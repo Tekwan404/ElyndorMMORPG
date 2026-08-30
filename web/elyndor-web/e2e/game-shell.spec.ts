@@ -12,6 +12,10 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await installMockApiUnlessReal(page)
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Создание героя' })).toBeVisible()
+  await page.screenshot({
+    path: '../../output/playwright/session-2a-character-creation.png',
+    fullPage: true,
+  })
   await page.getByLabel('Имя').fill(characterName())
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
@@ -20,12 +24,38 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByRole('heading', { name: 'Whispering Forest' })).toBeVisible()
   await page.getByRole('button', { name: /Deep Forest/ }).click()
   await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
+  expect(
+    await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
+  ).toBe(true)
+  const navigationBox = await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .boundingBox()
+  expect(navigationBox).not.toBeNull()
+  expect((navigationBox?.y ?? 0) + (navigationBox?.height ?? 0)).toBeLessThanOrEqual(
+    page.viewportSize()?.height ?? 0,
+  )
+  await page.screenshot({ path: '../../output/playwright/session-2a-world.png', fullPage: true })
+  await page.getByRole('button', { name: 'Герой' }).click()
+  await expect(page.getByRole('heading', { name: 'Arthas' })).toBeVisible()
+  expect(
+    await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
+  ).toBe(true)
+  await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
+  await page.getByRole('button', { name: 'Мир' }).click()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
     false,
   )
+  await page.setViewportSize({ width: 320, height: 568 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+    false,
+  )
+  await page.screenshot({
+    path: '../../output/playwright/session-2a-world-320.png',
+    fullPage: true,
+  })
   expect(browserErrors).toEqual([])
 })
 
@@ -34,6 +64,12 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
 
   let hasCharacter = false
   let locationId: keyof typeof locations = 'STARTER_TOWN'
+  await page.route('https://telegram.org/js/telegram-web-app.js?63', (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: 'window.Telegram = { WebApp: { initData: "", ready() {}, expand() {} } };',
+    }),
+  )
   await page.route('**/api/v1/auth/development', (route) =>
     route.fulfill({ json: { accessToken: 'test-token', expiresAtUtc: '2026-08-30T12:15:00Z' } }),
   )
@@ -48,13 +84,13 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
         name: 'Arthas',
         raceId: 'HUMAN',
         genderId: 'MALE',
-          classId: 'ARCHER',
-          level: 1,
-          primaryAttribute: 'AGILITY',
-          classProfileVersion: '0.2.0',
-          stats: archerStats,
-          vitals: archerVitals,
-          createdAtUtc: '2026-08-30T12:00:00Z',
+        classId: 'ARCHER',
+        level: 1,
+        primaryAttribute: 'AGILITY',
+        classProfileVersion: '0.2.0',
+        stats: archerStats,
+        vitals: archerVitals,
+        createdAtUtc: '2026-08-30T12:00:00Z',
       },
     })
   })

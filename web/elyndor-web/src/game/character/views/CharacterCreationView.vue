@@ -156,7 +156,8 @@ async function submit() {
 .creation {
   width: min(100%, var(--ui-content-width));
   margin-inline: auto;
-  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-7);
+  padding: var(--ui-space-6) calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-7)
+    calc(var(--ui-space-4) + var(--ui-safe-area-left));
 }
 .creation header {
   margin-bottom: var(--ui-space-5);
@@ -249,6 +250,7 @@ legend {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .class-choice {
+  position: relative;
   display: grid;
   min-width: 0;
   min-height: calc(var(--ui-touch-target) * 2);
@@ -271,10 +273,13 @@ legend {
 }
 .class-choice input {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
+  cursor: pointer;
 }
 .class-choice__icon {
   width: var(--ui-icon-slot-sm);
@@ -300,7 +305,8 @@ legend {
 }
 @media (max-width: 360px) {
   .creation {
-    padding-inline: var(--ui-space-3);
+    padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left))
+      calc(var(--ui-space-3) + var(--ui-safe-area-right));
   }
   .class-grid {
     grid-template-columns: 1fr;

@@ -138,7 +138,8 @@ function isPrimary(id: keyof CharacterStats): boolean {
   width: min(100%, var(--ui-content-width));
   margin-inline: auto;
   gap: var(--ui-space-4);
-  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-7);
+  padding: var(--ui-space-6) calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-7)
+    calc(var(--ui-space-4) + var(--ui-safe-area-left));
 }
 .character__header {
   display: flex;
@@ -219,7 +220,8 @@ dd {
 }
 @media (max-width: 360px) {
   .character {
-    padding-inline: var(--ui-space-3);
+    padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left))
+      calc(var(--ui-space-3) + var(--ui-safe-area-right));
   }
   .portrait {
     width: var(--ui-icon-slot-md);

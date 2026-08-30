@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppShell from '@/app/AppShell.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
-vi.mock('@/telegram/telegramWebApp', () => ({ initializeTelegramWebApp: vi.fn() }))
+vi.mock('@/telegram/telegramWebApp', () => ({ initializeTelegramWebApp: vi.fn<() => void>() }))
 
 describe('AppShell', () => {
   beforeEach(() => setActivePinia(createPinia()))

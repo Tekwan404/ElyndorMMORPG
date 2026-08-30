@@ -18,6 +18,9 @@ describe('WorldView', () => {
     expect(wrapper.text()).toContain('Whispering Forest')
     expect(wrapper.findAll('[data-travel]')).toHaveLength(1)
     expect(wrapper.find('input').exists()).toBe(false)
+    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-label')).toContain(
+      'Whispering Forest',
+    )
 
     await wrapper.get('[data-travel="WHISPERING_FOREST"]').trigger('click')
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')

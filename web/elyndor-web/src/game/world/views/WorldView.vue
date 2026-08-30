@@ -47,6 +47,7 @@ const locationIcon = computed<IconConfig>(() => ({
           </div>
           <UIButton
             :data-travel="location.id"
+            :aria-label="`Отправиться: ${location.displayName}`"
             variant="secondary"
             :loading="session.mutationPending"
             :disabled="session.mutationPending"
@@ -76,7 +77,8 @@ const locationIcon = computed<IconConfig>(() => ({
   width: min(100%, var(--ui-content-width));
   margin-inline: auto;
   gap: var(--ui-space-4);
-  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-7);
+  padding: var(--ui-space-6) calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-7)
+    calc(var(--ui-space-4) + var(--ui-safe-area-left));
 }
 .world__header {
   text-align: center;
@@ -140,7 +142,8 @@ h1 {
 }
 @media (max-width: 360px) {
   .world {
-    padding-inline: var(--ui-space-3);
+    padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left))
+      calc(var(--ui-space-3) + var(--ui-safe-area-right));
   }
   .path-card {
     grid-template-columns: 1fr;

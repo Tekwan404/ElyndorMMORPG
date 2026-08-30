@@ -6,7 +6,7 @@ Elyndor uses **Arcane Minimal**: deep neutral surfaces, cold blue/violet as the 
 
 ## Canonical tokens
 
-`web/elyndor-web/src/styles/tokens.css` owns all new visual values. New UI code uses `--ui-*` tokens; temporary `--color-*` aliases exist only to keep pre-refactor screens stable until Session 2. Telegram theme and safe-area variables are bounded fallbacks rather than the visual source of truth.
+`web/elyndor-web/src/styles/tokens.css` owns all visual values. UI code uses `--ui-*` tokens; the temporary pre-refactor `--color-*` and safe-area aliases were removed after the existing production screens migrated in Session 2A. Telegram theme and safe-area variables are bounded fallbacks rather than the visual source of truth.
 
 - Spacing uses `--ui-space-1` through `--ui-space-8`.
 - Interactive targets are at least `--ui-touch-target` (44px) in both dimensions.
@@ -24,4 +24,6 @@ Reusable primitives live in `src/ui/components`: `UIButton`, `UIPanel`, `UICard`
 
 ## Verification and migration boundary
 
-In development, `/dev/ui` is the visual playground for component variants, rarity, modifiers, cooldown, feedback, and system states. It must never appear in the production route table or game navigation. Session 1 establishes the system only; migration of gameplay screens belongs to Session 2 and must follow the approved screen order.
+In development, `/dev/ui` is the visual playground for component variants, rarity, modifiers, cooldown, feedback, and system states. It must never appear in the production route table or game navigation.
+
+Session 2A migrated the implemented production shell, character creation, character stats, and location flow. Combat and Inventory do not yet have authoritative production flows: Combat belongs to Phase 4 and Inventory to Phase 5. Their UI migration happens with those implementations rather than introducing fake client-only gameplay state.

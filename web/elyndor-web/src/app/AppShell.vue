@@ -138,7 +138,7 @@ onMounted(() => {
 .game-shell {
   display: grid;
   width: min(100%, var(--ui-content-width));
-  min-height: var(--ui-viewport-height);
+  height: var(--ui-viewport-height);
   margin-inline: auto;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
