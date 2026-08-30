@@ -39,24 +39,24 @@
 - Create: `src/Elyndor.Infrastructure/Persistence/Configurations/CharacterConfiguration.cs`
 - Create: `src/Elyndor.Infrastructure/Persistence/Configurations/CharacterLocationConfiguration.cs`
 - Create: `src/Elyndor.Infrastructure/Persistence/Configurations/TravelOperationConfiguration.cs`
-- Create: `src/Elyndor.Infrastructure/Persistence/Migrations/20260830130000_PhaseOneIdentityWorld.cs`
-- Create: `src/Elyndor.Infrastructure/Persistence/Migrations/20260830130000_PhaseOneIdentityWorld.Designer.cs`
+- Create: `src/Elyndor.Infrastructure/Persistence/Migrations/20260830075709_PhaseOneIdentityWorld.cs`
+- Create: `src/Elyndor.Infrastructure/Persistence/Migrations/20260830075709_PhaseOneIdentityWorld.Designer.cs`
 - Create: `src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextModelSnapshot.cs`
 - Test: `tests/Elyndor.IntegrationTests/Postgres/PhaseOneSchemaTests.cs`
 
 **Interfaces:**
-- Produces: `PostgresFixture.ConnectionString`, `PostgresFixture.CreateDbContextAsync()`.
+- Produces: `PostgresFixture.ConnectionString`, `PostgresFixture.CreateDbContext()`.
 - Produces: `GameDbContext.Accounts`, `Characters`, `CharacterLocations`, and `TravelOperations`.
 - Constraints: unique `accounts.telegram_user_id`, `characters.account_id`, `characters.creation_request_id`, `characters.normalized_name`, and `travel_operations(character_id, request_id)`.
 
-- [ ] **Step 1: Add the PostgreSQL test dependency and fixture**
+- [x] **Step 1: Add the PostgreSQL test dependency and fixture**
 
 Add central package version `Testcontainers.PostgreSql` and reference it from IntegrationTests. The fixture starts `postgres:18.4`, creates `GameDbContext` with Npgsql, runs `Database.MigrateAsync`, and disposes the container after the collection.
 
-- [ ] **Step 2: Write failing schema tests**
+- [x] **Step 2: Write failing schema tests**
 
 ```csharp
-[Collection(PostgresCollection.Name)]
+[Collection(PostgresFixtureDefinition.Name)]
 public sealed class PhaseOneSchemaTests(PostgresFixture postgres)
 {
     [Fact]
@@ -70,29 +70,29 @@ public sealed class PhaseOneSchemaTests(PostgresFixture postgres)
 }
 ```
 
-- [ ] **Step 3: Run the focused tests and confirm RED**
+- [x] **Step 3: Run the focused tests and confirm RED**
 
 Run: `dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --filter FullyQualifiedName~PhaseOneSchemaTests`
 
 Expected: compile failure because Phase 1 entities/DbSets do not exist.
 
-- [ ] **Step 4: Implement focused entities and EF configurations**
+- [x] **Step 4: Implement focused entities and EF configurations**
 
 Use UUID keys, `timestamptz`, required varchar IDs, cascade only from Account to its single Character, and restrict unrelated deletes. `CharacterLocation.Version` is a `long` concurrency token incremented only by a successful travel update. `TravelOperation` stores request ID, requested target, resulting location/version, and completion timestamp.
 
-- [ ] **Step 5: Generate and inspect the migration**
+- [x] **Step 5: Generate and inspect the migration**
 
-Run with an explicit local design connection string, then rename the generated timestamp prefix and migration ID consistently to `20260830130000` so the reviewed plan and committed artifact agree:
+Run with an explicit local design connection string and keep EF Core's generated UTC migration ID so the migration history matches the generated artifact:
 
-`dotnet ef migrations add PhaseOneIdentityWorld --project src/Elyndor.Infrastructure --startup-project src/Elyndor.Server --context GameDbContext`
+`dotnet tool run dotnet-ef migrations add PhaseOneIdentityWorld --project src/Elyndor.Infrastructure --startup-project src/Elyndor.Server --context GameDbContext --output-dir Persistence/Migrations`
 
 Inspect SQL/model snapshot for unique constraints, FKs, schema `game`, UTC column types, and unintended cascade paths.
 
-- [ ] **Step 6: Run schema tests and confirm GREEN**
+- [x] **Step 6: Run schema tests and confirm GREEN**
 
 Run the focused test command from Step 3. Expected: all schema tests pass against PostgreSQL 18.4.
 
-- [ ] **Step 7: Commit the persistence foundation**
+- [x] **Step 7: Commit the persistence foundation**
 
 `git commit -m "feat: add phase 1 persistence schema"`
 
