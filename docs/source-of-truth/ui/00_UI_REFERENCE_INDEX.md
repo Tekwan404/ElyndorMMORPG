@@ -7,6 +7,10 @@ docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
 reference/
 ```
 
+Design system foundation:
+
+- `docs/source-of-truth/ui/UI_DESIGN_GUIDELINES.md`
+
 ## Current composite visual boards
 
 - `reference/UI_01-02_GLOBAL_SHELL_WORLD.png`

@@ -1,8 +1,17 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
+const developmentRoutes: RouteRecordRaw[] = import.meta.env.DEV
+  ? [
+      {
+        path: '/dev/ui',
+        name: 'ui-playground',
+        component: () => import('@/ui/playground/UiPlaygroundView.vue'),
+      },
+    ]
+  : []
+
+export function createRoutes(isDevelopment: boolean): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [
     {
       path: '/',
       redirect: '/world',
@@ -10,9 +19,18 @@ const router = createRouter({
     {
       path: '/world',
       name: 'world',
-      component: () => import('@/game/world/views/WorldView.vue'),
+      component: () => import('@/app/AppShell.vue'),
     },
-  ],
+  ]
+
+  if (isDevelopment) routes.push(...developmentRoutes)
+
+  return routes
+}
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: createRoutes(import.meta.env.DEV),
 })
 
 export default router

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
+
 const session = useGameSessionStore()
 const activeView = ref<'world' | 'hero'>('world')
 const character = computed(() => session.snapshot?.character)
@@ -16,6 +18,11 @@ const resourcePercent = computed(() =>
     ? (character.value.vitals.currentResource / character.value.vitals.maxResource) * 100
     : 0,
 )
+
+onMounted(() => {
+  initializeTelegramWebApp()
+  void session.start()
+})
 </script>
 
 <template>

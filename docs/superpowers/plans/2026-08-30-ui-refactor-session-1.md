@@ -282,7 +282,7 @@ npm run type-check --prefix web/elyndor-web
 
 Expected: component tests pass and TypeScript exits 0.
 
-- [ ] **Step 6: Commit atomic components**
+- [x] **Step 6: Commit atomic components**
 
 ```powershell
 git add web/elyndor-web/src/ui/components
@@ -306,7 +306,7 @@ git commit -m "feat: add Arcane Minimal UI primitives"
 - Consumes: all components and presets from Tasks 2 and 3.
 - Produces: development-only route `/dev/ui` and the concise UI Source of Truth.
 
-- [ ] **Step 1: Write a failing production-route guard test**
+- [x] **Step 1: Write a failing production-route guard test**
 
 Add `web/elyndor-web/src/ui/playground/__tests__/playground-route.spec.ts` that imports a small exported `createRoutes(isDevelopment: boolean)` helper from the router module and asserts:
 
@@ -315,7 +315,7 @@ expect(createRoutes(false).some((route) => route.path === '/dev/ui')).toBe(false
 expect(createRoutes(true).some((route) => route.path === '/dev/ui')).toBe(true)
 ```
 
-- [ ] **Step 2: Run the route test and verify RED**
+- [x] **Step 2: Run the route test and verify RED**
 
 ```powershell
 npm run test:unit --prefix web/elyndor-web -- src/ui/playground/__tests__/playground-route.spec.ts
@@ -323,15 +323,15 @@ npm run test:unit --prefix web/elyndor-web -- src/ui/playground/__tests__/playgr
 
 Expected: FAIL because `createRoutes` and the playground route do not exist.
 
-- [ ] **Step 3: Build the playground**
+- [x] **Step 3: Build the playground**
 
 Display all required variants and states in clear sections: buttons; panel/card; health/resource bars; tabs; toast; modal; loading/empty/error; cooldown; rarity; fire/ice/poison; selected/equipped/locked/new. Add one interactive modal toggle and controlled tab example so behavior is testable in the browser.
 
-- [ ] **Step 4: Add the development-only route**
+- [x] **Step 4: Add the development-only route**
 
 Export `createRoutes(isDevelopment: boolean): RouteRecordRaw[]`. Make `/world` lazily render `AppShell`, append the lazy `/dev/ui` route only when `isDevelopment` is true, and create the router with `createRoutes(import.meta.env.DEV)`. Install the router in `main.ts`, replace the direct shell in `App.vue` with `RouterView`, and move Telegram initialization plus `session.start()` into the mounted lifecycle of `AppShell`. Do not add the playground to game navigation. This removes the existing dead-router condition without creating a second routing mechanism.
 
-- [ ] **Step 5: Write concise UI guidelines**
+- [x] **Step 5: Write concise UI guidelines**
 
 Document canonical token ownership, Arcane Minimal palette, typography, spacing, 44px rule, rarity and glow semantics, component list, icon composition, modifiers/states, Telegram fallbacks, and the Session 2 migration boundary. Link the file from `00_UI_REFERENCE_INDEX.md`.
 
