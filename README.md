@@ -12,12 +12,12 @@
 
 ```text
 README.md
-→ 00_MASTER_PROJECT_INDEX.md
-→ 00_DEVELOPMENT_ROADMAP.md
+→ docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
+→ docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
 → нужный system document 01–31
 → нужный UI document UI_01–UI_20
-→ 00_MASTER_UI_REFERENCE.md
-→ references/PRIMARY_VISUAL_CANON/
+→ docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
+→ reference/UI_*.png
 ```
 
 ## Что является источником истины
@@ -29,7 +29,7 @@ README.md
         ↓
 UI_01–UI_20 UI/UX SPECIFICATIONS
         ↓
-00_MASTER_UI_REFERENCE.md
+docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
         ↓
 PNG/JPG REFERENCES
 ```
@@ -41,17 +41,17 @@ PNG/JPG REFERENCES
 ### Инженерные и управляющие документы
 
 ```text
-00_MASTER_PROJECT_INDEX.md
-00_DEVELOPMENT_ROADMAP.md
-00_DEVELOPMENT_STACK.md
-00_COMPATIBILITY_MATRIX.md
-00_CONTENT_AND_BALANCE_PROFILES.md
-00_MASTER_UI_REFERENCE.md
-00_UI_REFERENCE_INDEX.md
-00_UI_UX_CONCEPT.md
-00_UI_PACK_SUMMARY.md
-00_FULL_AUDIT_V7_1.md
-00_MANIFEST.md
+docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
+docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
+docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md
+docs/source-of-truth/architecture/00_COMPATIBILITY_MATRIX.md
+docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md
+docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
+docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md
+docs/source-of-truth/ui/00_UI_UX_CONCEPT.md
+docs/source-of-truth/ui/00_UI_PACK_SUMMARY.md
+docs/archive/00_FULL_AUDIT_V7_1.md
+docs/archive/00_MANIFEST.md
 ```
 
 ### Игровые системы 01–31
@@ -269,28 +269,18 @@ Cooking
 Основной документ:
 
 ```text
-00_MASTER_UI_REFERENCE.md
+docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
 ```
 
-Сводная доска:
+Текущие утверждённые composite boards:
 
 ```text
-references/00_MASTER_VISUAL_REFERENCE_BOARD.jpg
+reference/UI_01-02_GLOBAL_SHELL_WORLD.png
+...
+reference/UI_19-20_SETTINGS_GUILD.png
 ```
 
-Утверждённые картинки:
-
-```text
-references/PRIMARY_VISUAL_CANON/
-```
-
-Неудачный визуальный стиль экрана характеристик специально изолирован:
-
-```text
-references/STRUCTURE_ONLY/
-```
-
-Его можно использовать только как пример структуры, но не цветов/материалов Elyndor.
+Каталог `references/` из исторического v7.1 manifest был удалён и не является доступным источником в текущем checkout. Актуальное соответствие экранов и composite boards находится в `docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md`.
 
 Ключевой visual language:
 
@@ -316,7 +306,7 @@ EF Core
 PostgreSQL
 SignalR
 Quartz.NET
-Redis
+Redis only for a measured need
 Vue 3 + TypeScript
 Telegram Mini App
 OpenTelemetry / Aspire
@@ -355,12 +345,12 @@ UI spec
 Для начала реализации используйте:
 
 ```text
-00_MASTER_PROJECT_INDEX.md
-00_DEVELOPMENT_ROADMAP.md
-UI_01_GLOBAL_GAME_SHELL.md
-UI_02_WORLD_AND_LOCATION.md
-UI_03_HERO.md
-UI_08_NORMAL_COMBAT.md
+docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
+docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
+docs/source-of-truth/ui/UI_01_GLOBAL_GAME_SHELL.md
+docs/source-of-truth/ui/UI_02_WORLD_AND_LOCATION.md
+docs/source-of-truth/ui/UI_03_HERO.md
+docs/source-of-truth/ui/UI_08_NORMAL_COMBAT.md
 ```
 
 ## Проверка пакета
@@ -368,11 +358,32 @@ UI_08_NORMAL_COMBAT.md
 Последний полный аудит:
 
 ```text
-00_FULL_AUDIT_V7_1.md
+docs/archive/00_FULL_AUDIT_V7_1.md
 ```
 
 Integrity hashes:
 
 ```text
-00_MANIFEST.md
+docs/archive/00_MANIFEST.md
 ```
+
+## Development
+
+Первый компилируемый foundation находится в `src/`, `apphost/`, `web/`, `tests/` и `content/`.
+
+Engineering foundation завершён и зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Текущая реализация — `docs/source-of-truth/architecture/PHASE_01_TELEGRAM_IDENTITY_WORLD_IMPLEMENTATION.md`; для работы через Codex сначала читать `AGENTS.md`.
+
+Локальный стек запускается через Aspire:
+
+```powershell
+npm ci --prefix web/elyndor-web
+dotnet run --project apphost/Elyndor.AppHost
+```
+
+Static game content проверяется той же командой, которую запускает CI:
+
+```powershell
+dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
+```
+
+Подробности окружения, secrets policy и команды проверки: `docs/development/getting-started.md`.

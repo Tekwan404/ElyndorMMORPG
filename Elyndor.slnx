@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/apphost/">
+    <Project Path="apphost/Elyndor.AppHost/Elyndor.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Elyndor.Contracts/Elyndor.Contracts.csproj" />
+    <Project Path="src/Elyndor.Core/Elyndor.Core.csproj" />
+    <Project Path="src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj" />
+    <Project Path="src/Elyndor.Server/Elyndor.Server.csproj" />
+    <Project Path="src/Elyndor.ServiceDefaults/Elyndor.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj" />
+    <Project Path="tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Elyndor.ContentValidator/Elyndor.ContentValidator.csproj" />
+  </Folder>
+</Solution>

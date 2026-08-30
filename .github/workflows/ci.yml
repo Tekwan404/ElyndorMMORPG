@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.13.3
+          cache: npm
+          cache-dependency-path: web/elyndor-web/package-lock.json
+
+      - name: Restore backend
+        run: dotnet restore Elyndor.slnx
+
+      - name: Build backend
+        run: dotnet build Elyndor.slnx --configuration Release --no-restore
+
+      - name: Test backend
+        run: dotnet test Elyndor.slnx --configuration Release --no-build
+
+      - name: Validate game content
+        run: dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- content/package.json
+
+      - name: Install frontend dependencies
+        working-directory: web/elyndor-web
+        run: npm ci
+
+      - name: Check frontend
+        working-directory: web/elyndor-web
+        run: |
+          npm run lint
+          npm run format:check
+          npm run test:unit
+          npm run build
+
+      - name: Install Playwright Chromium
+        working-directory: web/elyndor-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Test frontend shell
+        working-directory: web/elyndor-web
+        run: npm run test:e2e
