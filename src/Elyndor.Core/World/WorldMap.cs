@@ -4,6 +4,8 @@ public sealed class WorldMap
 {
     private readonly Dictionary<string, LocationDefinition> _locations;
 
+    public IReadOnlyCollection<LocationDefinition> Locations => _locations.Values;
+
     public WorldMap(IEnumerable<LocationDefinition> locations)
     {
         ArgumentNullException.ThrowIfNull(locations);

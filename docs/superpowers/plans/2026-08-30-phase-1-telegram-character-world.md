@@ -268,35 +268,35 @@ Expected: all creation and policy tests pass against real PostgreSQL.
 - `Task<TravelResult> TravelService.TravelAsync(Guid accountId, Guid requestId, string targetLocationId, CancellationToken cancellationToken)`.
 - JWT-protected `GET /api/v1/bootstrap`, `GET /api/v1/world/locations`, and `POST /api/v1/world/travel`.
 
-- [ ] **Step 1: Write failing bootstrap tests**
+- [x] **Step 1: Write failing bootstrap tests**
 
 Assert no-character snapshot, created-character snapshot, current content/balance versions, server UTC, actual location, and only server-derived outgoing transitions.
 
-- [ ] **Step 2: Write failing travel/idempotency/concurrency tests**
+- [x] **Step 2: Write failing travel/idempotency/concurrency tests**
 
 Cover valid Town ↔ Forest ↔ Deep transitions, direct Town → Deep rejection, unknown target, exact retry, request ID reused for another target, and two DbContexts racing Forest vs Deep from Town. Assert only the valid transition from the winning authoritative row commits.
 
-- [ ] **Step 3: Run focused tests and confirm RED**
+- [x] **Step 3: Run focused tests and confirm RED**
 
 Run: `dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~BootstrapServiceTests|FullyQualifiedName~TravelServiceTests|FullyQualifiedName~WorldEndpointsTests"`
 
-- [ ] **Step 4: Implement bootstrap projection**
+- [x] **Step 4: Implement bootstrap projection**
 
 Project only the authenticated Account/Character row, join current location state, and resolve display/transitions from `WorldMap`. Do not serialize EF entities.
 
-- [ ] **Step 5: Implement atomic travel and operation replay**
+- [x] **Step 5: Implement atomic travel and operation replay**
 
 Within one transaction, first resolve an existing operation. Otherwise load actual location/version, validate through `WorldMap`, insert the request record, and execute a conditional update matching `(CharacterId, Version)`. Commit result and operation together. Convert a zero-row update to `travel_conflict` after rollback/reload.
 
-- [ ] **Step 6: Map protected endpoints and stable errors**
+- [x] **Step 6: Map protected endpoints and stable errors**
 
 The body contains no source location or version. Unknown/invalid transition is 422, idempotency mismatch is 409, concurrency conflict is 409, and unauthenticated access is 401.
 
-- [ ] **Step 7: Run focused and full backend tests**
+- [x] **Step 7: Run focused and full backend tests**
 
 Run: `dotnet test Elyndor.slnx --configuration Release`
 
-- [ ] **Step 8: Commit world bootstrap/travel**
+- [x] **Step 8: Commit world bootstrap/travel**
 
 `git commit -m "feat: add persistent world travel"`
 

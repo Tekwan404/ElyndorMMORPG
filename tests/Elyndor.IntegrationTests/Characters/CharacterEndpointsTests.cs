@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Identity;
+using Elyndor.Contracts.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.AspNetCore.Hosting;
@@ -67,8 +68,34 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal(first, retry);
         Assert.Equal(first, restored);
 
+        BootstrapResponse? initialWorld =
+            await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap");
+        Assert.Equal("STARTER_TOWN", initialWorld?.World?.CurrentLocation.Id);
+        WorldLocationResponse[]? locations =
+            await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
+        Assert.Equal(3, locations?.Length);
+
+        HttpResponseMessage invalidTravel = await client.PostAsJsonAsync(
+            "/api/v1/world/travel",
+            new TravelRequest(Guid.CreateVersion7(), "DEEP_FOREST"));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, invalidTravel.StatusCode);
+
+        HttpResponseMessage travelResponse = await client.PostAsJsonAsync(
+            "/api/v1/world/travel",
+            new TravelRequest(Guid.CreateVersion7(), "WHISPERING_FOREST"));
+        travelResponse.EnsureSuccessStatusCode();
+        TravelResponse? travel = await travelResponse.Content.ReadFromJsonAsync<TravelResponse>();
+        Assert.Equal("WHISPERING_FOREST", travel?.LocationId);
+        Assert.Equal(2, travel?.Version);
+
+        BootstrapResponse? reconnected =
+            await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap");
+        Assert.Equal("WHISPERING_FOREST", reconnected?.World?.CurrentLocation.Id);
+
         await using GameDbContext context = postgres.CreateDbContext();
-        Assert.Equal("STARTER_TOWN", (await context.CharacterLocations.SingleAsync()).LocationId);
+        Assert.Equal(
+            "WHISPERING_FOREST",
+            (await context.CharacterLocations.SingleAsync()).LocationId);
     }
 
     [Fact]

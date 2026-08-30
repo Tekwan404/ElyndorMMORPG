@@ -1,10 +1,12 @@
 using System.Text;
 using Elyndor.Contracts.System;
 using Elyndor.Core.Content;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Server.Characters;
 using Elyndor.Server.Identity;
+using Elyndor.Server.World;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -37,6 +39,7 @@ builder.AddElyndorInfrastructure();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(gameContentPackage);
+builder.Services.AddSingleton(new WorldMap(gameContentPackage.Locations));
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddOptions<AuthenticationOptions>()
@@ -100,6 +103,7 @@ bool mapDevelopmentAuthentication = app.Environment.IsDevelopment()
     && app.Configuration.GetValue<bool>("Authentication:Development:Enabled");
 app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
 app.MapCharacterEndpoints();
+app.MapWorldEndpoints();
 
 app.MapGet(
         "/api/v1/status",
