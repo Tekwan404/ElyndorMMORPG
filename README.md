@@ -371,7 +371,7 @@ docs/archive/00_MANIFEST.md
 
 Первый компилируемый foundation находится в `src/`, `apphost/`, `web/`, `tests/` и `content/`.
 
-Engineering foundation завершён и зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Текущая реализация — `docs/source-of-truth/architecture/PHASE_01_TELEGRAM_IDENTITY_WORLD_IMPLEMENTATION.md`; для работы через Codex сначала читать `AGENTS.md`.
+Engineering foundation завершён и зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Текущая реализация — `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`; общий roadmap находится в `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`. Для работы через Codex сначала читать `AGENTS.md`.
 
 Локальный стек запускается через Aspire:
 

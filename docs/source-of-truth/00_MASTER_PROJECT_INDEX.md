@@ -91,7 +91,9 @@ README.md
 - `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`
 - `docs/source-of-truth/architecture/00_PRODUCT_AND_PROTOTYPE_STRATEGY.md`
 - `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md` — completed engineering foundation and verification checklist.
-- `docs/source-of-truth/architecture/PHASE_01_TELEGRAM_IDENTITY_WORLD_IMPLEMENTATION.md` — current implementation phase.
+- `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md` — prototype phase roadmap/navigation.
+- `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md` — current implementation phase.
+- `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md` — next phase, gated by Phase 1 DoD.
 
 ---
 

@@ -12,7 +12,9 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Roadmap and phase order: `docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md`
 - Product and prototype: `docs/source-of-truth/architecture/00_PRODUCT_AND_PROTOTYPE_STRATEGY.md`
 - Completed foundation: `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`
-- Current implementation phase: `docs/source-of-truth/architecture/PHASE_01_TELEGRAM_IDENTITY_WORLD_IMPLEMENTATION.md`
+- Phase roadmap: `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`
+- Current implementation phase: `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`
+- Next phase, gated by Phase 1 DoD: `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md`
 - Combat: `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`, `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`, `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`, `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`, `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`, `docs/source-of-truth/gameplay/15_MONSTER_AND_AI_SYSTEM.md`
 - Progression and classes: `docs/source-of-truth/gameplay/11_PROGRESSION_SYSTEM.md`, `docs/source-of-truth/gameplay/12_CLASS_SYSTEM.md`, `docs/source-of-truth/gameplay/19_CLASS_ROSTER_AND_CHARACTER_CREATION.md`
 - Items and rewards: `docs/source-of-truth/gameplay/13_ITEM_EQUIPMENT_SYSTEM.md`, `docs/source-of-truth/gameplay/14_LOOT_SYSTEM.md`

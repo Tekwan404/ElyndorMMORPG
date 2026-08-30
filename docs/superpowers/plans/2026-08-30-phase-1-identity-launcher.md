@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 10, ASP.NET Core, EF Core/PostgreSQL through Aspire, Vue 3/Vite, PowerShell, Tailscale Funnel, xUnit, Playwright.
 
-**Spec:** `docs/source-of-truth/architecture/PHASE_01_TELEGRAM_IDENTITY_WORLD_IMPLEMENTATION.md`
+**Spec:** `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`
 
 ## Global Constraints
 
