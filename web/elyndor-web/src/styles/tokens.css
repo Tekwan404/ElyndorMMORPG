@@ -1,0 +1,114 @@
+:root {
+  color-scheme: dark;
+
+  /* Arcane Minimal semantic colors */
+  --ui-color-background: var(--tg-theme-bg-color, #070911);
+  --ui-color-surface-1: #0d1220;
+  --ui-color-surface-2: #121827;
+  --ui-color-surface-3: #182033;
+  --ui-color-overlay: rgb(3 5 10 / 82%);
+  --ui-color-border: rgb(137 151 185 / 22%);
+  --ui-color-border-strong: rgb(146 164 206 / 42%);
+  --ui-color-primary: #7f7bea;
+  --ui-color-primary-hover: #918df4;
+  --ui-color-primary-active: #6864c9;
+  --ui-color-secondary: #3da7bd;
+  --ui-color-danger: #d85f72;
+  --ui-color-warning: #d0a458;
+  --ui-color-success: #4fb996;
+  --ui-color-text-primary: var(--tg-theme-text-color, #e6e9f2);
+  --ui-color-text-secondary: #b2bbce;
+  --ui-color-text-muted: var(--tg-theme-hint-color, #8993a9);
+  --ui-color-text-inverse: #080a12;
+  --ui-color-disabled: #596275;
+  --ui-color-focus: #aaa7ff;
+
+  /* Resource colors */
+  --ui-color-hp: #b84152;
+  --ui-color-rage: #c18a3b;
+  --ui-color-focus-resource: #3fac9b;
+  --ui-color-mana: #7185df;
+
+  /* Rarity: neutral slot background with semantic frame/accent only */
+  --ui-rarity-common: #7f899c;
+  --ui-rarity-uncommon: #54a875;
+  --ui-rarity-rare: #4f83c9;
+  --ui-rarity-epic: #8d66d9;
+  --ui-rarity-legendary: #b8914f;
+  --ui-rarity-unique: #b65d75;
+  --ui-rarity-glow-common: none;
+  --ui-rarity-glow-uncommon: 0 0 8px rgb(84 168 117 / 14%);
+  --ui-rarity-glow-rare: 0 0 9px rgb(79 131 201 / 18%);
+  --ui-rarity-glow-epic: 0 0 10px rgb(141 102 217 / 22%);
+  --ui-rarity-glow-legendary: 0 0 11px rgb(184 145 79 / 26%);
+  --ui-rarity-glow-unique: 0 0 11px rgb(182 93 117 / 24%);
+
+  /* Icon modifiers */
+  --ui-modifier-fire: #db7548;
+  --ui-modifier-ice: #72b8df;
+  --ui-modifier-lightning: #9a8ff0;
+  --ui-modifier-poison: #69ae6a;
+  --ui-modifier-holy: #d7c68a;
+  --ui-modifier-shadow: #8b6ab4;
+
+  /* Spacing and sizing */
+  --ui-space-1: 0.25rem;
+  --ui-space-2: 0.5rem;
+  --ui-space-3: 0.75rem;
+  --ui-space-4: 1rem;
+  --ui-space-5: 1.25rem;
+  --ui-space-6: 1.5rem;
+  --ui-space-7: 2rem;
+  --ui-space-8: 2.5rem;
+  --ui-radius-xs: 2px;
+  --ui-radius-sm: 4px;
+  --ui-radius-md: 6px;
+  --ui-radius-lg: 10px;
+  --ui-radius-round: 999px;
+  --ui-touch-target: 44px;
+  --ui-control-height-sm: 44px;
+  --ui-control-height-md: 48px;
+  --ui-control-height-lg: 54px;
+  --ui-content-width: 540px;
+  --ui-icon-slot-sm: 44px;
+  --ui-icon-slot-md: 56px;
+  --ui-icon-slot-lg: 72px;
+
+  /* Typography */
+  --ui-font-display: Georgia, 'Times New Roman', serif;
+  --ui-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ui-font-size-xs: 0.6875rem;
+  --ui-font-size-sm: 0.8125rem;
+  --ui-font-size-md: 0.9375rem;
+  --ui-font-size-lg: 1.125rem;
+  --ui-font-size-xl: 1.5rem;
+  --ui-font-size-2xl: 2rem;
+  --ui-font-weight-regular: 400;
+  --ui-font-weight-medium: 500;
+  --ui-font-weight-semibold: 600;
+  --ui-font-weight-bold: 700;
+  --ui-line-height-tight: 1.2;
+  --ui-line-height-normal: 1.5;
+  --ui-line-height-relaxed: 1.7;
+
+  /* Effects and layers */
+  --ui-shadow-panel: 0 12px 30px rgb(0 0 0 / 28%);
+  --ui-shadow-modal: 0 24px 70px rgb(0 0 0 / 48%);
+  --ui-glow-selected: 0 0 0 1px rgb(127 123 234 / 55%), 0 0 12px rgb(127 123 234 / 22%);
+  --ui-glow-danger: 0 0 13px rgb(216 95 114 / 25%);
+  --ui-glow-magic: 0 0 12px rgb(127 123 234 / 20%);
+  --ui-transition-fast: 120ms ease;
+  --ui-transition-normal: 180ms ease;
+  --ui-transition-slow: 280ms ease;
+  --ui-z-base: 0;
+  --ui-z-sticky: 20;
+  --ui-z-toast: 60;
+  --ui-z-modal: 80;
+
+  /* Telegram and device geometry */
+  --ui-safe-area-top: env(safe-area-inset-top, 0px);
+  --ui-safe-area-right: env(safe-area-inset-right, 0px);
+  --ui-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --ui-safe-area-left: env(safe-area-inset-left, 0px);
+  --ui-viewport-height: var(--tg-viewport-stable-height, 100dvh);
+}

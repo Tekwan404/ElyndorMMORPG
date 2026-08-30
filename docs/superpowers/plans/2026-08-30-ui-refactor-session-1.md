@@ -33,7 +33,7 @@
 - Consumes: Telegram CSS variables exposed by the Mini App host.
 - Produces: canonical `--ui-*` tokens and temporary legacy `--color-*` aliases used by current screens.
 
-- [ ] **Step 1: Create the canonical token file**
+- [x] **Step 1: Create the canonical token file**
 
 Define Arcane Minimal groups under `:root`: background/surface/border, primary/secondary/danger/warning/success, text and disabled colors; all six rarities; spacing from `--ui-space-1` through `--ui-space-8`; radii; 44px touch target and control heights; display/UI typography; shadows, semantic glows, transition durations, z-index layers; safe-area and Telegram viewport fallbacks.
 
@@ -52,7 +52,7 @@ Use Telegram variables only as bounded fallbacks, for example:
 }
 ```
 
-- [ ] **Step 2: Import tokens before global styles and alias legacy variables**
+- [x] **Step 2: Import tokens before global styles and alias legacy variables**
 
 In `main.ts`, import `tokens.css` before `base.scss`. In `base.scss`, remove canonical color declarations and keep compatibility aliases only:
 
@@ -69,7 +69,7 @@ In `main.ts`, import `tokens.css` before `base.scss`. In `base.scss`, remove can
 
 Use canonical tokens for the body background and base focus-visible outline. Do not migrate scoped gameplay styles.
 
-- [ ] **Step 3: Run the frontend baseline gate**
+- [x] **Step 3: Run the frontend baseline gate**
 
 Run:
 
@@ -80,7 +80,7 @@ npm run build-only --prefix web/elyndor-web
 
 Expected: both commands exit 0 and the existing game still compiles.
 
-- [ ] **Step 4: Commit the token foundation**
+- [x] **Step 4: Commit the token foundation**
 
 ```powershell
 git add web/elyndor-web/src/styles/tokens.css web/elyndor-web/src/styles/base.scss web/elyndor-web/src/main.ts
