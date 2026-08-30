@@ -202,7 +202,7 @@ npm run type-check --prefix web/elyndor-web
 
 Expected: resolver tests pass and TypeScript exits 0.
 
-- [ ] **Step 7: Commit the icon factory**
+- [x] **Step 7: Commit the icon factory**
 
 ```powershell
 git add web/elyndor-web/src/ui/icons
@@ -230,7 +230,7 @@ git commit -m "feat: add data-driven UI icon factory"
 - Consumes: Task 1 tokens and Task 2 `IconConfig`/`IconGenerator`.
 - Produces: named component exports and controlled props/events defined in the design spec.
 
-- [ ] **Step 1: Write failing component behavior tests**
+- [x] **Step 1: Write failing component behavior tests**
 
 Cover behavior rather than CSS snapshots:
 
@@ -257,7 +257,7 @@ it('renders modal dialog semantics and closes from its close control', async () 
 
 Add one `UIItemSlot` assertion for locked state and accessible item label.
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 ```powershell
 npm run test:unit --prefix web/elyndor-web -- src/ui/components/__tests__/ui-components.spec.ts
@@ -265,15 +265,15 @@ npm run test:unit --prefix web/elyndor-web -- src/ui/components/__tests__/ui-com
 
 Expected: FAIL because components do not exist.
 
-- [ ] **Step 3: Implement buttons, surfaces, bars, and tabs**
+- [x] **Step 3: Implement buttons, surfaces, bars, and tabs**
 
 Use canonical tokens exclusively. `UIButton` supports only `primary | secondary | ghost | danger`. `UIHealthBar` clamps its displayed percentage to 0–100 without mutating props. `UITabs` does not emit disabled values.
 
-- [ ] **Step 4: Implement modal, toast, system state, and item slot**
+- [x] **Step 4: Implement modal, toast, system state, and item slot**
 
 Use controlled props/events. `UIModal` teleports to body, emits close, and has `aria-modal="true"`. `UIToast` is presentational and has no singleton bus. `UILoadingState` owns loading/empty/error visuals. `UIItemSlot` composes `IconGenerator` and never rebuilds icon logic.
 
-- [ ] **Step 5: Export the primitives and run focused tests**
+- [x] **Step 5: Export the primitives and run focused tests**
 
 ```powershell
 npm run test:unit --prefix web/elyndor-web -- src/ui/components/__tests__/ui-components.spec.ts
