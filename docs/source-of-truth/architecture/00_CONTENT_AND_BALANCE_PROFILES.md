@@ -317,9 +317,10 @@ BaseStatProfileId
 LevelGrowthProfileId
 ```
 
-Конкретные значения Warrior/Archer/Mage должны быть утверждены отдельным balance content pass до массового создания Level 1–60 encounters/items.
-
-Это content gap, а не архитектурная неопределённость.
+Текущие prototype-значения Warrior/Archer/Mage для validation slice Level 1–10
+утверждены в `content/package.json` начиная с `BalanceVersion = 0.2.0`.
+Они являются playtest-профилем и не считаются финальным балансом Level 1–60.
+Изменение этих чисел выполняется content pass без перекомпиляции gameplay Core.
 
 ---
 

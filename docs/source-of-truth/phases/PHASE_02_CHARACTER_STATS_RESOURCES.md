@@ -1,6 +1,6 @@
 # Phase 2 — Character Stats and Class Resources
 
-**Status:** Approved for implementation
+**Status:** Complete — playable prototype balance 0.2.0
 **Owner:** Phase 2 execution contract
 **Entry gate:** Every applicable Phase 1 Definition of Done item is verified.
 
@@ -98,13 +98,13 @@ The mobile UI adds real HP/resource bars and a character-stat screen with loadin
 
 ## Definition of Done
 
-- [ ] Warrior, Archer, and Mage load different versioned class/resource profiles.
-- [ ] The complete approved stat set is calculated server-side through the deterministic pipeline.
-- [ ] Final stats are reproducible and are not persisted as permanent truth.
-- [ ] Rage, Focus, and Mana clamp/spend/restore/time/respawn rules pass deterministic tests.
-- [ ] No HTTP contract permits client-owned stats or resources.
-- [ ] HP/resource checkpoints restore correctly after reload and process restart.
-- [ ] No per-combat-action PostgreSQL persistence is introduced.
-- [ ] Character HUD and stat UI render all three class resource models.
-- [ ] Backend, content, PostgreSQL, frontend, and Playwright checks pass.
-- [ ] Diff review finds no abilities, damage, effects, combat, or other Phase 3 scope.
+- [x] Warrior, Archer, and Mage load different versioned class/resource profiles.
+- [x] The complete approved stat set is calculated server-side through the deterministic pipeline.
+- [x] Final stats are reproducible and are not persisted as permanent truth.
+- [x] Rage, Focus, and Mana clamp/spend/restore/time/respawn rules pass deterministic tests.
+- [x] No HTTP contract permits client-owned stats or resources.
+- [x] HP/resource checkpoints restore correctly after reload and process restart.
+- [x] No per-combat-action PostgreSQL persistence is introduced.
+- [x] Character HUD and stat UI render all three class resource models.
+- [x] Backend, content, PostgreSQL, frontend, and Playwright checks pass.
+- [x] Diff review finds no abilities, damage, effects, combat, or other Phase 3 scope.

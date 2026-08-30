@@ -14,7 +14,8 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Completed foundation: `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`
 - Phase roadmap: `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`
 - Completed Phase 1: `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`
-- Current implementation phase: `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md`
+- Completed Phase 2: `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md`
+- Next phase planning: Phase 3 section in `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`
 - Combat: `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`, `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`, `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`, `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`, `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`, `docs/source-of-truth/gameplay/15_MONSTER_AND_AI_SYSTEM.md`
 - Progression and classes: `docs/source-of-truth/gameplay/11_PROGRESSION_SYSTEM.md`, `docs/source-of-truth/gameplay/12_CLASS_SYSTEM.md`, `docs/source-of-truth/gameplay/19_CLASS_ROSTER_AND_CHARACTER_CREATION.md`
 - Items and rewards: `docs/source-of-truth/gameplay/13_ITEM_EQUIPMENT_SYSTEM.md`, `docs/source-of-truth/gameplay/14_LOOT_SYSTEM.md`
@@ -23,7 +24,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Content: `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`, `content/README.md`
 - Infrastructure/testing: `docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md`, `.github/workflows/ci.yml`, `docs/development/getting-started.md`
 
-Phase 0 and Phase 1 Definitions of Done are verified in their phase documents. Implement Phase 2 only as bounded vertical slices and do not implement Phase 3+ while Phase 2 is current.
+Phase 0, Phase 1, and Phase 2 Definitions of Done are verified in their phase documents. Do not implement Phase 3 until its bounded execution contract is approved.
 
 ## Core invariants
 
