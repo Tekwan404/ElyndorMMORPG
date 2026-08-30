@@ -60,5 +60,6 @@ describe('Arcane Minimal UI primitives', () => {
     })
 
     expect(wrapper.get('[data-item-slot]').attributes('aria-label')).toBe('Ancient chest, locked')
+    expect(wrapper.get('[data-item-slot]').attributes('disabled')).toBeDefined()
   })
 })

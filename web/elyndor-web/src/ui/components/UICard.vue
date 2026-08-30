@@ -16,7 +16,7 @@ defineEmits<{ activate: [] }>()
     :disabled="interactive && disabled ? true : undefined"
     :aria-pressed="interactive ? selected : undefined"
     :aria-disabled="!interactive && disabled ? 'true' : undefined"
-    @click="!disabled && $emit('activate')"
+    @click="interactive && !disabled && $emit('activate')"
   >
     <slot />
   </component>

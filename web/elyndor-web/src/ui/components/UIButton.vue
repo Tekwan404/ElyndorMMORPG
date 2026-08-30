@@ -78,7 +78,7 @@ withDefaults(
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: var(--ui-radius-round);
-  animation: ui-button-spin var(--ui-transition-slow) infinite linear;
+  animation: ui-button-spin var(--ui-animation-spin-duration) infinite linear;
 }
 
 @keyframes ui-button-spin {

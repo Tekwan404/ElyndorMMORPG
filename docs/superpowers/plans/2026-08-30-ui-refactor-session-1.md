@@ -335,7 +335,7 @@ Export `createRoutes(isDevelopment: boolean): RouteRecordRaw[]`. Make `/world` l
 
 Document canonical token ownership, Arcane Minimal palette, typography, spacing, 44px rule, rarity and glow semantics, component list, icon composition, modifiers/states, Telegram fallbacks, and the Session 2 migration boundary. Link the file from `00_UI_REFERENCE_INDEX.md`.
 
-- [ ] **Step 6: Run route test, all unit tests, lint, format, and build**
+- [x] **Step 6: Run route test, all unit tests, lint, format, and build**
 
 ```powershell
 npm run test:unit --prefix web/elyndor-web -- src/ui/playground/__tests__/playground-route.spec.ts
@@ -347,7 +347,7 @@ npm run build --prefix web/elyndor-web
 
 Expected: all commands exit 0.
 
-- [ ] **Step 7: Commit playground and guidelines**
+- [x] **Step 7: Commit playground and guidelines**
 
 ```powershell
 git add web/elyndor-web/src/ui/playground web/elyndor-web/src/router/index.ts web/elyndor-web/src/main.ts web/elyndor-web/src/App.vue web/elyndor-web/src/app/AppShell.vue docs/source-of-truth/ui/UI_DESIGN_GUIDELINES.md docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md
@@ -366,7 +366,7 @@ git commit -m "feat: add UI development playground"
 - Consumes: `/dev/ui` from Task 4 and the repository Playwright CLI wrapper.
 - Produces: browser evidence, final reviewed diff, and Session 1 DoD report.
 
-- [ ] **Step 1: Start Vite development mode for the playground**
+- [x] **Step 1: Start Vite development mode for the playground**
 
 ```powershell
 npm run dev --prefix web/elyndor-web -- --host 127.0.0.1
@@ -374,7 +374,7 @@ npm run dev --prefix web/elyndor-web -- --host 127.0.0.1
 
 Keep it in a managed terminal session and use the actual printed port.
 
-- [ ] **Step 2: Open and inspect `/dev/ui` in a real browser**
+- [x] **Step 2: Open and inspect `/dev/ui` in a real browser**
 
 Use the Playwright CLI wrapper after confirming `npx` exists. Open the route, take a snapshot, interact with tabs and modal by current snapshot refs, then re-snapshot.
 
@@ -388,15 +388,15 @@ Verify:
 - selected/legendary glow is semantic;
 - focus-visible and disabled state are distinguishable.
 
-- [ ] **Step 3: Verify Telegram-like and narrow mobile viewports**
+- [x] **Step 3: Verify Telegram-like and narrow mobile viewports**
 
 Use 390 by 844 and 320 by 568 viewports. Capture screenshots under `output/playwright/`. Verify no horizontal overflow, clipped controls, unreadable labels, or touch targets below 44px.
 
-- [ ] **Step 4: Verify the production route boundary**
+- [x] **Step 4: Verify the production route boundary**
 
 Run the production preview and request `/dev/ui`. Confirm the development component is not present in the production route table and normal production navigation remains unchanged.
 
-- [ ] **Step 5: Run the final automated gate**
+- [x] **Step 5: Run the final automated gate**
 
 ```powershell
 npm run lint --prefix web/elyndor-web
@@ -408,11 +408,11 @@ git diff --check
 
 Expected: all commands exit 0.
 
-- [ ] **Step 6: Review complete diff**
+- [x] **Step 6: Review complete diff**
 
 Review for correctness, unsafe SVG markup, missing states, hardcoded colors in new UI files, accessibility regressions, duplicated icon logic, production dev-route leakage, backend/API changes, Session 2 scope creep, secrets, and unrelated modifications.
 
-- [ ] **Step 7: Commit verification fixes if required**
+- [x] **Step 7: Commit verification fixes if required**
 
 If browser verification produced a reproduced defect, commit only its tested fix:
 

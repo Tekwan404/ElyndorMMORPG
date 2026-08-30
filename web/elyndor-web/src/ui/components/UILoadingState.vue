@@ -56,7 +56,7 @@ withDefaults(
   border: 2px solid var(--ui-color-border-strong);
   border-top-color: var(--ui-color-primary);
   border-radius: var(--ui-radius-round);
-  animation: ui-state-spin var(--ui-transition-slow) infinite linear;
+  animation: ui-state-spin var(--ui-animation-spin-duration) infinite linear;
 }
 .ui-system-state__mark {
   display: grid;

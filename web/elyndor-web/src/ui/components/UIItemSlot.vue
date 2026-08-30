@@ -12,11 +12,14 @@ defineEmits<{ activate: [] }>()
 
 const accessibleLabel = computed(() => {
   const details = [props.label]
-  if (props.icon.state === 'locked') details.push('locked')
+  if (props.icon.state === 'locked' && props.label.toLocaleLowerCase() !== 'locked') {
+    details.push('locked')
+  }
   if (props.quantity > 1) details.push(`quantity ${props.quantity}`)
   return details.join(', ')
 })
 const cooldown = computed(() => Math.min(100, Math.max(0, props.cooldown)))
+const unavailable = computed(() => props.icon.state === 'locked' || props.icon.state === 'disabled')
 </script>
 
 <template>
@@ -25,6 +28,7 @@ const cooldown = computed(() => Math.min(100, Math.max(0, props.cooldown)))
     class="ui-item-slot"
     type="button"
     :aria-label="accessibleLabel"
+    :disabled="unavailable"
     @click="$emit('activate')"
   >
     <span class="ui-item-slot__icon">
@@ -54,6 +58,9 @@ const cooldown = computed(() => Math.min(100, Math.max(0, props.cooldown)))
   font: inherit;
   font-size: var(--ui-font-size-xs);
   cursor: pointer;
+}
+.ui-item-slot:disabled {
+  cursor: not-allowed;
 }
 .ui-item-slot__icon {
   position: relative;

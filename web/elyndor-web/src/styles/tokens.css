@@ -101,6 +101,7 @@
   --ui-transition-fast: 120ms ease;
   --ui-transition-normal: 180ms ease;
   --ui-transition-slow: 280ms ease;
+  --ui-animation-spin-duration: 800ms;
   --ui-z-base: 0;
   --ui-z-sticky: 20;
   --ui-z-toast: 60;
