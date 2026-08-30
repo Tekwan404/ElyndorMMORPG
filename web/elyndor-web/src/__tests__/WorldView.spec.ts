@@ -16,10 +16,10 @@ describe('WorldView', () => {
 
     expect(wrapper.text()).toContain('Starter Town')
     expect(wrapper.text()).toContain('Whispering Forest')
-    expect(wrapper.findAll('button.travel')).toHaveLength(1)
+    expect(wrapper.findAll('[data-travel]')).toHaveLength(1)
     expect(wrapper.find('input').exists()).toBe(false)
 
-    await wrapper.get('button.travel').trigger('click')
+    await wrapper.get('[data-travel="WHISPERING_FOREST"]').trigger('click')
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
   })
 
@@ -30,8 +30,20 @@ describe('WorldView', () => {
     store.errorCode = 'travel_conflict'
     const wrapper = mount(WorldView)
 
-    expect(wrapper.get('button.travel').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-busy')).toBe('true')
     expect(wrapper.get('[role="alert"]').text()).toBe('travel_conflict')
+  })
+
+  it('explains when the current location has no outgoing path', () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot()
+    store.snapshot.world!.outgoingTransitions = []
+
+    const wrapper = mount(WorldView)
+
+    expect(wrapper.get('[role="status"]').text()).toContain('Пути не найдены')
+    expect(wrapper.find('[data-travel]').exists()).toBe(false)
   })
 })
 

@@ -1,95 +1,149 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import { useGameSessionStore } from '@/stores/gameSession'
+import { UIButton, UICard, UILoadingState, UIPanel, UIToast } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { IconConfig } from '@/ui/icons/icon.types'
+
 const session = useGameSessionStore()
+const world = computed(() => session.snapshot?.world)
+const character = computed(() => session.snapshot?.character)
+const locationIcon = computed<IconConfig>(() => ({
+  id: `location-${world.value?.currentLocation.id ?? 'unknown'}`,
+  glyph: world.value?.currentLocation.dangerLevel === 'DANGEROUS' ? 'skull' : 'star',
+  category: 'utility',
+  modifier:
+    world.value?.currentLocation.dangerLevel === 'DANGEROUS'
+      ? 'fire'
+      : world.value?.currentLocation.dangerLevel === 'ADVENTURE'
+        ? 'shadow'
+        : 'holy',
+}))
 </script>
+
 <template>
-  <section v-if="session.snapshot?.world && session.snapshot.character" class="world">
-    <p class="kicker">{{ session.snapshot.world.currentLocation.dangerLevel }}</p>
-    <h1>{{ session.snapshot.world.currentLocation.displayName }}</h1>
-    <p class="hero">
-      {{ session.snapshot.character.name }} · уровень {{ session.snapshot.character.level }}
-    </p>
-    <div class="scene" aria-hidden="true"><span>♜</span></div>
-    <h2>Доступные пути</h2>
-    <p v-if="session.snapshot.world.outgoingTransitions.length === 0" class="muted">
-      Пути отсюда пока не найдены.
-    </p>
-    <button
-      v-for="location in session.snapshot.world.outgoingTransitions"
-      :key="location.id"
-      class="travel"
-      :disabled="session.mutationPending"
-      type="button"
-      @click="session.travel(location.id)"
-    >
-      <span>{{ location.displayName }}</span
-      ><small>опасность: {{ location.dangerLevel }} · ур. {{ location.recommendedLevel }}</small>
-    </button>
-    <p v-if="session.errorCode" class="error" role="alert">{{ session.errorCode }}</p>
+  <section v-if="world && character" class="world">
+    <header class="world__header">
+      <p class="kicker">{{ world.currentLocation.dangerLevel }}</p>
+      <h1>{{ world.currentLocation.displayName }}</h1>
+      <p class="hero">{{ character.name }} · уровень {{ character.level }}</p>
+    </header>
+
+    <div class="scene" aria-hidden="true">
+      <IconGenerator class="scene__icon" :config="locationIcon" />
+    </div>
+
+    <UIPanel class="paths">
+      <template #title>Доступные пути</template>
+      <div v-if="world.outgoingTransitions.length > 0" class="paths__list">
+        <UICard v-for="location in world.outgoingTransitions" :key="location.id" class="path-card">
+          <div class="path-card__copy">
+            <strong>{{ location.displayName }}</strong>
+            <small
+              >Опасность: {{ location.dangerLevel }} · рекомендован ур.
+              {{ location.recommendedLevel }}</small
+            >
+          </div>
+          <UIButton
+            :data-travel="location.id"
+            variant="secondary"
+            :loading="session.mutationPending"
+            :disabled="session.mutationPending"
+            @click="session.travel(location.id)"
+          >
+            Отправиться
+          </UIButton>
+        </UICard>
+      </div>
+      <UILoadingState
+        v-else
+        state="empty"
+        title="Пути не найдены"
+        message="Эта область пока не открывает новых направлений."
+      />
+    </UIPanel>
+
+    <div v-if="session.errorCode" role="alert">
+      <UIToast tone="danger">{{ session.errorCode }}</UIToast>
+    </div>
   </section>
 </template>
-<style scoped lang="scss">
+
+<style scoped>
 .world {
-  width: min(100%, 480px);
-  margin: auto;
-  padding: 28px 18px;
+  display: grid;
+  width: min(100%, var(--ui-content-width));
+  margin-inline: auto;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-7);
+}
+.world__header {
   text-align: center;
 }
 .kicker {
   margin: 0;
-  color: var(--color-gold);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
+  color: var(--ui-color-secondary);
+  font-size: var(--ui-font-size-xs);
+  font-weight: var(--ui-font-weight-bold);
+  letter-spacing: var(--ui-space-1);
 }
 h1 {
-  margin: 6px 0;
-  font:
-    500 clamp(2rem, 10vw, 3rem) Georgia,
-    serif;
-  color: #f0e7d2;
+  margin: var(--ui-space-1) 0;
+  color: var(--ui-color-text-primary);
+  font-family: var(--ui-font-display);
+  font-size: clamp(var(--ui-font-size-xl), 9vw, var(--ui-font-size-2xl));
+  font-weight: var(--ui-font-weight-semibold);
 }
-.hero,
-.muted {
-  color: var(--color-text-muted);
+.hero {
+  margin: 0;
+  color: var(--ui-color-text-muted);
 }
 .scene {
   display: grid;
-  min-height: 180px;
-  margin: 22px 0;
-  border-block: 1px solid rgb(200 169 99 / 32%);
-  background: radial-gradient(circle, rgb(88 74 164 / 32%), transparent 62%);
+  min-height: calc(var(--ui-icon-slot-lg) * 2);
   place-items: center;
+  border-block: 1px solid var(--ui-color-border);
+  background: var(--ui-color-surface-1);
 }
-.scene span {
-  color: var(--color-gold);
-  font-size: 4rem;
-  filter: drop-shadow(0 0 18px #594da0);
+.scene__icon {
+  width: var(--ui-icon-slot-lg);
+  height: var(--ui-icon-slot-lg);
+  box-shadow: var(--ui-glow-magic);
 }
-h2 {
-  font:
-    1.1rem Georgia,
-    serif;
-  color: #e5d8bc;
-  text-align: left;
+.paths {
+  box-shadow: none;
 }
-.travel {
+.paths__list {
   display: grid;
-  width: 100%;
-  margin-top: 9px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-border);
-  background: #101827;
-  color: var(--color-text-primary);
-  text-align: left;
+  gap: var(--ui-space-3);
 }
-.travel small {
-  margin-top: 4px;
-  color: var(--color-text-muted);
+.path-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-3);
 }
-.travel:disabled {
-  opacity: 0.5;
+.path-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--ui-space-1);
 }
-.error {
-  color: #ef8c93;
+.path-card__copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.path-card__copy small {
+  color: var(--ui-color-text-muted);
+  line-height: var(--ui-line-height-normal);
+}
+@media (max-width: 360px) {
+  .world {
+    padding-inline: var(--ui-space-3);
+  }
+  .path-card {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
