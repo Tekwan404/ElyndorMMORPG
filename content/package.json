@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.1.0",
-  "balanceVersion": "0.1.0",
+  "contentVersion": "0.2.0",
+  "balanceVersion": "0.2.0",
   "publishedAtUtc": "2026-08-29T00:00:00+00:00",
   "definitions": [
     { "type": "RACE", "id": "HUMAN", "references": [] },
@@ -10,6 +10,88 @@
     { "type": "CLASS", "id": "WARRIOR", "references": [] },
     { "type": "CLASS", "id": "ARCHER", "references": [] },
     { "type": "CLASS", "id": "MAGE", "references": [] }
+  ],
+  "classProfiles": [
+    {
+      "id": "WARRIOR",
+      "primaryAttribute": "STRENGTH",
+      "resourceProfileId": "RAGE",
+      "baseStats": { "strength": 12, "agility": 6, "intellect": 4, "stamina": 10 },
+      "levelGrowth": { "strength": 3, "agility": 1, "intellect": 0.5, "stamina": 2 },
+      "allowedWeaponCategories": ["ONE_HAND_SWORD", "TWO_HAND_SWORD", "AXE", "MACE", "SHIELD"],
+      "allowedArmorCategories": ["MEDIUM", "HEAVY"],
+      "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage."
+    },
+    {
+      "id": "ARCHER",
+      "primaryAttribute": "AGILITY",
+      "resourceProfileId": "FOCUS",
+      "baseStats": { "strength": 5, "agility": 9, "intellect": 5, "stamina": 7 },
+      "levelGrowth": { "strength": 1, "agility": 3, "intellect": 1, "stamina": 2 },
+      "allowedWeaponCategories": ["BOW", "DAGGER", "ONE_HAND_SWORD"],
+      "allowedArmorCategories": ["LIGHT", "MEDIUM"],
+      "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs."
+    },
+    {
+      "id": "MAGE",
+      "primaryAttribute": "INTELLECT",
+      "resourceProfileId": "MANA",
+      "baseStats": { "strength": 3, "agility": 5, "intellect": 11, "stamina": 6 },
+      "levelGrowth": { "strength": 1, "agility": 1, "intellect": 3, "stamina": 2 },
+      "allowedWeaponCategories": ["STAFF", "WAND", "DAGGER"],
+      "allowedArmorCategories": ["LIGHT"],
+      "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk."
+    }
+  ],
+  "statFormula": {
+    "id": "PROTOTYPE_STATS_V1",
+    "maxHpBase": 50,
+    "maxHpPerStamina": 10,
+    "attackPowerPerStrength": 2,
+    "attackPowerPerAgility": 1,
+    "spellPowerPerIntellect": 2,
+    "armorPerStamina": 2,
+    "armorPerStrength": 1,
+    "magicResistancePerStamina": 1,
+    "magicResistancePerIntellect": 1,
+    "criticalChanceBase": 5,
+    "criticalChancePerAgility": 0.25,
+    "criticalDamageBase": 100,
+    "accuracyBase": 95,
+    "dodgePerAgility": 0.2,
+    "attackSpeedBase": 1
+  },
+  "resourceProfiles": [
+    {
+      "id": "RAGE",
+      "maxValue": 100,
+      "startValue": 0,
+      "respawnValue": 0,
+      "combatRegenPerSecond": 0,
+      "outOfCombatRegenPerSecond": 0,
+      "outOfCombatDecayPerSecond": 5,
+      "outOfCombatDelaySeconds": 5
+    },
+    {
+      "id": "FOCUS",
+      "maxValue": 100,
+      "startValue": 100,
+      "respawnValue": 100,
+      "combatRegenPerSecond": 8,
+      "outOfCombatRegenPerSecond": 12,
+      "outOfCombatDecayPerSecond": 0,
+      "outOfCombatDelaySeconds": 0
+    },
+    {
+      "id": "MANA",
+      "maxValue": 100,
+      "startValue": 100,
+      "respawnValue": 100,
+      "combatRegenPerSecond": 4,
+      "outOfCombatRegenPerSecond": 12,
+      "outOfCombatDecayPerSecond": 0,
+      "outOfCombatDelaySeconds": 0
+    }
   ],
   "locations": [
     {

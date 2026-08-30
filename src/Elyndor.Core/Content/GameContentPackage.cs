@@ -7,7 +7,10 @@ public sealed record GameContentPackage(
     string BalanceVersion,
     DateTimeOffset PublishedAtUtc,
     IReadOnlyList<GameContentDefinition> Definitions,
-    IReadOnlyList<LocationDefinition> Locations);
+    IReadOnlyList<LocationDefinition> Locations,
+    IReadOnlyList<ClassProfile>? ClassProfiles = null,
+    StatFormulaProfile? StatFormula = null,
+    IReadOnlyList<ResourceProfile>? ResourceProfiles = null);
 
 public sealed record GameContentDefinition(
     string Type,
@@ -17,3 +20,47 @@ public sealed record GameContentDefinition(
 public sealed record GameContentReference(string Type, string Id);
 
 public sealed record ContentValidationError(string Code, string Path, string Message);
+
+public sealed record PrimaryStats(
+    decimal Strength,
+    decimal Agility,
+    decimal Intellect,
+    decimal Stamina);
+
+public sealed record ClassProfile(
+    string Id,
+    string PrimaryAttribute,
+    string ResourceProfileId,
+    PrimaryStats BaseStats,
+    PrimaryStats LevelGrowth,
+    IReadOnlyList<string> AllowedWeaponCategories,
+    IReadOnlyList<string> AllowedArmorCategories,
+    string PrototypeIdentity);
+
+public sealed record StatFormulaProfile(
+    string Id,
+    decimal MaxHpBase,
+    decimal MaxHpPerStamina,
+    decimal AttackPowerPerStrength,
+    decimal AttackPowerPerAgility,
+    decimal SpellPowerPerIntellect,
+    decimal ArmorPerStamina,
+    decimal ArmorPerStrength,
+    decimal MagicResistancePerStamina,
+    decimal MagicResistancePerIntellect,
+    decimal CriticalChanceBase,
+    decimal CriticalChancePerAgility,
+    decimal CriticalDamageBase,
+    decimal AccuracyBase,
+    decimal DodgePerAgility,
+    decimal AttackSpeedBase);
+
+public sealed record ResourceProfile(
+    string Id,
+    decimal MaxValue,
+    decimal StartValue,
+    decimal RespawnValue,
+    decimal CombatRegenPerSecond,
+    decimal OutOfCombatRegenPerSecond,
+    decimal OutOfCombatDecayPerSecond,
+    decimal OutOfCombatDelaySeconds);
