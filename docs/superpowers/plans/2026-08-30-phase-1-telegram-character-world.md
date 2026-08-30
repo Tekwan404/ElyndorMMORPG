@@ -166,35 +166,35 @@ Run:
 - `IssuedAccessToken JwtTokenIssuer.Issue(Guid accountId)` with a 15-minute expiry from injected `TimeProvider`.
 - `POST /api/v1/auth/telegram` and Development-only `POST /api/v1/auth/development`.
 
-- [ ] **Step 1: Write failing concurrent Account tests**
+- [x] **Step 1: Write failing concurrent Account tests**
 
 Start two separate DbContexts resolving the same Telegram user ID simultaneously. Assert one database row, identical Account IDs, and monotonic `LastSeenAtUtc`.
 
-- [ ] **Step 2: Write failing authentication API tests**
+- [x] **Step 2: Write failing authentication API tests**
 
 Cover valid signed fixture, invalid hash, expired data, missing Bot Token failure, 15-minute JWT claims, development endpoint enabled in Development, and 404 outside Development/when flag is false.
 
-- [ ] **Step 3: Run focused tests and confirm RED**
+- [x] **Step 3: Run focused tests and confirm RED**
 
 Run: `dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~AccountResolverTests|FullyQualifiedName~AuthenticationEndpointsTests"`
 
-- [ ] **Step 4: Implement Account resolution transaction**
+- [x] **Step 4: Implement Account resolution transaction**
 
 Insert by unique Telegram ID and handle only PostgreSQL unique-violation `23505` for the named constraint by reloading the winner. Do not catch arbitrary database exceptions. Update `LastSeenAtUtc` using `TimeProvider`.
 
-- [ ] **Step 5: Configure JWT bearer authentication**
+- [x] **Step 5: Configure JWT bearer authentication**
 
 Add `Microsoft.AspNetCore.Authentication.JwtBearer`. Validate issuer, audience, signature, and lifetime with zero hidden clock authority; use configured 30-second validation skew. Signing key must be at least 32 UTF-8 bytes and configuration validation fails closed.
 
-- [ ] **Step 6: Map Telegram and Development endpoints**
+- [x] **Step 6: Map Telegram and Development endpoints**
 
 Telegram endpoint passes raw data to the existing `TelegramInitDataValidator`, resolves Account, and returns the token. Development endpoint reads only `Authentication:Development:TelegramUserId`; it has no request identity field and is mapped only in the permitted environment/flag combination.
 
-- [ ] **Step 7: Run focused and security-boundary tests**
+- [x] **Step 7: Run focused and security-boundary tests**
 
 Also rerun `PublicTestEnvironmentTests` to prove PublicTest has no development endpoint or Development OpenAPI.
 
-- [ ] **Step 8: Commit authentication**
+- [x] **Step 8: Commit authentication**
 
 `git commit -m "feat: add Telegram account authentication"`
 

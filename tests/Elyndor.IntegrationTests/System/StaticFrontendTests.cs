@@ -1,3 +1,4 @@
+using Elyndor.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -22,6 +23,7 @@ public sealed class StaticFrontendTests
                 new WebApplicationFactory<Program>()
                     .WithWebHostBuilder(builder =>
                     {
+                        builder.UseTestAuthentication();
                         builder.UseSetting("Frontend:DistPath", frontendDirectory);
                         builder.UseSetting(
                             "ConnectionStrings:game",

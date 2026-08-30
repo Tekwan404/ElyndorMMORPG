@@ -1,3 +1,4 @@
+using Elyndor.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -13,6 +14,7 @@ public sealed class PublicTestEnvironmentTests
                 .WithWebHostBuilder(builder =>
                 {
                     builder.UseEnvironment("PublicTest");
+                    builder.UseTestAuthentication();
                     builder.UseSetting(
                         "ConnectionStrings:game",
                         "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres");
@@ -22,10 +24,16 @@ public sealed class PublicTestEnvironmentTests
 
         HttpResponseMessage healthResponse = await client.GetAsync("/alive");
         HttpResponseMessage openApiResponse = await client.GetAsync("/openapi/v1.json");
+        HttpResponseMessage developmentAuthResponse = await client.PostAsync(
+            "/api/v1/auth/development",
+            content: null);
 
         healthResponse.EnsureSuccessStatusCode();
         Assert.Equal("Healthy", await healthResponse.Content.ReadAsStringAsync());
         Assert.Equal(global::System.Net.HttpStatusCode.NotFound, openApiResponse.StatusCode);
+        Assert.Equal(
+            global::System.Net.HttpStatusCode.NotFound,
+            developmentAuthResponse.StatusCode);
     }
 
     [Fact]
@@ -34,9 +42,12 @@ public sealed class PublicTestEnvironmentTests
         await using WebApplicationFactory<Program> factory =
             new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
+                {
+                    builder.UseTestAuthentication();
                     builder.UseSetting(
                         "ConnectionStrings:game",
-                        "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres"));
+                        "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres");
+                });
 
         using HttpClient client = factory.CreateClient();
 

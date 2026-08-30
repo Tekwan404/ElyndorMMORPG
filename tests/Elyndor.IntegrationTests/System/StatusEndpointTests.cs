@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Elyndor.Contracts.System;
+using Elyndor.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -12,9 +13,12 @@ public sealed class StatusEndpointTests
     {
         await using WebApplicationFactory<Program> factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
+            {
+                builder.UseTestAuthentication();
                 builder.UseSetting(
                     "ConnectionStrings:game",
-                    "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres"));
+                    "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres");
+            });
 
         using HttpClient client = factory.CreateClient();
 

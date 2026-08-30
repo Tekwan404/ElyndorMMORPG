@@ -1,3 +1,4 @@
+using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.Extensions.Hosting;
 
@@ -9,6 +10,7 @@ public static class DependencyInjection
         this IHostApplicationBuilder builder)
     {
         builder.AddNpgsqlDbContext<GameDbContext>("game");
+        builder.Services.AddScoped<AccountResolver>();
 
         return builder;
     }
