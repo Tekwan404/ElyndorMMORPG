@@ -1,10 +1,13 @@
+using Elyndor.Core.World;
+
 namespace Elyndor.Core.Content;
 
 public sealed record GameContentPackage(
     string ContentVersion,
     string BalanceVersion,
     DateTimeOffset PublishedAtUtc,
-    IReadOnlyList<GameContentDefinition> Definitions);
+    IReadOnlyList<GameContentDefinition> Definitions,
+    IReadOnlyList<LocationDefinition> Locations);
 
 public sealed record GameContentDefinition(
     string Type,

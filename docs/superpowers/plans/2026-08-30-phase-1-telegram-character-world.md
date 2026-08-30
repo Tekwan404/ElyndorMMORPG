@@ -115,23 +115,23 @@ Run the focused test command from Step 3. Expected: all schema tests pass agains
 - `WorldMap.GetRequired(string locationId)` and `WorldMap.CanTravel(string sourceId, string targetId)`.
 - Produces location IDs `STARTER_TOWN`, `WHISPERING_FOREST`, `DEEP_FOREST`.
 
-- [ ] **Step 1: Write failing content and transition tests**
+- [x] **Step 1: Write failing content and transition tests**
 
 Cover duplicate location IDs, missing transition targets, self-transition, non-positive recommended level, invalid danger category, valid bidirectional chain, and rejection of direct Starter Town → Deep Forest.
 
-- [ ] **Step 2: Run focused unit/content tests and confirm RED**
+- [x] **Step 2: Run focused unit/content tests and confirm RED**
 
 Run: `dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --configuration Release --filter "FullyQualifiedName~WorldMapTests|FullyQualifiedName~GameContentPackageValidatorTests"`
 
-- [ ] **Step 3: Implement location content and pure WorldMap**
+- [x] **Step 3: Implement location content and pure WorldMap**
 
 Extend the strict JSON package with `locations`. Validate canonical IDs, unique IDs, all references, allowed danger values `SAFE|ADVENTURE|DANGEROUS`, and the exact three-location prototype chain.
 
-- [ ] **Step 4: Add the production content records**
+- [x] **Step 4: Add the production content records**
 
 Add Starter Town, Whispering Forest, and Deep Forest to `content/package.json` with the names, danger levels, recommended levels, and transitions from the Phase 1 spec.
 
-- [ ] **Step 5: Run unit, loader, and content-validator checks**
+- [x] **Step 5: Run unit, loader, and content-validator checks**
 
 Run:
 
@@ -139,7 +139,7 @@ Run:
 - `dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --filter FullyQualifiedName~GameContentPackageLoaderTests`
 - `dotnet run --project tools/Elyndor.ContentValidator --configuration Release -- content/package.json`
 
-- [ ] **Step 6: Commit world content**
+- [x] **Step 6: Commit world content**
 
 `git commit -m "feat: add phase 1 world content"`
 

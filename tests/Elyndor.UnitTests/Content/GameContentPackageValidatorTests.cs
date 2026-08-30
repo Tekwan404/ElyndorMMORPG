@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.World;
 
 namespace Elyndor.UnitTests.Content;
 
@@ -75,6 +76,7 @@ public sealed class GameContentPackageValidatorTests
             string.Empty,
             " ",
             PublishedAtUtc.ToOffset(TimeSpan.FromHours(5)),
+            [],
             []);
 
         IReadOnlyList<ContentValidationError> errors =
@@ -85,6 +87,63 @@ public sealed class GameContentPackageValidatorTests
         Assert.Contains(errors, error => error.Code == "PUBLISHED_AT_NOT_UTC");
     }
 
+    [Fact]
+    public void ValidateRejectsDuplicateLocationIds()
+    {
+        GameContentPackage package = CreatePackageWithLocations(
+            CreateLocation("STARTER_TOWN"),
+            CreateLocation("STARTER_TOWN"));
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "DUPLICATE_LOCATION_ID");
+    }
+
+    [Fact]
+    public void ValidateRejectsMissingAndSelfTransitions()
+    {
+        GameContentPackage package = CreatePackageWithLocations(
+            CreateLocation("STARTER_TOWN", transitions: ["STARTER_TOWN", "MISSING"]));
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "SELF_LOCATION_TRANSITION");
+        Assert.Contains(errors, error => error.Code == "MISSING_LOCATION_TRANSITION");
+    }
+
+    [Theory]
+    [InlineData("UNKNOWN", 1, "INVALID_LOCATION_DANGER_LEVEL")]
+    [InlineData("SAFE", 0, "INVALID_LOCATION_RECOMMENDED_LEVEL")]
+    public void ValidateRejectsInvalidLocationGameplayMetadata(
+        string dangerLevel,
+        int recommendedLevel,
+        string expectedErrorCode)
+    {
+        GameContentPackage package = CreatePackageWithLocations(
+            CreateLocation(
+                "STARTER_TOWN",
+                dangerLevel,
+                recommendedLevel));
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == expectedErrorCode);
+    }
+
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>
-        new("0.1.0", "0.1.0", PublishedAtUtc, definitions);
+        new("0.1.0", "0.1.0", PublishedAtUtc, definitions, []);
+
+    private static GameContentPackage CreatePackageWithLocations(
+        params LocationDefinition[] locations) =>
+        new("0.1.0", "0.1.0", PublishedAtUtc, [], locations);
+
+    private static LocationDefinition CreateLocation(
+        string id,
+        string dangerLevel = "SAFE",
+        int recommendedLevel = 1,
+        IReadOnlyList<string>? transitions = null) =>
+        new(id, id, dangerLevel, recommendedLevel, transitions ?? []);
 }

@@ -13,7 +13,16 @@ public sealed class GameContentPackageLoaderTests
               "contentVersion": "0.1.0",
               "balanceVersion": "0.1.0",
               "publishedAtUtc": "2026-08-29T00:00:00+00:00",
-              "definitions": []
+              "definitions": [],
+              "locations": [
+                {
+                  "id": "STARTER_TOWN",
+                  "displayName": "Starter Town",
+                  "dangerLevel": "SAFE",
+                  "recommendedLevel": 1,
+                  "transitions": []
+                }
+              ]
             }
             """;
 
@@ -23,6 +32,7 @@ public sealed class GameContentPackageLoaderTests
 
             Assert.Equal("0.1.0", package.ContentVersion);
             Assert.Empty(package.Definitions);
+            Assert.Equal("STARTER_TOWN", Assert.Single(package.Locations).Id);
         });
     }
 
@@ -35,6 +45,7 @@ public sealed class GameContentPackageLoaderTests
               "balanceVersion": "0.1.0",
               "publishedAtUtc": "2026-08-29T00:00:00+00:00",
               "definitions": [],
+              "locations": [],
               "unexpected": true
             }
             """;
@@ -62,7 +73,8 @@ public sealed class GameContentPackageLoaderTests
                     { "type": "ABILITY", "id": "MISSING" }
                   ]
                 }
-              ]
+              ],
+              "locations": []
             }
             """;
 

@@ -11,7 +11,8 @@ try
     GameContentPackage package = await GameContentPackageLoader.LoadAsync(packagePath);
     Console.WriteLine(
         $"Content package valid: ContentVersion={package.ContentVersion}, "
-        + $"BalanceVersion={package.BalanceVersion}, Definitions={package.Definitions.Count}");
+        + $"BalanceVersion={package.BalanceVersion}, Definitions={package.Definitions.Count}, "
+        + $"Locations={package.Locations.Count}");
 
     return 0;
 }

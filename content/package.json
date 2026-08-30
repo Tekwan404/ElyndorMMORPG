@@ -2,5 +2,28 @@
   "contentVersion": "0.1.0",
   "balanceVersion": "0.1.0",
   "publishedAtUtc": "2026-08-29T00:00:00+00:00",
-  "definitions": []
+  "definitions": [],
+  "locations": [
+    {
+      "id": "STARTER_TOWN",
+      "displayName": "Starter Town",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 1,
+      "transitions": ["WHISPERING_FOREST"]
+    },
+    {
+      "id": "WHISPERING_FOREST",
+      "displayName": "Whispering Forest",
+      "dangerLevel": "ADVENTURE",
+      "recommendedLevel": 1,
+      "transitions": ["STARTER_TOWN", "DEEP_FOREST"]
+    },
+    {
+      "id": "DEEP_FOREST",
+      "displayName": "Deep Forest",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 3,
+      "transitions": ["WHISPERING_FOREST"]
+    }
+  ]
 }
