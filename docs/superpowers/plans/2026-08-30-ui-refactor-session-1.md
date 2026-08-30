@@ -296,6 +296,9 @@ git commit -m "feat: add Arcane Minimal UI primitives"
 **Files:**
 - Create: `web/elyndor-web/src/ui/playground/UiPlaygroundView.vue`
 - Modify: `web/elyndor-web/src/router/index.ts`
+- Modify: `web/elyndor-web/src/main.ts`
+- Modify: `web/elyndor-web/src/App.vue`
+- Modify: `web/elyndor-web/src/app/AppShell.vue`
 - Create: `docs/source-of-truth/ui/UI_DESIGN_GUIDELINES.md`
 - Modify: `docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md`
 
@@ -326,7 +329,7 @@ Display all required variants and states in clear sections: buttons; panel/card;
 
 - [ ] **Step 4: Add the development-only route**
 
-Export `createRoutes(isDevelopment: boolean): RouteRecordRaw[]`. Append the lazy `/dev/ui` route only when `isDevelopment` is true, and create the router with `createRoutes(import.meta.env.DEV)`. Do not add the playground to `AppShell` navigation.
+Export `createRoutes(isDevelopment: boolean): RouteRecordRaw[]`. Make `/world` lazily render `AppShell`, append the lazy `/dev/ui` route only when `isDevelopment` is true, and create the router with `createRoutes(import.meta.env.DEV)`. Install the router in `main.ts`, replace the direct shell in `App.vue` with `RouterView`, and move Telegram initialization plus `session.start()` into the mounted lifecycle of `AppShell`. Do not add the playground to game navigation. This removes the existing dead-router condition without creating a second routing mechanism.
 
 - [ ] **Step 5: Write concise UI guidelines**
 
@@ -347,7 +350,7 @@ Expected: all commands exit 0.
 - [ ] **Step 7: Commit playground and guidelines**
 
 ```powershell
-git add web/elyndor-web/src/ui/playground web/elyndor-web/src/router/index.ts docs/source-of-truth/ui/UI_DESIGN_GUIDELINES.md docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md
+git add web/elyndor-web/src/ui/playground web/elyndor-web/src/router/index.ts web/elyndor-web/src/main.ts web/elyndor-web/src/App.vue web/elyndor-web/src/app/AppShell.vue docs/source-of-truth/ui/UI_DESIGN_GUIDELINES.md docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md
 git commit -m "feat: add UI development playground"
 ```
 

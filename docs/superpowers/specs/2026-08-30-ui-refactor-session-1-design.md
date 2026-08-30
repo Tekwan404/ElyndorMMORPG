@@ -83,6 +83,8 @@ Components do not own game state, call APIs, or introduce a parallel application
 
 Add `src/ui/playground/UiPlaygroundView.vue` and register `/dev/ui` only when `import.meta.env.DEV` is true. The route is absent from production routing and never appears in game navigation.
 
+The existing router is currently not installed in `main.ts`. Session 1 completes that existing integration rather than adding a second routing mechanism: `App.vue` becomes the router outlet, `/world` renders `AppShell`, and `/dev/ui` renders the standalone playground only in development. Telegram initialization and session startup move with the game lifecycle into `AppShell`, so opening the playground never triggers authentication or game API calls.
+
 The playground displays every required component variant and state, including rarity, modifiers, cooldown, loading, empty, disabled, selected, equipped, locked, and new. It is the visual verification surface for Session 1.
 
 ## Documentation
