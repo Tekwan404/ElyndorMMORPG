@@ -2,7 +2,15 @@
   "contentVersion": "0.1.0",
   "balanceVersion": "0.1.0",
   "publishedAtUtc": "2026-08-29T00:00:00+00:00",
-  "definitions": [],
+  "definitions": [
+    { "type": "RACE", "id": "HUMAN", "references": [] },
+    { "type": "RACE", "id": "UNDEAD", "references": [] },
+    { "type": "GENDER", "id": "MALE", "references": [] },
+    { "type": "GENDER", "id": "FEMALE", "references": [] },
+    { "type": "CLASS", "id": "WARRIOR", "references": [] },
+    { "type": "CLASS", "id": "ARCHER", "references": [] },
+    { "type": "CLASS", "id": "MAGE", "references": [] }
+  ],
   "locations": [
     {
       "id": "STARTER_TOWN",

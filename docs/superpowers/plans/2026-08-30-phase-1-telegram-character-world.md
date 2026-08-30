@@ -217,35 +217,35 @@ Also rerun `PublicTestEnvironmentTests` to prove PublicTest has no development e
 - `Task<CharacterCreationResult> CharacterCreationService.CreateAsync(Guid accountId, CreateCharacterCommand command, CancellationToken cancellationToken)`.
 - `POST /api/v1/character` requires JWT and accepts `requestId`, `name`, `raceId`, `genderId`, `classId`.
 
-- [ ] **Step 1: Write exhaustive failing name-policy theory tests**
+- [x] **Step 1: Write exhaustive failing name-policy theory tests**
 
 Valid examples: `Arthas`, `Артас`, `Анна-Мария`, `Dark Wolf`. Invalid examples: trimmed names, two separators, leading/trailing separators, digits, emoji, Greek, mixed `Aртас`, fewer than 3 or more than 16 Unicode scalar values, and names changed by disallowed normalization behavior.
 
-- [ ] **Step 2: Run name tests and confirm RED**
+- [x] **Step 2: Run name tests and confirm RED**
 
 Run: `dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --configuration Release --filter FullyQualifiedName~CharacterNamePolicyTests`
 
-- [ ] **Step 3: Implement the Unicode policy using `System.Text.Rune`**
+- [x] **Step 3: Implement the Unicode policy using `System.Text.Rune`**
 
 Normalize Form KC, count runes, classify Latin/Cyrillic ranges explicitly, enforce separator adjacency, and create invariant-uppercase `NormalizedName`.
 
-- [ ] **Step 4: Write failing PostgreSQL creation tests**
+- [x] **Step 4: Write failing PostgreSQL creation tests**
 
 Cover exact request retry, request-key payload mismatch, concurrent same normalized name across accounts, concurrent different requests for one account, invalid roster values, and rollback leaving neither Character nor CharacterLocation.
 
-- [ ] **Step 5: Implement one-transaction creation service**
+- [x] **Step 5: Implement one-transaction creation service**
 
 Persist Character and initial `CharacterLocation(STARTER_TOWN, Version=1)` in one transaction. Map named PostgreSQL constraints to `character_name_taken`, `character_already_exists`, or idempotent result. Never implement uniqueness with only a pre-insert SELECT.
 
-- [ ] **Step 6: Add JWT-protected GET/POST character endpoints**
+- [x] **Step 6: Add JWT-protected GET/POST character endpoints**
 
 Read Account ID only from validated JWT subject. Return RFC problem details plus stable `code` and correlation identifier for failures.
 
-- [ ] **Step 7: Run focused unit/integration/API tests**
+- [x] **Step 7: Run focused unit/integration/API tests**
 
 Expected: all creation and policy tests pass against real PostgreSQL.
 
-- [ ] **Step 8: Commit character creation**
+- [x] **Step 8: Commit character creation**
 
 `git commit -m "feat: add atomic character creation"`
 

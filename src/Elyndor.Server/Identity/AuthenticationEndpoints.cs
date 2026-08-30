@@ -43,9 +43,13 @@ public static class AuthenticationEndpoints
 
         if (!validation.IsValid)
         {
-            return Results.Json(
-                CreateError(validation.ErrorCode!, httpContext),
-                statusCode: StatusCodes.Status401Unauthorized);
+            return Results.Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = validation.ErrorCode!,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                });
         }
 
         Account account = await accountResolver.ResolveAsync(
@@ -73,7 +77,4 @@ public static class AuthenticationEndpoints
             token.AccessToken,
             token.ExpiresAtUtc));
     }
-
-    private static ApiErrorResponse CreateError(string code, HttpContext httpContext) =>
-        new(code, httpContext.TraceIdentifier);
 }

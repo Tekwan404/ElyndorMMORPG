@@ -3,6 +3,7 @@ using Elyndor.Contracts.System;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Identity.Telegram;
+using Elyndor.Server.Characters;
 using Elyndor.Server.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
@@ -98,6 +99,7 @@ app.UseAuthorization();
 bool mapDevelopmentAuthentication = app.Environment.IsDevelopment()
     && app.Configuration.GetValue<bool>("Authentication:Development:Enabled");
 app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
+app.MapCharacterEndpoints();
 
 app.MapGet(
         "/api/v1/status",
