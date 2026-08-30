@@ -105,7 +105,7 @@ git commit -m "feat: add Arcane Minimal UI tokens"
 - Produces: `GlyphName`, `IconCategory`, `Rarity`, `ModifierName`, `IconState`, `IconConfig`, `ResolvedIcon`, `resolveIcon(config: IconConfig): ResolvedIcon`, `GLYPHS`, and `IconGenerator.vue` props `{ config: IconConfig; label?: string }`.
 - Consumes: canonical tokens from Task 1.
 
-- [ ] **Step 1: Write failing resolver tests**
+- [x] **Step 1: Write failing resolver tests**
 
 Create tests that demand composition without Vue or DOM:
 
@@ -133,7 +133,7 @@ it('uses common default rarity and default state', () => {
 })
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 
@@ -143,7 +143,7 @@ npm run test:unit --prefix web/elyndor-web -- src/ui/icons/__tests__/icon-render
 
 Expected: FAIL because icon types and resolver do not exist.
 
-- [ ] **Step 3: Implement typed icon contracts and geometry library**
+- [x] **Step 3: Implement typed icon contracts and geometry library**
 
 Define exact unions:
 
@@ -164,7 +164,7 @@ export type GlyphDefinition = { readonly paths: readonly string[] }
 
 Populate `GLYPHS: Record<GlyphName, GlyphDefinition>` with path geometry for every required name. Keep the `viewBox` consistently `0 0 24 24` and geometry recognizable at 44px.
 
-- [ ] **Step 4: Implement the pure resolver and typed presets**
+- [x] **Step 4: Implement the pure resolver and typed presets**
 
 Implement:
 
@@ -189,11 +189,11 @@ export function resolveIcon(config: IconConfig): ResolvedIcon {
 
 Add representative item, skill, and effect presets, including flameblade, frost staff, poison dagger, healing potion, locked chest, and new ore.
 
-- [ ] **Step 5: Implement `IconGenerator.vue` without unsafe markup**
+- [x] **Step 5: Implement `IconGenerator.vue` without unsafe markup**
 
 Render SVG paths with `v-for`, modifier geometry in a separate group, a rarity accent, and state overlays. Locked uses the typed lock glyph. Selected/equipped/new use semantic markers. Disabled uses opacity and grayscale. Add `role="img"` only when `label` exists; otherwise use `aria-hidden="true"`.
 
-- [ ] **Step 6: Run focused tests and typecheck**
+- [x] **Step 6: Run focused tests and typecheck**
 
 ```powershell
 npm run test:unit --prefix web/elyndor-web -- src/ui/icons/__tests__/icon-renderer.spec.ts
