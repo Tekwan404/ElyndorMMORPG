@@ -24,11 +24,33 @@ The AppHost generates the local PostgreSQL password and passes the `game` connec
 
 ## Quick launcher and Tailscale public test
 
-Double-click `Start-Elyndor.cmd` to build the client, start PostgreSQL and the server,
-and open the playable build at `http://127.0.0.1:5080`.
+Double-click `Elyndor-Control.cmd` to manage the complete Telegram test runtime from one menu:
 
-For a public Telegram test, set runtime secrets in the current PowerShell session
-and then double-click `Start-Elyndor-Public.cmd` or run:
+- save or replace the Telegram Bot Token;
+- start the game through Tailscale Funnel;
+- inspect status and URLs;
+- restart or stop Elyndor and its Funnel route.
+
+The Bot Token is entered with hidden input and stored under `.elyndor/` using
+Windows DPAPI encryption for the current Windows user. The launcher generates a
+separate JWT signing key. Neither secret is committed to Git.
+
+To create or retrieve a token, open `@BotFather` in Telegram and use `/newbot` or
+`/token`. In Elyndor Control Center select `4`, paste the token, then select `1`.
+After Funnel starts, copy the printed public HTTPS URL into:
+
+```text
+@BotFather -> /mybots -> your bot -> Bot Settings -> Menu Button -> Configure menu button
+```
+
+The public URL must use HTTPS. Tailscale must be installed, signed in, and allowed
+to use Funnel for the current tailnet.
+
+The control center intentionally exposes only the Telegram/Tailscale workflow. A
+loopback development mode still exists internally for automated tests.
+
+For automation, the original PowerShell entrypoint remains available. You can set
+runtime secrets in the current PowerShell session and run:
 
 ```powershell
 $env:Authentication__SigningKey = '<random-secret-at-least-32-characters>'

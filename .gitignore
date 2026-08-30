@@ -15,6 +15,7 @@
 output/
 
 # Local configuration and secrets
+.elyndor/
 .env
 .env.*
 !.env.example
