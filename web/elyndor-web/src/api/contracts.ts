@@ -24,6 +24,38 @@ export interface CharacterSnapshot {
   genderId: 'MALE' | 'FEMALE'
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE'
   level: number
+  primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
+  classProfileVersion: string
+  stats: CharacterStats
+  vitals: CharacterVitals
+}
+
+export interface CharacterStats {
+  strength: number
+  agility: number
+  intellect: number
+  stamina: number
+  maxHp: number
+  attackPower: number
+  spellPower: number
+  criticalChance: number
+  criticalDamage: number
+  accuracy: number
+  armorPenetration: number
+  magicPenetration: number
+  attackSpeed: number
+  armor: number
+  magicResistance: number
+  dodge: number
+}
+
+export interface CharacterVitals {
+  currentHp: number
+  maxHp: number
+  resourceType: 'RAGE' | 'FOCUS' | 'MANA'
+  currentResource: number
+  maxResource: number
+  checkpointedAtUtc: string
 }
 
 export interface BootstrapSnapshot {

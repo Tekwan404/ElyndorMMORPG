@@ -58,6 +58,15 @@ public static class GameContentPackageValidator
             || package.StatFormula is null
             || package.ResourceProfiles is null)
         {
+            if (Version.TryParse(package.ContentVersion, out Version? version)
+                && version >= new Version(0, 2, 0))
+            {
+                errors.Add(new ContentValidationError(
+                    "MISSING_CHARACTER_PROFILES",
+                    "classProfiles",
+                    "Content version 0.2.0 and newer requires class, stat, and resource profiles."));
+            }
+
             return;
         }
 

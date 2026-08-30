@@ -1,8 +1,21 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
+import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 const session = useGameSessionStore()
+const activeView = ref<'world' | 'hero'>('world')
+const character = computed(() => session.snapshot?.character)
+const hpPercent = computed(() =>
+  character.value ? (character.value.vitals.currentHp / character.value.vitals.maxHp) * 100 : 0,
+)
+const resourcePercent = computed(() =>
+  character.value
+    ? (character.value.vitals.currentResource / character.value.vitals.maxResource) * 100
+    : 0,
+)
 </script>
 
 <template>
@@ -16,6 +29,25 @@ const session = useGameSessionStore()
         <i></i><span>{{ session.state === 'world' ? 'Мир доступен' : 'Синхронизация' }}</span>
       </div>
     </header>
+    <section v-if="session.state === 'world' && character" class="hud" aria-label="Состояние героя">
+      <div class="hud__identity">
+        <b>{{ character.name }}</b
+        ><small>ур. {{ character.level }} · {{ character.classId }}</small>
+      </div>
+      <div class="hud__bars">
+        <label class="bar bar--hp">
+          <span :style="{ width: `${hpPercent}%` }"></span>
+          <b>HP {{ character.vitals.currentHp }} / {{ character.vitals.maxHp }}</b>
+        </label>
+        <label class="bar" :class="`bar--${character.vitals.resourceType.toLowerCase()}`">
+          <span :style="{ width: `${resourcePercent}%` }"></span>
+          <b
+            >{{ character.vitals.resourceType }} {{ character.vitals.currentResource }} /
+            {{ character.vitals.maxResource }}</b
+          >
+        </label>
+      </div>
+    </section>
     <main class="content">
       <section
         v-if="['idle', 'authenticating', 'reauthenticating', 'loading'].includes(session.state)"
@@ -37,14 +69,23 @@ const session = useGameSessionStore()
         <button class="primary" type="button" @click="session.start">Повторить вход</button>
       </section>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
-      <WorldView v-else-if="session.state === 'world'" />
+      <WorldView v-else-if="session.state === 'world' && activeView === 'world'" />
+      <CharacterStatsView v-else-if="session.state === 'world'" />
     </main>
     <nav v-if="session.state === 'world'" class="nav" aria-label="Основная навигация">
-      <span class="active">◈<small>Мир</small></span
-      ><span>♙<small>Герой</small></span
-      ><span>⌖<small>Локация</small></span
-      ><span>◇<small>Квесты</small></span
-      ><span>☰<small>Меню</small></span>
+      <button
+        :class="{ active: activeView === 'world' }"
+        type="button"
+        @click="activeView = 'world'"
+      >
+        ◈<small>Мир</small>
+      </button>
+      <button :class="{ active: activeView === 'hero' }" type="button" @click="activeView = 'hero'">
+        ♙<small>Герой</small>
+      </button>
+      <button type="button" disabled>⌖<small>Локация</small></button>
+      <button type="button" disabled>◇<small>Квесты</small></button>
+      <button type="button" disabled>☰<small>Меню</small></button>
     </nav>
   </div>
 </template>
@@ -105,6 +146,65 @@ const session = useGameSessionStore()
   min-height: 0;
   overflow-y: auto;
 }
+.hud {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-border);
+  background: #0b111d;
+}
+.hud__identity {
+  display: flex;
+  min-width: 88px;
+  flex-direction: column;
+}
+.hud__identity b {
+  color: #f0e7d2;
+  font:
+    0.88rem Georgia,
+    serif;
+}
+.hud__identity small {
+  color: var(--color-text-muted);
+  font-size: 0.58rem;
+}
+.hud__bars {
+  display: grid;
+  gap: 5px;
+}
+.bar {
+  position: relative;
+  min-height: 17px;
+  overflow: hidden;
+  border: 1px solid rgb(133 148 177 / 34%);
+  background: #080b12;
+}
+.bar span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: linear-gradient(90deg, #735418, #d2a83f);
+}
+.bar--hp span {
+  background: linear-gradient(90deg, #6e1723, #c7424f);
+}
+.bar--focus span {
+  background: linear-gradient(90deg, #1b6e66, #42c4aa);
+}
+.bar--mana span {
+  background: linear-gradient(90deg, #30469a, #6f87f0);
+}
+.bar b {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: #fff7e4;
+  font-size: 0.58rem;
+  line-height: 15px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
 .system-state {
   display: grid;
   min-height: 100%;
@@ -143,15 +243,21 @@ const session = useGameSessionStore()
   border-top: 1px solid var(--color-border);
   background: rgb(7 11 19 / 95%);
 }
-.nav span {
+.nav button {
   display: flex;
   gap: 3px;
   align-items: center;
   min-height: 49px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--color-text-muted);
   flex-direction: column;
   justify-content: center;
   opacity: 0.5;
+}
+.nav button:disabled {
+  opacity: 0.32;
 }
 .nav small {
   font-size: 0.62rem;

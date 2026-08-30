@@ -5,6 +5,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
 using Elyndor.IntegrationTests.Postgres;
+using Elyndor.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.IntegrationTests.World;
@@ -160,15 +161,14 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             context.Characters.Add(character);
             context.CharacterLocations.Add(
                 new CharacterLocation(character.Id, "STARTER_TOWN", 1, Now));
+            context.CharacterVitals.Add(new CharacterVitals(character.Id, 150, 0, Now, Now));
         }
 
         await context.SaveChangesAsync();
         return accountId;
     }
 
-    private static readonly GameContentPackage Content = new(
-        "0.1.0",
-        "0.1.0",
+    private static readonly GameContentPackage Content = PhaseTwoTestContent.Create(
         Now,
         [],
         [

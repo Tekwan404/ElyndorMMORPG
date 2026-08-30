@@ -12,7 +12,19 @@ public sealed record BootstrapCharacter(
     string RaceId,
     string GenderId,
     string ClassId,
-    int Level);
+    int Level,
+    string PrimaryAttribute,
+    string ClassProfileVersion,
+    CharacterStats Stats,
+    BootstrapVitals Vitals);
+
+public sealed record BootstrapVitals(
+    decimal CurrentHp,
+    decimal MaxHp,
+    string ResourceType,
+    decimal CurrentResource,
+    decimal MaxResource,
+    DateTimeOffset CheckpointedAtUtc);
 
 public sealed record BootstrapLocation(
     string Id,
@@ -59,6 +71,36 @@ public sealed class BootstrapService(
                 timeProvider.GetUtcNow());
         }
 
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        ClassProfile classProfile = (contentPackage.ClassProfiles
+            ?? throw new InvalidOperationException("Class profiles are required."))
+            .Single(profile => string.Equals(profile.Id, character.ClassId, StringComparison.Ordinal));
+        ResourceProfile resourceProfile = (contentPackage.ResourceProfiles
+            ?? throw new InvalidOperationException("Resource profiles are required."))
+            .Single(profile => string.Equals(
+                profile.Id,
+                classProfile.ResourceProfileId,
+                StringComparison.Ordinal));
+        CharacterStats stats = new CharacterStatCalculator(
+            contentPackage.StatFormula
+                ?? throw new InvalidOperationException("Stat formula content is required."),
+            contentPackage.ClassProfiles).Calculate(character.ClassId, character.Level);
+        CharacterVitals vitals = await dbContext.CharacterVitals
+            .SingleAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+        TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
+        TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
+        decimal currentResource = CharacterResourceRules.ApplyElapsed(
+            resourceProfile,
+            vitals.CurrentResource,
+            elapsed,
+            isInCombat: false,
+            contextElapsed);
+        decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
+        vitals.Checkpoint(currentHp, currentResource, now);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         CharacterLocation location = await dbContext.CharacterLocations
             .AsNoTracking()
             .SingleAsync(
@@ -78,11 +120,21 @@ public sealed class BootstrapService(
                 character.RaceId,
                 character.GenderId,
                 character.ClassId,
-                character.Level),
+                character.Level,
+                classProfile.PrimaryAttribute,
+                contentPackage.BalanceVersion,
+                stats,
+                new BootstrapVitals(
+                    currentHp,
+                    stats.MaxHp,
+                    resourceProfile.Id,
+                    currentResource,
+                    resourceProfile.MaxValue,
+                    now)),
             new BootstrapWorld(ToLocation(current), location.Version, transitions),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
-            timeProvider.GetUtcNow());
+            now);
     }
 
     private static BootstrapLocation ToLocation(LocationDefinition location) =>

@@ -18,7 +18,10 @@ public sealed class CharacterResourceRulesTests
             focus, 10, TimeSpan.FromSeconds(5), isInCombat: true, TimeSpan.FromSeconds(5)));
         Assert.Equal(75, CharacterResourceRules.ApplyElapsed(
             rage, 100, TimeSpan.FromSeconds(10), isInCombat: false, TimeSpan.FromSeconds(10)));
-        Assert.Equal(0, CharacterResourceRules.Spend(mana, 20, 30));
+        Assert.False(CharacterResourceRules.TrySpend(mana, 20, 30, out decimal unchanged));
+        Assert.Equal(20, unchanged);
+        Assert.True(CharacterResourceRules.TrySpend(mana, 20, 12, out decimal remaining));
+        Assert.Equal(8, remaining);
         Assert.Equal(100, CharacterResourceRules.Restore(mana, 95, 20));
         Assert.Equal(100, CharacterResourceRules.Respawn(mana));
         Assert.Equal(0, CharacterResourceRules.Respawn(rage));

@@ -12,7 +12,37 @@ public sealed record BootstrapCharacterResponse(
     string RaceId,
     string GenderId,
     string ClassId,
-    int Level);
+    int Level,
+    string PrimaryAttribute,
+    string ClassProfileVersion,
+    CharacterStatsResponse Stats,
+    CharacterVitalsResponse Vitals);
+
+public sealed record CharacterStatsResponse(
+    decimal Strength,
+    decimal Agility,
+    decimal Intellect,
+    decimal Stamina,
+    decimal MaxHp,
+    decimal AttackPower,
+    decimal SpellPower,
+    decimal CriticalChance,
+    decimal CriticalDamage,
+    decimal Accuracy,
+    decimal ArmorPenetration,
+    decimal MagicPenetration,
+    decimal AttackSpeed,
+    decimal Armor,
+    decimal MagicResistance,
+    decimal Dodge);
+
+public sealed record CharacterVitalsResponse(
+    decimal CurrentHp,
+    decimal MaxHp,
+    string ResourceType,
+    decimal CurrentResource,
+    decimal MaxResource,
+    DateTimeOffset CheckpointedAtUtc);
 
 public sealed record BootstrapWorldResponse(
     WorldLocationResponse CurrentLocation,

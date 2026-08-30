@@ -3,6 +3,7 @@ using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
+using Elyndor.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.IntegrationTests.Characters;
@@ -145,9 +146,7 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
         new(requestId, name, raceId, genderId, classId);
 
     private static GameContentPackage CreateContentPackage() =>
-        new(
-            "0.1.0",
-            "0.1.0",
+        PhaseTwoTestContent.Create(
             Now,
             [
                 new GameContentDefinition("RACE", "HUMAN", []),

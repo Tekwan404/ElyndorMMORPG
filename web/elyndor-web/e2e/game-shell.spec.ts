@@ -48,9 +48,13 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
         name: 'Arthas',
         raceId: 'HUMAN',
         genderId: 'MALE',
-        classId: 'ARCHER',
-        level: 1,
-        createdAtUtc: '2026-08-30T12:00:00Z',
+          classId: 'ARCHER',
+          level: 1,
+          primaryAttribute: 'AGILITY',
+          classProfileVersion: '0.2.0',
+          stats: archerStats,
+          vitals: archerVitals,
+          createdAtUtc: '2026-08-30T12:00:00Z',
       },
     })
   })
@@ -113,6 +117,10 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
           genderId: 'MALE',
           classId: 'ARCHER',
           level: 1,
+          primaryAttribute: 'AGILITY',
+          classProfileVersion: '0.2.0',
+          stats: archerStats,
+          vitals: archerVitals,
         }
       : null,
     world: hasCharacter
@@ -122,4 +130,32 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
     balanceVersion: '0.1.0',
     serverTimeUtc: '2026-08-30T12:00:00Z',
   }
+}
+
+const archerStats = {
+  strength: 5,
+  agility: 9,
+  intellect: 5,
+  stamina: 7,
+  maxHp: 120,
+  attackPower: 19,
+  spellPower: 10,
+  criticalChance: 7.25,
+  criticalDamage: 100,
+  accuracy: 95,
+  armorPenetration: 0,
+  magicPenetration: 0,
+  attackSpeed: 1,
+  armor: 19,
+  magicResistance: 12,
+  dodge: 1.8,
+}
+
+const archerVitals = {
+  currentHp: 120,
+  maxHp: 120,
+  resourceType: 'FOCUS',
+  currentResource: 100,
+  maxResource: 100,
+  checkpointedAtUtc: '2026-08-30T12:00:00Z',
 }

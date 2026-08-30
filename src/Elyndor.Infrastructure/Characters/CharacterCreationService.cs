@@ -140,8 +140,17 @@ public sealed class CharacterCreationService(
             command.ClassId,
             now);
         CharacterLocation location = new(character.Id, InitialLocationId, 1, now);
+        CharacterStats stats = CreateCalculator().Calculate(command.ClassId, character.Level);
+        ResourceProfile resource = GetResourceProfile(command.ClassId);
+        CharacterVitals vitals = new(
+            character.Id,
+            stats.MaxHp,
+            resource.StartValue,
+            now,
+            now);
         _dbContext.Characters.Add(character);
         _dbContext.CharacterLocations.Add(location);
+        _dbContext.CharacterVitals.Add(vitals);
 
         try
         {
@@ -195,6 +204,26 @@ public sealed class CharacterCreationService(
         _contentPackage.Definitions.Any(
             definition => string.Equals(definition.Type, type, StringComparison.Ordinal)
                 && string.Equals(definition.Id, id, StringComparison.Ordinal));
+
+    private CharacterStatCalculator CreateCalculator() =>
+        new(
+            _contentPackage.StatFormula
+                ?? throw new InvalidOperationException("Stat formula content is required."),
+            _contentPackage.ClassProfiles
+                ?? throw new InvalidOperationException("Class profiles are required."));
+
+    private ResourceProfile GetResourceProfile(string classId)
+    {
+        ClassProfile profile = (_contentPackage.ClassProfiles
+            ?? throw new InvalidOperationException("Class profiles are required."))
+            .Single(candidate => string.Equals(candidate.Id, classId, StringComparison.Ordinal));
+        return (_contentPackage.ResourceProfiles
+            ?? throw new InvalidOperationException("Resource profiles are required."))
+            .Single(candidate => string.Equals(
+                candidate.Id,
+                profile.ResourceProfileId,
+                StringComparison.Ordinal));
+    }
 
     private static bool Matches(
         Character character,
