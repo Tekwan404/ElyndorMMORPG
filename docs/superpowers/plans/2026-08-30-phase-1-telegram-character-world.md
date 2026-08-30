@@ -319,23 +319,23 @@ Run: `dotnet test Elyndor.slnx --configuration Release`
 - `apiClient.request<T>(path, init)` attaches runtime bearer token and retries one safe request after delegated re-authentication.
 - Pinia `useGameSessionStore()` exposes `state`, `snapshot`, `authenticate()`, `bootstrap()`, `createCharacter()`, and `travel()`.
 
-- [ ] **Step 1: Write failing store/client tests**
+- [x] **Step 1: Write failing store/client tests**
 
 Cover Telegram exchange, Development fallback only in dev build, token never written to Web Storage, one `401` re-auth/retry, second `401` terminal error, bootstrap states, mutation disabling, and offline error.
 
-- [ ] **Step 2: Run focused frontend tests and confirm RED**
+- [x] **Step 2: Run focused frontend tests and confirm RED**
 
 Run: `npm run test:unit -- --run src/__tests__/gameSession.spec.ts src/__tests__/apiClient.spec.ts`
 
-- [ ] **Step 3: Implement Telegram adapter and runtime-only client**
+- [x] **Step 3: Implement Telegram adapter and runtime-only client**
 
 Keep the token in a closure/Pinia ref. Never call `localStorage` or `sessionStorage`. Re-authenticate only once per request chain and never automatically retry unsafe POST mutations unless their stable request ID is unchanged.
 
-- [ ] **Step 4: Implement the session state machine**
+- [x] **Step 4: Implement the session state machine**
 
 On app mount: authenticate, fetch bootstrap, then select character-creation or world state. Repeating bootstrap after reload reconstructs state entirely from the server response.
 
-- [ ] **Step 5: Run unit, lint, typecheck, and build**
+- [x] **Step 5: Run unit, lint, typecheck, and build**
 
 Run:
 
@@ -344,7 +344,7 @@ Run:
 - `npm run format:check`
 - `npm run build`
 
-- [ ] **Step 6: Commit frontend session flow**
+- [x] **Step 6: Commit frontend session flow**
 
 `git commit -m "feat: add Telegram frontend session flow"`
 
