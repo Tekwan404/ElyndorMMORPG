@@ -1,9 +1,9 @@
 # Elyndor MMORPG — Development Phases 0–5
 
-> Status: Prototype Execution Plan  
-> Scope: From engineering foundation to the first real playable vertical slice  
-> Product direction: Telegram-first MMORPG  
-> Prototype classes: Warrior, Archer, Mage  
+> Status: Prototype Execution Plan
+> Scope: From engineering foundation to the first real playable vertical slice
+> Product direction: Telegram-first MMORPG
+> Prototype classes: Warrior, Archer, Mage
 > Validation level range: 1–10
 > Role: Roadmap and navigation. Detailed implementation contracts live in the phase-specific documents in this directory.
 

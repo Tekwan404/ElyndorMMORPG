@@ -1,7 +1,7 @@
 # Phase 1 — Telegram Identity, Character Creation, and First World
 
-**Status:** Approved for implementation  
-**Owner:** Phase 1 execution contract  
+**Status:** Approved for implementation
+**Owner:** Phase 1 execution contract
 **Exit gate:** Phase 2 cannot begin until every applicable item in this document is verified.
 
 ## Outcome
