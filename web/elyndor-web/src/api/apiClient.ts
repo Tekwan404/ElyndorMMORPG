@@ -45,7 +45,7 @@ export class ApiClient {
       headers.set('Authorization', `Bearer ${this.accessToken}`)
     }
 
-    return this.fetchImplementation(path, { ...init, headers })
+    return this.fetchImplementation.call(globalThis, path, { ...init, headers })
   }
 
   private async read<T>(response: Response): Promise<T> {

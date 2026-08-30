@@ -1,41 +1,125 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-test('shows the mobile game shell', async ({ page }) => {
+test('creates a hero, travels, and restores the world on reload', async ({ page }) => {
   const browserErrors: string[] = []
-
   page.on('console', (message) => {
-    if (message.type() === 'error') {
-      browserErrors.push(`console: ${message.text()}`)
-    }
+    if (message.type() === 'error') browserErrors.push(message.text())
   })
-  page.on('pageerror', (error) => browserErrors.push(`page: ${error.message}`))
+  page.on('pageerror', (error) => browserErrors.push(error.message))
+  page.on('requestfailed', (request) =>
+    browserErrors.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`),
+  )
+  await installMockApiUnlessReal(page)
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Создание героя' })).toBeVisible()
+  await page.getByLabel('Имя').fill(characterName())
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await expect(page.getByRole('heading', { name: 'Starter Town' })).toBeVisible()
+  await page.getByRole('button', { name: /Whispering Forest/ }).click()
+  await expect(page.getByRole('heading', { name: 'Whispering Forest' })).toBeVisible()
+  await page.getByRole('button', { name: /Deep Forest/ }).click()
+  await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
+  expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+    false,
+  )
+  expect(browserErrors).toEqual([])
+})
 
-  await page.route('**/api/v1/status', async (route) => {
+async function installMockApiUnlessReal(page: Page): Promise<void> {
+  if (process.env.ELYNDOR_E2E_REAL === 'true') return
+
+  let hasCharacter = false
+  let locationId: keyof typeof locations = 'STARTER_TOWN'
+  await page.route('**/api/v1/auth/development', (route) =>
+    route.fulfill({ json: { accessToken: 'test-token', expiresAtUtc: '2026-08-30T12:15:00Z' } }),
+  )
+  await page.route('**/api/v1/bootstrap', (route) =>
+    route.fulfill({ json: snapshot(hasCharacter, locationId) }),
+  )
+  await page.route('**/api/v1/character', async (route) => {
+    hasCharacter = true
     await route.fulfill({
-      contentType: 'application/json',
       json: {
-        service: 'Elyndor.Server',
-        status: 'ready',
-        utcNow: '2026-08-29T00:00:00Z',
+        id: '00000000-0000-0000-0000-000000000001',
+        name: 'Arthas',
+        raceId: 'HUMAN',
+        genderId: 'MALE',
+        classId: 'ARCHER',
+        level: 1,
+        createdAtUtc: '2026-08-30T12:00:00Z',
       },
     })
   })
+  await page.route('**/api/v1/world/travel', async (route) => {
+    locationId = (route.request().postDataJSON() as { targetLocationId: keyof typeof locations })
+      .targetLocationId
+    await route.fulfill({ json: { locationId, version: 2 } })
+  })
+}
 
-  await page.goto('/')
+function characterName(): string {
+  return process.env.ELYNDOR_E2E_REAL === 'true' ? `Hero${asLetters(Date.now())}` : 'Arthas'
+}
 
-  await expect(page.getByRole('heading', { name: 'Северные земли' })).toBeVisible()
-  await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible()
-  await expect(page.getByText('Сервер доступен')).toBeVisible()
-  await expect(page.getByRole('main')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Мир' })).toHaveAttribute('aria-current', 'page')
-  await expect(page.getByRole('button', { name: 'Герой' })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Локация' })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Квесты' })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Меню' })).toBeDisabled()
+function asLetters(value: number): string {
+  let remaining = value
+  let result = ''
+  while (remaining > 0 && result.length < 10) {
+    result += String.fromCharCode(97 + (remaining % 26))
+    remaining = Math.floor(remaining / 26)
+  }
+  return result
+}
 
-  expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
-  ).toBe(false)
-  expect(browserErrors).toEqual([])
-})
+const locations = {
+  STARTER_TOWN: {
+    id: 'STARTER_TOWN',
+    displayName: 'Starter Town',
+    dangerLevel: 'SAFE',
+    recommendedLevel: 1,
+  },
+  WHISPERING_FOREST: {
+    id: 'WHISPERING_FOREST',
+    displayName: 'Whispering Forest',
+    dangerLevel: 'ADVENTURE',
+    recommendedLevel: 1,
+  },
+  DEEP_FOREST: {
+    id: 'DEEP_FOREST',
+    displayName: 'Deep Forest',
+    dangerLevel: 'DANGEROUS',
+    recommendedLevel: 3,
+  },
+} as const
+
+function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
+  const transitions =
+    locationId === 'STARTER_TOWN'
+      ? [locations.WHISPERING_FOREST]
+      : locationId === 'WHISPERING_FOREST'
+        ? [locations.STARTER_TOWN, locations.DEEP_FOREST]
+        : [locations.WHISPERING_FOREST]
+  return {
+    accountId: '00000000-0000-0000-0000-000000000002',
+    character: hasCharacter
+      ? {
+          id: '00000000-0000-0000-0000-000000000001',
+          name: 'Arthas',
+          raceId: 'HUMAN',
+          genderId: 'MALE',
+          classId: 'ARCHER',
+          level: 1,
+        }
+      : null,
+    world: hasCharacter
+      ? { currentLocation: locations[locationId], version: 1, outgoingTransitions: transitions }
+      : null,
+    contentVersion: '0.1.0',
+    balanceVersion: '0.1.0',
+    serverTimeUtc: '2026-08-30T12:00:00Z',
+  }
+}

@@ -1,138 +1,95 @@
+<script setup lang="ts">
+import { useGameSessionStore } from '@/stores/gameSession'
+const session = useGameSessionStore()
+</script>
 <template>
-  <section class="world-view">
-    <div class="world-view__content">
-      <p class="world-view__kicker">Первый игровой контур</p>
-      <h1>Северные земли</h1>
-      <p class="world-view__description">
-        Основа мира готова к подключению server-authoritative персонажа, путешествий и охоты.
-      </p>
-
-      <div class="world-view__divider" aria-hidden="true">
-        <span></span>
-        <b>◆</b>
-        <span></span>
-      </div>
-
-      <dl class="foundation-list">
-        <div>
-          <dt>Backend</dt>
-          <dd>ASP.NET Core / PostgreSQL</dd>
-        </div>
-        <div>
-          <dt>Runtime</dt>
-          <dd>Aspire / Docker</dd>
-        </div>
-        <div>
-          <dt>Client</dt>
-          <dd>Vue 3 / Telegram Mini App</dd>
-        </div>
-      </dl>
-
-      <p class="world-view__notice">
-        Следующий vertical slice: Telegram identity → character → world.
-      </p>
-    </div>
+  <section v-if="session.snapshot?.world && session.snapshot.character" class="world">
+    <p class="kicker">{{ session.snapshot.world.currentLocation.dangerLevel }}</p>
+    <h1>{{ session.snapshot.world.currentLocation.displayName }}</h1>
+    <p class="hero">
+      {{ session.snapshot.character.name }} · уровень {{ session.snapshot.character.level }}
+    </p>
+    <div class="scene" aria-hidden="true"><span>♜</span></div>
+    <h2>Доступные пути</h2>
+    <p v-if="session.snapshot.world.outgoingTransitions.length === 0" class="muted">
+      Пути отсюда пока не найдены.
+    </p>
+    <button
+      v-for="location in session.snapshot.world.outgoingTransitions"
+      :key="location.id"
+      class="travel"
+      :disabled="session.mutationPending"
+      type="button"
+      @click="session.travel(location.id)"
+    >
+      <span>{{ location.displayName }}</span
+      ><small>опасность: {{ location.dangerLevel }} · ур. {{ location.recommendedLevel }}</small>
+    </button>
+    <p v-if="session.errorCode" class="error" role="alert">{{ session.errorCode }}</p>
   </section>
 </template>
-
 <style scoped lang="scss">
-.world-view {
-  display: grid;
-  min-height: 100%;
-  padding: 26px 18px;
-  place-items: center;
-}
-
-.world-view__content {
-  width: min(100%, 440px);
-  padding: 28px 22px;
-  border-block: 1px solid rgb(200 169 99 / 32%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(19 28 47 / 72%) 18%,
-    rgb(19 28 47 / 72%) 82%,
-    transparent
-  );
+.world {
+  width: min(100%, 480px);
+  margin: auto;
+  padding: 28px 18px;
   text-align: center;
 }
-
-.world-view__kicker {
-  margin: 0 0 8px;
+.kicker {
+  margin: 0;
   color: var(--color-gold);
-  font-size: 0.67rem;
+  font-size: 0.7rem;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
-
 h1 {
-  margin: 0;
+  margin: 6px 0;
+  font:
+    500 clamp(2rem, 10vw, 3rem) Georgia,
+    serif;
   color: #f0e7d2;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2rem, 10vw, 3.25rem);
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-shadow: 0 2px 22px rgb(95 80 190 / 55%);
 }
-
-.world-view__description {
-  max-width: 34rem;
-  margin: 14px auto 0;
-  color: var(--color-text-secondary);
-  line-height: 1.55;
+.hero,
+.muted {
+  color: var(--color-text-muted);
 }
-
-.world-view__divider {
+.scene {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 10px;
-  align-items: center;
-  margin: 24px 0;
+  min-height: 180px;
+  margin: 22px 0;
+  border-block: 1px solid rgb(200 169 99 / 32%);
+  background: radial-gradient(circle, rgb(88 74 164 / 32%), transparent 62%);
+  place-items: center;
+}
+.scene span {
   color: var(--color-gold);
+  font-size: 4rem;
+  filter: drop-shadow(0 0 18px #594da0);
 }
-
-.world-view__divider span {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(201 168 94 / 55%));
-}
-
-.world-view__divider span:last-child {
-  background: linear-gradient(90deg, rgb(201 168 94 / 55%), transparent);
-}
-
-.foundation-list {
-  display: grid;
-  gap: 12px;
-  margin: 0;
+h2 {
+  font:
+    1.1rem Georgia,
+    serif;
+  color: #e5d8bc;
   text-align: left;
 }
-
-.foundation-list > div {
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgb(142 156 191 / 15%);
-}
-
-.foundation-list dt {
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.foundation-list dd {
-  margin: 0;
+.travel {
+  display: grid;
+  width: 100%;
+  margin-top: 9px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  background: #101827;
   color: var(--color-text-primary);
-  font-size: 0.82rem;
-  text-align: right;
+  text-align: left;
 }
-
-.world-view__notice {
-  margin: 24px 0 0;
+.travel small {
+  margin-top: 4px;
   color: var(--color-text-muted);
-  font-size: 0.74rem;
-  line-height: 1.5;
+}
+.travel:disabled {
+  opacity: 0.5;
+}
+.error {
+  color: #ef8c93;
 }
 </style>

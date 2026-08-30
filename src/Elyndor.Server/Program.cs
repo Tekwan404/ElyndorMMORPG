@@ -4,10 +4,12 @@ using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Identity.Telegram;
+using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Characters;
 using Elyndor.Server.Identity;
 using Elyndor.Server.World;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +79,13 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 
 WebApplication app = builder.Build();
+
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 if (frontendFileProvider is not null)
 {

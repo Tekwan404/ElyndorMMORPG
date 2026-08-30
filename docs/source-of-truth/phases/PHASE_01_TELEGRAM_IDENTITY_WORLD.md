@@ -1,6 +1,6 @@
 # Phase 1 — Telegram Identity, Character Creation, and First World
 
-**Status:** Approved for implementation
+**Status:** Complete — locally playable; live Telegram deployment requires operator-owned credentials
 **Owner:** Phase 1 execution contract
 **Exit gate:** Phase 2 cannot begin until every applicable item in this document is verified.
 
@@ -227,17 +227,17 @@ Authoritative state does not imply writing HP, Rage, Focus, or Mana to PostgreSQ
 
 ## Definition of Done
 
-- [ ] Telegram auth endpoint validates real protocol fixtures and issues a 15-minute JWT.
-- [ ] Invalid `initData` is rejected and Development auth is absent outside Development.
-- [ ] Expired JWT performs one clean Telegram re-authentication attempt without persistent token storage.
-- [ ] Account creation is idempotent under concurrency.
-- [ ] Character creation is atomic, idempotent, and protected by PostgreSQL uniqueness.
-- [ ] Human/Undead, Male/Female, and Warrior/Archer/Mage are available.
-- [ ] Formal character-name policy is covered by tests.
-- [ ] Starter Town, Whispering Forest, and Deep Forest are versioned content.
-- [ ] Travel is server-authoritative, idempotent, and concurrency-safe.
-- [ ] Reload/reconnect restores the authoritative character and location.
-- [ ] Backend build/tests and PostgreSQL integration tests pass.
-- [ ] Frontend lint/typecheck/unit/build checks pass.
-- [ ] The complete mobile flow passes in a real Playwright browser.
-- [ ] Diff review finds no secrets, development-auth exposure, or Phase 2 scope creep.
+- [x] Telegram auth endpoint validates real protocol fixtures and issues a 15-minute JWT.
+- [x] Invalid `initData` is rejected and Development auth is absent outside Development.
+- [x] Expired JWT performs one clean Telegram re-authentication attempt without persistent token storage.
+- [x] Account creation is idempotent under concurrency.
+- [x] Character creation is atomic, idempotent, and protected by PostgreSQL uniqueness.
+- [x] Human/Undead, Male/Female, and Warrior/Archer/Mage are available.
+- [x] Formal character-name policy is covered by tests.
+- [x] Starter Town, Whispering Forest, and Deep Forest are versioned content.
+- [x] Travel is server-authoritative, idempotent, and concurrency-safe.
+- [x] Reload/reconnect restores the authoritative character and location.
+- [x] Backend build/tests and PostgreSQL integration tests pass.
+- [x] Frontend lint/typecheck/unit/build checks pass.
+- [x] The complete mobile flow passes in a real Playwright browser.
+- [x] Diff review finds no secrets, development-auth exposure, or Phase 2 scope creep.

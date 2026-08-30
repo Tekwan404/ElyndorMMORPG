@@ -4,7 +4,9 @@ param(
     [string]$Action = 'Start',
     [switch]$Public,
     [switch]$Open,
-    [switch]$KeepFunnel
+    [switch]$KeepFunnel,
+    [ValidateRange(1, [long]::MaxValue)]
+    [long]$DevelopmentTelegramUserId = 1000001
 )
 
 $ErrorActionPreference = 'Stop'
@@ -126,7 +128,6 @@ function Get-FunnelUrl {
 
 function Show-Status {
     $aspire = Resolve-AspireCli
-    $tailscale = Resolve-Executable 'tailscale'
 
     Write-Host "Local URL:  $localUrl"
     try {
@@ -138,6 +139,13 @@ function Show-Status {
     }
 
     & $aspire ps --non-interactive
+    $tailscaleCommand = Get-Command 'tailscale' -ErrorAction SilentlyContinue
+    if ($null -eq $tailscaleCommand) {
+        Write-Host 'Funnel:     unavailable (Tailscale is not installed)'
+        return
+    }
+
+    $tailscale = $tailscaleCommand.Source
     $funnelUrl = Get-FunnelUrl $tailscale
     if ($null -eq $funnelUrl) {
         Write-Host 'Funnel:     off'
@@ -152,7 +160,7 @@ function Start-Elyndor {
     $dotnet = Resolve-Executable 'dotnet'
     $npm = Resolve-Executable 'npm'
     $docker = Resolve-Executable 'docker'
-    $tailscale = Resolve-Executable 'tailscale'
+    $tailscale = if ($Public) { Resolve-Executable 'tailscale' } else { $null }
 
     Ensure-DockerReady $docker
 
@@ -160,8 +168,21 @@ function Start-Elyndor {
         Invoke-CheckedCommand $npm @('ci', '--prefix', $frontendDirectory)
     }
 
+    Invoke-CheckedCommand $npm @('run', 'build', '--prefix', $frontendDirectory)
+
     if ($Public) {
-        Invoke-CheckedCommand $npm @('run', 'build', '--prefix', $frontendDirectory)
+        $signingKey = [Environment]::GetEnvironmentVariable(
+            'Authentication__SigningKey',
+            'Process')
+        $botToken = [Environment]::GetEnvironmentVariable(
+            'Authentication__Telegram__BotToken',
+            'Process')
+        if ([string]::IsNullOrWhiteSpace($signingKey) -or $signingKey.Length -lt 32) {
+            throw 'Public mode requires Authentication__SigningKey (at least 32 characters) in the process environment.'
+        }
+        if ([string]::IsNullOrWhiteSpace($botToken)) {
+            throw 'Public mode requires Authentication__Telegram__BotToken in the process environment.'
+        }
     }
 
     Invoke-CheckedCommand $dotnet @('restore', $appHostProject)
@@ -169,12 +190,20 @@ function Start-Elyndor {
 
     if (-not (Test-AppHostRunning $aspire)) {
         $previousPublicTest = [Environment]::GetEnvironmentVariable('Elyndor__PublicTest', 'Process')
+        $previousDevelopmentUserId = [Environment]::GetEnvironmentVariable(
+            'Elyndor__DevelopmentTelegramUserId',
+            'Process')
         try {
             if ($Public) {
                 [Environment]::SetEnvironmentVariable('Elyndor__PublicTest', 'true', 'Process')
             }
             else {
                 [Environment]::SetEnvironmentVariable('Elyndor__PublicTest', $null, 'Process')
+                [Environment]::SetEnvironmentVariable(
+                    'Elyndor__DevelopmentTelegramUserId',
+                    $DevelopmentTelegramUserId.ToString(
+                        [System.Globalization.CultureInfo]::InvariantCulture),
+                    'Process')
             }
 
             Invoke-CheckedCommand $aspire @(
@@ -187,6 +216,10 @@ function Start-Elyndor {
             [Environment]::SetEnvironmentVariable(
                 'Elyndor__PublicTest',
                 $previousPublicTest,
+                'Process')
+            [Environment]::SetEnvironmentVariable(
+                'Elyndor__DevelopmentTelegramUserId',
+                $previousDevelopmentUserId,
                 'Process')
         }
     }
@@ -228,10 +261,16 @@ function Start-Elyndor {
 
 function Stop-Elyndor {
     $aspire = Resolve-AspireCli
-    $tailscale = Resolve-Executable 'tailscale'
 
     if (-not $KeepFunnel) {
-        Invoke-CheckedCommand $tailscale @('funnel', '--https=443', '--yes', 'off')
+        $tailscaleCommand = Get-Command 'tailscale' -ErrorAction SilentlyContinue
+        if ($null -ne $tailscaleCommand) {
+            $funnelUrl = Get-FunnelUrl $tailscaleCommand.Source
+            if ($null -ne $funnelUrl) {
+                Invoke-CheckedCommand $tailscaleCommand.Source @(
+                    'funnel', '--https=443', '--yes', 'off')
+            }
+        }
     }
 
     if (Test-AppHostRunning $aspire) {

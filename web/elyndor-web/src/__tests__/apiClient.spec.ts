@@ -10,6 +10,20 @@ function jsonResponse(body: object, status = 200): Response {
 }
 
 describe('ApiClient', () => {
+  it('invokes browser fetch with the global object as its receiver', async () => {
+    let callCount = 0
+    const browserLikeFetch = function (this: unknown): Promise<Response> {
+      if (this !== globalThis) throw new TypeError('Illegal invocation')
+      callCount += 1
+      return Promise.resolve(jsonResponse({ ok: true }))
+    } as typeof fetch
+    const client = new ApiClient(browserLikeFetch)
+
+    await client.request('/api/v1/bootstrap')
+
+    expect(callCount).toBe(1)
+  })
+
   it('keeps the bearer token in memory and attaches it to requests', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ ok: true }))
     const client = new ApiClient(fetchMock)

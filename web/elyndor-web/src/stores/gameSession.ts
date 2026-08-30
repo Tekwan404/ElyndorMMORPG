@@ -34,7 +34,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     const initData = getTelegramInitData()
     const endpoint = initData
       ? '/api/v1/auth/telegram'
-      : import.meta.env.DEV
+      : import.meta.env.DEV || isLoopbackOrigin()
         ? '/api/v1/auth/development'
         : null
     if (!endpoint) {
@@ -125,3 +125,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     travel,
   }
 })
+
+function isLoopbackOrigin(): boolean {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+}

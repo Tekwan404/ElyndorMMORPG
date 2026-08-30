@@ -1,6 +1,6 @@
 # Phase 2 — Character Stats and Class Resources
 
-**Status:** Approved design; implementation blocked by Phase 1 gate
+**Status:** Approved for implementation
 **Owner:** Phase 2 execution contract
 **Entry gate:** Every applicable Phase 1 Definition of Done item is verified.
 
