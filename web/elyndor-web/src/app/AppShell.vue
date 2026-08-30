@@ -6,18 +6,54 @@ import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
+import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
+
+type ShellView = 'world' | 'hero'
 
 const session = useGameSessionStore()
-const activeView = ref<'world' | 'hero'>('world')
+const activeView = ref<ShellView>('world')
 const character = computed(() => session.snapshot?.character)
-const hpPercent = computed(() =>
-  character.value ? (character.value.vitals.currentHp / character.value.vitals.maxHp) * 100 : 0,
-)
-const resourcePercent = computed(() =>
-  character.value
-    ? (character.value.vitals.currentResource / character.value.vitals.maxResource) * 100
-    : 0,
-)
+const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
+  const value = character.value?.vitals.resourceType.toLowerCase()
+  return value === 'rage' || value === 'mana' ? value : 'focus'
+})
+const resourceLabel = computed(() => {
+  const value = character.value?.vitals.resourceType.toLowerCase() ?? 'resource'
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+})
+const connectionLabel = computed(() => {
+  if (session.state === 'world') return 'Мир доступен'
+  if (session.state === 'offline' || session.state === 'error') return 'Связь потеряна'
+  return 'Синхронизация'
+})
+
+const navigation: readonly {
+  id: ShellView | 'location' | 'quests' | 'menu'
+  label: string
+  glyph: GlyphName
+  enabled: boolean
+}[] = [
+  { id: 'world', label: 'Мир', glyph: 'star', enabled: true },
+  { id: 'hero', label: 'Герой', glyph: 'helmet', enabled: true },
+  { id: 'location', label: 'Локация', glyph: 'lock', enabled: false },
+  { id: 'quests', label: 'Квесты', glyph: 'scroll', enabled: false },
+  { id: 'menu', label: 'Меню', glyph: 'chest', enabled: false },
+]
+
+function navigationIcon(item: (typeof navigation)[number]): IconConfig {
+  return {
+    id: `navigation-${item.id}`,
+    glyph: item.glyph,
+    category: 'utility',
+    state: item.enabled ? (item.id === activeView.value ? 'selected' : 'default') : 'locked',
+  }
+}
+
+function selectView(item: (typeof navigation)[number]) {
+  if (item.enabled && (item.id === 'world' || item.id === 'hero')) activeView.value = item.id
+}
 
 onMounted(() => {
   initializeTelegramWebApp()
@@ -33,252 +69,218 @@ onMounted(() => {
         <p class="subtitle">Telegram MMORPG</p>
       </div>
       <div class="server-state" :data-state="session.state" aria-live="polite">
-        <i></i><span>{{ session.state === 'world' ? 'Мир доступен' : 'Синхронизация' }}</span>
+        <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
       </div>
     </header>
+
     <section v-if="session.state === 'world' && character" class="hud" aria-label="Состояние героя">
       <div class="hud__identity">
-        <b>{{ character.name }}</b
-        ><small>ур. {{ character.level }} · {{ character.classId }}</small>
+        <b>{{ character.name }}</b>
+        <small>ур. {{ character.level }} · {{ character.classId }}</small>
       </div>
       <div class="hud__bars">
-        <label class="bar bar--hp">
-          <span :style="{ width: `${hpPercent}%` }"></span>
-          <b>HP {{ character.vitals.currentHp }} / {{ character.vitals.maxHp }}</b>
-        </label>
-        <label class="bar" :class="`bar--${character.vitals.resourceType.toLowerCase()}`">
-          <span :style="{ width: `${resourcePercent}%` }"></span>
-          <b
-            >{{ character.vitals.resourceType }} {{ character.vitals.currentResource }} /
-            {{ character.vitals.maxResource }}</b
-          >
-        </label>
+        <UIHealthBar
+          label="Health"
+          :value="character.vitals.currentHp"
+          :max="character.vitals.maxHp"
+        />
+        <UIHealthBar
+          :label="resourceLabel"
+          :tone="resourceTone"
+          :value="character.vitals.currentResource"
+          :max="character.vitals.maxResource"
+        />
       </div>
     </section>
+
     <main class="content">
-      <section
+      <UILoadingState
         v-if="['idle', 'authenticating', 'reauthenticating', 'loading'].includes(session.state)"
-        class="system-state"
-      >
-        <b>✦</b>
-        <h1>
-          {{ session.state === 'reauthenticating' ? 'Возвращаем связь' : 'Входим в Elyndor' }}
-        </h1>
-        <p>Восстанавливаем героя и его положение в мире.</p>
-      </section>
-      <section
+        state="loading"
+        :title="session.state === 'reauthenticating' ? 'Возвращаем связь' : 'Входим в Elyndor'"
+        message="Восстанавливаем героя и его положение в мире."
+      />
+      <UILoadingState
         v-else-if="session.state === 'offline' || session.state === 'error'"
-        class="system-state"
+        state="error"
+        title="Связь с миром потеряна"
+        :message="session.errorCode ?? 'Не удалось восстановить состояние мира.'"
       >
-        <b class="danger">!</b>
-        <h1>Связь с миром потеряна</h1>
-        <p data-testid="session-error">{{ session.errorCode }}</p>
-        <button class="primary" type="button" @click="session.start">Повторить вход</button>
-      </section>
+        <UIButton data-retry-session variant="secondary" @click="session.start"
+          >Повторить вход</UIButton
+        >
+      </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <WorldView v-else-if="session.state === 'world' && activeView === 'world'" />
       <CharacterStatsView v-else-if="session.state === 'world'" />
     </main>
-    <nav v-if="session.state === 'world'" class="nav" aria-label="Основная навигация">
+
+    <nav v-if="session.state === 'world'" class="navigation" aria-label="Основная навигация">
       <button
-        :class="{ active: activeView === 'world' }"
+        v-for="item in navigation"
+        :key="item.id"
+        class="navigation__item"
+        :class="{ 'navigation__item--active': item.id === activeView }"
+        :data-nav="item.id"
         type="button"
-        @click="activeView = 'world'"
+        :disabled="!item.enabled"
+        :aria-current="item.id === activeView ? 'page' : undefined"
+        @click="selectView(item)"
       >
-        ◈<small>Мир</small>
+        <IconGenerator class="navigation__icon" :config="navigationIcon(item)" />
+        <small>{{ item.label }}</small>
       </button>
-      <button :class="{ active: activeView === 'hero' }" type="button" @click="activeView = 'hero'">
-        ♙<small>Герой</small>
-      </button>
-      <button type="button" disabled>⌖<small>Локация</small></button>
-      <button type="button" disabled>◇<small>Квесты</small></button>
-      <button type="button" disabled>☰<small>Меню</small></button>
     </nav>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .game-shell {
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-height: 100dvh;
+  width: min(100%, var(--ui-content-width));
+  min-height: var(--ui-viewport-height);
+  margin-inline: auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 75% 10%, rgb(79 68 173 / 24%), transparent 36%),
-    linear-gradient(180deg, #0c1220, #070a11);
-  color: var(--color-text-primary);
+  border-inline: 1px solid var(--ui-color-border);
+  background: var(--ui-color-background);
+  color: var(--ui-color-text-primary);
 }
 .game-shell__header {
   display: flex;
+  min-height: var(--ui-control-height-lg);
   align-items: center;
   justify-content: space-between;
-  min-height: 68px;
-  padding: calc(12px + var(--safe-area-top)) 16px 12px;
-  border-bottom: 1px solid var(--color-border);
-  background: rgb(7 11 19 / 90%);
+  gap: var(--ui-space-3);
+  padding: calc(var(--ui-space-3) + var(--ui-safe-area-top))
+    calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-3)
+    calc(var(--ui-space-4) + var(--ui-safe-area-left));
+  border-bottom: 1px solid var(--ui-color-border);
+  background: var(--ui-color-surface-1);
 }
 .brand,
 .subtitle {
   margin: 0;
 }
 .brand {
-  color: var(--color-gold);
-  font-family: Georgia, serif;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  color: var(--ui-color-primary);
+  font-family: var(--ui-font-display);
+  font-weight: var(--ui-font-weight-bold);
+  letter-spacing: var(--ui-space-1);
 }
 .subtitle {
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
   text-transform: uppercase;
 }
 .server-state {
   display: flex;
-  gap: 7px;
   align-items: center;
-  color: var(--color-text-muted);
-  font-size: 0.72rem;
+  gap: var(--ui-space-2);
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
 }
 .server-state i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #c89b4a;
-  box-shadow: 0 0 8px currentcolor;
+  width: var(--ui-space-2);
+  height: var(--ui-space-2);
+  border-radius: var(--ui-radius-round);
+  background: var(--ui-color-warning);
 }
 .server-state[data-state='world'] i {
-  background: #6fc58f;
+  background: var(--ui-color-success);
+}
+.server-state[data-state='offline'] i,
+.server-state[data-state='error'] i {
+  background: var(--ui-color-danger);
+  box-shadow: var(--ui-glow-danger);
+}
+.hud {
+  display: grid;
+  grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-2) var(--ui-space-4);
+  border-bottom: 1px solid var(--ui-color-border);
+  background: var(--ui-color-surface-1);
+}
+.hud__identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+.hud__identity b {
+  overflow: hidden;
+  font-family: var(--ui-font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hud__identity small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+.hud__bars {
+  display: grid;
+  gap: var(--ui-space-1);
 }
 .content {
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
-.hud {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--color-border);
-  background: #0b111d;
-}
-.hud__identity {
-  display: flex;
-  min-width: 88px;
-  flex-direction: column;
-}
-.hud__identity b {
-  color: #f0e7d2;
-  font:
-    0.88rem Georgia,
-    serif;
-}
-.hud__identity small {
-  color: var(--color-text-muted);
-  font-size: 0.58rem;
-}
-.hud__bars {
-  display: grid;
-  gap: 5px;
-}
-.bar {
-  position: relative;
-  min-height: 17px;
-  overflow: hidden;
-  border: 1px solid rgb(133 148 177 / 34%);
-  background: #080b12;
-}
-.bar span {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  background: linear-gradient(90deg, #735418, #d2a83f);
-}
-.bar--hp span {
-  background: linear-gradient(90deg, #6e1723, #c7424f);
-}
-.bar--focus span {
-  background: linear-gradient(90deg, #1b6e66, #42c4aa);
-}
-.bar--mana span {
-  background: linear-gradient(90deg, #30469a, #6f87f0);
-}
-.bar b {
-  position: relative;
-  z-index: 1;
-  display: block;
-  color: #fff7e4;
-  font-size: 0.58rem;
-  line-height: 15px;
-  text-align: center;
-  text-shadow: 0 1px 2px #000;
-}
-.system-state {
-  display: grid;
+.content > :deep(.ui-system-state) {
   min-height: 100%;
-  padding: 32px;
-  text-align: center;
-  place-content: center;
+  border: 0;
 }
-.system-state b {
-  color: var(--color-gold);
-  font-size: 2.5rem;
-}
-.system-state .danger {
-  color: #d35f67;
-}
-.system-state h1 {
-  margin: 12px 0 6px;
-  font-family: Georgia, serif;
-  color: #f0e7d2;
-}
-.system-state p {
-  color: var(--color-text-secondary);
-}
-.primary {
-  min-height: 46px;
-  border: 1px solid #c8a963;
-  border-radius: 4px;
-  background: linear-gradient(#6c5224, #39280f);
-  color: #fff4d1;
-  font: inherit;
-  font-weight: 700;
-}
-.nav {
+.navigation {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  padding: 7px 6px calc(7px + var(--safe-area-bottom));
-  border-top: 1px solid var(--color-border);
-  background: rgb(7 11 19 / 95%);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: var(--ui-space-1) calc(var(--ui-space-1) + var(--ui-safe-area-right))
+    calc(var(--ui-space-1) + var(--ui-safe-area-bottom))
+    calc(var(--ui-space-1) + var(--ui-safe-area-left));
+  border-top: 1px solid var(--ui-color-border);
+  background: var(--ui-color-surface-1);
 }
-.nav button {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  min-height: 49px;
-  padding: 0;
+.navigation__item {
+  display: grid;
+  min-width: var(--ui-touch-target);
+  min-height: var(--ui-control-height-lg);
+  place-items: center;
+  align-content: center;
+  gap: var(--ui-space-1);
+  padding: var(--ui-space-1);
   border: 0;
   background: transparent;
-  color: var(--color-text-muted);
-  flex-direction: column;
-  justify-content: center;
+  color: var(--ui-color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.navigation__item:disabled {
+  color: var(--ui-color-disabled);
+  cursor: not-allowed;
   opacity: 0.5;
 }
-.nav button:disabled {
-  opacity: 0.32;
+.navigation__item--active {
+  color: var(--ui-color-primary);
 }
-.nav small {
-  font-size: 0.62rem;
-  text-transform: uppercase;
+.navigation__icon {
+  width: var(--ui-space-6);
+  height: var(--ui-space-6);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
-.nav .active {
-  color: var(--color-gold-bright);
-  opacity: 1;
+.navigation small {
+  font-size: var(--ui-font-size-xs);
 }
-@media (min-width: 720px) {
+@media (max-width: 350px) {
+  .navigation small {
+    font-size: var(--ui-font-size-xs);
+    transform: scale(0.9);
+  }
+}
+@media (min-width: 542px) {
   .game-shell {
-    width: min(100%, 540px);
-    margin-inline: auto;
-    border-inline: 1px solid var(--color-border);
+    box-shadow: var(--ui-shadow-panel);
   }
 }
 </style>
