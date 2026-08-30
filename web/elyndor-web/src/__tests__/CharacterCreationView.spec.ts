@@ -60,5 +60,6 @@ describe('CharacterCreationView', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.get('button[type="submit"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('button[type="submit"]').attributes('aria-busy')).toBe('true')
   })
 })
