@@ -39,7 +39,11 @@ public sealed record ClassProfile(
     PrimaryStats LevelGrowth,
     IReadOnlyList<string> AllowedWeaponCategories,
     IReadOnlyList<string> AllowedArmorCategories,
-    string PrototypeIdentity);
+    string PrototypeIdentity,
+    IReadOnlyList<string>? StartingAbilityIds = null,
+    IReadOnlyList<AbilityUnlockDefinition>? AbilityUnlocks = null);
+
+public sealed record AbilityUnlockDefinition(string AbilityId, int UnlockLevel);
 
 public sealed record StatFormulaProfile(
     string Id,

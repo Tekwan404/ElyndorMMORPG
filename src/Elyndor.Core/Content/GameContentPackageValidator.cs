@@ -103,8 +103,10 @@ public static class GameContentPackageValidator
                 || ability.Type != AbilityType.Casted && ability.CastTime != TimeSpan.Zero
                 || ability.UsesGlobalCooldown && ability.GlobalCooldownCategory == GlobalCooldownCategory.None
                 || ability.Actions?.Any(action => action.Amount < 0
+                    || action.AttackPowerCoefficient < 0
                     || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
-                    || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null) == true
+                    || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
+                    || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true
                 || string.IsNullOrWhiteSpace(ability.School))
             {
                 errors.Add(new ContentValidationError(
@@ -207,6 +209,30 @@ public static class GameContentPackageValidator
                     "INVALID_CLASS_STATS",
                     path,
                     $"Class profile '{profile.Id}' contains negative stats."));
+            }
+
+            HashSet<string> ownedAbilityIds = [];
+            foreach (string abilityId in profile.StartingAbilityIds ?? [])
+            {
+                if (!ownedAbilityIds.Add(abilityId)
+                    || package.Abilities?.Any(ability => ability.Id == abilityId) != true)
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_CLASS_ABILITY", path,
+                        $"Class profile '{profile.Id}' references invalid ability '{abilityId}'."));
+                }
+            }
+
+            foreach (AbilityUnlockDefinition unlock in profile.AbilityUnlocks ?? [])
+            {
+                if (unlock.UnlockLevel < 2
+                    || !ownedAbilityIds.Add(unlock.AbilityId)
+                    || package.Abilities?.Any(ability => ability.Id == unlock.AbilityId) != true)
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_CLASS_ABILITY_UNLOCK", path,
+                        $"Class profile '{profile.Id}' contains invalid unlock '{unlock.AbilityId}'."));
+                }
             }
         }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { gameArt, preloadGameArt } from '@/assets/gameArt'
+import { gameArt } from '@/assets/gameArt'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
@@ -47,7 +47,6 @@ function selectView(item: (typeof navigation)[number]) {
 
 onMounted(() => {
   initializeTelegramWebApp()
-  void preloadGameArt()
   void session.start()
 })
 </script>

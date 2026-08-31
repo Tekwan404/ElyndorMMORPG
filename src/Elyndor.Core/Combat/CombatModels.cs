@@ -11,7 +11,9 @@ public sealed record CombatStats(
     decimal Armor,
     decimal MagicResistance,
     decimal ArmorPenetration,
-    decimal MagicPenetration)
+    decimal MagicPenetration,
+    decimal AttackPower = 0,
+    decimal SpellPower = 0)
 {
     public static CombatStats Default { get; } = new(1, 0, 0, 0, 1, 0, 0, 0, 0);
 }
@@ -66,6 +68,13 @@ public sealed class CombatActorState
         CurrentResource -= amount;
         return true;
     }
+
+    public decimal AddResource(decimal amount)
+    {
+        decimal previous = CurrentResource;
+        CurrentResource = Math.Clamp(CurrentResource + amount, 0, MaxResource);
+        return CurrentResource - previous;
+    }
 }
 
 public enum CombatEventType
@@ -81,6 +90,7 @@ public enum CombatEventType
     AbilityStarted,
     AbilityCompleted,
     AbilityInterrupted,
+    TauntApplied,
     ResourceChanged,
     ActorDied
 }

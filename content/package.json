@@ -1,15 +1,28 @@
 {
-  "contentVersion": "0.2.0",
-  "balanceVersion": "0.2.0",
+  "contentVersion": "0.3.0",
+  "balanceVersion": "0.3.0",
   "publishedAtUtc": "2026-08-29T00:00:00+00:00",
   "definitions": [
     { "type": "RACE", "id": "HUMAN", "references": [] },
     { "type": "RACE", "id": "UNDEAD", "references": [] },
     { "type": "GENDER", "id": "MALE", "references": [] },
     { "type": "GENDER", "id": "FEMALE", "references": [] },
-    { "type": "CLASS", "id": "WARRIOR", "references": [] },
+    { "type": "CLASS", "id": "WARRIOR", "references": [
+      { "type": "ABILITY", "id": "STRIKE" },
+      { "type": "ABILITY", "id": "SHIELD_BASH" },
+      { "type": "ABILITY", "id": "PROVOKE" },
+      { "type": "ABILITY", "id": "HEAVY_BLOW" },
+      { "type": "ABILITY", "id": "BATTLE_FOCUS" },
+      { "type": "ABILITY", "id": "BATTLE_SHOUT" }
+    ] },
     { "type": "CLASS", "id": "ARCHER", "references": [] },
-    { "type": "CLASS", "id": "MAGE", "references": [] }
+    { "type": "CLASS", "id": "MAGE", "references": [] },
+    { "type": "ABILITY", "id": "STRIKE", "references": [] },
+    { "type": "ABILITY", "id": "SHIELD_BASH", "references": [] },
+    { "type": "ABILITY", "id": "PROVOKE", "references": [] },
+    { "type": "ABILITY", "id": "HEAVY_BLOW", "references": [] },
+    { "type": "ABILITY", "id": "BATTLE_FOCUS", "references": [] },
+    { "type": "ABILITY", "id": "BATTLE_SHOUT", "references": [] }
   ],
   "classProfiles": [
     {
@@ -20,7 +33,14 @@
       "levelGrowth": { "strength": 3, "agility": 1, "intellect": 0.5, "stamina": 2 },
       "allowedWeaponCategories": ["ONE_HAND_SWORD", "TWO_HAND_SWORD", "AXE", "MACE", "SHIELD"],
       "allowedArmorCategories": ["MEDIUM", "HEAVY"],
-      "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage."
+      "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
+      "startingAbilityIds": ["STRIKE", "PROVOKE"],
+      "abilityUnlocks": [
+        { "abilityId": "HEAVY_BLOW", "unlockLevel": 2 },
+        { "abilityId": "SHIELD_BASH", "unlockLevel": 3 },
+        { "abilityId": "BATTLE_FOCUS", "unlockLevel": 5 },
+        { "abilityId": "BATTLE_SHOUT", "unlockLevel": 7 }
+      ]
     },
     {
       "id": "ARCHER",
@@ -91,6 +111,56 @@
       "outOfCombatRegenPerSecond": 12,
       "outOfCombatDecayPerSecond": 0,
       "outOfCombatDelaySeconds": 0
+    }
+  ],
+  "abilities": [
+    {
+      "id": "STRIKE", "type": "Instant", "targetType": "SingleEnemy",
+      "resourceCost": 0, "cooldown": "00:00:00", "castTime": "00:00:00",
+      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [
+        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.8 },
+        { "type": "ResourceChange", "amount": 10 }
+      ]
+    },
+    {
+      "id": "SHIELD_BASH", "type": "Instant", "targetType": "SingleEnemy",
+      "resourceCost": 20, "cooldown": "00:00:08", "castTime": "00:00:00",
+      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [
+        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.7 },
+        { "type": "ApplyEffect", "effect": { "id": "SHIELD_BASH_STUN", "kind": "Stun", "duration": "00:00:01.5000000", "maxStacks": 1, "stackPolicy": "Replace", "magnitude": 0 } }
+      ]
+    },
+    {
+      "id": "PROVOKE", "type": "Taunt", "targetType": "SingleEnemy",
+      "resourceCost": 15, "cooldown": "00:00:08", "castTime": "00:00:00",
+      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [{ "type": "Taunt", "duration": "00:00:03" }]
+    },
+    {
+      "id": "HEAVY_BLOW", "type": "Instant", "targetType": "SingleEnemy",
+      "resourceCost": 30, "cooldown": "00:00:04", "castTime": "00:00:00",
+      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [{ "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 1.6 }]
+    },
+    {
+      "id": "BATTLE_FOCUS", "type": "Instant", "targetType": "Self",
+      "resourceCost": 20, "cooldown": "00:00:20", "castTime": "00:00:00",
+      "usesGlobalCooldown": false, "globalCooldownCategory": "None",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [{ "type": "ApplyEffect", "effect": { "id": "BATTLE_FOCUS_ATTACK_POWER", "kind": "StatModifier", "duration": "00:00:06", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.15, "modifiedStat": "AttackPower", "modifierMode": "Percent" } }]
+    },
+    {
+      "id": "BATTLE_SHOUT", "type": "Instant", "targetType": "Self",
+      "resourceCost": 0, "cooldown": "00:00:15", "castTime": "00:00:00",
+      "usesGlobalCooldown": false, "globalCooldownCategory": "None",
+      "isSpell": false, "school": "PHYSICAL",
+      "actions": [{ "type": "ResourceChange", "amount": 20 }]
     }
   ],
   "locations": [

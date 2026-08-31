@@ -23,6 +23,9 @@ public enum EffectStackPolicy
     StrongestWins
 }
 
+public enum EffectStat { AttackPower }
+public enum EffectModifierMode { Flat, Percent, Multiplicative }
+
 public sealed record EffectDefinition(
     string Id,
     EffectKind Kind,
@@ -34,7 +37,9 @@ public sealed record EffectDefinition(
     int ApplicationPriority = 0,
     bool IsDynamic = false,
     string? DispelCategory = null,
-    int Version = 1);
+    int Version = 1,
+    EffectStat? ModifiedStat = null,
+    EffectModifierMode ModifierMode = EffectModifierMode.Flat);
 
 public sealed class ActiveEffect
 {

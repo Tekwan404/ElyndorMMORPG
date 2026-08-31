@@ -16,7 +16,7 @@ public enum AbilityTargetType
     Owner
 }
 public enum GlobalCooldownCategory { None, Reduced, Standard }
-public enum AbilityActionType { Damage, Healing, ApplyEffect }
+public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Taunt }
 public enum AbilityErrorCode
 {
     None,
@@ -60,7 +60,9 @@ public sealed record AbilityActionDefinition(
     EffectDefinition? Effect = null,
     bool CanMiss = true,
     bool CanCrit = true,
-    bool CanDodge = true);
+    bool CanDodge = true,
+    decimal AttackPowerCoefficient = 0,
+    TimeSpan? Duration = null);
 
 public sealed record AbilityIntent(string CommandId, string AbilityId, Guid TargetId);
 

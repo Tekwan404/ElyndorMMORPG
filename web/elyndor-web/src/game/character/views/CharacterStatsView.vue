@@ -11,12 +11,12 @@ import type { IconConfig } from '@/ui/icons/icon.types'
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const warriorAbilities = [
-  { id: 'strike', name: 'Удар', image: gameArt.warriorAbilities.strike },
-  { id: 'shield-bash', name: 'Удар щитом', image: gameArt.warriorAbilities.shieldBash },
-  { id: 'bastion', name: 'Бастион', image: gameArt.warriorAbilities.bastion },
-  { id: 'provoke', name: 'Провокация', image: gameArt.warriorAbilities.provoke },
-  { id: 'whirlwind', name: 'Вихрь', image: gameArt.warriorAbilities.whirlwind },
-  { id: 'wild-strike', name: 'Дикий удар', image: gameArt.warriorAbilities.wildStrike },
+  { id: 'strike', name: 'Удар', image: gameArt.warriorAbilities.strike, unlockLevel: 1 },
+  { id: 'shield-bash', name: 'Удар щитом', image: gameArt.warriorAbilities.shieldBash, unlockLevel: 3 },
+  { id: 'bastion', name: 'Бастион', image: gameArt.warriorAbilities.bastion, talent: true },
+  { id: 'provoke', name: 'Провокация', image: gameArt.warriorAbilities.provoke, unlockLevel: 1 },
+  { id: 'whirlwind', name: 'Вихрь', image: gameArt.warriorAbilities.whirlwind, talent: true },
+  { id: 'wild-strike', name: 'Дикий удар', image: gameArt.warriorAbilities.wildStrike, talent: true },
 ] as const
 
 type StatRow = { id: keyof CharacterStats; label: string; percent?: boolean; multiplier?: boolean }
@@ -90,6 +90,14 @@ function format(row: StatRow): string {
 function isPrimary(id: keyof CharacterStats): boolean {
   return character.value?.primaryAttribute.toLowerCase() === id.toLowerCase()
 }
+
+function isAbilityLocked(ability: (typeof warriorAbilities)[number]): boolean {
+  return 'talent' in ability || character.value!.level < ability.unlockLevel
+}
+
+function abilityLockLabel(ability: (typeof warriorAbilities)[number]): string {
+  return 'talent' in ability ? 'Талант' : `Уровень ${ability.unlockLevel}`
+}
 </script>
 
 <template>
@@ -132,9 +140,17 @@ function isPrimary(id: keyof CharacterStats): boolean {
     <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities">
       <template #title>Боевые способности</template>
       <div class="abilities__grid" aria-label="Warrior abilities">
-        <figure v-for="ability in warriorAbilities" :key="ability.id" :data-ability="ability.id">
+        <figure
+          v-for="ability in warriorAbilities"
+          :key="ability.id"
+          :data-ability="ability.id"
+          :class="{ 'ability--locked': isAbilityLocked(ability) }"
+        >
           <img :src="ability.image" :alt="ability.name" />
-          <figcaption>{{ ability.name }}</figcaption>
+          <figcaption>
+            {{ ability.name }}
+            <small v-if="isAbilityLocked(ability)">{{ abilityLockLabel(ability) }}</small>
+          </figcaption>
         </figure>
       </div>
     </UIPanel>
@@ -239,6 +255,13 @@ h1 {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.abilities figcaption small {
+  display: block;
+  color: var(--ui-color-text-muted);
+}
+.ability--locked img {
+  filter: grayscale(0.8) brightness(0.45);
 }
 dl {
   margin: 0;

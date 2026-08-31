@@ -97,6 +97,29 @@ public static class EffectEngine
     public static bool HasControl(CombatActorState target, EffectKind kind, DateTimeOffset now) =>
         target.ActiveEffects.Any(effect => effect.Definition.Kind == kind && effect.ExpiresAtUtc > now);
 
+    public static decimal CalculateStat(
+        CombatActorState target,
+        EffectStat stat,
+        decimal baseValue,
+        DateTimeOffset now)
+    {
+        ActiveEffect[] modifiers = target.ActiveEffects
+            .Where(effect => effect.ExpiresAtUtc > now
+                && effect.Definition.Kind == EffectKind.StatModifier
+                && effect.Definition.ModifiedStat == stat)
+            .ToArray();
+        decimal flat = modifiers
+            .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Flat)
+            .Sum(effect => effect.Definition.Magnitude * effect.Stacks);
+        decimal percent = modifiers
+            .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Percent)
+            .Sum(effect => effect.Definition.Magnitude * effect.Stacks);
+        decimal multiplier = modifiers
+            .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Multiplicative)
+            .Aggregate(1m, (current, effect) => current * effect.Definition.Magnitude);
+        return Math.Max(0, (baseValue + flat) * (1 + percent) * multiplier);
+    }
+
     public static IReadOnlyList<CombatEvent> Dispel(
         CombatActorState target,
         string dispelCategory,

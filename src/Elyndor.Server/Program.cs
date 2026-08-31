@@ -96,7 +96,15 @@ if (frontendFileProvider is not null)
     });
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = frontendFileProvider
+        FileProvider = frontendFileProvider,
+        OnPrepareResponse = context =>
+        {
+            if (context.Context.Request.Path.StartsWithSegments("/assets"))
+            {
+                context.Context.Response.Headers.CacheControl =
+                    "public,max-age=31536000,immutable";
+            }
+        }
     });
 }
 

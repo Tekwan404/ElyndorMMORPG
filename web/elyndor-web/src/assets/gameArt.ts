@@ -26,28 +26,3 @@ export const gameArt = {
   },
   warriorAbilities: { strike, shieldBash, bastion, provoke, whirlwind, wildStrike },
 } as const
-
-const preloadUrls = [
-  ...Object.values(gameArt.world),
-  ...Object.values(gameArt.characters),
-  ...Object.values(gameArt.navigation),
-  ...Object.values(gameArt.warriorAbilities),
-]
-
-let preloadPromise: Promise<void> | undefined
-
-export function preloadGameArt(): Promise<void> {
-  preloadPromise ??= Promise.allSettled(
-    preloadUrls.map(
-      (url) =>
-        new Promise<void>((resolve) => {
-          const image = new Image()
-          image.onload = () => resolve()
-          image.onerror = () => resolve()
-          image.src = url
-        }),
-    ),
-  ).then(() => undefined)
-
-  return preloadPromise
-}

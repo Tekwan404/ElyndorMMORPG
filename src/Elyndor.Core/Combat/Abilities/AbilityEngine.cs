@@ -175,8 +175,13 @@ public static class AbilityEngine
                         throw new InvalidOperationException("Damage actions require an injected game RNG.");
                     }
 
+                    decimal attackPower = EffectEngine.CalculateStat(
+                        runtime.Actor, EffectStat.AttackPower,
+                        runtime.Actor.Stats.AttackPower, now);
+                    decimal baseDamage = action.Amount
+                        + attackPower * Math.Max(0, action.AttackPowerCoefficient);
                     DamageResult damage = DamagePipeline.Resolve(
-                        new DamageRequest(runtime.Actor, target, action.Amount, action.DamageType,
+                        new DamageRequest(runtime.Actor, target, baseDamage, action.DamageType,
                             CanMiss: action.CanMiss, CanDodge: action.CanDodge,
                             CanCrit: action.CanCrit), random, now);
                     events.AddRange(damage.Events);
@@ -192,6 +197,17 @@ public static class AbilityEngine
                     }
 
                     events.AddRange(EffectEngine.Apply(target, runtime.Actor.ActorId, action.Effect, now));
+                    break;
+                case AbilityActionType.ResourceChange:
+                    decimal actualChange = runtime.Actor.AddResource(action.Amount);
+                    events.Add(new CombatEvent(
+                        CombatEventType.ResourceChanged, now, runtime.Actor.ActorId,
+                        ability.Id, actualChange));
+                    break;
+                case AbilityActionType.Taunt:
+                    events.Add(new CombatEvent(
+                        CombatEventType.TauntApplied, now, target.ActorId,
+                        ability.Id, (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds));
                     break;
             }
         }
