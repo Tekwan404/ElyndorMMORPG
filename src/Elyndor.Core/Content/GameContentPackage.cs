@@ -1,4 +1,6 @@
 using Elyndor.Core.World;
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Effects;
 
 namespace Elyndor.Core.Content;
 
@@ -10,7 +12,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<LocationDefinition> Locations,
     IReadOnlyList<ClassProfile>? ClassProfiles = null,
     StatFormulaProfile? StatFormula = null,
-    IReadOnlyList<ResourceProfile>? ResourceProfiles = null);
+    IReadOnlyList<ResourceProfile>? ResourceProfiles = null,
+    IReadOnlyList<EffectDefinition>? Effects = null,
+    IReadOnlyList<AbilityDefinition>? Abilities = null);
 
 public sealed record GameContentDefinition(
     string Type,

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import type { CharacterStats } from '@/api/contracts'
+import { gameArt } from '@/assets/gameArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIHealthBar, UIPanel } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -9,6 +10,14 @@ import type { IconConfig } from '@/ui/icons/icon.types'
 
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
+const warriorAbilities = [
+  { id: 'strike', name: 'Удар', image: gameArt.warriorAbilities.strike },
+  { id: 'shield-bash', name: 'Удар щитом', image: gameArt.warriorAbilities.shieldBash },
+  { id: 'bastion', name: 'Бастион', image: gameArt.warriorAbilities.bastion },
+  { id: 'provoke', name: 'Провокация', image: gameArt.warriorAbilities.provoke },
+  { id: 'whirlwind', name: 'Вихрь', image: gameArt.warriorAbilities.whirlwind },
+  { id: 'wild-strike', name: 'Дикий удар', image: gameArt.warriorAbilities.wildStrike },
+] as const
 
 type StatRow = { id: keyof CharacterStats; label: string; percent?: boolean; multiplier?: boolean }
 
@@ -91,7 +100,14 @@ function isPrimary(id: keyof CharacterStats): boolean {
         <h1>{{ character.name }}</h1>
         <p class="summary">Уровень {{ character.level }} · {{ character.classId }}</p>
       </div>
+      <img
+        v-if="character.classId === 'WARRIOR'"
+        class="warrior-portrait"
+        :src="gameArt.characters.warrior"
+        alt="Воин"
+      />
       <IconGenerator
+        v-else
         class="portrait"
         :config="portraitIcon"
         :label="`Класс ${character.classId}`"
@@ -111,6 +127,16 @@ function isPrimary(id: keyof CharacterStats): boolean {
         :value="character.vitals.currentResource"
         :max="character.vitals.maxResource"
       />
+    </UIPanel>
+
+    <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities">
+      <template #title>Боевые способности</template>
+      <div class="abilities__grid" aria-label="Warrior abilities">
+        <figure v-for="ability in warriorAbilities" :key="ability.id" :data-ability="ability.id">
+          <img :src="ability.image" :alt="ability.name" />
+          <figcaption>{{ ability.name }}</figcaption>
+        </figure>
+      </div>
     </UIPanel>
 
     <UIPanel v-for="group in groups" :key="group.title" class="stat-group">
@@ -174,9 +200,45 @@ h1 {
   height: var(--ui-icon-slot-lg);
   flex: 0 0 auto;
 }
+.warrior-portrait {
+  width: clamp(7rem, 30vw, 10rem);
+  height: 10rem;
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 0.5rem 0.8rem rgb(0 0 0 / 55%));
+}
 .vitals :deep(.ui-panel__body) {
   display: grid;
   gap: var(--ui-space-3);
+}
+.abilities__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ui-space-2);
+}
+.abilities figure {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-background);
+}
+.abilities img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.abilities figcaption {
+  overflow: hidden;
+  padding: var(--ui-space-2) var(--ui-space-1);
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-xs);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 dl {
   margin: 0;
@@ -226,6 +288,10 @@ dd {
   .portrait {
     width: var(--ui-icon-slot-md);
     height: var(--ui-icon-slot-md);
+  }
+  .warrior-portrait {
+    width: 6rem;
+    height: 8rem;
   }
 }
 </style>

@@ -151,10 +151,11 @@ OpenAPI является источником TypeScript API contracts.
 PHASE 0   Engineering Foundation
 PHASE 1   Telegram Identity + Character + Time + World
 PHASE 2   Stats + Resources + Content Profiles
-PHASE 3   Effect + Damage + Ability Kernel
-PHASE 4   Combat + Monster AI + Warrior Vertical Slice
-PHASE 5   Progression + Items + Equipment + Loot
-PHASE 6   Warrior Talents + 2 Loadouts
+PHASE 3A  Effect + Damage + Ability Kernel
+PHASE 3B  Warrior Ability Kit
+PHASE 3C  Talent Engine + Warrior Talent Content + 2 Loadouts
+PHASE 4   CombatSession + Monster System + Monster AI + Whispering Forest
+PHASE 5   Progression + Items + Equipment + Loot + First Local Boss
 PHASE 7   Party
 PHASE 8   Companion + Archer
 PHASE 9   Mage
@@ -499,7 +500,7 @@ Class/resource/stat состояние рассчитывается data-driven 
 
 ---
 
-# PHASE 3 — Effect + Damage + Ability Kernel
+# PHASE 3A — Effect + Damage + Ability Kernel
 
 Это главный технический фундамент боя.
 
@@ -631,7 +632,40 @@ Ability можно выполнить полностью server-side без по
 
 ---
 
-# PHASE 4 — Combat + Monster AI + Warrior Vertical Slice
+# PHASE 3B — Warrior Ability Kit
+
+Phase 3B starts only after the Phase 3A Definition of Done passes.
+
+- reuse the Phase 3A kernel instead of creating Warrior-specific damage/effect engines;
+- integrate authoritative Rage generation and spending;
+- implement the bounded Warrior active kit from current Source of Truth;
+- verify every distinct ability mechanic through the deterministic headless harness;
+- do not add Monster System, production encounters, XP, loot, or talents.
+
+## DONE
+
+The Warrior kit executes server-side through the shared kernel and deterministic tests cover its resource, timing, damage, defense, control, and failure behavior.
+
+---
+
+# PHASE 3C — Talent Engine + Warrior Talent Content + 2 Loadouts
+
+Phase 3C starts only after the Phase 3B Definition of Done passes. The detailed requirements formerly listed under Phase 6 remain authoritative, but their execution position is moved here.
+
+- data-driven talent definitions, ranks, prerequisites, points, and modifier families;
+- PostgreSQL persistence for exactly two saved loadouts and one active loadout;
+- full Warrior talent content where Source of Truth is complete;
+- party/boss/elite-dependent nodes may be represented and validated, but their owning runtime integrations remain deferred;
+- no self-only fallback unless the owning Source of Truth explicitly allows it;
+- Talent UI consumes server/content data and does not duplicate the tree in Vue.
+
+## DONE
+
+Warrior talents and two loadouts persist atomically, rebuild the Talent stage of authoritative stats, and modify supported kernel behavior without scattered per-talent hardcoding.
+
+---
+
+# PHASE 4 — CombatSession + Monster System + Monster AI + Whispering Forest
 
 Docs:
 
@@ -698,7 +732,9 @@ AggressionProfile
 World encounter trigger
 ```
 
-## Warrior initial kit
+## Warrior integration
+
+Reuse the completed Phase 3B Warrior kit. Phase 4 does not redesign or duplicate the kit.
 
 Level 1–10 playtest kit:
 
@@ -763,7 +799,7 @@ ASP.NET отдаёт Mini App и API.
 
 ---
 
-# PHASE 5 — Progression + Items + Equipment + Loot
+# PHASE 5 — Progression + Items + Equipment + Loot + First Local Boss
 
 Docs:
 
@@ -872,7 +908,9 @@ Combat
 
 ---
 
-# PHASE 6 — Warrior Talents + 2 Loadouts
+# LEGACY PHASE 6 REQUIREMENTS — MOVED TO PHASE 3C
+
+This section is retained as the detailed checklist for Phase 3C. It is not a later execution phase and must not be implemented a second time.
 
 Docs:
 

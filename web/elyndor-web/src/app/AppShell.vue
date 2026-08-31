@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+import { gameArt, preloadGameArt } from '@/assets/gameArt'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
 
 type ShellView = 'world' | 'hero'
 
@@ -32,24 +31,15 @@ const connectionLabel = computed(() => {
 const navigation: readonly {
   id: ShellView | 'location' | 'quests' | 'menu'
   label: string
-  glyph: GlyphName
+  icon: string
   enabled: boolean
 }[] = [
-  { id: 'world', label: 'Мир', glyph: 'star', enabled: true },
-  { id: 'hero', label: 'Герой', glyph: 'helmet', enabled: true },
-  { id: 'location', label: 'Локация', glyph: 'lock', enabled: false },
-  { id: 'quests', label: 'Квесты', glyph: 'scroll', enabled: false },
-  { id: 'menu', label: 'Меню', glyph: 'chest', enabled: false },
+  { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
+  { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
+  { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: false },
+  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
+  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
 ]
-
-function navigationIcon(item: (typeof navigation)[number]): IconConfig {
-  return {
-    id: `navigation-${item.id}`,
-    glyph: item.glyph,
-    category: 'utility',
-    state: item.enabled ? (item.id === activeView.value ? 'selected' : 'default') : 'locked',
-  }
-}
 
 function selectView(item: (typeof navigation)[number]) {
   if (item.enabled && (item.id === 'world' || item.id === 'hero')) activeView.value = item.id
@@ -57,6 +47,7 @@ function selectView(item: (typeof navigation)[number]) {
 
 onMounted(() => {
   initializeTelegramWebApp()
+  void preloadGameArt()
   void session.start()
 })
 </script>
@@ -127,7 +118,7 @@ onMounted(() => {
         :aria-current="item.id === activeView ? 'page' : undefined"
         @click="selectView(item)"
       >
-        <IconGenerator class="navigation__icon" :config="navigationIcon(item)" />
+        <img class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
         <small>{{ item.label }}</small>
       </button>
     </nav>
@@ -263,11 +254,13 @@ onMounted(() => {
   color: var(--ui-color-primary);
 }
 .navigation__icon {
-  width: var(--ui-space-6);
-  height: var(--ui-space-6);
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  width: calc(var(--ui-space-6) + var(--ui-space-1));
+  height: calc(var(--ui-space-6) + var(--ui-space-1));
+  object-fit: contain;
+  filter: saturate(0.8);
+}
+.navigation__item--active .navigation__icon {
+  filter: saturate(1.15) drop-shadow(0 0 0.35rem rgb(92 110 255 / 55%));
 }
 .navigation small {
   font-size: var(--ui-font-size-xs);

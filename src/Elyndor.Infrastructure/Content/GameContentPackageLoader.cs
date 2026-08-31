@@ -15,6 +15,11 @@ public static class GameContentPackageLoader
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
+    static GameContentPackageLoader()
+    {
+        SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }
+
     public static async Task<GameContentPackage> LoadAsync(
         string path,
         CancellationToken cancellationToken = default)

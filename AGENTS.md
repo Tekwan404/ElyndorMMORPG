@@ -15,7 +15,8 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Phase roadmap: `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`
 - Completed Phase 1: `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`
 - Completed Phase 2: `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md`
-- Next phase planning: Phase 3 section in `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`
+- Current phase contract: `docs/source-of-truth/phases/PHASE_03A_COMBAT_KERNEL.md`
+- Approved phase order: Phase 3A Combat Kernel → Phase 3B Warrior Ability Kit → Phase 3C Talent Engine and Warrior Talent Content → Phase 4 CombatSession/Monsters/Whispering Forest → Phase 5 Progression/Loot/Equipment/Local Boss
 - Combat: `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`, `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`, `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`, `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`, `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`, `docs/source-of-truth/gameplay/15_MONSTER_AND_AI_SYSTEM.md`
 - Progression and classes: `docs/source-of-truth/gameplay/11_PROGRESSION_SYSTEM.md`, `docs/source-of-truth/gameplay/12_CLASS_SYSTEM.md`, `docs/source-of-truth/gameplay/19_CLASS_ROSTER_AND_CHARACTER_CREATION.md`
 - Items and rewards: `docs/source-of-truth/gameplay/13_ITEM_EQUIPMENT_SYSTEM.md`, `docs/source-of-truth/gameplay/14_LOOT_SYSTEM.md`
@@ -24,7 +25,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Content: `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`, `content/README.md`
 - Infrastructure/testing: `docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md`, `.github/workflows/ci.yml`, `docs/development/getting-started.md`
 
-Phase 0, Phase 1, and Phase 2 Definitions of Done are verified in their phase documents. Do not implement Phase 3 until its bounded execution contract is approved.
+Phase 0, Phase 1, and Phase 2 Definitions of Done are verified in their phase documents. Phase 3A is the active approved phase. Do not implement Phase 3B, Phase 3C, Monster System, or later gameplay while Phase 3A remains incomplete.
 
 ## Core invariants
 

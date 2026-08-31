@@ -1,4 +1,6 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.World;
 
 namespace Elyndor.UnitTests.Content;
@@ -131,6 +133,51 @@ public sealed class GameContentPackageValidatorTests
             GameContentPackageValidator.Validate(package);
 
         Assert.Contains(errors, error => error.Code == expectedErrorCode);
+    }
+
+    [Fact]
+    public void ValidateAcceptsOptionalCombatDefinitions()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            Effects =
+            [
+                new EffectDefinition("TEST_BURN", EffectKind.DamageOverTime,
+                    TimeSpan.FromSeconds(4), 1, EffectStackPolicy.Refresh, 5,
+                    TimeSpan.FromSeconds(1))
+            ],
+            Abilities =
+            [
+                new AbilityDefinition("TEST_FIREBALL", AbilityType.Casted,
+                    AbilityTargetType.SingleEnemy, 10, TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(2), true, GlobalCooldownCategory.Standard,
+                    true, "FIRE")
+            ]
+        };
+
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
+    public void ValidateRejectsDuplicateAndInvalidCombatDefinitions()
+    {
+        EffectDefinition effect = new("TEST_EFFECT", EffectKind.Buff,
+            TimeSpan.Zero, 0, EffectStackPolicy.Stack, -1);
+        AbilityDefinition ability = new("TEST_ABILITY", AbilityType.Instant,
+            AbilityTargetType.Self, -1, TimeSpan.Zero, TimeSpan.Zero, true,
+            GlobalCooldownCategory.None, false, "PHYSICAL");
+        GameContentPackage package = CreatePackage() with
+        {
+            Effects = [effect, effect],
+            Abilities = [ability, ability]
+        };
+
+        IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "DUPLICATE_EFFECT_ID");
+        Assert.Contains(errors, error => error.Code == "INVALID_EFFECT_DEFINITION");
+        Assert.Contains(errors, error => error.Code == "DUPLICATE_ABILITY_ID");
+        Assert.Contains(errors, error => error.Code == "INVALID_ABILITY_DEFINITION");
     }
 
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>

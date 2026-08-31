@@ -329,7 +329,7 @@ Level 1–10
 
 ---
 
-# Phase 3 — Abilities, Damage, Effects & Combat Rules
+# Phase 3A — Combat Kernel
 
 ## Цель
 
@@ -350,22 +350,9 @@ Ability должна поддерживать:
 - interruptibility;
 - server-side validation.
 
-## Prototype class kits
+## Class content boundary
 
-Ориентир:
-
-```text
-5–7 meaningful active abilities per class
-```
-
-### Warrior
-Rage, offense vs defense, reactive decisions.
-
-### Archer
-Focus, priority/procs, быстрые действия.
-
-### Mage
-Mana, cast timing, sequencing, interrupt risk.
+Phase 3A реализует общий kernel и тестовые определения для deterministic harness. Production class kits не входят в Phase 3A.
 
 ## Combat design axes
 
@@ -399,17 +386,76 @@ RISK
 ## Definition of Done
 
 - ability engine работает;
-- три маленьких class kits существуют;
 - damage считается сервером;
 - cooldown/cast/resource validation работает;
 - effects работают;
 - invalid requests отклоняются;
 - deterministic tests возможны;
-- class kits отличаются не только названиями способностей.
+- headless harness выполняет deterministic sequence без браузера и Monster System.
 
 ---
 
-# Phase 4 — Combat, Monsters & Three-Class Prototype
+# Phase 3B — Warrior Ability Kit
+
+## Цель
+
+Первым production class slice подключить Warrior к общему Combat Kernel без Monster System.
+
+## Scope
+
+- Rage integration;
+- bounded Warrior active kit из действующих Source of Truth;
+- damage/healing/effects только через Phase 3A pipelines;
+- deterministic dummy tests;
+- server-side validation, cooldown, GCD, cast/interrupt и structured events.
+
+## Out of scope
+
+- talents;
+- CombatSession;
+- Monster System и AI;
+- encounters, XP, loot и equipment rewards.
+
+## Definition of Done
+
+- Warrior abilities представлены versioned content;
+- Rage не может быть потрачена дважды;
+- distinct Warrior mechanics проходят deterministic tests;
+- frontend не определяет damage, crit, resource result или effect result.
+
+---
+
+# Phase 3C — Talent Engine & Warrior Talent Content
+
+## Цель
+
+Реализовать data-driven Talent Engine, два persisted loadout и полное Warrior talent content там, где Source of Truth определён однозначно.
+
+## Scope
+
+- ranks, prerequisites, points, branches and typed modifiers;
+- exactly two saved loadouts and one active loadout;
+- atomic persistence and authoritative stat recalculation;
+- Warrior talent content and Talent UI driven by server/content data;
+- nodes that require Party/Boss/Elite integrations remain representable and validatable, but their owning runtime integration is deferred.
+
+## Out of scope
+
+- Party System;
+- Boss/Elite runtime behavior;
+- Monster System;
+- XP mutations, loot and economy.
+
+## Definition of Done
+
+- talent purchase and loadout mutations are idempotent and transaction-safe;
+- full defined Warrior tree loads and validates;
+- supported modifiers integrate through typed hooks rather than scattered talent-id switches;
+- mobile Talent UI renders real server/content state.
+
+---
+
+# Phase 4 — CombatSession, Monsters, Monster AI & Whispering Forest
 
 ## Цель
 

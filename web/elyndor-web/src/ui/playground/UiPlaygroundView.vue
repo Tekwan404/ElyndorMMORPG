@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 
 import {
   UIButton,
+  UIAbilityButton,
+  UICastBar,
   UICard,
   UIHealthBar,
   UIItemSlot,
@@ -11,6 +13,7 @@ import {
   UIPanel,
   UITabs,
   UIToast,
+  UIEffectBadge,
 } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { IconConfig, IconState, Rarity } from '@/ui/icons/icon.types'
@@ -53,6 +56,21 @@ const stateIcons = computed<IconConfig[]>(() =>
         <UIButton>Enter world</UIButton><UIButton variant="secondary">Inspect</UIButton>
         <UIButton variant="ghost">Cancel</UIButton><UIButton variant="danger">Abandon</UIButton>
         <UIButton loading>Travelling</UIButton><UIButton disabled>Unavailable</UIButton>
+      </div>
+    </UIPanel>
+
+    <UIPanel>
+      <template #title>Combat kernel primitives</template>
+      <div class="combat-primitives">
+        <div class="ability-row">
+          <UIAbilityButton :icon="ITEM_ICON_PRESETS.flameblade" label="Arcane strike" :resource-cost="20" />
+          <UIAbilityButton :icon="ITEM_ICON_PRESETS.frostStaff" label="Frost ward" :resource-cost="12" :cooldown-remaining="4.2" :cooldown-total="8" />
+        </div>
+        <UICastBar label="Arcane convergence" :elapsed="1.3" :duration="2" />
+        <div class="effect-row">
+          <UIEffectBadge :icon="EFFECT_ICON_PRESETS.frozen" label="Arcane ward" :remaining-seconds="8" />
+          <UIEffectBadge :icon="EFFECT_ICON_PRESETS.burning" label="Burning" :stacks="3" :remaining-seconds="4.2" harmful />
+        </div>
       </div>
     </UIPanel>
 
@@ -230,6 +248,8 @@ const stateIcons = computed<IconConfig[]>(() =>
   gap: var(--ui-space-2);
   margin-top: var(--ui-space-5);
 }
+.combat-primitives { display: grid; gap: var(--ui-space-4); }
+.ability-row { display: flex; flex-wrap: wrap; gap: var(--ui-space-3); }
 .effect-icon {
   width: var(--ui-icon-slot-sm);
   height: var(--ui-icon-slot-sm);

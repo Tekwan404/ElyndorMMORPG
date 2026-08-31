@@ -1,25 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { gameArt } from '@/assets/gameArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIPanel, UIToast } from '@/ui/components'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { IconConfig } from '@/ui/icons/icon.types'
 
 const session = useGameSessionStore()
 const world = computed(() => session.snapshot?.world)
 const character = computed(() => session.snapshot?.character)
-const locationIcon = computed<IconConfig>(() => ({
-  id: `location-${world.value?.currentLocation.id ?? 'unknown'}`,
-  glyph: world.value?.currentLocation.dangerLevel === 'DANGEROUS' ? 'skull' : 'star',
-  category: 'utility',
-  modifier:
-    world.value?.currentLocation.dangerLevel === 'DANGEROUS'
-      ? 'fire'
-      : world.value?.currentLocation.dangerLevel === 'ADVENTURE'
-        ? 'shadow'
-        : 'holy',
-}))
+const sceneBackground = computed(() => {
+  const dangerLevel = world.value?.currentLocation.dangerLevel
+  if (dangerLevel === 'DANGEROUS') return gameArt.world.ruins
+  if (dangerLevel === 'ADVENTURE') return gameArt.world.forest
+  return gameArt.world.capital
+})
 </script>
 
 <template>
@@ -30,9 +24,12 @@ const locationIcon = computed<IconConfig>(() => ({
       <p class="hero">{{ character.name }} · уровень {{ character.level }}</p>
     </header>
 
-    <div class="scene" aria-hidden="true">
-      <IconGenerator class="scene__icon" :config="locationIcon" />
-    </div>
+    <div
+      class="scene"
+      :style="{ backgroundImage: `url(${sceneBackground})` }"
+      role="img"
+      :aria-label="world.currentLocation.displayName"
+    />
 
     <UIPanel class="paths">
       <template #title>Доступные пути</template>
@@ -102,16 +99,13 @@ h1 {
   color: var(--ui-color-text-muted);
 }
 .scene {
-  display: grid;
-  min-height: calc(var(--ui-icon-slot-lg) * 2);
-  place-items: center;
-  border-block: 1px solid var(--ui-color-border);
-  background: var(--ui-color-surface-1);
-}
-.scene__icon {
-  width: var(--ui-icon-slot-lg);
-  height: var(--ui-icon-slot-lg);
-  box-shadow: var(--ui-glow-magic);
+  min-height: clamp(12rem, 46vw, 18rem);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-lg);
+  background-color: var(--ui-color-surface-1);
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 -5rem 5rem rgb(7 9 17 / 48%), var(--ui-shadow-panel);
 }
 .paths {
   box-shadow: none;
