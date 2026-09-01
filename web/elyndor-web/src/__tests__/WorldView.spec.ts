@@ -11,7 +11,7 @@ describe('WorldView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
   it('renders only server-provided transitions and sends their target id', async () => {
-    const store = useGameSessionStore(); store.snapshot = snapshot(); const travel = vi.spyOn(store, 'travel').mockResolvedValue(); const wrapper = mount(WorldView)
+    const store = useGameSessionStore(); store.snapshot = snapshot(); const travel = vi.spyOn(store, 'travel').mockResolvedValue(undefined); const wrapper = mount(WorldView)
     expect(wrapper.text()).toContain('Starter Town'); expect(wrapper.text()).toContain('Whispering Forest'); expect(wrapper.findAll('[data-travel]')).toHaveLength(1); expect(wrapper.find('input').exists()).toBe(false)
     expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-label')).toContain('Whispering Forest')
     await wrapper.get('[data-travel="WHISPERING_FOREST"]').trigger('click'); expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
@@ -29,7 +29,7 @@ describe('WorldView', () => {
 
   it('discovers Wolf before starting the existing combat flow', async () => {
     const session = useGameSessionStore(); session.snapshot = snapshot('WHISPERING_FOREST')
-    const combat = useCombatSessionStore(); vi.spyOn(combat, 'connect').mockResolvedValue(); vi.spyOn(combat, 'resume').mockResolvedValue()
+    const combat = useCombatSessionStore(); vi.spyOn(combat, 'connect').mockResolvedValue(undefined); vi.spyOn(combat, 'resume').mockResolvedValue(undefined)
     const startCombat = vi.spyOn(combat, 'startCombat').mockImplementation(async () => { combat.snapshot = combatSnapshot(); return true })
     const wrapper = mount(WorldView); await flushPromises()
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false); expect(startCombat).not.toHaveBeenCalled()
