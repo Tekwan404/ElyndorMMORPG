@@ -8,14 +8,41 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIPanel, UIToast } from '@/ui/components'
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
+interface ForestEncounter {
+  id: 'WOLF' | 'FOREST_BOAR' | 'GIANT_SPIDER'
+  name: string
+  level: number
+  description: string
+}
 
 const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
-const WOLF_ID = 'WOLF'
+const FOREST_ENCOUNTERS: readonly ForestEncounter[] = [
+  {
+    id: 'WOLF',
+    name: 'Волк',
+    level: 3,
+    description: 'Дикий волк вышел на тропу и внимательно следит за каждым движением.',
+  },
+  {
+    id: 'FOREST_BOAR',
+    name: 'Лесной кабан',
+    level: 2,
+    description: 'Тяжёлый кабан роет землю копытом и готовится броситься вперёд.',
+  },
+  {
+    id: 'GIANT_SPIDER',
+    name: 'Гигантский паук',
+    level: 2,
+    description: 'Из тёмных корней выполз огромный паук. Он быстрый, но заметно хрупче других зверей.',
+  },
+]
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
-const encounterOpen = ref(false)
+const selectedEncounter = ref<ForestEncounter | null>(null)
 const lastCombatResult = ref<CombatResult | null>(null)
+const lastEnemyName = ref<string | null>(null)
+let encounterCursor = -1
 
 const world = computed(() => session.snapshot?.world)
 const character = computed(() => session.snapshot?.character)
@@ -31,20 +58,23 @@ const sceneBackground = computed(() => {
 function explore(): void {
   if (!isWhisperingForest.value || combat.isActive) return
   lastCombatResult.value = null
-  encounterOpen.value = true
+  encounterCursor = (encounterCursor + 1) % FOREST_ENCOUNTERS.length
+  selectedEncounter.value = FOREST_ENCOUNTERS[encounterCursor] ?? null
 }
 
 async function startEncounterCombat(): Promise<void> {
-  if (!isWhisperingForest.value || combat.pending) return
-  const started = await combat.startCombat(WOLF_ID)
+  if (!isWhisperingForest.value || combat.pending || !selectedEncounter.value) return
+  const encounter = selectedEncounter.value
+  const started = await combat.startCombat(encounter.id)
   if (started) {
-    encounterOpen.value = false
+    lastEnemyName.value = encounter.name
+    selectedEncounter.value = null
     lastCombatResult.value = null
   }
 }
 
 function cancelEncounter(): void {
-  encounterOpen.value = false
+  selectedEncounter.value = null
 }
 
 function handleCombatLeft(): void {
@@ -55,17 +85,29 @@ async function restoreCombat(): Promise<void> {
   try {
     await combat.connect()
     await combat.resume()
+    if (combat.snapshot) {
+      lastEnemyName.value = localizedEnemyName(
+        combat.snapshot.enemy.definitionId,
+        combat.snapshot.enemy.name,
+      )
+    }
   } catch {
     // World navigation must stay usable when the realtime channel is temporarily unavailable.
   }
+}
+
+function localizedEnemyName(definitionId: string, fallback: string): string {
+  return FOREST_ENCOUNTERS.find((encounter) => encounter.id === definitionId)?.name ?? fallback
 }
 
 watch(
   currentLocationId,
   (locationId, previousLocationId) => {
     if (locationId !== previousLocationId) {
-      encounterOpen.value = false
+      selectedEncounter.value = null
       lastCombatResult.value = null
+      lastEnemyName.value = null
+      encounterCursor = -1
     }
     if (locationId === WHISPERING_FOREST_ID) {
       void restoreCombat()
@@ -78,7 +120,13 @@ watch(
   () => combat.snapshot?.status,
   (status) => {
     if (status === 'Victory' || status === 'Defeat') {
-      encounterOpen.value = false
+      selectedEncounter.value = null
+      if (combat.snapshot) {
+        lastEnemyName.value = localizedEnemyName(
+          combat.snapshot.enemy.definitionId,
+          combat.snapshot.enemy.name,
+        )
+      }
       lastCombatResult.value = status
     }
   },
@@ -108,7 +156,7 @@ watch(
       title="Победа"
       data-combat-result
     >
-      Волк повержен. Вы снова можете исследовать Шепчущий лес.
+      {{ lastEnemyName ?? 'Противник' }} повержен. Вы снова можете исследовать Шепчущий лес.
     </UIToast>
     <UIToast
       v-else-if="lastCombatResult === 'Defeat'"
@@ -116,7 +164,7 @@ watch(
       title="Поражение"
       data-combat-result
     >
-      Бой завершён. Вы вернулись в текущую локацию.
+      {{ lastEnemyName ?? 'Противник' }} оказался сильнее. Вы вернулись в текущую локацию.
     </UIToast>
     <UIToast
       v-else-if="lastCombatResult === 'Cancelled'"
@@ -127,11 +175,18 @@ watch(
       Вы покинули бой и вернулись к исследованию.
     </UIToast>
 
-    <UICard v-if="encounterOpen" class="encounter" data-world-encounter>
+    <UICard
+      v-if="selectedEncounter"
+      class="encounter"
+      data-world-encounter
+      :data-monster-id="selectedEncounter.id"
+    >
       <div class="encounter__copy">
         <p class="encounter__eyebrow">Обнаружен противник</p>
-        <h2>Волк</h2>
-        <p>Дикий зверь вышел на тропу. Бой начнётся только после вашего решения.</p>
+        <h2>{{ selectedEncounter.name }}</h2>
+        <p class="encounter__level">Уровень {{ selectedEncounter.level }}</p>
+        <p>{{ selectedEncounter.description }}</p>
+        <small>Бой начнётся только после вашего решения.</small>
       </div>
       <div class="encounter__actions">
         <UIButton
@@ -150,7 +205,7 @@ watch(
 
     <UIPanel v-else-if="isWhisperingForest" class="exploration">
       <template #title>Исследование</template>
-      <p>Осмотрите окрестности и найдите противника.</p>
+      <p>Осмотрите окрестности. В лесу уже встречаются волки, кабаны и гигантские пауки.</p>
       <UIButton
         data-explore
         variant="secondary"
@@ -161,7 +216,7 @@ watch(
       </UIButton>
     </UIPanel>
 
-    <UIPanel v-if="!encounterOpen" class="paths">
+    <UIPanel v-if="!selectedEncounter" class="paths">
       <template #title>Доступные пути</template>
       <div v-if="world.outgoingTransitions.length > 0" class="paths__list">
         <UICard v-for="location in world.outgoingTransitions" :key="location.id" class="path-card">
@@ -259,6 +314,8 @@ h1 {
   color: var(--ui-color-text-muted);
   line-height: var(--ui-line-height-normal);
 }
+.encounter__copy small { color: var(--ui-color-text-muted); }
+.encounter__level { font-weight: var(--ui-font-weight-semibold); }
 .encounter__eyebrow {
   color: var(--ui-color-warning);
   font-size: var(--ui-font-size-xs);
