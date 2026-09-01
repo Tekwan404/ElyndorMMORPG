@@ -1,10 +1,13 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Start', 'Stop', 'Status', 'Menu', 'Configure', 'ConfigureAdmin', 'ResetSecrets', 'Restart', 'Open')]
+    [ValidateSet('Start', 'Stop', 'Status', 'Menu', 'Configure', 'ConfigureAdmin', 'ResetSecrets', 'Restart', 'Dashboard', 'Game', 'Open', 'SelfTest')]
     [string]$Action = 'Start',
     [switch]$Public,
     [switch]$Open,
     [switch]$KeepFunnel,
+    [switch]$NoOpen,
+    [switch]$Development,
+    [string]$ControlDirectory,
     [ValidateRange(1, [long]::MaxValue)]
     [long]$DevelopmentTelegramUserId = 1000001,
     [long]$AdminTelegramUserId = 0
@@ -16,7 +19,11 @@ $workspace = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $appHostProject = Join-Path $workspace 'apphost\Elyndor.AppHost\Elyndor.AppHost.csproj'
 $frontendDirectory = Join-Path $workspace 'web\elyndor-web'
 $localUrl = 'http://127.0.0.1:5080'
-$controlDirectory = Join-Path $workspace '.elyndor'
+$controlDirectory = if ([string]::IsNullOrWhiteSpace($ControlDirectory)) {
+    Join-Path $workspace '.elyndor'
+} else {
+    [IO.Path]::GetFullPath($ControlDirectory)
+}
 $secretPath = Join-Path $controlDirectory 'launcher-secrets.json'
 $runtimeStatePath = Join-Path $controlDirectory 'runtime-state.json'
 
@@ -175,27 +182,42 @@ function Reset-LauncherSecrets {
     Write-Host 'No saved Telegram credentials were found.'
 }
 
-function Get-RuntimeMode {
+function Get-RuntimeState {
     if (-not (Test-Path -LiteralPath $runtimeStatePath -PathType Leaf)) {
         return $null
     }
 
     try {
-        return (Get-Content -LiteralPath $runtimeStatePath -Raw | ConvertFrom-Json).Mode
+        return Get-Content -LiteralPath $runtimeStatePath -Raw | ConvertFrom-Json
     }
     catch {
         return $null
     }
 }
 
-function Set-RuntimeMode {
-    param([Parameter(Mandatory)][ValidateSet('Local', 'Public')][string]$Mode)
-
-    Ensure-ControlDirectory
-    @{ Mode = $Mode } | ConvertTo-Json | Set-Content -LiteralPath $runtimeStatePath -Encoding UTF8
+function Get-RuntimeMode {
+    $state = Get-RuntimeState
+    if ($null -eq $state) { return $null }
+    return $state.Mode
 }
 
-function Clear-RuntimeMode {
+function Set-RuntimeState {
+    param(
+        [Parameter(Mandatory)][ValidateSet('Local', 'Public')][string]$Mode,
+        [string]$DashboardUrl,
+        [string]$PublicUrl
+    )
+
+    Ensure-ControlDirectory
+    @{
+        Mode = $Mode
+        DashboardUrl = $DashboardUrl
+        PublicUrl = $PublicUrl
+        StartedAtUtc = [DateTimeOffset]::UtcNow.ToString('O')
+    } | ConvertTo-Json | Set-Content -LiteralPath $runtimeStatePath -Encoding UTF8
+}
+
+function Clear-RuntimeState {
     if (Test-Path -LiteralPath $runtimeStatePath -PathType Leaf) {
         Remove-Item -LiteralPath $runtimeStatePath -Force
     }
@@ -348,33 +370,49 @@ function Remove-TelegramWebhook {
 
 function Show-Status {
     $aspire = Resolve-AspireCli
-
-    Write-Host "API URL:    $localUrl"
+    $application = Get-AspireApplication $aspire
+    $runtimeState = Get-RuntimeState
+    $resources = if ($null -ne $application) { Get-AspireResources $aspire } else { @() }
+    $server = $resources | Where-Object { $_.displayName -eq 'server' } | Select-Object -First 1
+    $database = $resources | Where-Object { $_.displayName -eq 'game' } | Select-Object -First 1
+    $postgres = $resources | Where-Object { $_.displayName -eq 'postgres' } | Select-Object -First 1
+    Write-Host ''
+    Write-Host '================ ELYNDOR STATUS ================' -ForegroundColor Cyan
+    Write-Host "Runtime:      $(if ($null -ne $application) { 'RUNNING' } else { 'OFFLINE' })"
+    Write-Host "Mode:         $(if ($null -ne $runtimeState) { $runtimeState.Mode } else { 'n/a' })"
+    Write-Host "Server:       $(if ($null -ne $server) { "$($server.state) / $($server.healthStatus)" } else { 'offline' })"
+    Write-Host "PostgreSQL:   $(if ($null -ne $postgres) { "$($postgres.state) / $($postgres.healthStatus)" } else { 'offline' })"
+    Write-Host "Game DB:      $(if ($null -ne $database) { "$($database.state) / $($database.healthStatus)" } else { 'offline' })"
+    Write-Host "API:          $localUrl"
     try {
         $response = Invoke-WebRequest -Uri "$localUrl/alive" -UseBasicParsing -TimeoutSec 3
-        Write-Host "API health: HTTP $($response.StatusCode) $($response.Content)"
+        Write-Host "API health:   HTTP $($response.StatusCode) $($response.Content)"
     }
     catch {
-        Write-Host 'API health: offline'
+        Write-Host 'API health:   offline'
     }
-
-    $runtimeState = if (Test-AppHostRunning $aspire) { 'running' } else { 'offline' }
-    Write-Host "Runtime:    $runtimeState"
+    if ($null -ne $server) { Write-Host "Server load:  $(Get-ProcessLoadText ([int]$server.properties.'executable.pid'))" }
+    $dockerCommand = Get-Command 'docker' -ErrorAction SilentlyContinue
+    if ($null -ne $postgres -and $null -ne $dockerCommand) {
+        Write-Host "DB load:      $(Get-ContainerLoadText $dockerCommand.Source $postgres.properties.'container.id')"
+    }
+    $dashboardUrl = if ($null -ne $application) { $application.dashboardUrl } else { $runtimeState.DashboardUrl }
+    Write-Host "Dashboard:    $(if ($dashboardUrl) { $dashboardUrl } else { 'offline' })"
     $tailscaleCommand = Get-Command 'tailscale' -ErrorAction SilentlyContinue
     if ($null -eq $tailscaleCommand) {
-        Write-Host 'Funnel:     unavailable (Tailscale is not installed)'
+        Write-Host 'Funnel:       unavailable'
         return
     }
 
     $tailscale = $tailscaleCommand.Source
     $funnelUrl = Get-FunnelUrl $tailscale
     if ($null -eq $funnelUrl) {
-        Write-Host 'Funnel:     off'
+        Write-Host 'Funnel:       off'
     }
     else {
-        Write-Host "Funnel:     $funnelUrl"
-        & $tailscale funnel status
+        Write-Host "Public game:  $funnelUrl"
     }
+    Write-Host '==================================================' -ForegroundColor Cyan
 }
 
 function Start-Elyndor {
@@ -495,7 +533,12 @@ function Start-Elyndor {
             -PublicUrl $launchUrl
     }
 
-    Set-RuntimeMode $requestedMode
+    $application = Get-AspireApplication $aspire
+    $dashboardUrl = if ($null -ne $application) { $application.dashboardUrl } else { $null }
+    Set-RuntimeState `
+        -Mode $requestedMode `
+        -DashboardUrl $dashboardUrl `
+        -PublicUrl $(if ($Public) { $launchUrl } else { $null })
 
     Write-Host ''
     Write-Host 'Elyndor is running.'
@@ -506,8 +549,9 @@ function Start-Elyndor {
         Write-Host 'Set the Public URL in @BotFather: /mybots -> Bot Settings -> Menu Button -> Configure menu button.'
     }
 
-    if ($Open) {
-        Start-Process $launchUrl | Out-Null
+    if (-not $NoOpen -and -not [string]::IsNullOrWhiteSpace($dashboardUrl)) {
+        Write-Host "Dashboard: $dashboardUrl"
+        Start-Process -FilePath $dashboardUrl | Out-Null
     }
 }
 
@@ -544,7 +588,7 @@ function Stop-Elyndor {
             '--non-interactive')
     }
 
-    Clear-RuntimeMode
+    Clear-RuntimeState
 
     Write-Host 'Elyndor runtime stopped.'
 }
@@ -606,18 +650,19 @@ function Open-Elyndor {
 function Show-ControlMenu {
     while ($true) {
         Clear-Host
-        Write-Host '========================================'
-        Write-Host '          ELYNDOR CONTROL CENTER'
-        Write-Host '========================================'
-        Write-Host '1. Start Elyndor in Telegram through Tailscale'
-        Write-Host '2. Restart Elyndor'
-        Write-Host '3. Show status and public URL'
-        Write-Host '4. Configure Telegram Bot Token'
-        Write-Host '5. Configure Telegram administrator'
-        Write-Host '6. Open the game'
-        Write-Host '7. Stop Elyndor and Tailscale Funnel'
-        Write-Host '8. Remove saved Telegram credentials'
-        Write-Host '0. Exit control center'
+        Write-Host '╔══════════════════════════════════════════╗' -ForegroundColor Cyan
+        Write-Host '║          ELYNDOR CONTROL CENTER          ║' -ForegroundColor Cyan
+        Write-Host '╚══════════════════════════════════════════╝' -ForegroundColor Cyan
+        Write-Host ' 1. Запустить игру + Tailscale + мониторинг'
+        Write-Host ' 2. Перезапустить всё'
+        Write-Host ' 3. Открыть Aspire Dashboard'
+        Write-Host ' 4. Показать статус и нагрузку'
+        Write-Host ' 5. Открыть игру в браузере'
+        Write-Host ' 6. Настроить Telegram Bot Token'
+        Write-Host ' 7. Настроить Telegram администратора'
+        Write-Host ' 8. Выключить игру и Tailscale Funnel'
+        Write-Host ' 9. Удалить сохранённые credentials'
+        Write-Host ' 0. Закрыть панель'
         Write-Host ''
         $selection = Read-Host 'Select an action'
         if ($null -eq $selection) {
@@ -627,14 +672,15 @@ function Show-ControlMenu {
 
         try {
             switch ($selection) {
-                '1' { $script:Open = $true; Invoke-PublicStart }
-                '2' { $script:Open = $true; Restart-Elyndor }
-                '3' { Show-Status }
-                '4' { Set-TelegramSecrets }
-                '5' { Set-TelegramAdminConfiguration }
-                '6' { Open-Elyndor }
-                '7' { Stop-Elyndor }
-                '8' { Reset-LauncherSecrets }
+                '1' { Invoke-PublicStart }
+                '2' { Restart-Elyndor }
+                '3' { Open-Dashboard }
+                '4' { Show-Status }
+                '5' { Open-Elyndor }
+                '6' { Set-TelegramSecrets }
+                '7' { Set-TelegramAdminConfiguration }
+                '8' { Stop-Elyndor }
+                '9' { Reset-LauncherSecrets }
                 '0' { return }
                 default { Write-Host 'Unknown menu option.' }
             }
@@ -649,8 +695,71 @@ function Show-ControlMenu {
     }
 }
 
+function Open-Dashboard {
+    $aspire = Resolve-AspireCli
+    $application = Get-AspireApplication $aspire
+    $state = Get-RuntimeState
+    $dashboardUrl = if ($null -ne $application) { $application.dashboardUrl } else { $state.DashboardUrl }
+    if ([string]::IsNullOrWhiteSpace($dashboardUrl)) {
+        throw 'Aspire Dashboard is unavailable. Start Elyndor first.'
+    }
+    Start-Process -FilePath $dashboardUrl | Out-Null
+    Write-Host "Aspire Dashboard opened: $dashboardUrl"
+}
+
+function Get-AspireApplication {
+    param([Parameter(Mandatory)][string]$AspirePath)
+    $json = (& $AspirePath ps --format Json --non-interactive 2>$null | Out-String)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) { return $null }
+    return @($json | ConvertFrom-Json) |
+        Where-Object { $_.appHostPath -eq $appHostProject } |
+        Select-Object -First 1
+}
+
+function Get-AspireResources {
+    param([Parameter(Mandatory)][string]$AspirePath)
+    $json = (& $AspirePath describe --apphost $appHostProject --format Json --non-interactive 2>$null | Out-String)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) { return @() }
+    return @(($json | ConvertFrom-Json).resources)
+}
+
+function Format-Bytes {
+    param([long]$Bytes)
+    if ($Bytes -ge 1GB) { return '{0:N1} GB' -f ($Bytes / 1GB) }
+    if ($Bytes -ge 1MB) { return '{0:N0} MB' -f ($Bytes / 1MB) }
+    return '{0:N0} KB' -f ($Bytes / 1KB)
+}
+
+function Get-ProcessLoadText {
+    param([int]$ProcessId)
+    if ($ProcessId -le 0) { return 'n/a' }
+    $process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+    if ($null -eq $process) { return 'n/a' }
+    return "RAM $(Format-Bytes $process.WorkingSet64), CPU $([Math]::Round($process.CPU, 1))s"
+}
+
+function Get-ContainerLoadText {
+    param([Parameter(Mandatory)][string]$DockerPath, [string]$ContainerId)
+    if ([string]::IsNullOrWhiteSpace($ContainerId)) { return 'n/a' }
+    $stats = (& $DockerPath stats $ContainerId --no-stream --format '{{.CPUPerc}}|{{.MemUsage}}' 2>$null | Out-String).Trim()
+    if ($LASTEXITCODE -eq 0 -and $stats) { return $stats -replace '\|', ', RAM ' }
+    return 'n/a'
+}
+
+function Invoke-LauncherSelfTest {
+    Set-RuntimeState `
+        -Mode Public `
+        -DashboardUrl 'https://localhost:17239/test' `
+        -PublicUrl 'https://elyndor.test'
+    $state = Get-RuntimeState
+    if ($state.Mode -ne 'Public' -or $state.DashboardUrl -ne 'https://localhost:17239/test') {
+        throw 'Runtime state round-trip failed.'
+    }
+    Write-Output 'Launcher self-test passed.'
+}
+
 switch ($Action) {
-    'Start' { Start-Elyndor }
+    'Start' { if ($Development) { Start-Elyndor } else { Invoke-PublicStart } }
     'Stop' { Stop-Elyndor }
     'Status' { Show-Status }
     'Menu' { Show-ControlMenu }
@@ -658,5 +767,8 @@ switch ($Action) {
     'ConfigureAdmin' { Set-TelegramAdminConfiguration }
     'ResetSecrets' { Reset-LauncherSecrets }
     'Restart' { Restart-Elyndor }
+    'Dashboard' { Open-Dashboard }
+    'Game' { Open-Elyndor }
     'Open' { Open-Elyndor }
+    'SelfTest' { Invoke-LauncherSelfTest }
 }

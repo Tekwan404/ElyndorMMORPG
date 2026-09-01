@@ -28,7 +28,8 @@ Double-click `Elyndor-Control.cmd` to manage the complete Telegram test runtime 
 
 - save or replace the Telegram Bot Token;
 - start the game through Tailscale Funnel;
-- inspect status and URLs;
+- open the local Aspire Dashboard with server logs, traces, metrics, and resource health;
+- inspect API/PostgreSQL status, CPU, memory, and URLs;
 - restart or stop Elyndor and its Funnel route.
 
 The Bot Token is entered with hidden input and stored under `.elyndor/` using
@@ -36,7 +37,7 @@ Windows DPAPI encryption for the current Windows user. The launcher generates a
 separate JWT signing key. Neither secret is committed to Git.
 
 To create or retrieve a token, open `@BotFather` in Telegram and use `/newbot` or
-`/token`. In Elyndor Control Center select `4`, paste the token, then select `1`.
+`/token`. In Elyndor Control Center select `6`, paste the token, then select `1`.
 After Funnel starts, copy the printed public HTTPS URL into:
 
 ```text
@@ -49,13 +50,11 @@ to use Funnel for the current tailnet.
 The control center intentionally exposes only the Telegram/Tailscale workflow. A
 loopback development mode still exists internally for automated tests.
 
-For automation, the original PowerShell entrypoint remains available. You can set
-runtime secrets in the current PowerShell session and run:
+For automation, the original PowerShell entrypoint remains available. `Start` and
+`Restart` always use the encrypted Telegram configuration and open monitoring:
 
 ```powershell
-$env:Authentication__SigningKey = '<random-secret-at-least-32-characters>'
-$env:Authentication__Telegram__BotToken = '<telegram-bot-token>'
-.\tools\dev\Elyndor.ps1 -Action Start -Public -Open
+.\tools\dev\Elyndor.ps1 -Action Start
 ```
 
 Public mode disables development authentication, OpenAPI, and Vite, then points
@@ -63,12 +62,17 @@ Tailscale Funnel at the single ASP.NET origin on port 5080. It prints the stable
 `https://<node>.<tailnet>.ts.net` URL to configure as the Telegram Mini App URL.
 PostgreSQL and the Aspire Dashboard are never routed through Funnel.
 
-Inspect or stop the runtime with:
+Inspect resources, reopen the monitoring board or game, and stop the runtime with:
 
 ```powershell
 .\tools\dev\Elyndor.ps1 -Action Status
+.\tools\dev\Elyndor.ps1 -Action Dashboard
+.\tools\dev\Elyndor.ps1 -Action Game
 .\tools\dev\Elyndor.ps1 -Action Stop
 ```
+
+The Dashboard URL is stored locally in `.elyndor/runtime-state.json`. Dashboard
+and PostgreSQL endpoints remain loopback-only and are never exposed by Funnel.
 
 `Stop` disables the public Funnel by default. Pass `-KeepFunnel` only when you intentionally want the HTTPS route to remain configured while the local service is offline.
 

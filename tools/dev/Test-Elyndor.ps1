@@ -10,7 +10,7 @@ $developmentTelegramUserId = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
 try {
     & $launcher -Action Stop
-    & $launcher -Action Start -DevelopmentTelegramUserId $developmentTelegramUserId
+    & $launcher -Action Start -Development -NoOpen -DevelopmentTelegramUserId $developmentTelegramUserId
 
     $previousBaseUrl = [Environment]::GetEnvironmentVariable('ELYNDOR_E2E_BASE_URL', 'Process')
     $previousRealRuntime = [Environment]::GetEnvironmentVariable('ELYNDOR_E2E_REAL', 'Process')
@@ -26,7 +26,7 @@ try {
         }
 
         & $launcher -Action Stop
-        & $launcher -Action Start -DevelopmentTelegramUserId $developmentTelegramUserId
+        & $launcher -Action Start -Development -NoOpen -DevelopmentTelegramUserId $developmentTelegramUserId
         $authentication = Invoke-RestMethod `
             -Uri 'http://127.0.0.1:5080/api/v1/auth/development' `
             -Method Post `
