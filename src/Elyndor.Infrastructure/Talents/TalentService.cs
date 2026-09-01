@@ -29,48 +29,56 @@ public sealed class TalentService(
         ExecuteAsync(() => GetOrCreateCoreAsync(accountId, cancellationToken));
 
     public Task<TalentOperationResult> LearnAsync(
-        Guid accountId, string loadoutId, string talentId, long expectedStateVersion,
+        Guid accountId, string loadoutId, string talentId, long expectedStateVersion, string mutationId,
         CancellationToken cancellationToken) => ExecuteAsync(async () =>
     {
         TalentOperationResult loaded = await GetOrCreateCoreAsync(accountId, cancellationToken, false);
         if (!loaded.IsSuccess) return loaded;
         TalentStateSnapshot snapshot = loaded.Snapshot!;
+        if (!IsValidMutationId(mutationId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidMutationId);
         if (!TalentLoadoutIds.IsValid(loadoutId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
+        if (snapshot.State.HasProcessedMutation(mutationId)) return TalentOperationResult.Success(snapshot);
         if (snapshot.State.StateVersion != expectedStateVersion) return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
         IReadOnlyDictionary<string, int> ranks = snapshot.State.GetRanks(loadoutId);
         TalentLearnResult learned = TalentRules.TryLearn(snapshot.Tree, snapshot.Character.Level, ranks, talentId);
         if (!learned.IsSuccess) return TalentOperationResult.Failure(learned.ErrorCode!);
-        snapshot.State.ReplaceRanks(loadoutId, learned.SelectedRanks, timeProvider.GetUtcNow());
+        snapshot.State.ReplaceRanks(loadoutId, learned.SelectedRanks, timeProvider.GetUtcNow(), mutationId);
         await dbContext.SaveChangesAsync(cancellationToken);
         return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
     });
 
     public Task<TalentOperationResult> SwitchAsync(
-        Guid accountId, string loadoutId, long expectedStateVersion, CancellationToken cancellationToken) =>
+        Guid accountId, string loadoutId, long expectedStateVersion, string mutationId,
+        CancellationToken cancellationToken) =>
         ExecuteAsync(async () =>
         {
             TalentOperationResult loaded = await GetOrCreateCoreAsync(accountId, cancellationToken, false);
             if (!loaded.IsSuccess) return loaded;
             TalentStateSnapshot snapshot = loaded.Snapshot!;
+            if (!IsValidMutationId(mutationId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidMutationId);
             if (!TalentLoadoutIds.IsValid(loadoutId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
+            if (snapshot.State.HasProcessedMutation(mutationId)) return TalentOperationResult.Success(snapshot);
             if (snapshot.State.StateVersion != expectedStateVersion) return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
             if (TalentRules.ValidateBuild(snapshot.Tree, snapshot.Character.Level, snapshot.State.GetRanks(loadoutId)).Count > 0)
                 return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
-            snapshot.State.SwitchLoadout(loadoutId, timeProvider.GetUtcNow());
+            snapshot.State.SwitchLoadout(loadoutId, timeProvider.GetUtcNow(), mutationId);
             await dbContext.SaveChangesAsync(cancellationToken);
             return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
         });
 
     public Task<TalentOperationResult> ResetAsync(
-        Guid accountId, string loadoutId, long expectedStateVersion, CancellationToken cancellationToken) =>
+        Guid accountId, string loadoutId, long expectedStateVersion, string mutationId,
+        CancellationToken cancellationToken) =>
         ExecuteAsync(async () =>
         {
             TalentOperationResult loaded = await GetOrCreateCoreAsync(accountId, cancellationToken, false);
             if (!loaded.IsSuccess) return loaded;
             TalentStateSnapshot snapshot = loaded.Snapshot!;
+            if (!IsValidMutationId(mutationId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidMutationId);
             if (!TalentLoadoutIds.IsValid(loadoutId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
+            if (snapshot.State.HasProcessedMutation(mutationId)) return TalentOperationResult.Success(snapshot);
             if (snapshot.State.StateVersion != expectedStateVersion) return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
-            snapshot.State.Reset(loadoutId, timeProvider.GetUtcNow());
+            snapshot.State.Reset(loadoutId, timeProvider.GetUtcNow(), mutationId);
             await dbContext.SaveChangesAsync(cancellationToken);
             return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
         });
@@ -82,9 +90,17 @@ public sealed class TalentService(
         {
             dbContext.ChangeTracker.Clear();
             await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
-            TalentOperationResult result = await operation();
-            await transaction.CommitAsync();
-            return result;
+            try
+            {
+                TalentOperationResult result = await operation();
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
+            }
         });
     }
 
@@ -110,4 +126,7 @@ public sealed class TalentService(
     private static TalentStateSnapshot ToSnapshot(
         Character character, TalentTreeDefinition tree, CharacterTalentState state) =>
         new(character, tree, state, state.GetRanks(TalentLoadoutIds.Loadout1), state.GetRanks(TalentLoadoutIds.Loadout2));
+
+    private static bool IsValidMutationId(string mutationId) =>
+        !string.IsNullOrWhiteSpace(mutationId) && mutationId.Length <= 64;
 }

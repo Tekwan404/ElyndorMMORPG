@@ -453,6 +453,15 @@ RISK
 - supported modifiers integrate through typed hooks rather than scattered talent-id switches;
 - mobile Talent UI renders real server/content state.
 
+## Verified implementation status — 2026-09-01
+
+- Phase 3C is implemented as the bounded Talent Engine slice.
+- All 96 Warrior nodes have a typed supported modifier or an explicit deferred runtime owner.
+- Exactly two PostgreSQL-backed loadouts are retained; mutations use optimistic concurrency and retry identifiers.
+- Supported stat, resource, damage, effect-duration, ability-cost, cooldown, penetration, unlock, and AoE hooks use shared pipelines.
+- Berserker artwork is content-driven and shared by active talent nodes and their unlocked ability presentation.
+- Party, CombatSession event, Monster, Boss/Elite, equipment, XP, and loot integrations remain deferred to their owning phases.
+
 ---
 
 # Phase 4 — CombatSession, Monsters, Monster AI & Whispering Forest

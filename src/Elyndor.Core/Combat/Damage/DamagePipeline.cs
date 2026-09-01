@@ -16,7 +16,8 @@ public sealed record DamageRequest(
     bool CanCrit = true,
     bool IgnoreShields = false,
     decimal DamageMultiplier = 1,
-    decimal MinimumDamage = 1);
+    decimal MinimumDamage = 1,
+    decimal ArmorPenetrationBonus = 0);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -73,11 +74,33 @@ public static class DamagePipeline
             return Empty(request, DamageAvoidance.Dodge);
         }
 
+        decimal criticalChance = EffectEngine.CalculateStat(
+            request.Source,
+            EffectStat.CriticalChance,
+            request.Source.Stats.CriticalChance,
+            occurredAtUtc);
         bool critical = request.CanCrit
-                        && random.NextUnit() < Math.Clamp(request.Source.Stats.CriticalChance / 100m, 0, 1);
+                        && random.NextUnit() < Math.Clamp(criticalChance / 100m, 0, 1);
         decimal raw = request.BaseAmount * (critical ? 1 + request.Source.Stats.CriticalDamage : 1);
-        decimal afterMitigation = Mitigate(raw, request.Type, request.Source.Stats, request.Target.Stats);
-        decimal modified = afterMitigation * Math.Max(0, request.DamageMultiplier);
+        decimal afterMitigation = Mitigate(request, raw);
+        decimal incomingMultiplier = EffectEngine.CalculateStat(
+            request.Target,
+            EffectStat.IncomingDamageMultiplier,
+            1,
+            occurredAtUtc);
+        decimal talentDamageMultiplier = 1 + request.Source.TalentModifiers.DamageDealtPercent / 100m;
+        decimal talentReduction = request.Type switch
+        {
+            DamageType.Physical => request.Target.TalentModifiers.IncomingPhysicalDamageReductionPercent,
+            DamageType.Magical => request.Target.TalentModifiers.IncomingMagicalDamageReductionPercent,
+            _ => 0
+        };
+        decimal talentIncomingMultiplier = Math.Max(0, 1 - talentReduction / 100m);
+        decimal modified = afterMitigation
+            * Math.Max(0, request.DamageMultiplier)
+            * incomingMultiplier
+            * Math.Max(0, talentDamageMultiplier)
+            * talentIncomingMultiplier;
         decimal minimumApplied = modified > 0 ? Math.Max(modified, Math.Max(0, request.MinimumDamage)) : 0;
         decimal rounded = decimal.Round(minimumApplied, 0, MidpointRounding.AwayFromZero);
         decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, rounded);
@@ -101,6 +124,14 @@ public static class DamagePipeline
         }
         request.Target.ApplyDamage(hpDamage);
 
+        decimal vampirismHealing = hpDamage
+            * Math.Max(0, request.Source.TalentModifiers.VampirismPercent)
+            / 100m;
+        if (vampirismHealing > 0 && request.Source.ActorId != request.Target.ActorId)
+        {
+            request.Source.ApplyHealing(vampirismHealing);
+        }
+
         List<CombatEvent> events = [];
         if (absorbed > 0)
         {
@@ -110,6 +141,14 @@ public static class DamagePipeline
 
         events.Add(new CombatEvent(CombatEventType.DamageApplied, occurredAtUtc,
             request.Target.ActorId, Amount: hpDamage));
+        if (vampirismHealing > 0)
+        {
+            events.Add(new CombatEvent(
+                CombatEventType.HealingApplied,
+                occurredAtUtc,
+                request.Source.ActorId,
+                Amount: vampirismHealing));
+        }
         if (request.Target.IsDead)
         {
             events.Add(new CombatEvent(CombatEventType.ActorDied, occurredAtUtc, request.Target.ActorId));
@@ -121,19 +160,19 @@ public static class DamagePipeline
             absorbed, hpDamage, lethal, preventionTriggered, request.Target.CurrentHp, events);
     }
 
-    private static decimal Mitigate(
-        decimal damage,
-        DamageType type,
-        CombatStats source,
-        CombatStats target)
+    private static decimal Mitigate(DamageRequest request, decimal damage)
     {
-        if (type == DamageType.True)
+        if (request.Type == DamageType.True)
         {
             return damage;
         }
 
-        decimal defense = type == DamageType.Physical ? target.Armor : target.MagicResistance;
-        decimal penetration = type == DamageType.Physical ? source.ArmorPenetration : source.MagicPenetration;
+        decimal defense = request.Type == DamageType.Physical
+            ? request.Target.Stats.Armor
+            : request.Target.Stats.MagicResistance;
+        decimal penetration = request.Type == DamageType.Physical
+            ? request.Source.Stats.ArmorPenetration + request.ArmorPenetrationBonus
+            : request.Source.Stats.MagicPenetration;
         decimal effectiveDefense = Math.Max(0, defense * (1 - Math.Clamp(penetration, 0, 1)));
         return damage * MitigationConstant / (MitigationConstant + effectiveDefense);
     }

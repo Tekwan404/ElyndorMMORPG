@@ -23,7 +23,13 @@ public enum EffectStackPolicy
     StrongestWins
 }
 
-public enum EffectStat { AttackPower }
+public enum EffectStat
+{
+    AttackPower,
+    CriticalChance,
+    AttackSpeed,
+    IncomingDamageMultiplier
+}
 public enum EffectModifierMode { Flat, Percent, Multiplicative }
 
 public sealed record EffectDefinition(

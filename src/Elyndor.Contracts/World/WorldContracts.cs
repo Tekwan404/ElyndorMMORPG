@@ -15,6 +15,7 @@ public sealed record BootstrapCharacterResponse(
     int Level,
     string PrimaryAttribute,
     string ClassProfileVersion,
+    IReadOnlyList<string> KnownAbilityIds,
     CharacterStatsResponse Stats,
     CharacterVitalsResponse Vitals);
 

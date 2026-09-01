@@ -33,7 +33,7 @@ public static class TalentEndpoints
     {
         return TryGetAccountId(user, out Guid accountId)
             ? ToResult(await service.LearnAsync(accountId, request.LoadoutId, request.TalentId,
-                request.ExpectedStateVersion, cancellationToken), context)
+                request.ExpectedStateVersion, request.MutationId, cancellationToken), context)
             : Results.Unauthorized();
     }
 
@@ -43,7 +43,7 @@ public static class TalentEndpoints
     {
         return TryGetAccountId(user, out Guid accountId)
             ? ToResult(await service.SwitchAsync(accountId, request.LoadoutId,
-                request.ExpectedStateVersion, cancellationToken), context)
+                request.ExpectedStateVersion, request.MutationId, cancellationToken), context)
             : Results.Unauthorized();
     }
 
@@ -53,7 +53,7 @@ public static class TalentEndpoints
     {
         return TryGetAccountId(user, out Guid accountId)
             ? ToResult(await service.ResetAsync(accountId, request.LoadoutId,
-                request.ExpectedStateVersion, cancellationToken), context)
+                request.ExpectedStateVersion, request.MutationId, cancellationToken), context)
             : Results.Unauthorized();
     }
 
@@ -88,7 +88,12 @@ public static class TalentEndpoints
                 node.EnglishName, node.MaxRank,
                 node.Prerequisites.Select(item => new TalentPrerequisiteResponse(
                     item.TalentId, item.RequiredRank)).ToArray(), node.Description,
-                node.RequiredLevel)).ToArray(),
+                node.RequiredLevel,
+                node.IconId,
+                RuntimeStatus(node),
+                node.Modifiers?.FirstOrDefault(modifier =>
+                    modifier.Type == TalentModifierType.AbilityModifier
+                    && modifier.Key == TalentModifierKeys.UnlockAbility)?.TargetId)).ToArray(),
             [
                 new TalentLoadoutResponse(TalentLoadoutIds.Loadout1, snapshot.Loadout1Ranks,
                     snapshot.Loadout1Ranks.Values.Sum()),
@@ -100,4 +105,18 @@ public static class TalentEndpoints
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
         && accountId != Guid.Empty;
+
+    private static string RuntimeStatus(TalentDefinition node)
+    {
+        bool supported = node.Modifiers?.Any(modifier =>
+            modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported) == true;
+        bool deferred = node.Modifiers?.Any(modifier =>
+            modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred) == true;
+        return (supported, deferred) switch
+        {
+            (true, true) => "PARTIAL",
+            (true, false) => "SUPPORTED",
+            _ => "DEFERRED"
+        };
+    }
 }

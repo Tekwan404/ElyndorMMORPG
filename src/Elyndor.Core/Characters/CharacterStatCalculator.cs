@@ -31,30 +31,40 @@ public sealed class CharacterStatCalculator(
             beforeTalents.Stamina * sources.TalentPercentages.Stamina / 100);
         PrimaryStats primary = Add(beforeTalents, sources.Talents, talentPercentages, sources.Effects);
 
+        decimal maxHp = formula.MaxHpBase + (primary.Stamina * formula.MaxHpPerStamina);
+        decimal attackPower = (primary.Strength * formula.AttackPowerPerStrength)
+            + (primary.Agility * formula.AttackPowerPerAgility);
+        decimal armor = (primary.Stamina * formula.ArmorPerStamina)
+            + (primary.Strength * formula.ArmorPerStrength);
+        decimal magicResistance = (primary.Stamina * formula.MagicResistancePerStamina)
+            + (primary.Intellect * formula.MagicResistancePerIntellect);
+        TalentStatModifiers talent = sources.TalentDerived;
+
         return new CharacterStats(
             primary.Strength,
             primary.Agility,
             primary.Intellect,
             primary.Stamina,
-            formula.MaxHpBase + (primary.Stamina * formula.MaxHpPerStamina),
-            (primary.Strength * formula.AttackPowerPerStrength)
-                + (primary.Agility * formula.AttackPowerPerAgility),
+            ApplyPercent(maxHp, talent.MaxHpPercent),
+            ApplyPercent(attackPower, talent.AttackPowerPercent),
             primary.Intellect * formula.SpellPowerPerIntellect,
             decimal.Clamp(
                 formula.CriticalChanceBase
-                    + (primary.Agility * formula.CriticalChancePerAgility),
+                    + (primary.Agility * formula.CriticalChancePerAgility)
+                    + talent.CriticalChancePercent,
                 0,
                 100),
-            formula.CriticalDamageBase,
-            formula.AccuracyBase,
+            formula.CriticalDamageBase + talent.CriticalDamagePercent,
+            decimal.Clamp(formula.AccuracyBase + talent.AccuracyPercent, 0, 100),
+            talent.ArmorPenetrationPercent,
             0,
-            0,
-            formula.AttackSpeedBase,
-            (primary.Stamina * formula.ArmorPerStamina)
-                + (primary.Strength * formula.ArmorPerStrength),
-            (primary.Stamina * formula.MagicResistancePerStamina)
-                + (primary.Intellect * formula.MagicResistancePerIntellect),
-            decimal.Clamp(primary.Agility * formula.DodgePerAgility, 0, 100));
+            ApplyPercent(formula.AttackSpeedBase, talent.AttackSpeedPercent),
+            ApplyPercent(armor, talent.ArmorPercent),
+            ApplyPercent(magicResistance, talent.MagicResistancePercent),
+            decimal.Clamp(
+                primary.Agility * formula.DodgePerAgility + talent.DodgePercent,
+                0,
+                100));
     }
 
     private static PrimaryStats Add(PrimaryStats first, params PrimaryStats[] sources) =>
@@ -65,6 +75,9 @@ public sealed class CharacterStatCalculator(
                 total.Agility + source.Agility,
                 total.Intellect + source.Intellect,
                 total.Stamina + source.Stamina));
+
+    private static decimal ApplyPercent(decimal value, decimal percentage) =>
+        value * (1 + percentage / 100m);
 }
 
 public sealed record CharacterStatInputs(
@@ -77,4 +90,6 @@ public sealed record CharacterStatInputs(
 
     public static CharacterStatInputs Empty { get; } =
         new(EmptyStats, EmptyStats, EmptyStats, TalentPrimaryStatPercentages.Empty);
+
+    public TalentStatModifiers TalentDerived { get; init; } = new();
 }

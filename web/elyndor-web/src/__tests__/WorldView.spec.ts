@@ -62,6 +62,7 @@ function snapshot() {
       level: 1,
       primaryAttribute: 'AGILITY' as const,
       classProfileVersion: '0.2.0',
+      knownAbilityIds: [],
       stats: {
         strength: 5,
         agility: 9,

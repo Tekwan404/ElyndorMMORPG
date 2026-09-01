@@ -205,6 +205,56 @@ public sealed class GameContentPackageValidatorTests
         Assert.Contains(errors, error => error.Code == "CIRCULAR_TALENT_PREREQUISITE");
     }
 
+    [Fact]
+    public void ValidateRejectsSupportedTalentAbilityReferenceThatDoesNotExist()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "", 1)],
+                    [
+                        new TalentDefinition(
+                            "B-1-1", "BERSERKER", 1, 0, "Удар", "Strike", 1, [], "",
+                            Modifiers:
+                            [
+                                new TalentModifierDefinition(
+                                    TalentModifierType.AbilityModifier,
+                                    TalentModifierKeys.UnlockAbility,
+                                    [1],
+                                    "MISSING_ABILITY")
+                            ],
+                            IconId: "BERSERKER_STRIKE")
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "MISSING_TALENT_ABILITY_REFERENCE");
+    }
+
+    [Fact]
+    public void ValidateRejectsDescriptionOnlyTalentNode()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "", 1)],
+                    [new TalentDefinition("B-1-1", "BERSERKER", 1, 0, "Удар", "Strike", 1, [], "")])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "MISSING_TALENT_MODIFIER");
+    }
+
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>
         new("0.1.0", "0.1.0", PublishedAtUtc, definitions, []);
 

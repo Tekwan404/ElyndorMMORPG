@@ -12,7 +12,8 @@ const snapshot = {
   branches: [{ id: 'GUARDIAN', name: 'Страж', fantasy: 'Защита', nodeCount: 1 }],
   nodes: [{ id: 'G-1-1', branchId: 'GUARDIAN', tier: 1, requiredSpentPoints: 0,
     name: 'Железная Кожа', englishName: 'Iron Skin', maxRank: 2, prerequisites: [],
-    description: 'Armor повышен.', requiredLevel: null }],
+    description: 'Armor повышен.', requiredLevel: null, iconId: null,
+    runtimeStatus: 'SUPPORTED', unlockedAbilityId: null }],
   loadouts: [
     { id: 'LOADOUT_1', selectedRanks: {}, spentPoints: 0 },
     { id: 'LOADOUT_2', selectedRanks: {}, spentPoints: 0 },
@@ -40,8 +41,13 @@ describe('WarriorTalentTreeView', () => {
 
     expect(apiClient.request).toHaveBeenLastCalledWith('/api/v1/talents/learn', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ talentId: 'G-1-1', loadoutId: 'LOADOUT_1', expectedStateVersion: 1 }),
+      body: expect.stringContaining('"mutationId"'),
     }))
+    const calls = vi.mocked(apiClient.request).mock.calls
+    const request = calls[calls.length - 1]?.[1]
+    expect(JSON.parse(String(request?.body))).toMatchObject({
+      talentId: 'G-1-1', loadoutId: 'LOADOUT_1', expectedStateVersion: 1,
+    })
     expect(document.body.textContent).toContain('Ранг 1/2')
     wrapper.unmount()
   })

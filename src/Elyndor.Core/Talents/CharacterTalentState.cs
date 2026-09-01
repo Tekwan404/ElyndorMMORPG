@@ -43,6 +43,7 @@ public sealed class CharacterTalentState
     public int TalentVersion { get; private set; }
     public long StateVersion { get; private set; }
     public DateTimeOffset LastChangedAtUtc { get; private set; }
+    public string? LastMutationId { get; private set; }
 
     public IReadOnlyDictionary<string, int> GetRanks(string loadoutId) =>
         Deserialize(GetJson(loadoutId));
@@ -50,7 +51,8 @@ public sealed class CharacterTalentState
     public void ReplaceRanks(
         string loadoutId,
         IReadOnlyDictionary<string, int> selectedRanks,
-        DateTimeOffset changedAtUtc)
+        DateTimeOffset changedAtUtc,
+        string? mutationId = null)
     {
         EnsureUtc(changedAtUtc);
         string json = JsonSerializer.Serialize(
@@ -60,19 +62,29 @@ public sealed class CharacterTalentState
         if (loadoutId == TalentLoadoutIds.Loadout1) Loadout1RanksJson = json;
         else if (loadoutId == TalentLoadoutIds.Loadout2) Loadout2RanksJson = json;
         else throw new ArgumentOutOfRangeException(nameof(loadoutId));
-        Touch(changedAtUtc);
+        Touch(changedAtUtc, mutationId);
     }
 
-    public void SwitchLoadout(string loadoutId, DateTimeOffset changedAtUtc)
+    public void SwitchLoadout(
+        string loadoutId,
+        DateTimeOffset changedAtUtc,
+        string? mutationId = null)
     {
         EnsureUtc(changedAtUtc);
         if (!TalentLoadoutIds.IsValid(loadoutId)) throw new ArgumentOutOfRangeException(nameof(loadoutId));
         ActiveLoadoutId = loadoutId;
-        Touch(changedAtUtc);
+        Touch(changedAtUtc, mutationId);
     }
 
-    public void Reset(string loadoutId, DateTimeOffset changedAtUtc) =>
-        ReplaceRanks(loadoutId, new Dictionary<string, int>(), changedAtUtc);
+    public void Reset(
+        string loadoutId,
+        DateTimeOffset changedAtUtc,
+        string? mutationId = null) =>
+        ReplaceRanks(loadoutId, new Dictionary<string, int>(), changedAtUtc, mutationId);
+
+    public bool HasProcessedMutation(string mutationId) =>
+        !string.IsNullOrWhiteSpace(mutationId)
+        && string.Equals(LastMutationId, mutationId, StringComparison.Ordinal);
 
     private string GetJson(string loadoutId) => loadoutId switch
     {
@@ -85,10 +97,11 @@ public sealed class CharacterTalentState
         JsonSerializer.Deserialize<Dictionary<string, int>>(json, JsonOptions)
         ?? new Dictionary<string, int>(StringComparer.Ordinal);
 
-    private void Touch(DateTimeOffset changedAtUtc)
+    private void Touch(DateTimeOffset changedAtUtc, string? mutationId)
     {
         StateVersion++;
         LastChangedAtUtc = changedAtUtc;
+        if (!string.IsNullOrWhiteSpace(mutationId)) LastMutationId = mutationId;
     }
 
     private static void EnsureUtc(DateTimeOffset value)

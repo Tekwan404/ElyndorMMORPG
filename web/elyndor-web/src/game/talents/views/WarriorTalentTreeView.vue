@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { TalentBranchId, TalentLoadoutId, TalentNode, TalentSnapshot } from '@/api/contracts'
+import { resolveTalentArt } from '@/game/talents/talentArt'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
@@ -19,6 +20,7 @@ const selectedTalent = ref<TalentNode | null>(null)
 const loading = ref(true)
 const pending = ref(false)
 const errorCode = ref<string | null>(null)
+const retryMutationIds = new Map<string, string>()
 
 const warriorTalentBranches = computed(() => snapshot.value?.branches ?? [])
 const warriorTalents = computed(() => snapshot.value?.nodes ?? [])
@@ -104,6 +106,15 @@ function iconFor(talent: TalentNode): IconConfig {
   }
 }
 
+function artFor(talent: TalentNode): string | null {
+  return resolveTalentArt(talent.iconId)
+}
+
+function createMutationId(): string {
+  return globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+}
+
 function nodePoint(talentId: string): { x: number; y: number } {
   const talent = branchTalents.value.find((item) => item.id === talentId)!
   const row = talentsInTier(talent.tier)
@@ -139,17 +150,25 @@ function applySnapshot(next: TalentSnapshot): void {
   }
 }
 
-async function mutate(path: string, body: object): Promise<void> {
+async function mutate(path: string, mutationKey: string, body: object): Promise<void> {
   if (!snapshot.value || pending.value) return
   pending.value = true
   errorCode.value = null
+  const mutationId = retryMutationIds.get(mutationKey) ?? createMutationId()
+  retryMutationIds.set(mutationKey, mutationId)
   try {
     applySnapshot(await apiClient.request<TalentSnapshot>(path, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, mutationId }),
     }))
+    retryMutationIds.delete(mutationKey)
   } catch (error) {
     errorCode.value = error instanceof ApiRequestError ? error.code : 'network_unavailable'
-    if (error instanceof ApiRequestError && error.code === 'talent_state_conflict') await loadTalents()
+    if (error instanceof ApiRequestError && error.code === 'talent_state_conflict') {
+      retryMutationIds.delete(mutationKey)
+      await loadTalents()
+    }
   } finally {
     pending.value = false
   }
@@ -157,7 +176,7 @@ async function mutate(path: string, body: object): Promise<void> {
 
 async function learnSelected(): Promise<void> {
   if (!selectedTalent.value || !snapshot.value) return
-  await mutate('/api/v1/talents/learn', {
+  await mutate('/api/v1/talents/learn', `learn:${activeLoadoutId.value}:${selectedTalent.value.id}`, {
     talentId: selectedTalent.value.id, loadoutId: activeLoadoutId.value,
     expectedStateVersion: snapshot.value.stateVersion,
   })
@@ -165,12 +184,15 @@ async function learnSelected(): Promise<void> {
 
 async function switchLoadout(loadoutId: TalentLoadoutId): Promise<void> {
   if (!snapshot.value || loadoutId === snapshot.value.activeLoadoutId) return
-  await mutate('/api/v1/talents/switch', { loadoutId, expectedStateVersion: snapshot.value.stateVersion })
+  await mutate('/api/v1/talents/switch', `switch:${loadoutId}`, {
+    loadoutId,
+    expectedStateVersion: snapshot.value.stateVersion,
+  })
 }
 
 async function resetLoadout(): Promise<void> {
   if (!snapshot.value) return
-  await mutate('/api/v1/talents/reset', {
+  await mutate('/api/v1/talents/reset', `reset:${activeLoadoutId.value}`, {
     loadoutId: activeLoadoutId.value, expectedStateVersion: snapshot.value.stateVersion,
   })
 }
@@ -279,7 +301,15 @@ onMounted(loadTalents)
             :aria-label="`${talent.name}, ${rankFor(talent.id)} из ${talent.maxRank}`"
             @click="selectedTalent = talent"
           >
-            <IconGenerator :config="iconFor(talent)" :label="talent.name" />
+            <img
+              v-if="artFor(talent)"
+              class="talent-node__art"
+              :src="artFor(talent)!"
+              :alt="talent.name"
+              loading="lazy"
+              decoding="async"
+            />
+            <IconGenerator v-else :config="iconFor(talent)" :label="talent.name" />
             <span>{{ rankFor(talent.id) }}/{{ talent.maxRank }}</span>
           </button>
         </div>
@@ -298,13 +328,26 @@ onMounted(loadTalents)
     >
       <article v-if="selectedTalent" class="talent-detail" data-talent-detail>
         <div class="talent-detail__identity">
-          <IconGenerator :config="iconFor(selectedTalent)" :label="selectedTalent.name" />
+          <img
+            v-if="artFor(selectedTalent)"
+            class="talent-detail__art"
+            :src="artFor(selectedTalent)!"
+            :alt="selectedTalent.name"
+            decoding="async"
+          />
+          <IconGenerator v-else :config="iconFor(selectedTalent)" :label="selectedTalent.name" />
           <div>
             <p>{{ selectedTalent.englishName }}</p>
             <strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong>
           </div>
         </div>
         <p class="talent-detail__state">{{ stateLabel(stateFor(selectedTalent)) }}</p>
+        <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">
+          Открывает способность · {{ selectedTalent.unlockedAbilityId }}
+        </p>
+        <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">
+          Эффект подготовлен и станет активен вместе с боевой системой своей фазы.
+        </p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
           <div><dt>Tier</dt><dd>{{ selectedTalent.tier }}</dd></div>
@@ -486,6 +529,12 @@ onMounted(loadTalents)
   box-shadow: 0 0 0 4px rgb(8 12 22 / 82%);
 }
 .talent-node :deep(.icon-generator) { width: 100%; height: 100%; }
+.talent-node__art {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .talent-node > span {
   position: absolute;
   right: -0.35rem;
@@ -514,8 +563,19 @@ onMounted(loadTalents)
 .talents__footer small { color: var(--ui-color-text-muted); }
 .talent-detail__identity { display: flex; align-items: center; gap: var(--ui-space-3); }
 .talent-detail__identity :deep(.icon-generator) { width: var(--ui-icon-slot-lg); height: var(--ui-icon-slot-lg); }
+.talent-detail__art {
+  width: var(--ui-icon-slot-lg);
+  height: var(--ui-icon-slot-lg);
+  flex: 0 0 auto;
+  border: 1px solid var(--branch-accent);
+  border-radius: var(--ui-radius-md);
+  object-fit: cover;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--branch-accent) 32%, transparent);
+}
 .talent-detail__identity p { margin: 0; color: var(--ui-color-text-muted); }
 .talent-detail__state { color: var(--ui-color-primary); font-weight: var(--ui-font-weight-semibold); }
+.talent-detail__ability { color: var(--branch-accent); font-weight: var(--ui-font-weight-semibold); }
+.talent-detail__deferred { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-sm); }
 .talent-detail__description { white-space: pre-line; }
 .talent-detail dl { display: grid; gap: var(--ui-space-2); }
 .talent-detail dl div { display: flex; justify-content: space-between; gap: var(--ui-space-4); }

@@ -28,6 +28,7 @@ public sealed class CharacterTalentStateConfiguration : IEntityTypeConfiguration
         builder.Property(state => state.TalentVersion).IsRequired();
         builder.Property(state => state.StateVersion).IsConcurrencyToken().IsRequired();
         builder.Property(state => state.LastChangedAtUtc).IsRequired();
+        builder.Property(state => state.LastMutationId).HasMaxLength(64);
         builder.HasOne<Character>().WithOne().HasForeignKey<CharacterTalentState>(state => state.CharacterId)
             .OnDelete(DeleteBehavior.Cascade).HasConstraintName("fk_character_talent_states_characters_character_id");
     }

@@ -2,8 +2,6 @@ import bastion from './abilities/warrior/bastion.jpg'
 import provoke from './abilities/warrior/provoke.jpg'
 import shieldBash from './abilities/warrior/shield-bash.jpg'
 import strike from './abilities/warrior/strike.jpg'
-import whirlwind from './abilities/warrior/whirlwind.jpg'
-import wildStrike from './abilities/warrior/wild-strike.jpg'
 import warrior from './characters/warrior.png'
 import heroNavigation from './navigation/hero.png'
 import locationNavigation from './navigation/location.png'
@@ -24,5 +22,5 @@ export const gameArt = {
     quests: questsNavigation,
     menu: menuNavigation,
   },
-  warriorAbilities: { strike, shieldBash, bastion, provoke, whirlwind, wildStrike },
+  warriorAbilities: { strike, shieldBash, bastion, provoke },
 } as const

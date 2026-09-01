@@ -94,6 +94,7 @@ public static class WorldEndpoints
                     snapshot.Character.Level,
                     snapshot.Character.PrimaryAttribute,
                     snapshot.Character.ClassProfileVersion,
+                    snapshot.Character.KnownAbilityIds,
                     new CharacterStatsResponse(
                         snapshot.Character.Stats.Strength,
                         snapshot.Character.Stats.Agility,

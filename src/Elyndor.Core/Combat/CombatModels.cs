@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat;
 
@@ -26,7 +27,8 @@ public sealed class CombatActorState
         decimal currentHp,
         decimal maxResource,
         decimal currentResource,
-        CombatStats stats)
+        CombatStats stats,
+        TalentCombatModifiers? talentModifiers = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHp);
         ArgumentOutOfRangeException.ThrowIfNegative(maxResource);
@@ -36,6 +38,7 @@ public sealed class CombatActorState
         MaxResource = maxResource;
         CurrentResource = Math.Clamp(currentResource, 0, maxResource);
         Stats = stats;
+        TalentModifiers = talentModifiers ?? new TalentCombatModifiers();
     }
 
     public Guid ActorId { get; }
@@ -44,6 +47,7 @@ public sealed class CombatActorState
     public decimal MaxResource { get; }
     public decimal CurrentResource { get; private set; }
     public CombatStats Stats { get; }
+    public TalentCombatModifiers TalentModifiers { get; }
     public List<ActiveEffect> ActiveEffects { get; } = [];
     public bool IsDead => CurrentHp <= 0;
 
@@ -51,8 +55,10 @@ public sealed class CombatActorState
         decimal maxHp,
         decimal maxResource = 100,
         decimal? resource = null,
-        CombatStats? stats = null) =>
-        new(Guid.NewGuid(), maxHp, maxHp, maxResource, resource ?? maxResource, stats ?? CombatStats.Default);
+        CombatStats? stats = null,
+        TalentCombatModifiers? talentModifiers = null) =>
+        new(Guid.NewGuid(), maxHp, maxHp, maxResource, resource ?? maxResource,
+            stats ?? CombatStats.Default, talentModifiers);
 
     public void SetCurrentHp(decimal value) => CurrentHp = Math.Clamp(value, 0, MaxHp);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));

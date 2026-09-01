@@ -26,6 +26,7 @@ export interface CharacterSnapshot {
   level: number
   primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
   classProfileVersion: string
+  knownAbilityIds: string[]
   stats: CharacterStats
   vitals: CharacterVitals
 }
@@ -91,6 +92,8 @@ export interface TalentNode {
   id: string; branchId: TalentBranchId; tier: number; requiredSpentPoints: number
   name: string; englishName: string; maxRank: number
   prerequisites: TalentPrerequisite[]; description: string; requiredLevel: number | null
+  iconId: string | null; runtimeStatus: 'SUPPORTED' | 'PARTIAL' | 'DEFERRED'
+  unlockedAbilityId: string | null
 }
 export interface TalentBranch {
   id: TalentBranchId; name: string; fantasy: string; nodeCount: number

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { CharacterStats } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIHealthBar, UIPanel } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -11,12 +12,13 @@ import type { IconConfig } from '@/ui/icons/icon.types'
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const warriorAbilities = [
-  { id: 'strike', name: 'Удар', image: gameArt.warriorAbilities.strike, unlockLevel: 1 },
-  { id: 'shield-bash', name: 'Удар щитом', image: gameArt.warriorAbilities.shieldBash, unlockLevel: 3 },
-  { id: 'bastion', name: 'Бастион', image: gameArt.warriorAbilities.bastion, talent: true },
-  { id: 'provoke', name: 'Провокация', image: gameArt.warriorAbilities.provoke, unlockLevel: 1 },
-  { id: 'whirlwind', name: 'Вихрь', image: gameArt.warriorAbilities.whirlwind, talent: true },
-  { id: 'wild-strike', name: 'Дикий удар', image: gameArt.warriorAbilities.wildStrike, talent: true },
+  { id: 'STRIKE', name: 'Удар', image: gameArt.warriorAbilities.strike, unlockLevel: 1 },
+  { id: 'SHIELD_BASH', name: 'Удар щитом', image: gameArt.warriorAbilities.shieldBash, unlockLevel: 3 },
+  { id: 'BASTION', name: 'Бастион', image: gameArt.warriorAbilities.bastion, talent: true },
+  { id: 'PROVOKE', name: 'Провокация', image: gameArt.warriorAbilities.provoke, unlockLevel: 1 },
+  { id: 'WHIRLWIND', name: 'Вихрь', image: resolveAbilityArt('WHIRLWIND')!, talent: true },
+  { id: 'WILD_STRIKE', name: 'Дикий удар', image: resolveAbilityArt('WILD_STRIKE')!, talent: true },
+  { id: 'BERSERK', name: 'Берсерк', image: resolveAbilityArt('BERSERK')!, talent: true },
 ] as const
 
 type StatRow = { id: keyof CharacterStats; label: string; percent?: boolean; multiplier?: boolean }
@@ -92,7 +94,9 @@ function isPrimary(id: keyof CharacterStats): boolean {
 }
 
 function isAbilityLocked(ability: (typeof warriorAbilities)[number]): boolean {
-  return 'talent' in ability || character.value!.level < ability.unlockLevel
+  return 'talent' in ability
+    ? !character.value!.knownAbilityIds.includes(ability.id)
+    : character.value!.level < ability.unlockLevel
 }
 
 function abilityLockLabel(ability: (typeof warriorAbilities)[number]): string {

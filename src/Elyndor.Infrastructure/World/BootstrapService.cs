@@ -16,6 +16,7 @@ public sealed record BootstrapCharacter(
     int Level,
     string PrimaryAttribute,
     string ClassProfileVersion,
+    IReadOnlyList<string> KnownAbilityIds,
     CharacterStats Stats,
     BootstrapVitals Vitals);
 
@@ -83,6 +84,7 @@ public sealed class BootstrapService(
                 classProfile.ResourceProfileId,
                 StringComparison.Ordinal));
         TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
+        ResolvedTalentModifiers talentModifiers = ResolvedTalentModifiers.Empty;
         TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
             .SingleOrDefault(tree => tree.ClassId == character.ClassId);
         if (talentTree is not null)
@@ -92,8 +94,13 @@ public sealed class BootstrapService(
                 .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
             if (talentState is not null)
             {
-                talentPercentages = TalentStatModifierResolver.ResolvePrimaryPercentages(
+                talentModifiers = TalentModifierResolver.Resolve(
                     talentTree, talentState.GetRanks(talentState.ActiveLoadoutId));
+                talentPercentages = new TalentPrimaryStatPercentages(
+                    talentModifiers.Stats.StrengthPercent,
+                    0,
+                    0,
+                    talentModifiers.Stats.StaminaPercent);
             }
         }
         CharacterStats stats = new CharacterStatCalculator(
@@ -102,7 +109,23 @@ public sealed class BootstrapService(
             contentPackage.ClassProfiles).Calculate(
                 character.ClassId,
                 character.Level,
-                CharacterStatInputs.Empty with { TalentPercentages = talentPercentages });
+                CharacterStatInputs.Empty with
+                {
+                    TalentPercentages = talentPercentages,
+                    TalentDerived = talentModifiers.Stats
+                });
+        string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
+            .Concat((classProfile.AbilityUnlocks ?? [])
+                .Where(unlock => unlock.UnlockLevel <= character.Level)
+                .Select(unlock => unlock.AbilityId))
+            .Concat(talentModifiers.UnlockedAbilityIds)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
+            .ToArray();
+        ResourceProfile effectiveResourceProfile = resourceProfile with
+        {
+            MaxValue = resourceProfile.MaxValue + talentModifiers.Stats.MaxResourceFlat
+        };
         CharacterVitals vitals = await dbContext.CharacterVitals
             .SingleAsync(
                 candidate => candidate.CharacterId == character.Id,
@@ -110,7 +133,7 @@ public sealed class BootstrapService(
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
         TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
         decimal currentResource = CharacterResourceRules.ApplyElapsed(
-            resourceProfile,
+            effectiveResourceProfile,
             vitals.CurrentResource,
             elapsed,
             isInCombat: false,
@@ -141,13 +164,14 @@ public sealed class BootstrapService(
                 character.Level,
                 classProfile.PrimaryAttribute,
                 contentPackage.BalanceVersion,
+                knownAbilityIds,
                 stats,
                 new BootstrapVitals(
                     currentHp,
                     stats.MaxHp,
                     resourceProfile.Id,
                     currentResource,
-                    resourceProfile.MaxValue,
+                    effectiveResourceProfile.MaxValue,
                     now)),
             new BootstrapWorld(ToLocation(current), location.Version, transitions),
             contentPackage.ContentVersion,

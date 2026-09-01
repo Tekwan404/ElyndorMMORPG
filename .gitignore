@@ -15,6 +15,7 @@
 output/
 .superpowers/
 /pic/
+/talant/
 
 # Local configuration and secrets
 .elyndor/

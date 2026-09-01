@@ -119,6 +119,35 @@ public sealed class AbilityEngineTests
         Assert.Contains(result.Events, combatEvent => combatEvent.Type == CombatEventType.DamageApplied);
     }
 
+    [Fact]
+    public void AllEnemiesAbilityResolvesAgainstEveryOtherRuntimeActor()
+    {
+        CombatRuntimeState runtime = CreateRuntime(resource: 50);
+        CombatActorState first = CombatActorState.CreateDummy(100);
+        CombatActorState second = CombatActorState.CreateDummy(100);
+        runtime.AddActor(first);
+        runtime.AddActor(second);
+        AbilityDefinition ability = Instant("WHIRLWIND", 35, 10) with
+        {
+            TargetType = AbilityTargetType.AllEnemiesInCombat,
+            Actions =
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage, 20, DamageType.True,
+                    CanMiss: false, CanCrit: false, CanDodge: false)
+            ]
+        };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime, ability, new AbilityIntent("whirlwind", ability.Id, first.ActorId),
+            Now, new SequenceGameRandom(0.9m, 0.9m));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(80, first.CurrentHp);
+        Assert.Equal(80, second.CurrentHp);
+        Assert.Equal(2, result.Events.Count(item => item.Type == CombatEventType.DamageApplied));
+    }
+
     private static CombatRuntimeState CreateRuntime(decimal resource) =>
         new(CombatActorState.CreateDummy(100, 100, resource));
 

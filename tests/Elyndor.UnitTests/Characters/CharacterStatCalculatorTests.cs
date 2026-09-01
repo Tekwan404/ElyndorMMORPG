@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Characters;
 
@@ -37,6 +38,35 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(0, result.ArmorPenetration);
         Assert.Equal(0, result.MagicPenetration);
         Assert.Equal(1, result.AttackSpeed);
+    }
+
+    [Fact]
+    public void AppliesDerivedTalentModifiersAfterPrimaryTalentStage()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            TalentDerived = new TalentStatModifiers(
+                AttackPowerPercent: 10,
+                ArmorPercent: 20,
+                AccuracyPercent: 3,
+                CriticalChancePercent: 4,
+                CriticalDamagePercent: 15,
+                ArmorPenetrationPercent: 9,
+                AttackSpeedPercent: 6,
+                MaxHpPercent: 10)
+        };
+
+        CharacterStats result = calculator.Calculate("WARRIOR", 3, inputs);
+
+        Assert.Equal(209, result.MaxHp);
+        Assert.Equal(48.4m, result.AttackPower);
+        Assert.Equal(98, result.Accuracy);
+        Assert.Equal(11, result.CriticalChance);
+        Assert.Equal(115, result.CriticalDamage);
+        Assert.Equal(9, result.ArmorPenetration);
+        Assert.Equal(1.06m, result.AttackSpeed);
+        Assert.Equal(55.2m, result.Armor);
     }
 
     private static StatFormulaProfile Formula() => new(

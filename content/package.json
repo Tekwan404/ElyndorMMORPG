@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.4.0",
-  "balanceVersion": "0.3.0",
-  "publishedAtUtc": "2026-08-29T00:00:00+00:00",
+  "contentVersion": "0.5.0",
+  "balanceVersion": "0.4.0",
+  "publishedAtUtc": "2026-09-01T00:00:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -385,6 +385,124 @@
           "amount": 20
         }
       ]
+    },
+    {
+      "id": "BASTION",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 40,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BASTION_DAMAGE_REDUCTION",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.7,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ]
+    },
+    {
+      "id": "WILD_STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 25,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 1.35
+        }
+      ]
+    },
+    {
+      "id": "WHIRLWIND",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 35,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.7
+        }
+      ]
+    },
+    {
+      "id": "BERSERK",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 50,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_ATTACK_POWER",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.15,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_CRITICAL_CHANCE",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 8,
+            "modifiedStat": "CriticalChance",
+            "modifierMode": "Flat"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_ATTACK_SPEED",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.25,
+            "modifiedStat": "AttackSpeed",
+            "modifierMode": "Percent"
+          }
+        }
+      ]
     }
   ],
   "locations": [
@@ -454,7 +572,19 @@
           "prerequisites": [],
           "description": "Увеличивает Armor на 2% / 4% / 6% / 9%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ARMOR_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ]
         },
         {
           "id": "G-1-2",
@@ -466,7 +596,20 @@
           "prerequisites": [],
           "description": "Получение урона генерирует дополнительно +2 / +3 / +4 Rage сверх базового значения.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-1-3",
@@ -478,7 +621,16 @@
           "prerequisites": [],
           "description": "Увеличивает Stamina на 2% / 4% / 6% / 9%.",
           "modifiers": [
-            { "type": "StatModifier", "key": "STAMINA_PERCENT", "values": [2, 4, 6, 9] }
+            {
+              "type": "StatModifier",
+              "key": "STAMINA_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
           ],
           "branchId": "GUARDIAN",
           "version": 1
@@ -493,7 +645,21 @@
           "prerequisites": [],
           "description": "Threat от обычных Auto Attack увеличивается на 4% / 8% / 12% / 15%.\r\nНе увеличивает наносимый урон.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-2-1",
@@ -505,7 +671,27 @@
           "prerequisites": [],
           "description": "Увеличивает Dodge на 2% / 4%.\r\nПри HP ниже 30% дополнительно получает +2% Dodge.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "DODGE_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                2,
+                2
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-2-2",
@@ -517,7 +703,18 @@
           "prerequisites": [],
           "description": "Способность Provoke дополнительно снижает Threat всех Party Allies на этой цели на 10% после применения Taunt.\r\nЦель атакует только тебя следующие +1 секунду сверх базового ForcedTarget duration.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-2-3",
@@ -529,7 +726,18 @@
           "prerequisites": [],
           "description": "Уменьшает входящий физический урон на 1% / 2% / 3%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "INCOMING_PHYSICAL_DAMAGE_REDUCTION_PERCENT",
+              "values": [
+                1,
+                2,
+                3
+              ]
+            }
+          ]
         },
         {
           "id": "G-2-4",
@@ -541,7 +749,20 @@
           "prerequisites": [],
           "description": "Пока HP выше 70%, входящий урон снижается на 1% / 2% / 3%.\r\nПри падении HP до 70% или ниже эффект немедленно отключается.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-3-1",
@@ -553,7 +774,19 @@
           "prerequisites": [],
           "description": "При получении Dodge 15% / 25% шанс автоматически нанести ответный физический удар с уроном 50% / 70% от обычной Auto Attack.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DODGE",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-3-2",
@@ -565,7 +798,19 @@
           "prerequisites": [],
           "description": "Уменьшает длительность Stun-эффектов на 10% / 20%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-3-3",
@@ -577,7 +822,18 @@
           "prerequisites": [],
           "description": "Увеличивает максимальный запас Rage на 5 / 10 / 15.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "ResourceModifier",
+              "key": "MAX_RESOURCE_FLAT",
+              "values": [
+                5,
+                10,
+                15
+              ]
+            }
+          ]
         },
         {
           "id": "G-3-4",
@@ -589,7 +845,20 @@
           "prerequisites": [],
           "description": "Уменьшает дополнительный урон получаемых критических ударов на 5% / 10% / 15%.\r\nТалант уменьшает только критическую надбавку и не влияет на обычный урон.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-4-1",
@@ -601,7 +870,18 @@
           "prerequisites": [],
           "description": "Пассив. Когда HP падает ниже 25%:\r\n• входящий урон снижается на 12% на 6 секунд.\r\n• генерируется +15 Rage мгновенно.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-4-2",
@@ -618,7 +898,29 @@
           ],
           "description": "Provoke добавляет +150 / +300 Threat сверх базового значения.\r\nСтоимость Provoke снижается на 5 / 10 Rage.\r\nPrerequisite: [G-2-2] Провокатор.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_RESOURCE_COST_FLAT",
+              "values": [
+                5,
+                10
+              ],
+              "targetId": "PROVOKE"
+            },
+            {
+              "type": "AbilityModifier",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "targetId": "PROVOKE",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-4-3",
@@ -630,7 +932,19 @@
           "prerequisites": [],
           "description": "Увеличивает MagicResistance на 2% / 4% / 6% / 9%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "MAGIC_RESISTANCE_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ]
         },
         {
           "id": "G-4-4",
@@ -642,7 +956,19 @@
           "prerequisites": [],
           "description": "Успешный Dodge восстанавливает +3 / +5 Rage.\r\nInternalCooldown = 2 sec.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DODGE",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-5-1",
@@ -654,7 +980,17 @@
           "prerequisites": [],
           "description": "Активная способность. Стоит 40 Rage.\r\nНа 6 секунд входящий урон (Physical + Magical) снижается на 30%.\r\nCooldown: 90 секунд. Off-GCD.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BASTION"
+            }
+          ]
         },
         {
           "id": "G-5-2",
@@ -666,7 +1002,21 @@
           "prerequisites": [],
           "description": "Увеличивает Threat Multiplier на 2% / 4% / 6% / 9% для всех источников урона.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-5-3",
@@ -678,7 +1028,17 @@
           "prerequisites": [],
           "description": "Уменьшает входящий магический урон на 2% / 4%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "INCOMING_MAGICAL_DAMAGE_REDUCTION_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            }
+          ]
         },
         {
           "id": "G-6-1",
@@ -690,7 +1050,18 @@
           "prerequisites": [],
           "description": "Пассив. При нанесении Auto Attack 12% шанс создать щит поглощающий 4% от MaxHP урона на 8 секунд.\r\nНовый щит заменяет старый.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-6-2",
@@ -702,7 +1073,19 @@
           "prerequisites": [],
           "description": "Каждые 25 Rage сверх 50 дают дополнительно +1% / +1.5% к Armor.\r\nМаксимум +4% / +6% при полном Rage.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-6-3",
@@ -714,7 +1097,18 @@
           "prerequisites": [],
           "description": "Уменьшает длительность входящих Stun и Silence на 25%.\r\nНе изменяет Diminishing Returns и не объединяет DR-категории.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-6-4",
@@ -731,7 +1125,19 @@
           ],
           "description": "Щиты, созданные твоими собственными талантами и способностями, поглощают на 10% / 20% больше урона.\r\nНе усиливает щиты, наложенные другими персонажами.\r\nPrerequisite: [G-6-1] Живой Щит.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-7-1",
@@ -748,7 +1154,18 @@
           ],
           "description": "Снижает Cooldown способности Бастион на 10 / 20 секунд.\r\nPrerequisite: [G-5-1] Бастион.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_COOLDOWN_SECONDS",
+              "values": [
+                10,
+                20
+              ],
+              "targetId": "BASTION"
+            }
+          ]
         },
         {
           "id": "G-7-2",
@@ -760,7 +1177,18 @@
           "prerequisites": [],
           "description": "Если входящий урон должен снизить HP до 0 или ниже: один раз за Combat Session lethal result предотвращается.\r\nПосле предотвращения CurrentHP = 12% MaxHP.\r\nRage сбрасывается до 0.\r\nCanTriggerFromProc = false. Limit: one activation per CombatSession.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-7-3",
@@ -772,7 +1200,19 @@
           "prerequisites": [],
           "description": "Увеличивает MaxHP на 2% / 4% / 6% / 9% дополнительно (помимо Stamina scaling).",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "MAX_HP_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ]
         },
         {
           "id": "G-7-4",
@@ -784,7 +1224,19 @@
           "prerequisites": [],
           "description": "При HP ниже 35%:\r\n• получаемое лечение увеличивается на 5% / 10%;\r\n• MagicResistance увеличивается на 3% / 6%.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-8-1",
@@ -796,7 +1248,18 @@
           "prerequisites": [],
           "description": "Пассив. При получении критического удара: 25% шанс нанести ответный физический удар на 65% от AttackPower.\r\nУдар не может быть критическим.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-8-2",
@@ -817,7 +1280,20 @@
           ],
           "description": "Бастион теперь также даёт +8% / +15% к Dodge на время действия.\r\nPrerequisite: [G-5-1] Бастион, [G-7-1] Бессмертный Воин.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "targetId": "BASTION",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-8-3",
@@ -829,7 +1305,18 @@
           "prerequisites": [],
           "description": "Увеличивает генерацию Rage от получения урона на 35%.\r\nStamina даёт дополнительно +1 MaxHP за каждые 3 единицы сверх базового.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ]
         },
         {
           "id": "G-9-1",
@@ -841,7 +1328,32 @@
           "prerequisites": [],
           "description": "Требует 40 очков в Страже.\r\nПассив. Ты становишься воплощением защиты.\r\nЭффекты:\r\n• Входящий урон снижается на 6% постоянно.\r\n• Когда ты получаешь урон, ты и Party Allies в том же CombatSession восстанавливают 0.35% MaxHP. InternalCooldown = 2 секунды.\r\n• Provoke теперь также снижает урон цели по всем кроме тебя на 15% на 4 секунды.\r\n• При активном Бастионе: Auto Attack генерирует +5 Rage дополнительно.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
           "branchId": "GUARDIAN",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "INCOMING_PHYSICAL_DAMAGE_REDUCTION_PERCENT",
+              "values": [
+                6
+              ]
+            },
+            {
+              "type": "StatModifier",
+              "key": "INCOMING_MAGICAL_DAMAGE_REDUCTION_PERCENT",
+              "values": [
+                6
+              ]
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "B-1-1",
@@ -853,7 +1365,20 @@
           "prerequisites": [],
           "description": "Увеличивает AttackPower на 2% / 4% / 6% / 9%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_POWER_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-1-2",
@@ -865,7 +1390,21 @@
           "prerequisites": [],
           "description": "Убийство врага восстанавливает 8 / 12 / 16 Rage мгновенно.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ENEMY_KILLED",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_RENEWAL"
         },
         {
           "id": "B-1-3",
@@ -877,7 +1416,20 @@
           "prerequisites": [],
           "description": "Увеличивает Accuracy на 1.5% / 3% / 4.5% / 6%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ACCURACY_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_KEEN_EYE"
         },
         {
           "id": "B-1-4",
@@ -889,10 +1441,18 @@
           "prerequisites": [],
           "description": "Strength увеличивается на 3% / 6%.",
           "modifiers": [
-            { "type": "StatModifier", "key": "STRENGTH_PERCENT", "values": [3, 6] }
+            {
+              "type": "StatModifier",
+              "key": "STRENGTH_PERCENT",
+              "values": [
+                3,
+                6
+              ]
+            }
           ],
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "iconId": "BERSERKER_CRUSHING_BLOW"
         },
         {
           "id": "B-2-1",
@@ -904,7 +1464,20 @@
           "prerequisites": [],
           "description": "При HP ниже 50%:\r\n• AttackPower +7% / 12%.\r\n• AttackSpeed +4% / 8%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-2-2",
@@ -916,7 +1489,18 @@
           "prerequisites": [],
           "description": "Активная способность. Стоит 25 Rage. GCD: STANDARD.\r\nНаносит физический урон 135% от AttackPower.\r\nCooldown: 6 секунд.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WILD_STRIKE"
+            }
+          ],
+          "iconId": "BERSERKER_RAGE_SLASH"
         },
         {
           "id": "B-2-3",
@@ -928,7 +1512,20 @@
           "prerequisites": [],
           "description": "CriticalChance +1.5% / 3% / 4.5% / 6%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "CRITICAL_CHANCE_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_KEEN_EYE"
         },
         {
           "id": "B-2-4",
@@ -940,7 +1537,21 @@
           "prerequisites": [],
           "description": "После расходования 20 или более Rage одной способностью AttackSpeed увеличивается на 2% / 4% / 6% на 3 секунды.\r\nПовторное срабатывание обновляет Duration, но не создаёт новый stack.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_SUNDERING_BLADE"
         },
         {
           "id": "B-3-1",
@@ -952,7 +1563,20 @@
           "prerequisites": [],
           "description": "Критический удар генерирует дополнительно +4 / +8 Rage.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_KEEN_EYE"
         },
         {
           "id": "B-3-2",
@@ -969,7 +1593,18 @@
           ],
           "description": "Активная способность. Стоит 35 Rage. GCD: STANDARD.\r\nАтакует всех врагов в encounter. Урон = 70% от AttackPower по каждому.\r\nCooldown: 10 секунд.\r\nPrerequisite: [B-2-2] Дикий Удар.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WHIRLWIND"
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_BLADES"
         },
         {
           "id": "B-3-3",
@@ -981,7 +1616,20 @@
           "prerequisites": [],
           "description": "Увеличивает ArmorPenetration на 2% / 4% / 6% / 9%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ARMOR_PENETRATION_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_SHATTER_GUARD"
         },
         {
           "id": "B-3-4",
@@ -998,7 +1646,20 @@
           ],
           "description": "Критический Дикий Удар накладывает Кровотечение на 4 секунды:\r\n• Rank 1: 4% AttackPower per second = 16% total;\r\n• Rank 2: 7% AttackPower per second = 28% total.\r\nTickInterval = 1 sec.\r\nPrerequisite: [B-2-2] Дикий Удар.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_BLADES"
         },
         {
           "id": "B-4-1",
@@ -1010,7 +1671,19 @@
           "prerequisites": [],
           "description": "Пассив. 15% шанс при Auto Attack нанести второй удар немедленно за 45% урона от первого.\r\nВторой удар не может критовать.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_SUNDERING_BLADE"
         },
         {
           "id": "B-4-2",
@@ -1027,7 +1700,28 @@
           ],
           "description": "Вихрь наносит +10% / +20% урона.\r\nCooldown Вихря снижается на 1 / 2 секунды.\r\nPrerequisite: [B-3-2] Вихрь.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_DAMAGE_PERCENT",
+              "values": [
+                10,
+                20
+              ],
+              "targetId": "WHIRLWIND"
+            },
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_COOLDOWN_SECONDS",
+              "values": [
+                1,
+                2
+              ],
+              "targetId": "WHIRLWIND"
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_BLADES"
         },
         {
           "id": "B-4-3",
@@ -1044,7 +1738,19 @@
           ],
           "description": "Дикий Удар игнорирует 8% / 15% Armor цели (ArmorPenetration для этой способности).\r\nPrerequisite: [B-2-2] Дикий Удар.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_ARMOR_PENETRATION_PERCENT",
+              "values": [
+                8,
+                15
+              ],
+              "targetId": "WILD_STRIKE"
+            }
+          ],
+          "iconId": "BERSERKER_SHATTER_GUARD"
         },
         {
           "id": "B-4-4",
@@ -1056,7 +1762,20 @@
           "prerequisites": [],
           "description": "При HP ниже 50% наносимый физический урон увеличивается на 2% / 4%, но входящий урон также увеличивается на 1% / 2%.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-5-1",
@@ -1068,7 +1787,18 @@
           "prerequisites": [],
           "description": "Активная способность. Стоит 50 Rage. Off-GCD.\r\nНа 8 секунд: AttackSpeed +25%, AttackPower +15%, CriticalChance +8%.\r\nВ течение действия: нельзя использовать защитные способности.\r\nCooldown: 120 секунд.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BERSERK"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-5-2",
@@ -1080,7 +1810,20 @@
           "prerequisites": [],
           "description": "AttackSpeed +1.5% / 3% / 4.5% / 6% постоянно.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_SPEED_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_RAGE_SLASH"
         },
         {
           "id": "B-5-3",
@@ -1092,7 +1835,18 @@
           "prerequisites": [],
           "description": "CriticalDamage +8% / 15% (поверх базового критического множителя).",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "CRITICAL_DAMAGE_PERCENT",
+              "values": [
+                8,
+                15
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_BLADES"
         },
         {
           "id": "B-5-4",
@@ -1109,7 +1863,20 @@
           ],
           "description": "Пока активен Берсерк, стоимость Rage у атакующих способностей уменьшается на 10% / 20%.\r\nСтоимость способности не может стать отрицательной.\r\nPrerequisite: [B-5-1] Берсерк.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-6-1",
@@ -1121,7 +1888,18 @@
           "prerequisites": [],
           "description": "Вампиризм: 2% / 4% от EffectivePhysicalDamageToHP восстанавливает HP.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "VAMPIRISM_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_RENEWAL"
         },
         {
           "id": "B-6-2",
@@ -1133,7 +1911,19 @@
           "prerequisites": [],
           "description": "Пассив. Критический Auto Attack накладывает дебафф Уязвимость на цель на 8 секунд:\r\n• цель получает +5% физического урона от этого Warrior.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_SHATTER_GUARD"
         },
         {
           "id": "B-6-3",
@@ -1150,7 +1940,20 @@
           ],
           "description": "Во время активного Берсерка получение урона генерирует +3 / +5 Rage дополнительно.\r\nPrerequisite: [B-5-1] Берсерк.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_IRON_WILL"
         },
         {
           "id": "B-6-4",
@@ -1167,7 +1970,21 @@
           ],
           "description": "Пока Берсерк не активен, критический удар уменьшает оставшийся Cooldown Берсерка на 1 / 2 / 3 секунды.\r\nInternalCooldown = 3 sec.\r\nPrerequisite: [B-5-1] Берсерк.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_RAGE_SLASH"
         },
         {
           "id": "B-7-1",
@@ -1188,7 +2005,19 @@
           ],
           "description": "При активном Берсерке: Auto Attack имеет 100% шанс нанести второй удар за 30% урона.\r\nPrerequisite: [B-5-1] Берсерк, [B-4-1] Двойной Удар.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_SUNDERING_BLADE"
         },
         {
           "id": "B-7-2",
@@ -1200,7 +2029,22 @@
           "prerequisites": [],
           "description": "При HP ниже 25%: CriticalChance +3% / 6% / 9% / 12% дополнительно.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-7-3",
@@ -1217,7 +2061,20 @@
           ],
           "description": "Вихрь накладывает на каждую поражённую цель Кровотечение на 6 секунд:\r\n• физический DoT на 6 секунд, TickInterval = 1 секунда, всего 6 ticks.\r\n• Rank 1: 5% AttackPower per tick = 30% AttackPower total.\r\n• Rank 2: 8% AttackPower per tick = 48% AttackPower total.\r\nPrerequisite: [B-3-2] Вихрь.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_BLOOD_BLADES"
         },
         {
           "id": "B-7-4",
@@ -1229,7 +2086,20 @@
           "prerequisites": [],
           "description": "Физический урон по целям с HP ниже 20% увеличивается на 5% / 10%.\r\nНе увеличивает True Damage.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_KEEN_EYE"
         },
         {
           "id": "B-8-1",
@@ -1250,7 +2120,19 @@
           ],
           "description": "После расчёта физического компонента Вихря способность дополнительно наносит True Damage = 15% от PhysicalDamageBeforeShield по той же цели.\r\nPhysicalDamageBeforeShield — физический урон Вихря после критического множителя, Armor mitigation и damage modifiers, но до Shield absorption.\r\nPrerequisite: [B-4-2] Мастер Вихря, [B-7-3] Пронизывающая Ярость.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_RAGE_SLASH"
         },
         {
           "id": "B-8-2",
@@ -1267,7 +2149,30 @@
           ],
           "description": "Cooldown Берсерка снижается на 15 / 30 секунд.\r\nВо время Берсерка: каждое убийство сбрасывает Cooldown Дикого Удара.\r\nPrerequisite: [B-5-1] Берсерк.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_COOLDOWN_SECONDS",
+              "values": [
+                15,
+                30
+              ],
+              "targetId": "BERSERK"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ENEMY_KILLED",
+              "values": [
+                0,
+                0
+              ],
+              "targetId": "WILD_STRIKE",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "B-8-3",
@@ -1279,7 +2184,19 @@
           "prerequisites": [],
           "description": "Пассив. При HP ниже 10%: следующая Auto Attack наносит 200% обычного урона и гарантированно критует.\r\nСрабатывает один раз за Combat Session.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_BLADE_GUARD"
         },
         {
           "id": "B-9-1",
@@ -1291,7 +2208,34 @@
           "prerequisites": [],
           "description": "Требует 40 очков в Берсерке.\r\nПассив. Ты становишься воплощением разрушения.\r\nЭффекты:\r\n• AttackPower +10% постоянно.\r\n• Берсерк теперь длится +4 секунды дольше и снимает все активные Stun и Silence с тебя при активации.\r\n• При нанесении критического удара: 20% шанс мгновенно сгенерировать +10 Rage.\r\n• Убийство врага во время Берсерка: снижает оставшийся Cooldown Берсерка на 15 секунд.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
           "branchId": "BERSERKER",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_POWER_PERCENT",
+              "values": [
+                10
+              ]
+            },
+            {
+              "type": "AbilityModifier",
+              "key": "EFFECT_DURATION_SECONDS",
+              "values": [
+                4
+              ],
+              "targetId": "BERSERK"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "COMBAT_SESSION"
+            }
+          ],
+          "iconId": "BERSERKER_WAR_MASK"
         },
         {
           "id": "W-1-1",
@@ -1303,7 +2247,20 @@
           "prerequisites": [],
           "description": "Боевые крики теперь стоят на 5 / 10 / 15 Rage меньше.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-1-2",
@@ -1315,7 +2272,20 @@
           "prerequisites": [],
           "description": "Ты и Party Allies в том же CombatSession получают +1% / +2% / +3% к AttackPower.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-1-3",
@@ -1327,7 +2297,17 @@
           "prerequisites": [],
           "description": "Увеличивает Accuracy на 2% / 4%.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ACCURACY_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            }
+          ]
         },
         {
           "id": "W-1-4",
@@ -1339,7 +2319,20 @@
           "prerequisites": [],
           "description": "Ты и Party Allies в том же CombatSession получают +1% / +2% / +3% MagicResistance.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-2-1",
@@ -1351,7 +2344,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 20 Rage.\r\nТы и Party Allies в том же CombatSession получают +8% AttackPower на 20 секунд.\r\nCooldown: 60 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BATTLE_CRY",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-2-2",
@@ -1363,7 +2368,20 @@
           "prerequisites": [],
           "description": "Когда Party Ally получает урон снижающий его HP ниже 20%:\r\n10% / 15% / 20% шанс создать на нём щит поглощающий 4% его MaxHP на 5 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-2-3",
@@ -1375,7 +2393,15 @@
           "prerequisites": [],
           "description": "Stamina +2% / 4% / 6%.",
           "modifiers": [
-            { "type": "StatModifier", "key": "STAMINA_PERCENT", "values": [2, 4, 6] }
+            {
+              "type": "StatModifier",
+              "key": "STAMINA_PERCENT",
+              "values": [
+                2,
+                4,
+                6
+              ]
+            }
           ],
           "branchId": "WARLORD",
           "version": 1
@@ -1395,7 +2421,19 @@
           ],
           "description": "Боевой Клич дополнительно увеличивает Accuracy получателей на +2% / +4% на время действия.\r\nPrerequisite: [W-2-1] Боевой Клич.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-3-1",
@@ -1407,7 +2445,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 25 Rage.\r\nТы и Party Allies получают +6% к MaxHP (как временный бафф) на 15 секунд.\r\nCooldown: 90 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ENDURANCE_CRY",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-3-2",
@@ -1419,7 +2469,19 @@
           "prerequisites": [],
           "description": "Auto Attack имеет 15% / 25% шанс снизить Cooldown одного случайного крика на 2 / 4 секунды.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-3-3",
@@ -1431,7 +2493,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 30 Rage.\r\nУстанавливает Стяг на 30 секунд. Пока Стяг активен:\r\n• ты и Party Allies в том же CombatSession получают +4% CriticalChance.\r\n• при убийстве врага: все союзники восстанавливают 2% MaxResource своего Action Resource.\r\nCooldown: 120 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WAR_BANNER",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-3-4",
@@ -1443,7 +2517,20 @@
           "prerequisites": [],
           "description": "Пока активен любой твой эффект с тегом BANNER или FLAG, ты и Party Allies получают снижение входящего урона на 1% / 2% / 3%.\r\nНесколько твоих Banner/Flag не складывают этот бонус между собой.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-4-1",
@@ -1460,7 +2547,20 @@
           ],
           "description": "Боевой Клич теперь также увеличивает AttackSpeed получателей на 3% / 5% / 8%.\r\nPrerequisite: [W-2-1] Боевой Клич.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-4-2",
@@ -1472,7 +2572,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 35 Rage.\r\nНа 10 секунд активирует эффект Клич Мести.\r\nПока эффект активен, когда Party Ally получает direct damage, Warrior получает 1 stack (макс 5).\r\nInternalCooldown = 0.5 sec между получением stacks.\r\nСледующая Auto Attack Warrior наносит +35% урона за stack и потребляет все stacks.\r\nCooldown: 30 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "CRY_OF_VENGEANCE",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-4-3",
@@ -1484,7 +2596,20 @@
           "prerequisites": [],
           "description": "Ты и Party Allies получают +1% / +2% / +3% к Dodge.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-4-4",
@@ -1496,7 +2621,20 @@
           "prerequisites": [],
           "description": "Duration положительных эффектов твоих способностей с тегом CRY увеличивается на +1 / +2 / +3 секунды.\r\nНе влияет на cooldown.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-5-1",
@@ -1508,7 +2646,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 40 Rage.\r\nУстанавливает Флаг Победы на 18 секунд. Пока активен:\r\n• ты и Party Allies получают +8% ко всему наносимому урону.\r\n• первые 4 секунды после установки вы иммунны к новым Stun и Silence. Уже активные control effects не снимаются.\r\nCooldown: 180 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "VICTORY_FLAG",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-5-2",
@@ -1525,7 +2675,20 @@
           ],
           "description": "Уменьшает Cooldown Стяга Войны и Флага Победы на 7 / 14 / 20 секунд.\r\nPrerequisite: [W-3-3] Стяг Войны.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-5-3",
@@ -1537,7 +2700,20 @@
           "prerequisites": [],
           "description": "Увеличивает Rage generation от Auto Attack на 8% / 16% / 24%.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-5-4",
@@ -1554,7 +2730,19 @@
           ],
           "description": "Пока активен Боевой Клич, ты и Party Allies дополнительно получают +2% / +4% CriticalChance.\r\nPrerequisite: [W-2-1] Боевой Клич.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-6-1",
@@ -1566,7 +2754,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 30 Rage.\r\nТы и Party Allies восстанавливают 6% MaxHP мгновенно.\r\nCooldown: 120 секунд.\r\nHealingType = Scripted, GeneratesThreat = true.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "RALLY_CRY",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-6-2",
@@ -1583,7 +2783,20 @@
           ],
           "description": "Клич Стойкости теперь также даёт +3% / +5% / +8% к Armor и MagicResistance получателям.\r\nPrerequisite: [W-3-1] Клич Стойкости.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-6-3",
@@ -1595,7 +2808,18 @@
           "prerequisites": [],
           "description": "Пассив. При каждом использовании крика (любой AbilityId с тегом CRY):\r\n• генерируется +10 Rage мгновенно.\r\n• с тебя и одного случайного Party Ally снимается один активный дебафф категории Poison, если он есть.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-6-4",
@@ -1607,7 +2831,20 @@
           "prerequisites": [],
           "description": "Восстановление Action Resource, создаваемое твоими талантами и способностями Командира, увеличивается на 10% / 20% / 30%.\r\nНе усиливает обычную пассивную регенерацию ресурсов.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-7-1",
@@ -1619,7 +2856,19 @@
           "prerequisites": [],
           "description": "Активная способность. Off-GCD. Стоит 50 Rage.\r\nУстанавливает Флаг Битвы на 15 секунд. Пока активен:\r\n• Auto Attack тебя и Party Allies имеют +10% шанс нанести дополнительный физический удар за 25% урона.\r\nCooldown: 150 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BATTLE_STANDARD",
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-7-2",
@@ -1631,7 +2880,19 @@
           "prerequisites": [],
           "description": "Когда Party Ally погибает: ты и оставшиеся Party Allies получают +6% / +10% к AttackPower и +4% / +7% к Dodge на 10 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-7-3",
@@ -1643,7 +2904,19 @@
           "prerequisites": [],
           "description": "Cooldown всех криков снижается на 3 / 6 секунд.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-7-4",
@@ -1655,7 +2928,20 @@
           "prerequisites": [],
           "description": "Party Ally с HP ниже 25% получает на 2% / 4% / 6% меньше входящего урона.\r\nНа самого Warrior эффект также действует, если он соответствует условию.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-8-1",
@@ -1676,7 +2962,18 @@
           ],
           "description": "Боевой Клич теперь также:\r\n• восстанавливает 8% MaxRage тебе и Party Allies-воинам.\r\n• восстанавливает 6% MaxMana тебе и Party Allies-магам.\r\n• восстанавливает 6% MaxEnergy тебе и Party Allies-разбойникам.\r\nPrerequisite: [W-2-1] Боевой Клич, [W-4-1] Усиленный Клич.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-8-2",
@@ -1693,7 +2990,18 @@
           ],
           "description": "Пока активен Флаг Победы:\r\n• ты и Party Allies не могут быть убиты (HP фиксируется на 1) в течение первых 2 секунд действия флага.\r\nPrerequisite: [W-5-1] Флаг Победы.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-8-3",
@@ -1705,7 +3013,20 @@
           "prerequisites": [],
           "description": "Каждый раз когда Party Ally наносит критический удар:\r\nКомандир получает +1 / +2 / +3 Rage.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-8-4",
@@ -1722,7 +3043,19 @@
           ],
           "description": "При активации способности с тегом FLAG или BANNER оставшийся Cooldown всех твоих CRY уменьшается на 3 / 5 секунд.\r\nInternalCooldown = 20 sec.\r\nPrerequisite: [W-3-3] Стяг Войны.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0,
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         },
         {
           "id": "W-9-1",
@@ -1734,7 +3067,18 @@
           "prerequisites": [],
           "description": "Требует 40 очков в Командире.\r\nПассив. Ты становишься воплощением воли к победе.\r\nЭффекты:\r\n• Все крики теперь действуют +5 секунд дольше.\r\n• При активации любого флага или крика: ты и Party Allies получают щит поглощающий 4% их MaxHP на 6 секунд.\r\n• Клич Исцеления теперь также восстанавливает 20% MaxRage тебе.\r\n• Убийство врага тобой или Party Ally снижает оставшийся Cooldown всех твоих криков на 1 секунду. InternalCooldown = 1 sec.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
           "branchId": "WARLORD",
-          "version": 1
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                0
+              ],
+              "runtimeStatus": "Deferred",
+              "deferredOwner": "PARTY"
+            }
+          ]
         }
       ]
     }

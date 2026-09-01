@@ -663,6 +663,8 @@ Phase 3C starts only after the Phase 3B Definition of Done passes. The detailed 
 
 Warrior talents and two loadouts persist atomically, rebuild the Talent stage of authoritative stats, and modify supported kernel behavior without scattered per-talent hardcoding.
 
+Verified 2026-09-01: the 96-node Warrior package validates, supported Phase 3 hooks execute through typed resolvers, deferred hooks declare their later runtime owner, mutation retry state is persisted in PostgreSQL, and the server-driven mobile Talent UI uses optimized Berserker art.
+
 ---
 
 # PHASE 4 — CombatSession + Monster System + Monster AI + Whispering Forest

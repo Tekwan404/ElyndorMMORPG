@@ -62,7 +62,8 @@ public sealed record AbilityActionDefinition(
     bool CanCrit = true,
     bool CanDodge = true,
     decimal AttackPowerCoefficient = 0,
-    TimeSpan? Duration = null);
+    TimeSpan? Duration = null,
+    decimal ArmorPenetrationBonus = 0);
 
 public sealed record AbilityIntent(string CommandId, string AbilityId, Guid TargetId);
 

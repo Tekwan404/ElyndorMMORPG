@@ -2,6 +2,7 @@ using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Combat;
 
@@ -78,5 +79,52 @@ public sealed class DamageAndHealingPipelineTests
         Assert.Equal(1, target.CurrentHp);
         Assert.DoesNotContain(target.ActiveEffects,
             effect => effect.Definition.Kind == EffectKind.LethalDamagePrevention);
+    }
+
+    [Fact]
+    public void IncomingDamageMultiplierEffectParticipatesInDamagePipeline()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(100);
+        EffectEngine.Apply(target, target.ActorId,
+            new EffectDefinition(
+                "BASTION_DAMAGE_REDUCTION", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(6), 1, EffectStackPolicy.Refresh, 0.7m,
+                ModifiedStat: EffectStat.IncomingDamageMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative),
+            DateTimeOffset.UnixEpoch);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.True, CanCrit: false),
+            new SequenceGameRandom(0.9m),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(70, result.HpDamage);
+        Assert.Equal(30, target.CurrentHp);
+    }
+
+    [Fact]
+    public void TalentDamageModifiersReduceIncomingDamageAndApplyVampirism()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            100,
+            talentModifiers: new TalentCombatModifiers(
+                DamageDealtPercent: 10,
+                VampirismPercent: 10));
+        source.SetCurrentHp(50);
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            talentModifiers: new TalentCombatModifiers(
+                IncomingPhysicalDamageReductionPercent: 20));
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source, target, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom(0.9m));
+
+        Assert.Equal(88, result.HpDamage);
+        Assert.Equal(58.8m, source.CurrentHp);
+        Assert.Equal(112, target.CurrentHp);
     }
 }

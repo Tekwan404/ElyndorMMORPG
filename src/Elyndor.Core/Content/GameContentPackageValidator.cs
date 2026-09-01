@@ -49,13 +49,14 @@ public static class GameContentPackageValidator
         ValidateLocations(package.Locations, errors);
         ValidateCharacterProfiles(package, definitions, errors);
         ValidateCombatDefinitions(package, errors);
-        ValidateTalentDefinitions(package.TalentTrees ?? [], errors);
+        ValidateTalentDefinitions(package.TalentTrees ?? [], package.Abilities ?? [], errors);
 
         return errors;
     }
 
     private static void ValidateTalentDefinitions(
         IReadOnlyList<TalentTreeDefinition> trees,
+        IReadOnlyList<AbilityDefinition> abilities,
         List<ContentValidationError> errors)
     {
         HashSet<string> treeIds = [];
@@ -84,6 +85,7 @@ public static class GameContentPackageValidator
             }
 
             Dictionary<string, TalentDefinition> nodes = [];
+            HashSet<string> abilityIds = abilities.Select(ability => ability.Id).ToHashSet(StringComparer.Ordinal);
             foreach (TalentDefinition node in tree.Nodes)
             {
                 if (string.IsNullOrWhiteSpace(node.Id) || !nodes.TryAdd(node.Id, node))
@@ -98,10 +100,37 @@ public static class GameContentPackageValidator
                     errors.Add(new("INVALID_TALENT_DEFINITION", path, $"Talent node '{node.Id}' is invalid."));
                 }
 
-                if (node.Modifiers?.Any(modifier => string.IsNullOrWhiteSpace(modifier.Key)
-                    || modifier.Values.Count == 0 || modifier.Values.Any(value => value < 0)) == true)
+                if (node.Modifiers is null || node.Modifiers.Count == 0)
+                {
+                    errors.Add(new("MISSING_TALENT_MODIFIER", path,
+                        $"Talent node '{node.Id}' must define a supported modifier or an explicit deferred hook."));
+                }
+                else if (node.Modifiers.Any(modifier => string.IsNullOrWhiteSpace(modifier.Key)
+                    || !TalentModifierKeys.All.Contains(modifier.Key)
+                    || modifier.Values.Count == 0 || modifier.Values.Any(value => value < 0)
+                    || modifier.Values.Count != node.MaxRank
+                    || modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+                        && (string.IsNullOrWhiteSpace(modifier.DeferredOwner)
+                            || !TalentRuntimeOwners.All.Contains(modifier.DeferredOwner))))
                 {
                     errors.Add(new("INVALID_TALENT_MODIFIER", path, $"Talent node '{node.Id}' contains an invalid modifier."));
+                }
+
+                if (node.Modifiers?.Any(modifier =>
+                    modifier.Type == TalentModifierType.AbilityModifier
+                    && modifier.Key == TalentModifierKeys.UnlockAbility
+                    && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
+                    && (string.IsNullOrWhiteSpace(modifier.TargetId)
+                        || !abilityIds.Contains(modifier.TargetId))) == true)
+                {
+                    errors.Add(new("MISSING_TALENT_ABILITY_REFERENCE", path,
+                        $"Talent node '{node.Id}' references an ability that does not exist."));
+                }
+
+                if (node.IconId is not null && !IsCanonicalIdentifier(node.IconId))
+                {
+                    errors.Add(new("INVALID_TALENT_ICON_ID", path,
+                        $"Talent node '{node.Id}' has a non-canonical icon id."));
                 }
             }
 
@@ -223,6 +252,7 @@ public static class GameContentPackageValidator
                 || ability.UsesGlobalCooldown && ability.GlobalCooldownCategory == GlobalCooldownCategory.None
                 || ability.Actions?.Any(action => action.Amount < 0
                     || action.AttackPowerCoefficient < 0
+                    || action.ArmorPenetrationBonus < 0
                     || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                     || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                     || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true

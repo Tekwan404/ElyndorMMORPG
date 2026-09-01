@@ -29,7 +29,8 @@ public sealed record TalentModifierDefinition(
     string Key,
     IReadOnlyList<decimal> Values,
     string? TargetId = null,
-    TalentModifierRuntimeStatus RuntimeStatus = TalentModifierRuntimeStatus.Supported);
+    TalentModifierRuntimeStatus RuntimeStatus = TalentModifierRuntimeStatus.Supported,
+    string? DeferredOwner = null);
 
 public sealed record TalentPrerequisite(string TalentId, int RequiredRank = 1);
 
@@ -45,7 +46,8 @@ public sealed record TalentDefinition(
     string Description,
     int? RequiredLevel = null,
     IReadOnlyList<TalentModifierDefinition>? Modifiers = null,
-    int Version = 1);
+    int Version = 1,
+    string? IconId = null);
 
 public sealed record TalentBranchDefinition(
     string Id,
@@ -73,6 +75,7 @@ public static class TalentErrorCodes
     public const string InvalidRank = "talent_invalid_rank";
     public const string InvalidLoadout = "talent_invalid_loadout";
     public const string Conflict = "talent_state_conflict";
+    public const string InvalidMutationId = "talent_invalid_mutation_id";
 }
 
 public sealed record TalentLearnResult(
