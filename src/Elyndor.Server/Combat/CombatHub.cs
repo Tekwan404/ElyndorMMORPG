@@ -22,9 +22,9 @@ public sealed class CombatHub(CombatApplicationService combat) : Hub
     public Task<CombatUpdateResponse> UseAbility(
         Guid sessionId,
         string abilityId,
-        string commandId) => CombatContractMapper.ToResponse(
+        string commandId) => ToResponseAsync(
             combat.UseAbilityAsync(
-                GetAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted).GetAwaiter().GetResult());
+                GetAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> StartAutoAttack(
         Guid sessionId,
