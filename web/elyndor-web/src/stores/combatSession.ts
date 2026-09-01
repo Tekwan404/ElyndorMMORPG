@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import {
   HubConnectionBuilder,
   HubConnectionState,
+  HttpTransportType,
   LogLevel,
   type HubConnection,
 } from '@microsoft/signalr'
@@ -38,6 +39,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         connection = new HubConnectionBuilder()
           .withUrl('/hubs/combat', {
             accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
+            // Tailscale Funnel/Serve can fail WebSocket upgrades over HTTP/2.
+            // Long Polling keeps SignalR semantics while using ordinary authenticated HTTP requests.
+            transport: HttpTransportType.LongPolling,
           })
           .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
           .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
