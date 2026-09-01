@@ -47,11 +47,8 @@ function cancelEncounter(): void {
   encounterOpen.value = false
 }
 
-async function leaveCombat(): Promise<void> {
-  const left = await combat.leave()
-  if (left) {
-    lastCombatResult.value = 'Cancelled'
-  }
+function handleCombatLeft(): void {
+  lastCombatResult.value = 'Cancelled'
 }
 
 async function restoreCombat(): Promise<void> {
@@ -89,7 +86,7 @@ watch(
 </script>
 
 <template>
-  <CombatView v-if="combat.isActive" @leave="leaveCombat" />
+  <CombatView v-if="combat.isActive" @leave="handleCombatLeft" />
 
   <section v-else-if="world && character" class="world">
     <header class="world__header">
