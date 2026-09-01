@@ -3,14 +3,14 @@
 Generated from `content/package.json` by `scripts/update-phase3c-talent-content.mjs`.
 
 - Nodes: 96
-- Supported hooks: 32
-- Deferred hooks: 72
+- Supported hooks: 35
+- Deferred hooks: 69
 - Deferred hooks remain data contracts until their owning phase supplies CombatSession, Party, Monster, Boss/Elite, or equipment runtime.
 
 | ID | Branch | Talent | Runtime contracts | Icon |
 | --- | --- | --- | --- | --- |
 | G-1-1 | GUARDIAN | Iron Skin | Supported ARMOR_PERCENT | generated |
-| G-1-2 | GUARDIAN | Combat Stance | Deferred ON_DAMAGE_TAKEN -> COMBAT_SESSION | generated |
+| G-1-2 | GUARDIAN | Combat Stance | Supported ON_DAMAGE_TAKEN | generated |
 | G-1-3 | GUARDIAN | Endurance | Supported STAMINA_PERCENT | generated |
 | G-1-4 | GUARDIAN | Heavy Presence | Deferred ON_AUTO_ATTACK -> COMBAT_SESSION | generated |
 | G-2-1 | GUARDIAN | Shield Reflex | Supported DODGE_PERCENT<br>Deferred ON_HP_THRESHOLD -> COMBAT_SESSION | generated |
@@ -41,14 +41,14 @@ Generated from `content/package.json` by `scripts/update-phase3c-talent-content.
 | G-8-3 | GUARDIAN | Fortress Heart | Deferred ON_DAMAGE_TAKEN -> COMBAT_SESSION | generated |
 | G-9-1 | GUARDIAN | ETERNAL GUARDIAN | Supported INCOMING_PHYSICAL_DAMAGE_REDUCTION_PERCENT<br>Supported INCOMING_MAGICAL_DAMAGE_REDUCTION_PERCENT<br>Deferred ON_DAMAGE_TAKEN -> PARTY | generated |
 | B-1-1 | BERSERKER | Battle Frenzy | Supported ATTACK_POWER_PERCENT | BERSERKER_WAR_MASK |
-| B-1-2 | BERSERKER | Bloodthirst | Deferred ON_ENEMY_KILLED -> COMBAT_SESSION | BERSERKER_BLOOD_RENEWAL |
+| B-1-2 | BERSERKER | Bloodthirst | Supported ON_ENEMY_KILLED | BERSERKER_BLOOD_RENEWAL |
 | B-1-3 | BERSERKER | Keen Senses | Supported ACCURACY_PERCENT | BERSERKER_KEEN_EYE |
 | B-1-4 | BERSERKER | Savage Strength | Supported STRENGTH_PERCENT | BERSERKER_CRUSHING_BLOW |
 | B-2-1 | BERSERKER | Blood Rage | Deferred ON_HP_THRESHOLD -> COMBAT_SESSION | BERSERKER_WAR_MASK |
 | B-2-2 | BERSERKER | Wild Strike | Supported UNLOCK_ABILITY:WILD_STRIKE | BERSERKER_RAGE_SLASH |
 | B-2-3 | BERSERKER | Unrelenting | Supported CRITICAL_CHANCE_PERCENT | BERSERKER_KEEN_EYE |
 | B-2-4 | BERSERKER | Momentum | Deferred ON_ABILITY_USED -> COMBAT_SESSION | BERSERKER_SUNDERING_BLADE |
-| B-3-1 | BERSERKER | Critical Instinct | Deferred ON_CRITICAL_HIT -> COMBAT_SESSION | BERSERKER_KEEN_EYE |
+| B-3-1 | BERSERKER | Critical Instinct | Supported ON_CRITICAL_HIT | BERSERKER_KEEN_EYE |
 | B-3-2 | BERSERKER | Whirlwind | Supported UNLOCK_ABILITY:WHIRLWIND | BERSERKER_BLOOD_BLADES |
 | B-3-3 | BERSERKER | Rending Fury | Supported ARMOR_PENETRATION_PERCENT | BERSERKER_SHATTER_GUARD |
 | B-3-4 | BERSERKER | Blood Trail | Deferred ON_CRITICAL_HIT -> COMBAT_SESSION | BERSERKER_BLOOD_BLADES |

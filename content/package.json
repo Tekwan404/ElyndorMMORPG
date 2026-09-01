@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.5.0",
-  "balanceVersion": "0.4.0",
+  "contentVersion": "0.6.0",
+  "balanceVersion": "0.5.0",
   "publishedAtUtc": "2026-09-01T00:00:00+00:00",
   "definitions": [
     {
@@ -503,6 +503,26 @@
           }
         }
       ]
+    },
+    {
+      "id": "BITE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.9
+        }
+      ]
     }
   ],
   "locations": [
@@ -602,12 +622,10 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+                2,
+                3,
+                4
+              ]
             }
           ]
         },
@@ -1396,12 +1414,10 @@
               "type": "EventTriggered",
               "key": "ON_ENEMY_KILLED",
               "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+                8,
+                12,
+                16
+              ]
             }
           ],
           "iconId": "BERSERKER_BLOOD_RENEWAL"
@@ -1569,11 +1585,10 @@
               "type": "EventTriggered",
               "key": "ON_CRITICAL_HIT",
               "values": [
-                0,
-                0
+                4,
+                8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "internalCooldownSeconds": 1
             }
           ],
           "iconId": "BERSERKER_KEEN_EYE"
@@ -3081,6 +3096,44 @@
           ]
         }
       ]
+    }
+  ],
+  "monsterAiProfiles": [
+    {
+      "id": "WOLF_BASIC_AI",
+      "priorityAbilityIds": [
+        "BITE"
+      ],
+      "version": 1
+    }
+  ],
+  "monsters": [
+    {
+      "id": "WOLF",
+      "name": "Forest Wolf",
+      "rank": "Normal",
+      "level": 3,
+      "maxHp": 180,
+      "stats": {
+        "level": 3,
+        "accuracy": 95,
+        "dodge": 3,
+        "criticalChance": 5,
+        "criticalDamage": 1,
+        "armor": 16,
+        "magicResistance": 8,
+        "armorPenetration": 0,
+        "magicPenetration": 0,
+        "attackPower": 12,
+        "spellPower": 0
+      },
+      "autoAttackInterval": "00:00:02.5000000",
+      "autoAttackBaseDamage": 6,
+      "abilityIds": [
+        "BITE"
+      ],
+      "aiProfileId": "WOLF_BASIC_AI",
+      "version": 1
     }
   ]
 }

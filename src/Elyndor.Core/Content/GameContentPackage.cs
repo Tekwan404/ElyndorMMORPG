@@ -2,6 +2,7 @@ using Elyndor.Core.World;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Talents;
+using Elyndor.Core.Monsters;
 
 namespace Elyndor.Core.Content;
 
@@ -16,7 +17,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<ResourceProfile>? ResourceProfiles = null,
     IReadOnlyList<EffectDefinition>? Effects = null,
     IReadOnlyList<AbilityDefinition>? Abilities = null,
-    IReadOnlyList<TalentTreeDefinition>? TalentTrees = null);
+    IReadOnlyList<TalentTreeDefinition>? TalentTrees = null,
+    IReadOnlyList<MonsterDefinition>? Monsters = null,
+    IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null);
 
 public sealed record GameContentDefinition(
     string Type,

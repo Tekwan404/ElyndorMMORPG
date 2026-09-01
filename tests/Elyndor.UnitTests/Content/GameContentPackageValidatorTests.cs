@@ -1,8 +1,10 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
+using Elyndor.Core.Monsters;
 
 namespace Elyndor.UnitTests.Content;
 
@@ -253,6 +255,28 @@ public sealed class GameContentPackageValidatorTests
         IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
 
         Assert.Contains(errors, error => error.Code == "MISSING_TALENT_MODIFIER");
+    }
+
+    [Fact]
+    public void ValidateRejectsMonsterWithMissingAbilityAndAiProfile()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            Monsters =
+            [
+                new MonsterDefinition(
+                    "WOLF", "Wolf", MonsterRank.Normal, 3, 180,
+                    CombatStats.Default, TimeSpan.FromSeconds(2.5), 8,
+                    ["MISSING_BITE"], "MISSING_AI")
+            ],
+            MonsterAiProfiles = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "MISSING_MONSTER_ABILITY");
+        Assert.Contains(errors, error => error.Code == "MISSING_MONSTER_AI_PROFILE");
     }
 
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>

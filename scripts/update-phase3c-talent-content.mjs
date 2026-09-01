@@ -11,11 +11,12 @@ if (!tree || tree.nodes.length !== 96) {
   throw new Error('Expected the canonical 96-node WARRIOR_TREE.')
 }
 
-const supported = (type, key, values, targetId) => ({
+const supported = (type, key, values, targetId, metadata = {}) => ({
   type,
   key,
   values,
   ...(targetId ? { targetId } : {}),
+  ...metadata,
 })
 const deferred = (type, key, values, owner, targetId) => ({
   type,
@@ -35,6 +36,7 @@ const values = (node, ...items) => {
 
 const modifierFactories = {
   'G-1-1': (n) => [supported('StatModifier', 'ARMOR_PERCENT', values(n, 2, 4, 6, 9))],
+  'G-1-2': (n) => [supported('EventTriggered', 'ON_DAMAGE_TAKEN', values(n, 2, 3, 4))],
   'G-1-3': (n) => [supported('StatModifier', 'STAMINA_PERCENT', values(n, 2, 4, 6, 9))],
   'G-2-1': (n) => [
     supported('StatModifier', 'DODGE_PERCENT', values(n, 2, 4)),
@@ -58,11 +60,16 @@ const modifierFactories = {
     deferred('EventTriggered', 'ON_DAMAGE_TAKEN', zeroes(n), 'PARTY'),
   ],
   'B-1-1': (n) => [supported('StatModifier', 'ATTACK_POWER_PERCENT', values(n, 2, 4, 6, 9))],
+  'B-1-2': (n) => [supported('EventTriggered', 'ON_ENEMY_KILLED', values(n, 8, 12, 16))],
   'B-1-3': (n) => [supported('StatModifier', 'ACCURACY_PERCENT', values(n, 1.5, 3, 4.5, 6))],
   'B-1-4': (n) => [supported('StatModifier', 'STRENGTH_PERCENT', values(n, 3, 6))],
   'B-2-2': (n) => [supported('AbilityModifier', 'UNLOCK_ABILITY', values(n, 1), 'WILD_STRIKE')],
   'B-2-3': (n) => [supported('StatModifier', 'CRITICAL_CHANCE_PERCENT', values(n, 1.5, 3, 4.5, 6))],
   'B-3-2': (n) => [supported('AbilityModifier', 'UNLOCK_ABILITY', values(n, 1), 'WHIRLWIND')],
+  'B-3-1': (n) => [supported(
+    'EventTriggered', 'ON_CRITICAL_HIT', values(n, 4, 8), undefined,
+    { internalCooldownSeconds: 1 },
+  )],
   'B-3-3': (n) => [supported('StatModifier', 'ARMOR_PENETRATION_PERCENT', values(n, 2, 4, 6, 9))],
   'B-4-2': (n) => [
     supported('AbilityModifier', 'ABILITY_DAMAGE_PERCENT', values(n, 10, 20), 'WHIRLWIND'),
@@ -149,6 +156,12 @@ for (const node of tree.nodes) {
 
 const abilities = [
   {
+    id: 'BITE', type: 'Instant', targetType: 'SingleEnemy', resourceCost: 0,
+    cooldown: '00:00:04', castTime: '00:00:00', usesGlobalCooldown: true,
+    globalCooldownCategory: 'Standard', isSpell: false, school: 'PHYSICAL',
+    actions: [{ type: 'Damage', amount: 4, damageType: 'Physical', attackPowerCoefficient: 0.9 }],
+  },
+  {
     id: 'BASTION', type: 'Instant', targetType: 'Self', resourceCost: 40,
     cooldown: '00:01:30', castTime: '00:00:00', usesGlobalCooldown: false,
     globalCooldownCategory: 'None', isSpell: false, school: 'PHYSICAL',
@@ -190,8 +203,39 @@ for (const ability of abilities) {
   else content.abilities.push(ability)
 }
 
-content.contentVersion = '0.5.0'
-content.balanceVersion = '0.4.0'
+content.monsterAiProfiles = [{
+  id: 'WOLF_BASIC_AI',
+  priorityAbilityIds: ['BITE'],
+  version: 1,
+}]
+content.monsters = [{
+  id: 'WOLF',
+  name: 'Forest Wolf',
+  rank: 'Normal',
+  level: 3,
+  maxHp: 180,
+  stats: {
+    level: 3,
+    accuracy: 95,
+    dodge: 3,
+    criticalChance: 5,
+    criticalDamage: 1,
+    armor: 16,
+    magicResistance: 8,
+    armorPenetration: 0,
+    magicPenetration: 0,
+    attackPower: 12,
+    spellPower: 0,
+  },
+  autoAttackInterval: '00:00:02.5000000',
+  autoAttackBaseDamage: 6,
+  abilityIds: ['BITE'],
+  aiProfileId: 'WOLF_BASIC_AI',
+  version: 1,
+}]
+
+content.contentVersion = '0.6.0'
+content.balanceVersion = '0.5.0'
 content.publishedAtUtc = '2026-09-01T00:00:00+00:00'
 
 fs.writeFileSync(packagePath, `${JSON.stringify(content, null, 2)}\n`, 'utf8')

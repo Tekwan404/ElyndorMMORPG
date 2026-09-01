@@ -30,7 +30,9 @@ public sealed record TalentModifierDefinition(
     IReadOnlyList<decimal> Values,
     string? TargetId = null,
     TalentModifierRuntimeStatus RuntimeStatus = TalentModifierRuntimeStatus.Supported,
-    string? DeferredOwner = null);
+    string? DeferredOwner = null,
+    decimal InternalCooldownSeconds = 0,
+    bool CanTriggerFromProc = false);
 
 public sealed record TalentPrerequisite(string TalentId, int RequiredRank = 1);
 
