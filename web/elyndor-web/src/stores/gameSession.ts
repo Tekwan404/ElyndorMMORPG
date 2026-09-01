@@ -54,10 +54,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return authentication.accessToken
   }
 
+  async function refreshSnapshot(): Promise<void> {
+    snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
+  }
+
   async function bootstrap(): Promise<void> {
     state.value = 'loading'
-    snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
-    state.value = snapshot.value.character ? 'world' : 'needs-character'
+    await refreshSnapshot()
+    state.value = snapshot.value?.character ? 'world' : 'needs-character'
   }
 
   async function start(): Promise<void> {
@@ -119,6 +123,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     mutationPending,
     isReady,
     authenticate,
+    refreshSnapshot,
     bootstrap,
     start,
     createCharacter,
