@@ -1,0 +1,113 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const packagePath = path.join(root, 'content', 'package.json')
+const content = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
+
+content.monsterAiProfiles = [
+  {
+    id: 'WOLF_BASIC_AI',
+    priorityAbilityIds: ['BITE'],
+    version: 1,
+  },
+  {
+    id: 'BOAR_BASIC_AI',
+    priorityAbilityIds: [],
+    version: 1,
+  },
+  {
+    id: 'SPIDER_BASIC_AI',
+    priorityAbilityIds: ['BITE'],
+    version: 1,
+  },
+]
+
+content.monsters = [
+  {
+    id: 'WOLF',
+    name: 'Forest Wolf',
+    rank: 'Normal',
+    level: 3,
+    maxHp: 180,
+    stats: {
+      level: 3,
+      accuracy: 95,
+      dodge: 3,
+      criticalChance: 5,
+      criticalDamage: 1,
+      armor: 16,
+      magicResistance: 8,
+      armorPenetration: 0,
+      magicPenetration: 0,
+      attackPower: 12,
+      spellPower: 0,
+    },
+    autoAttackInterval: '00:00:02.5000000',
+    autoAttackBaseDamage: 6,
+    autoAttackAttackPowerCoefficient: 0.5,
+    abilityIds: ['BITE'],
+    aiProfileId: 'WOLF_BASIC_AI',
+    version: 1,
+  },
+  {
+    id: 'FOREST_BOAR',
+    name: 'Forest Boar',
+    rank: 'Normal',
+    level: 2,
+    maxHp: 220,
+    stats: {
+      level: 2,
+      accuracy: 93,
+      dodge: 1,
+      criticalChance: 4,
+      criticalDamage: 1,
+      armor: 22,
+      magicResistance: 5,
+      armorPenetration: 0,
+      magicPenetration: 0,
+      attackPower: 14,
+      spellPower: 0,
+    },
+    autoAttackInterval: '00:00:03.2000000',
+    autoAttackBaseDamage: 8,
+    autoAttackAttackPowerCoefficient: 0.65,
+    abilityIds: [],
+    aiProfileId: 'BOAR_BASIC_AI',
+    version: 1,
+  },
+  {
+    id: 'GIANT_SPIDER',
+    name: 'Giant Spider',
+    rank: 'Normal',
+    level: 2,
+    maxHp: 130,
+    stats: {
+      level: 2,
+      accuracy: 96,
+      dodge: 6,
+      criticalChance: 7,
+      criticalDamage: 1,
+      armor: 8,
+      magicResistance: 10,
+      armorPenetration: 0,
+      magicPenetration: 0,
+      attackPower: 10,
+      spellPower: 0,
+    },
+    autoAttackInterval: '00:00:01.8000000',
+    autoAttackBaseDamage: 3,
+    autoAttackAttackPowerCoefficient: 0.4,
+    abilityIds: ['BITE'],
+    aiProfileId: 'SPIDER_BASIC_AI',
+    version: 1,
+  },
+]
+
+content.contentVersion = '0.6.1'
+content.balanceVersion = '0.5.1'
+content.publishedAtUtc = '2026-09-01T00:00:00+00:00'
+
+fs.writeFileSync(packagePath, `${JSON.stringify(content, null, 2)}\n`, 'utf8')
+console.log('Updated Whispering Forest monsters: WOLF, FOREST_BOAR, GIANT_SPIDER')
