@@ -669,6 +669,8 @@ Verified 2026-09-01: the 96-node Warrior package validates, supported Phase 3 ho
 
 # PHASE 4 — CombatSession + Monster System + Monster AI + Whispering Forest
 
+Phase 4 begins with the bounded Phase 4A contract in `../phases/PHASE_04A_FIRST_PLAYABLE_COMBAT.md`. Phase 4A intentionally proves one playable Warrior-versus-`WOLF` server-authoritative loop before expanding the monster roster or encounter systems.
+
 Docs:
 
 ```text

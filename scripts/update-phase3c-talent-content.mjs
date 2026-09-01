@@ -6,9 +6,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const packagePath = path.join(root, 'content', 'package.json')
 const content = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
 const tree = content.talentTrees.find((candidate) => candidate.id === 'WARRIOR_TREE')
+const warrior = content.classProfiles.find((candidate) => candidate.id === 'WARRIOR')
 
 if (!tree || tree.nodes.length !== 96) {
   throw new Error('Expected the canonical 96-node WARRIOR_TREE.')
+}
+
+if (!warrior) throw new Error('Expected WARRIOR class profile.')
+warrior.combatAutoAttack = {
+  interval: '00:00:02',
+  baseDamage: 0,
+  attackPowerCoefficient: 0.65,
+  resourceOnHit: 10,
 }
 
 const supported = (type, key, values, targetId, metadata = {}) => ({
@@ -229,6 +238,7 @@ content.monsters = [{
   },
   autoAttackInterval: '00:00:02.5000000',
   autoAttackBaseDamage: 6,
+  autoAttackAttackPowerCoefficient: 0.5,
   abilityIds: ['BITE'],
   aiProfileId: 'WOLF_BASIC_AI',
   version: 1,
@@ -255,6 +265,7 @@ const coverage = `# Phase 3C Warrior Talent Coverage\n\n`
   + `- Supported hooks: ${tree.nodes.flatMap((node) => node.modifiers).filter((modifier) => modifier.runtimeStatus !== 'Deferred').length}\n`
   + `- Deferred hooks: ${tree.nodes.flatMap((node) => node.modifiers).filter((modifier) => modifier.runtimeStatus === 'Deferred').length}\n`
   + `- Deferred hooks remain data contracts until their owning phase supplies CombatSession, Party, Monster, Boss/Elite, or equipment runtime.\n\n`
+  + `Phase 4A activates only G-1-2 ON_DAMAGE_TAKEN, B-3-1 ON_CRITICAL_HIT, and B-1-2 ON_ENEMY_KILLED through typed CombatSession hooks.\n\n`
   + `| ID | Branch | Talent | Runtime contracts | Icon |\n`
   + `| --- | --- | --- | --- | --- |\n`
   + `${coverageRows.join('\n')}\n`

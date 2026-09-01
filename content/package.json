@@ -144,7 +144,13 @@
           "abilityId": "BATTLE_SHOUT",
           "unlockLevel": 7
         }
-      ]
+      ],
+      "combatAutoAttack": {
+        "interval": "00:00:02",
+        "baseDamage": 0,
+        "attackPowerCoefficient": 0.65,
+        "resourceOnHit": 10
+      }
     },
     {
       "id": "ARCHER",
@@ -3129,6 +3135,7 @@
       },
       "autoAttackInterval": "00:00:02.5000000",
       "autoAttackBaseDamage": 6,
+      "autoAttackAttackPowerCoefficient": 0.5,
       "abilityIds": [
         "BITE"
       ],

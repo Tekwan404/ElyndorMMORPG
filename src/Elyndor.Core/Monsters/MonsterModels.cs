@@ -20,7 +20,8 @@ public sealed record MonsterDefinition(
     decimal AutoAttackBaseDamage,
     IReadOnlyList<string> AbilityIds,
     string AiProfileId,
-    int Version = 1);
+    int Version = 1,
+    decimal AutoAttackAttackPowerCoefficient = 0.5m);
 
 public sealed record MonsterAiProfile(
     string Id,

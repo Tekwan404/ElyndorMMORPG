@@ -136,22 +136,35 @@ public static class DamagePipeline
         if (absorbed > 0)
         {
             events.Add(new CombatEvent(CombatEventType.ShieldAbsorbed, occurredAtUtc,
-                request.Target.ActorId, Amount: absorbed));
+                request.Target.ActorId, Amount: absorbed,
+                SourceActorId: request.Source.ActorId, TargetActorId: request.Target.ActorId));
         }
 
-        events.Add(new CombatEvent(CombatEventType.DamageApplied, occurredAtUtc,
-            request.Target.ActorId, Amount: hpDamage));
+        if (critical)
+        {
+            events.Add(new CombatEvent(CombatEventType.CriticalHit, occurredAtUtc,
+                request.Source.ActorId, Amount: hpDamage,
+                SourceActorId: request.Source.ActorId, TargetActorId: request.Target.ActorId));
+        }
+
+        events.Add(new CombatEvent(CombatEventType.DamageDealt, occurredAtUtc,
+            request.Target.ActorId, Amount: hpDamage,
+            SourceActorId: request.Source.ActorId, TargetActorId: request.Target.ActorId));
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(
                 CombatEventType.HealingApplied,
                 occurredAtUtc,
                 request.Source.ActorId,
-                Amount: vampirismHealing));
+                Amount: vampirismHealing,
+                SourceActorId: request.Source.ActorId,
+                TargetActorId: request.Source.ActorId));
         }
         if (request.Target.IsDead)
         {
-            events.Add(new CombatEvent(CombatEventType.ActorDied, occurredAtUtc, request.Target.ActorId));
+            events.Add(new CombatEvent(CombatEventType.ActorDied, occurredAtUtc,
+                request.Target.ActorId, SourceActorId: request.Source.ActorId,
+                TargetActorId: request.Target.ActorId));
         }
 
         return new DamageResult(

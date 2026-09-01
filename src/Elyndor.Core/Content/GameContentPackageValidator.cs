@@ -313,6 +313,7 @@ public static class GameContentPackageValidator
                 || monster.MaxHp <= 0
                 || monster.AutoAttackInterval <= TimeSpan.Zero
                 || monster.AutoAttackBaseDamage < 0
+                || monster.AutoAttackAttackPowerCoefficient < 0
                 || monster.Version <= 0)
             {
                 errors.Add(new("INVALID_MONSTER_DEFINITION", path,
@@ -429,6 +430,18 @@ public static class GameContentPackageValidator
                     "INVALID_CLASS_STATS",
                     path,
                     $"Class profile '{profile.Id}' contains negative stats."));
+            }
+
+            if (profile.CombatAutoAttack is { } autoAttack
+                && (autoAttack.Interval <= TimeSpan.Zero
+                    || autoAttack.BaseDamage < 0
+                    || autoAttack.AttackPowerCoefficient < 0
+                    || autoAttack.ResourceOnHit < 0))
+            {
+                errors.Add(new ContentValidationError(
+                    "INVALID_CLASS_AUTO_ATTACK",
+                    path,
+                    $"Class profile '{profile.Id}' contains an invalid combat auto attack."));
             }
 
             HashSet<string> ownedAbilityIds = [];

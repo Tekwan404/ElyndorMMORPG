@@ -5,6 +5,23 @@ public interface IGameRandom
     decimal NextUnit();
 }
 
+public interface IGameRandomFactory
+{
+    IGameRandom Create();
+}
+
+public sealed class SystemGameRandomFactory : IGameRandomFactory
+{
+    public IGameRandom Create() => new SystemGameRandom(Random.Shared.Next());
+
+    private sealed class SystemGameRandom(int seed) : IGameRandom
+    {
+        private readonly Random _random = new(seed);
+
+        public decimal NextUnit() => (decimal)_random.NextDouble();
+    }
+}
+
 public sealed class SequenceGameRandom(params decimal[] values) : IGameRandom
 {
     private int _index;

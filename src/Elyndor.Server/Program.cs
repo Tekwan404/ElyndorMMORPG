@@ -11,6 +11,8 @@ using Elyndor.Server.Administration;
 using Elyndor.Server.Identity;
 using Elyndor.Server.World;
 using Elyndor.Server.Talents;
+using Elyndor.Server.Combat;
+using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -69,6 +71,20 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             AuthenticationOptions options = configuredOptions.Value;
             jwtOptions.MapInboundClaims = false;
             jwtOptions.SaveToken = false;
+            jwtOptions.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    string? token = context.Request.Query["access_token"].FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(token)
+                        && context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat"))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
             jwtOptions.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -86,6 +102,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             };
         });
 builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublisher>();
 
 WebApplication app = builder.Build();
 
@@ -132,6 +150,7 @@ app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
 app.MapTalentEndpoints();
 app.MapTelegramAdminEndpoints();
+app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 
 app.MapGet(
         "/api/v1/status",

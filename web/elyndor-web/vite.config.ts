@@ -18,6 +18,11 @@ export default defineConfig({
         target: process.env.services__server__http__0 ?? 'http://localhost:5080',
         changeOrigin: true,
       },
+      '/hubs': {
+        target: process.env.services__server__http__0 ?? 'http://localhost:5080',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

@@ -85,13 +85,20 @@ public sealed class CombatActorState
 
 public enum CombatEventType
 {
+    CombatStarted,
+    AbilityUsed,
+    AutoAttackStarted,
+    AutoAttackStopped,
+    DamageDealt,
+    CriticalHit,
+    EnemyKilled,
+    CombatEnded,
     EffectApplied,
     EffectRefreshed,
     EffectTicked,
     EffectExpired,
     EffectRemoved,
     ShieldAbsorbed,
-    DamageApplied,
     HealingApplied,
     AbilityStarted,
     AbilityCompleted,
@@ -106,4 +113,8 @@ public sealed record CombatEvent(
     DateTimeOffset OccurredAtUtc,
     Guid ActorId,
     string? DefinitionId = null,
-    decimal Amount = 0);
+    decimal Amount = 0,
+    Guid? SourceActorId = null,
+    Guid? TargetActorId = null,
+    long Sequence = 0,
+    bool IsPeriodic = false);

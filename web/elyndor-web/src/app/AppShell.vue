@@ -4,12 +4,13 @@ import { computed, onMounted, ref } from 'vue'
 import { gameArt } from '@/assets/gameArt'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import CombatView from '@/game/combat/views/CombatView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'hero'
+type ShellView = 'world' | 'hero' | 'combat'
 
 const session = useGameSessionStore()
 const activeView = ref<ShellView>('world')
@@ -29,20 +30,22 @@ const connectionLabel = computed(() => {
 })
 
 const navigation: readonly {
-  id: ShellView | 'location' | 'quests' | 'menu'
+  id: ShellView | 'quests' | 'menu'
   label: string
   icon: string
   enabled: boolean
 }[] = [
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
-  { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: false },
+  { id: 'combat', label: 'Бой', icon: gameArt.navigation.location, enabled: true },
   { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'world' || item.id === 'hero')) activeView.value = item.id
+  if (item.enabled && (item.id === 'world' || item.id === 'hero' || item.id === 'combat')) {
+    activeView.value = item.id
+  }
 }
 
 onMounted(() => {
@@ -63,7 +66,7 @@ onMounted(() => {
       </div>
     </header>
 
-    <section v-if="session.state === 'world' && character" class="hud" aria-label="Состояние героя">
+    <section v-if="session.state === 'world' && character && activeView !== 'combat'" class="hud" aria-label="Состояние героя">
       <div class="hud__identity">
         <b>{{ character.name }}</b>
         <small>ур. {{ character.level }} · {{ character.classId }}</small>
@@ -102,6 +105,7 @@ onMounted(() => {
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <WorldView v-else-if="session.state === 'world' && activeView === 'world'" />
+      <CombatView v-else-if="session.state === 'world' && activeView === 'combat'" />
       <HeroView v-else-if="session.state === 'world'" />
     </main>
 

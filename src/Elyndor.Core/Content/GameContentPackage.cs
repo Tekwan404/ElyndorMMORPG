@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Combat.Sessions;
 
 namespace Elyndor.Core.Content;
 
@@ -46,7 +47,8 @@ public sealed record ClassProfile(
     IReadOnlyList<string> AllowedArmorCategories,
     string PrototypeIdentity,
     IReadOnlyList<string>? StartingAbilityIds = null,
-    IReadOnlyList<AbilityUnlockDefinition>? AbilityUnlocks = null);
+    IReadOnlyList<AbilityUnlockDefinition>? AbilityUnlocks = null,
+    AutoAttackProfile? CombatAutoAttack = null);
 
 public sealed record AbilityUnlockDefinition(string AbilityId, int UnlockLevel);
 

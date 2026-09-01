@@ -466,6 +466,8 @@ RISK
 
 # Phase 4 — CombatSession, Monsters, Monster AI & Whispering Forest
 
+The first bounded execution slice is `PHASE_04A_FIRST_PLAYABLE_COMBAT.md`: one playable Warrior versus `WOLF`, SignalR snapshots/events, simple Wolf AI, and only the first three CombatSession-owned talent hooks. The larger roster, elites, threat, telemetry hardening, and full Whispering Forest loop remain later Phase 4 slices.
+
 ## Цель
 
 Получить первые настоящие бои.

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Elyndor.Core\Elyndor.Core.csproj" />
+    <ProjectReference Include="..\..\src\Elyndor.Infrastructure\Elyndor.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

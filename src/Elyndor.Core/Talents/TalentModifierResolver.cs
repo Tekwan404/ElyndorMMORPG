@@ -13,6 +13,8 @@ public static class TalentModifierResolver
         TalentCombatModifiers combat = new();
         HashSet<string> abilities = new(StringComparer.Ordinal);
         Dictionary<string, TalentAbilityModifiers> abilityModifiers = new(StringComparer.Ordinal);
+        List<ResolvedTalentEventHook> eventHooks = [];
+        List<TalentModifierDefinition> deferredHooks = [];
 
         foreach (TalentDefinition node in tree.Nodes)
         {
@@ -21,13 +23,30 @@ public static class TalentModifierResolver
 
             foreach (TalentModifierDefinition modifier in node.Modifiers ?? [])
             {
-                if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
-                    || modifier.Values.Count < rank)
+                if (modifier.Values.Count < rank)
                 {
                     continue;
                 }
 
+                if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
+                {
+                    deferredHooks.Add(modifier);
+                    continue;
+                }
+
                 decimal value = modifier.Values[rank - 1];
+                if (modifier.Type == TalentModifierType.EventTriggered)
+                {
+                    eventHooks.Add(new ResolvedTalentEventHook(
+                        node.Id,
+                        modifier.Key,
+                        rank,
+                        value,
+                        modifier.TargetId,
+                        TimeSpan.FromSeconds((double)modifier.InternalCooldownSeconds),
+                        modifier.CanTriggerFromProc));
+                    continue;
+                }
                 if (modifier.Type == TalentModifierType.StatModifier
                     || modifier.Type == TalentModifierType.ResourceModifier)
                 {
@@ -54,7 +73,7 @@ public static class TalentModifierResolver
             }
         }
 
-        return new(stats, combat, abilities, abilityModifiers, []);
+        return new(stats, combat, abilities, abilityModifiers, eventHooks, deferredHooks);
     }
 
     private static TalentStatModifiers ApplyStat(

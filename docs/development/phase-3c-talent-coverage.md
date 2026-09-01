@@ -7,6 +7,8 @@ Generated from `content/package.json` by `scripts/update-phase3c-talent-content.
 - Deferred hooks: 69
 - Deferred hooks remain data contracts until their owning phase supplies CombatSession, Party, Monster, Boss/Elite, or equipment runtime.
 
+Phase 4A activates only G-1-2 ON_DAMAGE_TAKEN, B-3-1 ON_CRITICAL_HIT, and B-1-2 ON_ENEMY_KILLED through typed CombatSession hooks.
+
 | ID | Branch | Talent | Runtime contracts | Icon |
 | --- | --- | --- | --- | --- |
 | G-1-1 | GUARDIAN | Iron Skin | Supported ARMOR_PERCENT | generated |

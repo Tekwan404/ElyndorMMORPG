@@ -31,7 +31,8 @@ public sealed class TalentModifierResolverTests
 
         Assert.Equal(4, result.Stats.AttackPowerPercent);
         Assert.Contains("WILD_STRIKE", result.UnlockedAbilityIds);
-        Assert.Empty(result.DeferredHooks);
+        Assert.Single(result.DeferredHooks);
+        Assert.Empty(result.EventHooks);
     }
 
     [Fact]

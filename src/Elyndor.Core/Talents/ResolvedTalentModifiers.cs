@@ -31,11 +31,21 @@ public sealed record TalentCombatModifiers(
     decimal HealingReceivedPercent = 0,
     decimal VampirismPercent = 0);
 
+public sealed record ResolvedTalentEventHook(
+    string TalentId,
+    string Key,
+    int Rank,
+    decimal Value,
+    string? TargetId,
+    TimeSpan InternalCooldown,
+    bool CanTriggerFromProc);
+
 public sealed record ResolvedTalentModifiers(
     TalentStatModifiers Stats,
     TalentCombatModifiers Combat,
     IReadOnlySet<string> UnlockedAbilityIds,
     IReadOnlyDictionary<string, TalentAbilityModifiers> Abilities,
+    IReadOnlyList<ResolvedTalentEventHook> EventHooks,
     IReadOnlyList<TalentModifierDefinition> DeferredHooks)
 {
     public static ResolvedTalentModifiers Empty { get; } = new(
@@ -43,5 +53,6 @@ public sealed record ResolvedTalentModifiers(
         new TalentCombatModifiers(),
         new HashSet<string>(StringComparer.Ordinal),
         new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
+        [],
         []);
 }

@@ -22,6 +22,10 @@ export class ApiClient {
     this.accessToken = token
   }
 
+  getAccessToken(): string | null {
+    return this.accessToken
+  }
+
   setReauthenticate(handler: Reauthenticate): void {
     this.reauthenticate = handler
   }

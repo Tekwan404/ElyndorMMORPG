@@ -116,7 +116,7 @@ public sealed class AbilityEngineTests
 
         Assert.True(result.Succeeded);
         Assert.Equal(75, target.CurrentHp);
-        Assert.Contains(result.Events, combatEvent => combatEvent.Type == CombatEventType.DamageApplied);
+        Assert.Contains(result.Events, combatEvent => combatEvent.Type == CombatEventType.DamageDealt);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class AbilityEngineTests
         Assert.True(result.Succeeded);
         Assert.Equal(80, first.CurrentHp);
         Assert.Equal(80, second.CurrentHp);
-        Assert.Equal(2, result.Events.Count(item => item.Type == CombatEventType.DamageApplied));
+        Assert.Equal(2, result.Events.Count(item => item.Type == CombatEventType.DamageDealt));
     }
 
     private static CombatRuntimeState CreateRuntime(decimal resource) =>

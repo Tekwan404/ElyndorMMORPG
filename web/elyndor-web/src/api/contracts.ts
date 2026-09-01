@@ -106,3 +106,53 @@ export interface TalentSnapshot {
   stateVersion: number; earnedPoints: number; availablePoints: number
   branches: TalentBranch[]; nodes: TalentNode[]; loadouts: TalentLoadout[]
 }
+
+export interface CombatEffectSnapshot {
+  id: string
+  stacks: number
+  expiresAtUtc: string
+}
+
+export interface CombatActorSnapshot {
+  actorId: string
+  kind: 'Player' | 'Monster'
+  definitionId: string
+  name: string
+  hp: number
+  maxHp: number
+  resourceType: string
+  resource: number
+  maxResource: number
+  autoAttackEnabled: boolean
+  cooldowns: Record<string, string>
+  knownAbilityIds: string[]
+  abilities: { id: string; resourceCost: number; cooldownSeconds: number }[]
+  effects: CombatEffectSnapshot[]
+}
+
+export interface CombatSnapshot {
+  sessionId: string
+  sequence: number
+  status: 'Active' | 'Victory' | 'Defeat' | 'Cancelled'
+  serverTimeUtc: string
+  player: CombatActorSnapshot
+  enemy: CombatActorSnapshot
+}
+
+export interface CombatEvent {
+  sequence: number
+  type: string
+  actorId: string
+  sourceActorId: string | null
+  targetActorId: string | null
+  definitionId: string | null
+  amount: number
+  serverTimeUtc: string
+}
+
+export interface CombatUpdate {
+  succeeded: boolean
+  errorCode: string | null
+  snapshot: CombatSnapshot | null
+  events: CombatEvent[]
+}

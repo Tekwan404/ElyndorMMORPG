@@ -17,6 +17,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Completed Phase 2: `docs/source-of-truth/phases/PHASE_02_CHARACTER_STATS_RESOURCES.md`
 - Current phase contract: `docs/source-of-truth/phases/PHASE_03A_COMBAT_KERNEL.md`
 - Current Warrior kit contract: `docs/source-of-truth/phases/PHASE_03B_WARRIOR_ABILITY_KIT.md`
+- Current playable combat contract: `docs/source-of-truth/phases/PHASE_04A_FIRST_PLAYABLE_COMBAT.md`
 - Approved phase order: Phase 3A Combat Kernel → Phase 3B Warrior Ability Kit → Phase 3C Talent Engine and Warrior Talent Content → Phase 4 CombatSession/Monsters/Whispering Forest → Phase 5 Progression/Loot/Equipment/Local Boss
 - Combat: `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`, `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`, `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`, `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`, `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`, `docs/source-of-truth/gameplay/15_MONSTER_AND_AI_SYSTEM.md`
 - Progression and classes: `docs/source-of-truth/gameplay/11_PROGRESSION_SYSTEM.md`, `docs/source-of-truth/gameplay/12_CLASS_SYSTEM.md`, `docs/source-of-truth/gameplay/19_CLASS_ROSTER_AND_CHARACTER_CREATION.md`
@@ -26,7 +27,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Content: `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`, `content/README.md`
 - Infrastructure/testing: `docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md`, `.github/workflows/ci.yml`, `docs/development/getting-started.md`
 
-Phase 0, Phase 1, and Phase 2 Definitions of Done are verified in their phase documents. Phase 3B is the active approved slice by explicit product decision; remaining Phase 3A hardening stays tracked separately. Do not implement Phase 3C, Monster System, or later gameplay until their owning slice is explicitly started.
+Phase 0 through Phase 3C are implemented. Phase 4A is the active bounded slice: Warrior versus `WOLF`, in-memory `CombatSession`, simple Monster AI, SignalR transport, minimal Telegram combat UI, and three explicitly owned talent hooks. Do not expand into XP, loot, equipment, elites, bosses, party combat, or the remaining Phase 4 encounter roster without a separate approved slice.
 
 ## Core invariants
 
