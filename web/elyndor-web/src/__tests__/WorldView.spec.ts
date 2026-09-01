@@ -29,7 +29,7 @@ describe('WorldView', () => {
 
   it('discovers Wolf before starting the existing combat flow', async () => {
     const session = useGameSessionStore(); session.snapshot = snapshot('WHISPERING_FOREST')
-    const combat = useCombatSessionStore(); vi.spyOn(combat, 'connect').mockResolvedValue(undefined); vi.spyOn(combat, 'resume').mockResolvedValue(undefined)
+    const combat = useCombatSessionStore(); vi.spyOn(combat, 'connect').mockResolvedValue(undefined); vi.spyOn(combat, 'resume').mockResolvedValue(true)
     const startCombat = vi.spyOn(combat, 'startCombat').mockImplementation(async () => { combat.snapshot = combatSnapshot(); return true })
     const wrapper = mount(WorldView); await flushPromises()
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false); expect(startCombat).not.toHaveBeenCalled()
