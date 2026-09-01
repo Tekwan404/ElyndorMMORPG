@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@microsoft/signalr', () => ({
   HubConnectionState: { Connected: 'Connected' },
+  HttpTransportType: { LongPolling: 4 },
   LogLevel: { Warning: 3, Error: 4 },
   HubConnectionBuilder: class {
     withUrl() { return this }
