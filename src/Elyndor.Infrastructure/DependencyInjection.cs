@@ -1,6 +1,7 @@
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Talents;
 using Elyndor.Infrastructure.World;
 using Microsoft.Extensions.Hosting;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         builder.AddNpgsqlDbContext<GameDbContext>("game");
         builder.Services.AddScoped<AccountResolver>();
         builder.Services.AddScoped<CharacterCreationService>();
+        builder.Services.AddScoped<TalentAllocationService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
 

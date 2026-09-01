@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
 
     public DbSet<TravelOperation> TravelOperations => Set<TravelOperation>();
+
+    public DbSet<CharacterTalents> CharacterTalents => Set<CharacterTalents>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

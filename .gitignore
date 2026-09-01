@@ -1,33 +1,32 @@
-# .NET
-**/bin/
-**/obj/
-*.user
-*.suo
-.vs/
+```
+# Build artifacts
+bin/
+obj/
+out/
+dist/
+build/
+target/
 
-# Node / Vue
-**/node_modules/
-**/dist/
-**/.vite/
-**/playwright-report/
-**/test-results/
-.playwright-cli/
-output/
-.superpowers/
+# Dependencies
+node_modules/
+packages/
 
-# Local configuration and secrets
-.elyndor/
-.env
-.env.*
-!.env.example
-appsettings.*.local.json
-secrets.json
-
-# IDE / OS
-.idea/
+# IDE files
 .vscode/
+.idea/
+*.sln.docstates
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Aspire
-.aspire/
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Configuration
+global.json
+```
