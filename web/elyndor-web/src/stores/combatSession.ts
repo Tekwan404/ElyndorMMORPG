@@ -7,7 +7,7 @@ import {
   type HubConnection,
 } from '@microsoft/signalr'
 
-import { apiClient } from '@/api/apiClient'
+import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { CombatEvent, CombatSnapshot, CombatUpdate } from '@/api/contracts'
 
 export const useCombatSessionStore = defineStore('combatSession', () => {
@@ -18,33 +18,49 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const pending = ref(false)
   const isActive = computed(() => snapshot.value?.status === 'Active')
   let connection: HubConnection | null = null
+  let connectPromise: Promise<void> | null = null
 
   async function connect(): Promise<void> {
     if (connection?.state === HubConnectionState.Connected) return
-    connectionState.value = 'connecting'
-    if (!connection) {
-      connection = new HubConnectionBuilder()
-        .withUrl('/hubs/combat', {
-          accessTokenFactory: () => apiClient.getAccessToken() ?? '',
-        })
-        .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
-        .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
-        .build()
-      connection.on('CombatUpdated', applyUpdate)
-      connection.on('CombatEnded', applyUpdate)
-      connection.onreconnecting(() => (connectionState.value = 'connecting'))
-      connection.onreconnected(() => {
-        connectionState.value = 'connected'
-        void resume()
-      })
-      connection.onclose(() => (connectionState.value = 'disconnected'))
-    }
-    await connection.start()
-    connectionState.value = 'connected'
+    if (connectPromise) return await connectPromise
+
+    connectPromise = connectCore().finally(() => {
+      connectPromise = null
+    })
+    return await connectPromise
   }
 
-  async function startCombat(): Promise<void> {
-    await invoke('StartCombat', 'WOLF')
+  async function connectCore(): Promise<void> {
+    connectionState.value = 'connecting'
+    try {
+      await apiClient.ensureFreshAccessToken()
+      if (!connection) {
+        connection = new HubConnectionBuilder()
+          .withUrl('/hubs/combat', {
+            accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
+          })
+          .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
+          .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
+          .build()
+        connection.on('CombatUpdated', applyUpdate)
+        connection.on('CombatEnded', applyUpdate)
+        connection.onreconnecting(() => (connectionState.value = 'connecting'))
+        connection.onreconnected(() => {
+          connectionState.value = 'connected'
+          void resume()
+        })
+        connection.onclose(() => (connectionState.value = 'disconnected'))
+      }
+      await connection.start()
+      connectionState.value = 'connected'
+    } catch (error) {
+      connectionState.value = 'disconnected'
+      throw error
+    }
+  }
+
+  async function startCombat(monsterId = 'WOLF'): Promise<boolean> {
+    return await invoke('StartCombat', monsterId)
   }
 
   async function useAbility(abilityId: string): Promise<void> {
@@ -73,22 +89,29 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     applyUpdate(update)
   }
 
-  async function leave(): Promise<void> {
-    await invoke('LeaveCombat')
-    snapshot.value = null
-    events.value = []
+  async function leave(): Promise<boolean> {
+    const succeeded = await invoke('LeaveCombat')
+    if (succeeded || errorCode.value === 'combat_not_found') {
+      snapshot.value = null
+      events.value = []
+    }
+    return succeeded
   }
 
-  async function invoke(method: string, ...args: unknown[]): Promise<void> {
-    if (pending.value) return
+  async function invoke(method: string, ...args: unknown[]): Promise<boolean> {
+    if (pending.value) return false
     pending.value = true
     errorCode.value = null
     try {
       await connect()
       const update = await connection!.invoke<CombatUpdate>(method, ...args)
       applyUpdate(update)
-    } catch {
-      errorCode.value = 'combat_connection_failed'
+      return update.succeeded
+    } catch (error) {
+      errorCode.value = error instanceof ApiRequestError
+        ? error.code
+        : 'combat_connection_failed'
+      return false
     } finally {
       pending.value = false
     }

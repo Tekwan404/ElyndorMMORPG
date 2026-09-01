@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { gameArt } from '@/assets/gameArt'
+import { computed, onUnmounted, ref } from 'vue'
+
 import type { CombatEvent } from '@/api/contracts'
+import { gameArt } from '@/assets/gameArt'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { UIButton, UIHealthBar } from '@/ui/components'
 
+const emit = defineEmits<{ leave: [] }>()
 const combat = useCombatSessionStore()
 const now = ref(Date.now())
 const timer = window.setInterval(() => (now.value = Date.now()), 250)
@@ -39,34 +41,28 @@ function eventText(event: CombatEvent): string {
   }
 }
 
-onMounted(async () => {
-  try {
-    await combat.connect()
-    await combat.resume()
-  } catch {
-    // Connection state and retry controls remain visible to the player.
-  }
-})
+async function leaveCombat(): Promise<void> {
+  const left = await combat.leave()
+  if (left) emit('leave')
+}
+
 onUnmounted(() => window.clearInterval(timer))
 </script>
 
 <template>
   <section class="combat-screen">
-    <div v-if="!snapshot" class="combat-entry">
-      <p class="eyebrow">WHISPERING FOREST · ПРОТОТИП</p>
-      <h1>Охота на волка</h1>
-      <p>Первый серверный бой Elyndor. Волк атакует сам — исход определяет только сервер.</p>
-      <UIButton :disabled="combat.pending" @click="combat.startCombat">Начать бой</UIButton>
-      <small v-if="combat.errorCode" class="error">{{ combat.errorCode }}</small>
-    </div>
-
-    <template v-else>
+    <template v-if="snapshot">
       <header class="enemy-panel">
-        <div><p class="eyebrow">{{ snapshot.enemy.definitionId }}</p><h1>{{ snapshot.enemy.name }}</h1></div>
+        <div>
+          <p class="eyebrow">{{ snapshot.enemy.definitionId }}</p>
+          <h1>{{ snapshot.enemy.name }}</h1>
+        </div>
         <span class="combat-state" :data-status="snapshot.status">{{ snapshot.status }}</span>
         <UIHealthBar label="Wolf HP" :value="snapshot.enemy.hp" :max="snapshot.enemy.maxHp" />
         <div v-if="snapshot.enemy.effects.length" class="effects">
-          <span v-for="effect in snapshot.enemy.effects" :key="effect.id">{{ effect.id }}<b v-if="effect.stacks > 1">×{{ effect.stacks }}</b></span>
+          <span v-for="effect in snapshot.enemy.effects" :key="effect.id">
+            {{ effect.id }}<b v-if="effect.stacks > 1">×{{ effect.stacks }}</b>
+          </span>
         </div>
       </header>
 
@@ -75,7 +71,12 @@ onUnmounted(() => window.clearInterval(timer))
       <section class="player-panel">
         <div class="player-bars">
           <UIHealthBar label="Health" :value="snapshot.player.hp" :max="snapshot.player.maxHp" />
-          <UIHealthBar label="Rage" tone="rage" :value="snapshot.player.resource" :max="snapshot.player.maxResource" />
+          <UIHealthBar
+            label="Rage"
+            tone="rage"
+            :value="snapshot.player.resource"
+            :max="snapshot.player.maxResource"
+          />
         </div>
         <div class="abilities" aria-label="Способности Warrior">
           <button
@@ -83,41 +84,63 @@ onUnmounted(() => window.clearInterval(timer))
             :key="ability.id"
             class="ability"
             type="button"
-            :disabled="!combat.isActive || combat.pending || cooldownRemaining(ability.id) > 0 || snapshot.player.resource < ability.resourceCost"
+            :disabled="
+              !combat.isActive
+              || combat.pending
+              || cooldownRemaining(ability.id) > 0
+              || snapshot.player.resource < ability.resourceCost
+            "
             @click="combat.useAbility(ability.id)"
           >
             <span class="ability__icon">
               <img v-if="abilityArt[ability.id]" :src="abilityArt[ability.id]" alt="" />
               <b v-else>{{ ability.id.slice(0, 2) }}</b>
-              <i v-if="cooldownRemaining(ability.id) > 0">{{ Math.ceil(cooldownRemaining(ability.id)) }}</i>
+              <i v-if="cooldownRemaining(ability.id) > 0">
+                {{ Math.ceil(cooldownRemaining(ability.id)) }}
+              </i>
               <em v-if="ability.resourceCost > 0">{{ ability.resourceCost }}</em>
             </span>
             <small>{{ ability.id.split('_').join(' ') }}</small>
           </button>
         </div>
         <div class="controls">
-          <UIButton v-if="combat.isActive" variant="secondary" :disabled="combat.pending" @click="combat.toggleAutoAttack">
+          <UIButton
+            variant="secondary"
+            :disabled="!combat.isActive || combat.pending"
+            @click="combat.toggleAutoAttack"
+          >
             {{ snapshot.player.autoAttackEnabled ? 'Остановить автоатаку' : 'Включить автоатаку' }}
           </UIButton>
-          <UIButton v-else :disabled="combat.pending" @click="combat.startCombat">Новый бой</UIButton>
-          <UIButton variant="ghost" :disabled="combat.pending" @click="combat.leave">Покинуть</UIButton>
+          <UIButton variant="ghost" :disabled="combat.pending" @click="leaveCombat">
+            Покинуть бой
+          </UIButton>
         </div>
       </section>
 
       <section class="combat-log" aria-live="polite">
         <b>Combat log</b>
-        <ol><li v-for="event in combat.events.slice(-8).reverse()" :key="event.sequence"><span>#{{ event.sequence }}</span>{{ eventText(event) }}</li></ol>
+        <ol>
+          <li v-for="event in combat.events.slice(-8).reverse()" :key="event.sequence">
+            <span>#{{ event.sequence }}</span>{{ eventText(event) }}
+          </li>
+        </ol>
       </section>
       <p v-if="combat.errorCode" class="error">{{ combat.errorCode }}</p>
     </template>
+
+    <div v-else class="combat-missing">
+      <h1>Бой прерван</h1>
+      <p>Активная серверная сессия не найдена.</p>
+      <UIButton variant="secondary" @click="emit('leave')">Вернуться в мир</UIButton>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .combat-screen { display: grid; min-height: 100%; align-content: start; background: var(--ui-color-background); }
-.combat-entry { display: grid; min-height: 100%; place-content: center; justify-items: start; gap: var(--ui-space-4); padding: var(--ui-space-6); background: linear-gradient(rgb(7 9 19 / 55%), rgb(7 9 19 / 94%)), url('@/assets/world/forest.jpg') center/cover; }
-.combat-entry h1, .combat-entry p { margin: 0; }
-.combat-entry p:not(.eyebrow) { max-width: 28rem; color: var(--ui-color-text-secondary); line-height: 1.5; }
+.combat-missing { display: grid; min-height: 100%; place-content: center; justify-items: start; gap: var(--ui-space-3); padding: var(--ui-space-6); background: linear-gradient(rgb(7 9 19 / 55%), rgb(7 9 19 / 94%)), url('@/assets/world/forest.jpg') center/cover; }
+.combat-missing h1, .combat-missing p { margin: 0; }
+.combat-missing p { color: var(--ui-color-text-secondary); }
 .eyebrow { margin: 0; color: var(--ui-color-primary); font-size: var(--ui-font-size-xs); letter-spacing: .12em; }
 .enemy-panel, .player-panel, .combat-log { padding: var(--ui-space-3) var(--ui-space-4); border-bottom: 1px solid var(--ui-color-border); background: rgb(15 18 34 / 94%); }
 .enemy-panel { display: grid; grid-template-columns: 1fr auto; gap: var(--ui-space-2) var(--ui-space-3); }

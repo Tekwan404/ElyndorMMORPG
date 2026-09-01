@@ -32,15 +32,8 @@ public sealed record CombatParticipantDefinition(
     AutoAttackProfile AutoAttack,
     IReadOnlySet<string> KnownAbilityIds);
 
-public sealed record CombatEffectSnapshot(
-    string Id,
-    int Stacks,
-    DateTimeOffset ExpiresAtUtc);
-
-public sealed record CombatAbilitySnapshot(
-    string Id,
-    decimal ResourceCost,
-    TimeSpan Cooldown);
+public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
+public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
 
 public sealed record CombatActorSnapshot(
     Guid ActorId,
@@ -80,6 +73,7 @@ public static class CombatErrorCodes
     public const string AlreadyActive = "combat_already_active";
     public const string UnsupportedMonster = "combat_monster_unsupported";
     public const string UnsupportedClass = "combat_class_unsupported";
+    public const string InvalidLocation = "combat_location_invalid";
 }
 
 public sealed record CombatCommandResult(

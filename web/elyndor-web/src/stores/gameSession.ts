@@ -30,28 +30,39 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   apiClient.setReauthenticate(async () => authenticate(true))
 
   async function authenticate(isRetry = false): Promise<string> {
-    state.value = isRetry ? 'reauthenticating' : 'authenticating'
-    const initData = getTelegramInitData()
-    const endpoint = initData
-      ? '/api/v1/auth/telegram'
-      : import.meta.env.DEV || isLoopbackOrigin()
-        ? '/api/v1/auth/development'
-        : null
-    if (!endpoint) {
-      throw new ApiRequestError(401, 'telegram_init_data_missing')
+    const previousState = state.value
+    if (!isRetry) {
+      state.value = 'authenticating'
+    } else if (previousState !== 'world' && previousState !== 'needs-character') {
+      state.value = 'reauthenticating'
     }
+    try {
+      const initData = getTelegramInitData()
+      const endpoint = initData
+        ? '/api/v1/auth/telegram'
+        : import.meta.env.DEV || isLoopbackOrigin()
+          ? '/api/v1/auth/development'
+          : null
+      if (!endpoint) {
+        throw new ApiRequestError(401, 'telegram_init_data_missing')
+      }
 
-    const authentication = await apiClient.request<AuthenticationResponse>(
-      endpoint,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(initData ? { initData } : {}),
-      },
-      false,
-    )
-    apiClient.setAccessToken(authentication.accessToken)
-    return authentication.accessToken
+      const authentication = await apiClient.request<AuthenticationResponse>(
+        endpoint,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(initData ? { initData } : {}),
+        },
+        false,
+      )
+      apiClient.setAccessToken(authentication.accessToken)
+      return authentication.accessToken
+    } finally {
+      if (isRetry && state.value === 'reauthenticating') {
+        state.value = previousState
+      }
+    }
   }
 
   async function refreshSnapshot(): Promise<void> {
