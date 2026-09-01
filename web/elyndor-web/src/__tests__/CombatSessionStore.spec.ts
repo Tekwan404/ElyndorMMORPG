@@ -5,6 +5,7 @@ const signalRMock = vi.hoisted(() => ({
   accessTokenFactory: null as null | (() => string | Promise<string>),
   calls: [] as string[],
   transport: null as number | null,
+  startError: null as Error | null,
 }))
 
 vi.mock('@microsoft/signalr', () => ({
@@ -32,6 +33,7 @@ vi.mock('@microsoft/signalr', () => ({
         start: vi.fn(async () => {
           signalRMock.calls.push('signalr:start')
           await signalRMock.accessTokenFactory?.()
+          if (signalRMock.startError) throw signalRMock.startError
           connection.state = 'Connected'
         }),
         invoke: vi.fn(),
@@ -50,6 +52,7 @@ describe('combatSession realtime authentication', () => {
     signalRMock.calls.length = 0
     signalRMock.accessTokenFactory = null
     signalRMock.transport = null
+    signalRMock.startError = null
     vi.restoreAllMocks()
   })
 
@@ -68,5 +71,22 @@ describe('combatSession realtime authentication', () => {
     expect(ensureFreshAccessToken).toHaveBeenCalledTimes(2)
     expect(signalRMock.transport).toBe(4)
     expect(store.connectionState).toBe('connected')
+    expect(store.diagnostic).toBeNull()
+  })
+
+  it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    signalRMock.startError = new Error('Failed to complete negotiation with the server')
+
+    const store = useCombatSessionStore()
+
+    await expect(store.connect()).rejects.toThrow('Failed to complete negotiation')
+    expect(store.connectionState).toBe('disconnected')
+    expect(store.errorCode).toBe('combat_negotiate_failed')
+    expect(store.diagnostic).toMatchObject({
+      stage: 'signalr_start',
+      operation: 'connect',
+      code: 'combat_negotiate_failed',
+    })
   })
 })
