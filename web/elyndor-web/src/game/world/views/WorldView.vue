@@ -195,8 +195,16 @@ watch(
     <div v-if="session.errorCode" role="alert">
       <UIToast tone="danger">{{ session.errorCode }}</UIToast>
     </div>
-    <div v-if="combat.errorCode" role="alert">
-      <UIToast tone="danger">{{ combat.errorCode }}</UIToast>
+    <div v-if="combat.errorCode" role="alert" data-combat-diagnostic>
+      <UIToast tone="danger" title="Ошибка realtime-соединения">
+        <code>{{ combat.errorCode }}</code>
+        <div v-if="combat.diagnostic" class="diagnostic">
+          <small><b>stage:</b> {{ combat.diagnostic.stage }}</small>
+          <small v-if="combat.diagnostic.operation"><b>operation:</b> {{ combat.diagnostic.operation }}</small>
+          <small v-if="combat.diagnostic.statusCode !== null"><b>HTTP:</b> {{ combat.diagnostic.statusCode }}</small>
+          <small><b>message:</b> {{ combat.diagnostic.message }}</small>
+        </div>
+      </UIToast>
     </div>
   </section>
 </template>
@@ -273,6 +281,15 @@ h1 {
 .path-card__copy { display: grid; min-width: 0; gap: var(--ui-space-1); }
 .path-card__copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .path-card__copy small { color: var(--ui-color-text-muted); line-height: var(--ui-line-height-normal); }
+.diagnostic {
+  display: grid;
+  gap: var(--ui-space-1);
+  margin-top: var(--ui-space-2);
+  overflow-wrap: anywhere;
+}
+.diagnostic small { color: var(--ui-color-text-muted); }
+.diagnostic b { color: var(--ui-color-text-secondary); }
+code { overflow-wrap: anywhere; color: var(--ui-color-danger); }
 @media (max-width: 360px) {
   .world {
     padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left))
