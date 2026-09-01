@@ -27,15 +27,16 @@ function cooldownRemaining(abilityId: string): number {
 
 function eventText(event: CombatEvent): string {
   const definition = event.definitionId?.split('_').join(' ') ?? ''
+  const enemyName = snapshot.value?.enemy.name ?? 'противником'
   switch (event.type) {
-    case 'CombatStarted': return 'Бой с волком начался'
+    case 'CombatStarted': return `Бой с ${enemyName} начался`
     case 'AbilityUsed': return `${definition}: способность применена`
     case 'DamageDealt': return `${definition || 'Удар'}: ${event.amount} урона`
     case 'CriticalHit': return `Критический удар: ${event.amount}`
     case 'ResourceChanged': return `${event.amount > 0 ? '+' : ''}${event.amount} Rage (${definition})`
     case 'EffectApplied': return `Эффект: ${definition}`
-    case 'ActorDied': return 'Противник повержен'
-    case 'EnemyKilled': return 'Волк убит'
+    case 'ActorDied': return 'Участник боя повержен'
+    case 'EnemyKilled': return `${enemyName} повержен`
     case 'CombatEnded': return event.definitionId === 'Victory' ? 'Победа' : 'Бой завершён'
     default: return definition ? `${event.type}: ${definition}` : event.type
   }
@@ -58,7 +59,11 @@ onUnmounted(() => window.clearInterval(timer))
           <h1>{{ snapshot.enemy.name }}</h1>
         </div>
         <span class="combat-state" :data-status="snapshot.status">{{ snapshot.status }}</span>
-        <UIHealthBar label="Wolf HP" :value="snapshot.enemy.hp" :max="snapshot.enemy.maxHp" />
+        <UIHealthBar
+          :label="`${snapshot.enemy.name} HP`"
+          :value="snapshot.enemy.hp"
+          :max="snapshot.enemy.maxHp"
+        />
         <div v-if="snapshot.enemy.effects.length" class="effects">
           <span v-for="effect in snapshot.enemy.effects" :key="effect.id">
             {{ effect.id }}<b v-if="effect.stacks > 1">×{{ effect.stacks }}</b>
