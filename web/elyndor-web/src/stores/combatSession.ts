@@ -11,11 +11,22 @@ import {
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { CombatEvent, CombatSnapshot, CombatUpdate } from '@/api/contracts'
 
+type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
+
+export interface CombatRealtimeDiagnostic {
+  stage: CombatRealtimeStage
+  operation: string | null
+  code: string
+  statusCode: number | null
+  message: string
+}
+
 export const useCombatSessionStore = defineStore('combatSession', () => {
   const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const snapshot = ref<CombatSnapshot | null>(null)
   const events = ref<CombatEvent[]>([])
   const errorCode = ref<string | null>(null)
+  const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
   const isActive = computed(() => snapshot.value?.status === 'Active')
   let connection: HubConnection | null = null
@@ -33,32 +44,51 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   async function connectCore(): Promise<void> {
     connectionState.value = 'connecting'
+    diagnostic.value = null
+
     try {
       await apiClient.ensureFreshAccessToken()
-      if (!connection) {
-        connection = new HubConnectionBuilder()
-          .withUrl('/hubs/combat', {
-            accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
-            // Tailscale Funnel/Serve can fail WebSocket upgrades over HTTP/2.
-            // Long Polling keeps SignalR semantics while using ordinary authenticated HTTP requests.
-            transport: HttpTransportType.LongPolling,
-          })
-          .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
-          .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
-          .build()
-        connection.on('CombatUpdated', applyUpdate)
-        connection.on('CombatEnded', applyUpdate)
-        connection.onreconnecting(() => (connectionState.value = 'connecting'))
-        connection.onreconnected(() => {
-          connectionState.value = 'connected'
-          void resume()
+    } catch (error) {
+      recordFailure('auth_refresh', null, error)
+      connectionState.value = 'disconnected'
+      throw error
+    }
+
+    if (!connection) {
+      connection = new HubConnectionBuilder()
+        .withUrl('/hubs/combat', {
+          accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
+          // Tailscale Funnel/Serve can fail WebSocket upgrades over HTTP/2.
+          // Long Polling keeps SignalR semantics while using ordinary authenticated HTTP requests.
+          transport: HttpTransportType.LongPolling,
         })
-        connection.onclose(() => (connectionState.value = 'disconnected'))
-      }
+        .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
+        .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
+        .build()
+      connection.on('CombatUpdated', applyUpdate)
+      connection.on('CombatEnded', applyUpdate)
+      connection.onreconnecting((error) => {
+        connectionState.value = 'connecting'
+        if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
+      })
+      connection.onreconnected(() => {
+        connectionState.value = 'connected'
+        diagnostic.value = null
+        void resume()
+      })
+      connection.onclose((error) => {
+        connectionState.value = 'disconnected'
+        if (error) recordFailure('signalr_start', 'connection_closed', error)
+      })
+    }
+
+    try {
       await connection.start()
       connectionState.value = 'connected'
+      diagnostic.value = null
     } catch (error) {
       connectionState.value = 'disconnected'
+      recordFailure('signalr_start', 'connect', error)
       throw error
     }
   }
@@ -81,16 +111,23 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     )
   }
 
-  async function resume(): Promise<void> {
-    if (connection?.state !== HubConnectionState.Connected) return
-    const update = await connection.invoke<CombatUpdate>('ResumeCombat')
-    if (update.errorCode === 'combat_not_found') {
-      snapshot.value = null
-      events.value = []
-      errorCode.value = null
-      return
+  async function resume(): Promise<boolean> {
+    if (connection?.state !== HubConnectionState.Connected) return false
+    try {
+      const update = await connection.invoke<CombatUpdate>('ResumeCombat')
+      if (update.errorCode === 'combat_not_found') {
+        snapshot.value = null
+        events.value = []
+        errorCode.value = null
+        diagnostic.value = null
+        return true
+      }
+      applyUpdate(update)
+      return update.succeeded
+    } catch (error) {
+      recordFailure('resume', 'ResumeCombat', error)
+      return false
     }
-    applyUpdate(update)
   }
 
   async function leave(): Promise<boolean> {
@@ -106,15 +143,19 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (pending.value) return false
     pending.value = true
     errorCode.value = null
+    diagnostic.value = null
+    let connected = false
     try {
       await connect()
+      connected = true
       const update = await connection!.invoke<CombatUpdate>(method, ...args)
       applyUpdate(update)
       return update.succeeded
     } catch (error) {
-      errorCode.value = error instanceof ApiRequestError
-        ? error.code
-        : 'combat_connection_failed'
+      // connectCore already records the exact auth/transport stage.
+      if (connected || diagnostic.value === null) {
+        recordFailure('hub_invoke', method, error)
+      }
       return false
     } finally {
       pending.value = false
@@ -124,8 +165,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   function applyUpdate(update: CombatUpdate): void {
     if (!update.succeeded) {
       errorCode.value = update.errorCode
+      diagnostic.value = null
       return
     }
+    errorCode.value = null
+    diagnostic.value = null
     if (update.snapshot && snapshot.value?.sessionId !== update.snapshot.sessionId) {
       snapshot.value = null
       events.value = []
@@ -138,11 +182,22 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     events.value = [...events.value, ...fresh].slice(-40)
   }
 
+  function recordFailure(stage: CombatRealtimeStage, operation: string | null, error: unknown): void {
+    const statusCode = getStatusCode(error)
+    const message = sanitizeDiagnosticMessage(getErrorMessage(error))
+    const code = classifyFailure(stage, operation, statusCode, message, error)
+    const details: CombatRealtimeDiagnostic = { stage, operation, code, statusCode, message }
+    diagnostic.value = details
+    errorCode.value = code
+    console.error('[combat-realtime]', details)
+  }
+
   return {
     connectionState,
     snapshot,
     events,
     errorCode,
+    diagnostic,
     pending,
     isActive,
     connect,
@@ -153,3 +208,56 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     leave,
   }
 })
+
+function classifyFailure(
+  stage: CombatRealtimeStage,
+  operation: string | null,
+  statusCode: number | null,
+  message: string,
+  error: unknown,
+): string {
+  if (stage === 'auth_refresh') {
+    return error instanceof ApiRequestError
+      ? `combat_auth_refresh_${error.code}`
+      : 'combat_auth_refresh_failed'
+  }
+
+  if (stage === 'signalr_start') {
+    if (statusCode !== null && /negotiat/i.test(message)) return `combat_negotiate_http_${statusCode}`
+    if (statusCode !== null) return `combat_signalr_start_http_${statusCode}`
+    if (/negotiat/i.test(message)) return 'combat_negotiate_failed'
+    if (/long\s*poll|longpoll/i.test(message)) return 'combat_long_polling_start_failed'
+    return 'combat_signalr_start_failed'
+  }
+
+  if (stage === 'resume') {
+    return statusCode !== null ? `combat_resume_http_${statusCode}` : 'combat_resume_failed'
+  }
+
+  const operationCode = operation?.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase() ?? 'unknown'
+  return statusCode !== null
+    ? `combat_hub_${operationCode}_http_${statusCode}`
+    : `combat_hub_${operationCode}_failed`
+}
+
+function getStatusCode(error: unknown): number | null {
+  if (error instanceof ApiRequestError) return error.status
+  if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+    const value = (error as { statusCode?: unknown }).statusCode
+    return typeof value === 'number' ? value : null
+  }
+  return null
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  return 'Unknown realtime error'
+}
+
+function sanitizeDiagnosticMessage(message: string): string {
+  return message
+    .replace(/([?&]access_token=)[^&\s]+/gi, '$1[redacted]')
+    .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, 'Bearer [redacted]')
+    .slice(0, 320)
+}
