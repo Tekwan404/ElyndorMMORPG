@@ -36,9 +36,11 @@ Telegram Mini App
 
 The separate bottom-navigation Combat entry is intentionally removed. Combat is entered through the world exploration loop.
 
-## Content update
+## Content layout
 
-The committed updater `scripts/update-phase4-monster-content.mjs` writes the Phase 4A monster roster into `content/package.json` and bumps content/balance versions to `0.6.1 / 0.5.1`.
+The base package remains `content/package.json`. Phase 4A monster runtime data lives in the versioned `content/whispering-forest-monsters.json` overlay. `GameContentPackageLoader` merges that overlay before running the normal package validator, so build/publish copies it automatically and no manual generation step is required.
+
+The overlay currently reports content/balance versions `0.6.1 / 0.5.1`.
 
 ## Explicitly deferred
 
