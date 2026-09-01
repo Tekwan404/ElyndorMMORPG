@@ -3,17 +3,20 @@ using System;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Elyndor.Infrastructure.Persistence.Migrations
-{
+namespace Elyndor.Infrastructure.Persistence.Migrations;
+
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260901051839_TelegramAdministration")]
+    partial class TelegramAdministration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,54 +186,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("accounts", "game");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
-                {
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ActiveLoadoutId")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<DateTimeOffset>("LastChangedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Loadout1RanksJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Loadout2RanksJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<long>("StateVersion")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TalentTreeId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int>("TalentVersion")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CharacterId")
-                        .HasName("pk_character_talent_states");
-
-                    b.ToTable("character_talent_states", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_character_talent_states_active_loadout", "\"ActiveLoadoutId\" IN ('LOADOUT_1', 'LOADOUT_2')");
-
-                            t.HasCheckConstraint("ck_character_talent_states_loadout_1_json", "jsonb_typeof(\"Loadout1RanksJson\") = 'object'");
-
-                            t.HasCheckConstraint("ck_character_talent_states_loadout_2_json", "jsonb_typeof(\"Loadout2RanksJson\") = 'object'");
-
-                            t.HasCheckConstraint("ck_character_talent_states_state_version", "\"StateVersion\" > 0");
-                        });
-                });
-
             modelBuilder.Entity("Elyndor.Core.World.CharacterLocation", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -304,16 +259,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_character_vitals_characters_character_id");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
-                {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithOne()
-                        .HasForeignKey("Elyndor.Core.Talents.CharacterTalentState", "CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_character_talent_states_characters_character_id");
-                });
-
             modelBuilder.Entity("Elyndor.Core.World.CharacterLocation", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -335,5 +280,4 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                 });
 #pragma warning restore 612, 618
         }
-    }
 }

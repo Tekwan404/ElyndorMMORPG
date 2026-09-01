@@ -2,6 +2,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.World;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Content;
 
@@ -178,6 +179,30 @@ public sealed class GameContentPackageValidatorTests
         Assert.Contains(errors, error => error.Code == "INVALID_EFFECT_DEFINITION");
         Assert.Contains(errors, error => error.Code == "DUPLICATE_ABILITY_ID");
         Assert.Contains(errors, error => error.Code == "INVALID_ABILITY_DEFINITION");
+    }
+
+    [Fact]
+    public void ValidateRejectsCircularTalentPrerequisites()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("GUARDIAN", "Страж", "", 2)],
+                    [
+                        new TalentDefinition("A", "GUARDIAN", 1, 0, "A", "A", 1,
+                            [new TalentPrerequisite("B")], ""),
+                        new TalentDefinition("B", "GUARDIAN", 1, 0, "B", "B", 1,
+                            [new TalentPrerequisite("A")], "")
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "CIRCULAR_TALENT_PREREQUISITE");
     }
 
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>

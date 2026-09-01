@@ -1,6 +1,7 @@
 using Elyndor.Core.World;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Content;
 
@@ -14,7 +15,8 @@ public sealed record GameContentPackage(
     StatFormulaProfile? StatFormula = null,
     IReadOnlyList<ResourceProfile>? ResourceProfiles = null,
     IReadOnlyList<EffectDefinition>? Effects = null,
-    IReadOnlyList<AbilityDefinition>? Abilities = null);
+    IReadOnlyList<AbilityDefinition>? Abilities = null,
+    IReadOnlyList<TalentTreeDefinition>? TalentTrees = null);
 
 public sealed record GameContentDefinition(
     string Type,

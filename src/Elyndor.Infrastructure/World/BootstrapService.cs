@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
+using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,10 +82,27 @@ public sealed class BootstrapService(
                 profile.Id,
                 classProfile.ResourceProfileId,
                 StringComparison.Ordinal));
+        TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
+        TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
+            .SingleOrDefault(tree => tree.ClassId == character.ClassId);
+        if (talentTree is not null)
+        {
+            CharacterTalentState? talentState = await dbContext.CharacterTalentStates
+                .AsNoTracking()
+                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
+            if (talentState is not null)
+            {
+                talentPercentages = TalentStatModifierResolver.ResolvePrimaryPercentages(
+                    talentTree, talentState.GetRanks(talentState.ActiveLoadoutId));
+            }
+        }
         CharacterStats stats = new CharacterStatCalculator(
             contentPackage.StatFormula
                 ?? throw new InvalidOperationException("Stat formula content is required."),
-            contentPackage.ClassProfiles).Calculate(character.ClassId, character.Level);
+            contentPackage.ClassProfiles).Calculate(
+                character.ClassId,
+                character.Level,
+                CharacterStatInputs.Empty with { TalentPercentages = talentPercentages });
         CharacterVitals vitals = await dbContext.CharacterVitals
             .SingleAsync(
                 candidate => candidate.CharacterId == character.Id,

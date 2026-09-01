@@ -3,11 +3,14 @@ using Elyndor.Contracts.System;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Characters;
+using Elyndor.Server.Administration;
 using Elyndor.Server.Identity;
 using Elyndor.Server.World;
+using Elyndor.Server.Talents;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -44,6 +47,12 @@ builder.Services.AddSingleton(gameContentPackage);
 builder.Services.AddSingleton(new WorldMap(gameContentPackage.Locations));
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
+builder.Services.AddSingleton(new HttpClient());
+builder.Services.AddSingleton<ITelegramMessageSender, TelegramBotMessageSender>();
+builder.Services.AddOptions<TelegramAdminOptions>()
+    .BindConfiguration(TelegramAdminOptions.SectionName)
+    .Validate(options => options.IsConfigured, "Telegram administration configuration is invalid.")
+    .ValidateOnStart();
 builder.Services.AddOptions<AuthenticationOptions>()
     .BindConfiguration(AuthenticationOptions.SectionName)
     .Validate(
@@ -121,6 +130,8 @@ bool mapDevelopmentAuthentication = app.Environment.IsDevelopment()
 app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
 app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
+app.MapTalentEndpoints();
+app.MapTelegramAdminEndpoints();
 
 app.MapGet(
         "/api/v1/status",

@@ -63,4 +63,34 @@ public sealed class Character
     public int Level { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
+
+    public void Rename(string name, string normalizedName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
+        Name = name;
+        NormalizedName = normalizedName;
+    }
+
+    public void SetLevel(int level)
+    {
+        if (level is < 1 or > 60)
+        {
+            throw new ArgumentOutOfRangeException(nameof(level));
+        }
+
+        Level = level;
+    }
+
+    public void ChangeClass(string classId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(classId);
+        ClassId = classId;
+    }
+
+    public void ChangeRace(string raceId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceId);
+        RaceId = raceId;
+    }
 }

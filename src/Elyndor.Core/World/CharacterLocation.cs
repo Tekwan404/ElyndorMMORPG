@@ -43,4 +43,17 @@ public sealed class CharacterLocation
     public long Version { get; private set; }
 
     public DateTimeOffset UpdatedAtUtc { get; private set; }
+
+    public void Relocate(string locationId, DateTimeOffset atUtc)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(locationId);
+        if (atUtc.Offset != TimeSpan.Zero || atUtc < UpdatedAtUtc)
+        {
+            throw new ArgumentOutOfRangeException(nameof(atUtc));
+        }
+
+        LocationId = locationId;
+        Version++;
+        UpdatedAtUtc = atUtc;
+    }
 }

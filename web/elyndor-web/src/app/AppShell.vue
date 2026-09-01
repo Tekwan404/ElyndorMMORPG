@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
-import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
+import HeroView from '@/game/character/views/HeroView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
@@ -102,7 +102,7 @@ onMounted(() => {
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <WorldView v-else-if="session.state === 'world' && activeView === 'world'" />
-      <CharacterStatsView v-else-if="session.state === 'world'" />
+      <HeroView v-else-if="session.state === 'world'" />
     </main>
 
     <nav v-if="session.state === 'world'" class="navigation" aria-label="Основная навигация">

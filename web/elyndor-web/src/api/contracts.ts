@@ -83,3 +83,23 @@ export interface TravelResponse {
   locationId: string
   version: number
 }
+
+export type TalentLoadoutId = 'LOADOUT_1' | 'LOADOUT_2'
+export type TalentBranchId = 'GUARDIAN' | 'BERSERKER' | 'WARLORD'
+export interface TalentPrerequisite { talentId: string; requiredRank: number }
+export interface TalentNode {
+  id: string; branchId: TalentBranchId; tier: number; requiredSpentPoints: number
+  name: string; englishName: string; maxRank: number
+  prerequisites: TalentPrerequisite[]; description: string; requiredLevel: number | null
+}
+export interface TalentBranch {
+  id: TalentBranchId; name: string; fantasy: string; nodeCount: number
+}
+export interface TalentLoadout {
+  id: TalentLoadoutId; selectedRanks: Record<string, number>; spentPoints: number
+}
+export interface TalentSnapshot {
+  treeId: string; classId: string; version: number; activeLoadoutId: TalentLoadoutId
+  stateVersion: number; earnedPoints: number; availablePoints: number
+  branches: TalentBranch[]; nodes: TalentNode[]; loadouts: TalentLoadout[]
+}

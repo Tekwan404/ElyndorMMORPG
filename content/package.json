@@ -1,65 +1,202 @@
 {
-  "contentVersion": "0.3.0",
+  "contentVersion": "0.4.0",
   "balanceVersion": "0.3.0",
   "publishedAtUtc": "2026-08-29T00:00:00+00:00",
   "definitions": [
-    { "type": "RACE", "id": "HUMAN", "references": [] },
-    { "type": "RACE", "id": "UNDEAD", "references": [] },
-    { "type": "GENDER", "id": "MALE", "references": [] },
-    { "type": "GENDER", "id": "FEMALE", "references": [] },
-    { "type": "CLASS", "id": "WARRIOR", "references": [
-      { "type": "ABILITY", "id": "STRIKE" },
-      { "type": "ABILITY", "id": "SHIELD_BASH" },
-      { "type": "ABILITY", "id": "PROVOKE" },
-      { "type": "ABILITY", "id": "HEAVY_BLOW" },
-      { "type": "ABILITY", "id": "BATTLE_FOCUS" },
-      { "type": "ABILITY", "id": "BATTLE_SHOUT" }
-    ] },
-    { "type": "CLASS", "id": "ARCHER", "references": [] },
-    { "type": "CLASS", "id": "MAGE", "references": [] },
-    { "type": "ABILITY", "id": "STRIKE", "references": [] },
-    { "type": "ABILITY", "id": "SHIELD_BASH", "references": [] },
-    { "type": "ABILITY", "id": "PROVOKE", "references": [] },
-    { "type": "ABILITY", "id": "HEAVY_BLOW", "references": [] },
-    { "type": "ABILITY", "id": "BATTLE_FOCUS", "references": [] },
-    { "type": "ABILITY", "id": "BATTLE_SHOUT", "references": [] }
+    {
+      "type": "RACE",
+      "id": "HUMAN",
+      "references": []
+    },
+    {
+      "type": "RACE",
+      "id": "UNDEAD",
+      "references": []
+    },
+    {
+      "type": "GENDER",
+      "id": "MALE",
+      "references": []
+    },
+    {
+      "type": "GENDER",
+      "id": "FEMALE",
+      "references": []
+    },
+    {
+      "type": "CLASS",
+      "id": "WARRIOR",
+      "references": [
+        {
+          "type": "ABILITY",
+          "id": "STRIKE"
+        },
+        {
+          "type": "ABILITY",
+          "id": "SHIELD_BASH"
+        },
+        {
+          "type": "ABILITY",
+          "id": "PROVOKE"
+        },
+        {
+          "type": "ABILITY",
+          "id": "HEAVY_BLOW"
+        },
+        {
+          "type": "ABILITY",
+          "id": "BATTLE_FOCUS"
+        },
+        {
+          "type": "ABILITY",
+          "id": "BATTLE_SHOUT"
+        }
+      ]
+    },
+    {
+      "type": "CLASS",
+      "id": "ARCHER",
+      "references": []
+    },
+    {
+      "type": "CLASS",
+      "id": "MAGE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "STRIKE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "SHIELD_BASH",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "PROVOKE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "HEAVY_BLOW",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "BATTLE_FOCUS",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "BATTLE_SHOUT",
+      "references": []
+    }
   ],
   "classProfiles": [
     {
       "id": "WARRIOR",
       "primaryAttribute": "STRENGTH",
       "resourceProfileId": "RAGE",
-      "baseStats": { "strength": 12, "agility": 6, "intellect": 4, "stamina": 10 },
-      "levelGrowth": { "strength": 3, "agility": 1, "intellect": 0.5, "stamina": 2 },
-      "allowedWeaponCategories": ["ONE_HAND_SWORD", "TWO_HAND_SWORD", "AXE", "MACE", "SHIELD"],
-      "allowedArmorCategories": ["MEDIUM", "HEAVY"],
+      "baseStats": {
+        "strength": 12,
+        "agility": 6,
+        "intellect": 4,
+        "stamina": 10
+      },
+      "levelGrowth": {
+        "strength": 3,
+        "agility": 1,
+        "intellect": 0.5,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "ONE_HAND_SWORD",
+        "TWO_HAND_SWORD",
+        "AXE",
+        "MACE",
+        "SHIELD"
+      ],
+      "allowedArmorCategories": [
+        "MEDIUM",
+        "HEAVY"
+      ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
-      "startingAbilityIds": ["STRIKE", "PROVOKE"],
+      "startingAbilityIds": [
+        "STRIKE",
+        "PROVOKE"
+      ],
       "abilityUnlocks": [
-        { "abilityId": "HEAVY_BLOW", "unlockLevel": 2 },
-        { "abilityId": "SHIELD_BASH", "unlockLevel": 3 },
-        { "abilityId": "BATTLE_FOCUS", "unlockLevel": 5 },
-        { "abilityId": "BATTLE_SHOUT", "unlockLevel": 7 }
+        {
+          "abilityId": "HEAVY_BLOW",
+          "unlockLevel": 2
+        },
+        {
+          "abilityId": "SHIELD_BASH",
+          "unlockLevel": 3
+        },
+        {
+          "abilityId": "BATTLE_FOCUS",
+          "unlockLevel": 5
+        },
+        {
+          "abilityId": "BATTLE_SHOUT",
+          "unlockLevel": 7
+        }
       ]
     },
     {
       "id": "ARCHER",
       "primaryAttribute": "AGILITY",
       "resourceProfileId": "FOCUS",
-      "baseStats": { "strength": 5, "agility": 9, "intellect": 5, "stamina": 7 },
-      "levelGrowth": { "strength": 1, "agility": 3, "intellect": 1, "stamina": 2 },
-      "allowedWeaponCategories": ["BOW", "DAGGER", "ONE_HAND_SWORD"],
-      "allowedArmorCategories": ["LIGHT", "MEDIUM"],
+      "baseStats": {
+        "strength": 5,
+        "agility": 9,
+        "intellect": 5,
+        "stamina": 7
+      },
+      "levelGrowth": {
+        "strength": 1,
+        "agility": 3,
+        "intellect": 1,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "BOW",
+        "DAGGER",
+        "ONE_HAND_SWORD"
+      ],
+      "allowedArmorCategories": [
+        "LIGHT",
+        "MEDIUM"
+      ],
       "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs."
     },
     {
       "id": "MAGE",
       "primaryAttribute": "INTELLECT",
       "resourceProfileId": "MANA",
-      "baseStats": { "strength": 3, "agility": 5, "intellect": 11, "stamina": 6 },
-      "levelGrowth": { "strength": 1, "agility": 1, "intellect": 3, "stamina": 2 },
-      "allowedWeaponCategories": ["STAFF", "WAND", "DAGGER"],
-      "allowedArmorCategories": ["LIGHT"],
+      "baseStats": {
+        "strength": 3,
+        "agility": 5,
+        "intellect": 11,
+        "stamina": 6
+      },
+      "levelGrowth": {
+        "strength": 1,
+        "agility": 1,
+        "intellect": 3,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "STAFF",
+        "WAND",
+        "DAGGER"
+      ],
+      "allowedArmorCategories": [
+        "LIGHT"
+      ],
       "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk."
     }
   ],
@@ -115,52 +252,139 @@
   ],
   "abilities": [
     {
-      "id": "STRIKE", "type": "Instant", "targetType": "SingleEnemy",
-      "resourceCost": 0, "cooldown": "00:00:00", "castTime": "00:00:00",
-      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
-      "isSpell": false, "school": "PHYSICAL",
+      "id": "STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
       "actions": [
-        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.8 },
-        { "type": "ResourceChange", "amount": 10 }
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.8
+        },
+        {
+          "type": "ResourceChange",
+          "amount": 10
+        }
       ]
     },
     {
-      "id": "SHIELD_BASH", "type": "Instant", "targetType": "SingleEnemy",
-      "resourceCost": 20, "cooldown": "00:00:08", "castTime": "00:00:00",
-      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
-      "isSpell": false, "school": "PHYSICAL",
+      "id": "SHIELD_BASH",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
       "actions": [
-        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.7 },
-        { "type": "ApplyEffect", "effect": { "id": "SHIELD_BASH_STUN", "kind": "Stun", "duration": "00:00:01.5000000", "maxStacks": 1, "stackPolicy": "Replace", "magnitude": 0 } }
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.7
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "SHIELD_BASH_STUN",
+            "kind": "Stun",
+            "duration": "00:00:01.5000000",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0
+          }
+        }
       ]
     },
     {
-      "id": "PROVOKE", "type": "Taunt", "targetType": "SingleEnemy",
-      "resourceCost": 15, "cooldown": "00:00:08", "castTime": "00:00:00",
-      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
-      "isSpell": false, "school": "PHYSICAL",
-      "actions": [{ "type": "Taunt", "duration": "00:00:03" }]
+      "id": "PROVOKE",
+      "type": "Taunt",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Taunt",
+          "duration": "00:00:03"
+        }
+      ]
     },
     {
-      "id": "HEAVY_BLOW", "type": "Instant", "targetType": "SingleEnemy",
-      "resourceCost": 30, "cooldown": "00:00:04", "castTime": "00:00:00",
-      "usesGlobalCooldown": true, "globalCooldownCategory": "Standard",
-      "isSpell": false, "school": "PHYSICAL",
-      "actions": [{ "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 1.6 }]
+      "id": "HEAVY_BLOW",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 30,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 1.6
+        }
+      ]
     },
     {
-      "id": "BATTLE_FOCUS", "type": "Instant", "targetType": "Self",
-      "resourceCost": 20, "cooldown": "00:00:20", "castTime": "00:00:00",
-      "usesGlobalCooldown": false, "globalCooldownCategory": "None",
-      "isSpell": false, "school": "PHYSICAL",
-      "actions": [{ "type": "ApplyEffect", "effect": { "id": "BATTLE_FOCUS_ATTACK_POWER", "kind": "StatModifier", "duration": "00:00:06", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.15, "modifiedStat": "AttackPower", "modifierMode": "Percent" } }]
+      "id": "BATTLE_FOCUS",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 20,
+      "cooldown": "00:00:20",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BATTLE_FOCUS_ATTACK_POWER",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.15,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        }
+      ]
     },
     {
-      "id": "BATTLE_SHOUT", "type": "Instant", "targetType": "Self",
-      "resourceCost": 0, "cooldown": "00:00:15", "castTime": "00:00:00",
-      "usesGlobalCooldown": false, "globalCooldownCategory": "None",
-      "isSpell": false, "school": "PHYSICAL",
-      "actions": [{ "type": "ResourceChange", "amount": 20 }]
+      "id": "BATTLE_SHOUT",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:15",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ResourceChange",
+          "amount": 20
+        }
+      ]
     }
   ],
   "locations": [
@@ -169,21 +393,1350 @@
       "displayName": "Starter Town",
       "dangerLevel": "SAFE",
       "recommendedLevel": 1,
-      "transitions": ["WHISPERING_FOREST"]
+      "transitions": [
+        "WHISPERING_FOREST"
+      ]
     },
     {
       "id": "WHISPERING_FOREST",
       "displayName": "Whispering Forest",
       "dangerLevel": "ADVENTURE",
       "recommendedLevel": 1,
-      "transitions": ["STARTER_TOWN", "DEEP_FOREST"]
+      "transitions": [
+        "STARTER_TOWN",
+        "DEEP_FOREST"
+      ]
     },
     {
       "id": "DEEP_FOREST",
       "displayName": "Deep Forest",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 3,
-      "transitions": ["WHISPERING_FOREST"]
+      "transitions": [
+        "WHISPERING_FOREST"
+      ]
+    }
+  ],
+  "talentTrees": [
+    {
+      "id": "WARRIOR_TREE",
+      "classId": "WARRIOR",
+      "maxSpendablePoints": 59,
+      "version": 1,
+      "branches": [
+        {
+          "id": "GUARDIAN",
+          "name": "Страж",
+          "fantasy": "Непробиваемый защитник",
+          "nodeCount": 31
+        },
+        {
+          "id": "BERSERKER",
+          "name": "Берсерк",
+          "fantasy": "Ярость и сокрушительный урон",
+          "nodeCount": 32
+        },
+        {
+          "id": "WARLORD",
+          "name": "Командир",
+          "fantasy": "Крики, знамёна и поддержка",
+          "nodeCount": 33
+        }
+      ],
+      "nodes": [
+        {
+          "id": "G-1-1",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Железная Кожа",
+          "englishName": "Iron Skin",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает Armor на 2% / 4% / 6% / 9%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-1-2",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Боевая Стойка",
+          "englishName": "Combat Stance",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Получение урона генерирует дополнительно +2 / +3 / +4 Rage сверх базового значения.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-1-3",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Стойкость",
+          "englishName": "Endurance",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает Stamina на 2% / 4% / 6% / 9%.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "STAMINA_PERCENT", "values": [2, 4, 6, 9] }
+          ],
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-1-4",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Тяжёлое Присутствие",
+          "englishName": "Heavy Presence",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Threat от обычных Auto Attack увеличивается на 4% / 8% / 12% / 15%.\r\nНе увеличивает наносимый урон.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-2-1",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Щитовой Рефлекс",
+          "englishName": "Shield Reflex",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Увеличивает Dodge на 2% / 4%.\r\nПри HP ниже 30% дополнительно получает +2% Dodge.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-2-2",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Провокатор",
+          "englishName": "Provocateur",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Способность Provoke дополнительно снижает Threat всех Party Allies на этой цели на 10% после применения Taunt.\r\nЦель атакует только тебя следующие +1 секунду сверх базового ForcedTarget duration.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-2-3",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Толстокожий",
+          "englishName": "Thick Hide",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Уменьшает входящий физический урон на 1% / 2% / 3%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-2-4",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Первая Линия",
+          "englishName": "Front Line",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Пока HP выше 70%, входящий урон снижается на 1% / 2% / 3%.\r\nПри падении HP до 70% или ниже эффект немедленно отключается.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-3-1",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Ответный Удар",
+          "englishName": "Counterattack",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При получении Dodge 15% / 25% шанс автоматически нанести ответный физический удар с уроном 50% / 70% от обычной Auto Attack.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-3-2",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Укреплённый Разум",
+          "englishName": "Fortified Mind",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Уменьшает длительность Stun-эффектов на 10% / 20%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-3-3",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Ярость Защитника",
+          "englishName": "Guardian's Rage",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Увеличивает максимальный запас Rage на 5 / 10 / 15.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-3-4",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Закалённый Ветеран",
+          "englishName": "Battle Hardened",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Уменьшает дополнительный урон получаемых критических ударов на 5% / 10% / 15%.\r\nТалант уменьшает только критическую надбавку и не влияет на обычный урон.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-4-1",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Несокрушимость",
+          "englishName": "Indomitable",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. Когда HP падает ниже 25%:\r\n• входящий урон снижается на 12% на 6 секунд.\r\n• генерируется +15 Rage мгновенно.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-4-2",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Мастер Провокации",
+          "englishName": "Taunt Mastery",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "G-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Provoke добавляет +150 / +300 Threat сверх базового значения.\r\nСтоимость Provoke снижается на 5 / 10 Rage.\r\nPrerequisite: [G-2-2] Провокатор.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-4-3",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Броня Войны",
+          "englishName": "War Armor",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает MagicResistance на 2% / 4% / 6% / 9%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-4-4",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Ответная Ярость",
+          "englishName": "Defiant Fury",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Успешный Dodge восстанавливает +3 / +5 Rage.\r\nInternalCooldown = 2 sec.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-5-1",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Бастион",
+          "englishName": "Bastion",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Стоит 40 Rage.\r\nНа 6 секунд входящий урон (Physical + Magical) снижается на 30%.\r\nCooldown: 90 секунд. Off-GCD.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-5-2",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Притяжение Угрозы",
+          "englishName": "Threat Presence",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает Threat Multiplier на 2% / 4% / 6% / 9% для всех источников урона.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-5-3",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Несгибаемость",
+          "englishName": "Unyielding",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Уменьшает входящий магический урон на 2% / 4%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-6-1",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Живой Щит",
+          "englishName": "Living Shield",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. При нанесении Auto Attack 12% шанс создать щит поглощающий 4% от MaxHP урона на 8 секунд.\r\nНовый щит заменяет старый.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-6-2",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Броня Крови",
+          "englishName": "Blood Armor",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Каждые 25 Rage сверх 50 дают дополнительно +1% / +1.5% к Armor.\r\nМаксимум +4% / +6% при полном Rage.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-6-3",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Стальная Воля",
+          "englishName": "Iron Will",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Уменьшает длительность входящих Stun и Silence на 25%.\r\nНе изменяет Diminishing Returns и не объединяет DR-категории.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-6-4",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Усиленные Барьеры",
+          "englishName": "Reinforced Barriers",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "G-6-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Щиты, созданные твоими собственными талантами и способностями, поглощают на 10% / 20% больше урона.\r\nНе усиливает щиты, наложенные другими персонажами.\r\nPrerequisite: [G-6-1] Живой Щит.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-7-1",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Бессмертный Воин",
+          "englishName": "Immortal Warrior",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "G-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Снижает Cooldown способности Бастион на 10 / 20 секунд.\r\nPrerequisite: [G-5-1] Бастион.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-7-2",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Щит Вечности",
+          "englishName": "Eternal Guard",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Если входящий урон должен снизить HP до 0 или ниже: один раз за Combat Session lethal result предотвращается.\r\nПосле предотвращения CurrentHP = 12% MaxHP.\r\nRage сбрасывается до 0.\r\nCanTriggerFromProc = false. Limit: one activation per CombatSession.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-7-3",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Вечная Стойкость",
+          "englishName": "Perpetual Endurance",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает MaxHP на 2% / 4% / 6% / 9% дополнительно (помимо Stamina scaling).",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-7-4",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Последний Рубеж",
+          "englishName": "Last Stand",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При HP ниже 35%:\r\n• получаемое лечение увеличивается на 5% / 10%;\r\n• MagicResistance увеличивается на 3% / 6%.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-8-1",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Отражение Удара",
+          "englishName": "Retaliation",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. При получении критического удара: 25% шанс нанести ответный физический удар на 65% от AttackPower.\r\nУдар не может быть критическим.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-8-2",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Нерушимый Оплот",
+          "englishName": "Unbreakable Bastion",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "G-5-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "G-7-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Бастион теперь также даёт +8% / +15% к Dodge на время действия.\r\nPrerequisite: [G-5-1] Бастион, [G-7-1] Бессмертный Воин.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-8-3",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Сердце Крепости",
+          "englishName": "Fortress Heart",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Увеличивает генерацию Rage от получения урона на 35%.\r\nStamina даёт дополнительно +1 MaxHP за каждые 3 единицы сверх базового.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "G-9-1",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "СТРАЖ ВЕЧНОСТИ",
+          "englishName": "ETERNAL GUARDIAN",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Требует 40 очков в Страже.\r\nПассив. Ты становишься воплощением защиты.\r\nЭффекты:\r\n• Входящий урон снижается на 6% постоянно.\r\n• Когда ты получаешь урон, ты и Party Allies в том же CombatSession восстанавливают 0.35% MaxHP. InternalCooldown = 2 секунды.\r\n• Provoke теперь также снижает урон цели по всем кроме тебя на 15% на 4 секунды.\r\n• При активном Бастионе: Auto Attack генерирует +5 Rage дополнительно.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
+          "branchId": "GUARDIAN",
+          "version": 1
+        },
+        {
+          "id": "B-1-1",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Боевое Безумие",
+          "englishName": "Battle Frenzy",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает AttackPower на 2% / 4% / 6% / 9%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-1-2",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Кровожадность",
+          "englishName": "Bloodthirst",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Убийство врага восстанавливает 8 / 12 / 16 Rage мгновенно.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-1-3",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Острые Чувства",
+          "englishName": "Keen Senses",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает Accuracy на 1.5% / 3% / 4.5% / 6%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-1-4",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Звериная Сила",
+          "englishName": "Savage Strength",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Strength увеличивается на 3% / 6%.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "STRENGTH_PERCENT", "values": [3, 6] }
+          ],
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-2-1",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Ярость Крови",
+          "englishName": "Blood Rage",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При HP ниже 50%:\r\n• AttackPower +7% / 12%.\r\n• AttackSpeed +4% / 8%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-2-2",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Дикий Удар",
+          "englishName": "Wild Strike",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Стоит 25 Rage. GCD: STANDARD.\r\nНаносит физический урон 135% от AttackPower.\r\nCooldown: 6 секунд.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-2-3",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Неукротимость",
+          "englishName": "Unrelenting",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "CriticalChance +1.5% / 3% / 4.5% / 6%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-2-4",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Разгон",
+          "englishName": "Momentum",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "После расходования 20 или более Rage одной способностью AttackSpeed увеличивается на 2% / 4% / 6% на 3 секунды.\r\nПовторное срабатывание обновляет Duration, но не создаёт новый stack.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-3-1",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Критический Инстинкт",
+          "englishName": "Critical Instinct",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический удар генерирует дополнительно +4 / +8 Rage.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-3-2",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Вихрь",
+          "englishName": "Whirlwind",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Активная способность. Стоит 35 Rage. GCD: STANDARD.\r\nАтакует всех врагов в encounter. Урон = 70% от AttackPower по каждому.\r\nCooldown: 10 секунд.\r\nPrerequisite: [B-2-2] Дикий Удар.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-3-3",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Пробивная Ярость",
+          "englishName": "Rending Fury",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Увеличивает ArmorPenetration на 2% / 4% / 6% / 9%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-3-4",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Кровавый След",
+          "englishName": "Blood Trail",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Критический Дикий Удар накладывает Кровотечение на 4 секунды:\r\n• Rank 1: 4% AttackPower per second = 16% total;\r\n• Rank 2: 7% AttackPower per second = 28% total.\r\nTickInterval = 1 sec.\r\nPrerequisite: [B-2-2] Дикий Удар.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-4-1",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Двойной Удар",
+          "englishName": "Double Strike",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. 15% шанс при Auto Attack нанести второй удар немедленно за 45% урона от первого.\r\nВторой удар не может критовать.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-4-2",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Мастер Вихря",
+          "englishName": "Whirlwind Mastery",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вихрь наносит +10% / +20% урона.\r\nCooldown Вихря снижается на 1 / 2 секунды.\r\nPrerequisite: [B-3-2] Вихрь.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-4-3",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Пронизывающий Удар",
+          "englishName": "Piercing Blow",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Дикий Удар игнорирует 8% / 15% Armor цели (ArmorPenetration для этой способности).\r\nPrerequisite: [B-2-2] Дикий Удар.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-4-4",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Безрассудство",
+          "englishName": "Recklessness",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При HP ниже 50% наносимый физический урон увеличивается на 2% / 4%, но входящий урон также увеличивается на 1% / 2%.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-5-1",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Берсерк",
+          "englishName": "Berserk",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Стоит 50 Rage. Off-GCD.\r\nНа 8 секунд: AttackSpeed +25%, AttackPower +15%, CriticalChance +8%.\r\nВ течение действия: нельзя использовать защитные способности.\r\nCooldown: 120 секунд.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-5-2",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Адреналин",
+          "englishName": "Adrenaline",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "AttackSpeed +1.5% / 3% / 4.5% / 6% постоянно.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-5-3",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Смертельный Критик",
+          "englishName": "Lethal Crits",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "CriticalDamage +8% / 15% (поверх базового критического множителя).",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-5-4",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Неистовство",
+          "englishName": "Frenzy",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока активен Берсерк, стоимость Rage у атакующих способностей уменьшается на 10% / 20%.\r\nСтоимость способности не может стать отрицательной.\r\nPrerequisite: [B-5-1] Берсерк.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-6-1",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Жажда Крови",
+          "englishName": "Blood Hunger",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Вампиризм: 2% / 4% от EffectivePhysicalDamageToHP восстанавливает HP.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-6-2",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Разрушительный Критик",
+          "englishName": "Devastating Blow",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. Критический Auto Attack накладывает дебафф Уязвимость на цель на 8 секунд:\r\n• цель получает +5% физического урона от этого Warrior.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-6-3",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Боевой Транс",
+          "englishName": "Battle Trance",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время активного Берсерка получение урона генерирует +3 / +5 Rage дополнительно.\r\nPrerequisite: [B-5-1] Берсерк.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-6-4",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Кровавая Инерция",
+          "englishName": "Blood Momentum",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока Берсерк не активен, критический удар уменьшает оставшийся Cooldown Берсерка на 1 / 2 / 3 секунды.\r\nInternalCooldown = 3 sec.\r\nPrerequisite: [B-5-1] Берсерк.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-7-1",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Неостановимая Сила",
+          "englishName": "Unstoppable Force",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "B-4-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "При активном Берсерке: Auto Attack имеет 100% шанс нанести второй удар за 30% урона.\r\nPrerequisite: [B-5-1] Берсерк, [B-4-1] Двойной Удар.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-7-2",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Сила Смерти",
+          "englishName": "Death's Strength",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "При HP ниже 25%: CriticalChance +3% / 6% / 9% / 12% дополнительно.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-7-3",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Пронизывающая Ярость",
+          "englishName": "Rending Rampage",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вихрь накладывает на каждую поражённую цель Кровотечение на 6 секунд:\r\n• физический DoT на 6 секунд, TickInterval = 1 секунда, всего 6 ticks.\r\n• Rank 1: 5% AttackPower per tick = 30% AttackPower total.\r\n• Rank 2: 8% AttackPower per tick = 48% AttackPower total.\r\nPrerequisite: [B-3-2] Вихрь.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-7-4",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Палач",
+          "englishName": "Executioner",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Физический урон по целям с HP ниже 20% увеличивается на 5% / 10%.\r\nНе увеличивает True Damage.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-8-1",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Смертельный Вихрь",
+          "englishName": "Death Whirlwind",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-4-2",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "B-7-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После расчёта физического компонента Вихря способность дополнительно наносит True Damage = 15% от PhysicalDamageBeforeShield по той же цели.\r\nPhysicalDamageBeforeShield — физический урон Вихря после критического множителя, Armor mitigation и damage modifiers, но до Shield absorption.\r\nPrerequisite: [B-4-2] Мастер Вихря, [B-7-3] Пронизывающая Ярость.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-8-2",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Агония Берсерка",
+          "englishName": "Berserker's Agony",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Cooldown Берсерка снижается на 15 / 30 секунд.\r\nВо время Берсерка: каждое убийство сбрасывает Cooldown Дикого Удара.\r\nPrerequisite: [B-5-1] Берсерк.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-8-3",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Последний Вздох",
+          "englishName": "Death's Embrace",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. При HP ниже 10%: следующая Auto Attack наносит 200% обычного урона и гарантированно критует.\r\nСрабатывает один раз за Combat Session.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "B-9-1",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ВОПЛОЩЕНИЕ ЯРОСТИ",
+          "englishName": "AVATAR OF RAGE",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Требует 40 очков в Берсерке.\r\nПассив. Ты становишься воплощением разрушения.\r\nЭффекты:\r\n• AttackPower +10% постоянно.\r\n• Берсерк теперь длится +4 секунды дольше и снимает все активные Stun и Silence с тебя при активации.\r\n• При нанесении критического удара: 20% шанс мгновенно сгенерировать +10 Rage.\r\n• Убийство врага во время Берсерка: снижает оставшийся Cooldown Берсерка на 15 секунд.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
+          "branchId": "BERSERKER",
+          "version": 1
+        },
+        {
+          "id": "W-1-1",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Командный Голос",
+          "englishName": "Voice of Command",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Боевые крики теперь стоят на 5 / 10 / 15 Rage меньше.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-1-2",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Вдохновляющее Присутствие",
+          "englishName": "Inspiring Presence",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Ты и Party Allies в том же CombatSession получают +1% / +2% / +3% к AttackPower.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-1-3",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Тактическая Подготовка",
+          "englishName": "Tactical Awareness",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Увеличивает Accuracy на 2% / 4%.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-1-4",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Военная Выправка",
+          "englishName": "Battle Formation",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Ты и Party Allies в том же CombatSession получают +1% / +2% / +3% MagicResistance.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-2-1",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Боевой Клич",
+          "englishName": "Battle Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 20 Rage.\r\nТы и Party Allies в том же CombatSession получают +8% AttackPower на 20 секунд.\r\nCooldown: 60 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-2-2",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Щит Товарища",
+          "englishName": "Comrade's Shield",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Когда Party Ally получает урон снижающий его HP ниже 20%:\r\n10% / 15% / 20% шанс создать на нём щит поглощающий 4% его MaxHP на 5 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-2-3",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Сила Строя",
+          "englishName": "Formation Strength",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Stamina +2% / 4% / 6%.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "STAMINA_PERCENT", "values": [2, 4, 6] }
+          ],
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-2-4",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Единый Ритм",
+          "englishName": "Unified Rhythm",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой Клич дополнительно увеличивает Accuracy получателей на +2% / +4% на время действия.\r\nPrerequisite: [W-2-1] Боевой Клич.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-3-1",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Клич Стойкости",
+          "englishName": "Endurance Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 25 Rage.\r\nТы и Party Allies получают +6% к MaxHP (как временный бафф) на 15 секунд.\r\nCooldown: 90 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-3-2",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Тактический Удар",
+          "englishName": "Tactical Strike",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Auto Attack имеет 15% / 25% шанс снизить Cooldown одного случайного крика на 2 / 4 секунды.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-3-3",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Стяг Войны",
+          "englishName": "War Banner",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 30 Rage.\r\nУстанавливает Стяг на 30 секунд. Пока Стяг активен:\r\n• ты и Party Allies в том же CombatSession получают +4% CriticalChance.\r\n• при убийстве врага: все союзники восстанавливают 2% MaxResource своего Action Resource.\r\nCooldown: 120 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-3-4",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Знамя Единства",
+          "englishName": "Banner of Unity",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Пока активен любой твой эффект с тегом BANNER или FLAG, ты и Party Allies получают снижение входящего урона на 1% / 2% / 3%.\r\nНесколько твоих Banner/Flag не складывают этот бонус между собой.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-4-1",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Усиленный Клич",
+          "englishName": "Amplified Cry",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой Клич теперь также увеличивает AttackSpeed получателей на 3% / 5% / 8%.\r\nPrerequisite: [W-2-1] Боевой Клич.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-4-2",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Клич Мести",
+          "englishName": "Cry of Vengeance",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 35 Rage.\r\nНа 10 секунд активирует эффект Клич Мести.\r\nПока эффект активен, когда Party Ally получает direct damage, Warrior получает 1 stack (макс 5).\r\nInternalCooldown = 0.5 sec между получением stacks.\r\nСледующая Auto Attack Warrior наносит +35% урона за stack и потребляет все stacks.\r\nCooldown: 30 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-4-3",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Железная Дисциплина",
+          "englishName": "Iron Discipline",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Ты и Party Allies получают +1% / +2% / +3% к Dodge.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-4-4",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Эхо Команды",
+          "englishName": "Echoing Command",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Duration положительных эффектов твоих способностей с тегом CRY увеличивается на +1 / +2 / +3 секунды.\r\nНе влияет на cooldown.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-5-1",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Флаг Победы",
+          "englishName": "Victory Flag",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 40 Rage.\r\nУстанавливает Флаг Победы на 18 секунд. Пока активен:\r\n• ты и Party Allies получают +8% ко всему наносимому урону.\r\n• первые 4 секунды после установки вы иммунны к новым Stun и Silence. Уже активные control effects не снимаются.\r\nCooldown: 180 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-5-2",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Неустрашимость",
+          "englishName": "Fearlessness",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-3-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Уменьшает Cooldown Стяга Войны и Флага Победы на 7 / 14 / 20 секунд.\r\nPrerequisite: [W-3-3] Стяг Войны.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-5-3",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Воля к Победе",
+          "englishName": "Will to Win",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Увеличивает Rage generation от Auto Attack на 8% / 16% / 24%.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-5-4",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Приказ Наступать",
+          "englishName": "Order to Advance",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока активен Боевой Клич, ты и Party Allies дополнительно получают +2% / +4% CriticalChance.\r\nPrerequisite: [W-2-1] Боевой Клич.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-6-1",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Клич Исцеления",
+          "englishName": "Rally Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 30 Rage.\r\nТы и Party Allies восстанавливают 6% MaxHP мгновенно.\r\nCooldown: 120 секунд.\r\nHealingType = Scripted, GeneratesThreat = true.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-6-2",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Знамя Стойкости",
+          "englishName": "Banner of Endurance",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Клич Стойкости теперь также даёт +3% / +5% / +8% к Armor и MagicResistance получателям.\r\nPrerequisite: [W-3-1] Клич Стойкости.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-6-3",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Полководец",
+          "englishName": "War Leader",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пассив. При каждом использовании крика (любой AbilityId с тегом CRY):\r\n• генерируется +10 Rage мгновенно.\r\n• с тебя и одного случайного Party Ally снимается один активный дебафф категории Poison, если он есть.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-6-4",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Слаженное Снабжение",
+          "englishName": "Coordinated Supply",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Восстановление Action Resource, создаваемое твоими талантами и способностями Командира, увеличивается на 10% / 20% / 30%.\r\nНе усиливает обычную пассивную регенерацию ресурсов.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-7-1",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Флаг Битвы",
+          "englishName": "Battle Standard",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Активная способность. Off-GCD. Стоит 50 Rage.\r\nУстанавливает Флаг Битвы на 15 секунд. Пока активен:\r\n• Auto Attack тебя и Party Allies имеют +10% шанс нанести дополнительный физический удар за 25% урона.\r\nCooldown: 150 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-7-2",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Несломленный Строй",
+          "englishName": "Unbroken Formation",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Когда Party Ally погибает: ты и оставшиеся Party Allies получают +6% / +10% к AttackPower и +4% / +7% к Dodge на 10 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-7-3",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Командный Ритм",
+          "englishName": "Command Rhythm",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Cooldown всех криков снижается на 3 / 6 секунд.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-7-4",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Стоять До Конца",
+          "englishName": "Hold the Line",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Party Ally с HP ниже 25% получает на 2% / 4% / 6% меньше входящего урона.\r\nНа самого Warrior эффект также действует, если он соответствует условию.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-8-1",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Легендарный Клич",
+          "englishName": "Legendary Cry",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "W-4-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой Клич теперь также:\r\n• восстанавливает 8% MaxRage тебе и Party Allies-воинам.\r\n• восстанавливает 6% MaxMana тебе и Party Allies-магам.\r\n• восстанавливает 6% MaxEnergy тебе и Party Allies-разбойникам.\r\nPrerequisite: [W-2-1] Боевой Клич, [W-4-1] Усиленный Клич.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-8-2",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Непобедимый Авангард",
+          "englishName": "Vanguard Unbroken",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "W-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока активен Флаг Победы:\r\n• ты и Party Allies не могут быть убиты (HP фиксируется на 1) в течение первых 2 секунд действия флага.\r\nPrerequisite: [W-5-1] Флаг Победы.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-8-3",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Ярость Командира",
+          "englishName": "Warlord's Rage",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Каждый раз когда Party Ally наносит критический удар:\r\nКомандир получает +1 / +2 / +3 Rage.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-8-4",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Главнокомандующий",
+          "englishName": "Supreme Commander",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-3-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "При активации способности с тегом FLAG или BANNER оставшийся Cooldown всех твоих CRY уменьшается на 3 / 5 секунд.\r\nInternalCooldown = 20 sec.\r\nPrerequisite: [W-3-3] Стяг Войны.",
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-9-1",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ПОЛКОВОДЕЦ ЭЛИНДОРА",
+          "englishName": "WARLORD OF ELYNDOR",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Требует 40 очков в Командире.\r\nПассив. Ты становишься воплощением воли к победе.\r\nЭффекты:\r\n• Все крики теперь действуют +5 секунд дольше.\r\n• При активации любого флага или крика: ты и Party Allies получают щит поглощающий 4% их MaxHP на 6 секунд.\r\n• Клич Исцеления теперь также восстанавливает 20% MaxRage тебе.\r\n• Убийство врага тобой или Party Ally снижает оставшийся Cooldown всех твоих криков на 1 секунду. InternalCooldown = 1 sec.\r\nДополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.",
+          "branchId": "WARLORD",
+          "version": 1
+        }
+      ]
     }
   ]
 }

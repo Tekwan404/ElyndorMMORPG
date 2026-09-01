@@ -7,6 +7,11 @@ const developmentRoutes: RouteRecordRaw[] = import.meta.env.DEV
         name: 'ui-playground',
         component: () => import('@/ui/playground/UiPlaygroundView.vue'),
       },
+      {
+        path: '/dev/talents',
+        name: 'talent-tree-playground',
+        component: () => import('@/game/talents/views/WarriorTalentTreeView.vue'),
+      },
     ]
   : []
 

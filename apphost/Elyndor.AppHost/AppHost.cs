@@ -27,7 +27,14 @@ if (publicTest)
 {
     server
         .WithEnvironment("ASPNETCORE_ENVIRONMENT", "PublicTest")
-        .WithEnvironment("Authentication__Development__Enabled", "false");
+        .WithEnvironment("Authentication__Development__Enabled", "false")
+        .WithEnvironment("Administration__Telegram__Enabled", "true")
+        .WithEnvironment(
+            "Administration__Telegram__WebhookSecret",
+            builder.Configuration["Administration:Telegram:WebhookSecret"] ?? string.Empty)
+        .WithEnvironment(
+            "Administration__Telegram__AllowedUserIds__0",
+            builder.Configuration["Administration:Telegram:AllowedUserIds:0"] ?? string.Empty);
 }
 
 if (!publicTest)

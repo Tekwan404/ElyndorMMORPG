@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Characters;
 
@@ -22,11 +23,13 @@ public sealed class CharacterStatCalculator(
             profile.BaseStats.Intellect + (profile.LevelGrowth.Intellect * completedLevels),
             profile.BaseStats.Stamina + (profile.LevelGrowth.Stamina * completedLevels));
         CharacterStatInputs sources = inputs ?? CharacterStatInputs.Empty;
-        PrimaryStats primary = Add(
-            classStats,
-            sources.Equipment,
-            sources.Talents,
-            sources.Effects);
+        PrimaryStats beforeTalents = Add(classStats, sources.Equipment);
+        PrimaryStats talentPercentages = new(
+            beforeTalents.Strength * sources.TalentPercentages.Strength / 100,
+            beforeTalents.Agility * sources.TalentPercentages.Agility / 100,
+            beforeTalents.Intellect * sources.TalentPercentages.Intellect / 100,
+            beforeTalents.Stamina * sources.TalentPercentages.Stamina / 100);
+        PrimaryStats primary = Add(beforeTalents, sources.Talents, talentPercentages, sources.Effects);
 
         return new CharacterStats(
             primary.Strength,
@@ -67,10 +70,11 @@ public sealed class CharacterStatCalculator(
 public sealed record CharacterStatInputs(
     PrimaryStats Equipment,
     PrimaryStats Talents,
-    PrimaryStats Effects)
+    PrimaryStats Effects,
+    TalentPrimaryStatPercentages TalentPercentages)
 {
     private static readonly PrimaryStats EmptyStats = new(0, 0, 0, 0);
 
     public static CharacterStatInputs Empty { get; } =
-        new(EmptyStats, EmptyStats, EmptyStats);
+        new(EmptyStats, EmptyStats, EmptyStats, TalentPrimaryStatPercentages.Empty);
 }

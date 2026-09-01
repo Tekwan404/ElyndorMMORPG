@@ -1,7 +1,9 @@
+using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Talents;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -16,6 +18,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterCreationService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
+        builder.Services.AddScoped<TelegramAdministrationService>();
+        builder.Services.AddScoped<TalentService>();
 
         return builder;
     }

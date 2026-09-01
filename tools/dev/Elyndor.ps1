@@ -1,12 +1,13 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Start', 'Stop', 'Status', 'Menu', 'Configure', 'ResetSecrets', 'Restart', 'Open')]
+    [ValidateSet('Start', 'Stop', 'Status', 'Menu', 'Configure', 'ConfigureAdmin', 'ResetSecrets', 'Restart', 'Open')]
     [string]$Action = 'Start',
     [switch]$Public,
     [switch]$Open,
     [switch]$KeepFunnel,
     [ValidateRange(1, [long]::MaxValue)]
-    [long]$DevelopmentTelegramUserId = 1000001
+    [long]$DevelopmentTelegramUserId = 1000001,
+    [long]$AdminTelegramUserId = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -41,13 +42,17 @@ function ConvertFrom-ProtectedString {
 function Save-LauncherSecrets {
     param(
         [Parameter(Mandatory)][Security.SecureString]$BotToken,
-        [Parameter(Mandatory)][Security.SecureString]$SigningKey
+        [Parameter(Mandatory)][Security.SecureString]$SigningKey,
+        [Parameter(Mandatory)][Security.SecureString]$WebhookSecret,
+        [Parameter(Mandatory)][long]$AdministratorTelegramUserId
     )
 
     Ensure-ControlDirectory
     @{
         BotToken = ConvertTo-ProtectedString $BotToken
         SigningKey = ConvertTo-ProtectedString $SigningKey
+        WebhookSecret = ConvertTo-ProtectedString $WebhookSecret
+        AdministratorTelegramUserId = $AdministratorTelegramUserId
     } | ConvertTo-Json | Set-Content -LiteralPath $secretPath -Encoding UTF8
 }
 
@@ -61,6 +66,12 @@ function Get-LauncherSecrets {
         return @{
             BotToken = ConvertFrom-ProtectedString $protected.BotToken
             SigningKey = ConvertFrom-ProtectedString $protected.SigningKey
+            WebhookSecret = if ($null -ne $protected.WebhookSecret) {
+                ConvertFrom-ProtectedString $protected.WebhookSecret
+            } else { '' }
+            AdministratorTelegramUserId = if ($null -ne $protected.AdministratorTelegramUserId) {
+                [long]$protected.AdministratorTelegramUserId
+            } else { 0 }
         }
     }
     catch {
@@ -87,17 +98,71 @@ function Set-TelegramSecrets {
     }
     $plainSigningKey = [Convert]::ToBase64String($signingBytes)
     $signingKey = ConvertTo-SecureString -String $plainSigningKey -AsPlainText -Force
+    $configuredAdminId = $AdminTelegramUserId
+    if ($configuredAdminId -le 0) {
+        $configuredAdminId = [long](Read-Host 'Your Telegram numeric user ID')
+    }
+    if ($configuredAdminId -le 0) {
+        throw 'Administrator Telegram user ID must be positive.'
+    }
+    $plainWebhookSecret = New-RandomSecret
+    $webhookSecret = ConvertTo-SecureString -String $plainWebhookSecret -AsPlainText -Force
 
     try {
-        Save-LauncherSecrets -BotToken $botToken -SigningKey $signingKey
+        Save-LauncherSecrets `
+            -BotToken $botToken `
+            -SigningKey $signingKey `
+            -WebhookSecret $webhookSecret `
+            -AdministratorTelegramUserId $configuredAdminId
     }
     finally {
         $plainBotToken = $null
         $plainSigningKey = $null
+        $plainWebhookSecret = $null
     }
 
     Write-Host 'Telegram Bot Token was encrypted for the current Windows user and saved locally.'
     Write-Host "File: $secretPath"
+}
+
+function New-RandomSecret {
+    $bytes = [byte[]]::new(48)
+    $generator = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $generator.GetBytes($bytes)
+    }
+    finally {
+        $generator.Dispose()
+    }
+    return [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+}
+
+function Set-TelegramAdminConfiguration {
+    $secrets = Get-LauncherSecrets
+    if ($null -eq $secrets) {
+        throw 'Configure the Telegram Bot Token first.'
+    }
+
+    $configuredAdminId = $AdminTelegramUserId
+    if ($configuredAdminId -le 0) {
+        $configuredAdminId = [long](Read-Host 'Your Telegram numeric user ID')
+    }
+    if ($configuredAdminId -le 0) {
+        throw 'Administrator Telegram user ID must be positive.'
+    }
+
+    $botToken = ConvertTo-SecureString -String $secrets.BotToken -AsPlainText -Force
+    $signingKey = ConvertTo-SecureString -String $secrets.SigningKey -AsPlainText -Force
+    $plainWebhookSecret = New-RandomSecret
+    $webhookSecret = ConvertTo-SecureString -String $plainWebhookSecret -AsPlainText -Force
+    Save-LauncherSecrets `
+        -BotToken $botToken `
+        -SigningKey $signingKey `
+        -WebhookSecret $webhookSecret `
+        -AdministratorTelegramUserId $configuredAdminId
+    $secrets = $null
+    $plainWebhookSecret = $null
+    Write-Host 'Telegram administrator and webhook secret were saved locally.'
 }
 
 function Reset-LauncherSecrets {
@@ -246,6 +311,41 @@ function Get-FunnelUrl {
     return "https://$hostName"
 }
 
+function Set-TelegramWebhook {
+    param(
+        [Parameter(Mandatory)][string]$BotToken,
+        [Parameter(Mandatory)][string]$WebhookSecret,
+        [Parameter(Mandatory)][string]$PublicUrl
+    )
+
+    $response = Invoke-RestMethod `
+        -Method Post `
+        -Uri "https://api.telegram.org/bot$BotToken/setWebhook" `
+        -Body @{
+            url = "$PublicUrl/api/v1/administration/telegram/webhook"
+            secret_token = $WebhookSecret
+            allowed_updates = '["message"]'
+            drop_pending_updates = 'true'
+        } `
+        -TimeoutSec 20
+    if (-not $response.ok) {
+        throw 'Telegram rejected webhook registration.'
+    }
+}
+
+function Remove-TelegramWebhook {
+    param([Parameter(Mandatory)][string]$BotToken)
+
+    $response = Invoke-RestMethod `
+        -Method Post `
+        -Uri "https://api.telegram.org/bot$BotToken/deleteWebhook" `
+        -Body @{ drop_pending_updates = 'true' } `
+        -TimeoutSec 20
+    if (-not $response.ok) {
+        throw 'Telegram rejected webhook removal.'
+    }
+}
+
 function Show-Status {
     $aspire = Resolve-AspireCli
 
@@ -303,6 +403,18 @@ function Start-Elyndor {
         }
         if ([string]::IsNullOrWhiteSpace($botToken)) {
             throw 'Public mode requires Authentication__Telegram__BotToken in the process environment.'
+        }
+        $webhookSecret = [Environment]::GetEnvironmentVariable(
+            'Administration__Telegram__WebhookSecret',
+            'Process')
+        $administratorId = [Environment]::GetEnvironmentVariable(
+            'Administration__Telegram__AllowedUserIds__0',
+            'Process')
+        if ([string]::IsNullOrWhiteSpace($webhookSecret) -or $webhookSecret.Length -lt 32) {
+            throw 'Public mode requires a configured Telegram admin webhook secret.'
+        }
+        if ([string]::IsNullOrWhiteSpace($administratorId)) {
+            throw 'Public mode requires a configured Telegram administrator ID.'
         }
     }
 
@@ -377,6 +489,10 @@ function Start-Elyndor {
         if ($null -eq $launchUrl) {
             throw 'Tailscale Funnel did not report a public HTTPS URL.'
         }
+        Set-TelegramWebhook `
+            -BotToken $botToken `
+            -WebhookSecret $webhookSecret `
+            -PublicUrl $launchUrl
     }
 
     Set-RuntimeMode $requestedMode
@@ -399,6 +515,18 @@ function Stop-Elyndor {
     $aspire = Resolve-AspireCli
 
     if (-not $KeepFunnel) {
+        $secrets = Get-LauncherSecrets
+        if ($null -ne $secrets -and -not [string]::IsNullOrWhiteSpace($secrets.BotToken)) {
+            try {
+                Remove-TelegramWebhook -BotToken $secrets.BotToken
+            }
+            catch {
+                Write-Warning "Unable to remove Telegram webhook: $($_.Exception.Message)"
+            }
+            finally {
+                $secrets = $null
+            }
+        }
         $tailscaleCommand = Get-Command 'tailscale' -ErrorAction SilentlyContinue
         if ($null -ne $tailscaleCommand) {
             $funnelUrl = Get-FunnelUrl $tailscaleCommand.Source
@@ -428,18 +556,30 @@ function Invoke-PublicStart {
         Set-TelegramSecrets
         $secrets = Get-LauncherSecrets
     }
+    if ([string]::IsNullOrWhiteSpace($secrets.WebhookSecret) -or $secrets.AdministratorTelegramUserId -le 0) {
+        throw 'Telegram admin is not configured. Run ConfigureAdmin once.'
+    }
 
     $previousSigningKey = [Environment]::GetEnvironmentVariable('Authentication__SigningKey', 'Process')
     $previousBotToken = [Environment]::GetEnvironmentVariable('Authentication__Telegram__BotToken', 'Process')
+    $previousWebhookSecret = [Environment]::GetEnvironmentVariable('Administration__Telegram__WebhookSecret', 'Process')
+    $previousAdminId = [Environment]::GetEnvironmentVariable('Administration__Telegram__AllowedUserIds__0', 'Process')
     try {
         [Environment]::SetEnvironmentVariable('Authentication__SigningKey', $secrets.SigningKey, 'Process')
         [Environment]::SetEnvironmentVariable('Authentication__Telegram__BotToken', $secrets.BotToken, 'Process')
+        [Environment]::SetEnvironmentVariable('Administration__Telegram__WebhookSecret', $secrets.WebhookSecret, 'Process')
+        [Environment]::SetEnvironmentVariable(
+            'Administration__Telegram__AllowedUserIds__0',
+            $secrets.AdministratorTelegramUserId.ToString([System.Globalization.CultureInfo]::InvariantCulture),
+            'Process')
         $script:Public = $true
         Start-Elyndor
     }
     finally {
         [Environment]::SetEnvironmentVariable('Authentication__SigningKey', $previousSigningKey, 'Process')
         [Environment]::SetEnvironmentVariable('Authentication__Telegram__BotToken', $previousBotToken, 'Process')
+        [Environment]::SetEnvironmentVariable('Administration__Telegram__WebhookSecret', $previousWebhookSecret, 'Process')
+        [Environment]::SetEnvironmentVariable('Administration__Telegram__AllowedUserIds__0', $previousAdminId, 'Process')
         $secrets = $null
         $script:Public = $false
     }
@@ -473,9 +613,10 @@ function Show-ControlMenu {
         Write-Host '2. Restart Elyndor'
         Write-Host '3. Show status and public URL'
         Write-Host '4. Configure Telegram Bot Token'
-        Write-Host '5. Open the game'
-        Write-Host '6. Stop Elyndor and Tailscale Funnel'
-        Write-Host '7. Remove saved Telegram credentials'
+        Write-Host '5. Configure Telegram administrator'
+        Write-Host '6. Open the game'
+        Write-Host '7. Stop Elyndor and Tailscale Funnel'
+        Write-Host '8. Remove saved Telegram credentials'
         Write-Host '0. Exit control center'
         Write-Host ''
         $selection = Read-Host 'Select an action'
@@ -490,9 +631,10 @@ function Show-ControlMenu {
                 '2' { $script:Open = $true; Restart-Elyndor }
                 '3' { Show-Status }
                 '4' { Set-TelegramSecrets }
-                '5' { Open-Elyndor }
-                '6' { Stop-Elyndor }
-                '7' { Reset-LauncherSecrets }
+                '5' { Set-TelegramAdminConfiguration }
+                '6' { Open-Elyndor }
+                '7' { Stop-Elyndor }
+                '8' { Reset-LauncherSecrets }
                 '0' { return }
                 default { Write-Host 'Unknown menu option.' }
             }
@@ -513,6 +655,7 @@ switch ($Action) {
     'Status' { Show-Status }
     'Menu' { Show-ControlMenu }
     'Configure' { Set-TelegramSecrets }
+    'ConfigureAdmin' { Set-TelegramAdminConfiguration }
     'ResetSecrets' { Reset-LauncherSecrets }
     'Restart' { Restart-Elyndor }
     'Open' { Open-Elyndor }

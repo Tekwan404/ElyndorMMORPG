@@ -28,7 +28,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         DbContextOptions<GameDbContext> options =
             new DbContextOptionsBuilder<GameDbContext>()
-                .UseNpgsql(ConnectionString)
+                .UseNpgsql(ConnectionString, options => options.EnableRetryOnFailure())
                 .Options;
 
         return new GameDbContext(options);
@@ -38,6 +38,6 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         await using GameDbContext context = CreateDbContext();
         await context.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE game.travel_operations, game.character_locations, game.characters, game.accounts CASCADE");
+            "TRUNCATE TABLE game.admin_command_audits, game.travel_operations, game.character_locations, game.characters, game.accounts CASCADE");
     }
 }
