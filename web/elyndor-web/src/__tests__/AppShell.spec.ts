@@ -31,7 +31,7 @@ describe('AppShell', () => {
     store.state = 'offline'
     store.errorCode = 'network_unavailable'
     const wrapper = mount(AppShell)
-    expect(wrapper.get('[role="alert"]').text()).toContain('network_unavailable')
+    expect(wrapper.get('[role="alert"]').text()).toContain('Не удалось связаться с сервером')
     await wrapper.get('[data-retry-session]').trigger('click')
     expect(store.start).toHaveBeenCalledTimes(2)
   })
