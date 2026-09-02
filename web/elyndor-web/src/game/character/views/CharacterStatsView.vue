@@ -101,7 +101,7 @@ function isPrimary(id: keyof CharacterStats): boolean {
 }
 
 function abilityName(ability: KnownAbility): string {
-  return abilityPresentation[ability.id]?.name ?? ability.id.replaceAll('_', ' ')
+  return abilityPresentation[ability.id]?.name ?? ability.id.replace(/_/g, ' ')
 }
 
 function abilityDescription(ability: KnownAbility): string {
