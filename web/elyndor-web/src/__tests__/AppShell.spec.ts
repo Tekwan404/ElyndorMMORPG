@@ -16,12 +16,13 @@ describe('AppShell', () => {
     store.state = 'world'
     store.snapshot = worldSnapshot()
     const wrapper = mount(AppShell)
-    expect(wrapper.get('[role="progressbar"][aria-label="Health"]')).toBeTruthy()
-    expect(wrapper.get('[role="progressbar"][aria-label="Focus"]')).toBeTruthy()
-    expect(wrapper.get('main').text()).toContain('Starter Town')
+    expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
+    expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
+    expect(wrapper.get('main').text()).toContain('Стартовый город')
     expect(wrapper.find('[data-nav="combat"]').exists()).toBe(false)
     await wrapper.get('[data-nav="hero"]').trigger('click')
-    expect(wrapper.get('main').text()).toContain('Основные')
+    expect(wrapper.get('main').text()).toContain('Развитие героя')
+    expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
   })
 
   it('explains a failed connection and offers an explicit retry', async () => {
@@ -71,6 +72,7 @@ function worldSnapshot() {
         magicResistance: 12,
         dodge: 1.8,
       },
+      statBreakdown: {} as never,
       vitals: {
         currentHp: 120,
         maxHp: 120,
