@@ -15,6 +15,7 @@ namespace Elyndor.Infrastructure.Progression;
 public sealed record CombatRewardApplicationResult(
     bool Granted,
     int XpEarned,
+    int GoldEarned,
     CharacterProgressionResult? Progression,
     IReadOnlyList<CombatRewardItemResult> Items);
 
@@ -37,7 +38,7 @@ public sealed class CombatRewardService(
         CancellationToken cancellationToken)
     {
         if (snapshot.Status != CombatSessionStatus.Victory)
-            return new CombatRewardApplicationResult(false, 0, null, []);
+            return new CombatRewardApplicationResult(false, 0, 0, null, []);
 
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(
@@ -64,6 +65,7 @@ public sealed class CombatRewardService(
             return new CombatRewardApplicationResult(
                 false,
                 existingGrant.XpEarned,
+                existingGrant.GoldEarned,
                 null,
                 []);
         }
@@ -82,6 +84,8 @@ public sealed class CombatRewardService(
             character,
             monster.XpReward,
             progression);
+        int goldEarned = RollGold(monster);
+        character.AddGold(goldEarned);
 
         IReadOnlyList<LootRoll> loot = RollLoot(monster);
         DateTimeOffset now = timeProvider.GetUtcNow();
@@ -102,6 +106,7 @@ public sealed class CombatRewardService(
             characterId,
             monster.Id,
             monster.XpReward,
+            goldEarned,
             now));
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -110,8 +115,18 @@ public sealed class CombatRewardService(
         return new CombatRewardApplicationResult(
             true,
             monster.XpReward,
+            goldEarned,
             progressionResult,
             loot.Select(ToRewardItem).ToArray());
+    }
+
+    private int RollGold(MonsterDefinition monster)
+    {
+        if (monster.GoldRewardMax <= 0 || monster.GoldRewardMax < monster.GoldRewardMin)
+            return 0;
+        int span = monster.GoldRewardMax - monster.GoldRewardMin + 1;
+        int offset = (int)decimal.Floor(randomFactory.Create().NextUnit() * span);
+        return monster.GoldRewardMin + Math.Min(offset, span - 1);
     }
 
     private IReadOnlyList<LootRoll> RollLoot(MonsterDefinition monster)
@@ -194,8 +209,12 @@ public sealed class CombatRewardService(
             .Select(item => item.ItemDefinitionId)
             .ToArrayAsync(cancellationToken);
         HashSet<string> equippedDefinitions = equippedDefinitionIds.ToHashSet(StringComparer.Ordinal);
-        PrimaryStats equipment = EquipmentStatModifierResolver.Resolve(
-            (content.Items ?? []).Where(item => equippedDefinitions.Contains(item.Id)));
+        ItemDefinition[] equippedItems = (content.Items ?? [])
+            .Where(item => equippedDefinitions.Contains(item.Id))
+            .ToArray();
+        EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
+            equippedItems,
+            content.EquipmentSets ?? []);
 
         TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
         TalentStatModifiers talentDerived = new();
@@ -230,7 +249,10 @@ public sealed class CombatRewardService(
                 character.Level,
                 CharacterStatInputs.Empty with
                 {
-                    Equipment = equipment,
+                    Equipment = equipment.PrimaryStats,
+                    EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                        equipment.AttackSpeedPercent,
+                        equipment.DodgePercent),
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentDerived
                 });
