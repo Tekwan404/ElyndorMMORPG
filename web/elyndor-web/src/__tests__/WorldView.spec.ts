@@ -15,12 +15,12 @@ describe('WorldView', () => {
     store.snapshot = snapshot()
     const travel = vi.spyOn(store, 'travel').mockResolvedValue(undefined)
     const wrapper = mount(WorldView)
-    expect(wrapper.text()).toContain('Starter Town')
-    expect(wrapper.text()).toContain('Whispering Forest')
+    expect(wrapper.text()).toContain('Стартовый город')
+    expect(wrapper.text()).toContain('Шепчущий лес')
     expect(wrapper.findAll('[data-travel]')).toHaveLength(1)
     expect(wrapper.find('input').exists()).toBe(false)
     expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-label')).toContain(
-      'Whispering Forest',
+      'Шепчущий лес',
     )
     await wrapper.get('[data-travel="WHISPERING_FOREST"]').trigger('click')
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
@@ -34,7 +34,7 @@ describe('WorldView', () => {
     const wrapper = mount(WorldView)
     expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('disabled')).toBeDefined()
     expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-busy')).toBe('true')
-    expect(wrapper.get('[role="alert"]').text()).toBe('travel_conflict')
+    expect(wrapper.get('[role="alert"]').text()).toContain('travel_conflict')
   })
 
   it('explains when the current location has no outgoing path', () => {
@@ -62,11 +62,12 @@ describe('WorldView', () => {
     expect(startCombat).not.toHaveBeenCalled()
     await wrapper.get('[data-explore]').trigger('click')
     expect(wrapper.get('[data-world-encounter]').text()).toContain('Волк')
+    expect(wrapper.find('[data-world-encounter] img[alt="Волк"]').exists()).toBe(true)
     expect(startCombat).not.toHaveBeenCalled()
     await wrapper.get('[data-start-encounter]').trigger('click')
     await flushPromises()
     expect(startCombat).toHaveBeenCalledWith('WOLF')
-    expect(wrapper.text()).toContain('Forest Wolf')
+    expect(wrapper.text()).toContain('Волк')
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
   })
 })
@@ -119,6 +120,7 @@ function snapshot(
         magicResistance: 12,
         dodge: 1.8,
       },
+      statBreakdown: {} as never,
       vitals: {
         currentHp: 120,
         maxHp: 120,
