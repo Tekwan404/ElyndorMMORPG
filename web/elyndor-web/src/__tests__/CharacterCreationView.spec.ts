@@ -35,7 +35,7 @@ describe('CharacterCreationView', () => {
 
   it('reuses the same request id for an explicit retry and preserves the form', async () => {
     const store = useGameSessionStore()
-    const createCharacter = vi.spyOn(store, 'createCharacter').mockResolvedValue()
+    const createCharacter = vi.spyOn(store, 'createCharacter').mockResolvedValue(undefined)
     const wrapper = mount(CharacterCreationView)
     await wrapper.get('input[autocomplete="off"]').setValue('Arthas')
     await wrapper.get('input[value="ARCHER"]').setValue(true)
