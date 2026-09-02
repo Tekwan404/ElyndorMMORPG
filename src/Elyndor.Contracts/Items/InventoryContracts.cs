@@ -17,12 +17,22 @@ public sealed record InventoryItemResponse(
     string? Slot,
     string? EquippedSlot,
     ItemStatsResponse Stats,
-    string Description);
+    string Description,
+    string? SetId,
+    decimal? WeaponBaseAttackIntervalSeconds,
+    decimal AttackSpeedPercent,
+    decimal DodgePercent,
+    decimal HealAmount,
+    decimal ConsumableCooldownSeconds,
+    int BuyPriceGold);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
     InventoryItemResponse? Head,
-    InventoryItemResponse? Chest);
+    InventoryItemResponse? Chest,
+    InventoryItemResponse? Legs,
+    InventoryItemResponse? Boots,
+    InventoryItemResponse? Accessory);
 
 public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
@@ -31,3 +41,5 @@ public sealed record InventoryResponse(
 public sealed record EquipItemRequest(Guid CharacterItemId);
 
 public sealed record UnequipItemRequest(string Slot);
+
+public sealed record UseConsumableRequest(Guid CharacterItemId);
