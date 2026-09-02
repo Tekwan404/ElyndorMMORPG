@@ -153,9 +153,12 @@ watch(
   (locationId, previousLocationId) => {
     if (locationId !== previousLocationId) {
       selectedEncounter.value = null
-      lastCombatResult.value = null
-      lastEnemyName.value = null
       encounterCursor = -1
+      const isDefeatRespawn = lastCombatResult.value === 'Defeat' && locationId === STARTER_TOWN_ID
+      if (!isDefeatRespawn) {
+        lastCombatResult.value = null
+        lastEnemyName.value = null
+      }
     }
     if (locationId === WHISPERING_FOREST_ID) {
       void restoreCombat()
@@ -233,7 +236,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       title="Поражение"
       data-combat-result
     >
-      {{ lastEnemyName ?? 'Противник' }} оказался сильнее. Вы вернулись в текущую локацию.
+      {{ lastEnemyName ?? 'Противник' }} оказался сильнее. Вы очнулись в Стартовом городе с восстановленным здоровьем.
     </UIToast>
     <UIToast
       v-else-if="lastCombatResult === 'Cancelled'"
