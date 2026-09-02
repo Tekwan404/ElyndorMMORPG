@@ -9,7 +9,11 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
 {
     public void Configure(EntityTypeBuilder<Character> builder)
     {
-        builder.ToTable("characters");
+        builder.ToTable(
+            "characters",
+            table => table.HasCheckConstraint(
+                "ck_characters_experience_non_negative",
+                "\"Experience\" >= 0"));
         builder.HasKey(character => character.Id).HasName("pk_characters");
 
         builder.Property(character => character.Name).HasMaxLength(16).IsRequired();
@@ -18,6 +22,7 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
         builder.Property(character => character.GenderId).HasMaxLength(16).IsRequired();
         builder.Property(character => character.ClassId).HasMaxLength(16).IsRequired();
         builder.Property(character => character.Level).IsRequired();
+        builder.Property(character => character.Experience).HasDefaultValue(0L).IsRequired();
         builder.Property(character => character.CreatedAtUtc).IsRequired();
 
         builder.HasOne<Account>()
