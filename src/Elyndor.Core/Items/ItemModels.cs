@@ -44,7 +44,8 @@ public sealed record ItemDefinition(
     decimal DodgePercent = 0,
     decimal HealAmount = 0,
     decimal ConsumableCooldownSeconds = 0,
-    int BuyPriceGold = 0);
+    int BuyPriceGold = 0,
+    int SellPriceGold = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
