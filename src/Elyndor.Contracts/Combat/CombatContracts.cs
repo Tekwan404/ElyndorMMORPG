@@ -46,6 +46,7 @@ public sealed record CombatRewardItemResponse(
 
 public sealed record CombatRewardResponse(
     int XpEarned,
+    int GoldEarned,
     bool LeveledUp,
     int PreviousLevel,
     int CurrentLevel,
