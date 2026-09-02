@@ -6,7 +6,7 @@ import type {
   AuthenticationResponse,
   BootstrapSnapshot,
   CreateCharacterRequest,
-  TravelResponse,
+  MerchantSnapshot,
 } from '@/api/contracts'
 import { getTelegramInitData } from '@/telegram/telegramWebApp'
 
@@ -104,18 +104,68 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     await mutate('/api/v1/inventory/unequip', { slot })
   }
 
+  async function useConsumable(characterItemId: string): Promise<void> {
+    await mutate('/api/v1/inventory/use-consumable', { characterItemId })
+  }
+
+  async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
+    return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
+  }
+
+  async function buyMerchantItem(
+    merchantId: string,
+    itemDefinitionId: string,
+    quantity = 1,
+  ): Promise<MerchantSnapshot | null> {
+    return await merchantMutation('/api/v1/inventory/merchant/buy', {
+      merchantId,
+      itemDefinitionId,
+      quantity,
+    })
+  }
+
+  async function sellMerchantMaterial(
+    merchantId: string,
+    characterItemId: string,
+    quantity = 1,
+  ): Promise<MerchantSnapshot | null> {
+    return await merchantMutation('/api/v1/inventory/merchant/sell-material', {
+      merchantId,
+      characterItemId,
+      quantity,
+    })
+  }
+
+  async function merchantMutation(path: string, body: object): Promise<MerchantSnapshot | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const merchant = await apiClient.request<MerchantSnapshot>(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      await refreshSnapshot()
+      return merchant
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function mutate(path: string, body: object): Promise<void> {
     if (mutationPending.value) return
     mutationPending.value = true
     errorCode.value = null
     try {
-      await apiClient.request<TravelResponse>(path, {
+      await apiClient.request<unknown>(path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      // Mutations already have their own pending UI. Refresh authoritative data silently so
-      // HeroView/InventoryView are not unmounted and reset to the default tab after Equip.
       await refreshSnapshot()
       state.value = snapshot.value?.character ? 'world' : 'needs-character'
     } catch (error) {
@@ -132,8 +182,6 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   function handleError(error: unknown): void {
     if (error instanceof ApiRequestError) {
       errorCode.value = error.code
-      // A failed in-world mutation should not tear the whole game shell down. Keep the
-      // current authoritative snapshot visible and surface the error locally.
       if (state.value !== 'world' && state.value !== 'needs-character') {
         state.value = 'error'
       }
@@ -159,6 +207,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     travel,
     equip,
     unequip,
+    useConsumable,
+    getMerchant,
+    buyMerchantItem,
+    sellMerchantMaterial,
   }
 })
 
