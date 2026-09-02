@@ -28,6 +28,7 @@ public sealed record BootstrapCharacter(
     int Level,
     long Experience,
     int XpToNextLevel,
+    long Gold,
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
@@ -108,8 +109,9 @@ public sealed class BootstrapService(
         InventorySnapshot inventory = await inventoryService.GetForCharacterAsync(
             character.Id,
             cancellationToken);
-        PrimaryStats equipmentStats = EquipmentStatModifierResolver.Resolve(
-            inventory.Equipped.Values.Select(item => item.Definition));
+        EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
+            inventory.Equipped.Values.Select(item => item.Definition),
+            contentPackage.EquipmentSets ?? []);
         TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
         ResolvedTalentModifiers talentModifiers = ResolvedTalentModifiers.Empty;
         TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
@@ -139,14 +141,15 @@ public sealed class BootstrapService(
                 character.Level,
                 CharacterStatInputs.Empty with
                 {
-                    Equipment = equipmentStats,
+                    Equipment = equipment.PrimaryStats,
+                    EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                        equipment.AttackSpeedPercent,
+                        equipment.DodgePercent),
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });
         CharacterStats stats = statCalculation.Stats;
 
-        // Levels increase stats and award talent points. Active combat abilities are not
-        // unlocked by level: only baseline class actions plus the active talent loadout count.
         string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
             .Concat(talentModifiers.UnlockedAbilityIds)
             .Distinct(StringComparer.Ordinal)
@@ -203,8 +206,6 @@ public sealed class BootstrapService(
             }
         }
 
-        // Ordinary GET /bootstrap stays read-only. Mutations such as travel/combat start
-        // explicitly request a checkpoint so polling the HUD does not write every second.
         if (checkpoint)
         {
             vitals.Checkpoint(currentHp, currentResource, now);
@@ -229,6 +230,7 @@ public sealed class BootstrapService(
                 (contentPackage.LevelProgression
                     ?? throw new InvalidOperationException("Level progression content is required."))
                     .XpToNext(character.Level),
+                character.Gold,
                 classProfile.PrimaryAttribute,
                 contentPackage.BalanceVersion,
                 knownAbilityIds,
