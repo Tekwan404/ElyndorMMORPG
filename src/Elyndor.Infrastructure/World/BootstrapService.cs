@@ -33,6 +33,7 @@ public sealed record BootstrapCharacter(
     IReadOnlyList<string> KnownAbilityIds,
     IReadOnlyList<BootstrapAbility> KnownAbilities,
     CharacterStats Stats,
+    IReadOnlyDictionary<string, CharacterStatBreakdown> StatBreakdown,
     BootstrapVitals Vitals,
     InventorySnapshot Inventory);
 
@@ -130,10 +131,10 @@ public sealed class BootstrapService(
                     talentModifiers.Stats.StaminaPercent);
             }
         }
-        CharacterStats stats = new CharacterStatCalculator(
+        CharacterStatCalculation statCalculation = new CharacterStatCalculator(
             contentPackage.StatFormula
                 ?? throw new InvalidOperationException("Stat formula content is required."),
-            contentPackage.ClassProfiles).Calculate(
+            contentPackage.ClassProfiles).CalculateDetailed(
                 character.ClassId,
                 character.Level,
                 CharacterStatInputs.Empty with
@@ -142,6 +143,7 @@ public sealed class BootstrapService(
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });
+        CharacterStats stats = statCalculation.Stats;
 
         // Levels increase stats and award talent points. Active combat abilities are not
         // unlocked by level: only baseline class actions plus the active talent loadout count.
@@ -232,6 +234,7 @@ public sealed class BootstrapService(
                 knownAbilityIds,
                 knownAbilities,
                 stats,
+                statCalculation.Breakdown,
                 new BootstrapVitals(
                     currentHp,
                     stats.MaxHp,
