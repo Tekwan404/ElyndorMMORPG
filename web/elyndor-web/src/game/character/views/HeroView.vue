@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
 import WarriorTalentTreeView from '@/game/talents/views/WarriorTalentTreeView.vue'
@@ -9,10 +10,10 @@ import { useGameSessionStore } from '@/stores/gameSession'
 type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
 
 const session = useGameSessionStore()
-const activeTab = ref<HeroTab>('stats')
+const activeTab = ref<HeroTab>('character')
 const isWarrior = computed(() => session.snapshot?.character?.classId === 'WARRIOR')
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'warrior' }[] = [
-  { id: 'character', label: 'Персонаж', available: false },
+  { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'warrior' },
@@ -39,7 +40,8 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
         {{ tab.label }}
       </button>
     </nav>
-    <WarriorTalentTreeView v-if="activeTab === 'talents' && isWarrior" />
+    <CharacterOverviewView v-if="activeTab === 'character'" />
+    <WarriorTalentTreeView v-else-if="activeTab === 'talents' && isWarrior" />
     <InventoryView v-else-if="activeTab === 'inventory'" />
     <CharacterStatsView v-else />
   </section>
@@ -55,6 +57,7 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
   overflow-x: auto;
   border-bottom: 1px solid var(--ui-color-border);
   background: rgb(13 18 32 / 96%);
+  backdrop-filter: blur(10px);
   scrollbar-width: none;
 }
 .hero-tabs::-webkit-scrollbar { display: none; }
