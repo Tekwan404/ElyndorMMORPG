@@ -46,6 +46,7 @@ public static class WorldEndpoints
         TravelRequest request,
         ClaimsPrincipal user,
         HttpContext httpContext,
+        BootstrapService bootstrapService,
         TravelService travelService,
         CancellationToken cancellationToken)
     {
@@ -53,6 +54,10 @@ public static class WorldEndpoints
         {
             return Results.Unauthorized();
         }
+
+        // Checkpoint elapsed out-of-combat recovery/decay in the authoritative
+        // current location before the location mutation is committed.
+        await bootstrapService.GetAsync(accountId, cancellationToken);
 
         TravelResult result = await travelService.TravelAsync(
             accountId,
