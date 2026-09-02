@@ -62,7 +62,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           </div>
           <div class="trade-row__action">
             <span>{{ item.buyPriceGold }} зол.</span>
-            <UIButton size="sm" :loading="session.mutationPending" :disabled="session.mutationPending || (merchant?.gold ?? 0) < item.buyPriceGold" @click="buy(item.definitionId)">Купить</UIButton>
+            <UIButton :loading="session.mutationPending" :disabled="session.mutationPending || (merchant?.gold ?? 0) < item.buyPriceGold" @click="buy(item.definitionId)">Купить</UIButton>
           </div>
         </article>
         <p v-if="loading" class="muted">Маркус раскладывает товар…</p>
@@ -77,8 +77,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <small>{{ item.sellPriceGold }} золота за штуку</small>
           </div>
           <div class="sell-actions">
-            <UIButton size="sm" variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">Продать 1</UIButton>
-            <UIButton size="sm" :disabled="session.mutationPending" @click="sell(item, item.quantity)">Всё · {{ item.sellPriceGold * item.quantity }}</UIButton>
+            <UIButton variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">Продать 1</UIButton>
+            <UIButton :disabled="session.mutationPending" @click="sell(item, item.quantity)">Всё · {{ item.sellPriceGold * item.quantity }}</UIButton>
           </div>
         </article>
         <p v-if="materials.length === 0" class="muted">В рюкзаке пока нет материалов для продажи.</p>
