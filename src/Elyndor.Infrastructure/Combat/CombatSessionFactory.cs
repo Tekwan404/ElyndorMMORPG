@@ -36,7 +36,12 @@ public sealed class CombatSessionFactory(
         string monsterId,
         CancellationToken cancellationToken)
     {
-        BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(accountId, cancellationToken);
+        // Starting a combat is a real mutation boundary: checkpoint elapsed out-of-combat
+        // recovery/decay once before the in-memory CombatSession becomes authoritative.
+        BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
+            accountId,
+            cancellationToken,
+            checkpoint: true);
         BootstrapCharacter? character = bootstrap.Character;
         if (character is null) return Failure("character_not_found");
         if (!string.Equals(character.ClassId, "WARRIOR", StringComparison.Ordinal))
@@ -52,6 +57,8 @@ public sealed class CombatSessionFactory(
                 bootstrap.World.CurrentLocation.Id,
                 WhisperingForestId,
                 StringComparison.Ordinal))
+            return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+        if (character.Vitals.CurrentHp <= 0)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
         ClassProfile classProfile = content.ClassProfiles!.Single(candidate =>
