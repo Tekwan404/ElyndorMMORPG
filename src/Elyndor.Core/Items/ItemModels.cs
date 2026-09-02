@@ -5,7 +5,8 @@ namespace Elyndor.Core.Items;
 public enum ItemType
 {
     Equipment,
-    Material
+    Material,
+    Consumable
 }
 
 public enum ItemRarity
@@ -19,7 +20,10 @@ public enum EquipmentSlot
 {
     Weapon,
     Head,
-    Chest
+    Chest,
+    Legs,
+    Boots,
+    Accessory
 }
 
 public sealed record ItemDefinition(
@@ -33,7 +37,31 @@ public sealed record ItemDefinition(
     EquipmentSlot? Slot,
     PrimaryStats Stats,
     string Description,
-    int Version = 1);
+    int Version = 1,
+    string? SetId = null,
+    decimal? WeaponBaseAttackIntervalSeconds = null,
+    decimal AttackSpeedPercent = 0,
+    decimal DodgePercent = 0,
+    decimal HealAmount = 0,
+    decimal ConsumableCooldownSeconds = 0,
+    int BuyPriceGold = 0);
+
+public sealed record EquipmentSetBonusDefinition(
+    int RequiredPieces,
+    decimal AttackSpeedPercent = 0,
+    decimal DodgePercent = 0);
+
+public sealed record EquipmentSetDefinition(
+    string Id,
+    string Name,
+    IReadOnlyList<EquipmentSetBonusDefinition> Bonuses);
+
+public sealed record MerchantDefinition(
+    string Id,
+    string Name,
+    string LocationId,
+    string Description,
+    IReadOnlyList<string> ItemIds);
 
 public sealed record LootTableEntry(
     string ItemId,
