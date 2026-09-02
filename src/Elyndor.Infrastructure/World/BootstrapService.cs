@@ -1,4 +1,5 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
@@ -8,6 +9,15 @@ using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.World;
+
+public sealed record BootstrapAbility(
+    string Id,
+    decimal ResourceCost,
+    decimal CooldownSeconds,
+    string Type,
+    string TargetType,
+    string? SourceTalentId,
+    string? SourceTalentName);
 
 public sealed record BootstrapCharacter(
     Guid Id,
@@ -21,6 +31,7 @@ public sealed record BootstrapCharacter(
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
+    IReadOnlyList<BootstrapAbility> KnownAbilities,
     CharacterStats Stats,
     BootstrapVitals Vitals,
     InventorySnapshot Inventory);
@@ -64,7 +75,8 @@ public sealed class BootstrapService(
 
     public async Task<BootstrapSnapshot> GetAsync(
         Guid accountId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool checkpoint = false)
     {
         Character? character = await dbContext.Characters
             .AsNoTracking()
@@ -101,6 +113,7 @@ public sealed class BootstrapService(
         ResolvedTalentModifiers talentModifiers = ResolvedTalentModifiers.Empty;
         TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
             .SingleOrDefault(tree => tree.ClassId == character.ClassId);
+        IReadOnlyDictionary<string, int> activeTalentRanks = new Dictionary<string, int>(StringComparer.Ordinal);
         if (talentTree is not null)
         {
             CharacterTalentState? talentState = await dbContext.CharacterTalentStates
@@ -108,8 +121,8 @@ public sealed class BootstrapService(
                 .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
             if (talentState is not null)
             {
-                talentModifiers = TalentModifierResolver.Resolve(
-                    talentTree, talentState.GetRanks(talentState.ActiveLoadoutId));
+                activeTalentRanks = talentState.GetRanks(talentState.ActiveLoadoutId);
+                talentModifiers = TalentModifierResolver.Resolve(talentTree, activeTalentRanks);
                 talentPercentages = new TalentPrimaryStatPercentages(
                     talentModifiers.Stats.StrengthPercent,
                     0,
@@ -129,14 +142,22 @@ public sealed class BootstrapService(
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });
+
+        // Levels increase stats and award talent points. Active combat abilities are not
+        // unlocked by level: only baseline class actions plus the active talent loadout count.
         string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
-            .Concat((classProfile.AbilityUnlocks ?? [])
-                .Where(unlock => unlock.UnlockLevel <= character.Level)
-                .Select(unlock => unlock.AbilityId))
             .Concat(talentModifiers.UnlockedAbilityIds)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
             .ToArray();
+        BootstrapAbility[] knownAbilities = knownAbilityIds
+            .Select(abilityId => ToBootstrapAbility(
+                abilityId,
+                talentTree,
+                activeTalentRanks,
+                contentPackage.Abilities ?? []))
+            .ToArray();
+
         ResourceProfile effectiveResourceProfile = resourceProfile with
         {
             MaxValue = resourceProfile.MaxValue + talentModifiers.Stats.MaxResourceFlat
@@ -163,9 +184,6 @@ public sealed class BootstrapService(
             contextElapsed);
         decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
 
-        // Starter Town is a safe recovery zone, but healing is intentionally gradual.
-        // Location.UpdatedAtUtc is the authoritative arrival time, so time spent damaged
-        // in the forest cannot be counted as town rest on the first bootstrap after travel.
         if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal)
             && currentHp < stats.MaxHp)
         {
@@ -182,8 +200,13 @@ public sealed class BootstrapService(
             }
         }
 
-        vitals.Checkpoint(currentHp, currentResource, now);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        // Ordinary GET /bootstrap stays read-only. Mutations such as travel/combat start
+        // explicitly request a checkpoint so polling the HUD does not write every second.
+        if (checkpoint)
+        {
+            vitals.Checkpoint(currentHp, currentResource, now);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         BootstrapLocation[] transitions = current.Transitions
             .Select(worldMap.GetRequired)
@@ -206,6 +229,7 @@ public sealed class BootstrapService(
                 classProfile.PrimaryAttribute,
                 contentPackage.BalanceVersion,
                 knownAbilityIds,
+                knownAbilities,
                 stats,
                 new BootstrapVitals(
                     currentHp,
@@ -213,12 +237,37 @@ public sealed class BootstrapService(
                     resourceProfile.Id,
                     currentResource,
                     effectiveResourceProfile.MaxValue,
-                    now),
+                    checkpoint ? now : vitals.CheckpointedAtUtc),
                 inventory),
             new BootstrapWorld(ToLocation(current), location.Version, transitions),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
             now);
+    }
+
+    private static BootstrapAbility ToBootstrapAbility(
+        string abilityId,
+        TalentTreeDefinition? talentTree,
+        IReadOnlyDictionary<string, int> activeTalentRanks,
+        IReadOnlyList<AbilityDefinition> abilities)
+    {
+        AbilityDefinition definition = abilities.Single(ability =>
+            string.Equals(ability.Id, abilityId, StringComparison.Ordinal));
+        TalentDefinition? sourceTalent = talentTree?.Nodes.FirstOrDefault(node =>
+            activeTalentRanks.GetValueOrDefault(node.Id) > 0
+            && (node.Modifiers ?? []).Any(modifier =>
+                modifier.RuntimeStatus != TalentModifierRuntimeStatus.Deferred
+                && modifier.Type == TalentModifierType.AbilityModifier
+                && modifier.Key == TalentModifierKeys.UnlockAbility
+                && string.Equals(modifier.TargetId, abilityId, StringComparison.Ordinal)));
+        return new BootstrapAbility(
+            definition.Id,
+            definition.ResourceCost,
+            (decimal)definition.Cooldown.TotalSeconds,
+            definition.Type.ToString(),
+            definition.TargetType.ToString(),
+            sourceTalent?.Id,
+            sourceTalent?.Name);
     }
 
     private static BootstrapLocation ToLocation(LocationDefinition location) =>
