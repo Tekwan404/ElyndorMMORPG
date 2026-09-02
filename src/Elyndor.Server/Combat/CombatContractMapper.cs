@@ -16,6 +16,7 @@ internal static class CombatContractMapper
             ? null
             : new CombatRewardResponse(
                 result.Reward.XpEarned,
+                result.Reward.GoldEarned,
                 result.Reward.Progression.LeveledUp,
                 result.Reward.Progression.PreviousLevel,
                 result.Reward.Progression.CurrentLevel,
