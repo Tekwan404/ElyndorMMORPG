@@ -103,7 +103,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         string definitionId,
         string name) =>
         new(id, kind, definitionId, name, 0, 100, "NONE", 0, 0, false,
-            new Dictionary<string, DateTimeOffset>(), new HashSet<string>(), [], []);
+            null, new Dictionary<string, DateTimeOffset>(), new HashSet<string>(), [], []);
 
     private sealed class FixedRandomFactory : IGameRandomFactory
     {

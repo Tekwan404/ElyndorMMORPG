@@ -307,6 +307,38 @@ public sealed class GameContentPackageValidatorTests
         Assert.Contains(errors, error => error.Code == "MISSING_LOOT_ITEM_REFERENCE");
     }
 
+    [Fact]
+    public void ValidateAcceptsHealingConsumableDefinition()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "SMALL_HEALING_POTION",
+                    "Small Healing Potion",
+                    ItemType.Consumable,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    20,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "Restores health.",
+                    HealAmount: 50,
+                    ConsumableCooldownSeconds: 30,
+                    BuyPriceGold: 20)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Empty(errors);
+    }
+
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>
         new("0.1.0", "0.1.0", PublishedAtUtc, definitions, []);
 

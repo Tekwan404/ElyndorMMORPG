@@ -103,6 +103,9 @@ public static class GameContentPackageValidator
                 ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
                     || item.Stats != new PrimaryStats(0, 0, 0, 0),
                 ItemType.Equipment => item.Stackable || item.MaxStack != 1 || item.Slot is null,
+                ItemType.Consumable => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
+                    || item.Stats != new PrimaryStats(0, 0, 0, 0)
+                    || item.HealAmount <= 0 || item.ConsumableCooldownSeconds <= 0,
                 _ => true
             };
             if (string.IsNullOrWhiteSpace(item.Name)
