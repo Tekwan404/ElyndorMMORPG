@@ -41,6 +41,7 @@ export interface CharacterSnapshot {
   knownAbilityIds: string[]
   knownAbilities: KnownAbility[]
   stats: CharacterStats
+  statBreakdown: Record<keyof CharacterStats, CharacterStatBreakdown>
   vitals: CharacterVitals
   inventory: InventorySnapshot
 }
@@ -94,6 +95,17 @@ export interface CharacterStats {
   armor: number
   magicResistance: number
   dodge: number
+}
+
+export interface CharacterStatContribution {
+  source: 'CLASS_BASE' | 'LEVEL_GROWTH' | 'EQUIPMENT' | 'TALENT_FLAT' | 'TALENT_PERCENT'
+    | 'EFFECTS' | 'FORMULA_BASE' | 'STRENGTH' | 'AGILITY' | 'INTELLECT' | 'STAMINA' | 'TALENT_BONUS'
+  value: number
+}
+
+export interface CharacterStatBreakdown {
+  finalValue: number
+  contributions: CharacterStatContribution[]
 }
 
 export interface CharacterVitals {
@@ -172,8 +184,14 @@ export interface CombatActorSnapshot {
   autoAttackEnabled: boolean
   cooldowns: Record<string, string>
   knownAbilityIds: string[]
-  abilities: { id: string; resourceCost: number; cooldownSeconds: number }[]
+  abilities: CombatAbilitySnapshot[]
   effects: CombatEffectSnapshot[]
+}
+
+export interface CombatAbilitySnapshot {
+  id: string
+  resourceCost: number
+  cooldownSeconds: number
 }
 
 export interface CombatSnapshot {
@@ -186,34 +204,40 @@ export interface CombatSnapshot {
 }
 
 export interface CombatEvent {
-  sequence: number
   type: string
+  occurredAtUtc: string
   actorId: string
-  sourceActorId: string | null
-  targetActorId: string | null
-  definitionId: string | null
+  definitionId?: string | null
   amount: number
-  serverTimeUtc: string
+  sourceActorId?: string | null
+  targetActorId?: string | null
+  sequence: number
+  isPeriodic: boolean
 }
 
-export interface CombatUpdate {
-  succeeded: boolean
-  errorCode: string | null
-  snapshot: CombatSnapshot | null
-  events: CombatEvent[]
-  reward: CombatReward | null
+export interface CombatRewardItem {
+  itemId: string
+  definitionId: string
+  name: string
+  quantity: number
+  rarity: string
+  type: 'Equipment' | 'Material'
 }
 
 export interface CombatReward {
   xpEarned: number
-  leveledUp: boolean
   previousLevel: number
   currentLevel: number
-  items: {
-    itemId: string
-    name: string
-    type: 'Equipment' | 'Material'
-    rarity: 'Common' | 'Uncommon' | 'Rare'
-    quantity: number
-  }[]
+  leveledUp: boolean
+  currentExperience: number
+  xpToNextLevel: number
+  items: CombatRewardItem[]
+}
+
+export interface CombatCommandResponse {
+  succeeded: boolean
+  errorCode: string | null
+  snapshot: CombatSnapshot | null
+  events: CombatEvent[]
+  reward?: CombatReward | null
 }
