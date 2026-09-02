@@ -98,6 +98,7 @@ public static class WorldEndpoints
                     snapshot.Character.Level,
                     snapshot.Character.Experience,
                     snapshot.Character.XpToNextLevel,
+                    snapshot.Character.Gold,
                     snapshot.Character.PrimaryAttribute,
                     snapshot.Character.ClassProfileVersion,
                     snapshot.Character.KnownAbilityIds,
