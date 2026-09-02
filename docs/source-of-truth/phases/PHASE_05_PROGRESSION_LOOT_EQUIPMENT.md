@@ -2,80 +2,92 @@
 
 ## Goal
 
-Extend the working world/combat loop into persistent character progression:
+Extend the playable combat loop into persistent progression:
 
 ```text
 Combat Victory
-→ XP
-→ Level Up
-→ Materials / Equipment Loot
+→ XP / Level Up
+→ Materials + possible Equipment
 → Inventory
 → Equip
 → stronger authoritative stats
 → next combat
 ```
 
-The phase also makes combat damage meaningful by persisting terminal vitals and restores characters in `STARTER_TOWN`.
+Phase 5 also makes combat damage persistent and gives safe locations a real recovery role.
 
-## Implemented foundation in this branch
+## Current playable state
 
-### Combat-end vitals
+The current branch supports:
 
-`CombatSessionRegistry` finalizes a terminal CombatSession exactly once through `ICombatSessionFinalizer`.
+- persistent XP and levels;
+- multi-level progression;
+- server-side Victory rewards;
+- reward idempotency by `CombatSessionId`;
+- material stacks;
+- equipment ownership and equipped slots;
+- equipment modifiers through the existing `CharacterStatCalculator` pipeline;
+- reward card, XP UI and inventory/equipment UI;
+- terminal combat HP/resource persistence;
+- live out-of-combat resource updates;
+- gradual Starter Town healing.
 
-The finalizer persists:
+## Combat-end vitals
+
+`CombatSessionRegistry` finalizes a terminal session once through `ICombatSessionFinalizer`.
+
+Terminal state persists:
 
 - final player HP;
-- final player action resource;
+- final action resource;
 - checkpoint timestamp.
 
-Combat ticks remain in-memory. PostgreSQL is written only after a terminal combat state. Victory then flows into the permanent reward service. Do not move EF Core writes into `CombatSession`.
+The finalizer also begins a new out-of-combat vitals context. This is important for class resource rules such as Warrior Rage decay.
 
-### Starter Town recovery
+Combat ticks remain in-memory. PostgreSQL is not written on every combat tick.
 
-`BootstrapService` treats `STARTER_TOWN` as the prototype recovery checkpoint.
+## Starter Town recovery
 
-When authoritative location is `STARTER_TOWN`:
+`STARTER_TOWN` is the prototype safe recovery location.
 
-- `CurrentHp = MaxHp`;
-- `CurrentResource = ResourceProfile.RespawnValue`;
-- recovered vitals are persisted.
+Healing is **not instant**.
 
-Victory in the forest does not automatically heal the player. Defeat currently persists terminal vitals; automatic defeat teleport remains optional for the finishing pass.
+Current prototype rule:
 
-### Persistent progression schema
+```text
+Starter Town HP recovery = 5 HP / second
+```
 
-`Character` now owns persistent `Experience` in addition to `Level`.
+Recovery starts from the authoritative location arrival timestamp (`CharacterLocation.UpdatedAtUtc`). Time spent wounded in Whispering Forest is therefore not counted as town rest.
 
-The Core and EF model already define:
+The frontend refreshes authoritative vitals while recovery is active, so the HUD visibly changes without a reload.
 
-- `CharacterItem` with `Quantity` for inventory stacks;
-- `CharacterEquipment` keyed by `(CharacterId, Slot)`;
-- `CombatRewardGrant` keyed by unique `CombatSessionId` for reward idempotency;
-- DbSets and EF configurations for all three.
+Victory in the forest does not restore HP automatically.
 
-The generated EF migration/model snapshot is intentionally left to the local finishing pass using `dotnet ef`.
+## Resource lifecycle
 
-### XP and Level Up engine
+Resource behavior stays data-driven through `ResourceProfile` and `CharacterResourceRules`.
 
-`LevelProgressionDefinition` is loaded from content.
+For Warrior Rage the current profile uses out-of-combat decay. Combat finalization resets the out-of-combat context so Rage no longer appears frozen after battle.
 
-Current prototype profile:
+Focus and Mana continue to follow their configured out-of-combat regeneration rules.
 
-- max level: 60;
+## Persistent progression
+
+`Character` owns persistent:
+
+- `Level`;
+- `Experience`.
+
+Current prototype progression profile:
+
+- maximum level: 60;
 - level 1 → 2: 100 XP;
-- threshold grows by content-defined factor `1.5`.
+- growth factor: 1.5.
 
-`CharacterProgression.GrantExperience`:
+`CharacterProgression.GrantExperience` supports remaining XP and multiple level-ups from one grant.
 
-- applies XP;
-- carries remaining XP after a level;
-- supports multiple level-ups from one grant;
-- clamps max-level XP state.
-
-Level-up full-heal still needs to be wired to authoritative recalculated MaxHP during the finishing pass.
-
-### Monster reward metadata
+## Monster rewards
 
 | Monster | XP | Loot table |
 | --- | ---: | --- |
@@ -83,133 +95,87 @@ Level-up full-heal still needs to be wired to authoritative recalculated MaxHP d
 | `FOREST_BOAR` | 30 | `WHISPERING_FOREST_BOAR` |
 | `GIANT_SPIDER` | 25 | `WHISPERING_FOREST_SPIDER` |
 
-### Materials
+Rewards are rolled only by the server.
 
-Real versioned item definitions already exist:
+## Crafting materials foundation
 
-- `WOLF_HIDE` — Шкура волка
-- `WOLF_FANG` — Волчий клык
-- `BOAR_HIDE` — Шкура кабана
-- `BOAR_TUSK` — Кабаний клык
-- `SPIDER_SILK` — Паучий шёлк
-- `SPIDER_VENOM_SAC` — Ядовитая железа паука
+Crafting itself is deferred, but real persistent crafting materials already drop and stack in inventory:
 
-Materials are stackable with `MaxStack = 99`. Crafting itself remains deferred.
+- `WOLF_HIDE` — Шкура волка;
+- `WOLF_FANG` — Волчий клык;
+- `BOAR_HIDE` — Шкура кабана;
+- `BOAR_TUSK` — Кабаний клык;
+- `SPIDER_SILK` — Паучий шёлк;
+- `SPIDER_VENOM_SAC` — Ядовитая железа паука.
 
-### Equipment
+Materials have no equipment slot and must always have `EquippedSlot = null`.
 
-Prototype item definitions:
+The inventory UI separates **Материалы для крафта** from actual equipment and shows stack quantities and descriptions.
 
-- `WOLF_FANG_BLADE` — Weapon, +2 Strength
-- `BOAR_HIDE_VEST` — Chest, +2 Stamina
-- `SPIDER_SILK_HOOD` — Head, +2 Agility
+## Equipment
 
-`EquipmentStatModifierResolver` converts equipped item definitions into the existing `CharacterStatInputs.Equipment` primary-stat input. Do not add a second character stat calculator.
+Prototype equipment:
 
-### Loot and permanent Victory rewards
+- `WOLF_FANG_BLADE` — Weapon, +2 Strength;
+- `BOAR_HIDE_VEST` — Chest, +2 Stamina;
+- `SPIDER_SILK_HOOD` — Head, +2 Agility.
 
-Versioned loot tables exist for all three current forest monsters.
+Equipped definitions are resolved through `EquipmentStatModifierResolver` and fed into the existing `CharacterStatInputs.Equipment` pipeline.
 
-`LootRoller` uses the existing injectable `IGameRandom`.
+Do not add a second stat calculator.
 
-`CombatRewardService` is already wired into terminal Victory finalization and currently performs:
+## Inventory correctness
 
-- `CombatSessionId` replay guard through `CombatRewardGrant`;
-- configured monster XP;
-- multi-level progression through `CharacterProgression`;
-- deterministic/server-side loot roll;
-- stack filling for materials;
-- creation of non-stackable equipment items;
-- PostgreSQL transaction around the permanent reward mutation.
+`CharacterEquipment` is keyed by `(CharacterId, Slot)` and each equipped item is unique.
 
-Defeat and Cancelled grant no XP or loot.
+A fixed bug previously treated the default enum value (`Weapon`) as if it were a real equipped slot when an inventory item had no equipment record. That caused materials such as Wolf Hide to display as `Надето` and eventually caused duplicate `Weapon` keys during snapshot construction.
 
-## Content files
+The service now explicitly maps missing equipment records to nullable `null`.
 
-- `content/whispering-forest-monsters.json`
-- `content/phase5-progression-items.json`
+## Reward idempotency
 
-`GameContentPackageLoader` composes both overlays and exposes:
+`CombatRewardGrant` uses unique `CombatSessionId`.
 
-- `LevelProgression`;
-- `Items`;
-- `LootTables`;
-- monster XP reward and loot table IDs.
+A repeated/reconnected terminal combat must not:
 
-Resulting content version: `0.7.0`.
-Balance version: `0.6.0`.
-
-## Remaining implementation for Codex
-
-Do not redesign the foundation above. Finish only these bounded tasks:
-
-1. Generate and review the EF migration/model snapshot locally with `dotnet ef` for:
-   - `Character.Experience`;
-   - `character_items`;
-   - `character_equipment`;
-   - `combat_reward_grants`.
-2. Fix any compile/analyzer issues found by the local build without changing architecture.
-3. Wire Level Up full-heal to the newly recalculated authoritative MaxHP.
-4. Add inventory/equipment application service:
-   - read inventory;
-   - equip;
-   - unequip;
-   - verify ownership, type, slot, required level.
-5. Feed equipped definitions through `EquipmentStatModifierResolver` into `CharacterStatInputs.Equipment` in `BootstrapService`.
-6. Extend bootstrap/contracts with:
-   - current XP;
-   - XP to next level;
-   - inventory;
-   - equipped slots.
-7. Expose the already-applied Victory reward result to the client in a structured form suitable for the result card. Preserve reward idempotency; do not reroll on reconnect.
-8. Add minimal mobile UI only:
-   - XP bar;
-   - Victory rewards card;
-   - inventory list with material quantities;
-   - Weapon / Head / Chest slots;
-   - Equip / Unequip actions.
-9. Extend the existing `GameContentPackageValidator` for progression/items/loot references. Do not create a second validator.
-10. Optional only if clean and bounded: Defeat → `STARTER_TOWN`. Otherwise leave manual travel to town; town recovery already works.
-
-## Minimal automated checks only
-
-Do not build a large test matrix. Keep only the critical checks:
-
-1. Victory XP crosses a threshold and levels up.
-2. Same CombatSession reward applied twice grants XP/loot once.
-3. Equipping +Strength changes Strength and derived AttackPower through `CharacterStatCalculator`.
-4. Starter Town restores damaged HP.
-5. Phase 5 content loads and validates.
-
-Fix existing tests if signatures/contracts change. Manual Telegram gameplay verification is the main acceptance pass.
+- grant XP twice;
+- reroll loot;
+- create duplicate rewards.
 
 ## Manual acceptance
 
 ```text
-Starter Town (full HP)
-→ Whispering Forest
+Starter Town
+→ travel to Whispering Forest
 → fight Wolf / Boar / Spider
-→ Victory with damaged HP
-→ see XP + materials / possible equipment
-→ repeat until Level Up
-→ inventory contains accumulated materials
-→ equip dropped item
-→ character stats update immediately
-→ next CombatSession uses stronger stats
+→ Victory
+→ HP remains damaged
+→ Rage visibly decays out of combat
+→ XP/materials/equipment reward shown
+→ fight again without returning to town
+→ inventory remains stable
+→ material is NOT marked equipped
 → return to Starter Town
-→ HP restores
+→ HP rises gradually by 5/sec
+→ equip a real item
+→ stats update
+→ next combat uses stronger stats
 → reload
-→ Level / XP / inventory / equipment remain persistent
+→ XP / level / inventory / equipment remain persistent
 ```
 
 ## Explicitly deferred
 
-- crafting recipes / crafting UI;
+- crafting recipes and crafting UI;
 - professions;
-- vendors / gold / economy;
-- trading / auction house;
+- gold/economy/vendors;
+- trading/auction house;
 - durability;
-- random item affixes;
-- sockets / enchanting;
+- random affixes;
+- sockets/enchanting;
 - boss loot;
 - party loot rules.
+
+## Verification priority
+
+Keep automated coverage focused. Manual Telegram/browser gameplay verification remains the main acceptance pass for this prototype phase.
