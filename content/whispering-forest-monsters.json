@@ -1,13 +1,11 @@
 {
   "contentVersion": "0.6.1",
   "balanceVersion": "0.5.1",
-  "publishedAtUtc": "2026-09-01T00:00:00+00:00",
+  "publishedAtUtc": "2026-09-02T00:00:00+00:00",
   "monsterAiProfiles": [
     {
       "id": "WOLF_BASIC_AI",
-      "priorityAbilityIds": [
-        "BITE"
-      ],
+      "priorityAbilityIds": ["BITE"],
       "version": 1
     },
     {
@@ -17,9 +15,7 @@
     },
     {
       "id": "SPIDER_BASIC_AI",
-      "priorityAbilityIds": [
-        "BITE"
-      ],
+      "priorityAbilityIds": ["BITE"],
       "version": 1
     }
   ],
@@ -46,11 +42,11 @@
       "autoAttackInterval": "00:00:02.5000000",
       "autoAttackBaseDamage": 6,
       "autoAttackAttackPowerCoefficient": 0.5,
-      "abilityIds": [
-        "BITE"
-      ],
+      "abilityIds": ["BITE"],
       "aiProfileId": "WOLF_BASIC_AI",
-      "version": 1
+      "version": 1,
+      "xpReward": 35,
+      "lootTableId": "WHISPERING_FOREST_WOLF"
     },
     {
       "id": "FOREST_BOAR",
@@ -76,7 +72,9 @@
       "autoAttackAttackPowerCoefficient": 0.65,
       "abilityIds": [],
       "aiProfileId": "BOAR_BASIC_AI",
-      "version": 1
+      "version": 1,
+      "xpReward": 30,
+      "lootTableId": "WHISPERING_FOREST_BOAR"
     },
     {
       "id": "GIANT_SPIDER",
@@ -100,11 +98,11 @@
       "autoAttackInterval": "00:00:01.8000000",
       "autoAttackBaseDamage": 3,
       "autoAttackAttackPowerCoefficient": 0.4,
-      "abilityIds": [
-        "BITE"
-      ],
+      "abilityIds": ["BITE"],
       "aiProfileId": "SPIDER_BASIC_AI",
-      "version": 1
+      "version": 1,
+      "xpReward": 25,
+      "lootTableId": "WHISPERING_FOREST_SPIDER"
     }
   ]
 }
