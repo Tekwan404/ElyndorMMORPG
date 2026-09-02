@@ -84,12 +84,15 @@ public sealed class InventoryEquipmentService(
                     $"Inventory item '{item.ItemDefinitionId}' is missing from game content.");
             }
 
+            EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
+                ? slot
+                : null;
             return new InventoryItemSnapshot(
                 item.Id,
                 definition,
                 item.Quantity,
                 item.AcquiredAtUtc,
-                equippedSlots.GetValueOrDefault(item.Id));
+                equippedSlot);
         }).ToArray();
         Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots
             .Where(item => item.EquippedSlot.HasValue)
