@@ -13,6 +13,10 @@ public sealed record CharacterStatCalculation(
     CharacterStats Stats,
     IReadOnlyDictionary<string, CharacterStatBreakdown> Breakdown);
 
+public sealed record CharacterEquipmentDerivedModifiers(
+    decimal AttackSpeedPercent = 0,
+    decimal DodgePercent = 0);
+
 public sealed class CharacterStatCalculator(
     StatFormulaProfile formula,
     IReadOnlyList<ClassProfile> profiles)
@@ -56,6 +60,7 @@ public sealed class CharacterStatCalculator(
         decimal magicResistanceBeforeTalent = (primary.Stamina * formula.MagicResistancePerStamina)
             + (primary.Intellect * formula.MagicResistancePerIntellect);
         TalentStatModifiers talent = sources.TalentDerived;
+        CharacterEquipmentDerivedModifiers equipmentDerived = sources.EquipmentDerived;
 
         decimal maxHp = ApplyPercent(maxHpBeforeTalent, talent.MaxHpPercent);
         decimal attackPower = ApplyPercent(attackPowerBeforeTalent, talent.AttackPowerPercent);
@@ -68,11 +73,14 @@ public sealed class CharacterStatCalculator(
             100);
         decimal criticalDamage = formula.CriticalDamageBase + talent.CriticalDamagePercent;
         decimal accuracy = decimal.Clamp(formula.AccuracyBase + talent.AccuracyPercent, 0, 100);
-        decimal attackSpeed = ApplyPercent(formula.AttackSpeedBase, talent.AttackSpeedPercent);
+        decimal attackSpeedPercent = talent.AttackSpeedPercent + equipmentDerived.AttackSpeedPercent;
+        decimal attackSpeed = ApplyPercent(formula.AttackSpeedBase, attackSpeedPercent);
         decimal armor = ApplyPercent(armorBeforeTalent, talent.ArmorPercent);
         decimal magicResistance = ApplyPercent(magicResistanceBeforeTalent, talent.MagicResistancePercent);
         decimal dodge = decimal.Clamp(
-            primary.Agility * formula.DodgePerAgility + talent.DodgePercent,
+            primary.Agility * formula.DodgePerAgility
+                + talent.DodgePercent
+                + equipmentDerived.DodgePercent,
             0,
             100);
 
@@ -138,7 +146,8 @@ public sealed class CharacterStatCalculator(
                 ("FORMULA_BASE", 0)),
             ["attackSpeed"] = Breakdown(stats.AttackSpeed,
                 ("FORMULA_BASE", formula.AttackSpeedBase),
-                ("TALENT_BONUS", stats.AttackSpeed - formula.AttackSpeedBase)),
+                ("EQUIPMENT_BONUS", formula.AttackSpeedBase * equipmentDerived.AttackSpeedPercent / 100m),
+                ("TALENT_BONUS", formula.AttackSpeedBase * talent.AttackSpeedPercent / 100m)),
             ["armor"] = Breakdown(stats.Armor,
                 ("STAMINA", primary.Stamina * formula.ArmorPerStamina),
                 ("STRENGTH", primary.Strength * formula.ArmorPerStrength),
@@ -149,6 +158,7 @@ public sealed class CharacterStatCalculator(
                 ("TALENT_BONUS", stats.MagicResistance - magicResistanceBeforeTalent)),
             ["dodge"] = Breakdown(stats.Dodge,
                 ("AGILITY", primary.Agility * formula.DodgePerAgility),
+                ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
                 ("TALENT_BONUS", talent.DodgePercent))
         };
 
@@ -206,4 +216,5 @@ public sealed record CharacterStatInputs(
         new(EmptyStats, EmptyStats, EmptyStats, TalentPrimaryStatPercentages.Empty);
 
     public TalentStatModifiers TalentDerived { get; init; } = new();
+    public CharacterEquipmentDerivedModifiers EquipmentDerived { get; init; } = new();
 }
