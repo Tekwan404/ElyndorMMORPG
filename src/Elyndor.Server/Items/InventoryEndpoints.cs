@@ -63,7 +63,10 @@ public static class InventoryEndpoints
             new EquipmentSlotsResponse(
                 GetEquipped(snapshot, EquipmentSlot.Weapon),
                 GetEquipped(snapshot, EquipmentSlot.Head),
-                GetEquipped(snapshot, EquipmentSlot.Chest)));
+                GetEquipped(snapshot, EquipmentSlot.Chest),
+                GetEquipped(snapshot, EquipmentSlot.Legs),
+                GetEquipped(snapshot, EquipmentSlot.Boots),
+                GetEquipped(snapshot, EquipmentSlot.Accessory)));
 
     private static IResult ToResult(InventoryOperationResult result, HttpContext context) =>
         result.IsSuccess
@@ -91,7 +94,7 @@ public static class InventoryEndpoints
             ? ToResponse(item)
             : null;
 
-    private static InventoryItemResponse ToResponse(InventoryItemSnapshot item) =>
+    internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item) =>
         new(
             item.Id,
             item.Definition.Id,
@@ -107,7 +110,14 @@ public static class InventoryEndpoints
                 item.Definition.Stats.Agility,
                 item.Definition.Stats.Intellect,
                 item.Definition.Stats.Stamina),
-            item.Definition.Description);
+            item.Definition.Description,
+            item.Definition.SetId,
+            item.Definition.WeaponBaseAttackIntervalSeconds,
+            item.Definition.AttackSpeedPercent,
+            item.Definition.DodgePercent,
+            item.Definition.HealAmount,
+            item.Definition.ConsumableCooldownSeconds,
+            item.Definition.BuyPriceGold);
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
