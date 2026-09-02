@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.6.1",
-  "balanceVersion": "0.5.1",
-  "publishedAtUtc": "2026-09-02T00:00:00+00:00",
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
   "monsterAiProfiles": [
     {
       "id": "WOLF_BASIC_AI",
@@ -46,7 +46,9 @@
       "aiProfileId": "WOLF_BASIC_AI",
       "version": 1,
       "xpReward": 35,
-      "lootTableId": "WHISPERING_FOREST_WOLF"
+      "lootTableId": "WHISPERING_FOREST_WOLF",
+      "goldRewardMin": 5,
+      "goldRewardMax": 8
     },
     {
       "id": "FOREST_BOAR",
@@ -74,7 +76,9 @@
       "aiProfileId": "BOAR_BASIC_AI",
       "version": 1,
       "xpReward": 30,
-      "lootTableId": "WHISPERING_FOREST_BOAR"
+      "lootTableId": "WHISPERING_FOREST_BOAR",
+      "goldRewardMin": 4,
+      "goldRewardMax": 7
     },
     {
       "id": "GIANT_SPIDER",
@@ -102,7 +106,9 @@
       "aiProfileId": "SPIDER_BASIC_AI",
       "version": 1,
       "xpReward": 25,
-      "lootTableId": "WHISPERING_FOREST_SPIDER"
+      "lootTableId": "WHISPERING_FOREST_SPIDER",
+      "goldRewardMin": 4,
+      "goldRewardMax": 6
     }
   ]
 }
