@@ -8,6 +8,15 @@ public sealed record WorldLocationResponse(
     string DangerLevel,
     int RecommendedLevel);
 
+public sealed record BootstrapAbilityResponse(
+    string Id,
+    decimal ResourceCost,
+    decimal CooldownSeconds,
+    string Type,
+    string TargetType,
+    string? SourceTalentId,
+    string? SourceTalentName);
+
 public sealed record BootstrapCharacterResponse(
     Guid Id,
     string Name,
@@ -20,6 +29,7 @@ public sealed record BootstrapCharacterResponse(
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
+    IReadOnlyList<BootstrapAbilityResponse> KnownAbilities,
     CharacterStatsResponse Stats,
     CharacterVitalsResponse Vitals,
     InventoryResponse Inventory);
