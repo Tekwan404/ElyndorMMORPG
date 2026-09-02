@@ -13,6 +13,8 @@ public static class InventoryErrorCodes
     public const string ItemNotFound = "inventory_item_not_found";
     public const string ItemNotOwned = "inventory_item_not_owned";
     public const string NotEquipment = "inventory_item_not_equipment";
+    public const string NotConsumable = "inventory_item_not_consumable";
+    public const string ConsumableNotNeeded = "inventory_consumable_not_needed";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
     public const string Conflict = "inventory_conflict";
@@ -153,6 +155,100 @@ public sealed class InventoryEquipmentService(
                 dbContext.CharacterEquipment.Remove(equipped);
             return null;
         }, cancellationToken);
+
+    public Task<InventoryOperationResult> UseConsumableOutOfCombatAsync(
+        Guid accountId,
+        Guid characterItemId,
+        decimal maxHp,
+        DateTimeOffset now,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(accountId, async character =>
+        {
+            CharacterItem? item = await dbContext.CharacterItems
+                .SingleOrDefaultAsync(candidate => candidate.Id == characterItemId, cancellationToken);
+            if (item is null)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
+            if (item.CharacterId != character.Id)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
+
+            ItemDefinition? definition = (content.Items ?? []).SingleOrDefault(candidate =>
+                string.Equals(candidate.Id, item.ItemDefinitionId, StringComparison.Ordinal));
+            if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.NotConsumable);
+
+            CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+            decimal currentHp = Math.Min(maxHp, vitals.CurrentHp);
+            if (currentHp >= maxHp)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.ConsumableNotNeeded);
+
+            vitals.Checkpoint(
+                Math.Min(maxHp, currentHp + definition.HealAmount),
+                vitals.CurrentResource,
+                now);
+            ConsumeOne(item);
+            return null;
+        }, cancellationToken);
+
+    public async Task<string?> ConsumeOneForCombatAsync(
+        Guid accountId,
+        string itemDefinitionId,
+        CancellationToken cancellationToken)
+    {
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            dbContext.ChangeTracker.Clear();
+            await using IDbContextTransaction transaction =
+                await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                Character? character = await dbContext.Characters
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+                if (character is null)
+                    return InventoryErrorCodes.CharacterNotFound;
+
+                CharacterItem? item = await dbContext.CharacterItems
+                    .Where(candidate => candidate.CharacterId == character.Id
+                        && candidate.ItemDefinitionId == itemDefinitionId
+                        && candidate.Quantity > 0)
+                    .OrderBy(candidate => candidate.AcquiredAtUtc)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (item is null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return InventoryErrorCodes.ItemNotFound;
+                }
+
+                ItemDefinition? definition = (content.Items ?? []).SingleOrDefault(candidate =>
+                    string.Equals(candidate.Id, item.ItemDefinitionId, StringComparison.Ordinal));
+                if (definition is null || definition.Type != ItemType.Consumable)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return InventoryErrorCodes.NotConsumable;
+                }
+
+                ConsumeOne(item);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return null;
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return InventoryErrorCodes.Conflict;
+            }
+        });
+    }
+
+    private void ConsumeOne(CharacterItem item)
+    {
+        item.RemoveQuantity(1);
+        if (item.Quantity == 0)
+            dbContext.CharacterItems.Remove(item);
+    }
 
     private async Task<InventoryOperationResult> ExecuteMutationAsync(
         Guid accountId,
