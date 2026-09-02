@@ -10,7 +10,8 @@ public interface ICombatUpdatePublisher
 
 public sealed class CombatSessionRegistry(
     TimeProvider timeProvider,
-    ICombatUpdatePublisher publisher) : IDisposable
+    ICombatUpdatePublisher publisher,
+    ICombatSessionFinalizer finalizer) : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
@@ -51,6 +52,7 @@ public sealed class CombatSessionRegistry(
         {
             CombatCommandResult result = operation(entry.Session, timeProvider.GetUtcNow());
             Schedule(entry);
+            await FinalizeIfNeededAsync(entry, result.Snapshot, cancellationToken);
             await publisher.PublishAsync(accountId, result, cancellationToken);
             return CombatOperationResult.From(result);
         }
@@ -101,12 +103,29 @@ public sealed class CombatSessionRegistry(
                 || !ReferenceEquals(current, entry)) return;
             CombatCommandResult result = entry.Session.AdvanceTo(timeProvider.GetUtcNow());
             Schedule(entry);
+            await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);
             await publisher.PublishAsync(entry.AccountId, result, CancellationToken.None);
         }
         finally
         {
             entry.Gate.Release();
         }
+    }
+
+    private async Task FinalizeIfNeededAsync(
+        SessionEntry entry,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken)
+    {
+        if (snapshot.Status == CombatSessionStatus.Active || entry.Finalized)
+            return;
+
+        await finalizer.FinalizeAsync(
+            entry.AccountId,
+            entry.CharacterId,
+            snapshot,
+            cancellationToken);
+        entry.Finalized = true;
     }
 
     private void Remove(Guid accountId)
@@ -134,6 +153,7 @@ public sealed class CombatSessionRegistry(
         public CombatSession Session { get; } = session;
         public SemaphoreSlim Gate { get; } = new(1, 1);
         public ITimer? Timer { get; set; }
+        public bool Finalized { get; set; }
     }
 }
 
