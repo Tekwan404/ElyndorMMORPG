@@ -21,7 +21,9 @@ public sealed record MonsterDefinition(
     IReadOnlyList<string> AbilityIds,
     string AiProfileId,
     int Version = 1,
-    decimal AutoAttackAttackPowerCoefficient = 0.5m);
+    decimal AutoAttackAttackPowerCoefficient = 0.5m,
+    int XpReward = 0,
+    string? LootTableId = null);
 
 public sealed record MonsterAiProfile(
     string Id,
