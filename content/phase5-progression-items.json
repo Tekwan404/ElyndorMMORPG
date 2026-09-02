@@ -1,0 +1,159 @@
+{
+  "contentVersion": "0.7.0",
+  "balanceVersion": "0.6.0",
+  "publishedAtUtc": "2026-09-02T00:00:00+00:00",
+  "levelProgression": {
+    "id": "DEFAULT_LEVELING",
+    "maxLevel": 60,
+    "baseXpToNext": 100,
+    "growthFactor": 1.5
+  },
+  "items": [
+    {
+      "id": "WOLF_HIDE",
+      "name": "Шкура волка",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Грубая шкура лесного волка. Заготовка для будущего крафта лёгкой брони и других изделий.",
+      "version": 1
+    },
+    {
+      "id": "WOLF_FANG",
+      "name": "Волчий клык",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Острый клык лесного волка. Пригодится для будущего оружейного и ремесленного крафта.",
+      "version": 1
+    },
+    {
+      "id": "BOAR_HIDE",
+      "name": "Шкура кабана",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Толстая прочная шкура лесного кабана. Подходит для будущего изготовления защитной экипировки.",
+      "version": 1
+    },
+    {
+      "id": "BOAR_TUSK",
+      "name": "Кабаний клык",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Тяжёлый кабаний клык. Заготовка для будущих оружейных деталей и усилений.",
+      "version": 1
+    },
+    {
+      "id": "SPIDER_SILK",
+      "name": "Паучий шёлк",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Прочная нить гигантского паука. Основа для будущего крафта ткани, лёгкой брони и магических предметов.",
+      "version": 1
+    },
+    {
+      "id": "SPIDER_VENOM_SAC",
+      "name": "Ядовитая железа паука",
+      "type": "Material",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Сохранившая яд железа гигантского паука. Заготовка для будущей алхимии и специальных рецептов.",
+      "version": 1
+    },
+    {
+      "id": "WOLF_FANG_BLADE",
+      "name": "Клинок Волчьего Клыка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Weapon",
+      "stats": { "strength": 2, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Грубый клинок охотника, усиленный волчьим клыком. Повышает силу и через основной stat pipeline увеличивает Attack Power.",
+      "version": 1
+    },
+    {
+      "id": "BOAR_HIDE_VEST",
+      "name": "Жилет из шкуры кабана",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 2 },
+      "description": "Тяжёлый жилет из прочной кабаньей шкуры. Повышает выносливость, MaxHP и производную броню.",
+      "version": 1
+    },
+    {
+      "id": "SPIDER_SILK_HOOD",
+      "name": "Капюшон из паучьего шёлка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": { "strength": 0, "agility": 2, "intellect": 0, "stamina": 0 },
+      "description": "Лёгкий капюшон из прочного паучьего шёлка. Повышает ловкость, шанс критического удара и уклонение через основной stat pipeline.",
+      "version": 1
+    }
+  ],
+  "lootTables": [
+    {
+      "id": "WHISPERING_FOREST_WOLF",
+      "version": 1,
+      "entries": [
+        { "itemId": "WOLF_HIDE", "dropChance": 1.0, "minQuantity": 1, "maxQuantity": 2 },
+        { "itemId": "WOLF_FANG", "dropChance": 0.4, "minQuantity": 1, "maxQuantity": 1 },
+        { "itemId": "WOLF_FANG_BLADE", "dropChance": 0.15, "minQuantity": 1, "maxQuantity": 1 }
+      ]
+    },
+    {
+      "id": "WHISPERING_FOREST_BOAR",
+      "version": 1,
+      "entries": [
+        { "itemId": "BOAR_HIDE", "dropChance": 1.0, "minQuantity": 1, "maxQuantity": 2 },
+        { "itemId": "BOAR_TUSK", "dropChance": 0.4, "minQuantity": 1, "maxQuantity": 1 },
+        { "itemId": "BOAR_HIDE_VEST", "dropChance": 0.15, "minQuantity": 1, "maxQuantity": 1 }
+      ]
+    },
+    {
+      "id": "WHISPERING_FOREST_SPIDER",
+      "version": 1,
+      "entries": [
+        { "itemId": "SPIDER_SILK", "dropChance": 1.0, "minQuantity": 1, "maxQuantity": 3 },
+        { "itemId": "SPIDER_VENOM_SAC", "dropChance": 0.35, "minQuantity": 1, "maxQuantity": 1 },
+        { "itemId": "SPIDER_SILK_HOOD", "dropChance": 0.15, "minQuantity": 1, "maxQuantity": 1 }
+      ]
+    }
+  ]
+}
