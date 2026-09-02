@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Talents;
@@ -36,8 +37,6 @@ public sealed class CombatSessionFactory(
         string monsterId,
         CancellationToken cancellationToken)
     {
-        // Starting a combat is a real mutation boundary: checkpoint elapsed out-of-combat
-        // recovery/decay once before the in-memory CombatSession becomes authoritative.
         BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
             accountId,
             cancellationToken,
@@ -66,6 +65,18 @@ public sealed class CombatSessionFactory(
         if (classProfile.CombatAutoAttack is null)
             throw new InvalidOperationException(
                 $"Class {classProfile.Id} has no combat auto attack profile.");
+
+        EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
+            character.Inventory.Equipped.Values.Select(item => item.Definition),
+            content.EquipmentSets ?? []);
+        decimal weaponBaseIntervalSeconds = equipment.WeaponBaseAttackIntervalSeconds
+            ?? (decimal)classProfile.CombatAutoAttack.Interval.TotalSeconds;
+        decimal attackSpeedMultiplier = Math.Max(0.1m, character.Stats.AttackSpeed);
+        AutoAttackProfile playerAutoAttack = classProfile.CombatAutoAttack with
+        {
+            Interval = TimeSpan.FromSeconds(
+                (double)(weaponBaseIntervalSeconds / attackSpeedMultiplier))
+        };
 
         MonsterAiProfile ai = content.MonsterAiProfiles!.Single(candidate =>
             string.Equals(candidate.Id, monster.AiProfileId, StringComparison.Ordinal));
@@ -98,7 +109,7 @@ public sealed class CombatSessionFactory(
             character.ClassId,
             character.Name,
             character.Vitals.ResourceType,
-            classProfile.CombatAutoAttack,
+            playerAutoAttack,
             new HashSet<string>(character.KnownAbilityIds, StringComparer.Ordinal));
         CombatParticipantDefinition enemy = new(
             enemyActor,
