@@ -62,4 +62,10 @@ public sealed class CharacterVitals
         CurrentResource = currentResource;
         CheckpointedAtUtc = atUtc;
     }
+
+    public void BeginContext(decimal currentHp, decimal currentResource, DateTimeOffset atUtc)
+    {
+        Checkpoint(currentHp, currentResource, atUtc);
+        ContextStartedAtUtc = atUtc;
+    }
 }
