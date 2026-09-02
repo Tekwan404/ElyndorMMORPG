@@ -11,7 +11,7 @@ public static class GameContentPackageLoader
 {
     private const string MonsterOverlayFileName = "whispering-forest-monsters.json";
     private const string PhaseFiveOverlayFileName = "phase5-progression-items.json";
-    private const string CombatPresentationOverlayFileName = "combat-presentation.json";
+    private const string WarriorCombatBaselineOverlayFileName = "warrior-combat-baseline.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -48,7 +48,7 @@ public static class GameContentPackageLoader
 
             package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-            package = await ApplyCombatPresentationOverlayAsync(path, package, cancellationToken);
+            package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
                 GameContentPackageValidator.Validate(package);
@@ -91,9 +91,9 @@ public static class GameContentPackageLoader
 
         return package with
         {
-            ContentVersion = overlay.ContentVersion,
-            BalanceVersion = overlay.BalanceVersion,
-            PublishedAtUtc = overlay.PublishedAtUtc,
+            ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+            BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+            PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
             Monsters = overlay.Monsters,
             MonsterAiProfiles = overlay.MonsterAiProfiles
         };
@@ -122,16 +122,16 @@ public static class GameContentPackageLoader
 
         return package with
         {
-            ContentVersion = overlay.ContentVersion,
-            BalanceVersion = overlay.BalanceVersion,
-            PublishedAtUtc = overlay.PublishedAtUtc,
+            ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+            BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+            PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
             LevelProgression = overlay.LevelProgression,
             Items = overlay.Items,
             LootTables = overlay.LootTables
         };
     }
 
-    private static async Task<GameContentPackage> ApplyCombatPresentationOverlayAsync(
+    private static async Task<GameContentPackage> ApplyWarriorCombatBaselineOverlayAsync(
         string packagePath,
         GameContentPackage package,
         CancellationToken cancellationToken)
@@ -139,44 +139,58 @@ public static class GameContentPackageLoader
         string? directory = Path.GetDirectoryName(packagePath);
         if (string.IsNullOrWhiteSpace(directory)) return package;
 
-        string overlayPath = Path.Combine(directory, CombatPresentationOverlayFileName);
+        string overlayPath = Path.Combine(directory, WarriorCombatBaselineOverlayFileName);
         if (!File.Exists(overlayPath)) return package;
 
         await using FileStream stream = File.OpenRead(overlayPath);
-        CombatPresentationOverlay? overlay =
-            await JsonSerializer.DeserializeAsync<CombatPresentationOverlay>(
+        WarriorCombatBaselineOverlay? overlay =
+            await JsonSerializer.DeserializeAsync<WarriorCombatBaselineOverlay>(
                 stream,
                 SerializerOptions,
                 cancellationToken);
         if (overlay is null)
         {
-            throw new InvalidDataException($"Combat presentation overlay '{overlayPath}' is empty.");
+            throw new InvalidDataException($"Warrior combat baseline overlay '{overlayPath}' is empty.");
         }
 
         IReadOnlyList<ClassProfile> profiles = package.ClassProfiles
-            ?? throw new InvalidDataException("Class profiles are required for combat presentation overlay.");
+            ?? throw new InvalidDataException("Class profiles are required for warrior combat baseline overlay.");
         if (!profiles.Any(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)))
         {
             throw new InvalidDataException(
-                $"Combat presentation overlay references unknown class '{overlay.ClassId}'.");
+                $"Warrior combat baseline overlay references unknown class '{overlay.ClassId}'.");
         }
 
         return package with
         {
-            ContentVersion = overlay.ContentVersion,
-            BalanceVersion = overlay.BalanceVersion,
-            PublishedAtUtc = overlay.PublishedAtUtc,
+            ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+            BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+            PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
             ClassProfiles = profiles
                 .Select(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)
                     ? profile with
                     {
                         StartingAbilityIds = overlay.StartingAbilityIds,
-                        AbilityUnlocks = overlay.AbilityUnlocks
+                        AbilityUnlocks = []
                     }
                     : profile)
                 .ToArray()
         };
     }
+
+    private static string HigherVersion(string current, string candidate)
+    {
+        if (Version.TryParse(current, out Version? currentVersion)
+            && Version.TryParse(candidate, out Version? candidateVersion))
+        {
+            return candidateVersion > currentVersion ? candidate : current;
+        }
+
+        return string.CompareOrdinal(candidate, current) > 0 ? candidate : current;
+    }
+
+    private static DateTimeOffset Later(DateTimeOffset current, DateTimeOffset candidate) =>
+        candidate > current ? candidate : current;
 
     private sealed record MonsterContentOverlay(
         string ContentVersion,
@@ -193,11 +207,10 @@ public static class GameContentPackageLoader
         IReadOnlyList<ItemDefinition> Items,
         IReadOnlyList<LootTableDefinition> LootTables);
 
-    private sealed record CombatPresentationOverlay(
+    private sealed record WarriorCombatBaselineOverlay(
         string ContentVersion,
         string BalanceVersion,
         DateTimeOffset PublishedAtUtc,
         string ClassId,
-        IReadOnlyList<string> StartingAbilityIds,
-        IReadOnlyList<AbilityUnlockDefinition> AbilityUnlocks);
+        IReadOnlyList<string> StartingAbilityIds);
 }
