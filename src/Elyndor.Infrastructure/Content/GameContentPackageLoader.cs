@@ -11,6 +11,7 @@ public static class GameContentPackageLoader
 {
     private const string MonsterOverlayFileName = "whispering-forest-monsters.json";
     private const string PhaseFiveOverlayFileName = "phase5-progression-items.json";
+    private const string PhaseFiveLegacyItemsFileName = "phase5-legacy-items.json";
     private const string WarriorCombatBaselineOverlayFileName = "warrior-combat-baseline.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -48,6 +49,7 @@ public static class GameContentPackageLoader
 
             package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
+            package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
             package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
@@ -133,6 +135,36 @@ public static class GameContentPackageLoader
         };
     }
 
+    private static async Task<GameContentPackage> ApplyPhaseFiveLegacyItemsAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string overlayPath = Path.Combine(directory, PhaseFiveLegacyItemsFileName);
+        if (!File.Exists(overlayPath)) return package;
+
+        await using FileStream stream = File.OpenRead(overlayPath);
+        LegacyItemsOverlay? overlay = await JsonSerializer.DeserializeAsync<LegacyItemsOverlay>(
+            stream,
+            SerializerOptions,
+            cancellationToken);
+        if (overlay is null)
+        {
+            throw new InvalidDataException($"Legacy item overlay '{overlayPath}' is empty.");
+        }
+
+        ItemDefinition[] items = (package.Items ?? [])
+            .Concat(overlay.Items)
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToArray();
+
+        return package with { Items = items };
+    }
+
     private static async Task<GameContentPackage> ApplyWarriorCombatBaselineOverlayAsync(
         string packagePath,
         GameContentPackage package,
@@ -210,6 +242,8 @@ public static class GameContentPackageLoader
         IReadOnlyList<LootTableDefinition> LootTables,
         IReadOnlyList<EquipmentSetDefinition> EquipmentSets,
         IReadOnlyList<MerchantDefinition> Merchants);
+
+    private sealed record LegacyItemsOverlay(IReadOnlyList<ItemDefinition> Items);
 
     private sealed record WarriorCombatBaselineOverlay(
         string ContentVersion,
