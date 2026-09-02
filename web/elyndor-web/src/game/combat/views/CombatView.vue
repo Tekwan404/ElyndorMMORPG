@@ -13,6 +13,7 @@ const timer = window.setInterval(() => (now.value = Date.now()), 250)
 const snapshot = computed(() => combat.snapshot)
 
 type LogSide = 'player' | 'enemy' | 'system'
+interface CombatLogEntry { key: number; side: LogSide; actor: string; text: string; sequence: number }
 
 const monsterPresentation: Record<string, { name: string; level: number; art: string }> = {
   WOLF: { name: 'Волк', level: 3, art: gameArt.monsters.wolf },
@@ -64,6 +65,32 @@ const displayAbilities = computed(() => {
   )
 })
 
+const logEntries = computed<CombatLogEntry[]>(() => {
+  const events = combat.events.slice(-28)
+  const entries: CombatLogEntry[] = []
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index]!
+    // AbilityUsed is implementation detail: the actual outcome below is more useful.
+    // CriticalHit is folded into the matching DamageDealt line to avoid fake double hits.
+    if (event.type === 'AbilityUsed' || event.type === 'CriticalHit') continue
+    const previous = index > 0 ? events[index - 1] : undefined
+    const critical = event.type === 'DamageDealt'
+      && previous?.type === 'CriticalHit'
+      && previous.sourceActorId === event.sourceActorId
+      && previous.targetActorId === event.targetActorId
+      && previous.amount === event.amount
+    const side = eventSide(event)
+    entries.push({
+      key: event.sequence,
+      side,
+      actor: actorLabel(side),
+      text: eventText(event, critical),
+      sequence: event.sequence,
+    })
+  }
+  return entries.slice(-10).reverse()
+})
+
 function cooldownRemaining(abilityId: string): number {
   const readyAt = snapshot.value?.player.cooldowns[abilityId]
   return readyAt ? Math.max(0, (Date.parse(readyAt) - now.value) / 1_000) : 0
@@ -97,22 +124,25 @@ function abilityCaption(ability: { resourceCost: number; cooldownSeconds: number
 
 function eventSide(event: CombatEvent): LogSide {
   const current = snapshot.value
-  if (!current || event.type === 'CombatStarted' || event.type === 'CombatEnded') return 'system'
+  if (!current || ['CombatStarted', 'CombatEnded', 'ActorDied', 'EnemyKilled'].includes(event.type)) return 'system'
 
-  const sourceActorId = event.sourceActorId ?? event.actorId
-  if (sourceActorId === current.player.actorId || event.actorId === current.player.actorId) return 'player'
-  if (sourceActorId === current.enemy.actorId || event.actorId === current.enemy.actorId) return 'enemy'
+  // Damage events encode actorId as the target and sourceActorId as the attacker.
+  // Other state events belong to actorId (resource owner, auto-attack owner, effect owner).
+  const actorId = event.type === 'DamageDealt' || event.type === 'CriticalHit' || event.type === 'HealingApplied'
+    ? (event.sourceActorId ?? event.actorId)
+    : event.actorId
+  if (actorId === current.player.actorId) return 'player'
+  if (actorId === current.enemy.actorId) return 'enemy'
   return 'system'
 }
 
-function eventActorLabel(event: CombatEvent): string {
-  const side = eventSide(event)
+function actorLabel(side: LogSide): string {
   if (side === 'player') return 'ВЫ'
   if (side === 'enemy') return enemyPresentation.value?.name.toUpperCase() ?? 'ВРАГ'
   return 'СИСТЕМА'
 }
 
-function eventText(event: CombatEvent): string {
+function eventText(event: CombatEvent, critical = false): string {
   const definition = abilityName(event.definitionId)
   const enemyName = enemyPresentation.value?.name ?? snapshot.value?.enemy.name ?? 'Противник'
   const actorIsEnemy = event.actorId === snapshot.value?.enemy.actorId
@@ -121,12 +151,11 @@ function eventText(event: CombatEvent): string {
     case 'CombatStarted': return `Бой с ${enemyName} начался`
     case 'AutoAttackStarted': return 'Автоатака включена'
     case 'AutoAttackStopped': return 'Автоатака остановлена'
-    case 'AbilityUsed': return `Использована способность «${definition}»`
-    case 'DamageDealt': return `${definition || 'Удар'} · ${event.amount} урона`
-    case 'CriticalHit': return `Критический удар · ${event.amount} урона`
+    case 'DamageDealt': return `${definition || (eventSide(event) === 'enemy' ? 'Атака' : 'Удар')} · ${event.amount} урона${critical ? ' · КРИТ!' : ''}`
     case 'ResourceChanged': return `${event.amount > 0 ? '+' : ''}${event.amount} ярости${definition ? ` · ${definition}` : ''}`
     case 'EffectApplied': return `Наложен эффект «${definition}»`
     case 'EffectRemoved': return `Эффект «${definition}» завершён`
+    case 'HealingApplied': return `Восстановлено ${event.amount} здоровья`
     case 'ActorDied': return actorIsEnemy ? `${enemyName} повержен` : 'Вы повержены'
     case 'EnemyKilled': return `${enemyName} повержен`
     case 'CombatEnded': return event.definitionId === 'Victory'
@@ -251,17 +280,17 @@ onUnmounted(() => window.clearInterval(timer))
       <section class="combat-log" aria-live="polite">
         <div class="combat-log__heading">
           <b>Журнал боя</b>
-          <small>Последние события</small>
+          <small>Кто сделал → что произошло</small>
         </div>
         <ol>
           <li
-            v-for="event in combat.events.slice(-10).reverse()"
-            :key="event.sequence"
-            :data-side="eventSide(event)"
+            v-for="entry in logEntries"
+            :key="entry.key"
+            :data-side="entry.side"
           >
-            <span class="log-actor">{{ eventActorLabel(event) }}</span>
-            <span class="log-text">{{ eventText(event) }}</span>
-            <small class="log-sequence">#{{ event.sequence }}</small>
+            <span class="log-actor">{{ entry.actor }}</span>
+            <span class="log-text">{{ entry.text }}</span>
+            <small class="log-sequence">#{{ entry.sequence }}</small>
           </li>
         </ol>
       </section>
