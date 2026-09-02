@@ -41,6 +41,7 @@ public sealed class Character
         GenderId = genderId;
         ClassId = classId;
         Level = 1;
+        Experience = 0;
         CreatedAtUtc = createdAtUtc;
     }
 
@@ -62,6 +63,8 @@ public sealed class Character
 
     public int Level { get; private set; }
 
+    public long Experience { get; private set; }
+
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
     public void Rename(string name, string normalizedName)
@@ -80,6 +83,18 @@ public sealed class Character
         }
 
         Level = level;
+    }
+
+    public void SetExperience(long experience)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(experience);
+        Experience = experience;
+    }
+
+    public void AddExperience(long experience)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(experience);
+        Experience = checked(Experience + experience);
     }
 
     public void ChangeClass(string classId)
