@@ -40,7 +40,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             DateTimeOffset checkpointAt = snapshot.ServerTimeUtc < vitals.CheckpointedAtUtc
                 ? vitals.CheckpointedAtUtc
                 : snapshot.ServerTimeUtc;
-            vitals.Checkpoint(
+            vitals.BeginContext(
                 Math.Max(0m, snapshot.Player.Hp),
                 Math.Max(0m, snapshot.Player.Resource),
                 checkpointAt);
