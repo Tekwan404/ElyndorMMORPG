@@ -12,6 +12,7 @@ using Elyndor.Server.Identity;
 using Elyndor.Server.World;
 using Elyndor.Server.Talents;
 using Elyndor.Server.Combat;
+using Elyndor.Server.Items;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -149,6 +150,7 @@ app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
 app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
 app.MapTalentEndpoints();
+app.MapInventoryEndpoints();
 app.MapTelegramAdminEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 

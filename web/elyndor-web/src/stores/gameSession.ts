@@ -96,6 +96,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     })
   }
 
+  async function equip(characterItemId: string): Promise<void> {
+    await mutate('/api/v1/inventory/equip', { characterItemId })
+  }
+
+  async function unequip(slot: string): Promise<void> {
+    await mutate('/api/v1/inventory/unequip', { slot })
+  }
+
   async function mutate(path: string, body: object): Promise<void> {
     if (mutationPending.value) return
     mutationPending.value = true
@@ -139,6 +147,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     start,
     createCharacter,
     travel,
+    equip,
+    unequip,
   }
 })
 

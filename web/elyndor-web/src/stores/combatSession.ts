@@ -9,7 +9,7 @@ import {
 } from '@microsoft/signalr'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { CombatEvent, CombatSnapshot, CombatUpdate } from '@/api/contracts'
+import type { CombatEvent, CombatReward, CombatSnapshot, CombatUpdate } from '@/api/contracts'
 
 type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
 
@@ -25,6 +25,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const snapshot = ref<CombatSnapshot | null>(null)
   const events = ref<CombatEvent[]>([])
+  const reward = ref<CombatReward | null>(null)
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
@@ -94,6 +95,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function startCombat(monsterId = 'WOLF'): Promise<boolean> {
+    reward.value = null
     return await invoke('StartCombat', monsterId)
   }
 
@@ -173,6 +175,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (update.snapshot && snapshot.value?.sessionId !== update.snapshot.sessionId) {
       snapshot.value = null
       events.value = []
+      reward.value = null
     }
     if (update.snapshot && (!snapshot.value || update.snapshot.sequence >= snapshot.value.sequence)) {
       snapshot.value = update.snapshot
@@ -180,6 +183,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
     events.value = [...events.value, ...fresh].slice(-40)
+    if (update.reward) reward.value = update.reward
   }
 
   function recordFailure(stage: CombatRealtimeStage, operation: string | null, error: unknown): void {
@@ -196,6 +200,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     connectionState,
     snapshot,
     events,
+    reward,
     errorCode,
     diagnostic,
     pending,

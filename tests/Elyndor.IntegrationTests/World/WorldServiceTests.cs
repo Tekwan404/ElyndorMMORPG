@@ -4,6 +4,8 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Items;
+using Elyndor.Core.Progression;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             context,
             Content,
             Map,
+            new InventoryEquipmentService(context, Content),
             new FixedTimeProvider(Now));
 
         BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
@@ -40,6 +43,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Equal("0.1.0", snapshot.BalanceVersion);
         Assert.Equal(Now, snapshot.ServerTimeUtc);
         Assert.NotNull(snapshot.Character);
+        Assert.Equal(snapshot.Character.Stats.MaxHp, snapshot.Character.Vitals.CurrentHp);
         Assert.Equal("STARTER_TOWN", snapshot.World!.CurrentLocation.Id);
         Assert.Equal(
             ["WHISPERING_FOREST"],
@@ -55,6 +59,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             context,
             Content,
             Map,
+            new InventoryEquipmentService(context, Content),
             new FixedTimeProvider(Now));
 
         BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
@@ -180,7 +185,12 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
                 1,
                 ["STARTER_TOWN", "DEEP_FOREST"]),
             new("DEEP_FOREST", "Deep Forest", "DANGEROUS", 3, ["WHISPERING_FOREST"])
-        ]);
+        ]) with
+    {
+        LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+        Items = [],
+        LootTables = []
+    };
 
     private static readonly WorldMap Map = new(Content.Locations);
 

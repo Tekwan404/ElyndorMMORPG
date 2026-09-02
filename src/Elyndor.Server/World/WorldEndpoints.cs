@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.World;
+using Elyndor.Server.Items;
 
 namespace Elyndor.Server.World;
 
@@ -92,6 +93,8 @@ public static class WorldEndpoints
                     snapshot.Character.GenderId,
                     snapshot.Character.ClassId,
                     snapshot.Character.Level,
+                    snapshot.Character.Experience,
+                    snapshot.Character.XpToNextLevel,
                     snapshot.Character.PrimaryAttribute,
                     snapshot.Character.ClassProfileVersion,
                     snapshot.Character.KnownAbilityIds,
@@ -118,7 +121,8 @@ public static class WorldEndpoints
                         snapshot.Character.Vitals.ResourceType,
                         snapshot.Character.Vitals.CurrentResource,
                         snapshot.Character.Vitals.MaxResource,
-                        snapshot.Character.Vitals.CheckpointedAtUtc)),
+                        snapshot.Character.Vitals.CheckpointedAtUtc),
+                    InventoryEndpoints.ToResponse(snapshot.Character.Inventory)),
             snapshot.World is null
                 ? null
                 : new BootstrapWorldResponse(

@@ -128,6 +128,7 @@ watch(
         )
       }
       lastCombatResult.value = status
+      void session.refreshSnapshot()
     }
   },
 )
@@ -158,8 +159,21 @@ watch(
     >
       {{ lastEnemyName ?? 'Противник' }} повержен. Вы снова можете исследовать Шепчущий лес.
     </UIToast>
+    <UICard v-if="lastCombatResult === 'Victory' && combat.reward" class="reward-card" data-victory-reward>
+      <div class="reward-card__heading">
+        <div><small>Награда за победу</small><h2>+{{ combat.reward.xpEarned }} XP</h2></div>
+        <b v-if="combat.reward.leveledUp">Уровень {{ combat.reward.currentLevel }}</b>
+      </div>
+      <ul v-if="combat.reward.items.length">
+        <li v-for="item in combat.reward.items" :key="item.itemId">
+          <span>{{ item.name }}</span><b>×{{ item.quantity }}</b>
+          <small>{{ item.type === 'Equipment' ? 'Экипировка' : 'Материал' }}</small>
+        </li>
+      </ul>
+      <p v-else>В этот раз предметы не выпали.</p>
+    </UICard>
     <UIToast
-      v-else-if="lastCombatResult === 'Defeat'"
+      v-if="lastCombatResult === 'Defeat'"
       tone="danger"
       title="Поражение"
       data-combat-result
@@ -346,6 +360,15 @@ h1 {
 }
 .diagnostic small { color: var(--ui-color-text-muted); }
 .diagnostic b { color: var(--ui-color-text-secondary); }
+.reward-card { display: grid; gap: var(--ui-space-3); border-color: var(--ui-color-success); }
+.reward-card__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); }
+.reward-card__heading small { color: var(--ui-color-text-muted); text-transform: uppercase; }
+.reward-card__heading h2 { margin: 0; color: var(--ui-color-success); font-family: var(--ui-font-display); }
+.reward-card__heading > b { color: var(--ui-color-warning); }
+.reward-card ul { display: grid; gap: var(--ui-space-2); margin: 0; padding: 0; list-style: none; }
+.reward-card li { display: grid; grid-template-columns: 1fr auto; gap: 0 var(--ui-space-2); padding-top: var(--ui-space-2); border-top: 1px solid var(--ui-color-border); }
+.reward-card li small { grid-column: 1 / -1; color: var(--ui-color-text-muted); }
+.reward-card p { margin: 0; color: var(--ui-color-text-muted); }
 code { overflow-wrap: anywhere; color: var(--ui-color-danger); }
 @media (max-width: 360px) {
   .world {

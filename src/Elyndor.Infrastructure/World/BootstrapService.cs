@@ -2,6 +2,8 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
+using Elyndor.Core.Items;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,11 +16,14 @@ public sealed record BootstrapCharacter(
     string GenderId,
     string ClassId,
     int Level,
+    long Experience,
+    int XpToNextLevel,
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
     CharacterStats Stats,
-    BootstrapVitals Vitals);
+    BootstrapVitals Vitals,
+    InventorySnapshot Inventory);
 
 public sealed record BootstrapVitals(
     decimal CurrentHp,
@@ -51,6 +56,7 @@ public sealed class BootstrapService(
     GameDbContext dbContext,
     GameContentPackage contentPackage,
     WorldMap worldMap,
+    InventoryEquipmentService inventoryService,
     TimeProvider timeProvider)
 {
     private const string StarterTownId = "STARTER_TOWN";
@@ -85,6 +91,11 @@ public sealed class BootstrapService(
                 profile.Id,
                 classProfile.ResourceProfileId,
                 StringComparison.Ordinal));
+        InventorySnapshot inventory = await inventoryService.GetForCharacterAsync(
+            character.Id,
+            cancellationToken);
+        PrimaryStats equipmentStats = EquipmentStatModifierResolver.Resolve(
+            inventory.Equipped.Values.Select(item => item.Definition));
         TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
         ResolvedTalentModifiers talentModifiers = ResolvedTalentModifiers.Empty;
         TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
@@ -113,6 +124,7 @@ public sealed class BootstrapService(
                 character.Level,
                 CharacterStatInputs.Empty with
                 {
+                    Equipment = equipmentStats,
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });
@@ -178,6 +190,10 @@ public sealed class BootstrapService(
                 character.GenderId,
                 character.ClassId,
                 character.Level,
+                character.Experience,
+                (contentPackage.LevelProgression
+                    ?? throw new InvalidOperationException("Level progression content is required."))
+                    .XpToNext(character.Level),
                 classProfile.PrimaryAttribute,
                 contentPackage.BalanceVersion,
                 knownAbilityIds,
@@ -188,7 +204,8 @@ public sealed class BootstrapService(
                     resourceProfile.Id,
                     currentResource,
                     effectiveResourceProfile.MaxValue,
-                    now)),
+                    now),
+                inventory),
             new BootstrapWorld(ToLocation(current), location.Version, transitions),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,

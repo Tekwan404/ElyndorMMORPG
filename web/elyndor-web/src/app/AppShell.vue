@@ -74,6 +74,10 @@ onMounted(() => {
       <div class="hud__bars">
         <UIHealthBar label="Health" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
         <UIHealthBar :label="resourceLabel" :tone="resourceTone" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
+        <div class="xp" role="progressbar" aria-label="Experience" :aria-valuenow="character.experience" :aria-valuemax="character.xpToNextLevel || 1">
+          <span :style="{ width: `${character.xpToNextLevel ? Math.min(100, character.experience / character.xpToNextLevel * 100) : 100}%` }" />
+          <small>XP {{ character.experience }} / {{ character.xpToNextLevel || 'MAX' }}</small>
+        </div>
       </div>
     </section>
 
@@ -131,6 +135,9 @@ onMounted(() => {
 .hud__identity b { overflow: hidden; font-family: var(--ui-font-display); text-overflow: ellipsis; white-space: nowrap; }
 .hud__identity small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .hud__bars { display: grid; gap: var(--ui-space-1); }
+.xp { position: relative; min-height: 1rem; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); background: var(--ui-color-surface-2); }
+.xp > span { position: absolute; inset-block: 0; left: 0; background: linear-gradient(90deg, var(--ui-color-primary), var(--ui-color-secondary)); }
+.xp small { position: relative; z-index: 1; display: block; color: white; font-size: .62rem; line-height: .9rem; text-align: center; text-shadow: 0 1px 2px black; }
 .content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .content > :deep(.ui-system-state) { min-height: 100%; border: 0; }
 .navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: var(--ui-space-1) calc(var(--ui-space-1) + var(--ui-safe-area-right)) calc(var(--ui-space-1) + var(--ui-safe-area-bottom)) calc(var(--ui-space-1) + var(--ui-safe-area-left)); border-top: 1px solid var(--ui-color-border); background: var(--ui-color-surface-1); }

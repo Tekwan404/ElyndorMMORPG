@@ -1,3 +1,5 @@
+using Elyndor.Contracts.Items;
+
 namespace Elyndor.Contracts.World;
 
 public sealed record WorldLocationResponse(
@@ -13,11 +15,14 @@ public sealed record BootstrapCharacterResponse(
     string GenderId,
     string ClassId,
     int Level,
+    long Experience,
+    int XpToNextLevel,
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
     CharacterStatsResponse Stats,
-    CharacterVitalsResponse Vitals);
+    CharacterVitalsResponse Vitals,
+    InventoryResponse Inventory);
 
 public sealed record CharacterStatsResponse(
     decimal Strength,

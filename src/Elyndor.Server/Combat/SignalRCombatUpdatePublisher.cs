@@ -1,5 +1,4 @@
 using Elyndor.Contracts.Combat;
-using Elyndor.Core.Combat.Sessions;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.SignalR;
 
@@ -10,13 +9,13 @@ public sealed class SignalRCombatUpdatePublisher(IHubContext<CombatHub> hubConte
 {
     public async Task PublishAsync(
         Guid accountId,
-        CombatCommandResult update,
+        CombatOperationResult update,
         CancellationToken cancellationToken)
     {
-        CombatUpdateResponse response = CombatContractMapper.ToResponse(CombatOperationResult.From(update));
+        CombatUpdateResponse response = CombatContractMapper.ToResponse(update);
         IClientProxy client = hubContext.Clients.Group(CombatHub.GroupName(accountId));
         await client.SendAsync("CombatUpdated", response, cancellationToken);
-        if (update.Snapshot.Status != CombatSessionStatus.Active)
+        if (update.Snapshot?.Status != Core.Combat.Sessions.CombatSessionStatus.Active)
             await client.SendAsync("CombatEnded", response, cancellationToken);
     }
 }

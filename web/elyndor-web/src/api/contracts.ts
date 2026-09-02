@@ -24,11 +24,42 @@ export interface CharacterSnapshot {
   genderId: 'MALE' | 'FEMALE'
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE'
   level: number
+  experience: number
+  xpToNextLevel: number
   primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
   classProfileVersion: string
   knownAbilityIds: string[]
   stats: CharacterStats
   vitals: CharacterVitals
+  inventory: InventorySnapshot
+}
+
+export interface ItemStats {
+  strength: number
+  agility: number
+  intellect: number
+  stamina: number
+}
+
+export type EquipmentSlot = 'Weapon' | 'Head' | 'Chest'
+
+export interface InventoryItem {
+  id: string
+  definitionId: string
+  name: string
+  type: 'Equipment' | 'Material'
+  rarity: 'Common' | 'Uncommon' | 'Rare'
+  requiredLevel: number
+  quantity: number
+  slot: EquipmentSlot | null
+  equippedSlot: EquipmentSlot | null
+  stats: ItemStats
+  description: string
+}
+
+export interface InventorySnapshot {
+  items: InventoryItem[]
+  equipped: Record<EquipmentSlot, InventoryItem | null>
 }
 
 export interface CharacterStats {
@@ -155,4 +186,19 @@ export interface CombatUpdate {
   errorCode: string | null
   snapshot: CombatSnapshot | null
   events: CombatEvent[]
+  reward: CombatReward | null
+}
+
+export interface CombatReward {
+  xpEarned: number
+  leveledUp: boolean
+  previousLevel: number
+  currentLevel: number
+  items: {
+    itemId: string
+    name: string
+    type: 'Equipment' | 'Material'
+    rarity: 'Common' | 'Uncommon' | 'Rare'
+    quantity: number
+  }[]
 }

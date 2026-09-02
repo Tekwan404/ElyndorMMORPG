@@ -37,6 +37,9 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-2a-world.png', fullPage: true })
   await page.getByRole('button', { name: 'Герой' }).click()
   await expect(page.getByRole('heading', { name: 'Arthas' })).toBeVisible()
+  await page.getByRole('button', { name: 'Инвентарь' }).click()
+  await expect(page.getByRole('heading', { name: 'Инвентарь' })).toBeVisible()
+  await expect(page.getByText('Сумка пуста')).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
@@ -70,9 +73,16 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
       body: 'window.Telegram = { WebApp: { initData: "", ready() {}, expand() {} } };',
     }),
   )
-  await page.route('**/api/v1/auth/development', (route) =>
-    route.fulfill({ json: { accessToken: 'test-token', expiresAtUtc: '2026-08-30T12:15:00Z' } }),
-  )
+  await page.route('**/api/v1/auth/development', async (route) => {
+    if (process.env.ELYNDOR_E2E_LIVE_AUTH === 'true') {
+      await route.fulfill({ response: await route.fetch() })
+      return
+    }
+
+    await route.fulfill({
+      json: { accessToken: 'test-token', expiresAtUtc: '2026-08-30T12:15:00Z' },
+    })
+  })
   await page.route('**/api/v1/bootstrap', (route) =>
     route.fulfill({ json: snapshot(hasCharacter, locationId) }),
   )
@@ -153,10 +163,13 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
           genderId: 'MALE',
           classId: 'ARCHER',
           level: 1,
+          experience: 35,
+          xpToNextLevel: 100,
           primaryAttribute: 'AGILITY',
           classProfileVersion: '0.2.0',
           stats: archerStats,
           vitals: archerVitals,
+          inventory: emptyInventory,
         }
       : null,
     world: hasCharacter
@@ -194,4 +207,9 @@ const archerVitals = {
   currentResource: 100,
   maxResource: 100,
   checkpointedAtUtc: '2026-08-30T12:00:00Z',
+}
+
+const emptyInventory = {
+  items: [],
+  equipped: { Weapon: null, Head: null, Chest: null },
 }

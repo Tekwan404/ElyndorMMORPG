@@ -5,6 +5,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,7 +16,14 @@ public sealed record CombatRewardApplicationResult(
     bool Granted,
     int XpEarned,
     CharacterProgressionResult? Progression,
-    IReadOnlyList<LootRoll> Loot);
+    IReadOnlyList<CombatRewardItemResult> Items);
+
+public sealed record CombatRewardItemResult(
+    string ItemId,
+    string Name,
+    ItemType Type,
+    ItemRarity Rarity,
+    int Quantity);
 
 public sealed class CombatRewardService(
     GameDbContext dbContext,
@@ -80,6 +88,15 @@ public sealed class CombatRewardService(
         foreach (LootRoll roll in loot)
             await AddItemAsync(characterId, roll, now, cancellationToken);
 
+        if (progressionResult.LeveledUp)
+        {
+            CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
+                candidate => candidate.CharacterId == characterId,
+                cancellationToken);
+            CharacterStats stats = await CalculateStatsAsync(character, cancellationToken);
+            vitals.Checkpoint(stats.MaxHp, vitals.CurrentResource, now);
+        }
+
         dbContext.CombatRewardGrants.Add(new CombatRewardGrant(
             snapshot.SessionId,
             characterId,
@@ -94,7 +111,7 @@ public sealed class CombatRewardService(
             true,
             monster.XpReward,
             progressionResult,
-            loot);
+            loot.Select(ToRewardItem).ToArray());
     }
 
     private IReadOnlyList<LootRoll> RollLoot(MonsterDefinition monster)
@@ -162,5 +179,72 @@ public sealed class CombatRewardService(
                 acquiredAtUtc));
             remaining -= quantity;
         }
+    }
+
+    private async Task<CharacterStats> CalculateStatsAsync(
+        Character character,
+        CancellationToken cancellationToken)
+    {
+        Guid[] equippedItemIds = await dbContext.CharacterEquipment
+            .Where(item => item.CharacterId == character.Id)
+            .Select(item => item.CharacterItemId)
+            .ToArrayAsync(cancellationToken);
+        string[] equippedDefinitionIds = await dbContext.CharacterItems
+            .Where(item => equippedItemIds.Contains(item.Id))
+            .Select(item => item.ItemDefinitionId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<string> equippedDefinitions = equippedDefinitionIds.ToHashSet(StringComparer.Ordinal);
+        PrimaryStats equipment = EquipmentStatModifierResolver.Resolve(
+            (content.Items ?? []).Where(item => equippedDefinitions.Contains(item.Id)));
+
+        TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
+        TalentStatModifiers talentDerived = new();
+        TalentTreeDefinition? tree = content.TalentTrees?.SingleOrDefault(candidate =>
+            string.Equals(candidate.ClassId, character.ClassId, StringComparison.Ordinal));
+        if (tree is not null)
+        {
+            CharacterTalentState? talentState = await dbContext.CharacterTalentStates
+                .AsNoTracking()
+                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
+            if (talentState is not null)
+            {
+                ResolvedTalentModifiers talents = TalentModifierResolver.Resolve(
+                    tree,
+                    talentState.GetRanks(talentState.ActiveLoadoutId));
+                talentPercentages = new TalentPrimaryStatPercentages(
+                    talents.Stats.StrengthPercent,
+                    0,
+                    0,
+                    talents.Stats.StaminaPercent);
+                talentDerived = talents.Stats;
+            }
+        }
+
+        return new CharacterStatCalculator(
+            content.StatFormula
+                ?? throw new InvalidOperationException("Stat formula content is required."),
+            content.ClassProfiles
+                ?? throw new InvalidOperationException("Class profiles are required."))
+            .Calculate(
+                character.ClassId,
+                character.Level,
+                CharacterStatInputs.Empty with
+                {
+                    Equipment = equipment,
+                    TalentPercentages = talentPercentages,
+                    TalentDerived = talentDerived
+                });
+    }
+
+    private CombatRewardItemResult ToRewardItem(LootRoll roll)
+    {
+        ItemDefinition definition = (content.Items ?? []).Single(item =>
+            string.Equals(item.Id, roll.ItemId, StringComparison.Ordinal));
+        return new CombatRewardItemResult(
+            definition.Id,
+            definition.Name,
+            definition.Type,
+            definition.Rarity,
+            roll.Quantity);
     }
 }

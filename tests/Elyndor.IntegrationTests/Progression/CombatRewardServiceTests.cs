@@ -1,0 +1,117 @@
+using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
+using Elyndor.Core.Identity;
+using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Progression;
+using Elyndor.IntegrationTests.Postgres;
+using Microsoft.EntityFrameworkCore;
+
+namespace Elyndor.IntegrationTests.Progression;
+
+[Collection(PostgresFixtureDefinition.Name)]
+public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncLifetime
+{
+    private static readonly DateTimeOffset Now =
+        new(2026, 9, 2, 6, 0, 0, TimeSpan.Zero);
+
+    public Task InitializeAsync() => postgres.ResetAsync();
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task VictoryLevelUpFullyHealsToNewAuthoritativeMaxHp()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(90, 10);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            VictorySnapshot(Guid.CreateVersion7()),
+            CancellationToken.None);
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        CharacterVitals vitals = await context.CharacterVitals.AsNoTracking().SingleAsync();
+        Assert.True(result.Progression!.LeveledUp);
+        Assert.Equal(2, character.Level);
+        Assert.Equal(25, character.Experience);
+        Assert.Equal(170, vitals.CurrentHp);
+    }
+
+    [Fact]
+    public async Task SameCombatSessionGrantsPermanentRewardOnlyOnce()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        Guid sessionId = Guid.CreateVersion7();
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
+            characterId, VictorySnapshot(sessionId), CancellationToken.None);
+        CombatRewardApplicationResult replay = await service.ApplyVictoryAsync(
+            characterId, VictorySnapshot(sessionId), CancellationToken.None);
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.True(first.Granted);
+        Assert.False(replay.Granted);
+        Assert.Equal(35, character.Experience);
+        Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
+    }
+
+    private async Task<(Guid CharacterId, Guid AccountId)> CreateCharacterAsync(
+        long experience,
+        decimal currentHp)
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        await using GameDbContext context = postgres.CreateDbContext();
+        context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
+        Character character = new(
+            characterId, accountId, Guid.CreateVersion7(), "Arthas", $"ARTHAS{characterId:N}"[..16],
+            "HUMAN", "MALE", "WARRIOR", Now);
+        character.SetExperience(experience);
+        context.Characters.Add(character);
+        context.CharacterVitals.Add(new CharacterVitals(
+            characterId, currentHp, 0, Now.AddMinutes(-1), Now.AddMinutes(-1)));
+        await context.SaveChangesAsync();
+        return (characterId, accountId);
+    }
+
+    private static async Task<CombatRewardService> CreateServiceAsync(GameDbContext context)
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        return new CombatRewardService(
+            context,
+            content,
+            new FixedRandomFactory(),
+            new FixedTimeProvider(Now));
+    }
+
+    private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)
+    {
+        CombatActorSnapshot player = Actor(Guid.CreateVersion7(), CombatActorKind.Player, "WARRIOR", "Arthas");
+        CombatActorSnapshot enemy = Actor(Guid.CreateVersion7(), CombatActorKind.Monster, "WOLF", "Wolf");
+        return new CombatSessionSnapshot(sessionId, 1, CombatSessionStatus.Victory, Now, player, enemy);
+    }
+
+    private static CombatActorSnapshot Actor(
+        Guid id,
+        CombatActorKind kind,
+        string definitionId,
+        string name) =>
+        new(id, kind, definitionId, name, 0, 100, "NONE", 0, 0, false,
+            new Dictionary<string, DateTimeOffset>(), new HashSet<string>(), [], []);
+
+    private sealed class FixedRandomFactory : IGameRandomFactory
+    {
+        public IGameRandom Create() => new SequenceGameRandom(0, 0, 0, 0, 0, 0);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+}

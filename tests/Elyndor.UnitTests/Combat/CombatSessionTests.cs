@@ -99,7 +99,10 @@ public sealed class CombatSessionTests
     public async Task ConcurrentDuplicateCommandsMutateSessionOnlyOnce()
     {
         CombatSession session = CreateSession(enemyHp: 10_000);
-        using CombatSessionRegistry registry = new(new FrozenTimeProvider(Now), new NullPublisher());
+        using CombatSessionRegistry registry = new(
+            new FrozenTimeProvider(Now),
+            new NullPublisher(),
+            new NullFinalizer());
         Guid accountId = Guid.NewGuid();
         Assert.True(registry.TryAdd(accountId, PlayerId, session));
 
@@ -183,8 +186,17 @@ public sealed class CombatSessionTests
     private sealed class NullPublisher : ICombatUpdatePublisher
     {
         public Task PublishAsync(
-            Guid accountId, CombatCommandResult update, CancellationToken cancellationToken) =>
+            Guid accountId, CombatOperationResult update, CancellationToken cancellationToken) =>
             Task.CompletedTask;
+    }
+
+    private sealed class NullFinalizer : ICombatSessionFinalizer
+    {
+        public Task<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?> FinalizeAsync(
+            Guid characterId,
+            CombatSessionSnapshot snapshot,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?>(null);
     }
 
     private sealed class FrozenTimeProvider(DateTimeOffset now) : TimeProvider

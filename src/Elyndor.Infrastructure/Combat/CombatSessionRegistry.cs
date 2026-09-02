@@ -1,11 +1,12 @@
 using System.Collections.Concurrent;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Infrastructure.Progression;
 
 namespace Elyndor.Infrastructure.Combat;
 
 public interface ICombatUpdatePublisher
 {
-    Task PublishAsync(Guid accountId, CombatCommandResult update, CancellationToken cancellationToken);
+    Task PublishAsync(Guid accountId, CombatOperationResult update, CancellationToken cancellationToken);
 }
 
 public sealed class CombatSessionRegistry(
@@ -53,8 +54,12 @@ public sealed class CombatSessionRegistry(
             CombatCommandResult result = operation(entry.Session, timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, cancellationToken);
-            await publisher.PublishAsync(accountId, result, cancellationToken);
-            return CombatOperationResult.From(result);
+            CombatOperationResult operationResult = CombatOperationResult.From(result) with
+            {
+                Reward = entry.Reward
+            };
+            await publisher.PublishAsync(accountId, operationResult, cancellationToken);
+            return operationResult;
         }
         finally
         {
@@ -65,6 +70,7 @@ public sealed class CombatSessionRegistry(
     public CombatOperationResult Resume(Guid accountId) =>
         _byAccount.TryGetValue(accountId, out SessionEntry? entry)
             ? CombatOperationResult.FromSnapshot(entry.Session.Snapshot())
+                with { Reward = entry.Reward }
             : CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
     public void ClearFinished(Guid accountId)
@@ -104,7 +110,10 @@ public sealed class CombatSessionRegistry(
             CombatCommandResult result = entry.Session.AdvanceTo(timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);
-            await publisher.PublishAsync(entry.AccountId, result, CancellationToken.None);
+            await publisher.PublishAsync(
+                entry.AccountId,
+                CombatOperationResult.From(result) with { Reward = entry.Reward },
+                CancellationToken.None);
         }
         finally
         {
@@ -120,7 +129,7 @@ public sealed class CombatSessionRegistry(
         if (snapshot.Status == CombatSessionStatus.Active || entry.Finalized)
             return;
 
-        await finalizer.FinalizeAsync(
+        entry.Reward = await finalizer.FinalizeAsync(
             entry.CharacterId,
             snapshot,
             cancellationToken);
@@ -153,6 +162,7 @@ public sealed class CombatSessionRegistry(
         public SemaphoreSlim Gate { get; } = new(1, 1);
         public ITimer? Timer { get; set; }
         public bool Finalized { get; set; }
+        public CombatRewardApplicationResult? Reward { get; set; }
     }
 }
 
@@ -160,7 +170,8 @@ public sealed record CombatOperationResult(
     bool Succeeded,
     string? ErrorCode,
     CombatSessionSnapshot? Snapshot,
-    IReadOnlyList<Core.Combat.CombatEvent> Events)
+    IReadOnlyList<Core.Combat.CombatEvent> Events,
+    CombatRewardApplicationResult? Reward = null)
 {
     public static CombatOperationResult Failure(string errorCode) => new(false, errorCode, null, []);
     public static CombatOperationResult FromSnapshot(CombatSessionSnapshot snapshot) => new(true, null, snapshot, []);

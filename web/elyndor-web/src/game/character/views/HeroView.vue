@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
+import InventoryView from '@/game/character/views/InventoryView.vue'
 import WarriorTalentTreeView from '@/game/talents/views/WarriorTalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
@@ -12,7 +13,7 @@ const activeTab = ref<HeroTab>('stats')
 const isWarrior = computed(() => session.snapshot?.character?.classId === 'WARRIOR')
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'warrior' }[] = [
   { id: 'character', label: 'Персонаж', available: false },
-  { id: 'inventory', label: 'Инвентарь', available: false },
+  { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'warrior' },
 ]
@@ -39,6 +40,7 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
       </button>
     </nav>
     <WarriorTalentTreeView v-if="activeTab === 'talents' && isWarrior" />
+    <InventoryView v-else-if="activeTab === 'inventory'" />
     <CharacterStatsView v-else />
   </section>
 </template>

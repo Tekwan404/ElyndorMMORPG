@@ -11,7 +11,20 @@ internal static class CombatContractMapper
         result.Succeeded,
         result.ErrorCode,
         result.Snapshot is null ? null : ToResponse(result.Snapshot),
-        result.Events.Select(ToResponse).ToArray());
+        result.Events.Select(ToResponse).ToArray(),
+        result.Reward?.Progression is null
+            ? null
+            : new CombatRewardResponse(
+                result.Reward.XpEarned,
+                result.Reward.Progression.LeveledUp,
+                result.Reward.Progression.PreviousLevel,
+                result.Reward.Progression.CurrentLevel,
+                result.Reward.Items.Select(item => new CombatRewardItemResponse(
+                    item.ItemId,
+                    item.Name,
+                    item.Type.ToString(),
+                    item.Rarity.ToString(),
+                    item.Quantity)).ToArray()));
 
     private static CombatSnapshotResponse ToResponse(CombatSessionSnapshot snapshot) => new(
         snapshot.SessionId,

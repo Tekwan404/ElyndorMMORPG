@@ -5,6 +5,8 @@ using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Items;
+using Elyndor.Core.Progression;
 
 namespace Elyndor.UnitTests.Content;
 
@@ -277,6 +279,32 @@ public sealed class GameContentPackageValidatorTests
 
         Assert.Contains(errors, error => error.Code == "MISSING_MONSTER_ABILITY");
         Assert.Contains(errors, error => error.Code == "MISSING_MONSTER_AI_PROFILE");
+    }
+
+    [Fact]
+    public void ValidateRejectsPhaseFiveLootWithMissingItemReference()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "WOLF_HIDE", "Wolf Hide", ItemType.Material, ItemRarity.Common,
+                    1, true, 99, null, new PrimaryStats(0, 0, 0, 0), "Material")
+            ],
+            LootTables =
+            [
+                new LootTableDefinition(
+                    "WOLF_LOOT",
+                    [new LootTableEntry("MISSING_ITEM", 1m, 1, 1)])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "MISSING_LOOT_ITEM_REFERENCE");
     }
 
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>

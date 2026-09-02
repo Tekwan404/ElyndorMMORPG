@@ -1,0 +1,195 @@
+using Elyndor.Core.Characters;
+using Elyndor.Core.Content;
+using Elyndor.Core.Items;
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
+namespace Elyndor.Infrastructure.Items;
+
+public static class InventoryErrorCodes
+{
+    public const string CharacterNotFound = "character_not_found";
+    public const string ItemNotFound = "inventory_item_not_found";
+    public const string ItemNotOwned = "inventory_item_not_owned";
+    public const string NotEquipment = "inventory_item_not_equipment";
+    public const string InvalidSlot = "inventory_invalid_slot";
+    public const string RequiredLevel = "inventory_required_level";
+    public const string Conflict = "inventory_conflict";
+}
+
+public sealed record InventoryItemSnapshot(
+    Guid Id,
+    ItemDefinition Definition,
+    int Quantity,
+    DateTimeOffset AcquiredAtUtc,
+    EquipmentSlot? EquippedSlot);
+
+public sealed record InventorySnapshot(
+    IReadOnlyList<InventoryItemSnapshot> Items,
+    IReadOnlyDictionary<EquipmentSlot, InventoryItemSnapshot> Equipped);
+
+public sealed record InventoryOperationResult(
+    bool IsSuccess,
+    string? ErrorCode,
+    InventorySnapshot? Snapshot)
+{
+    public static InventoryOperationResult Success(InventorySnapshot snapshot) =>
+        new(true, null, snapshot);
+
+    public static InventoryOperationResult Failure(string errorCode) =>
+        new(false, errorCode, null);
+}
+
+public sealed class InventoryEquipmentService(
+    GameDbContext dbContext,
+    GameContentPackage content)
+{
+    public async Task<InventoryOperationResult> GetAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        Character? character = await dbContext.Characters
+            .AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+        return character is null
+            ? InventoryOperationResult.Failure(InventoryErrorCodes.CharacterNotFound)
+            : InventoryOperationResult.Success(
+                await GetForCharacterAsync(character.Id, cancellationToken));
+    }
+
+    public async Task<InventorySnapshot> GetForCharacterAsync(
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
+        CharacterItem[] items = await dbContext.CharacterItems
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .OrderByDescending(item => item.AcquiredAtUtc)
+            .ThenBy(item => item.Id)
+            .ToArrayAsync(cancellationToken);
+        CharacterEquipment[] equipment = await dbContext.CharacterEquipment
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .ToArrayAsync(cancellationToken);
+        Dictionary<Guid, EquipmentSlot> equippedSlots = equipment
+            .ToDictionary(item => item.CharacterItemId, item => item.Slot);
+        Dictionary<string, ItemDefinition> definitions = RequiredDefinitions();
+
+        InventoryItemSnapshot[] snapshots = items.Select(item =>
+        {
+            if (!definitions.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
+            {
+                throw new InvalidOperationException(
+                    $"Inventory item '{item.ItemDefinitionId}' is missing from game content.");
+            }
+
+            return new InventoryItemSnapshot(
+                item.Id,
+                definition,
+                item.Quantity,
+                item.AcquiredAtUtc,
+                equippedSlots.GetValueOrDefault(item.Id));
+        }).ToArray();
+        Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots
+            .Where(item => item.EquippedSlot.HasValue)
+            .ToDictionary(item => item.EquippedSlot!.Value);
+        return new InventorySnapshot(snapshots, equipped);
+    }
+
+    public Task<InventoryOperationResult> EquipAsync(
+        Guid accountId,
+        Guid characterItemId,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(accountId, async character =>
+        {
+            CharacterItem? item = await dbContext.CharacterItems
+                .SingleOrDefaultAsync(candidate => candidate.Id == characterItemId, cancellationToken);
+            if (item is null)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
+            if (item.CharacterId != character.Id)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
+
+            ItemDefinition? definition = (content.Items ?? []).SingleOrDefault(candidate =>
+                string.Equals(candidate.Id, item.ItemDefinitionId, StringComparison.Ordinal));
+            if (definition is null || definition.Type != ItemType.Equipment)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.NotEquipment);
+            if (definition.Slot is null)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSlot);
+            if (character.Level < definition.RequiredLevel)
+                return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
+
+            CharacterEquipment? equipped = await dbContext.CharacterEquipment
+                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
+                    && candidate.Slot == definition.Slot.Value, cancellationToken);
+            if (equipped is null)
+            {
+                dbContext.CharacterEquipment.Add(new CharacterEquipment(
+                    character.Id,
+                    definition.Slot.Value,
+                    item.Id));
+            }
+            else
+            {
+                equipped.Equip(item.Id);
+            }
+
+            return null;
+        }, cancellationToken);
+
+    public Task<InventoryOperationResult> UnequipAsync(
+        Guid accountId,
+        EquipmentSlot slot,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(accountId, async character =>
+        {
+            CharacterEquipment? equipped = await dbContext.CharacterEquipment
+                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
+                    && candidate.Slot == slot, cancellationToken);
+            if (equipped is not null)
+                dbContext.CharacterEquipment.Remove(equipped);
+            return null;
+        }, cancellationToken);
+
+    private async Task<InventoryOperationResult> ExecuteMutationAsync(
+        Guid accountId,
+        Func<Character, Task<InventoryOperationResult?>> mutation,
+        CancellationToken cancellationToken)
+    {
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            dbContext.ChangeTracker.Clear();
+            await using IDbContextTransaction transaction =
+                await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                Character? character = await dbContext.Characters
+                    .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+                if (character is null)
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.CharacterNotFound);
+
+                InventoryOperationResult? failure = await mutation(character);
+                if (failure is not null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return failure;
+                }
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return InventoryOperationResult.Success(
+                    await GetForCharacterAsync(character.Id, cancellationToken));
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return InventoryOperationResult.Failure(InventoryErrorCodes.Conflict);
+            }
+        });
+    }
+
+    private Dictionary<string, ItemDefinition> RequiredDefinitions() =>
+        (content.Items ?? throw new InvalidOperationException("Item content is required."))
+            .ToDictionary(item => item.Id, StringComparer.Ordinal);
+}

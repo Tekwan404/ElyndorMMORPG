@@ -9,7 +9,7 @@ namespace Elyndor.Infrastructure.Combat;
 
 public interface ICombatSessionFinalizer
 {
-    Task FinalizeAsync(
+    Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken);
@@ -21,13 +21,13 @@ public interface ICombatSessionFinalizer
 /// </summary>
 public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : ICombatSessionFinalizer
 {
-    public async Task FinalizeAsync(
+    public async Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken)
     {
         if (snapshot.Status == CombatSessionStatus.Active)
-            return;
+            return null;
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
@@ -51,7 +51,9 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         {
             CombatRewardService rewards =
                 scope.ServiceProvider.GetRequiredService<CombatRewardService>();
-            await rewards.ApplyVictoryAsync(characterId, snapshot, cancellationToken);
+            return await rewards.ApplyVictoryAsync(characterId, snapshot, cancellationToken);
         }
+
+        return null;
     }
 }

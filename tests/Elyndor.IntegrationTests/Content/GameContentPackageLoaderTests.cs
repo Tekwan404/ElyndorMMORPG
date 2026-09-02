@@ -6,6 +6,19 @@ namespace Elyndor.IntegrationTests.Content;
 public sealed class GameContentPackageLoaderTests
 {
     [Fact]
+    public async Task PhaseFivePackageLoadsAndValidates()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        Assert.Equal("0.7.0", package.ContentVersion);
+        Assert.NotNull(package.LevelProgression);
+        Assert.Equal(9, package.Items!.Count);
+        Assert.Equal(3, package.LootTables!.Count);
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
     public async Task LoadAsyncReturnsValidatedPackage()
     {
         const string json = """

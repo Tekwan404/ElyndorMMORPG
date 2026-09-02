@@ -37,8 +37,23 @@ public sealed record CombatEventResponse(
     decimal Amount,
     DateTimeOffset ServerTimeUtc);
 
+public sealed record CombatRewardItemResponse(
+    string ItemId,
+    string Name,
+    string Type,
+    string Rarity,
+    int Quantity);
+
+public sealed record CombatRewardResponse(
+    int XpEarned,
+    bool LeveledUp,
+    int PreviousLevel,
+    int CurrentLevel,
+    IReadOnlyList<CombatRewardItemResponse> Items);
+
 public sealed record CombatUpdateResponse(
     bool Succeeded,
     string? ErrorCode,
     CombatSnapshotResponse? Snapshot,
-    IReadOnlyList<CombatEventResponse> Events);
+    IReadOnlyList<CombatEventResponse> Events,
+    CombatRewardResponse? Reward);
