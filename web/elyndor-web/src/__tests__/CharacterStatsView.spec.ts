@@ -14,8 +14,8 @@ describe('CharacterStatsView', () => {
 
     const wrapper = mount(CharacterStatsView)
 
-    expect(wrapper.get('[role="progressbar"][aria-label="Health"]')).toBeTruthy()
-    expect(wrapper.get('[role="progressbar"][aria-label="Focus"]')).toBeTruthy()
+    expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
+    expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('[data-stat="agility"]').text()).toContain('основной')
     expect(wrapper.get('[data-stat="agility"]').text()).toContain('9')
   })
@@ -33,10 +33,11 @@ function snapshot() {
       level: 1,
       experience: 0,
       xpToNextLevel: 100,
-      inventory: { items: [], equipped: { Weapon: null, Head: null, Chest: null } },
+      inventory: { items: [], equipped: { weapon: null, head: null, chest: null } },
       primaryAttribute: 'AGILITY' as const,
       classProfileVersion: '0.2.0',
       knownAbilityIds: [],
+      knownAbilities: [],
       stats: {
         strength: 5,
         agility: 9,
