@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
+import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
@@ -20,14 +21,19 @@ const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
   const value = character.value?.vitals.resourceType.toLowerCase()
   return value === 'rage' || value === 'mana' ? value : 'focus'
 })
-const resourceLabel = computed(() => {
-  const value = character.value?.vitals.resourceType.toLowerCase() ?? 'resource'
-  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`
-})
+const resourceName = computed(() => resourceLabel(character.value?.vitals.resourceType ?? ''))
 const connectionLabel = computed(() => {
   if (session.state === 'world') return 'Мир доступен'
   if (session.state === 'offline' || session.state === 'error') return 'Связь потеряна'
   return 'Синхронизация'
+})
+const sessionErrorMessage = computed(() => {
+  const code = session.errorCode
+  if (!code) return 'Не удалось восстановить состояние мира.'
+  if (code === 'network_unavailable') return 'Не удалось связаться с сервером. Проверьте подключение и попробуйте снова.'
+  if (code === 'authentication_failed') return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
+  if (code === 'bootstrap_failed') return 'Не удалось загрузить состояние персонажа и мира.'
+  return `Не удалось продолжить игру. Код ошибки: ${code}`
 })
 
 const navigation: readonly {
@@ -59,7 +65,7 @@ onMounted(() => {
     <header class="game-shell__header">
       <div>
         <p class="brand">ELYNDOR</p>
-        <p class="subtitle">Telegram MMORPG</p>
+        <p class="subtitle">MMORPG в Telegram</p>
       </div>
       <div class="server-state" :data-state="session.state" aria-live="polite">
         <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
@@ -69,14 +75,14 @@ onMounted(() => {
     <section v-if="session.state === 'world' && character && !combat.isActive" class="hud" aria-label="Состояние героя">
       <div class="hud__identity">
         <b>{{ character.name }}</b>
-        <small>ур. {{ character.level }} · {{ character.classId }}</small>
+        <small>ур. {{ character.level }} · {{ classLabel(character.classId) }}</small>
       </div>
       <div class="hud__bars">
-        <UIHealthBar label="Health" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-        <UIHealthBar :label="resourceLabel" :tone="resourceTone" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
-        <div class="xp" role="progressbar" aria-label="Experience" :aria-valuenow="character.experience" :aria-valuemax="character.xpToNextLevel || 1">
+        <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
+        <UIHealthBar :label="resourceName" :tone="resourceTone" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
+        <div class="xp" role="progressbar" aria-label="Опыт" :aria-valuenow="character.experience" :aria-valuemax="character.xpToNextLevel || 1">
           <span :style="{ width: `${character.xpToNextLevel ? Math.min(100, character.experience / character.xpToNextLevel * 100) : 100}%` }" />
-          <small>XP {{ character.experience }} / {{ character.xpToNextLevel || 'MAX' }}</small>
+          <small>Опыт {{ character.experience }} / {{ character.xpToNextLevel || 'МАКС.' }}</small>
         </div>
       </div>
     </section>
@@ -92,7 +98,7 @@ onMounted(() => {
         v-else-if="session.state === 'offline' || session.state === 'error'"
         state="error"
         title="Связь с миром потеряна"
-        :message="session.errorCode ?? 'Не удалось восстановить состояние мира.'"
+        :message="sessionErrorMessage"
       >
         <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
       </UILoadingState>
