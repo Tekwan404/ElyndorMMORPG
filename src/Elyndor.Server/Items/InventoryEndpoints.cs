@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.Items;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.World;
 
 namespace Elyndor.Server.Items;
 
@@ -16,6 +17,10 @@ public static class InventoryEndpoints
         group.MapGet("/", GetAsync);
         group.MapPost("/equip", EquipAsync);
         group.MapPost("/unequip", UnequipAsync);
+        group.MapPost("/use-consumable", UseConsumableAsync);
+        group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
+        group.MapPost("/merchant/buy", BuyMerchantItemAsync);
+        group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
         return endpoints;
     }
 
@@ -50,11 +55,78 @@ public static class InventoryEndpoints
         if (!TryGetAccountId(user, out Guid accountId))
             return Results.Unauthorized();
         if (!Enum.TryParse(request.Slot, ignoreCase: false, out EquipmentSlot slot))
-        {
             return Problem(InventoryErrorCodes.InvalidSlot, context);
-        }
 
         return ToResult(await service.UnequipAsync(accountId, slot, cancellationToken), context);
+    }
+
+    private static async Task<IResult> UseConsumableAsync(
+        UseConsumableRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        InventoryEquipmentService service,
+        BootstrapService bootstrapService,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(accountId, cancellationToken);
+        if (bootstrap.Character is null) return Problem(InventoryErrorCodes.CharacterNotFound, context);
+
+        return ToResult(
+            await service.UseConsumableOutOfCombatAsync(
+                accountId,
+                request.CharacterItemId,
+                bootstrap.Character.Vitals.MaxHp,
+                timeProvider.GetUtcNow(),
+                cancellationToken),
+            context);
+    }
+
+    private static async Task<IResult> GetMerchantAsync(
+        string merchantId,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        MerchantOperationResult result = await service.GetAsync(accountId, merchantId, cancellationToken);
+        return ToMerchantResult(result, context);
+    }
+
+    private static async Task<IResult> BuyMerchantItemAsync(
+        BuyMerchantItemRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        MerchantOperationResult result = await service.BuyAsync(
+            accountId,
+            request.MerchantId,
+            request.ItemDefinitionId,
+            request.Quantity,
+            cancellationToken);
+        return ToMerchantResult(result, context);
+    }
+
+    private static async Task<IResult> SellMerchantMaterialAsync(
+        SellMerchantItemRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        MerchantOperationResult result = await service.SellMaterialAsync(
+            accountId,
+            request.MerchantId,
+            request.CharacterItemId,
+            request.Quantity,
+            cancellationToken);
+        return ToMerchantResult(result, context);
     }
 
     internal static InventoryResponse ToResponse(InventorySnapshot snapshot) =>
@@ -73,6 +145,27 @@ public static class InventoryEndpoints
             ? Results.Ok(ToResponse(result.Snapshot!))
             : Problem(result.ErrorCode!, context);
 
+    private static IResult ToMerchantResult(MerchantOperationResult result, HttpContext context) =>
+        result.IsSuccess
+            ? Results.Ok(ToMerchantResponse(result.Snapshot!))
+            : MerchantProblem(result.ErrorCode!, context);
+
+    private static MerchantResponse ToMerchantResponse(MerchantSnapshot snapshot) =>
+        new(
+            snapshot.Merchant.Id,
+            snapshot.Merchant.Name,
+            snapshot.Merchant.Description,
+            snapshot.Gold,
+            snapshot.Items.Select(item => new MerchantItemResponse(
+                item.Definition.Id,
+                item.Definition.Name,
+                item.Definition.Type.ToString(),
+                item.Definition.Rarity.ToString(),
+                item.Definition.Description,
+                item.Definition.BuyPriceGold,
+                item.SellPriceGold,
+                item.Definition.HealAmount)).ToArray());
+
     private static IResult Problem(string errorCode, HttpContext context) =>
         Results.Problem(
             statusCode: errorCode == InventoryErrorCodes.CharacterNotFound
@@ -81,6 +174,19 @@ public static class InventoryEndpoints
                     : errorCode == InventoryErrorCodes.Conflict
                         ? StatusCodes.Status409Conflict
                         : StatusCodes.Status422UnprocessableEntity,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = errorCode,
+                ["correlationId"] = context.TraceIdentifier
+            });
+
+    private static IResult MerchantProblem(string errorCode, HttpContext context) =>
+        Results.Problem(
+            statusCode: errorCode is MerchantErrorCodes.CharacterNotFound or MerchantErrorCodes.MerchantNotFound
+                ? StatusCodes.Status404NotFound
+                : errorCode == MerchantErrorCodes.Conflict
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
             {
                 ["code"] = errorCode,
@@ -117,7 +223,8 @@ public static class InventoryEndpoints
             item.Definition.DodgePercent,
             item.Definition.HealAmount,
             item.Definition.ConsumableCooldownSeconds,
-            item.Definition.BuyPriceGold);
+            item.Definition.BuyPriceGold,
+            MerchantService.ResolveSellPrice(item.Definition));
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
