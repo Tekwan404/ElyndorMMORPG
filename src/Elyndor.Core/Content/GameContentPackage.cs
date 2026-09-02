@@ -4,6 +4,8 @@ using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Items;
+using Elyndor.Core.Progression;
 
 namespace Elyndor.Core.Content;
 
@@ -20,7 +22,10 @@ public sealed record GameContentPackage(
     IReadOnlyList<AbilityDefinition>? Abilities = null,
     IReadOnlyList<TalentTreeDefinition>? TalentTrees = null,
     IReadOnlyList<MonsterDefinition>? Monsters = null,
-    IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null);
+    IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
+    LevelProgressionDefinition? LevelProgression = null,
+    IReadOnlyList<ItemDefinition>? Items = null,
+    IReadOnlyList<LootTableDefinition>? LootTables = null);
 
 public sealed record GameContentDefinition(
     string Type,
