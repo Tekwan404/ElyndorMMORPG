@@ -28,6 +28,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatApplicationService>();
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<InventoryEquipmentService>();
+        builder.Services.AddScoped<MerchantService>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<ICombatSessionFinalizer, CombatSessionFinalizer>();
         builder.Services.AddSingleton<CombatSessionRegistry>();
