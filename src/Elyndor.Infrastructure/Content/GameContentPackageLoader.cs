@@ -1,13 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Progression;
 
 namespace Elyndor.Infrastructure.Content;
 
 public static class GameContentPackageLoader
 {
     private const string MonsterOverlayFileName = "whispering-forest-monsters.json";
+    private const string PhaseFiveOverlayFileName = "phase5-progression-items.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -43,6 +46,7 @@ public static class GameContentPackageLoader
             }
 
             package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
+            package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
                 GameContentPackageValidator.Validate(package);
@@ -93,10 +97,50 @@ public static class GameContentPackageLoader
         };
     }
 
+    private static async Task<GameContentPackage> ApplyPhaseFiveOverlayAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string overlayPath = Path.Combine(directory, PhaseFiveOverlayFileName);
+        if (!File.Exists(overlayPath)) return package;
+
+        await using FileStream stream = File.OpenRead(overlayPath);
+        PhaseFiveContentOverlay? overlay = await JsonSerializer.DeserializeAsync<PhaseFiveContentOverlay>(
+            stream,
+            SerializerOptions,
+            cancellationToken);
+        if (overlay is null)
+        {
+            throw new InvalidDataException($"Phase 5 content overlay '{overlayPath}' is empty.");
+        }
+
+        return package with
+        {
+            ContentVersion = overlay.ContentVersion,
+            BalanceVersion = overlay.BalanceVersion,
+            PublishedAtUtc = overlay.PublishedAtUtc,
+            LevelProgression = overlay.LevelProgression,
+            Items = overlay.Items,
+            LootTables = overlay.LootTables
+        };
+    }
+
     private sealed record MonsterContentOverlay(
         string ContentVersion,
         string BalanceVersion,
         DateTimeOffset PublishedAtUtc,
         IReadOnlyList<MonsterDefinition> Monsters,
         IReadOnlyList<MonsterAiProfile> MonsterAiProfiles);
+
+    private sealed record PhaseFiveContentOverlay(
+        string ContentVersion,
+        string BalanceVersion,
+        DateTimeOffset PublishedAtUtc,
+        LevelProgressionDefinition LevelProgression,
+        IReadOnlyList<ItemDefinition> Items,
+        IReadOnlyList<LootTableDefinition> LootTables);
 }
