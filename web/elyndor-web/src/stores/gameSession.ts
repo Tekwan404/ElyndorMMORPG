@@ -114,11 +114,15 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      await bootstrap()
+      // Mutations already have their own pending UI. Refresh authoritative data silently so
+      // HeroView/InventoryView are not unmounted and reset to the default tab after Equip.
+      await refreshSnapshot()
+      state.value = snapshot.value?.character ? 'world' : 'needs-character'
     } catch (error) {
       handleError(error)
       if (error instanceof ApiRequestError && error.code === 'travel_conflict') {
-        await bootstrap()
+        await refreshSnapshot()
+        state.value = snapshot.value?.character ? 'world' : 'needs-character'
       }
     } finally {
       mutationPending.value = false
@@ -128,11 +132,17 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   function handleError(error: unknown): void {
     if (error instanceof ApiRequestError) {
       errorCode.value = error.code
-      state.value = 'error'
+      // A failed in-world mutation should not tear the whole game shell down. Keep the
+      // current authoritative snapshot visible and surface the error locally.
+      if (state.value !== 'world' && state.value !== 'needs-character') {
+        state.value = 'error'
+      }
       return
     }
     errorCode.value = 'network_unavailable'
-    state.value = 'offline'
+    if (state.value !== 'world' && state.value !== 'needs-character') {
+      state.value = 'offline'
+    }
   }
 
   return {
