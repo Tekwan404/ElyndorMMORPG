@@ -11,6 +11,7 @@ public static class GameContentPackageLoader
 {
     private const string MonsterOverlayFileName = "whispering-forest-monsters.json";
     private const string PhaseFiveOverlayFileName = "phase5-progression-items.json";
+    private const string CombatPresentationOverlayFileName = "combat-presentation.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -47,6 +48,7 @@ public static class GameContentPackageLoader
 
             package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
+            package = await ApplyCombatPresentationOverlayAsync(path, package, cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
                 GameContentPackageValidator.Validate(package);
@@ -129,6 +131,53 @@ public static class GameContentPackageLoader
         };
     }
 
+    private static async Task<GameContentPackage> ApplyCombatPresentationOverlayAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string overlayPath = Path.Combine(directory, CombatPresentationOverlayFileName);
+        if (!File.Exists(overlayPath)) return package;
+
+        await using FileStream stream = File.OpenRead(overlayPath);
+        CombatPresentationOverlay? overlay =
+            await JsonSerializer.DeserializeAsync<CombatPresentationOverlay>(
+                stream,
+                SerializerOptions,
+                cancellationToken);
+        if (overlay is null)
+        {
+            throw new InvalidDataException($"Combat presentation overlay '{overlayPath}' is empty.");
+        }
+
+        IReadOnlyList<ClassProfile> profiles = package.ClassProfiles
+            ?? throw new InvalidDataException("Class profiles are required for combat presentation overlay.");
+        if (!profiles.Any(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)))
+        {
+            throw new InvalidDataException(
+                $"Combat presentation overlay references unknown class '{overlay.ClassId}'.");
+        }
+
+        return package with
+        {
+            ContentVersion = overlay.ContentVersion,
+            BalanceVersion = overlay.BalanceVersion,
+            PublishedAtUtc = overlay.PublishedAtUtc,
+            ClassProfiles = profiles
+                .Select(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)
+                    ? profile with
+                    {
+                        StartingAbilityIds = overlay.StartingAbilityIds,
+                        AbilityUnlocks = overlay.AbilityUnlocks
+                    }
+                    : profile)
+                .ToArray()
+        };
+    }
+
     private sealed record MonsterContentOverlay(
         string ContentVersion,
         string BalanceVersion,
@@ -143,4 +192,12 @@ public static class GameContentPackageLoader
         LevelProgressionDefinition LevelProgression,
         IReadOnlyList<ItemDefinition> Items,
         IReadOnlyList<LootTableDefinition> LootTables);
+
+    private sealed record CombatPresentationOverlay(
+        string ContentVersion,
+        string BalanceVersion,
+        DateTimeOffset PublishedAtUtc,
+        string ClassId,
+        IReadOnlyList<string> StartingAbilityIds,
+        IReadOnlyList<AbilityUnlockDefinition> AbilityUnlocks);
 }
