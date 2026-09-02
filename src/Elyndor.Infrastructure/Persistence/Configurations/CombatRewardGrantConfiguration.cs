@@ -11,12 +11,19 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
     {
         builder.ToTable(
             "combat_reward_grants",
-            table => table.HasCheckConstraint(
-                "ck_combat_reward_grants_xp_non_negative",
-                "\"XpEarned\" >= 0"));
+            table =>
+            {
+                table.HasCheckConstraint(
+                    "ck_combat_reward_grants_xp_non_negative",
+                    "\"XpEarned\" >= 0");
+                table.HasCheckConstraint(
+                    "ck_combat_reward_grants_gold_non_negative",
+                    "\"GoldEarned\" >= 0");
+            });
         builder.HasKey(grant => grant.CombatSessionId).HasName("pk_combat_reward_grants");
         builder.Property(grant => grant.MonsterId).HasMaxLength(64).IsRequired();
         builder.Property(grant => grant.XpEarned).IsRequired();
+        builder.Property(grant => grant.GoldEarned).HasDefaultValue(0).IsRequired();
         builder.Property(grant => grant.GrantedAtUtc).IsRequired();
 
         builder.HasOne<Character>()
