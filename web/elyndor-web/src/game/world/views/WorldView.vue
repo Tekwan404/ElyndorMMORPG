@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
@@ -15,6 +15,7 @@ interface ForestEncounter {
   description: string
 }
 
+const STARTER_TOWN_ID = 'STARTER_TOWN'
 const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
 const FOREST_ENCOUNTERS: readonly ForestEncounter[] = [
   {
@@ -43,11 +44,35 @@ const selectedEncounter = ref<ForestEncounter | null>(null)
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
 let encounterCursor = -1
+let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
+let vitalsRefreshPending = false
 
 const world = computed(() => session.snapshot?.world)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
+const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
+const needsOutOfCombatRefresh = computed(() => {
+  const vitals = character.value?.vitals
+  if (!vitals || combat.isActive) return false
+
+  const hpRecovering = isStarterTown.value && vitals.currentHp < vitals.maxHp
+  const resourceRecovering = vitals.resourceType === 'RAGE'
+    ? vitals.currentResource > 0
+    : vitals.currentResource < vitals.maxResource
+  return hpRecovering || resourceRecovering
+})
+const recoveryMessage = computed(() => {
+  const vitals = character.value?.vitals
+  if (!vitals || combat.isActive) return null
+  if (isStarterTown.value && vitals.currentHp < vitals.maxHp) {
+    return 'Отдых в городе: здоровье восстанавливается по 5 ед. в секунду.'
+  }
+  if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) {
+    return 'Ярость постепенно угасает вне боя.'
+  }
+  return null
+})
 const sceneBackground = computed(() => {
   const dangerLevel = world.value?.currentLocation.dangerLevel
   if (dangerLevel === 'DANGEROUS') return gameArt.world.ruins
@@ -96,6 +121,29 @@ async function restoreCombat(): Promise<void> {
   }
 }
 
+async function refreshOutOfCombatVitals(): Promise<void> {
+  if (vitalsRefreshPending || combat.isActive || session.mutationPending) return
+  vitalsRefreshPending = true
+  try {
+    await session.refreshSnapshot()
+  } catch {
+    // Background recovery refresh must never make the world unusable.
+  } finally {
+    vitalsRefreshPending = false
+  }
+}
+
+function syncVitalsRefreshTimer(enabled: boolean): void {
+  if (enabled && vitalsRefreshTimer === null) {
+    vitalsRefreshTimer = setInterval(() => void refreshOutOfCombatVitals(), 1000)
+    return
+  }
+  if (!enabled && vitalsRefreshTimer !== null) {
+    clearInterval(vitalsRefreshTimer)
+    vitalsRefreshTimer = null
+  }
+}
+
 function localizedEnemyName(definitionId: string, fallback: string): string {
   return FOREST_ENCOUNTERS.find((encounter) => encounter.id === definitionId)?.name ?? fallback
 }
@@ -132,6 +180,9 @@ watch(
     }
   },
 )
+
+watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
+onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 </script>
 
 <template>
@@ -150,6 +201,10 @@ watch(
       role="img"
       :aria-label="world.currentLocation.displayName"
     />
+
+    <UIToast v-if="recoveryMessage" tone="info" title="Восстановление" data-world-recovery>
+      {{ recoveryMessage }}
+    </UIToast>
 
     <UIToast
       v-if="lastCombatResult === 'Victory'"
