@@ -86,10 +86,21 @@ function snapshot(
       level: 1,
       experience: 0,
       xpToNextLevel: 100,
-      inventory: { items: [], equipped: { Weapon: null, Head: null, Chest: null } },
+      inventory: { items: [], equipped: { weapon: null, head: null, chest: null } },
       primaryAttribute: 'STRENGTH',
       classProfileVersion: '0.2.0',
       knownAbilityIds: ['STRIKE'],
+      knownAbilities: [
+        {
+          id: 'STRIKE',
+          resourceCost: 0,
+          cooldownSeconds: 0,
+          type: 'Instant',
+          targetType: 'SingleEnemy',
+          sourceTalentId: null,
+          sourceTalentName: null,
+        },
+      ],
       stats: {
         strength: 9,
         agility: 5,
