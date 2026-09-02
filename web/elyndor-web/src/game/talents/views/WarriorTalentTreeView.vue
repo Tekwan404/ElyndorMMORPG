@@ -9,7 +9,7 @@ import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
 
-type TalentState = 'locked' | 'available' | 'learned' | 'maxed' | 'prerequisite' | 'no-points'
+type TalentState = 'locked' | 'level-locked' | 'available' | 'learned' | 'maxed' | 'prerequisite' | 'no-points'
 
 const tiers = Array.from({ length: 9 }, (_, index) => index + 1)
 const rowHeight = 128
@@ -66,28 +66,37 @@ function canLearn(talent: TalentNode): boolean {
   if (availablePoints.value <= 0) return false
   if (spentInBranch(talent.branchId) < talent.requiredSpentPoints) return false
   if (talent.prerequisites.some((item) => rankFor(item.talentId) < item.requiredRank)) return false
-  if (talent.requiredLevel !== null && (session.snapshot?.character?.level ?? snapshot.value?.earnedPoints ?? 0) < talent.requiredLevel) return false
+  if (talent.requiredLevel !== null && (session.snapshot?.character?.level ?? 0) < talent.requiredLevel) return false
   return true
 }
 
 function stateFor(talent: TalentNode): TalentState {
   const rank = rankFor(talent.id)
   if (rank >= talent.maxRank) return 'maxed'
+  if (talent.requiredLevel !== null && (session.snapshot?.character?.level ?? 0) < talent.requiredLevel) return 'level-locked'
   if (spentInBranch(talent.branchId) < talent.requiredSpentPoints) return 'locked'
   if (talent.prerequisites.some((item) => rankFor(item.talentId) < item.requiredRank)) return 'prerequisite'
   if (availablePoints.value <= 0) return 'no-points'
   return rank > 0 ? 'learned' : 'available'
 }
 
-function stateLabel(state: TalentState): string {
+function stateLabel(talent: TalentNode): string {
+  const state = stateFor(talent)
+  if (state === 'level-locked') return `Требуется уровень ${talent.requiredLevel}`
   return {
-    locked: 'Закрыто',
-    available: 'Доступно',
+    locked: 'Закрыто: вложите больше очков в ветку',
+    available: 'Доступно для изучения',
     learned: 'Изучено, можно улучшить',
-    maxed: 'Максимальный ранг',
-    prerequisite: 'Нужен предыдущий талант',
-    'no-points': 'Нет очков',
+    maxed: 'Изучено полностью',
+    prerequisite: 'Сначала изучите предыдущий талант',
+    'no-points': 'Нет свободных очков талантов',
   }[state]
+}
+
+function loadErrorLabel(code: string | null): string {
+  if (!code || code === 'talent_unavailable') return 'Дерево талантов сейчас недоступно.'
+  if (code === 'network_unavailable') return 'Нет соединения с сервером. Проверьте подключение и попробуйте снова.'
+  return `Не удалось загрузить дерево талантов. Код ошибки: ${code}`
 }
 
 function mutationErrorLabel(code: string): string {
@@ -95,9 +104,28 @@ function mutationErrorLabel(code: string): string {
     talent_insufficient_points: 'Недостаточно очков талантов.',
     talent_prerequisite_not_met: 'Сначала изучите требуемый предыдущий талант.',
     talent_tier_locked: 'Нужно вложить больше очков в эту ветку.',
-    talent_level_required: 'Недостаточный уровень персонажа.',
+    talent_level_required: 'Уровень персонажа пока недостаточен.',
     talent_state_conflict: 'Состояние талантов изменилось. Данные обновлены.',
-  }[code] ?? `Не удалось изменить таланты: ${code}`
+  }[code] ?? `Не удалось изменить таланты. Код ошибки: ${code}`
+}
+
+function abilityLabel(abilityId: string): string {
+  return {
+    STRIKE: 'Удар',
+    WILD_STRIKE: 'Дикий удар',
+    WHIRLWIND: 'Вихрь',
+    BASTION: 'Бастион',
+    BERSERK: 'Берсерк',
+    SHIELD_BASH: 'Удар щитом',
+    PROVOKE: 'Провокация',
+    HEAVY_BLOW: 'Тяжёлый удар',
+    BATTLE_FOCUS: 'Боевой фокус',
+    BATTLE_SHOUT: 'Боевой клич',
+  }[abilityId] ?? abilityId.replace(/_/g, ' ')
+}
+
+function talentName(talentId: string): string {
+  return warriorTalents.value.find((talent) => talent.id === talentId)?.name ?? talentId
 }
 
 function glyphFor(talent: TalentNode): GlyphName {
@@ -215,13 +243,13 @@ onMounted(loadTalents)
 <template>
   <div v-if="loading" class="talent-status" role="status">Загружаем дерево талантов…</div>
   <div v-else-if="loadErrorCode || !activeBranch" class="talent-status talent-status--error" role="alert">
-    <p>Не удалось открыть таланты: {{ loadErrorCode ?? 'talent_unavailable' }}</p>
+    <p>{{ loadErrorLabel(loadErrorCode) }}</p>
     <UIButton variant="ghost" @click="loadTalents">Повторить</UIButton>
   </div>
   <section v-else class="talents" data-talent-tree :data-tone="activeBranch.id.toLowerCase()">
     <header class="talents__topbar">
-      <div><p class="eyebrow">Warrior · Server authoritative</p><h1>Таланты</h1></div>
-      <div class="points" aria-label="Доступные очки талантов"><span>Очки</span><strong>{{ availablePoints }}</strong></div>
+      <div><p class="eyebrow">Воин · дерево развития</p><h1>Таланты</h1></div>
+      <div class="points" aria-label="Доступные очки талантов"><span>Свободно</span><strong>{{ availablePoints }}</strong></div>
     </header>
 
     <p v-if="mutationErrorCode" class="mutation-error" role="alert">{{ mutationErrorLabel(mutationErrorCode) }}</p>
@@ -230,9 +258,9 @@ onMounted(loadTalents)
       <button v-for="loadout in (['LOADOUT_1', 'LOADOUT_2'] as const)" :key="loadout" type="button"
         :class="{ active: activeLoadoutId === loadout }" :aria-pressed="activeLoadoutId === loadout"
         :disabled="pending" @click="switchLoadout(loadout)">
-        Build {{ loadout === 'LOADOUT_1' ? 1 : 2 }}
+        Сборка {{ loadout === 'LOADOUT_1' ? 1 : 2 }}
       </button>
-      <small>Активен {{ snapshot?.activeLoadoutId === 'LOADOUT_1' ? 'Build 1' : 'Build 2' }}</small>
+      <small>Активна сборка {{ snapshot?.activeLoadoutId === 'LOADOUT_1' ? 1 : 2 }}</small>
     </div>
 
     <nav class="branches" aria-label="Ветки талантов">
@@ -245,7 +273,7 @@ onMounted(loadTalents)
 
     <div class="branch-intro">
       <div><span>Ветка</span><h2>{{ activeBranch.name }}</h2><p>{{ activeBranch.fantasy }}</p></div>
-      <strong>{{ spentInBranch(activeBranch.id) }}<small> очков</small></strong>
+      <strong>{{ spentInBranch(activeBranch.id) }}<small> очков вложено</small></strong>
     </div>
 
     <div class="state-legend" aria-label="Состояния талантов">
@@ -261,7 +289,7 @@ onMounted(loadTalents)
       <section v-for="tier in tiers" :key="tier" class="tier"
         :class="{ 'tier--locked': spentInBranch(activeBranch.id) < (tier - 1) * 5 }"
         :style="{ top: `${(tier - 1) * rowHeight}px`, height: `${rowHeight}px` }">
-        <p class="tier__label"><b>Tier {{ tier }}</b><span>{{ (tier - 1) * 5 }} очков</span></p>
+        <p class="tier__label"><b>Ряд {{ tier }}</b><span>нужно {{ (tier - 1) * 5 }} очков</span></p>
         <div class="tier__nodes" :style="{ gridTemplateColumns: `repeat(${talentsInTier(tier).length}, 1fr)` }">
           <button v-for="talent in talentsInTier(tier)" :key="talent.id" data-talent-node type="button"
             class="talent-node" :class="`talent-node--${stateFor(talent)}`"
@@ -275,8 +303,8 @@ onMounted(loadTalents)
     </div>
 
     <footer class="talents__footer">
-      <div><b>Сбросить билд</b><small>Только для выбранного loadout</small></div>
-      <UIButton variant="ghost" :disabled="pending || (activeLoadout?.spentPoints ?? 0) === 0" @click="resetLoadout">Сброс</UIButton>
+      <div><b>Сбросить сборку</b><small>Будут сброшены таланты только выбранной сборки</small></div>
+      <UIButton variant="ghost" :disabled="pending || (activeLoadout?.spentPoints ?? 0) === 0" @click="resetLoadout">Сбросить</UIButton>
     </footer>
 
     <UIModal :open="selectedTalent !== null" :title="selectedTalent?.name ?? ''" @close="selectedTalent = null">
@@ -284,16 +312,17 @@ onMounted(loadTalents)
         <div class="talent-detail__identity">
           <img v-if="artFor(selectedTalent)" class="talent-detail__art" :src="artFor(selectedTalent)!" :alt="selectedTalent.name" decoding="async" />
           <IconGenerator v-else :config="iconFor(selectedTalent)" :label="selectedTalent.name" />
-          <div><p>{{ selectedTalent.englishName }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
+          <div><p>{{ activeBranch.name }} · ряд {{ selectedTalent.tier }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
         </div>
-        <p class="talent-detail__state">{{ stateLabel(stateFor(selectedTalent)) }}</p>
-        <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность · {{ selectedTalent.unlockedAbilityId }}</p>
-        <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">Эффект подготовлен и станет активен вместе с боевой системой своей фазы.</p>
+        <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
+        <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
+        <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">Этот эффект пока не участвует в бою. Он подготовлен для одной из следующих игровых систем.</p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
-          <div><dt>Tier</dt><dd>{{ selectedTalent.tier }}</dd></div>
+          <div><dt>Ряд дерева</dt><dd>{{ selectedTalent.tier }}</dd></div>
+          <div v-if="selectedTalent.requiredLevel !== null"><dt>Требуемый уровень</dt><dd>{{ selectedTalent.requiredLevel }}</dd></div>
           <div><dt>Нужно очков в ветке</dt><dd>{{ selectedTalent.requiredSpentPoints }}</dd></div>
-          <div v-if="selectedTalent.prerequisites.length"><dt>Предыдущие таланты</dt><dd>{{ selectedTalent.prerequisites.map((item) => item.talentId).join(', ') }}</dd></div>
+          <div v-if="selectedTalent.prerequisites.length"><dt>Нужные таланты</dt><dd>{{ selectedTalent.prerequisites.map((item) => talentName(item.talentId)).join(', ') }}</dd></div>
         </dl>
       </article>
       <template #actions>
@@ -351,7 +380,7 @@ onMounted(loadTalents)
 .talent-node > span { position: absolute; right: -0.35rem; bottom: -0.35rem; min-width: 1.75rem; padding: 0.1rem 0.25rem; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-xs); background: var(--ui-color-background); color: var(--ui-color-text-primary); font-size: 0.64rem; }
 .talent-node--available { border-color: var(--ui-color-primary); animation: talent-pulse 2.4s ease-in-out infinite; }
 .talent-node--learned, .talent-node--maxed { border-color: var(--branch-accent); box-shadow: 0 0 0 4px rgb(8 12 22 / 82%), 0 0 13px color-mix(in srgb, var(--branch-accent) 36%, transparent); }
-.talent-node--locked, .talent-node--prerequisite, .talent-node--no-points { filter: grayscale(0.9); opacity: 0.42; }
+.talent-node--locked, .talent-node--level-locked, .talent-node--prerequisite, .talent-node--no-points { filter: grayscale(0.9); opacity: 0.42; }
 .talents__footer { margin: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-border); background: var(--ui-color-surface-1); }
 .talents__footer div { display: grid; }
 .talents__footer small { color: var(--ui-color-text-muted); }
