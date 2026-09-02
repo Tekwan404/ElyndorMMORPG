@@ -25,7 +25,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
     LevelProgressionDefinition? LevelProgression = null,
     IReadOnlyList<ItemDefinition>? Items = null,
-    IReadOnlyList<LootTableDefinition>? LootTables = null);
+    IReadOnlyList<LootTableDefinition>? LootTables = null,
+    IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
+    IReadOnlyList<MerchantDefinition>? Merchants = null);
 
 public sealed record GameContentDefinition(
     string Type,
