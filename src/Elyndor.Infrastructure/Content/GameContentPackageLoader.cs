@@ -127,7 +127,9 @@ public static class GameContentPackageLoader
             PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
             LevelProgression = overlay.LevelProgression,
             Items = overlay.Items,
-            LootTables = overlay.LootTables
+            LootTables = overlay.LootTables,
+            EquipmentSets = overlay.EquipmentSets,
+            Merchants = overlay.Merchants
         };
     }
 
@@ -205,7 +207,9 @@ public static class GameContentPackageLoader
         DateTimeOffset PublishedAtUtc,
         LevelProgressionDefinition LevelProgression,
         IReadOnlyList<ItemDefinition> Items,
-        IReadOnlyList<LootTableDefinition> LootTables);
+        IReadOnlyList<LootTableDefinition> LootTables,
+        IReadOnlyList<EquipmentSetDefinition> EquipmentSets,
+        IReadOnlyList<MerchantDefinition> Merchants);
 
     private sealed record WarriorCombatBaselineOverlay(
         string ContentVersion,
