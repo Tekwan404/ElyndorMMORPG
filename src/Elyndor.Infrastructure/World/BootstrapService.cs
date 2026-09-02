@@ -60,6 +60,7 @@ public sealed class BootstrapService(
     TimeProvider timeProvider)
 {
     private const string StarterTownId = "STARTER_TOWN";
+    private const decimal StarterTownHpRegenPerSecond = 5m;
 
     public async Task<BootstrapSnapshot> GetAsync(
         Guid accountId,
@@ -140,10 +141,18 @@ public sealed class BootstrapService(
         {
             MaxValue = resourceProfile.MaxValue + talentModifiers.Stats.MaxResourceFlat
         };
+
         CharacterVitals vitals = await dbContext.CharacterVitals
             .SingleAsync(
                 candidate => candidate.CharacterId == character.Id,
                 cancellationToken);
+        CharacterLocation location = await dbContext.CharacterLocations
+            .AsNoTracking()
+            .SingleAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+        LocationDefinition current = worldMap.GetRequired(location.LocationId);
+
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
         TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
         decimal currentResource = CharacterResourceRules.ApplyElapsed(
@@ -153,28 +162,21 @@ public sealed class BootstrapService(
             isInCombat: false,
             contextElapsed);
         decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
+
+        // Starter Town is a safe recovery zone, but healing is intentionally gradual.
+        // Resource behavior remains data-driven: Rage decays while Focus/Mana regenerate.
+        if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal)
+            && currentHp < stats.MaxHp
+            && elapsed > TimeSpan.Zero)
+        {
+            decimal elapsedSeconds = Math.Max(0m, (decimal)elapsed.TotalSeconds);
+            currentHp = Math.Min(
+                stats.MaxHp,
+                currentHp + (elapsedSeconds * StarterTownHpRegenPerSecond));
+        }
+
         vitals.Checkpoint(currentHp, currentResource, now);
         await dbContext.SaveChangesAsync(cancellationToken);
-
-        CharacterLocation location = await dbContext.CharacterLocations
-            .AsNoTracking()
-            .SingleAsync(
-                candidate => candidate.CharacterId == character.Id,
-                cancellationToken);
-        LocationDefinition current = worldMap.GetRequired(location.LocationId);
-
-        // Prototype safe-zone rule: Starter Town is the recovery checkpoint.
-        // The mutation remains server-authoritative and is persisted so reloads keep the recovered state.
-        if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal))
-        {
-            currentHp = stats.MaxHp;
-            currentResource = decimal.Clamp(
-                resourceProfile.RespawnValue,
-                0,
-                effectiveResourceProfile.MaxValue);
-            vitals.Checkpoint(currentHp, currentResource, now);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
 
         BootstrapLocation[] transitions = current.Transitions
             .Select(worldMap.GetRequired)
