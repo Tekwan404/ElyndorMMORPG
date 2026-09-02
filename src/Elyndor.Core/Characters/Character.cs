@@ -42,6 +42,7 @@ public sealed class Character
         ClassId = classId;
         Level = 1;
         Experience = 0;
+        Gold = 0;
         CreatedAtUtc = createdAtUtc;
     }
 
@@ -64,6 +65,8 @@ public sealed class Character
     public int Level { get; private set; }
 
     public long Experience { get; private set; }
+
+    public long Gold { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
@@ -95,6 +98,20 @@ public sealed class Character
     {
         ArgumentOutOfRangeException.ThrowIfNegative(experience);
         Experience = checked(Experience + experience);
+    }
+
+    public void AddGold(long amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+        Gold = checked(Gold + amount);
+    }
+
+    public bool TrySpendGold(long amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+        if (Gold < amount) return false;
+        Gold -= amount;
+        return true;
     }
 
     public void ChangeClass(string classId)
