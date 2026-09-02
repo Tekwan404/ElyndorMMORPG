@@ -55,9 +55,7 @@ public static class WorldEndpoints
             return Results.Unauthorized();
         }
 
-        // Checkpoint elapsed out-of-combat recovery/decay in the authoritative
-        // current location before the location mutation is committed.
-        await bootstrapService.GetAsync(accountId, cancellationToken);
+        await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
 
         TravelResult result = await travelService.TravelAsync(
             accountId,
@@ -103,6 +101,16 @@ public static class WorldEndpoints
                     snapshot.Character.PrimaryAttribute,
                     snapshot.Character.ClassProfileVersion,
                     snapshot.Character.KnownAbilityIds,
+                    snapshot.Character.KnownAbilities
+                        .Select(ability => new BootstrapAbilityResponse(
+                            ability.Id,
+                            ability.ResourceCost,
+                            ability.CooldownSeconds,
+                            ability.Type,
+                            ability.TargetType,
+                            ability.SourceTalentId,
+                            ability.SourceTalentName))
+                        .ToArray(),
                     new CharacterStatsResponse(
                         snapshot.Character.Stats.Strength,
                         snapshot.Character.Stats.Agility,
