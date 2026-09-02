@@ -44,8 +44,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             ? vitals.CheckpointedAtUtc
             : snapshot.ServerTimeUtc;
         vitals.Checkpoint(
-            decimal.Max(0, snapshot.Player.Hp),
-            decimal.Max(0, snapshot.Player.Resource),
+            Math.Max(0m, snapshot.Player.Hp),
+            Math.Max(0m, snapshot.Player.Resource),
             checkpointAt);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
