@@ -59,8 +59,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       connection = new HubConnectionBuilder()
         .withUrl('/hubs/combat', {
           accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
-          // Tailscale Funnel/Serve can fail WebSocket upgrades over HTTP/2.
-          // Long Polling keeps SignalR semantics while using ordinary authenticated HTTP requests.
           transport: HttpTransportType.LongPolling,
         })
         .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
@@ -102,6 +100,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   async function useAbility(abilityId: string): Promise<void> {
     if (!snapshot.value) return
     await invoke('UseAbility', snapshot.value.sessionId, abilityId, crypto.randomUUID())
+  }
+
+  async function useConsumable(itemDefinitionId: string): Promise<void> {
+    if (!snapshot.value) return
+    await invoke('UseConsumable', snapshot.value.sessionId, itemDefinitionId, crypto.randomUUID())
   }
 
   async function toggleAutoAttack(): Promise<void> {
@@ -154,7 +157,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       applyUpdate(update)
       return update.succeeded
     } catch (error) {
-      // connectCore already records the exact auth/transport stage.
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)
       }
@@ -208,6 +210,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     connect,
     startCombat,
     useAbility,
+    useConsumable,
     toggleAutoAttack,
     resume,
     leave,
