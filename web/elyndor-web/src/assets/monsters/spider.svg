@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Giant Spider</title><desc id="desc">Dark fantasy giant spider portrait.</desc>
+  <defs>
+    <radialGradient id="a" cx="50%" cy="45%" r="62%"><stop offset="0" stop-color="#30264a"/><stop offset=".62" stop-color="#141020"/><stop offset="1" stop-color="#070912"/></radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#51445f"/><stop offset=".55" stop-color="#2e2738"/><stop offset="1" stop-color="#15121b"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="640" height="420" rx="34" fill="url(#a)"/>
+  <ellipse cx="320" cy="350" rx="190" ry="28" fill="#02040a" opacity=".7"/>
+  <g fill="none" stroke="#5d526d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M279 247 208 187 120 172"/><path d="M266 276 183 253 92 273"/><path d="M265 305 181 326 105 374"/><path d="M286 327 232 378 194 412"/>
+    <path d="M361 247 432 187 520 172"/><path d="M374 276 457 253 548 273"/><path d="M375 305 459 326 535 374"/><path d="M354 327 408 378 446 412"/>
+  </g>
+  <ellipse cx="320" cy="271" rx="92" ry="112" fill="url(#body)" stroke="#8f7ba4" stroke-opacity=".24" stroke-width="5"/>
+  <ellipse cx="320" cy="199" rx="58" ry="52" fill="#25202e"/>
+  <path d="M271 312c32 34 66 47 99 0-9 55-31 84-50 84s-42-29-49-84z" fill="#1a151f"/>
+  <g fill="#ff355e" filter="url(#glow)"><circle cx="292" cy="191" r="8"/><circle cx="314" cy="181" r="8"/><circle cx="336" cy="181" r="8"/><circle cx="358" cy="191" r="8"/><circle cx="302" cy="210" r="7"/><circle cx="348" cy="210" r="7"/></g>
+  <path d="M292 228c9 15 18 21 28 21s20-6 29-21" fill="none" stroke="#18121c" stroke-width="12" stroke-linecap="round"/>
+  <path d="m299 239 10 42 15-37M342 239l-10 42-15-37" fill="#e4d6d1" stroke="#aa9b98" stroke-width="2"/>
+  <path d="M285 142c18-20 52-31 75-12M259 169c-20-17-39-19-56-8M381 169c20-17 39-19 56-8" fill="none" stroke="#725f80" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+</svg>
