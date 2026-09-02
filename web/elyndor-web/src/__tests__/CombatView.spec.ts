@@ -32,7 +32,7 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 describe('CombatView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('renders only server-provided abilities and authoritative vitals', () => {
+  it('renders only server-provided abilities with localized combat presentation', () => {
     const store = useCombatSessionStore()
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
@@ -46,10 +46,11 @@ describe('CombatView', () => {
 
     const wrapper = mount(CombatView)
 
-    expect(wrapper.text()).toContain('Forest Wolf')
-    expect(wrapper.text()).toContain('STRIKE')
-    expect(wrapper.text()).toContain('WILD STRIKE')
-    expect(wrapper.text()).not.toContain('WHIRLWIND')
+    expect(wrapper.text()).toContain('Волк')
+    expect(wrapper.text()).toContain('Удар')
+    expect(wrapper.text()).toContain('Дикий удар')
+    expect(wrapper.text()).not.toContain('Вихрь')
+    expect(wrapper.find('img[alt="Волк"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
   })
 })
