@@ -23,7 +23,9 @@ public sealed record MonsterDefinition(
     int Version = 1,
     decimal AutoAttackAttackPowerCoefficient = 0.5m,
     int XpReward = 0,
-    string? LootTableId = null);
+    string? LootTableId = null,
+    int GoldRewardMin = 0,
+    int GoldRewardMax = 0);
 
 public sealed record MonsterAiProfile(
     string Id,
