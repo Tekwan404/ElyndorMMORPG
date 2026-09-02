@@ -87,6 +87,7 @@ public enum CombatEventType
 {
     CombatStarted,
     AbilityUsed,
+    ConsumableUsed,
     AutoAttackStarted,
     AutoAttackStopped,
     DamageDealt,
