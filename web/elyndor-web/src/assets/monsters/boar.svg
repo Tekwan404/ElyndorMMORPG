@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Forest Boar</title><desc id="desc">Dark fantasy forest boar portrait.</desc>
+  <defs>
+    <radialGradient id="a" cx="50%" cy="45%" r="62%"><stop offset="0" stop-color="#3b3027"/><stop offset=".62" stop-color="#19140f"/><stop offset="1" stop-color="#070912"/></radialGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6f5b48"/><stop offset=".55" stop-color="#3f3329"/><stop offset="1" stop-color="#1d1815"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="640" height="420" rx="34" fill="url(#a)"/>
+  <ellipse cx="320" cy="346" rx="205" ry="34" fill="#02040a" opacity=".65"/>
+  <path d="M145 279c8-91 75-150 174-151 102-1 176 57 188 151 4 32-1 61-14 87H157c-13-26-18-55-12-87z" fill="url(#fur)" stroke="#b98a5f" stroke-opacity=".2" stroke-width="5"/>
+  <path d="m205 192-73-41 26 83M438 188l78-38-31 88" fill="#2a211b" stroke="#6b5544" stroke-width="5"/>
+  <path d="M222 229c30-26 69-40 111-40 48 0 91 17 121 49l-18 88c-33 38-67 56-106 56-43 0-82-22-112-63z" fill="#554437"/>
+  <path d="M236 252c21-17 45-23 68-16M359 236c24-7 51 1 70 18" fill="none" stroke="#17130f" stroke-width="17" stroke-linecap="round"/>
+  <ellipse cx="277" cy="248" rx="10" ry="7" fill="#ff8a1f" filter="url(#glow)"/><ellipse cx="397" cy="248" rx="10" ry="7" fill="#ff8a1f" filter="url(#glow)"/>
+  <ellipse cx="338" cy="303" rx="62" ry="44" fill="#2a211d"/>
+  <ellipse cx="316" cy="302" rx="9" ry="11" fill="#0d0b0b"/><ellipse cx="360" cy="302" rx="9" ry="11" fill="#0d0b0b"/>
+  <path d="M276 319c-40 9-59 35-50 72 23-28 45-39 72-35M399 319c40 9 59 35 50 72-23-28-45-39-72-35" fill="#e8d7bd" stroke="#b9a486" stroke-width="3"/>
+  <path d="M196 163c18 9 29 25 35 46M460 162c-18 8-30 23-37 44" fill="none" stroke="#8d745d" stroke-width="10" stroke-linecap="round"/>
+</svg>
