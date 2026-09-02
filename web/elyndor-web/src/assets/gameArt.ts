@@ -5,6 +5,9 @@ import strike from './abilities/warrior/strike.jpg'
 import whirlwind from './abilities/warrior/whirlwind.jpg'
 import wildStrike from './abilities/warrior/wild-strike.jpg'
 import warrior from './characters/warrior.png'
+import forestBoar from './monsters/boar.svg'
+import giantSpider from './monsters/spider.svg'
+import wolf from './monsters/wolf.svg'
 import heroNavigation from './navigation/hero.png'
 import locationNavigation from './navigation/location.png'
 import menuNavigation from './navigation/menu.png'
@@ -17,6 +20,7 @@ import ruins from './world/ruins.jpg'
 export const gameArt = {
   world: { capital, forest, ruins },
   characters: { warrior },
+  monsters: { wolf, forestBoar, giantSpider },
   navigation: {
     world: worldNavigation,
     hero: heroNavigation,
