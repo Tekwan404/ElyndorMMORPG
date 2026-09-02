@@ -155,6 +155,7 @@ public sealed class BootstrapService(
                 abilityId,
                 talentTree,
                 activeTalentRanks,
+                talentModifiers,
                 contentPackage.Abilities ?? []))
             .ToArray();
 
@@ -249,10 +250,12 @@ public sealed class BootstrapService(
         string abilityId,
         TalentTreeDefinition? talentTree,
         IReadOnlyDictionary<string, int> activeTalentRanks,
+        ResolvedTalentModifiers talentModifiers,
         IReadOnlyList<AbilityDefinition> abilities)
     {
-        AbilityDefinition definition = abilities.Single(ability =>
+        AbilityDefinition baseDefinition = abilities.Single(ability =>
             string.Equals(ability.Id, abilityId, StringComparison.Ordinal));
+        AbilityDefinition definition = TalentAbilityResolver.Apply(baseDefinition, talentModifiers);
         TalentDefinition? sourceTalent = talentTree?.Nodes.FirstOrDefault(node =>
             activeTalentRanks.GetValueOrDefault(node.Id) > 0
             && (node.Modifiers ?? []).Any(modifier =>
