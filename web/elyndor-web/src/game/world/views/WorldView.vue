@@ -7,7 +7,7 @@ import CombatView from '@/game/combat/views/CombatView.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UICard, UIPanel, UIToast, UIHealthBar } from '@/ui/components'
+import { UIButton, UICard, UIHealthBar, UIToast } from '@/ui/components'
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 interface ForestEncounter {
@@ -65,6 +65,19 @@ function explore(): void {
   lastCombatResult.value = null
   encounterCursor = (encounterCursor + 1) % FOREST_ENCOUNTERS.length
   selectedEncounter.value = FOREST_ENCOUNTERS[encounterCursor] ?? null
+}
+
+function locationLabel(id: string, displayName: string): string {
+  if (id === STARTER_TOWN_ID) return 'Стартовый город'
+  if (id === WHISPERING_FOREST_ID) return 'Шепчущий лес'
+  return displayName
+}
+
+async function travelTo(locationId: string): Promise<void> {
+  await session.travel(locationId)
+  selectedEncounter.value = null
+  lastCombatResult.value = null
+  lastEnemyName.value = null
 }
 
 async function startEncounterCombat(): Promise<void> {
@@ -134,15 +147,74 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   <section v-else-if="world && character" class="world">
     <section class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
       <div class="scene__shade" />
-      <div class="scene__copy">
-        <small>{{ world.currentLocation.dangerLevel === 'SAFE' ? 'БЕЗОПАСНАЯ ЗОНА' : 'ОПАСНАЯ ОБЛАСТЬ' }}</small>
-        <h1>{{ locationName }}</h1>
-        <p>{{ locationDescription }}</p>
+      <div class="scene__content">
+        <div v-if="selectedEncounter" class="scene-encounter" data-world-encounter>
+          <img :src="selectedEncounter.art" :alt="selectedEncounter.name" />
+          <div class="scene-encounter__copy">
+            <small>ОБНАРУЖЕН ПРОТИВНИК</small>
+            <h2>{{ selectedEncounter.name }}</h2>
+            <p>Уровень {{ selectedEncounter.level }} · {{ selectedEncounter.description }}</p>
+          </div>
+          <div class="scene__actions">
+            <UIButton data-start-encounter :loading="combat.pending" @click="startEncounterCombat">Вступить в бой</UIButton>
+            <UIButton variant="ghost" @click="selectedEncounter = null">Уйти</UIButton>
+          </div>
+        </div>
+
+        <div v-else class="scene-location">
+          <small>{{ world.currentLocation.dangerLevel === 'SAFE' ? 'БЕЗОПАСНАЯ ЗОНА' : 'ОПАСНАЯ ОБЛАСТЬ' }}</small>
+          <h1>{{ locationName }}</h1>
+          <p>{{ locationDescription }}</p>
+
+          <div v-if="isWhisperingForest && lastCombatResult !== 'Victory'" class="scene__primary-action">
+            <UIButton data-explore @click="explore">Исследовать</UIButton>
+          </div>
+
+          <nav class="scene__travel" aria-label="Переходы между локациями">
+            <small>ПУТЕШЕСТВИЕ</small>
+            <div v-if="world.outgoingTransitions.length" class="scene__travel-actions">
+              <UIButton
+                v-for="location in world.outgoingTransitions"
+                :key="location.id"
+                :data-travel="location.id"
+                :aria-label="`Отправиться: ${locationLabel(location.id, location.displayName)}`"
+                variant="secondary"
+                :loading="session.mutationPending"
+                @click="travelTo(location.id)"
+              >
+                {{ locationLabel(location.id, location.displayName) }}
+              </UIButton>
+            </div>
+            <p v-else class="scene__no-paths" role="status">Пути не найдены. Исследуйте текущую область.</p>
+          </nav>
+        </div>
       </div>
     </section>
 
+    <p v-if="session.errorCode" class="world-error" role="alert">{{ session.errorCode }}</p>
+
+    <UICard v-if="lastCombatResult === 'Victory'" class="reward-card">
+      <div class="reward-card__heading">
+        <small>ПОБЕДА</small>
+        <strong>{{ lastEnemyName ?? 'Противник' }} повержен</strong>
+      </div>
+      <div v-if="combat.reward" class="reward-card__summary">
+        <strong>+{{ combat.reward.xpEarned }} опыта · +{{ combat.reward.goldEarned }} золота</strong>
+        <ul v-if="combat.reward.items.length">
+          <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
+        </ul>
+      </div>
+      <UIButton v-if="isWhisperingForest" data-explore-after-victory @click="explore">Исследовать дальше</UIButton>
+    </UICard>
+
+    <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
+    <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
+
     <section class="hero-hud">
-      <div><strong>{{ character.name }}</strong><small>{{ classLabel(character.classId) }} · уровень {{ character.level }}</small></div>
+      <div>
+        <strong>{{ character.name }}</strong>
+        <small>{{ classLabel(character.classId) }} · уровень {{ character.level }}</small>
+      </div>
       <div class="hero-hud__gold">● {{ character.gold }} золота</div>
       <div class="hero-hud__bars">
         <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
@@ -150,43 +222,19 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       </div>
     </section>
 
-    <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
-    <UIToast v-if="lastCombatResult === 'Victory'" tone="success" title="Победа">{{ lastEnemyName ?? 'Противник' }} повержен.</UIToast>
-    <UICard v-if="lastCombatResult === 'Victory' && combat.reward" class="reward-card">
-      <strong>+{{ combat.reward.xpEarned }} опыта · +{{ combat.reward.goldEarned }} золота</strong>
-      <ul v-if="combat.reward.items.length"><li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li></ul>
-    </UICard>
-    <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
-
-    <UICard v-if="selectedEncounter" class="encounter">
-      <img :src="selectedEncounter.art" :alt="selectedEncounter.name" />
-      <div><small>ОБНАРУЖЕН ПРОТИВНИК</small><h2>{{ selectedEncounter.name }}</h2><p>Уровень {{ selectedEncounter.level }} · {{ selectedEncounter.description }}</p></div>
-      <div class="actions"><UIButton :loading="combat.pending" @click="startEncounterCombat">Вступить в бой</UIButton><UIButton variant="ghost" @click="selectedEncounter = null">Уйти</UIButton></div>
-    </UICard>
-
-    <section v-else-if="isWhisperingForest" class="primary-action">
-      <div><small>ИССЛЕДОВАНИЕ</small><strong>Осмотреть лесные тропы</strong><p>Ищите противников ради опыта, золота, материалов и частей комплекта Следопыта.</p></div>
-      <UIButton @click="explore">Исследовать</UIButton>
-    </section>
-
-    <section v-else-if="isStarterTown" class="town-grid">
+    <section v-if="isStarterTown" class="town-grid">
       <UICard class="town-service">
-        <small>ТОРГОВЕЦ</small><h2>Маркус</h2><p>Лечебные припасы, покупка зелий и скупка добытых материалов.</p>
+        <small>ТОРГОВЕЦ</small>
+        <h2>Маркус</h2>
+        <p>Лечебные припасы, покупка зелий и скупка добытых материалов.</p>
         <UIButton @click="merchantOpen = true">Открыть лавку</UIButton>
       </UICard>
       <UICard class="town-service">
-        <small>ОТДЫХ</small><h2>Городская площадь</h2><p>Здесь здоровье постепенно восстанавливается. Подготовьте экипировку и таланты.</p>
+        <small>ОТДЫХ</small>
+        <h2>Городская площадь</h2>
+        <p>Здесь здоровье постепенно восстанавливается. Подготовьте экипировку и таланты.</p>
       </UICard>
     </section>
-
-    <UIPanel v-if="!selectedEncounter">
-      <template #title>Куда отправиться</template>
-      <div class="paths">
-        <UIButton v-for="location in world.outgoingTransitions" :key="location.id" variant="secondary" :disabled="session.mutationPending" @click="session.travel(location.id)">
-          {{ location.id === STARTER_TOWN_ID ? 'Стартовый город' : location.id === WHISPERING_FOREST_ID ? 'Шепчущий лес' : location.displayName }}
-        </UIButton>
-      </div>
-    </UIPanel>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
   </section>
@@ -194,11 +242,12 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
 <style scoped>
 .world{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4) var(--ui-space-4) var(--ui-space-7)}
-.scene{position:relative;min-height:20rem;overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-lg);background-position:center;background-size:cover}.scene__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(5 7 14 / 20%),rgb(5 7 14 / 88%))}.scene__copy{position:absolute;right:0;bottom:0;left:0;display:grid;gap:var(--ui-space-1);padding:var(--ui-space-5)}.scene__copy h1,.scene__copy p{margin:0}.scene__copy small{color:var(--ui-color-primary);font-weight:700}.scene__copy p{max-width:36rem;color:var(--ui-color-text-secondary)}
+.scene{position:relative;min-height:22rem;overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-lg);background-position:center;background-size:cover}.scene__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(5 7 14 / 12%),rgb(5 7 14 / 92%))}.scene__content{position:relative;z-index:1;display:grid;min-height:22rem;align-items:end;padding:var(--ui-space-5)}.scene-location{display:grid;gap:var(--ui-space-2)}.scene-location h1,.scene-location p,.scene-encounter h2,.scene-encounter p{margin:0}.scene-location>small,.scene-encounter small,.scene__travel>small{color:var(--ui-color-primary);font-weight:700}.scene-location>p,.scene-encounter p{max-width:38rem;color:var(--ui-color-text-secondary)}.scene__primary-action{display:flex;margin-top:var(--ui-space-2)}
+.scene__travel{display:grid;gap:var(--ui-space-2);margin-top:var(--ui-space-3);padding-top:var(--ui-space-3);border-top:1px solid var(--ui-color-border)}.scene__travel-actions{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.scene__no-paths{margin:0;color:var(--ui-color-text-muted)}
+.scene-encounter{display:grid;grid-template-columns:minmax(7rem,10rem) 1fr;gap:var(--ui-space-4);align-items:center}.scene-encounter img{width:100%;max-height:12rem;object-fit:contain;filter:drop-shadow(0 .5rem 1rem rgb(0 0 0 / 50%))}.scene-encounter__copy{display:grid;gap:var(--ui-space-1)}.scene__actions{grid-column:1/-1;display:flex;gap:var(--ui-space-2)}
+.world-error{margin:0;padding:var(--ui-space-3) var(--ui-space-4);border:1px solid var(--ui-color-danger);border-radius:var(--ui-radius-md);color:var(--ui-color-danger);background:var(--ui-color-surface-2)}
+.reward-card{display:grid;gap:var(--ui-space-3)}.reward-card__heading{display:grid;gap:var(--ui-space-1)}.reward-card__heading small{color:var(--ui-color-success);font-weight:700}.reward-card__summary>strong{color:var(--ui-color-success)}.reward-card ul{margin:var(--ui-space-2) 0 0;padding-left:1.2rem}
 .hero-hud{display:grid;grid-template-columns:auto auto;gap:var(--ui-space-3);align-items:start;padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.hero-hud>div:first-child{display:grid}.hero-hud small{color:var(--ui-color-text-muted)}.hero-hud__gold{justify-self:end;color:#e8c866;font-weight:700}.hero-hud__bars{grid-column:1/-1;display:grid;gap:var(--ui-space-2)}
-.primary-action,.town-service{display:grid;gap:var(--ui-space-2)}.primary-action{grid-template-columns:1fr auto;align-items:center;padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-2)}.primary-action div{display:grid;gap:var(--ui-space-1)}.primary-action p,.town-service p{margin:0;color:var(--ui-color-text-muted)}
-.town-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-3)}.town-service small,.encounter small{color:var(--ui-color-primary);font-weight:700}.town-service h2,.encounter h2{margin:0}
-.encounter{display:grid;grid-template-columns:8rem 1fr;gap:var(--ui-space-3);align-items:center}.encounter img{width:100%;max-height:8rem;object-fit:contain}.encounter p{margin:0;color:var(--ui-color-text-muted)}.actions{grid-column:1/-1;display:flex;gap:var(--ui-space-2)}
-.reward-card strong{color:var(--ui-color-success)}.reward-card ul{margin:var(--ui-space-2) 0 0;padding-left:1.2rem}.paths{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}
-@media(max-width:520px){.world{padding-inline:var(--ui-space-3)}.scene{min-height:17rem}.town-grid{grid-template-columns:1fr}.primary-action{grid-template-columns:1fr}.encounter{grid-template-columns:6rem 1fr}.hero-hud{grid-template-columns:1fr}.hero-hud__gold{justify-self:start}}
+.town-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-3)}.town-service{display:grid;gap:var(--ui-space-2)}.town-service small{color:var(--ui-color-primary);font-weight:700}.town-service h2,.town-service p{margin:0}.town-service p{color:var(--ui-color-text-muted)}
+@media(max-width:520px){.world{padding-inline:var(--ui-space-3)}.scene,.scene__content{min-height:19rem}.scene__content{padding:var(--ui-space-4)}.scene-encounter{grid-template-columns:6.5rem 1fr;gap:var(--ui-space-3)}.scene-encounter img{max-height:9rem}.scene__actions,.scene__travel-actions{display:grid;grid-template-columns:1fr}.town-grid{grid-template-columns:1fr}.hero-hud{grid-template-columns:1fr}.hero-hud__gold{justify-self:start}}
 </style>
