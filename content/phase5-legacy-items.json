@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "id": "WOLF_FANG_BLADE",
+      "name": "Клинок Волчьего Клыка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Weapon",
+      "stats": { "strength": 2, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Ранняя версия клинка Следопыта. Сохранена для совместимости с уже полученными предметами. Базовый интервал автоатаки — 2,4 сек.",
+      "version": 1,
+      "setId": "RANGER_SET",
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "BOAR_HIDE_VEST",
+      "name": "Жилет из шкуры кабана",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 2 },
+      "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "SPIDER_SILK_HOOD",
+      "name": "Капюшон из паучьего шёлка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": { "strength": 0, "agility": 2, "intellect": 0, "stamina": 0 },
+      "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    }
+  ]
+}
