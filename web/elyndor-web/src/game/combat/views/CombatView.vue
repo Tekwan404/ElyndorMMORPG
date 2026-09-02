@@ -81,8 +81,6 @@ const logEntries = computed<CombatLogEntry[]>(() => {
       && previous.targetActorId === event.targetActorId
       && previous.amount === event.amount
 
-    // AbilityUsed is emitted after the kernel outcome. Keep it only when there was no
-    // visible outcome (for example a miss/dodge), otherwise it would duplicate the hit.
     if (event.type === 'AbilityUsed') {
       const recentOutcome = events.slice(Math.max(0, index - 6), index).some((candidate) =>
         candidate.definitionId === event.definitionId
@@ -131,9 +129,17 @@ function abilityState(ability: { id: string; resourceCost: number; cooldownSecon
 }
 
 function abilityCaption(ability: { resourceCost: number; cooldownSeconds: number }): string {
-  const cooldown = ability.cooldownSeconds > 0 ? `КД ${ability.cooldownSeconds}с` : 'без КД'
-  const resource = ability.resourceCost > 0 ? `${ability.resourceCost} ярости` : '0 ярости'
+  const cooldown = ability.cooldownSeconds > 0 ? `Перезарядка ${ability.cooldownSeconds}с` : 'без перезарядки'
+  const resource = ability.resourceCost > 0 ? `${ability.resourceCost} ярости` : 'без затрат ярости'
   return `${resource} · ${cooldown}`
+}
+
+function combatStatusLabel(status: string): string {
+  if (status === 'Active') return 'Идёт бой'
+  if (status === 'Victory') return 'Победа'
+  if (status === 'Defeat') return 'Поражение'
+  if (status === 'Cancelled') return 'Бой завершён'
+  return 'Бой'
 }
 
 function eventSide(event: CombatEvent): LogSide {
@@ -179,12 +185,8 @@ function eventText(event: CombatEvent, critical = false): string {
       : event.definitionId === 'Defeat'
         ? 'Поражение'
         : 'Бой завершён'
-    default: return definition ? `${humanizeEventType(event.type)} · ${definition}` : humanizeEventType(event.type)
+    default: return definition ? `Событие боя · ${definition}` : 'Событие боя'
   }
-}
-
-function humanizeEventType(type: string): string {
-  return type.replace(/([a-z])([A-Z])/g, '$1 $2')
 }
 
 async function leaveCombat(): Promise<void> {
@@ -204,7 +206,7 @@ onUnmounted(() => window.clearInterval(timer))
             <p class="eyebrow">ПРОТИВНИК · УР. {{ enemyPresentation.level }}</p>
             <h1>{{ enemyPresentation.name }}</h1>
           </div>
-          <span class="combat-state" :data-status="snapshot.status">{{ snapshot.status }}</span>
+          <span class="combat-state" :data-status="snapshot.status">{{ combatStatusLabel(snapshot.status) }}</span>
         </div>
 
         <div class="enemy-portrait">
@@ -215,10 +217,10 @@ onUnmounted(() => window.clearInterval(timer))
         <div class="enemy-health">
           <div class="enemy-health__numbers">
             <strong>{{ enemyPresentation.name }}</strong>
-            <span>{{ Math.ceil(snapshot.enemy.hp) }} / {{ Math.ceil(snapshot.enemy.maxHp) }} HP</span>
+            <span>{{ Math.ceil(snapshot.enemy.hp) }} / {{ Math.ceil(snapshot.enemy.maxHp) }} здоровья</span>
           </div>
           <UIHealthBar
-            :label="`${enemyPresentation.name} HP`"
+            :label="`Здоровье: ${enemyPresentation.name}`"
             :value="snapshot.enemy.hp"
             :max="snapshot.enemy.maxHp"
           />
@@ -310,7 +312,7 @@ onUnmounted(() => window.clearInterval(timer))
           </li>
         </ol>
       </section>
-      <p v-if="combat.errorCode" class="error">{{ combat.errorCode }}</p>
+      <p v-if="combat.errorCode" class="error">Код ошибки боя: {{ combat.errorCode }}</p>
     </template>
 
     <div v-else class="combat-missing">
