@@ -40,9 +40,17 @@ public sealed class CombatSessionRegistry(
         return false;
     }
 
-    public async Task<CombatOperationResult> ExecuteAsync(
+    public Task<CombatOperationResult> ExecuteAsync(
         Guid accountId,
         Func<CombatSession, DateTimeOffset, CombatCommandResult> operation,
+        CancellationToken cancellationToken) => ExecuteAsync(
+            accountId,
+            (session, now) => Task.FromResult(operation(session, now)),
+            cancellationToken);
+
+    public async Task<CombatOperationResult> ExecuteAsync(
+        Guid accountId,
+        Func<CombatSession, DateTimeOffset, Task<CombatCommandResult>> operation,
         CancellationToken cancellationToken)
     {
         if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry))
@@ -51,7 +59,7 @@ public sealed class CombatSessionRegistry(
         await entry.Gate.WaitAsync(cancellationToken);
         try
         {
-            CombatCommandResult result = operation(entry.Session, timeProvider.GetUtcNow());
+            CombatCommandResult result = await operation(entry.Session, timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, cancellationToken);
             CombatOperationResult operationResult = CombatOperationResult.From(result) with
