@@ -36,6 +36,7 @@ export interface CharacterSnapshot {
   level: number
   experience: number
   xpToNextLevel: number
+  gold: number
   primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
   classProfileVersion: string
   knownAbilityIds: string[]
@@ -53,20 +54,30 @@ export interface ItemStats {
   stamina: number
 }
 
-export type EquipmentSlot = 'Weapon' | 'Head' | 'Chest'
+export type EquipmentSlot = 'Weapon' | 'Head' | 'Chest' | 'Legs' | 'Boots' | 'Accessory'
+export type ItemType = 'Equipment' | 'Material' | 'Consumable'
+export type ItemRarity = 'Common' | 'Uncommon' | 'Rare'
 
 export interface InventoryItem {
   id: string
   definitionId: string
   name: string
-  type: 'Equipment' | 'Material'
-  rarity: 'Common' | 'Uncommon' | 'Rare'
+  type: ItemType
+  rarity: ItemRarity
   requiredLevel: number
   quantity: number
   slot: EquipmentSlot | null
   equippedSlot: EquipmentSlot | null
   stats: ItemStats
   description: string
+  setId: string | null
+  weaponBaseAttackIntervalSeconds: number | null
+  attackSpeedPercent: number
+  dodgePercent: number
+  healAmount: number
+  consumableCooldownSeconds: number
+  buyPriceGold: number
+  sellPriceGold: number
 }
 
 export interface InventorySnapshot {
@@ -75,7 +86,29 @@ export interface InventorySnapshot {
     weapon: InventoryItem | null
     head: InventoryItem | null
     chest: InventoryItem | null
+    legs: InventoryItem | null
+    boots: InventoryItem | null
+    accessory: InventoryItem | null
   }
+}
+
+export interface MerchantItem {
+  definitionId: string
+  name: string
+  type: ItemType
+  rarity: ItemRarity
+  description: string
+  buyPriceGold: number
+  sellPriceGold: number
+  healAmount: number
+}
+
+export interface MerchantSnapshot {
+  id: string
+  name: string
+  description: string
+  gold: number
+  items: MerchantItem[]
 }
 
 export interface CharacterStats {
@@ -218,14 +251,15 @@ export interface CombatUpdate {
 
 export interface CombatReward {
   xpEarned: number
+  goldEarned: number
   leveledUp: boolean
   previousLevel: number
   currentLevel: number
   items: {
     itemId: string
     name: string
-    type: 'Equipment' | 'Material'
-    rarity: 'Common' | 'Uncommon' | 'Rare'
+    type: ItemType
+    rarity: ItemRarity
     quantity: number
   }[]
 }
