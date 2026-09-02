@@ -53,6 +53,39 @@ describe('CombatView', () => {
     expect(wrapper.find('img[alt="Волк"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
   })
+
+  it('attributes monster damage to the monster while player auto attack is disabled', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
+      { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
+    ])
+    const enemy = actor('Monster', 'WOLF', 'Forest Wolf', 180, 180, 0, 0, [])
+    player.autoAttackEnabled = false
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 3, status: 'Active',
+      serverTimeUtc: '2026-09-01T12:00:02Z', player, enemy,
+    }
+    store.events = [
+      {
+        sequence: 2,
+        type: 'DamageDealt',
+        actorId: player.actorId,
+        sourceActorId: enemy.actorId,
+        targetActorId: player.actorId,
+        definitionId: 'AUTO_ATTACK',
+        amount: 12,
+        serverTimeUtc: '2026-09-01T12:00:02Z',
+      },
+    ]
+
+    const wrapper = mount(CombatView)
+    const row = wrapper.get('.combat-log li')
+    expect(row.attributes('data-side')).toBe('enemy')
+    expect(row.text()).toContain('ВОЛК')
+    expect(row.text()).toContain('12 урона')
+    expect(row.text()).not.toContain('ВЫ')
+    expect(wrapper.text()).toContain('Включить автоатаку')
+  })
 })
 
 function actor(
