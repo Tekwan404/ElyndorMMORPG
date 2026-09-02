@@ -1,13 +1,16 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
+using Elyndor.Infrastructure.Items;
 
 namespace Elyndor.Infrastructure.Combat;
 
 public sealed class CombatApplicationService(
     CombatSessionFactory factory,
     CombatSessionRegistry registry,
-    GameContentPackage content)
+    GameContentPackage content,
+    InventoryEquipmentService inventoryService)
 {
     public async Task<CombatOperationResult> StartAsync(
         Guid accountId, string monsterId, CancellationToken cancellationToken)
@@ -45,6 +48,45 @@ public sealed class CombatApplicationService(
                     : session.EnemyActorId;
                 return session.Handle(
                     new UseAbilityCommand(commandId, abilityId, targetId), now);
+            }, cancellationToken);
+
+    public Task<CombatOperationResult> UseConsumableAsync(
+        Guid accountId,
+        Guid sessionId,
+        string commandId,
+        string itemDefinitionId,
+        CancellationToken cancellationToken) => registry.ExecuteAsync(
+            accountId,
+            async (session, now) =>
+            {
+                if (session.SessionId != sessionId)
+                    return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []);
+                if (session.HasProcessedCommand(commandId))
+                    return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(), []);
+
+                ItemDefinition? definition = (content.Items ?? []).SingleOrDefault(candidate =>
+                    string.Equals(candidate.Id, itemDefinitionId, StringComparison.Ordinal));
+                if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
+                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
+
+                string? validationError = session.ValidateConsumableUse(now, definition.HealAmount);
+                if (validationError is not null)
+                    return new CombatCommandResult(false, validationError, session.Snapshot(), []);
+
+                string? inventoryError = await inventoryService.ConsumeOneForCombatAsync(
+                    accountId,
+                    itemDefinitionId,
+                    cancellationToken);
+                if (inventoryError is not null)
+                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
+
+                return session.Handle(
+                    new UseConsumableCommand(
+                        commandId,
+                        definition.Id,
+                        definition.HealAmount,
+                        TimeSpan.FromSeconds((double)definition.ConsumableCooldownSeconds)),
+                    now);
             }, cancellationToken);
 
     public Task<CombatOperationResult> StartAutoAttackAsync(
