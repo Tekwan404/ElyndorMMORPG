@@ -128,6 +128,16 @@ public static class WorldEndpoints
                         snapshot.Character.Stats.Armor,
                         snapshot.Character.Stats.MagicResistance,
                         snapshot.Character.Stats.Dodge),
+                    snapshot.Character.StatBreakdown.ToDictionary(
+                        pair => pair.Key,
+                        pair => new CharacterStatBreakdownResponse(
+                            pair.Value.FinalValue,
+                            pair.Value.Contributions
+                                .Select(contribution => new CharacterStatContributionResponse(
+                                    contribution.Source,
+                                    contribution.Value))
+                                .ToArray()),
+                        StringComparer.Ordinal),
                     new CharacterVitalsResponse(
                         snapshot.Character.Vitals.CurrentHp,
                         snapshot.Character.Vitals.MaxHp,
