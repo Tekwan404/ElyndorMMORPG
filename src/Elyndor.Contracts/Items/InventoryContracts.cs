@@ -24,7 +24,8 @@ public sealed record InventoryItemResponse(
     decimal DodgePercent,
     decimal HealAmount,
     decimal ConsumableCooldownSeconds,
-    int BuyPriceGold);
+    int BuyPriceGold,
+    int SellPriceGold);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
@@ -43,3 +44,24 @@ public sealed record EquipItemRequest(Guid CharacterItemId);
 public sealed record UnequipItemRequest(string Slot);
 
 public sealed record UseConsumableRequest(Guid CharacterItemId);
+
+public sealed record MerchantItemResponse(
+    string DefinitionId,
+    string Name,
+    string Type,
+    string Rarity,
+    string Description,
+    int BuyPriceGold,
+    int SellPriceGold,
+    decimal HealAmount);
+
+public sealed record MerchantResponse(
+    string Id,
+    string Name,
+    string Description,
+    long Gold,
+    IReadOnlyList<MerchantItemResponse> Items);
+
+public sealed record BuyMerchantItemRequest(string MerchantId, string ItemDefinitionId, int Quantity = 1);
+
+public sealed record SellMerchantItemRequest(string MerchantId, Guid CharacterItemId, int Quantity = 1);
