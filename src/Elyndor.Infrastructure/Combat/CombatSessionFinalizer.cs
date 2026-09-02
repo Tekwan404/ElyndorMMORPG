@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Progression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,8 +17,7 @@ public interface ICombatSessionFinalizer
 
 /// <summary>
 /// Bridges in-memory combat runtime to permanent character state exactly once when a
-/// CombatSession reaches a terminal state. Permanent rewards can be composed here later
-/// without moving EF Core writes into CombatSession itself.
+/// CombatSession reaches a terminal state. Permanent progression stays outside CombatSession.
 /// </summary>
 public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : ICombatSessionFinalizer
 {
@@ -35,16 +35,23 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             .SingleOrDefaultAsync(
                 candidate => candidate.CharacterId == characterId,
                 cancellationToken);
-        if (vitals is null)
-            return;
+        if (vitals is not null)
+        {
+            DateTimeOffset checkpointAt = snapshot.ServerTimeUtc < vitals.CheckpointedAtUtc
+                ? vitals.CheckpointedAtUtc
+                : snapshot.ServerTimeUtc;
+            vitals.Checkpoint(
+                Math.Max(0m, snapshot.Player.Hp),
+                Math.Max(0m, snapshot.Player.Resource),
+                checkpointAt);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
-        DateTimeOffset checkpointAt = snapshot.ServerTimeUtc < vitals.CheckpointedAtUtc
-            ? vitals.CheckpointedAtUtc
-            : snapshot.ServerTimeUtc;
-        vitals.Checkpoint(
-            Math.Max(0m, snapshot.Player.Hp),
-            Math.Max(0m, snapshot.Player.Resource),
-            checkpointAt);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        if (snapshot.Status == CombatSessionStatus.Victory)
+        {
+            CombatRewardService rewards =
+                scope.ServiceProvider.GetRequiredService<CombatRewardService>();
+            await rewards.ApplyVictoryAsync(characterId, snapshot, cancellationToken);
+        }
     }
 }
