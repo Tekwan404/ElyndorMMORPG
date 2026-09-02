@@ -12,7 +12,7 @@ describe('AppShell', () => {
 
   it('presents authoritative vitals and switches between world and hero views', async () => {
     const store = useGameSessionStore()
-    vi.spyOn(store, 'start').mockResolvedValue()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
     store.state = 'world'
     store.snapshot = worldSnapshot()
     const wrapper = mount(AppShell)
@@ -26,7 +26,7 @@ describe('AppShell', () => {
 
   it('explains a failed connection and offers an explicit retry', async () => {
     const store = useGameSessionStore()
-    vi.spyOn(store, 'start').mockResolvedValue()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
     store.state = 'offline'
     store.errorCode = 'network_unavailable'
     const wrapper = mount(AppShell)
@@ -48,10 +48,11 @@ function worldSnapshot() {
       level: 1,
       experience: 0,
       xpToNextLevel: 100,
-      inventory: { items: [], equipped: { Weapon: null, Head: null, Chest: null } },
+      inventory: { items: [], equipped: { weapon: null, head: null, chest: null } },
       primaryAttribute: 'AGILITY' as const,
       classProfileVersion: '0.2.0',
       knownAbilityIds: [],
+      knownAbilities: [],
       stats: {
         strength: 5,
         agility: 9,
