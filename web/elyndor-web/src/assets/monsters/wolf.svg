@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Forest Wolf</title><desc id="desc">Dark fantasy forest wolf portrait.</desc>
+  <defs>
+    <radialGradient id="a" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#24395a"/><stop offset=".62" stop-color="#111829"/><stop offset="1" stop-color="#070912"/></radialGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b8c1ca"/><stop offset=".45" stop-color="#67717e"/><stop offset="1" stop-color="#242a34"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="640" height="420" rx="34" fill="url(#a)"/>
+  <ellipse cx="320" cy="340" rx="180" ry="34" fill="#02040a" opacity=".65"/>
+  <path d="M185 230 226 88l70 74c18-7 38-11 59-11 19 0 38 3 55 9l69-70 23 148c22 28 35 63 35 101 0 74-75 133-173 133S191 413 191 339c0-41 15-79 41-109z" fill="url(#fur)" stroke="#aeb8c7" stroke-opacity=".26" stroke-width="5"/>
+  <path d="m232 156 19-70 43 58-23 54zM425 145l49-54 10 77-38 32z" fill="#333b49"/>
+  <path d="M245 233c44-44 173-47 222 0-19 81-61 137-111 137-54 0-94-53-111-137z" fill="#858e99" opacity=".7"/>
+  <path d="M281 255c19-13 43-17 64-8M376 247c23-7 47-3 65 11" fill="none" stroke="#1b2029" stroke-width="16" stroke-linecap="round"/>
+  <ellipse cx="316" cy="254" rx="11" ry="7" fill="#ffb020" filter="url(#glow)"/><ellipse cx="407" cy="254" rx="11" ry="7" fill="#ffb020" filter="url(#glow)"/>
+  <path d="M352 286c17-10 38-10 56 0-2 26-11 37-28 37s-26-11-28-37z" fill="#12151c"/>
+  <path d="M302 333c22 17 45 24 74 24 31 0 54-8 74-26-8 46-35 73-74 73-37 0-65-27-74-71z" fill="#18171d"/>
+  <path d="m332 352 13 33 15-30M403 354l-13 32-15-30" fill="#f1e5cf"/>
+  <path d="M214 306c-29 4-54 15-77 35M218 326c-30 11-50 25-65 43M487 310c32 5 57 16 78 34M481 331c28 10 49 24 64 40" fill="none" stroke="#cbd2dc" stroke-opacity=".55" stroke-width="3"/>
+</svg>
