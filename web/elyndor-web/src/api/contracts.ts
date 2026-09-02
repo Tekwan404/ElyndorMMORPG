@@ -184,14 +184,8 @@ export interface CombatActorSnapshot {
   autoAttackEnabled: boolean
   cooldowns: Record<string, string>
   knownAbilityIds: string[]
-  abilities: CombatAbilitySnapshot[]
+  abilities: { id: string; resourceCost: number; cooldownSeconds: number }[]
   effects: CombatEffectSnapshot[]
-}
-
-export interface CombatAbilitySnapshot {
-  id: string
-  resourceCost: number
-  cooldownSeconds: number
 }
 
 export interface CombatSnapshot {
@@ -204,40 +198,34 @@ export interface CombatSnapshot {
 }
 
 export interface CombatEvent {
-  type: string
-  occurredAtUtc: string
-  actorId: string
-  definitionId?: string | null
-  amount: number
-  sourceActorId?: string | null
-  targetActorId?: string | null
   sequence: number
-  isPeriodic: boolean
+  type: string
+  actorId: string
+  sourceActorId: string | null
+  targetActorId: string | null
+  definitionId: string | null
+  amount: number
+  serverTimeUtc: string
 }
 
-export interface CombatRewardItem {
-  itemId: string
-  definitionId: string
-  name: string
-  quantity: number
-  rarity: string
-  type: 'Equipment' | 'Material'
-}
-
-export interface CombatReward {
-  xpEarned: number
-  previousLevel: number
-  currentLevel: number
-  leveledUp: boolean
-  currentExperience: number
-  xpToNextLevel: number
-  items: CombatRewardItem[]
-}
-
-export interface CombatCommandResponse {
+export interface CombatUpdate {
   succeeded: boolean
   errorCode: string | null
   snapshot: CombatSnapshot | null
   events: CombatEvent[]
-  reward?: CombatReward | null
+  reward: CombatReward | null
+}
+
+export interface CombatReward {
+  xpEarned: number
+  leveledUp: boolean
+  previousLevel: number
+  currentLevel: number
+  items: {
+    itemId: string
+    name: string
+    type: 'Equipment' | 'Material'
+    rarity: 'Common' | 'Uncommon' | 'Rare'
+    quantity: number
+  }[]
 }
