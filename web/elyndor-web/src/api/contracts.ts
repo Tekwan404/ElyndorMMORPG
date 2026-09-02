@@ -17,6 +17,16 @@ export interface WorldLocation {
   recommendedLevel: number
 }
 
+export interface KnownAbility {
+  id: string
+  resourceCost: number
+  cooldownSeconds: number
+  type: string
+  targetType: string
+  sourceTalentId: string | null
+  sourceTalentName: string | null
+}
+
 export interface CharacterSnapshot {
   id: string
   name: string
@@ -29,6 +39,7 @@ export interface CharacterSnapshot {
   primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
   classProfileVersion: string
   knownAbilityIds: string[]
+  knownAbilities: KnownAbility[]
   stats: CharacterStats
   vitals: CharacterVitals
   inventory: InventorySnapshot
@@ -59,7 +70,11 @@ export interface InventoryItem {
 
 export interface InventorySnapshot {
   items: InventoryItem[]
-  equipped: Record<EquipmentSlot, InventoryItem | null>
+  equipped: {
+    weapon: InventoryItem | null
+    head: InventoryItem | null
+    chest: InventoryItem | null
+  }
 }
 
 export interface CharacterStats {
