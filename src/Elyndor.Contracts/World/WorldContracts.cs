@@ -34,6 +34,7 @@ public sealed record BootstrapCharacterResponse(
     int Level,
     long Experience,
     int XpToNextLevel,
+    long Gold,
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,
