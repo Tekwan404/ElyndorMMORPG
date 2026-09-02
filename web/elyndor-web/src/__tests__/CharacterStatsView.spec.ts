@@ -8,16 +8,20 @@ import { useGameSessionStore } from '@/stores/gameSession'
 describe('CharacterStatsView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('renders authoritative vitals and highlights the class primary attribute', () => {
+  it('shows authoritative stats and explains their sources on click', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
 
-    const wrapper = mount(CharacterStatsView)
+    const wrapper = mount(CharacterStatsView, { attachTo: document.body })
 
-    expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
-    expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('[data-stat="agility"]').text()).toContain('основной')
     expect(wrapper.get('[data-stat="agility"]').text()).toContain('9')
+
+    await wrapper.get('[data-stat="agility"]').trigger('click')
+    expect(document.body.textContent).toContain('Из чего складывается')
+    expect(document.body.textContent).toContain('База класса')
+    expect(document.body.textContent).toContain('Экипировка')
+    wrapper.unmount()
   })
 })
 
@@ -55,6 +59,24 @@ function snapshot() {
         armor: 19,
         magicResistance: 12,
         dodge: 1.8,
+      },
+      statBreakdown: {
+        strength: { finalValue: 5, contributions: [{ source: 'CLASS_BASE' as const, value: 5 }] },
+        agility: { finalValue: 9, contributions: [{ source: 'CLASS_BASE' as const, value: 8 }, { source: 'EQUIPMENT' as const, value: 1 }] },
+        intellect: { finalValue: 5, contributions: [{ source: 'CLASS_BASE' as const, value: 5 }] },
+        stamina: { finalValue: 7, contributions: [{ source: 'CLASS_BASE' as const, value: 7 }] },
+        maxHp: { finalValue: 120, contributions: [{ source: 'FORMULA_BASE' as const, value: 50 }, { source: 'STAMINA' as const, value: 70 }] },
+        attackPower: { finalValue: 19, contributions: [{ source: 'STRENGTH' as const, value: 10 }, { source: 'AGILITY' as const, value: 9 }] },
+        spellPower: { finalValue: 10, contributions: [{ source: 'INTELLECT' as const, value: 10 }] },
+        criticalChance: { finalValue: 7.25, contributions: [{ source: 'FORMULA_BASE' as const, value: 5 }, { source: 'AGILITY' as const, value: 2.25 }] },
+        criticalDamage: { finalValue: 100, contributions: [{ source: 'FORMULA_BASE' as const, value: 100 }] },
+        accuracy: { finalValue: 95, contributions: [{ source: 'FORMULA_BASE' as const, value: 95 }] },
+        armorPenetration: { finalValue: 0, contributions: [] },
+        magicPenetration: { finalValue: 0, contributions: [{ source: 'FORMULA_BASE' as const, value: 0 }] },
+        attackSpeed: { finalValue: 1, contributions: [{ source: 'FORMULA_BASE' as const, value: 1 }] },
+        armor: { finalValue: 19, contributions: [{ source: 'STAMINA' as const, value: 14 }, { source: 'STRENGTH' as const, value: 5 }] },
+        magicResistance: { finalValue: 12, contributions: [{ source: 'STAMINA' as const, value: 7 }, { source: 'INTELLECT' as const, value: 5 }] },
+        dodge: { finalValue: 1.8, contributions: [{ source: 'AGILITY' as const, value: 1.8 }] },
       },
       vitals: {
         currentHp: 120,
