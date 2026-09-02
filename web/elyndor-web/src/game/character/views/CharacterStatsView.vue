@@ -1,272 +1,194 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { CharacterStats, KnownAbility } from '@/api/contracts'
-import { gameArt } from '@/assets/gameArt'
-import { resolveAbilityArt } from '@/game/talents/talentArt'
+import type { CharacterStatBreakdown, CharacterStats } from '@/api/contracts'
+import { classLabel } from '@/game/character/characterPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIHealthBar, UIModal, UIPanel } from '@/ui/components'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { IconConfig } from '@/ui/icons/icon.types'
+import { UIModal, UIPanel } from '@/ui/components'
 
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
-const selectedAbility = ref<KnownAbility | null>(null)
-const talentAbilities = computed(() => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [])
-const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
+const selectedStat = ref<StatRow | null>(null)
 
-type StatRow = { id: keyof CharacterStats; label: string; percent?: boolean; multiplier?: boolean }
+type StatRow = {
+  id: keyof CharacterStats
+  label: string
+  description: string
+  percent?: boolean
+  multiplier?: boolean
+}
 
-const groups: { title: string; rows: StatRow[] }[] = [
+const groups: { title: string; description: string; rows: StatRow[] }[] = [
   {
-    title: 'Основные',
+    title: 'Основные характеристики',
+    description: 'Базовые параметры героя. Они растут с уровнем и изменяются экипировкой и талантами.',
     rows: [
-      { id: 'strength', label: 'Сила' },
-      { id: 'agility', label: 'Ловкость' },
-      { id: 'intellect', label: 'Интеллект' },
-      { id: 'stamina', label: 'Выносливость' },
+      { id: 'strength', label: 'Сила', description: 'Повышает физическую силу атаки воина и дополнительно увеличивает броню.' },
+      { id: 'agility', label: 'Ловкость', description: 'Повышает шанс критического удара, уклонение и частично влияет на силу атаки.' },
+      { id: 'intellect', label: 'Интеллект', description: 'Повышает силу заклинаний и сопротивление магии.' },
+      { id: 'stamina', label: 'Выносливость', description: 'Увеличивает максимальное здоровье, броню и сопротивление магии.' },
     ],
   },
   {
     title: 'Атака',
+    description: 'Параметры, которые определяют силу и стабильность наносимого урона.',
     rows: [
-      { id: 'attackPower', label: 'Сила атаки' },
-      { id: 'spellPower', label: 'Сила заклинаний' },
-      { id: 'criticalChance', label: 'Шанс крита', percent: true },
-      { id: 'criticalDamage', label: 'Критический урон', percent: true },
-      { id: 'accuracy', label: 'Меткость' },
-      { id: 'armorPenetration', label: 'Пробивание брони' },
-      { id: 'magicPenetration', label: 'Пробивание магии' },
-      { id: 'attackSpeed', label: 'Скорость атаки', multiplier: true },
+      { id: 'attackPower', label: 'Сила атаки', description: 'Основной показатель физического урона. Для воина складывается из Силы, Ловкости и бонусов талантов.' },
+      { id: 'spellPower', label: 'Сила заклинаний', description: 'Определяет мощность магических способностей и зависит от Интеллекта.' },
+      { id: 'criticalChance', label: 'Шанс критического удара', description: 'Вероятность нанести критический удар с повышенным уроном.', percent: true },
+      { id: 'criticalDamage', label: 'Критический урон', description: 'Дополнительный урон, который наносит успешный критический удар.', percent: true },
+      { id: 'accuracy', label: 'Меткость', description: 'Вероятность успешно попасть атакой по цели до учёта её уклонения.', percent: true },
+      { id: 'armorPenetration', label: 'Пробивание брони', description: 'Часть физической защиты противника, которая игнорируется вашими атаками.', percent: true },
+      { id: 'magicPenetration', label: 'Пробивание магии', description: 'Часть магической защиты противника, которая игнорируется вашими заклинаниями.', percent: true },
+      { id: 'attackSpeed', label: 'Скорость атаки', description: 'Множитель скорости обычных атак. Значение 1× соответствует базовой скорости.', multiplier: true },
     ],
   },
   {
     title: 'Защита',
+    description: 'Параметры выживаемости героя в бою.',
     rows: [
-      { id: 'armor', label: 'Броня' },
-      { id: 'magicResistance', label: 'Сопротивление магии' },
-      { id: 'dodge', label: 'Уклонение', percent: true },
+      { id: 'maxHp', label: 'Максимальное здоровье', description: 'Максимальный запас здоровья. Основной источник — Выносливость.' },
+      { id: 'armor', label: 'Броня', description: 'Снижает получаемый физический урон. Формируется из Выносливости, Силы и талантов.' },
+      { id: 'magicResistance', label: 'Сопротивление магии', description: 'Защищает от магического урона и зависит от Выносливости и Интеллекта.' },
+      { id: 'dodge', label: 'Уклонение', description: 'Вероятность полностью избежать подходящей для уклонения атаки.', percent: true },
     ],
   },
 ]
 
-const portraitIcon = computed<IconConfig>(() => ({
-  id: `portrait-${character.value?.classId.toLowerCase() ?? 'hero'}`,
-  glyph:
-    character.value?.classId === 'WARRIOR'
-      ? 'shield'
-      : character.value?.classId === 'ARCHER'
-        ? 'bow'
-        : 'staff',
-  category: 'utility',
-  modifier:
-    character.value?.classId === 'WARRIOR'
-      ? 'fire'
-      : character.value?.classId === 'ARCHER'
-        ? 'poison'
-        : 'ice',
-  rarity: 'rare',
-}))
-const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
-  const value = character.value?.vitals.resourceType.toLowerCase()
-  return value === 'rage' || value === 'mana' ? value : 'focus'
-})
-const resourceLabel = computed(() => {
-  const value = character.value?.vitals.resourceType.toLowerCase() ?? 'resource'
-  return value === 'rage' ? 'Ярость' : value === 'mana' ? 'Мана' : 'Фокус'
+const primaryAttributeLabel = computed(() => {
+  if (character.value?.primaryAttribute === 'STRENGTH') return 'Сила'
+  if (character.value?.primaryAttribute === 'AGILITY') return 'Ловкость'
+  return 'Интеллект'
 })
 
-const abilityPresentation: Record<string, { name: string; description: string }> = {
-  STRIKE: { name: 'Удар', description: 'Базовая атака воина. Наносит физический урон и помогает накапливать ярость.' },
-  WILD_STRIKE: { name: 'Дикий удар', description: 'Мощная одиночная атака, открываемая талантом. Наносит повышенный физический урон.' },
-  WHIRLWIND: { name: 'Вихрь', description: 'Размашистая атака по всем противникам в бою. Открывается соответствующим талантом.' },
-  BASTION: { name: 'Бастион', description: 'Защитная способность, временно заметно снижающая входящий урон.' },
-  BERSERK: { name: 'Берсерк', description: 'Боевой режим, временно усиливающий силу атаки, шанс критического удара и скорость атаки.' },
-  SHIELD_BASH: { name: 'Удар щитом', description: 'Физический удар щитом с коротким оглушением цели.' },
-  PROVOKE: { name: 'Провокация', description: 'Заставляет выбранного противника удерживать внимание на воине.' },
-  HEAVY_BLOW: { name: 'Тяжёлый удар', description: 'Сильный одиночный физический удар с повышенным коэффициентом силы атаки.' },
-  BATTLE_FOCUS: { name: 'Боевой фокус', description: 'Кратковременно повышает силу атаки.' },
-  BATTLE_SHOUT: { name: 'Боевой клич', description: 'Мгновенно даёт дополнительную ярость.' },
-}
-
-function format(row: StatRow): string {
-  const value = character.value?.stats[row.id] ?? 0
-  if (row.multiplier) return `${value.toFixed(2)}×`
-  if (row.percent) return `${value.toFixed(2).replace(/\.00$/, '')}%`
-  return Number.isInteger(value) ? value.toString() : value.toFixed(1)
+function format(row: StatRow, value?: number): string {
+  const resolved = value ?? character.value?.stats[row.id] ?? 0
+  if (row.multiplier) return `${resolved.toFixed(2)}×`
+  if (row.percent) return `${resolved.toFixed(2).replace(/\.00$/, '')}%`
+  return Number.isInteger(resolved) ? resolved.toString() : resolved.toFixed(1)
 }
 
 function isPrimary(id: keyof CharacterStats): boolean {
   return character.value?.primaryAttribute.toLowerCase() === id.toLowerCase()
 }
 
-function abilityName(ability: KnownAbility): string {
-  return abilityPresentation[ability.id]?.name ?? ability.id.replace(/_/g, ' ')
+function breakdownFor(row: StatRow): CharacterStatBreakdown | null {
+  return character.value?.statBreakdown?.[row.id] ?? null
 }
 
-function abilityDescription(ability: KnownAbility): string {
-  return abilityPresentation[ability.id]?.description
-    ?? `Активная способность. Тип: ${ability.type}. Цель: ${ability.targetType}.`
+function sourceLabel(source: string): string {
+  if (source === 'CLASS_BASE') return 'База класса'
+  if (source === 'LEVEL_GROWTH') return 'Рост за уровни'
+  if (source === 'EQUIPMENT') return 'Экипировка'
+  if (source === 'TALENT_FLAT') return 'Таланты'
+  if (source === 'TALENT_PERCENT') return 'Процентные бонусы талантов'
+  if (source === 'EFFECTS') return 'Активные эффекты'
+  if (source === 'FORMULA_BASE') return 'Базовое значение формулы'
+  if (source === 'STRENGTH') return 'Вклад Силы'
+  if (source === 'AGILITY') return 'Вклад Ловкости'
+  if (source === 'INTELLECT') return 'Вклад Интеллекта'
+  if (source === 'STAMINA') return 'Вклад Выносливости'
+  if (source === 'TALENT_BONUS') return 'Бонус талантов'
+  return source
 }
 
-function abilityArt(ability: KnownAbility): string | null {
-  if (ability.id === 'STRIKE') return gameArt.warriorAbilities.strike
-  if (ability.id === 'SHIELD_BASH') return gameArt.warriorAbilities.shieldBash
-  if (ability.id === 'PROVOKE') return gameArt.warriorAbilities.provoke
-  if (ability.id === 'BASTION') return gameArt.warriorAbilities.bastion
-  return resolveAbilityArt(ability.id)
-}
-
-function abilityInitials(ability: KnownAbility): string {
-  return abilityName(ability).split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase()
+function contributionValue(row: StatRow, value: number): string {
+  const sign = value > 0 ? '+' : ''
+  if (row.multiplier) return `${sign}${value.toFixed(2)}`
+  if (row.percent) return `${sign}${value.toFixed(2).replace(/\.00$/, '')}%`
+  return `${sign}${Number.isInteger(value) ? value : value.toFixed(1)}`
 }
 </script>
 
 <template>
-  <section v-if="character" class="character">
-    <header class="character__header">
+  <section v-if="character" class="stats-view">
+    <header class="stats-header">
       <div>
-        <p class="kicker">Герой</p>
+        <p>Характеристики</p>
         <h1>{{ character.name }}</h1>
-        <p class="summary">Уровень {{ character.level }} · {{ character.classId }}</p>
+        <small>{{ classLabel(character.classId) }} · уровень {{ character.level }} · основной параметр: {{ primaryAttributeLabel }}</small>
       </div>
-      <img
-        v-if="character.classId === 'WARRIOR'"
-        class="warrior-portrait"
-        :src="gameArt.characters.warrior"
-        alt="Воин"
-      />
-      <IconGenerator
-        v-else
-        class="portrait"
-        :config="portraitIcon"
-        :label="`Класс ${character.classId}`"
-      />
     </header>
 
-    <UIPanel class="vitals">
-      <template #title>Состояние</template>
-      <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-      <UIHealthBar
-        :label="resourceLabel"
-        :tone="resourceTone"
-        :value="character.vitals.currentResource"
-        :max="character.vitals.maxResource"
-      />
-    </UIPanel>
-
-    <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities">
-      <template #title>Боевые способности</template>
-      <p class="abilities__hint">Здесь показаны только активные способности, которые реально открыты вашим текущим билдом талантов.</p>
-
-      <div v-if="talentAbilities.length" class="ability-list" aria-label="Способности из талантов">
-        <button
-          v-for="ability in talentAbilities"
-          :key="ability.id"
-          class="ability-row"
-          type="button"
-          :data-ability="ability.id"
-          @click="selectedAbility = ability"
-        >
-          <span class="ability-row__icon">
-            <img v-if="abilityArt(ability)" :src="abilityArt(ability)!" alt="" />
-            <b v-else>{{ abilityInitials(ability) }}</b>
-          </span>
-          <span class="ability-row__copy">
-            <strong>{{ abilityName(ability) }}</strong>
-            <small>{{ ability.sourceTalentName }} · {{ ability.resourceCost }} яр. · КД {{ ability.cooldownSeconds }}с</small>
-          </span>
-          <span class="ability-row__chevron">›</span>
-        </button>
-      </div>
-      <p v-else class="abilities__empty">Активные способности из талантов ещё не изучены.</p>
-
-      <div v-if="baselineAbilities.length" class="baseline">
-        <small>Базовое действие</small>
-        <button v-for="ability in baselineAbilities" :key="ability.id" type="button" @click="selectedAbility = ability">
-          {{ abilityName(ability) }}
-        </button>
-      </div>
-    </UIPanel>
+    <p class="stats-intro">Нажмите на любую характеристику, чтобы увидеть, что она делает и из каких источников складывается её текущее значение.</p>
 
     <UIPanel v-for="group in groups" :key="group.title" class="stat-group">
       <template #title>{{ group.title }}</template>
-      <dl>
-        <div
+      <p class="group-description">{{ group.description }}</p>
+      <div class="stat-list">
+        <button
           v-for="row in group.rows"
           :key="row.id"
+          type="button"
+          class="stat-row"
           :data-stat="row.id"
           :class="{ primary: isPrimary(row.id) }"
+          @click="selectedStat = row"
         >
-          <dt>{{ row.label }}<small v-if="isPrimary(row.id)">основной</small></dt>
-          <dd>{{ format(row) }}</dd>
-        </div>
-      </dl>
+          <span>
+            <strong>{{ row.label }}</strong>
+            <small v-if="isPrimary(row.id)">Основная характеристика класса</small>
+            <small v-else>Нажмите для подробностей</small>
+          </span>
+          <b>{{ format(row) }}</b>
+          <i>›</i>
+        </button>
+      </div>
     </UIPanel>
 
-    <p class="version">Balance {{ character.classProfileVersion }}</p>
-
-    <UIModal :open="selectedAbility !== null" :title="selectedAbility ? abilityName(selectedAbility) : ''" @close="selectedAbility = null">
-      <article v-if="selectedAbility" class="ability-detail">
-        <div class="ability-detail__identity">
-          <span class="ability-detail__icon">
-            <img v-if="abilityArt(selectedAbility)" :src="abilityArt(selectedAbility)!" :alt="abilityName(selectedAbility)" />
-            <b v-else>{{ abilityInitials(selectedAbility) }}</b>
-          </span>
-          <div>
-            <p v-if="selectedAbility.sourceTalentName">Талант · {{ selectedAbility.sourceTalentName }}</p>
-            <p v-else>Базовая способность класса</p>
-            <strong>Работает в текущем combat runtime</strong>
-          </div>
+    <UIModal :open="selectedStat !== null" :title="selectedStat?.label ?? ''" @close="selectedStat = null">
+      <article v-if="selectedStat" class="stat-detail">
+        <div class="stat-detail__value">
+          <small>Текущее значение</small>
+          <strong>{{ format(selectedStat) }}</strong>
         </div>
-        <p class="ability-detail__description">{{ abilityDescription(selectedAbility) }}</p>
-        <dl>
-          <div><dt>Стоимость</dt><dd>{{ selectedAbility.resourceCost }} ярости</dd></div>
-          <div><dt>Перезарядка</dt><dd>{{ selectedAbility.cooldownSeconds }} сек.</dd></div>
-          <div><dt>Тип</dt><dd>{{ selectedAbility.type }}</dd></div>
-        </dl>
+        <p>{{ selectedStat.description }}</p>
+
+        <section>
+          <h3>Из чего складывается</h3>
+          <dl v-if="breakdownFor(selectedStat)?.contributions.length">
+            <div v-for="(entry, index) in breakdownFor(selectedStat)?.contributions" :key="`${entry.source}-${index}`">
+              <dt>{{ sourceLabel(entry.source) }}</dt>
+              <dd>{{ contributionValue(selectedStat, entry.value) }}</dd>
+            </div>
+          </dl>
+          <p v-else class="no-breakdown">Для этой характеристики сейчас нет дополнительных источников.</p>
+        </section>
+
+        <p class="stat-detail__note">Итоговое значение рассчитывается сервером по текущему уровню, экипировке и активному набору талантов.</p>
       </article>
     </UIModal>
   </section>
 </template>
 
 <style scoped>
-.character { display: grid; width: min(100%, var(--ui-content-width)); margin-inline: auto; gap: var(--ui-space-4); padding: var(--ui-space-6) calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-7) calc(var(--ui-space-4) + var(--ui-safe-area-left)); }
-.character__header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-4); }
-.kicker, .summary, .version { color: var(--ui-color-text-muted); }
-.kicker { margin: 0; color: var(--ui-color-primary); font-size: var(--ui-font-size-xs); font-weight: var(--ui-font-weight-bold); letter-spacing: var(--ui-space-1); text-transform: uppercase; }
-h1 { margin: var(--ui-space-1) 0; color: var(--ui-color-text-primary); font-family: var(--ui-font-display); font-size: var(--ui-font-size-2xl); }
-.summary { margin: 0; }
-.portrait { width: var(--ui-icon-slot-lg); height: var(--ui-icon-slot-lg); flex: 0 0 auto; }
-.warrior-portrait { width: clamp(6rem, 26vw, 8.5rem); height: 8.5rem; flex: 0 0 auto; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 0.5rem 0.8rem rgb(0 0 0 / 55%)); }
-.vitals :deep(.ui-panel__body) { display: grid; gap: var(--ui-space-3); }
-.abilities__hint, .abilities__empty { margin: 0 0 var(--ui-space-3); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-sm); line-height: var(--ui-line-height-normal); }
-.ability-list { display: grid; gap: var(--ui-space-2); }
-.ability-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; min-height: var(--ui-touch-target); align-items: center; gap: var(--ui-space-3); width: 100%; padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: inherit; font: inherit; text-align: left; }
-.ability-row__icon { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; overflow: hidden; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-md); background: var(--ui-color-background); color: var(--ui-color-primary); }
-.ability-row__icon img { width: 100%; height: 100%; object-fit: cover; }
-.ability-row__copy { display: grid; min-width: 0; gap: 2px; }
-.ability-row__copy strong { color: var(--ui-color-text-primary); }
-.ability-row__copy small { overflow: hidden; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); text-overflow: ellipsis; white-space: nowrap; }
-.ability-row__chevron { color: var(--ui-color-primary); font-size: 1.5rem; }
-.baseline { display: flex; align-items: center; gap: var(--ui-space-2); margin-top: var(--ui-space-3); padding-top: var(--ui-space-3); border-top: 1px solid var(--ui-color-border); }
-.baseline small { color: var(--ui-color-text-muted); }
-.baseline button { min-height: 2rem; padding: 0 var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: transparent; color: var(--ui-color-text-secondary); font: inherit; font-size: var(--ui-font-size-xs); }
-dl { margin: 0; }
-.stat-group dl div { display: flex; min-height: var(--ui-touch-target); align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-2); border-bottom: 1px solid var(--ui-color-border); }
-.stat-group dl div:last-child { border-bottom: 0; }
-dt { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ui-space-2); color: var(--ui-color-text-secondary); }
-dt small { color: var(--ui-color-primary); font-size: var(--ui-font-size-xs); text-transform: uppercase; }
-dd { margin: 0; color: var(--ui-color-text-primary); font-variant-numeric: tabular-nums; }
-.primary { background: var(--ui-color-surface-3); }
-.version { margin: 0; font-size: var(--ui-font-size-xs); text-align: right; }
-.ability-detail { display: grid; gap: var(--ui-space-4); }
-.ability-detail__identity { display: flex; align-items: center; gap: var(--ui-space-3); }
-.ability-detail__identity p, .ability-detail__description { margin: 0; color: var(--ui-color-text-muted); }
-.ability-detail__identity div { display: grid; gap: var(--ui-space-1); }
-.ability-detail__icon { display: grid; width: 4rem; height: 4rem; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid var(--ui-color-primary); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: var(--ui-color-primary); }
-.ability-detail__icon img { width: 100%; height: 100%; object-fit: cover; }
-.ability-detail dl { display: grid; gap: var(--ui-space-1); }
-.ability-detail dl div { display: flex; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-2); border-bottom: 1px solid var(--ui-color-border); }
-@media (max-width: 360px) { .character { padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left)) calc(var(--ui-space-3) + var(--ui-safe-area-right)); } .warrior-portrait { width: 5.5rem; height: 7rem; } }
+.stats-view { display: grid; width: min(100%, var(--ui-content-width)); margin-inline: auto; gap: var(--ui-space-4); padding: var(--ui-space-5) var(--ui-space-4) var(--ui-space-7); }
+.stats-header p, .stats-header h1 { margin: 0; }
+.stats-header p { color: var(--ui-color-primary); font-size: var(--ui-font-size-xs); font-weight: var(--ui-font-weight-bold); letter-spacing: .1em; text-transform: uppercase; }
+.stats-header h1 { margin-top: var(--ui-space-1); font-family: var(--ui-font-display); font-size: var(--ui-font-size-2xl); }
+.stats-header small, .stats-intro, .group-description { color: var(--ui-color-text-muted); }
+.stats-intro { margin: 0; line-height: var(--ui-line-height-normal); }
+.group-description { margin: 0 0 var(--ui-space-3); font-size: var(--ui-font-size-sm); line-height: var(--ui-line-height-normal); }
+.stat-list { display: grid; gap: 1px; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-border); }
+.stat-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--ui-space-3); min-height: var(--ui-touch-target); padding: var(--ui-space-2) var(--ui-space-3); border: 0; background: var(--ui-color-surface-2); color: inherit; font: inherit; text-align: left; }
+.stat-row.primary { background: linear-gradient(90deg, rgb(105 93 255 / 14%), var(--ui-color-surface-2)); }
+.stat-row > span { display: grid; min-width: 0; gap: 2px; }
+.stat-row strong { color: var(--ui-color-text-primary); }
+.stat-row small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
+.stat-row > b { color: var(--ui-color-primary); font-size: var(--ui-font-size-md); font-variant-numeric: tabular-nums; }
+.stat-row > i { color: var(--ui-color-text-muted); font-size: 1.4rem; font-style: normal; }
+.stat-detail { display: grid; gap: var(--ui-space-4); }
+.stat-detail > p { margin: 0; color: var(--ui-color-text-muted); line-height: var(--ui-line-height-normal); }
+.stat-detail__value { display: flex; align-items: end; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-primary); border-radius: var(--ui-radius-md); background: rgb(105 93 255 / 9%); }
+.stat-detail__value small { color: var(--ui-color-text-muted); }
+.stat-detail__value strong { color: var(--ui-color-primary); font-family: var(--ui-font-display); font-size: var(--ui-font-size-2xl); }
+.stat-detail section { display: grid; gap: var(--ui-space-2); }
+.stat-detail h3 { margin: 0; font-size: var(--ui-font-size-md); }
+.stat-detail dl { display: grid; gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-border); }
+.stat-detail dl div { display: flex; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-2) var(--ui-space-3); background: var(--ui-color-surface-2); }
+.stat-detail dt { color: var(--ui-color-text-secondary); }
+.stat-detail dd { margin: 0; color: var(--ui-color-success); font-weight: var(--ui-font-weight-semibold); font-variant-numeric: tabular-nums; }
+.no-breakdown { margin: 0; color: var(--ui-color-text-muted); }
+.stat-detail__note { padding-top: var(--ui-space-3); border-top: 1px solid var(--ui-color-border); font-size: var(--ui-font-size-xs); }
+@media (max-width: 360px) { .stats-view { padding-inline: var(--ui-space-3); } .stat-row { padding-inline: var(--ui-space-2); } }
 </style>
