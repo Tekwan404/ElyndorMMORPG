@@ -8,6 +8,9 @@ import { UIButton, UICard, UILoadingState, UIPanel } from '@/ui/components'
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
+const materials = computed(() => inventory.value?.items.filter((item) => item.type === 'Material') ?? [])
+const equipmentItems = computed(() => inventory.value?.items.filter((item) => item.type === 'Equipment') ?? [])
+const materialUnits = computed(() => materials.value.reduce((total, item) => total + item.quantity, 0))
 const slots: readonly { id: EquipmentSlot; label: string }[] = [
   { id: 'Weapon', label: 'Оружие' },
   { id: 'Head', label: 'Голова' },
@@ -21,6 +24,12 @@ function statSummary(item: InventoryItem): string {
     item.stats.intellect ? `Интеллект +${item.stats.intellect}` : '',
     item.stats.stamina ? `Выносливость +${item.stats.stamina}` : '',
   ].filter(Boolean).join(' · ')
+}
+
+function rarityLabel(item: InventoryItem): string {
+  if (item.rarity === 'Rare') return 'Редкий'
+  if (item.rarity === 'Uncommon') return 'Необычный'
+  return 'Обычный'
 }
 </script>
 
@@ -41,20 +50,42 @@ function statSummary(item: InventoryItem): string {
         </UICard>
       </div>
     </UIPanel>
-    <UIPanel v-if="inventory">
-      <template #title>Сумка · {{ inventory.items.length }} / 40</template>
-      <div v-if="inventory.items.length" class="inventory-list">
-        <UICard v-for="item in inventory.items" :key="item.id" class="inventory-item" :data-rarity="item.rarity">
+
+    <UIPanel v-if="inventory && materials.length" class="loot-section">
+      <template #title>Материалы для крафта · {{ materialUnits }}</template>
+      <p class="section-hint">Собирайте добычу с монстров — эти материалы пригодятся в будущей системе крафта.</p>
+      <div class="inventory-list">
+        <UICard v-for="item in materials" :key="item.id" class="inventory-item material-item" :data-rarity="item.rarity">
           <div>
-            <strong>{{ item.name }}</strong>
-            <small>{{ item.type === 'Material' ? `Материал · ×${item.quantity}` : item.rarity }}</small>
-            <span v-if="statSummary(item)">{{ statSummary(item) }}</span>
+            <div class="item-heading">
+              <strong>{{ item.name }}</strong>
+              <b class="quantity">×{{ item.quantity }}</b>
+            </div>
+            <small>Материал · {{ rarityLabel(item) }}</small>
+            <span>{{ item.description }}</span>
           </div>
-          <UIButton v-if="item.type === 'Equipment' && !item.equippedSlot" variant="secondary" :disabled="session.mutationPending || (character?.level ?? 0) < item.requiredLevel" @click="session.equip(item.id)">Надеть</UIButton>
-          <span v-else-if="item.equippedSlot" class="equipped">Надето</span>
         </UICard>
       </div>
-      <UILoadingState v-else state="empty" title="Сумка пуста" message="Побеждайте противников в Шепчущем лесу, чтобы получить материалы и экипировку." />
+    </UIPanel>
+
+    <UIPanel v-if="inventory && equipmentItems.length" class="loot-section">
+      <template #title>Снаряжение в сумке</template>
+      <div class="inventory-list">
+        <UICard v-for="item in equipmentItems" :key="item.id" class="inventory-item" :data-rarity="item.rarity">
+          <div>
+            <strong>{{ item.name }}</strong>
+            <small>{{ rarityLabel(item) }} · уровень {{ item.requiredLevel }}</small>
+            <span v-if="statSummary(item)">{{ statSummary(item) }}</span>
+          </div>
+          <UIButton v-if="!item.equippedSlot" variant="secondary" :disabled="session.mutationPending || (character?.level ?? 0) < item.requiredLevel" @click="session.equip(item.id)">Надеть</UIButton>
+          <span v-else class="equipped">Надето</span>
+        </UICard>
+      </div>
+    </UIPanel>
+
+    <UIPanel v-if="inventory && !inventory.items.length">
+      <template #title>Сумка · 0 / 40</template>
+      <UILoadingState state="empty" title="Сумка пуста" message="Побеждайте противников в Шепчущем лесу, чтобы получить материалы и экипировку." />
     </UIPanel>
   </section>
 </template>
@@ -70,10 +101,15 @@ header h1 { font-family: var(--ui-font-display); }
 .equipment-slot small, .inventory-item small, .inventory-item span, .equipment-slot span { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .equipment-slot strong, .inventory-item strong { color: var(--ui-color-text-primary); }
 .empty { margin-block: auto; text-align: center; }
+.loot-section { display: grid; gap: var(--ui-space-3); }
+.section-hint { margin: 0 0 var(--ui-space-3); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-sm); line-height: var(--ui-line-height-normal); }
 .inventory-item { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); border-left: 2px solid var(--ui-color-border-strong); }
 .inventory-item[data-rarity='Uncommon'] { border-left-color: var(--ui-color-success); }
 .inventory-item[data-rarity='Rare'] { border-left-color: var(--ui-color-primary); }
 .inventory-item > div { display: grid; min-width: 0; gap: var(--ui-space-1); }
+.material-item { align-items: stretch; }
+.item-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--ui-space-3); }
+.quantity { flex: 0 0 auto; color: var(--ui-color-secondary); font-size: var(--ui-font-size-sm); }
 .equipped { color: var(--ui-color-success) !important; font-weight: var(--ui-font-weight-bold); }
 @media (max-width: 360px) { .equipment__slots { grid-template-columns: 1fr; } .equipment-slot { min-height: auto; } }
 </style>
