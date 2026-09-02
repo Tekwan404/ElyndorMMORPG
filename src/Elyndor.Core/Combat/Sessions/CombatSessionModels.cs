@@ -46,6 +46,7 @@ public sealed record CombatActorSnapshot(
     decimal Resource,
     decimal MaxResource,
     bool AutoAttackEnabled,
+    DateTimeOffset? ConsumableCooldownReadyAtUtc,
     IReadOnlyDictionary<string, DateTimeOffset> Cooldowns,
     IReadOnlySet<string> KnownAbilityIds,
     IReadOnlyList<CombatAbilitySnapshot> Abilities,
@@ -74,6 +75,9 @@ public static class CombatErrorCodes
     public const string UnsupportedMonster = "combat_monster_unsupported";
     public const string UnsupportedClass = "combat_class_unsupported";
     public const string InvalidLocation = "combat_location_invalid";
+    public const string ConsumableOnCooldown = "combat_consumable_on_cooldown";
+    public const string ConsumableNotNeeded = "combat_consumable_not_needed";
+    public const string ConsumableUnavailable = "combat_consumable_unavailable";
 }
 
 public sealed record CombatCommandResult(
