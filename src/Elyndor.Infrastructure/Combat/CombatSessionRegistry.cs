@@ -121,7 +121,6 @@ public sealed class CombatSessionRegistry(
             return;
 
         await finalizer.FinalizeAsync(
-            entry.AccountId,
             entry.CharacterId,
             snapshot,
             cancellationToken);
