@@ -23,10 +23,14 @@ const selectedItem = ref<InventoryItem | null>(null)
 const selectedAbility = ref<KnownAbility | null>(null)
 
 const equipment = computed(() => [
-  { id: 'head', label: 'Голова', item: character.value?.inventory.equipped.head ?? null, glyph: '◈' },
-  { id: 'weapon', label: 'Оружие', item: character.value?.inventory.equipped.weapon ?? null, glyph: '⚔' },
+  { id: 'head', label: 'Шлем', item: character.value?.inventory.equipped.head ?? null, glyph: '◈' },
   { id: 'chest', label: 'Нагрудник', item: character.value?.inventory.equipped.chest ?? null, glyph: '⬟' },
+  { id: 'legs', label: 'Штаны', item: character.value?.inventory.equipped.legs ?? null, glyph: '▥' },
+  { id: 'boots', label: 'Ботинки', item: character.value?.inventory.equipped.boots ?? null, glyph: '⌁' },
+  { id: 'weapon', label: 'Оружие', item: character.value?.inventory.equipped.weapon ?? null, glyph: '⚔' },
+  { id: 'accessory', label: 'Аксессуар', item: character.value?.inventory.equipped.accessory ?? null, glyph: '✦' },
 ])
+const rangerPieces = computed(() => equipment.value.filter((slot) => slot.item?.setId === 'RANGER_SET').length)
 const talentAbilities = computed(() => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [])
 const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
 const xpTarget = computed(() => character.value?.xpToNextLevel ?? 0)
@@ -36,13 +40,10 @@ function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (!item) return fallback
   if (item.slot === 'Weapon') return '⚔'
   if (item.slot === 'Head') return '◈'
-  return '⬟'
-}
-
-function rarityLabel(item: InventoryItem): string {
-  if (item.rarity === 'Rare') return 'Редкий'
-  if (item.rarity === 'Uncommon') return 'Необычный'
-  return 'Обычный'
+  if (item.slot === 'Chest') return '⬟'
+  if (item.slot === 'Legs') return '▥'
+  if (item.slot === 'Boots') return '⌁'
+  return '✦'
 }
 
 function itemStats(item: InventoryItem): string[] {
@@ -51,6 +52,8 @@ function itemStats(item: InventoryItem): string[] {
     item.stats.agility ? `Ловкость +${item.stats.agility}` : '',
     item.stats.intellect ? `Интеллект +${item.stats.intellect}` : '',
     item.stats.stamina ? `Выносливость +${item.stats.stamina}` : '',
+    item.attackSpeedPercent ? `Скорость атаки +${item.attackSpeedPercent}%` : '',
+    item.dodgePercent ? `Уклонение +${item.dodgePercent}%` : '',
   ].filter(Boolean)
 }
 
@@ -75,112 +78,67 @@ function abilityInitials(ability: KnownAbility): string {
         <h1>{{ character.name }}</h1>
         <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }} · уровень {{ character.level }}</p>
         <small>{{ genderLabel(character.genderId) }} персонаж</small>
+        <strong class="gold">● {{ character.gold }} золота</strong>
       </div>
       <img v-if="character.classId === 'WARRIOR'" :src="gameArt.characters.warrior" alt="Воин" />
     </header>
 
-    <UIPanel class="progress-panel">
+    <UIPanel>
       <template #title>Развитие героя</template>
-      <div class="xp-row">
-        <span>Уровень {{ character.level }}</span>
-        <strong>{{ character.experience }} / {{ xpTarget }} опыта</strong>
-      </div>
-      <div class="xp-track" role="progressbar" aria-label="Опыт" :aria-valuenow="character.experience" :aria-valuemax="xpTarget">
-        <i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" />
-      </div>
-      <small v-if="character.xpToNextLevel > 0">До следующего уровня: {{ xpRemaining }} опыта</small>
-      <small v-else>Достигнут максимальный уровень текущей версии.</small>
+      <div class="xp-row"><span>Уровень {{ character.level }}</span><strong>{{ character.experience }} / {{ xpTarget }} опыта</strong></div>
+      <div class="xp-track"><i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" /></div>
+      <small>До следующего уровня: {{ xpRemaining }} опыта</small>
     </UIPanel>
 
     <UIPanel class="vitals-panel">
       <template #title>Состояние</template>
       <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-      <UIHealthBar
-        :label="resourceLabel(character.vitals.resourceType)"
-        :tone="character.vitals.resourceType === 'RAGE' ? 'rage' : character.vitals.resourceType === 'MANA' ? 'mana' : 'focus'"
-        :value="character.vitals.currentResource"
-        :max="character.vitals.maxResource"
-      />
+      <UIHealthBar :label="resourceLabel(character.vitals.resourceType)" :tone="character.vitals.resourceType === 'RAGE' ? 'rage' : character.vitals.resourceType === 'MANA' ? 'mana' : 'focus'" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
     </UIPanel>
 
-    <UIPanel class="equipment-panel">
+    <UIPanel>
       <template #title>Надетое снаряжение</template>
       <div class="equipment-grid">
-        <button
-          v-for="slot in equipment"
-          :key="slot.id"
-          type="button"
-          class="equipment-slot"
-          :class="{ filled: slot.item }"
-          :disabled="!slot.item"
-          @click="selectedItem = slot.item"
-        >
-          <small>{{ slot.label }}</small>
-          <span>{{ itemGlyph(slot.item, slot.glyph) }}</span>
-          <strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
+        <button v-for="slot in equipment" :key="slot.id" type="button" class="equipment-slot" :class="{ filled: slot.item }" :disabled="!slot.item" @click="selectedItem = slot.item">
+          <small>{{ slot.label }}</small><span>{{ itemGlyph(slot.item, slot.glyph) }}</span><strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
         </button>
       </div>
-      <p class="panel-hint">Здесь видно только то, что надето на героя. Остальные предметы находятся во вкладке «Инвентарь».</p>
+      <div class="set-progress">
+        <strong>Комплект Следопыта · {{ rangerPieces }} / 6</strong>
+        <span :class="{ active: rangerPieces >= 3 }">3 предмета: +5% скорости атаки</span>
+        <span :class="{ active: rangerPieces >= 6 }">6 предметов: ещё +10% скорости атаки и +5% уклонения</span>
+      </div>
     </UIPanel>
 
-    <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities-panel">
+    <UIPanel v-if="character.classId === 'WARRIOR'">
       <template #title>Боевые способности</template>
-      <p class="panel-hint">Дополнительные способности появляются только после изучения соответствующих талантов.</p>
-      <div v-if="talentAbilities.length" class="ability-grid">
-        <button
-          v-for="ability in talentAbilities"
-          :key="ability.id"
-          type="button"
-          @click="selectedAbility = ability"
-        >
-          <span class="ability-icon">
-            <img v-if="abilityArt(ability)" :src="abilityArt(ability)!" alt="" />
-            <b v-else>{{ abilityInitials(ability) }}</b>
-          </span>
-          <span><strong>{{ abilityName(ability) }}</strong><small>{{ ability.sourceTalentName }}</small></span>
+      <p class="hint">Здесь только то, что реально доступно персонажу. Новые активные способности открываются талантами.</p>
+      <div class="ability-grid">
+        <button v-for="ability in [...baselineAbilities, ...talentAbilities]" :key="ability.id" type="button" @click="selectedAbility = ability">
+          <span class="ability-icon"><img v-if="abilityArt(ability)" :src="abilityArt(ability)!" alt="" /><b v-else>{{ abilityInitials(ability) }}</b></span>
+          <span><strong>{{ abilityName(ability) }}</strong><small>{{ ability.sourceTalentName ?? 'Базовое действие класса' }}</small></span>
         </button>
       </div>
-      <p v-else class="empty-copy">Активные способности из талантов ещё не изучены.</p>
-      <button
-        v-for="ability in baselineAbilities"
-        :key="ability.id"
-        class="baseline-ability"
-        type="button"
-        @click="selectedAbility = ability"
-      >
-        Базовое действие · {{ abilityName(ability) }}
-      </button>
     </UIPanel>
 
     <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="selectedItem = null">
       <article v-if="selectedItem" class="detail">
-        <p>{{ rarityLabel(selectedItem) }} снаряжение · надето</p>
         <p>{{ selectedItem.description }}</p>
-        <dl v-if="itemStats(selectedItem).length">
-          <div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
-        </dl>
-        <small>Требуемый уровень: {{ selectedItem.requiredLevel }}</small>
+        <dl><div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
+        <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
+        <p v-if="selectedItem.setId">Часть комплекта Следопыта.</p>
       </article>
     </UIModal>
 
     <UIModal :open="selectedAbility !== null" :title="selectedAbility ? abilityName(selectedAbility) : ''" @close="selectedAbility = null">
-      <article v-if="selectedAbility" class="detail ability-detail">
-        <div class="ability-detail__head">
-          <span class="ability-icon ability-icon--large">
-            <img v-if="abilityArt(selectedAbility)" :src="abilityArt(selectedAbility)!" :alt="abilityName(selectedAbility)" />
-            <b v-else>{{ abilityInitials(selectedAbility) }}</b>
-          </span>
-          <div>
-            <p v-if="selectedAbility.sourceTalentName">Получено из таланта «{{ selectedAbility.sourceTalentName }}»</p>
-            <p v-else>Базовая способность класса</p>
-          </div>
-        </div>
+      <article v-if="selectedAbility" class="detail">
         <p>{{ abilityDescription(selectedAbility) }}</p>
         <dl>
           <div><dt>Стоимость</dt><dd>{{ selectedAbility.resourceCost }} ярости</dd></div>
           <div><dt>Перезарядка</dt><dd>{{ selectedAbility.cooldownSeconds }} сек.</dd></div>
           <div><dt>Тип</dt><dd>{{ abilityTypeLabel(selectedAbility.type) }}</dd></div>
           <div><dt>Цель</dt><dd>{{ abilityTargetLabel(selectedAbility.targetType) }}</dd></div>
+          <div v-if="selectedAbility.sourceTalentName"><dt>Источник</dt><dd>{{ selectedAbility.sourceTalentName }}</dd></div>
         </dl>
       </article>
     </UIModal>
@@ -188,41 +146,14 @@ function abilityInitials(ability: KnownAbility): string {
 </template>
 
 <style scoped>
-.overview { display: grid; width: min(100%, var(--ui-content-width)); margin-inline: auto; gap: var(--ui-space-4); padding: var(--ui-space-5) var(--ui-space-4) var(--ui-space-7); }
-.hero-card { position: relative; display: grid; min-height: 12rem; grid-template-columns: minmax(0, 1fr) 8.5rem; align-items: end; overflow: hidden; padding: var(--ui-space-5); border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-lg); background: radial-gradient(circle at 85% 20%, rgb(96 82 255 / 18%), transparent 45%), linear-gradient(145deg, var(--ui-color-surface-3), var(--ui-color-surface-1)); box-shadow: var(--ui-shadow-panel); }
-.hero-card::after { position: absolute; right: -3rem; bottom: -5rem; width: 11rem; height: 11rem; border-radius: 50%; background: rgb(105 93 255 / 10%); content: ''; filter: blur(16px); }
-.hero-card__copy { z-index: 1; display: grid; gap: var(--ui-space-1); }
-.hero-card__copy h1, .hero-card__copy p { margin: 0; }
-.hero-card__copy h1 { font-family: var(--ui-font-display); font-size: var(--ui-font-size-2xl); }
-.hero-card__copy p, .hero-card__copy small { color: var(--ui-color-text-muted); }
-.eyebrow { color: var(--ui-color-primary) !important; font-size: var(--ui-font-size-xs); font-weight: var(--ui-font-weight-bold); letter-spacing: .1em; text-transform: uppercase; }
-.hero-card img { z-index: 1; width: 100%; max-height: 11.5rem; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 .8rem 1rem rgb(0 0 0 / 55%)); }
-.progress-panel :deep(.ui-panel__body), .vitals-panel :deep(.ui-panel__body) { display: grid; gap: var(--ui-space-3); }
-.xp-row { display: flex; justify-content: space-between; gap: var(--ui-space-3); font-size: var(--ui-font-size-sm); }
-.xp-row strong { color: var(--ui-color-primary); }
-.xp-track { height: .55rem; overflow: hidden; border-radius: var(--ui-radius-round); background: var(--ui-color-surface-3); }
-.xp-track i { display: block; height: 100%; border-radius: inherit; background: var(--ui-color-primary); box-shadow: var(--ui-glow-magic); }
-.progress-panel small, .panel-hint, .empty-copy { color: var(--ui-color-text-muted); }
-.equipment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ui-space-2); }
-.equipment-slot { display: grid; min-width: 0; min-height: 7.5rem; align-content: center; justify-items: center; gap: var(--ui-space-1); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: var(--ui-color-text-muted); font: inherit; text-align: center; }
-.equipment-slot.filled { border-color: var(--ui-color-primary); color: var(--ui-color-text-primary); }
-.equipment-slot > span { display: grid; width: 3rem; height: 3rem; place-items: center; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-md); background: var(--ui-color-background); color: var(--ui-color-primary); font-size: 1.45rem; }
-.equipment-slot small { font-size: var(--ui-font-size-xs); text-transform: uppercase; }
-.equipment-slot strong { display: -webkit-box; overflow: hidden; font-size: var(--ui-font-size-xs); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.panel-hint, .empty-copy { margin: var(--ui-space-3) 0 0; font-size: var(--ui-font-size-sm); line-height: var(--ui-line-height-normal); }
-.ability-grid { display: grid; gap: var(--ui-space-2); margin-top: var(--ui-space-3); }
-.ability-grid button { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--ui-space-3); width: 100%; padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: inherit; font: inherit; text-align: left; }
-.ability-grid button > span:last-child { display: grid; gap: 2px; }
-.ability-grid small { color: var(--ui-color-text-muted); }
-.ability-icon { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; overflow: hidden; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-md); background: var(--ui-color-background); color: var(--ui-color-primary); }
-.ability-icon img { width: 100%; height: 100%; object-fit: cover; }
-.ability-icon--large { width: 4rem; height: 4rem; flex: 0 0 auto; }
-.baseline-ability { margin-top: var(--ui-space-3); padding: var(--ui-space-2) var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-secondary); font: inherit; }
-.detail { display: grid; gap: var(--ui-space-3); }
-.detail p { margin: 0; color: var(--ui-color-text-muted); line-height: var(--ui-line-height-normal); }
-.detail dl { display: grid; gap: var(--ui-space-1); margin: 0; }
-.detail dl div { display: flex; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-2); border-bottom: 1px solid var(--ui-color-border); }
-.detail dd { margin: 0; text-align: right; }
-.ability-detail__head { display: flex; align-items: center; gap: var(--ui-space-3); }
-@media (max-width: 360px) { .overview { padding-inline: var(--ui-space-3); } .hero-card { grid-template-columns: minmax(0, 1fr) 6rem; padding: var(--ui-space-4); } .equipment-slot { min-height: 6.8rem; padding-inline: var(--ui-space-1); } }
+.overview{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-5) var(--ui-space-4) var(--ui-space-7)}
+.hero-card{display:grid;grid-template-columns:minmax(0,1fr) 8rem;align-items:end;min-height:12rem;padding:var(--ui-space-5);overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-lg);background:radial-gradient(circle at 85% 20%,rgb(96 82 255 / 18%),transparent 45%),var(--ui-color-surface-2)}
+.hero-card__copy{display:grid;gap:var(--ui-space-1)}.hero-card h1,.hero-card p{margin:0}.hero-card img{width:100%;max-height:11rem;object-fit:contain}.eyebrow{color:var(--ui-color-primary);font-size:var(--ui-font-size-xs);font-weight:700;text-transform:uppercase}.gold{margin-top:var(--ui-space-2);color:#e8c866}
+.xp-row{display:flex;justify-content:space-between;gap:var(--ui-space-3)}.xp-track{height:.55rem;margin:var(--ui-space-2) 0;overflow:hidden;border-radius:999px;background:var(--ui-color-surface-3)}.xp-track i{display:block;height:100%;background:var(--ui-color-primary)}
+.vitals-panel :deep(.ui-panel__body){display:grid;gap:var(--ui-space-3)}
+.equipment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ui-space-2)}.equipment-slot{display:grid;min-height:7rem;align-content:center;justify-items:center;gap:var(--ui-space-1);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:var(--ui-color-text-muted);font:inherit;text-align:center}.equipment-slot.filled{border-color:var(--ui-color-primary);color:var(--ui-color-text-primary)}.equipment-slot span{font-size:1.5rem;color:var(--ui-color-primary)}.equipment-slot strong{font-size:var(--ui-font-size-xs)}
+.set-progress{display:grid;gap:var(--ui-space-1);margin-top:var(--ui-space-3);padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md)}.set-progress span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-sm)}.set-progress span.active{color:var(--ui-color-success)}
+.hint{margin:0 0 var(--ui-space-3);color:var(--ui-color-text-muted)}.ability-grid{display:grid;gap:var(--ui-space-2)}.ability-grid button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-3);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.ability-grid button>span:last-child{display:grid}.ability-grid small{color:var(--ui-color-text-muted)}.ability-icon{display:grid;width:2.75rem;height:2.75rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background)}.ability-icon img{width:100%;height:100%;object-fit:cover}
+.detail{display:grid;gap:var(--ui-space-3)}.detail p{margin:0;color:var(--ui-color-text-muted)}.detail dl{display:grid;gap:var(--ui-space-1);margin:0}.detail dl div{display:flex;justify-content:space-between;gap:var(--ui-space-3);padding:var(--ui-space-2);border-bottom:1px solid var(--ui-color-border)}.detail dd{margin:0;color:var(--ui-color-text-primary)}
+@media(max-width:400px){.equipment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
