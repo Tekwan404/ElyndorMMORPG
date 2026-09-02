@@ -29,7 +29,8 @@ const equipment = computed(() => [
 ])
 const talentAbilities = computed(() => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [])
 const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
-const xpMax = computed(() => (character.value?.experience ?? 0) + (character.value?.xpToNextLevel ?? 0))
+const xpTarget = computed(() => character.value?.xpToNextLevel ?? 0)
+const xpRemaining = computed(() => Math.max(0, xpTarget.value - (character.value?.experience ?? 0)))
 
 function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (!item) return fallback
@@ -82,12 +83,12 @@ function abilityInitials(ability: KnownAbility): string {
       <template #title>Развитие героя</template>
       <div class="xp-row">
         <span>Уровень {{ character.level }}</span>
-        <strong>{{ character.experience }} / {{ xpMax }} опыта</strong>
+        <strong>{{ character.experience }} / {{ xpTarget }} опыта</strong>
       </div>
-      <div class="xp-track" role="progressbar" aria-label="Опыт" :aria-valuenow="character.experience" :aria-valuemax="xpMax">
-        <i :style="{ width: `${xpMax > 0 ? Math.min(100, character.experience / xpMax * 100) : 100}%` }" />
+      <div class="xp-track" role="progressbar" aria-label="Опыт" :aria-valuenow="character.experience" :aria-valuemax="xpTarget">
+        <i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" />
       </div>
-      <small v-if="character.xpToNextLevel > 0">До следующего уровня: {{ character.xpToNextLevel }} опыта</small>
+      <small v-if="character.xpToNextLevel > 0">До следующего уровня: {{ xpRemaining }} опыта</small>
       <small v-else>Достигнут максимальный уровень текущей версии.</small>
     </UIPanel>
 
