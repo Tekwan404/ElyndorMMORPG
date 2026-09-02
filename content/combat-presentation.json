@@ -1,0 +1,16 @@
+{
+  "contentVersion": "0.7.1",
+  "balanceVersion": "0.6.1",
+  "publishedAtUtc": "2026-09-02T11:40:00+00:00",
+  "classId": "WARRIOR",
+  "startingAbilityIds": [
+    "STRIKE"
+  ],
+  "abilityUnlocks": [
+    { "abilityId": "HEAVY_BLOW", "unlockLevel": 2 },
+    { "abilityId": "SHIELD_BASH", "unlockLevel": 3 },
+    { "abilityId": "PROVOKE", "unlockLevel": 4 },
+    { "abilityId": "BATTLE_FOCUS", "unlockLevel": 5 },
+    { "abilityId": "BATTLE_SHOUT", "unlockLevel": 7 }
+  ]
+}
