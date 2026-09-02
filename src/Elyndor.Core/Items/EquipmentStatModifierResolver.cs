@@ -2,28 +2,60 @@ using Elyndor.Core.Content;
 
 namespace Elyndor.Core.Items;
 
+public sealed record EquipmentModifierSummary(
+    PrimaryStats PrimaryStats,
+    decimal AttackSpeedPercent,
+    decimal DodgePercent,
+    decimal? WeaponBaseAttackIntervalSeconds,
+    IReadOnlyList<EquipmentSetBonusDefinition> ActiveSetBonuses);
+
 public static class EquipmentStatModifierResolver
 {
-    public static PrimaryStats Resolve(IEnumerable<ItemDefinition> equippedItems)
+    public static PrimaryStats Resolve(IEnumerable<ItemDefinition> equippedItems) =>
+        ResolveDetailed(equippedItems, []).PrimaryStats;
+
+    public static EquipmentModifierSummary ResolveDetailed(
+        IEnumerable<ItemDefinition> equippedItems,
+        IEnumerable<EquipmentSetDefinition> equipmentSets)
     {
         ArgumentNullException.ThrowIfNull(equippedItems);
+        ArgumentNullException.ThrowIfNull(equipmentSets);
 
-        decimal strength = 0;
-        decimal agility = 0;
-        decimal intellect = 0;
-        decimal stamina = 0;
+        ItemDefinition[] items = equippedItems
+            .Where(item => item.Type == ItemType.Equipment)
+            .ToArray();
 
-        foreach (ItemDefinition item in equippedItems)
+        decimal strength = items.Sum(item => item.Stats.Strength);
+        decimal agility = items.Sum(item => item.Stats.Agility);
+        decimal intellect = items.Sum(item => item.Stats.Intellect);
+        decimal stamina = items.Sum(item => item.Stats.Stamina);
+        decimal attackSpeedPercent = items.Sum(item => item.AttackSpeedPercent);
+        decimal dodgePercent = items.Sum(item => item.DodgePercent);
+
+        decimal? weaponBaseAttackIntervalSeconds = items
+            .Where(item => item.Slot == EquipmentSlot.Weapon)
+            .Select(item => item.WeaponBaseAttackIntervalSeconds)
+            .SingleOrDefault();
+
+        List<EquipmentSetBonusDefinition> activeBonuses = [];
+        foreach (EquipmentSetDefinition set in equipmentSets)
         {
-            if (item.Type != ItemType.Equipment)
-                continue;
-
-            strength += item.Stats.Strength;
-            agility += item.Stats.Agility;
-            intellect += item.Stats.Intellect;
-            stamina += item.Stats.Stamina;
+            int pieces = items.Count(item => string.Equals(item.SetId, set.Id, StringComparison.Ordinal));
+            foreach (EquipmentSetBonusDefinition bonus in set.Bonuses
+                         .Where(bonus => pieces >= bonus.RequiredPieces)
+                         .OrderBy(bonus => bonus.RequiredPieces))
+            {
+                activeBonuses.Add(bonus);
+                attackSpeedPercent += bonus.AttackSpeedPercent;
+                dodgePercent += bonus.DodgePercent;
+            }
         }
 
-        return new PrimaryStats(strength, agility, intellect, stamina);
+        return new EquipmentModifierSummary(
+            new PrimaryStats(strength, agility, intellect, stamina),
+            attackSpeedPercent,
+            dodgePercent,
+            weaponBaseAttackIntervalSeconds,
+            activeBonuses);
     }
 }
