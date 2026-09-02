@@ -53,6 +53,8 @@ public sealed class BootstrapService(
     WorldMap worldMap,
     TimeProvider timeProvider)
 {
+    private const string StarterTownId = "STARTER_TOWN";
+
     public async Task<BootstrapSnapshot> GetAsync(
         Guid accountId,
         CancellationToken cancellationToken)
@@ -148,6 +150,20 @@ public sealed class BootstrapService(
                 candidate => candidate.CharacterId == character.Id,
                 cancellationToken);
         LocationDefinition current = worldMap.GetRequired(location.LocationId);
+
+        // Prototype safe-zone rule: Starter Town is the recovery checkpoint.
+        // The mutation remains server-authoritative and is persisted so reloads keep the recovered state.
+        if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal))
+        {
+            currentHp = stats.MaxHp;
+            currentResource = decimal.Clamp(
+                resourceProfile.RespawnValue,
+                0,
+                effectiveResourceProfile.MaxValue);
+            vitals.Checkpoint(currentHp, currentResource, now);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         BootstrapLocation[] transitions = current.Transitions
             .Select(worldMap.GetRequired)
             .Select(ToLocation)
