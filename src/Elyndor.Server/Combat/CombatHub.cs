@@ -26,6 +26,13 @@ public sealed class CombatHub(CombatApplicationService combat) : Hub
             combat.UseAbilityAsync(
                 GetAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted));
 
+    public Task<CombatUpdateResponse> UseConsumable(
+        Guid sessionId,
+        string itemDefinitionId,
+        string commandId) => ToResponseAsync(
+            combat.UseConsumableAsync(
+                GetAccountId(), sessionId, commandId, itemDefinitionId, Context.ConnectionAborted));
+
     public Task<CombatUpdateResponse> StartAutoAttack(
         Guid sessionId,
         string commandId) => ToResponseAsync(
