@@ -9,7 +9,6 @@ namespace Elyndor.Infrastructure.Combat;
 public interface ICombatSessionFinalizer
 {
     Task FinalizeAsync(
-        Guid accountId,
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken);
@@ -23,7 +22,6 @@ public interface ICombatSessionFinalizer
 public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : ICombatSessionFinalizer
 {
     public async Task FinalizeAsync(
-        Guid accountId,
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken)
