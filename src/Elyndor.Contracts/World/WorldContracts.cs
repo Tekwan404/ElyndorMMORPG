@@ -17,6 +17,14 @@ public sealed record BootstrapAbilityResponse(
     string? SourceTalentId,
     string? SourceTalentName);
 
+public sealed record CharacterStatContributionResponse(
+    string Source,
+    decimal Value);
+
+public sealed record CharacterStatBreakdownResponse(
+    decimal FinalValue,
+    IReadOnlyList<CharacterStatContributionResponse> Contributions);
+
 public sealed record BootstrapCharacterResponse(
     Guid Id,
     string Name,
@@ -31,6 +39,7 @@ public sealed record BootstrapCharacterResponse(
     IReadOnlyList<string> KnownAbilityIds,
     IReadOnlyList<BootstrapAbilityResponse> KnownAbilities,
     CharacterStatsResponse Stats,
+    IReadOnlyDictionary<string, CharacterStatBreakdownResponse> StatBreakdown,
     CharacterVitalsResponse Vitals,
     InventoryResponse Inventory);
 
