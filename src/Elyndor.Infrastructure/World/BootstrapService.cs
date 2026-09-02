@@ -164,15 +164,22 @@ public sealed class BootstrapService(
         decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
 
         // Starter Town is a safe recovery zone, but healing is intentionally gradual.
-        // Resource behavior remains data-driven: Rage decays while Focus/Mana regenerate.
+        // Location.UpdatedAtUtc is the authoritative arrival time, so time spent damaged
+        // in the forest cannot be counted as town rest on the first bootstrap after travel.
         if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal)
-            && currentHp < stats.MaxHp
-            && elapsed > TimeSpan.Zero)
+            && currentHp < stats.MaxHp)
         {
-            decimal elapsedSeconds = Math.Max(0m, (decimal)elapsed.TotalSeconds);
-            currentHp = Math.Min(
-                stats.MaxHp,
-                currentHp + (elapsedSeconds * StarterTownHpRegenPerSecond));
+            DateTimeOffset recoveryFrom = vitals.CheckpointedAtUtc > location.UpdatedAtUtc
+                ? vitals.CheckpointedAtUtc
+                : location.UpdatedAtUtc;
+            TimeSpan recoveryElapsed = now - recoveryFrom;
+            if (recoveryElapsed > TimeSpan.Zero)
+            {
+                decimal elapsedSeconds = Math.Max(0m, (decimal)recoveryElapsed.TotalSeconds);
+                currentHp = Math.Min(
+                    stats.MaxHp,
+                    currentHp + (elapsedSeconds * StarterTownHpRegenPerSecond));
+            }
         }
 
         vitals.Checkpoint(currentHp, currentResource, now);
