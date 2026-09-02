@@ -24,6 +24,7 @@ public sealed class CombatSession
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset? _nextPlayerAutoAttackAtUtc;
     private DateTimeOffset? _nextEnemyActionAtUtc;
+    private DateTimeOffset? _consumableCooldownReadyAtUtc;
     private bool _playerAutoAttackEnabled;
 
     public CombatSession(
@@ -59,6 +60,8 @@ public sealed class CombatSession
         _enemyRuntime = CreateRuntime(enemy.Actor, player.Actor);
         CurrentTimeUtc = startedAtUtc;
         Status = CombatSessionStatus.Active;
+        _playerAutoAttackEnabled = true;
+        _nextPlayerAutoAttackAtUtc = startedAtUtc;
         _nextEnemyActionAtUtc = startedAtUtc + enemy.AutoAttack.Interval;
         Append(new CombatEvent(
             CombatEventType.CombatStarted, startedAtUtc, player.Actor.ActorId,
@@ -86,6 +89,20 @@ public sealed class CombatSession
         }
     }
 
+    public bool HasProcessedCommand(string commandId) =>
+        !string.IsNullOrWhiteSpace(commandId) && _processedCommandIds.Contains(commandId);
+
+    public string? ValidateConsumableUse(DateTimeOffset now, decimal healAmount)
+    {
+        if (Status != CombatSessionStatus.Active) return CombatErrorCodes.Ended;
+        if (_player.Actor.IsDead) return CombatErrorCodes.ActorDead;
+        if (healAmount <= 0) return CombatErrorCodes.CommandRejected;
+        if (_player.Actor.CurrentHp >= _player.Actor.MaxHp) return CombatErrorCodes.ConsumableNotNeeded;
+        if (_consumableCooldownReadyAtUtc is { } readyAt && readyAt > now)
+            return CombatErrorCodes.ConsumableOnCooldown;
+        return null;
+    }
+
     public CombatCommandResult Handle(CombatCommand command, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -100,6 +117,7 @@ public sealed class CombatSession
         return command switch
         {
             UseAbilityCommand useAbility => UseAbility(useAbility, now, before),
+            UseConsumableCommand consumable => UseConsumable(consumable, now, before),
             StartAutoAttackCommand => StartAutoAttack(now, before),
             StopAutoAttackCommand => StopAutoAttack(now, before),
             _ => Result(false, CombatErrorCodes.CommandRejected, before)
@@ -163,6 +181,32 @@ public sealed class CombatSession
         Append(new CombatEvent(CombatEventType.AbilityUsed, now, _player.Actor.ActorId,
             command.AbilityId, SourceActorId: _player.Actor.ActorId,
             TargetActorId: command.TargetActorId));
+        return Result(true, null, before);
+    }
+
+    private CombatCommandResult UseConsumable(
+        UseConsumableCommand command,
+        DateTimeOffset now,
+        long before)
+    {
+        string? validationError = ValidateConsumableUse(now, command.HealAmount);
+        if (validationError is not null)
+            return Result(false, validationError, before);
+        if (command.Cooldown < TimeSpan.Zero)
+            return Result(false, CombatErrorCodes.CommandRejected, before);
+
+        decimal previousHp = _player.Actor.CurrentHp;
+        _player.Actor.ApplyHealing(command.HealAmount);
+        decimal healed = _player.Actor.CurrentHp - previousHp;
+        _consumableCooldownReadyAtUtc = now + command.Cooldown;
+        Append(new CombatEvent(
+            CombatEventType.ConsumableUsed,
+            now,
+            _player.Actor.ActorId,
+            command.ItemDefinitionId,
+            healed,
+            SourceActorId: _player.Actor.ActorId,
+            TargetActorId: _player.Actor.ActorId));
         return Result(true, null, before);
     }
 
@@ -434,21 +478,22 @@ public sealed class CombatSession
                 ability.Id, ability.ResourceCost, ability.Cooldown))
             .ToArray();
         return new(
-        definition.Actor.ActorId,
-        definition.Kind,
-        definition.DefinitionId,
-        definition.Name,
-        definition.Actor.CurrentHp,
-        definition.Actor.MaxHp,
-        definition.ResourceType,
-        definition.Actor.CurrentResource,
-        definition.Actor.MaxResource,
-        autoAttackEnabled,
-        new Dictionary<string, DateTimeOffset>(runtime.Cooldowns, StringComparer.Ordinal),
-        new HashSet<string>(definition.KnownAbilityIds, StringComparer.Ordinal),
-        abilities,
-        definition.Actor.ActiveEffects.Select(effect => new CombatEffectSnapshot(
-            effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray());
+            definition.Actor.ActorId,
+            definition.Kind,
+            definition.DefinitionId,
+            definition.Name,
+            definition.Actor.CurrentHp,
+            definition.Actor.MaxHp,
+            definition.ResourceType,
+            definition.Actor.CurrentResource,
+            definition.Actor.MaxResource,
+            autoAttackEnabled,
+            definition.Kind == CombatActorKind.Player ? _consumableCooldownReadyAtUtc : null,
+            new Dictionary<string, DateTimeOffset>(runtime.Cooldowns, StringComparer.Ordinal),
+            new HashSet<string>(definition.KnownAbilityIds, StringComparer.Ordinal),
+            abilities,
+            definition.Actor.ActiveEffects.Select(effect => new CombatEffectSnapshot(
+                effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray());
     }
 
     private static string MapAbilityError(AbilityErrorCode code) => code switch
