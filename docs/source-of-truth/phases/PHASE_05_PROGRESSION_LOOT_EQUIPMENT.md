@@ -23,15 +23,13 @@ The phase also makes combat damage meaningful by persisting terminal vitals and 
 
 `CombatSessionRegistry` finalizes a terminal CombatSession exactly once through `ICombatSessionFinalizer`.
 
-The current finalizer persists:
+The finalizer persists:
 
 - final player HP;
 - final player action resource;
 - checkpoint timestamp.
 
-Combat ticks remain in-memory. PostgreSQL is written only when the session reaches `Victory`, `Defeat`, or `Cancelled`.
-
-This finalization seam is intentionally the future integration point for permanent combat rewards. Do not move EF Core writes into `CombatSession`.
+Combat ticks remain in-memory. PostgreSQL is written only after a terminal combat state. Victory then flows into the permanent reward service. Do not move EF Core writes into `CombatSession`.
 
 ### Starter Town recovery
 
@@ -41,23 +39,43 @@ When authoritative location is `STARTER_TOWN`:
 
 - `CurrentHp = MaxHp`;
 - `CurrentResource = ResourceProfile.RespawnValue`;
-- the recovered vitals are persisted.
+- recovered vitals are persisted.
 
-Victory in the forest does not automatically heal the player.
+Victory in the forest does not automatically heal the player. Defeat currently persists terminal vitals; automatic defeat teleport remains optional for the finishing pass.
 
-### Data-driven progression foundation
+### Persistent progression schema
 
-`LevelProgressionDefinition` exists in Core and is loaded through Phase 5 content.
+`Character` now owns persistent `Experience` in addition to `Level`.
+
+The Core and EF model already define:
+
+- `CharacterItem` with `Quantity` for inventory stacks;
+- `CharacterEquipment` keyed by `(CharacterId, Slot)`;
+- `CombatRewardGrant` keyed by unique `CombatSessionId` for reward idempotency;
+- DbSets and EF configurations for all three.
+
+The generated EF migration/model snapshot is intentionally left to the local finishing pass using `dotnet ef`.
+
+### XP and Level Up engine
+
+`LevelProgressionDefinition` is loaded from content.
 
 Current prototype profile:
 
-- maximum level: 60;
+- max level: 60;
 - level 1 → 2: 100 XP;
-- threshold grows by a content-defined factor of 1.5.
+- threshold grows by content-defined factor `1.5`.
+
+`CharacterProgression.GrantExperience`:
+
+- applies XP;
+- carries remaining XP after a level;
+- supports multiple level-ups from one grant;
+- clamps max-level XP state.
+
+Level-up full-heal still needs to be wired to authoritative recalculated MaxHP during the finishing pass.
 
 ### Monster reward metadata
-
-Current monsters carry reward metadata:
 
 | Monster | XP | Loot table |
 | --- | ---: | --- |
@@ -67,7 +85,7 @@ Current monsters carry reward metadata:
 
 ### Materials
 
-The following real item definitions already exist in versioned content:
+Real versioned item definitions already exist:
 
 - `WOLF_HIDE` — Шкура волка
 - `WOLF_FANG` — Волчий клык
@@ -76,7 +94,7 @@ The following real item definitions already exist in versioned content:
 - `SPIDER_SILK` — Паучий шёлк
 - `SPIDER_VENOM_SAC` — Ядовитая железа паука
 
-Materials are stackable with `MaxStack = 99` and are deliberately only crafting foundations. Crafting itself is deferred.
+Materials are stackable with `MaxStack = 99`. Crafting itself remains deferred.
 
 ### Equipment
 
@@ -86,13 +104,25 @@ Prototype item definitions:
 - `BOAR_HIDE_VEST` — Chest, +2 Stamina
 - `SPIDER_SILK_HOOD` — Head, +2 Agility
 
-`EquipmentStatModifierResolver` converts equipped item definitions to the existing `CharacterStatInputs.Equipment` primary-stat input. Do not add a second character stat calculator.
+`EquipmentStatModifierResolver` converts equipped item definitions into the existing `CharacterStatInputs.Equipment` primary-stat input. Do not add a second character stat calculator.
 
-### Loot
+### Loot and permanent Victory rewards
 
-Versioned loot tables are already defined for all three Whispering Forest monsters.
+Versioned loot tables exist for all three current forest monsters.
 
-`LootRoller` uses the existing injectable `IGameRandom`, so reward rolls can be deterministic in the one focused reward test.
+`LootRoller` uses the existing injectable `IGameRandom`.
+
+`CombatRewardService` is already wired into terminal Victory finalization and currently performs:
+
+- `CombatSessionId` replay guard through `CombatRewardGrant`;
+- configured monster XP;
+- multi-level progression through `CharacterProgression`;
+- deterministic/server-side loot roll;
+- stack filling for materials;
+- creation of non-stackable equipment items;
+- PostgreSQL transaction around the permanent reward mutation.
+
+Defeat and Cancelled grant no XP or loot.
 
 ## Content files
 
@@ -106,32 +136,40 @@ Versioned loot tables are already defined for all three Whispering Forest monste
 - `LootTables`;
 - monster XP reward and loot table IDs.
 
-Current resulting content version is `0.7.0`, balance version `0.6.0`.
+Resulting content version: `0.7.0`.
+Balance version: `0.6.0`.
 
 ## Remaining implementation for Codex
 
-Do not redesign the foundation above. Finish these bounded tasks:
+Do not redesign the foundation above. Finish only these bounded tasks:
 
-1. Add persistent `Experience` to Character and generate the EF migration locally with `dotnet ef`.
-2. Add `CharacterItem`, `CharacterEquipment`, and `CombatRewardGrant` persistence models/configurations.
-3. Generate the EF migration and model snapshot locally; do not hand-edit generated designer/snapshot files unless required.
-4. Implement `CombatRewardService` at the existing terminal finalization seam:
-   - Victory only;
-   - unique `CombatSessionId` idempotency;
-   - XP and multi-level-up;
-   - deterministic loot roll;
-   - material stack updates;
-   - equipment item creation.
-5. On Level Up restore HP to the recalculated MaxHP.
-6. Add inventory/equipment read + equip/unequip application service.
-7. Feed equipped item definitions through `EquipmentStatModifierResolver` into `CharacterStatInputs.Equipment` in Bootstrap.
-8. Add structured reward/inventory contracts and minimal mobile UI:
+1. Generate and review the EF migration/model snapshot locally with `dotnet ef` for:
+   - `Character.Experience`;
+   - `character_items`;
+   - `character_equipment`;
+   - `combat_reward_grants`.
+2. Fix any compile/analyzer issues found by the local build without changing architecture.
+3. Wire Level Up full-heal to the newly recalculated authoritative MaxHP.
+4. Add inventory/equipment application service:
+   - read inventory;
+   - equip;
+   - unequip;
+   - verify ownership, type, slot, required level.
+5. Feed equipped definitions through `EquipmentStatModifierResolver` into `CharacterStatInputs.Equipment` in `BootstrapService`.
+6. Extend bootstrap/contracts with:
+   - current XP;
+   - XP to next level;
+   - inventory;
+   - equipped slots.
+7. Expose the already-applied Victory reward result to the client in a structured form suitable for the result card. Preserve reward idempotency; do not reroll on reconnect.
+8. Add minimal mobile UI only:
    - XP bar;
-   - Victory reward card;
-   - inventory material quantities;
-   - Weapon / Head / Chest equipment slots.
-9. Prefer Defeat → Starter Town recovery if it fits the existing world transaction cleanly; otherwise persist defeat vitals and allow travel back to town in this phase.
-10. Extend the existing content validator for progression/items/loot references.
+   - Victory rewards card;
+   - inventory list with material quantities;
+   - Weapon / Head / Chest slots;
+   - Equip / Unequip actions.
+9. Extend the existing `GameContentPackageValidator` for progression/items/loot references. Do not create a second validator.
+10. Optional only if clean and bounded: Defeat → `STARTER_TOWN`. Otherwise leave manual travel to town; town recovery already works.
 
 ## Minimal automated checks only
 
@@ -140,10 +178,29 @@ Do not build a large test matrix. Keep only the critical checks:
 1. Victory XP crosses a threshold and levels up.
 2. Same CombatSession reward applied twice grants XP/loot once.
 3. Equipping +Strength changes Strength and derived AttackPower through `CharacterStatCalculator`.
-4. Starter Town bootstrap restores damaged HP.
+4. Starter Town restores damaged HP.
 5. Phase 5 content loads and validates.
 
 Fix existing tests if signatures/contracts change. Manual Telegram gameplay verification is the main acceptance pass.
+
+## Manual acceptance
+
+```text
+Starter Town (full HP)
+→ Whispering Forest
+→ fight Wolf / Boar / Spider
+→ Victory with damaged HP
+→ see XP + materials / possible equipment
+→ repeat until Level Up
+→ inventory contains accumulated materials
+→ equip dropped item
+→ character stats update immediately
+→ next CombatSession uses stronger stats
+→ return to Starter Town
+→ HP restores
+→ reload
+→ Level / XP / inventory / equipment remain persistent
+```
 
 ## Explicitly deferred
 
