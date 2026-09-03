@@ -141,7 +141,10 @@ public sealed class CharacterCreationService(
             now);
         CharacterLocation location = new(character.Id, InitialLocationId, 1, now);
         CharacterStats stats = CreateCalculator().Calculate(command.ClassId, character.Level);
-        ResourceProfile resource = GetResourceProfile(command.ClassId);
+        ResourceProfile resource = CharacterResourceProfileResolver.Resolve(
+            GetResourceProfile(command.ClassId),
+            _contentPackage.ResourceScaling,
+            stats);
         CharacterVitals vitals = new(
             character.Id,
             stats.MaxHp,
