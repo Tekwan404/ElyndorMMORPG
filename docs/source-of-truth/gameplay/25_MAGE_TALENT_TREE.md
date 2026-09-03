@@ -153,9 +153,9 @@ Remaining hybrid points = 18
 Полностью закрыть любую ветку невозможно:
 
 ```text
-Пламя:        64 rank-points
-Тайная магия: 61 rank-points
-Лёд:          63 rank-points
+Пламя:        69 rank-points
+Тайная магия: 69 rank-points
+Лёд:          69 rank-points
 ```
 
 ---
