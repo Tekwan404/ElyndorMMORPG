@@ -119,7 +119,7 @@ public sealed class CombatSessionFactory(
             ? character.Vitals.MaxHp
             : character.Vitals.CurrentHp;
         decimal playerResource = isTraining
-            ? resourceProfile.StartValue
+            ? character.Vitals.MaxResource
             : character.Vitals.CurrentResource;
         CombatActorState playerActor = new(
             character.Id,
