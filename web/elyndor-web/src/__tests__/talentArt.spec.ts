@@ -18,7 +18,7 @@ const berserkerTalentArt = {
 describe('talent art registry', () => {
   it('resolves every Berserker artwork asset', () => {
     for (const [iconId, filename] of Object.entries(berserkerTalentArt)) {
-      expect(resolveTalentArt(iconId)).toMatch(new RegExp(`${filename.replace('.', '\\.')}$$`))
+      expect(resolveTalentArt(iconId)?.endsWith(filename)).toBe(true)
     }
   })
 
