@@ -51,7 +51,7 @@ public sealed partial class CombatSession
             && IsHeatLimitActive(now)
             && HasPyromancerTalent("F-6-1");
 
-    private IReadOnlySet<string> GetPlayerKnownAbilityIds(DateTimeOffset now)
+    private HashSet<string> GetPlayerKnownAbilityIds(DateTimeOffset now)
     {
         HashSet<string> ids = new(_player.KnownAbilityIds, StringComparer.Ordinal);
         if (IsHeatLimitActive(now) && HasPyromancerTalent("F-6-1"))
@@ -683,7 +683,7 @@ public sealed partial class CombatSession
             effectId);
     }
 
-    private static IReadOnlyList<AbilityActionDefinition>? ScaleSpellPower(
+    private static AbilityActionDefinition[]? ScaleSpellPower(
         IReadOnlyList<AbilityActionDefinition>? actions,
         decimal multiplier) =>
         actions?.Select(action => action.Type == AbilityActionType.Damage

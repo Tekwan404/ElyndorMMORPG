@@ -265,7 +265,7 @@ public static class EffectEngine
         return RemoveEffects(target, removed, now);
     }
 
-    private static IReadOnlyList<CombatEvent> RemoveEffects(
+    private static CombatEvent[] RemoveEffects(
         CombatActorState target,
         IReadOnlyList<ActiveEffect> removed,
         DateTimeOffset now)
