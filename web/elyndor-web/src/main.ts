@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import './styles/tokens.css'
 import './styles/base.scss'
+import './styles/talent-icons.scss'
 
 const app = createApp(App)
 
