@@ -59,6 +59,10 @@ public sealed class CombatSessionRegistry(
         await entry.Gate.WaitAsync(cancellationToken);
         try
         {
+            if (!_byAccount.TryGetValue(accountId, out SessionEntry? current)
+                || !ReferenceEquals(current, entry))
+                return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
+
             CombatCommandResult result = await operation(entry.Session, timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, cancellationToken);
@@ -86,6 +90,28 @@ public sealed class CombatSessionRegistry(
         if (_byAccount.TryGetValue(accountId, out SessionEntry? entry)
             && entry.Session.Status != CombatSessionStatus.Active)
             Remove(accountId);
+    }
+
+    public async Task<bool> DiscardAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry)) return false;
+
+        await entry.Gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!_byAccount.TryGetValue(accountId, out SessionEntry? current)
+                || !ReferenceEquals(current, entry))
+                return false;
+
+            entry.Timer?.Dispose();
+            entry.Timer = null;
+            Remove(accountId);
+            return true;
+        }
+        finally
+        {
+            entry.Gate.Release();
+        }
     }
 
     public async Task<CombatOperationResult> LeaveAsync(Guid accountId, CancellationToken cancellationToken)

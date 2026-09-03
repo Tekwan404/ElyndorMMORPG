@@ -20,6 +20,7 @@ interface ForestEncounter {
 
 const STARTER_TOWN_ID = 'STARTER_TOWN'
 const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
+const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const FOREST_ENCOUNTERS: readonly ForestEncounter[] = [
   { id: 'WOLF', name: 'Волк', level: 3, description: 'Дикий волк вышел на тропу и следит за каждым движением.', art: gameArt.monsters.wolf },
   { id: 'FOREST_BOAR', name: 'Лесной кабан', level: 2, description: 'Тяжёлый кабан роет землю копытом и готовится броситься вперёд.', art: gameArt.monsters.forestBoar },
@@ -43,7 +44,7 @@ const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID
 const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
 const locationName = computed(() => isStarterTown.value ? 'Стартовый город' : isWhisperingForest.value ? 'Шепчущий лес' : world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() => isStarterTown.value
-  ? 'Безопасный город для отдыха, торговли и подготовки к следующему походу.'
+  ? 'Безопасный город для отдыха, торговли, тренировки билдов и подготовки к следующему походу.'
   : 'Сумрачный лес старых дорог. Здесь водятся волки, кабаны и гигантские пауки.')
 const sceneBackground = computed(() => isWhisperingForest.value ? gameArt.world.forest : gameArt.world.capital)
 const recoveryMessage = computed(() => {
@@ -90,6 +91,15 @@ async function startEncounterCombat(): Promise<void> {
   }
 }
 
+async function startTraining(): Promise<void> {
+  if (!isStarterTown.value || combat.pending) return
+  if (await combat.startCombat(TRAINING_DUMMY_ID)) {
+    lastEnemyName.value = 'Тренировочный манекен'
+    selectedEncounter.value = null
+    lastCombatResult.value = null
+  }
+}
+
 async function restoreCombat(): Promise<void> {
   try {
     await combat.connect()
@@ -116,6 +126,7 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
 }
 
 function localizedEnemyName(id: string, fallback: string): string {
+  if (id === TRAINING_DUMMY_ID) return 'Тренировочный манекен'
   return FOREST_ENCOUNTERS.find((item) => item.id === id)?.name ?? fallback
 }
 
@@ -125,7 +136,7 @@ watch(currentLocationId, (locationId, previousLocationId) => {
     merchantOpen.value = false
     encounterCursor = -1
   }
-  if (locationId === WHISPERING_FOREST_ID) void restoreCombat()
+  if (locationId === WHISPERING_FOREST_ID || locationId === STARTER_TOWN_ID) void restoreCombat()
 }, { immediate: true })
 
 watch(() => combat.snapshot?.status, (status) => {
@@ -223,6 +234,12 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     </section>
 
     <section v-if="isStarterTown" class="town-grid">
+      <UICard class="town-service town-service--training">
+        <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
+        <h2>Тренировочный манекен</h2>
+        <p>Проверяйте билды, криты, DoT и ротацию без риска, расхода зелий и наград.</p>
+        <UIButton data-start-training :loading="combat.pending" @click="startTraining">Тренироваться</UIButton>
+      </UICard>
       <UICard class="town-service">
         <small>ТОРГОВЕЦ</small>
         <h2>Маркус</h2>
@@ -248,6 +265,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 .world-error{margin:0;padding:var(--ui-space-3) var(--ui-space-4);border:1px solid var(--ui-color-danger);border-radius:var(--ui-radius-md);color:var(--ui-color-danger);background:var(--ui-color-surface-2)}
 .reward-card{display:grid;gap:var(--ui-space-3)}.reward-card__heading{display:grid;gap:var(--ui-space-1)}.reward-card__heading small{color:var(--ui-color-success);font-weight:700}.reward-card__summary>strong{color:var(--ui-color-success)}.reward-card ul{margin:var(--ui-space-2) 0 0;padding-left:1.2rem}
 .hero-hud{display:grid;grid-template-columns:auto auto;gap:var(--ui-space-3);align-items:start;padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.hero-hud>div:first-child{display:grid}.hero-hud small{color:var(--ui-color-text-muted)}.hero-hud__gold{justify-self:end;color:#e8c866;font-weight:700}.hero-hud__bars{grid-column:1/-1;display:grid;gap:var(--ui-space-2)}
-.town-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-3)}.town-service{display:grid;gap:var(--ui-space-2)}.town-service small{color:var(--ui-color-primary);font-weight:700}.town-service h2,.town-service p{margin:0}.town-service p{color:var(--ui-color-text-muted)}
-@media(max-width:520px){.world{padding-inline:var(--ui-space-3)}.scene,.scene__content{min-height:19rem}.scene__content{padding:var(--ui-space-4)}.scene-encounter{grid-template-columns:6.5rem 1fr;gap:var(--ui-space-3)}.scene-encounter img{max-height:9rem}.scene__actions,.scene__travel-actions{display:grid;grid-template-columns:1fr}.town-grid{grid-template-columns:1fr}.hero-hud{grid-template-columns:1fr}.hero-hud__gold{justify-self:start}}
+.town-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-3)}.town-service{display:grid;gap:var(--ui-space-2)}.town-service small{color:var(--ui-color-primary);font-weight:700}.town-service h2,.town-service p{margin:0}.town-service p{color:var(--ui-color-text-muted)}.town-service--training{grid-column:1/-1;border-color:color-mix(in srgb,var(--ui-color-primary) 45%,var(--ui-color-border));background:linear-gradient(135deg,color-mix(in srgb,var(--ui-color-primary) 8%,var(--ui-color-surface-1)),var(--ui-color-surface-1))}
+@media(max-width:520px){.world{padding-inline:var(--ui-space-3)}.scene,.scene__content{min-height:19rem}.scene__content{padding:var(--ui-space-4)}.scene-encounter{grid-template-columns:6.5rem 1fr;gap:var(--ui-space-3)}.scene-encounter img{max-height:9rem}.scene__actions,.scene__travel-actions{display:grid;grid-template-columns:1fr}.town-grid{grid-template-columns:1fr}.town-service--training{grid-column:auto}.hero-hud{grid-template-columns:1fr}.hero-hud__gold{justify-self:start}}
 </style>

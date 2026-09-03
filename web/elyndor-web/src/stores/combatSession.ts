@@ -21,6 +21,21 @@ export interface CombatRealtimeDiagnostic {
   message: string
 }
 
+export interface TrainingStats {
+  startedAtUtc: string | null
+  totalDamage: number
+  criticalHits: number
+  maxHit: number
+}
+
+const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
+const emptyTrainingStats = (): TrainingStats => ({
+  startedAtUtc: null,
+  totalDamage: 0,
+  criticalHits: 0,
+  maxHit: 0,
+})
+
 export const useCombatSessionStore = defineStore('combatSession', () => {
   const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const snapshot = ref<CombatSnapshot | null>(null)
@@ -29,7 +44,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
+  const trainingStats = ref<TrainingStats>(emptyTrainingStats())
   const isActive = computed(() => snapshot.value?.status === 'Active')
+  const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
 
@@ -97,13 +114,18 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return await invoke('StartCombat', monsterId)
   }
 
+  async function resetTraining(): Promise<boolean> {
+    if (!isTraining.value) return false
+    return await invoke('ResetTraining')
+  }
+
   async function useAbility(abilityId: string): Promise<void> {
     if (!snapshot.value) return
     await invoke('UseAbility', snapshot.value.sessionId, abilityId, crypto.randomUUID())
   }
 
   async function useConsumable(itemDefinitionId: string): Promise<void> {
-    if (!snapshot.value) return
+    if (!snapshot.value || isTraining.value) return
     await invoke('UseConsumable', snapshot.value.sessionId, itemDefinitionId, crypto.randomUUID())
   }
 
@@ -123,6 +145,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         events.value = []
+        trainingStats.value = emptyTrainingStats()
         errorCode.value = null
         diagnostic.value = null
         return true
@@ -140,6 +163,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
       events.value = []
+      trainingStats.value = emptyTrainingStats()
     }
     return succeeded
   }
@@ -174,18 +198,62 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
     errorCode.value = null
     diagnostic.value = null
-    if (update.snapshot && snapshot.value?.sessionId !== update.snapshot.sessionId) {
+
+    const incomingSnapshot = update.snapshot
+    const newSession = incomingSnapshot !== null
+      && snapshot.value?.sessionId !== incomingSnapshot.sessionId
+    if (newSession && incomingSnapshot) {
       snapshot.value = null
       events.value = []
       reward.value = null
+      trainingStats.value = incomingSnapshot.enemy.definitionId === TRAINING_DUMMY_ID
+        ? {
+            ...emptyTrainingStats(),
+            startedAtUtc: update.events.find((event) => event.type === 'CombatStarted')?.serverTimeUtc
+              ?? incomingSnapshot.serverTimeUtc,
+          }
+        : emptyTrainingStats()
     }
-    if (update.snapshot && (!snapshot.value || update.snapshot.sequence >= snapshot.value.sequence)) {
-      snapshot.value = update.snapshot
+
+    if (incomingSnapshot && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
+      snapshot.value = incomingSnapshot
     }
     const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
     events.value = [...events.value, ...fresh].slice(-40)
+    accumulateTrainingStats(fresh, incomingSnapshot ?? snapshot.value)
     if (update.reward) reward.value = update.reward
+  }
+
+  function accumulateTrainingStats(fresh: CombatEvent[], current: CombatSnapshot | null): void {
+    if (!current || current.enemy.definitionId !== TRAINING_DUMMY_ID) return
+    if (!trainingStats.value.startedAtUtc) {
+      trainingStats.value.startedAtUtc = fresh.find((event) => event.type === 'CombatStarted')?.serverTimeUtc
+        ?? current.serverTimeUtc
+    }
+
+    let totalDamage = trainingStats.value.totalDamage
+    let criticalHits = trainingStats.value.criticalHits
+    let maxHit = trainingStats.value.maxHit
+    for (const event of fresh) {
+      const playerToDummy = event.sourceActorId === current.player.actorId
+        && event.targetActorId === current.enemy.actorId
+      if (!playerToDummy) continue
+      if (event.type === 'DamageDealt') {
+        const damage = event.amountBeforeShields > 0 ? event.amountBeforeShields : event.amount
+        if (damage <= 0) continue
+        totalDamage += damage
+        maxHit = Math.max(maxHit, damage)
+      } else if (event.type === 'CriticalHit') {
+        criticalHits += 1
+      }
+    }
+    trainingStats.value = {
+      startedAtUtc: trainingStats.value.startedAtUtc,
+      totalDamage,
+      criticalHits,
+      maxHit,
+    }
   }
 
   function recordFailure(stage: CombatRealtimeStage, operation: string | null, error: unknown): void {
@@ -207,8 +275,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic,
     pending,
     isActive,
+    isTraining,
+    trainingStats,
     connect,
     startCombat,
+    resetTraining,
     useAbility,
     useConsumable,
     toggleAutoAttack,

@@ -148,7 +148,9 @@ public static class DamagePipeline
         decimal hpDamage = Math.Min(
             request.Target.CurrentHp,
             Math.Max(0, rounded - absorbed));
-        bool lethal = hpDamage >= request.Target.CurrentHp && hpDamage > 0;
+        bool lethal = request.Target.CanDie
+                      && hpDamage >= request.Target.CurrentHp
+                      && hpDamage > 0;
         bool preventionTriggered = false;
         if (lethal)
         {

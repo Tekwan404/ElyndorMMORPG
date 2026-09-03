@@ -24,7 +24,10 @@ public sealed class CombatSessionFactory(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    public const string TrainingDummyId = "TRAINING_DUMMY";
+    private const string StarterTownId = "STARTER_TOWN";
     private const string WhisperingForestId = "WHISPERING_FOREST";
+    private const decimal TrainingDummyMaxHp = 10_000m;
     private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
     {
         "WARRIOR",
@@ -51,15 +54,20 @@ public sealed class CombatSessionFactory(
         if (!PlayableCombatClassIds.Contains(character.ClassId))
             return Failure(CombatErrorCodes.UnsupportedClass, character.Id);
 
-        MonsterDefinition? monster = content.Monsters?.SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, monsterId, StringComparison.Ordinal));
-        if (monster is null || !WhisperingForestMonsterIds.Contains(monster.Id))
+        bool isTraining = string.Equals(monsterId, TrainingDummyId, StringComparison.Ordinal);
+        MonsterDefinition? monster = isTraining
+            ? CreateTrainingDummy(character.Level)
+            : content.Monsters?.SingleOrDefault(candidate =>
+                string.Equals(candidate.Id, monsterId, StringComparison.Ordinal));
+        if (monster is null
+            || !isTraining && !WhisperingForestMonsterIds.Contains(monster.Id))
             return Failure(CombatErrorCodes.UnsupportedMonster, character.Id);
 
+        string requiredLocationId = isTraining ? StarterTownId : WhisperingForestId;
         if (bootstrap.World is null
             || !string.Equals(
                 bootstrap.World.CurrentLocation.Id,
-                WhisperingForestId,
+                requiredLocationId,
                 StringComparison.Ordinal))
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         if (character.Vitals.CurrentHp <= 0)
@@ -85,8 +93,10 @@ public sealed class CombatSessionFactory(
                 (double)(weaponBaseIntervalSeconds / attackSpeedMultiplier))
         };
 
-        MonsterAiProfile ai = content.MonsterAiProfiles!.Single(candidate =>
-            string.Equals(candidate.Id, monster.AiProfileId, StringComparison.Ordinal));
+        MonsterAiProfile ai = isTraining
+            ? new MonsterAiProfile("TRAINING_DUMMY_AI", [])
+            : content.MonsterAiProfiles!.Single(candidate =>
+                string.Equals(candidate.Id, monster.AiProfileId, StringComparison.Ordinal));
 
         TalentOperationResult talents = await talentService.GetAsync(accountId, cancellationToken);
         ResolvedTalentModifiers talentModifiers = talents.IsSuccess
@@ -95,12 +105,18 @@ public sealed class CombatSessionFactory(
                 talents.Snapshot.State.GetRanks(talents.Snapshot.State.ActiveLoadoutId))
             : ResolvedTalentModifiers.Empty;
 
+        decimal playerHp = isTraining
+            ? character.Vitals.MaxHp
+            : character.Vitals.CurrentHp;
+        decimal playerResource = isTraining
+            ? resourceProfile.StartValue
+            : character.Vitals.CurrentResource;
         CombatActorState playerActor = new(
             character.Id,
             character.Vitals.MaxHp,
-            character.Vitals.CurrentHp,
+            playerHp,
             character.Vitals.MaxResource,
-            character.Vitals.CurrentResource,
+            playerResource,
             ToCombatStats(character.Level, character.Stats),
             talentModifiers.Combat);
         CombatActorState enemyActor = new(
@@ -109,7 +125,8 @@ public sealed class CombatSessionFactory(
             monster.MaxHp,
             0,
             0,
-            monster.Stats);
+            monster.Stats,
+            canDie: !isTraining);
         CombatParticipantDefinition player = new(
             playerActor,
             CombatActorKind.Player,
@@ -145,6 +162,32 @@ public sealed class CombatSessionFactory(
             timeProvider.GetUtcNow());
         return new CombatSessionCreationResult(true, null, character.Id, session);
     }
+
+    private static MonsterDefinition CreateTrainingDummy(int level) => new(
+        TrainingDummyId,
+        "Тренировочный манекен",
+        MonsterRank.Normal,
+        level,
+        TrainingDummyMaxHp,
+        new CombatStats(
+            level,
+            Accuracy: 0,
+            Dodge: 0,
+            CriticalChance: 0,
+            CriticalDamage: 1,
+            Armor: 0,
+            MagicResistance: 0,
+            ArmorPenetration: 0,
+            MagicPenetration: 0),
+        TimeSpan.FromDays(1),
+        AutoAttackBaseDamage: 0,
+        AbilityIds: [],
+        AiProfileId: "TRAINING_DUMMY_AI",
+        AutoAttackAttackPowerCoefficient: 0,
+        XpReward: 0,
+        LootTableId: null,
+        GoldRewardMin: 0,
+        GoldRewardMax: 0);
 
     private static CombatStats ToCombatStats(int level, Core.Characters.CharacterStats stats) => new(
         level,

@@ -35,7 +35,8 @@ public sealed record CombatEventResponse(
     Guid? TargetActorId,
     string? DefinitionId,
     decimal Amount,
-    DateTimeOffset ServerTimeUtc);
+    DateTimeOffset ServerTimeUtc,
+    decimal AmountBeforeShields = 0);
 
 public sealed record CombatRewardItemResponse(
     string ItemId,

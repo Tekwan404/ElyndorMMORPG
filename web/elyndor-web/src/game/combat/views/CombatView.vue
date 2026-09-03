@@ -16,11 +16,14 @@ const snapshot = computed(() => combat.snapshot)
 
 type LogSide = 'player' | 'enemy' | 'system'
 interface CombatLogEntry { key: number; side: LogSide; actor: string; text: string; detail?: string }
+interface EnemyPresentation { name: string; level: number; art?: string }
 
-const monsterPresentation: Record<string, { name: string; level: number; art: string }> = {
+const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
+const monsterPresentation: Record<string, EnemyPresentation> = {
   WOLF: { name: 'Волк', level: 3, art: gameArt.monsters.wolf },
   FOREST_BOAR: { name: 'Лесной кабан', level: 2, art: gameArt.monsters.forestBoar },
   GIANT_SPIDER: { name: 'Гигантский паук', level: 2, art: gameArt.monsters.giantSpider },
+  TRAINING_DUMMY: { name: 'Тренировочный манекен', level: 0 },
 }
 
 const abilityPresentation: Record<string, { name: string; art?: string }> = {
@@ -45,7 +48,7 @@ const abilityPresentation: Record<string, { name: string; art?: string }> = {
   PYRO_COMET_AFTERSHOCK: { name: 'Кометный удар' },
 }
 
-const enemyPresentation = computed(() => {
+const enemyPresentation = computed<EnemyPresentation | null>(() => {
   const enemy = snapshot.value?.enemy
   if (!enemy) return null
   return monsterPresentation[enemy.definitionId] ?? { name: enemy.name, level: 1, art: gameArt.monsters.wolf }
@@ -59,6 +62,15 @@ const heatLimit = computed(() => snapshot.value?.player.effects.find((effect) =>
 const combustion = computed(() => snapshot.value?.player.effects.find((effect) => effect.id === 'PYRO_COMBUSTION') ?? null)
 const targetBurn = computed(() => snapshot.value?.enemy.effects.find((effect) => effect.id === 'PYRO_BURN') ?? null)
 const isMage = computed(() => snapshot.value?.player.definitionId === 'MAGE')
+const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
+const trainingElapsedSeconds = computed(() => {
+  const startedAt = combat.trainingStats.startedAtUtc
+  if (!startedAt) return 0
+  return Math.max(0, (now.value - Date.parse(startedAt)) / 1_000)
+})
+const trainingDps = computed(() => trainingElapsedSeconds.value > 0
+  ? combat.trainingStats.totalDamage / trainingElapsedSeconds.value
+  : 0)
 
 const logEntries = computed<CombatLogEntry[]>(() => {
   const events = combat.events.slice(-40)
@@ -147,7 +159,7 @@ function eventText(event: CombatEvent, critical = false): string {
   const definition = abilityName(event.definitionId)
   const enemyName = enemyPresentation.value?.name ?? 'Противник'
   switch (event.type) {
-    case 'CombatStarted': return `Бой с ${enemyName} начался`
+    case 'CombatStarted': return isTraining.value ? 'Тренировка началась' : `Бой с ${enemyName} начался`
     case 'AutoAttackStarted': return 'Автоатака включена'
     case 'AutoAttackStopped': return 'Автоатака остановлена'
     case 'DamageDealt': return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТ!' : ''}`
@@ -159,15 +171,20 @@ function eventText(event: CombatEvent, critical = false): string {
     case 'TauntApplied': return `Провокация · ${definition}`
     case 'ActorDied': return event.actorId === snapshot.value?.enemy.actorId ? `${enemyName} повержен` : 'Вы повержены'
     case 'EnemyKilled': return `${enemyName} повержен`
-    case 'CombatEnded': return event.definitionId === 'Victory' ? 'Победа' : event.definitionId === 'Defeat' ? 'Поражение' : 'Бой завершён'
+    case 'CombatEnded': return event.definitionId === 'Victory' ? 'Победа' : event.definitionId === 'Defeat' ? 'Поражение' : isTraining.value ? 'Тренировка завершена' : 'Бой завершён'
     default: return definition ? `Событие · ${definition}` : 'Событие боя'
   }
 }
 
 async function usePotion(): Promise<void> {
-  if (!healingPotion.value || !snapshot.value) return
+  if (!healingPotion.value || !snapshot.value || isTraining.value) return
   await combat.useConsumable(healingPotion.value.definitionId)
   await session.refreshSnapshot()
+}
+
+async function resetTrainingCombat(): Promise<void> {
+  if (!isTraining.value) return
+  await combat.resetTraining()
 }
 
 async function leaveCombat(): Promise<void> {
@@ -181,10 +198,28 @@ onUnmounted(() => window.clearInterval(timer))
 <template>
   <section class="combat-screen">
     <template v-if="snapshot && enemyPresentation">
-      <section class="enemy-stage">
-        <div class="enemy-heading"><div><small>ПРОТИВНИК · УР. {{ enemyPresentation.level }}</small><h1>{{ enemyPresentation.name }}</h1></div><span v-if="targetBurn" class="burn">🔥 Горение · {{ effectRemaining(targetBurn.expiresAtUtc).toFixed(1) }}с</span></div>
-        <div class="enemy-portrait"><img :src="enemyPresentation.art" :alt="enemyPresentation.name" /></div>
+      <section class="enemy-stage" :class="{ 'enemy-stage--training': isTraining }">
+        <div class="enemy-heading">
+          <div>
+            <small>{{ isTraining ? 'ТРЕНИРОВОЧНАЯ ЦЕЛЬ' : `ПРОТИВНИК · УР. ${enemyPresentation.level}` }}</small>
+            <h1>{{ enemyPresentation.name }}</h1>
+          </div>
+          <span v-if="targetBurn" class="burn">🔥 Горение · {{ effectRemaining(targetBurn.expiresAtUtc).toFixed(1) }}с</span>
+        </div>
+        <div class="enemy-portrait">
+          <img v-if="enemyPresentation.art" :src="enemyPresentation.art" :alt="enemyPresentation.name" />
+          <div v-else class="training-dummy" role="img" aria-label="Тренировочный манекен"><span>✦</span><b>ЦЕЛЬ</b></div>
+        </div>
         <UIHealthBar :label="`${enemyPresentation.name} · ${Math.ceil(snapshot.enemy.hp)} / ${Math.ceil(snapshot.enemy.maxHp)}`" :value="snapshot.enemy.hp" :max="snapshot.enemy.maxHp" />
+        <p v-if="isTraining" class="training-note">Манекен не может умереть: на 1 HP можно проверять execute-механики.</p>
+      </section>
+
+      <section v-if="isTraining" class="training-stats" aria-label="Статистика тренировки">
+        <div><small>ВРЕМЯ</small><strong>{{ trainingElapsedSeconds.toFixed(1) }}с</strong></div>
+        <div><small>УРОН</small><strong>{{ Math.round(combat.trainingStats.totalDamage).toLocaleString('ru-RU') }}</strong></div>
+        <div><small>DPS</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
+        <div><small>КРИТЫ</small><strong>{{ combat.trainingStats.criticalHits }}</strong></div>
+        <div><small>МАКС. УДАР</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
       </section>
 
       <section class="player-panel">
@@ -205,8 +240,12 @@ onUnmounted(() => window.clearInterval(timer))
           </button>
         </div>
 
-        <div class="consumables"><button type="button" :disabled="combat.pending || !healingPotion || snapshot.player.hp >= snapshot.player.maxHp" @click="usePotion"><span>✚</span><div><strong>Малое зелье лечения</strong><small v-if="healingPotion">+{{ healingPotion.healAmount }} здоровья · в рюкзаке {{ healingPotion.quantity }}</small><small v-else>В рюкзаке нет зелий</small></div></button></div>
-        <div class="controls"><UIButton variant="secondary" :disabled="combat.pending" @click="combat.toggleAutoAttack">{{ snapshot.player.autoAttackEnabled ? 'Остановить автоатаку' : 'Включить автоатаку' }}</UIButton><UIButton variant="ghost" :disabled="combat.pending" @click="leaveCombat">Покинуть бой</UIButton></div>
+        <div v-if="!isTraining" class="consumables"><button type="button" :disabled="combat.pending || !healingPotion || snapshot.player.hp >= snapshot.player.maxHp" @click="usePotion"><span>✚</span><div><strong>Малое зелье лечения</strong><small v-if="healingPotion">+{{ healingPotion.healAmount }} здоровья · в рюкзаке {{ healingPotion.quantity }}</small><small v-else>В рюкзаке нет зелий</small></div></button></div>
+        <div class="controls">
+          <UIButton variant="secondary" :disabled="combat.pending" @click="combat.toggleAutoAttack">{{ snapshot.player.autoAttackEnabled ? 'Остановить автоатаку' : 'Включить автоатаку' }}</UIButton>
+          <UIButton v-if="isTraining" variant="secondary" :disabled="combat.pending" @click="resetTrainingCombat">Сбросить тренировку</UIButton>
+          <UIButton variant="ghost" :disabled="combat.pending" @click="leaveCombat">{{ isTraining ? 'Завершить тренировку' : 'Покинуть бой' }}</UIButton>
+        </div>
       </section>
 
       <section class="combat-log"><header><b>Журнал боя</b><small>Последние действия</small></header><ol><li v-for="entry in logEntries" :key="entry.key" :data-side="entry.side"><span class="actor">{{ entry.actor }}</span><div><strong>{{ entry.text }}</strong><small v-if="entry.detail">↳ {{ entry.detail }}</small></div></li></ol></section>
@@ -217,5 +256,5 @@ onUnmounted(() => window.clearInterval(timer))
 </template>
 
 <style scoped>
-.combat-screen{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4)}.enemy-stage,.player-panel,.combat-log{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-1)}.enemy-heading{display:flex;align-items:start;justify-content:space-between;gap:var(--ui-space-2)}.enemy-heading h1{margin:0;font-family:var(--ui-font-display)}.enemy-heading small,.player-heading small,.combat-log header small{color:var(--ui-color-text-muted)}.burn,.hot{color:var(--ui-modifier-fire);font-size:var(--ui-font-size-xs);font-weight:700}.enemy-portrait{display:grid;height:15rem;place-items:center;overflow:hidden;background:radial-gradient(circle,rgb(96 82 255 / 15%),transparent 60%)}.enemy-portrait img{width:100%;height:100%;object-fit:contain}.player-heading{display:flex;justify-content:space-between;gap:var(--ui-space-2)}.player-heading>div{display:grid}.player-heading>span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.player-heading>span.active{color:var(--ui-color-success)}.pyro-state{display:flex;flex-wrap:wrap;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid color-mix(in srgb,var(--ui-modifier-fire) 35%,var(--ui-color-border));border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-modifier-fire) 7%,transparent);color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.pyro-state b{color:var(--ui-color-text-primary)}.abilities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-2)}.abilities button,.consumables button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.abilities button.ability--comet{border-color:var(--ui-modifier-fire);box-shadow:0 0 14px color-mix(in srgb,var(--ui-modifier-fire) 35%,transparent)}.abilities button>span:last-child,.consumables div{display:grid}.abilities small,.consumables small{color:var(--ui-color-text-muted)}.ability-icon,.consumables button>span{display:grid;width:2.8rem;height:2.8rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background);color:var(--ui-color-primary)}.ability--comet .ability-icon{color:var(--ui-modifier-fire)}.ability-icon img{width:100%;height:100%;object-fit:cover}.controls{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.combat-log header{display:flex;justify-content:space-between}.combat-log ol{display:grid;gap:var(--ui-space-2);margin:0;padding:0;list-style:none}.combat-log li{display:grid;grid-template-columns:5rem 1fr;gap:var(--ui-space-2);padding:var(--ui-space-2);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.combat-log li[data-side='player']{border-left:3px solid var(--ui-color-primary)}.combat-log li[data-side='enemy']{border-left:3px solid var(--ui-color-danger)}.combat-log li[data-side='system']{border-left:3px solid var(--ui-color-border-strong)}.actor{font-size:var(--ui-font-size-xs);font-weight:700}.combat-log li div{display:grid;gap:2px}.combat-log li small{color:var(--ui-color-text-muted);font-weight:400}.error{color:var(--ui-color-danger)}.missing{display:grid;gap:var(--ui-space-3);place-items:start}@media(max-width:420px){.abilities{grid-template-columns:1fr}.combat-log li{grid-template-columns:4rem 1fr}.enemy-portrait{height:12rem}}
+.combat-screen{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4)}.enemy-stage,.player-panel,.combat-log,.training-stats{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-1)}.enemy-stage--training{border-color:color-mix(in srgb,var(--ui-color-primary) 45%,var(--ui-color-border))}.enemy-heading{display:flex;align-items:start;justify-content:space-between;gap:var(--ui-space-2)}.enemy-heading h1{margin:0;font-family:var(--ui-font-display)}.enemy-heading small,.player-heading small,.combat-log header small,.training-stats small{color:var(--ui-color-text-muted)}.burn,.hot{color:var(--ui-modifier-fire);font-size:var(--ui-font-size-xs);font-weight:700}.enemy-portrait{display:grid;height:15rem;place-items:center;overflow:hidden;background:radial-gradient(circle,rgb(96 82 255 / 15%),transparent 60%)}.enemy-portrait img{width:100%;height:100%;object-fit:contain}.training-dummy{display:grid;width:7rem;height:11rem;place-items:center;align-content:center;gap:var(--ui-space-2);border:2px solid var(--ui-color-border-strong);border-radius:45% 45% 18% 18%;background:linear-gradient(180deg,#6f5b43,#2c241c);box-shadow:0 1rem 2rem rgb(0 0 0 / 35%);color:#d5b783;text-align:center}.training-dummy span{font-size:2.5rem}.training-dummy b{font-size:var(--ui-font-size-xs);letter-spacing:.12em}.training-note{margin:0;color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.training-stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--ui-space-2);background:color-mix(in srgb,var(--ui-color-primary) 5%,var(--ui-color-surface-1))}.training-stats>div{display:grid;gap:2px;text-align:center}.training-stats strong{font-family:var(--ui-font-display);font-size:var(--ui-font-size-lg)}.player-heading{display:flex;justify-content:space-between;gap:var(--ui-space-2)}.player-heading>div{display:grid}.player-heading>span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.player-heading>span.active{color:var(--ui-color-success)}.pyro-state{display:flex;flex-wrap:wrap;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid color-mix(in srgb,var(--ui-modifier-fire) 35%,var(--ui-color-border));border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-modifier-fire) 7%,transparent);color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.pyro-state b{color:var(--ui-color-text-primary)}.abilities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-2)}.abilities button,.consumables button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.abilities button.ability--comet{border-color:var(--ui-modifier-fire);box-shadow:0 0 14px color-mix(in srgb,var(--ui-modifier-fire) 35%,transparent)}.abilities button>span:last-child,.consumables div{display:grid}.abilities small,.consumables small{color:var(--ui-color-text-muted)}.ability-icon,.consumables button>span{display:grid;width:2.8rem;height:2.8rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background);color:var(--ui-color-primary)}.ability--comet .ability-icon{color:var(--ui-modifier-fire)}.ability-icon img{width:100%;height:100%;object-fit:cover}.controls{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.combat-log header{display:flex;justify-content:space-between}.combat-log ol{display:grid;gap:var(--ui-space-2);margin:0;padding:0;list-style:none}.combat-log li{display:grid;grid-template-columns:5rem 1fr;gap:var(--ui-space-2);padding:var(--ui-space-2);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.combat-log li[data-side='player']{border-left:3px solid var(--ui-color-primary)}.combat-log li[data-side='enemy']{border-left:3px solid var(--ui-color-danger)}.combat-log li[data-side='system']{border-left:3px solid var(--ui-color-border-strong)}.actor{font-size:var(--ui-font-size-xs);font-weight:700}.combat-log li div{display:grid;gap:2px}.combat-log li small{color:var(--ui-color-text-muted);font-weight:400}.error{color:var(--ui-color-danger)}.missing{display:grid;gap:var(--ui-space-3);place-items:start}@media(max-width:520px){.training-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.training-stats>div:last-child{grid-column:1/-1}}@media(max-width:420px){.abilities{grid-template-columns:1fr}.combat-log li{grid-template-columns:4rem 1fr}.enemy-portrait{height:12rem}}
 </style>

@@ -29,13 +29,15 @@ public sealed class CombatActorState
         decimal maxResource,
         decimal currentResource,
         CombatStats stats,
-        TalentCombatModifiers? talentModifiers = null)
+        TalentCombatModifiers? talentModifiers = null,
+        bool canDie = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHp);
         ArgumentOutOfRangeException.ThrowIfNegative(maxResource);
         ActorId = actorId;
         MaxHp = maxHp;
-        CurrentHp = Math.Clamp(currentHp, 0, maxHp);
+        CanDie = canDie;
+        CurrentHp = ClampHp(currentHp);
         MaxResource = maxResource;
         CurrentResource = Math.Clamp(currentResource, 0, maxResource);
         Stats = stats;
@@ -49,15 +51,17 @@ public sealed class CombatActorState
     public decimal CurrentResource { get; private set; }
     public CombatStats Stats { get; }
     public TalentCombatModifiers TalentModifiers { get; }
+    public bool CanDie { get; }
     public List<ActiveEffect> ActiveEffects { get; } = [];
-    public bool IsDead => CurrentHp <= 0;
+    public bool IsDead => CanDie && CurrentHp <= 0;
 
     public static CombatActorState CreateDummy(
         decimal maxHp,
         decimal maxResource = 100,
         decimal? resource = null,
         CombatStats? stats = null,
-        TalentCombatModifiers? talentModifiers = null) =>
+        TalentCombatModifiers? talentModifiers = null,
+        bool canDie = true) =>
         new(
             Guid.NewGuid(),
             maxHp,
@@ -65,9 +69,10 @@ public sealed class CombatActorState
             maxResource,
             resource ?? maxResource,
             stats ?? CombatStats.Default,
-            talentModifiers);
+            talentModifiers,
+            canDie);
 
-    public void SetCurrentHp(decimal value) => CurrentHp = Math.Clamp(value, 0, MaxHp);
+    public void SetCurrentHp(decimal value) => CurrentHp = ClampHp(value);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
     public void ApplyHealing(decimal value) => SetCurrentHp(CurrentHp + Math.Max(0, value));
 
@@ -87,6 +92,12 @@ public sealed class CombatActorState
         decimal previous = CurrentResource;
         CurrentResource = Math.Clamp(CurrentResource + amount, 0, MaxResource);
         return CurrentResource - previous;
+    }
+
+    private decimal ClampHp(decimal value)
+    {
+        decimal minimum = CanDie ? 0 : Math.Min(1m, MaxHp);
+        return Math.Clamp(value, minimum, MaxHp);
     }
 }
 

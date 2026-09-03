@@ -32,6 +32,21 @@ public sealed class CombatApplicationService(
         };
     }
 
+    public async Task<CombatOperationResult> ResetTrainingAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        CombatOperationResult current = registry.Resume(accountId);
+        if (!current.Succeeded
+            || current.Snapshot is null
+            || !IsTraining(current.Snapshot))
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        if (!await registry.DiscardAsync(accountId, cancellationToken))
+            return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
+        return await StartAsync(accountId, CombatSessionFactory.TrainingDummyId, cancellationToken);
+    }
+
     public Task<CombatOperationResult> UseAbilityAsync(
         Guid accountId, Guid sessionId, string commandId, string abilityId,
         CancellationToken cancellationToken) => registry.ExecuteAsync(
@@ -61,6 +76,8 @@ public sealed class CombatApplicationService(
             {
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []);
+                if (IsTraining(session.Snapshot()))
+                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
                 if (session.HasProcessedCommand(commandId))
                     return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(), []);
 
@@ -111,4 +128,10 @@ public sealed class CombatApplicationService(
                 ? session.Handle(command, now)
                 : new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []),
             cancellationToken);
+
+    private static bool IsTraining(CombatSessionSnapshot snapshot) =>
+        string.Equals(
+            snapshot.Enemy.DefinitionId,
+            CombatSessionFactory.TrainingDummyId,
+            StringComparison.Ordinal);
 }

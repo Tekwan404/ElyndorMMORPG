@@ -61,5 +61,6 @@ internal static class CombatContractMapper
         combatEvent.TargetActorId,
         combatEvent.DefinitionId,
         combatEvent.Amount,
-        combatEvent.OccurredAtUtc);
+        combatEvent.OccurredAtUtc,
+        combatEvent.AmountBeforeShields);
 }

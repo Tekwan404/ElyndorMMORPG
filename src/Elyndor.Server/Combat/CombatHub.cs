@@ -19,6 +19,9 @@ public sealed class CombatHub(CombatApplicationService combat) : Hub
             await combat.StartAsync(accountId, monsterId, cancellationToken));
     }
 
+    public Task<CombatUpdateResponse> ResetTraining() => ToResponseAsync(
+        combat.ResetTrainingAsync(GetAccountId(), Context.ConnectionAborted));
+
     public Task<CombatUpdateResponse> UseAbility(
         Guid sessionId,
         string abilityId,

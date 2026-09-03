@@ -238,6 +238,7 @@ export interface CombatEvent {
   targetActorId: string | null
   definitionId: string | null
   amount: number
+  amountBeforeShields: number
   serverTimeUtc: string
 }
 
