@@ -164,10 +164,11 @@ public sealed class BootstrapService(
                 contentPackage.Abilities ?? []))
             .ToArray();
 
-        ResourceProfile effectiveResourceProfile = resourceProfile with
-        {
-            MaxValue = resourceProfile.MaxValue + talentModifiers.Stats.MaxResourceFlat
-        };
+        ResourceProfile effectiveResourceProfile = CharacterResourceProfileResolver.Resolve(
+            resourceProfile,
+            contentPackage.ResourceScaling,
+            stats,
+            talentModifiers.Stats.MaxResourceFlat);
 
         CharacterVitals vitals = await dbContext.CharacterVitals
             .SingleAsync(
