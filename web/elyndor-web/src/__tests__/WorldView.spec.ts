@@ -2,10 +2,20 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { BootstrapSnapshot, CombatSnapshot } from '@/api/contracts'
+import type { BootstrapSnapshot, CombatSnapshot, WorldEncounter } from '@/api/contracts'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+
+const WOLF_ENCOUNTER: WorldEncounter = {
+  encounterId: '01991ea5-74a0-7000-8000-000000000001',
+  monsterId: 'WOLF',
+  name: 'Волк',
+  level: 3,
+  rank: 'Normal',
+  description: 'Дикий волк вышел на тропу и следит за каждым движением.',
+  artId: 'wolf',
+}
 
 describe('WorldView', () => {
   beforeEach(() => setActivePinia(createPinia()))
@@ -46,9 +56,10 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-travel]').exists()).toBe(false)
   })
 
-  it('discovers Wolf before starting the existing combat flow', async () => {
+  it('renders the server-selected encounter and starts combat with its opaque encounter id', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot('WHISPERING_FOREST')
+    const explore = vi.spyOn(session, 'explore').mockResolvedValue(WOLF_ENCOUNTER)
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
     vi.spyOn(combat, 'resume').mockResolvedValue(true)
@@ -58,15 +69,21 @@ describe('WorldView', () => {
     })
     const wrapper = mount(WorldView)
     await flushPromises()
+
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
     expect(startCombat).not.toHaveBeenCalled()
     await wrapper.get('[data-explore]').trigger('click')
+    await flushPromises()
+
+    expect(explore).toHaveBeenCalledTimes(1)
     expect(wrapper.get('[data-world-encounter]').text()).toContain('Волк')
+    expect(wrapper.get('[data-world-encounter]').text()).toContain('Уровень 3')
     expect(wrapper.find('[data-world-encounter] img[alt="Волк"]').exists()).toBe(true)
     expect(startCombat).not.toHaveBeenCalled()
+
     await wrapper.get('[data-start-encounter]').trigger('click')
     await flushPromises()
-    expect(startCombat).toHaveBeenCalledWith('WOLF')
+    expect(startCombat).toHaveBeenCalledWith(WOLF_ENCOUNTER)
     expect(wrapper.text()).toContain('Волк')
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
   })
@@ -187,7 +204,7 @@ function combatSnapshot(): CombatSnapshot {
     status: 'Active',
     serverTimeUtc: '2026-09-01T12:00:00Z',
     player: combatActor('Player', 'WARRIOR', 'Arthas', 120, 120, 0, 100),
-    enemy: combatActor('Monster', 'WOLF', 'Forest Wolf', 100, 100, 0, 0),
+    enemy: combatActor('Monster', 'WOLF', 'Волк', 100, 100, 0, 0),
   }
 }
 

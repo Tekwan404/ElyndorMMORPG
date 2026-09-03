@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.8.0",
+  "contentVersion": "0.9.0",
   "balanceVersion": "0.7.0",
-  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "publishedAtUtc": "2026-09-03T17:30:00+00:00",
   "monsterAiProfiles": [
     {
       "id": "WOLF_BASIC_AI",
@@ -48,7 +48,10 @@
       "xpReward": 35,
       "lootTableId": "WHISPERING_FOREST_WOLF",
       "goldRewardMin": 5,
-      "goldRewardMax": 8
+      "goldRewardMax": 8,
+      "displayName": "Волк",
+      "description": "Дикий волк вышел на тропу и следит за каждым движением.",
+      "artId": "wolf"
     },
     {
       "id": "FOREST_BOAR",
@@ -78,7 +81,10 @@
       "xpReward": 30,
       "lootTableId": "WHISPERING_FOREST_BOAR",
       "goldRewardMin": 4,
-      "goldRewardMax": 7
+      "goldRewardMax": 7,
+      "displayName": "Лесной кабан",
+      "description": "Тяжёлый кабан роет землю копытом и готовится броситься вперёд.",
+      "artId": "boar"
     },
     {
       "id": "GIANT_SPIDER",
@@ -108,7 +114,10 @@
       "xpReward": 25,
       "lootTableId": "WHISPERING_FOREST_SPIDER",
       "goldRewardMin": 4,
-      "goldRewardMax": 6
+      "goldRewardMax": 6,
+      "displayName": "Гигантский паук",
+      "description": "Из корней выполз огромный паук. Он быстрый, но хрупкий.",
+      "artId": "spider"
     }
   ]
 }

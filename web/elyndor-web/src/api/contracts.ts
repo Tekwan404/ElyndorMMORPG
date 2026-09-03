@@ -17,6 +17,16 @@ export interface WorldLocation {
   recommendedLevel: number
 }
 
+export interface WorldEncounter {
+  encounterId: string
+  monsterId: string
+  name: string
+  level: number
+  rank: string
+  description: string
+  artId: string
+}
+
 export interface KnownAbility {
   id: string
   resourceCost: number
@@ -219,6 +229,8 @@ export interface CombatActorSnapshot {
   knownAbilityIds: string[]
   abilities: { id: string; resourceCost: number; cooldownSeconds: number }[]
   effects: CombatEffectSnapshot[]
+  level?: number
+  artId?: string | null
 }
 
 export interface CombatSnapshot {

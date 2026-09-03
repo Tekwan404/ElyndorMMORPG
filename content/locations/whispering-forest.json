@@ -1,0 +1,11 @@
+{
+  "contentVersion": "0.9.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-03T17:30:00+00:00",
+  "locationId": "WHISPERING_FOREST",
+  "encounters": [
+    { "monsterId": "WOLF", "weight": 1 },
+    { "monsterId": "FOREST_BOAR", "weight": 1 },
+    { "monsterId": "GIANT_SPIDER", "weight": 1 }
+  ]
+}

@@ -7,6 +7,7 @@ import type {
   BootstrapSnapshot,
   CreateCharacterRequest,
   MerchantSnapshot,
+  WorldEncounter,
 } from '@/api/contracts'
 import { getTelegramInitData } from '@/telegram/telegramWebApp'
 
@@ -94,6 +95,20 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       requestId: crypto.randomUUID(),
       targetLocationId,
     })
+  }
+
+  async function explore(): Promise<WorldEncounter | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      return await apiClient.request<WorldEncounter>('/api/v1/world/explore', { method: 'POST' })
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
   }
 
   async function equip(characterItemId: string): Promise<void> {
@@ -205,6 +220,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     start,
     createCharacter,
     travel,
+    explore,
     equip,
     unequip,
     useConsumable,

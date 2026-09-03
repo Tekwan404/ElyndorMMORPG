@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Combat;
+using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -8,15 +10,35 @@ using Microsoft.AspNetCore.SignalR;
 namespace Elyndor.Server.Combat;
 
 [Authorize]
-public sealed class CombatHub(CombatApplicationService combat) : Hub
+public sealed class CombatHub(
+    CombatApplicationService combat,
+    GameContentPackage content) : Hub
 {
-    public async Task<CombatUpdateResponse> StartCombat(string monsterId)
+    public async Task<CombatUpdateResponse> StartCombat(string encounterId)
+    {
+        Guid accountId = GetAccountId();
+        CancellationToken cancellationToken = Context.ConnectionAborted;
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
+        if (!Guid.TryParse(encounterId, out Guid parsedEncounterId) || parsedEncounterId == Guid.Empty)
+        {
+            return CombatContractMapper.ToResponse(
+                CombatOperationResult.Failure(CombatErrorCodes.InvalidEncounter),
+                content);
+        }
+
+        return CombatContractMapper.ToResponse(
+            await combat.StartAsync(accountId, parsedEncounterId, cancellationToken),
+            content);
+    }
+
+    public async Task<CombatUpdateResponse> StartTraining()
     {
         Guid accountId = GetAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
         return CombatContractMapper.ToResponse(
-            await combat.StartAsync(accountId, monsterId, cancellationToken));
+            await combat.StartTrainingAsync(accountId, cancellationToken),
+            content);
     }
 
     public Task<CombatUpdateResponse> ResetTraining() => ToResponseAsync(
@@ -53,7 +75,7 @@ public sealed class CombatHub(CombatApplicationService combat) : Hub
         Guid accountId = GetAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(combat.Resume(accountId));
+        return CombatContractMapper.ToResponse(combat.Resume(accountId), content);
     }
 
     public Task<CombatUpdateResponse> LeaveCombat() => ToResponseAsync(
@@ -61,8 +83,8 @@ public sealed class CombatHub(CombatApplicationService combat) : Hub
 
     internal static string GroupName(Guid accountId) => $"combat:{accountId:N}";
 
-    private static async Task<CombatUpdateResponse> ToResponseAsync(Task<CombatOperationResult> operation) =>
-        CombatContractMapper.ToResponse(await operation);
+    private async Task<CombatUpdateResponse> ToResponseAsync(Task<CombatOperationResult> operation) =>
+        CombatContractMapper.ToResponse(await operation, content);
 
     private Guid GetAccountId() =>
         Guid.TryParse(Context.User?.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId)

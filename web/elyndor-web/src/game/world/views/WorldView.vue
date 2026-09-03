@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
+import type { WorldEncounter } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { monsterArtUrl } from '@/assets/monsterArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CombatView from '@/game/combat/views/CombatView.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
@@ -10,30 +12,16 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UIHealthBar, UIToast } from '@/ui/components'
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
-interface ForestEncounter {
-  id: 'WOLF' | 'FOREST_BOAR' | 'GIANT_SPIDER'
-  name: string
-  level: number
-  description: string
-  art: string
-}
 
 const STARTER_TOWN_ID = 'STARTER_TOWN'
 const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
-const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
-const FOREST_ENCOUNTERS: readonly ForestEncounter[] = [
-  { id: 'WOLF', name: 'Волк', level: 3, description: 'Дикий волк вышел на тропу и следит за каждым движением.', art: gameArt.monsters.wolf },
-  { id: 'FOREST_BOAR', name: 'Лесной кабан', level: 2, description: 'Тяжёлый кабан роет землю копытом и готовится броситься вперёд.', art: gameArt.monsters.forestBoar },
-  { id: 'GIANT_SPIDER', name: 'Гигантский паук', level: 2, description: 'Из корней выполз огромный паук. Он быстрый, но хрупкий.', art: gameArt.monsters.giantSpider },
-]
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
-const selectedEncounter = ref<ForestEncounter | null>(null)
+const selectedEncounter = ref<WorldEncounter | null>(null)
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
 const merchantOpen = ref(false)
-let encounterCursor = -1
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
 
@@ -42,10 +30,14 @@ const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
+const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
+const selectedEncounterArt = computed(() => monsterArtUrl(selectedEncounter.value?.artId))
 const locationName = computed(() => isStarterTown.value ? 'Стартовый город' : isWhisperingForest.value ? 'Шепчущий лес' : world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() => isStarterTown.value
   ? 'Безопасный город для отдыха, торговли, тренировки билдов и подготовки к следующему походу.'
-  : 'Сумрачный лес старых дорог. Здесь водятся волки, кабаны и гигантские пауки.')
+  : isWhisperingForest.value
+    ? 'Сумрачный лес старых дорог. Исследуйте область, чтобы встретить противника.'
+    : 'Исследуйте текущую область и её доступные пути.')
 const sceneBackground = computed(() => isWhisperingForest.value ? gameArt.world.forest : gameArt.world.capital)
 const recoveryMessage = computed(() => {
   const vitals = character.value?.vitals
@@ -61,11 +53,10 @@ const needsOutOfCombatRefresh = computed(() => {
     || (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
 })
 
-function explore(): void {
-  if (!isWhisperingForest.value || combat.isActive) return
+async function explore(): Promise<void> {
+  if (!canExplore.value || combat.isActive || session.mutationPending) return
   lastCombatResult.value = null
-  encounterCursor = (encounterCursor + 1) % FOREST_ENCOUNTERS.length
-  selectedEncounter.value = FOREST_ENCOUNTERS[encounterCursor] ?? null
+  selectedEncounter.value = await session.explore()
 }
 
 function locationLabel(id: string, displayName: string): string {
@@ -84,7 +75,7 @@ async function travelTo(locationId: string): Promise<void> {
 async function startEncounterCombat(): Promise<void> {
   if (!selectedEncounter.value || combat.pending) return
   const encounter = selectedEncounter.value
-  if (await combat.startCombat(encounter.id)) {
+  if (await combat.startCombat(encounter)) {
     lastEnemyName.value = encounter.name
     selectedEncounter.value = null
     lastCombatResult.value = null
@@ -93,7 +84,7 @@ async function startEncounterCombat(): Promise<void> {
 
 async function startTraining(): Promise<void> {
   if (!isStarterTown.value || combat.pending) return
-  if (await combat.startCombat(TRAINING_DUMMY_ID)) {
+  if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
     selectedEncounter.value = null
     lastCombatResult.value = null
@@ -125,24 +116,18 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
   }
 }
 
-function localizedEnemyName(id: string, fallback: string): string {
-  if (id === TRAINING_DUMMY_ID) return 'Тренировочный манекен'
-  return FOREST_ENCOUNTERS.find((item) => item.id === id)?.name ?? fallback
-}
-
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
     selectedEncounter.value = null
     merchantOpen.value = false
-    encounterCursor = -1
   }
-  if (locationId === WHISPERING_FOREST_ID || locationId === STARTER_TOWN_ID) void restoreCombat()
+  if (locationId) void restoreCombat()
 }, { immediate: true })
 
 watch(() => combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
     selectedEncounter.value = null
-    if (combat.snapshot) lastEnemyName.value = localizedEnemyName(combat.snapshot.enemy.definitionId, combat.snapshot.enemy.name)
+    if (combat.snapshot) lastEnemyName.value = combat.snapshot.enemy.name
     lastCombatResult.value = status
     void session.refreshSnapshot()
   }
@@ -160,7 +145,8 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       <div class="scene__shade" />
       <div class="scene__content">
         <div v-if="selectedEncounter" class="scene-encounter" data-world-encounter>
-          <img :src="selectedEncounter.art" :alt="selectedEncounter.name" />
+          <img v-if="selectedEncounterArt" :src="selectedEncounterArt" :alt="selectedEncounter.name" />
+          <div v-else class="scene-encounter__fallback" role="img" :aria-label="selectedEncounter.name">⚔</div>
           <div class="scene-encounter__copy">
             <small>ОБНАРУЖЕН ПРОТИВНИК</small>
             <h2>{{ selectedEncounter.name }}</h2>
@@ -177,8 +163,8 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
 
-          <div v-if="isWhisperingForest && lastCombatResult !== 'Victory'" class="scene__primary-action">
-            <UIButton data-explore @click="explore">Исследовать</UIButton>
+          <div v-if="canExplore && lastCombatResult !== 'Victory'" class="scene__primary-action">
+            <UIButton data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
           </div>
 
           <nav class="scene__travel" aria-label="Переходы между локациями">
@@ -215,7 +201,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
         </ul>
       </div>
-      <UIButton v-if="isWhisperingForest" data-explore-after-victory @click="explore">Исследовать дальше</UIButton>
+      <UIButton v-if="canExplore" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
     </UICard>
 
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
@@ -261,7 +247,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 .world{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4) var(--ui-space-4) var(--ui-space-7)}
 .scene{position:relative;min-height:22rem;overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-lg);background-position:center;background-size:cover}.scene__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgb(5 7 14 / 12%),rgb(5 7 14 / 92%))}.scene__content{position:relative;z-index:1;display:grid;min-height:22rem;align-items:end;padding:var(--ui-space-5)}.scene-location{display:grid;gap:var(--ui-space-2)}.scene-location h1,.scene-location p,.scene-encounter h2,.scene-encounter p{margin:0}.scene-location>small,.scene-encounter small,.scene__travel>small{color:var(--ui-color-primary);font-weight:700}.scene-location>p,.scene-encounter p{max-width:38rem;color:var(--ui-color-text-secondary)}.scene__primary-action{display:flex;margin-top:var(--ui-space-2)}
 .scene__travel{display:grid;gap:var(--ui-space-2);margin-top:var(--ui-space-3);padding-top:var(--ui-space-3);border-top:1px solid var(--ui-color-border)}.scene__travel-actions{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.scene__no-paths{margin:0;color:var(--ui-color-text-muted)}
-.scene-encounter{display:grid;grid-template-columns:minmax(7rem,10rem) 1fr;gap:var(--ui-space-4);align-items:center}.scene-encounter img{width:100%;max-height:12rem;object-fit:contain;filter:drop-shadow(0 .5rem 1rem rgb(0 0 0 / 50%))}.scene-encounter__copy{display:grid;gap:var(--ui-space-1)}.scene__actions{grid-column:1/-1;display:flex;gap:var(--ui-space-2)}
+.scene-encounter{display:grid;grid-template-columns:minmax(7rem,10rem) 1fr;gap:var(--ui-space-4);align-items:center}.scene-encounter img{width:100%;max-height:12rem;object-fit:contain;filter:drop-shadow(0 .5rem 1rem rgb(0 0 0 / 50%))}.scene-encounter__fallback{display:grid;min-height:8rem;place-items:center;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-2);font-size:2rem}.scene-encounter__copy{display:grid;gap:var(--ui-space-1)}.scene__actions{grid-column:1/-1;display:flex;gap:var(--ui-space-2)}
 .world-error{margin:0;padding:var(--ui-space-3) var(--ui-space-4);border:1px solid var(--ui-color-danger);border-radius:var(--ui-radius-md);color:var(--ui-color-danger);background:var(--ui-color-surface-2)}
 .reward-card{display:grid;gap:var(--ui-space-3)}.reward-card__heading{display:grid;gap:var(--ui-space-1)}.reward-card__heading small{color:var(--ui-color-success);font-weight:700}.reward-card__summary>strong{color:var(--ui-color-success)}.reward-card ul{margin:var(--ui-space-2) 0 0;padding-left:1.2rem}
 .hero-hud{display:grid;grid-template-columns:auto auto;gap:var(--ui-space-3);align-items:start;padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.hero-hud>div:first-child{display:grid}.hero-hud small{color:var(--ui-color-text-muted)}.hero-hud__gold{justify-self:end;color:#e8c866;font-weight:700}.hero-hud__bars{grid-column:1/-1;display:grid;gap:var(--ui-space-2)}

@@ -25,7 +25,10 @@ public sealed record MonsterDefinition(
     int XpReward = 0,
     string? LootTableId = null,
     int GoldRewardMin = 0,
-    int GoldRewardMax = 0);
+    int GoldRewardMax = 0,
+    string? DisplayName = null,
+    string Description = "",
+    string? ArtId = null);
 
 public sealed record MonsterAiProfile(
     string Id,

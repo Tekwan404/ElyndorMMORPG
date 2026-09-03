@@ -22,6 +22,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterCreationService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
+        builder.Services.AddScoped<WorldEncounterService>();
         builder.Services.AddScoped<TelegramAdministrationService>();
         builder.Services.AddScoped<TalentService>();
         builder.Services.AddScoped<CombatSessionFactory>();
@@ -30,6 +31,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
+        builder.Services.AddSingleton<WorldEncounterRegistry>();
         builder.Services.AddSingleton<ICombatSessionFinalizer, CombatSessionFinalizer>();
         builder.Services.AddSingleton<CombatSessionRegistry>();
 

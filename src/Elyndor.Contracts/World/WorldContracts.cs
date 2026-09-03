@@ -8,6 +8,15 @@ public sealed record WorldLocationResponse(
     string DangerLevel,
     int RecommendedLevel);
 
+public sealed record WorldEncounterResponse(
+    Guid EncounterId,
+    string MonsterId,
+    string Name,
+    int Level,
+    string Rank,
+    string Description,
+    string ArtId);
+
 public sealed record BootstrapAbilityResponse(
     string Id,
     decimal ResourceCost,

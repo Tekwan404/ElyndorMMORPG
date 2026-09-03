@@ -7,6 +7,7 @@ using Elyndor.Core.Progression;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Talents;
+using Elyndor.Core.World;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -17,6 +18,7 @@ public static class GameContentPackageLoader
     private const string PhaseFiveLegacyItemsFileName = "phase5-legacy-items.json";
     private const string WarriorCombatBaselineOverlayFileName = "warrior-combat-baseline.json";
     private const string MagePyromancerOverlayFileName = "mage-pyromancer.json";
+    private const string LocationOverlayDirectoryName = "locations";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -52,15 +54,17 @@ public static class GameContentPackageLoader
             }
 
             package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
+            package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
             package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
             package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
 
-            IReadOnlyList<ContentValidationError> errors =
-                GameContentPackageValidator.Validate(package);
+            ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
+                .Concat(WorldEncounterContentValidator.Validate(package))
+                .ToArray();
 
-            if (errors.Count > 0)
+            if (errors.Length > 0)
             {
                 throw new ContentPackageValidationException(errors);
             }
@@ -104,6 +108,60 @@ public static class GameContentPackageLoader
             Monsters = overlay.Monsters,
             MonsterAiProfiles = overlay.MonsterAiProfiles
         };
+    }
+
+    private static async Task<GameContentPackage> ApplyLocationOverlaysAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string locationDirectory = Path.Combine(directory, LocationOverlayDirectoryName);
+        if (!Directory.Exists(locationDirectory)) return package;
+
+        HashSet<string> overlaidLocationIds = new(StringComparer.Ordinal);
+        foreach (string overlayPath in Directory
+                     .EnumerateFiles(locationDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                     .OrderBy(path => path, StringComparer.Ordinal))
+        {
+            await using FileStream stream = File.OpenRead(overlayPath);
+            LocationContentOverlay? overlay = await JsonSerializer.DeserializeAsync<LocationContentOverlay>(
+                stream,
+                SerializerOptions,
+                cancellationToken);
+            if (overlay is null)
+                throw new InvalidDataException($"Location content overlay '{overlayPath}' is empty.");
+            if (!overlaidLocationIds.Add(overlay.LocationId))
+            {
+                throw new InvalidDataException(
+                    $"Location '{overlay.LocationId}' is defined by more than one location overlay.");
+            }
+            if (!package.Locations.Any(location =>
+                    string.Equals(location.Id, overlay.LocationId, StringComparison.Ordinal)))
+            {
+                throw new InvalidDataException(
+                    $"Location content overlay '{overlayPath}' references unknown location '{overlay.LocationId}'.");
+            }
+
+            package = package with
+            {
+                ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+                BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+                PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+                Locations = package.Locations
+                    .Select(location => string.Equals(
+                            location.Id,
+                            overlay.LocationId,
+                            StringComparison.Ordinal)
+                        ? location with { Encounters = overlay.Encounters }
+                        : location)
+                    .ToArray()
+            };
+        }
+
+        return package;
     }
 
     private static async Task<GameContentPackage> ApplyPhaseFiveOverlayAsync(
@@ -305,6 +363,13 @@ public static class GameContentPackageLoader
         DateTimeOffset PublishedAtUtc,
         IReadOnlyList<MonsterDefinition> Monsters,
         IReadOnlyList<MonsterAiProfile> MonsterAiProfiles);
+
+    private sealed record LocationContentOverlay(
+        string ContentVersion,
+        string BalanceVersion,
+        DateTimeOffset PublishedAtUtc,
+        string LocationId,
+        IReadOnlyList<LocationEncounterDefinition> Encounters);
 
     private sealed record PhaseFiveContentOverlay(
         string ContentVersion,

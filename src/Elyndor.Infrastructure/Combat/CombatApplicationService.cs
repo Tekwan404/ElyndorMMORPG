@@ -3,33 +3,46 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.World;
 
 namespace Elyndor.Infrastructure.Combat;
 
 public sealed class CombatApplicationService(
     CombatSessionFactory factory,
     CombatSessionRegistry registry,
+    WorldEncounterRegistry encounterRegistry,
     GameContentPackage content,
     InventoryEquipmentService inventoryService)
 {
     public async Task<CombatOperationResult> StartAsync(
-        Guid accountId, string monsterId, CancellationToken cancellationToken)
+        Guid accountId,
+        Guid encounterId,
+        CancellationToken cancellationToken)
     {
-        registry.ClearFinished(accountId);
-        CombatOperationResult existing = registry.Resume(accountId);
-        if (existing.Succeeded)
-            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+        CombatOperationResult? active = PrepareStart(accountId);
+        if (active is not null) return active;
+        if (!encounterRegistry.TryConsume(accountId, encounterId, out PendingWorldEncounter pending))
+            return CombatOperationResult.Failure(CombatErrorCodes.InvalidEncounter);
 
-        CombatSessionCreationResult created = await factory.CreateAsync(
-            accountId, monsterId, cancellationToken);
-        if (!created.Succeeded)
-            return CombatOperationResult.Failure(created.ErrorCode!);
-        if (!registry.TryAdd(accountId, created.CharacterId, created.Session!))
-            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
-        return CombatOperationResult.FromSnapshot(created.Session!.Snapshot()) with
-        {
-            Events = created.Session.GetEventsAfter(0)
-        };
+        return await StartCoreAsync(
+            accountId,
+            pending.MonsterId,
+            pending.LocationId,
+            cancellationToken);
+    }
+
+    public async Task<CombatOperationResult> StartTrainingAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        CombatOperationResult? active = PrepareStart(accountId);
+        if (active is not null) return active;
+        encounterRegistry.Clear(accountId);
+        return await StartCoreAsync(
+            accountId,
+            CombatSessionFactory.TrainingDummyId,
+            CombatSessionFactory.StarterTownId,
+            cancellationToken);
     }
 
     public async Task<CombatOperationResult> ResetTrainingAsync(
@@ -44,7 +57,7 @@ public sealed class CombatApplicationService(
 
         if (!await registry.DiscardAsync(accountId, cancellationToken))
             return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
-        return await StartAsync(accountId, CombatSessionFactory.TrainingDummyId, cancellationToken);
+        return await StartTrainingAsync(accountId, cancellationToken);
     }
 
     public Task<CombatOperationResult> UseAbilityAsync(
@@ -120,6 +133,36 @@ public sealed class CombatApplicationService(
 
     public Task<CombatOperationResult> LeaveAsync(Guid accountId, CancellationToken cancellationToken) =>
         registry.LeaveAsync(accountId, cancellationToken);
+
+    private CombatOperationResult? PrepareStart(Guid accountId)
+    {
+        registry.ClearFinished(accountId);
+        CombatOperationResult existing = registry.Resume(accountId);
+        return existing.Succeeded
+            ? CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive)
+            : null;
+    }
+
+    private async Task<CombatOperationResult> StartCoreAsync(
+        Guid accountId,
+        string monsterId,
+        string locationId,
+        CancellationToken cancellationToken)
+    {
+        CombatSessionCreationResult created = await factory.CreateAsync(
+            accountId,
+            monsterId,
+            locationId,
+            cancellationToken);
+        if (!created.Succeeded)
+            return CombatOperationResult.Failure(created.ErrorCode!);
+        if (!registry.TryAdd(accountId, created.CharacterId, created.Session!))
+            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+        return CombatOperationResult.FromSnapshot(created.Session!.Snapshot()) with
+        {
+            Events = created.Session.GetEventsAfter(0)
+        };
+    }
 
     private Task<CombatOperationResult> ExecuteSessionCommand(
         Guid accountId, Guid sessionId, CombatCommand command, CancellationToken cancellationToken) =>

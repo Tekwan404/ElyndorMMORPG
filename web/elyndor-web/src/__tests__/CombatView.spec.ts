@@ -32,7 +32,7 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 describe('CombatView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('renders only server-provided abilities with localized combat presentation', () => {
+  it('renders server-provided monster presentation directly from the combat snapshot', () => {
     const store = useCombatSessionStore()
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
@@ -41,12 +41,13 @@ describe('CombatView', () => {
         { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
         { id: 'WILD_STRIKE', resourceCost: 25, cooldownSeconds: 6 },
       ]),
-      enemy: actor('Monster', 'WOLF', 'Forest Wolf', 120, 180, 0, 0, []),
+      enemy: actor('Monster', 'WOLF', 'Волк', 120, 180, 0, 0, [], 3, 'wolf'),
     }
 
     const wrapper = mount(CombatView)
 
     expect(wrapper.text()).toContain('Волк')
+    expect(wrapper.text()).toContain('УР. 3')
     expect(wrapper.text()).toContain('Удар')
     expect(wrapper.text()).toContain('Дикий удар')
     expect(wrapper.text()).not.toContain('Вихрь')
@@ -54,12 +55,12 @@ describe('CombatView', () => {
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
   })
 
-  it('attributes monster damage to the monster while player auto attack is disabled', () => {
+  it('attributes monster damage to the server-provided monster name while player auto attack is disabled', () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
       { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
     ])
-    const enemy = actor('Monster', 'WOLF', 'Forest Wolf', 180, 180, 0, 0, [])
+    const enemy = actor('Monster', 'WOLF', 'Волк', 180, 180, 0, 0, [], 3, 'wolf')
     player.autoAttackEnabled = false
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 3, status: 'Active',
@@ -93,11 +94,14 @@ function actor(
   kind: 'Player' | 'Monster', definitionId: string, name: string,
   hp: number, maxHp: number, resource: number, maxResource: number,
   abilities: { id: string; resourceCost: number; cooldownSeconds: number }[],
+  level?: number,
+  artId?: string | null,
 ) {
   return {
     actorId: crypto.randomUUID(), kind, definitionId, name, hp, maxHp,
     resourceType: kind === 'Player' ? 'RAGE' : 'NONE', resource, maxResource,
     autoAttackEnabled: false, cooldowns: {},
     knownAbilityIds: abilities.map((ability) => ability.id), abilities, effects: [],
+    level, artId,
   }
 }

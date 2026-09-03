@@ -9,7 +9,13 @@ import {
 } from '@microsoft/signalr'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { CombatEvent, CombatReward, CombatSnapshot, CombatUpdate } from '@/api/contracts'
+import type {
+  CombatEvent,
+  CombatReward,
+  CombatSnapshot,
+  CombatUpdate,
+  WorldEncounter,
+} from '@/api/contracts'
 
 type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
 
@@ -45,6 +51,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
+  const encounterPresentation = ref<WorldEncounter | null>(null)
   const isActive = computed(() => snapshot.value?.status === 'Active')
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
@@ -109,9 +116,18 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
   }
 
-  async function startCombat(monsterId = 'WOLF'): Promise<boolean> {
+  async function startCombat(encounter: WorldEncounter): Promise<boolean> {
     reward.value = null
-    return await invoke('StartCombat', monsterId)
+    encounterPresentation.value = encounter
+    const succeeded = await invoke('StartCombat', encounter.encounterId)
+    if (!succeeded) encounterPresentation.value = null
+    return succeeded
+  }
+
+  async function startTraining(): Promise<boolean> {
+    reward.value = null
+    encounterPresentation.value = null
+    return await invoke('StartTraining')
   }
 
   async function resetTraining(): Promise<boolean> {
@@ -145,6 +161,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         events.value = []
+        encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
         errorCode.value = null
         diagnostic.value = null
@@ -163,6 +180,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
       events.value = []
+      encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
     }
     return succeeded
@@ -206,6 +224,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       snapshot.value = null
       events.value = []
       reward.value = null
+      if (encounterPresentation.value?.monsterId !== incomingSnapshot.enemy.definitionId) {
+        encounterPresentation.value = null
+      }
       trainingStats.value = incomingSnapshot.enemy.definitionId === TRAINING_DUMMY_ID
         ? {
             ...emptyTrainingStats(),
@@ -277,8 +298,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     isActive,
     isTraining,
     trainingStats,
+    encounterPresentation,
     connect,
     startCombat,
+    startTraining,
     resetTraining,
     useAbility,
     useConsumable,

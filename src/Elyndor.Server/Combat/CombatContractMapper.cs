@@ -1,16 +1,20 @@
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
+using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.Combat;
 
 namespace Elyndor.Server.Combat;
 
 internal static class CombatContractMapper
 {
-    public static CombatUpdateResponse ToResponse(CombatOperationResult result) => new(
+    public static CombatUpdateResponse ToResponse(
+        CombatOperationResult result,
+        GameContentPackage content) => new(
         result.Succeeded,
         result.ErrorCode,
-        result.Snapshot is null ? null : ToResponse(result.Snapshot),
+        result.Snapshot is null ? null : ToResponse(result.Snapshot, content),
         result.Events.Select(ToResponse).ToArray(),
         result.Reward?.Progression is null
             ? null
@@ -27,31 +31,45 @@ internal static class CombatContractMapper
                     item.Rarity.ToString(),
                     item.Quantity)).ToArray()));
 
-    private static CombatSnapshotResponse ToResponse(CombatSessionSnapshot snapshot) => new(
+    private static CombatSnapshotResponse ToResponse(
+        CombatSessionSnapshot snapshot,
+        GameContentPackage content) => new(
         snapshot.SessionId,
         snapshot.Sequence,
         snapshot.Status.ToString(),
         snapshot.ServerTimeUtc,
-        ToResponse(snapshot.Player),
-        ToResponse(snapshot.Enemy));
+        ToResponse(snapshot.Player, content),
+        ToResponse(snapshot.Enemy, content));
 
-    private static CombatActorResponse ToResponse(CombatActorSnapshot actor) => new(
-        actor.ActorId,
-        actor.Kind.ToString(),
-        actor.DefinitionId,
-        actor.Name,
-        actor.Hp,
-        actor.MaxHp,
-        actor.ResourceType,
-        actor.Resource,
-        actor.MaxResource,
-        actor.AutoAttackEnabled,
-        actor.Cooldowns,
-        actor.KnownAbilityIds.OrderBy(id => id, StringComparer.Ordinal).ToArray(),
-        actor.Abilities.Select(ability => new CombatAbilityResponse(
-            ability.Id, ability.ResourceCost, ability.Cooldown.TotalSeconds)).ToArray(),
-        actor.Effects.Select(effect => new CombatEffectResponse(
-            effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray());
+    private static CombatActorResponse ToResponse(
+        CombatActorSnapshot actor,
+        GameContentPackage content)
+    {
+        MonsterDefinition? monster = actor.Kind == CombatActorKind.Monster
+            ? content.Monsters?.SingleOrDefault(candidate =>
+                string.Equals(candidate.Id, actor.DefinitionId, StringComparison.Ordinal))
+            : null;
+
+        return new CombatActorResponse(
+            actor.ActorId,
+            actor.Kind.ToString(),
+            actor.DefinitionId,
+            actor.Name,
+            actor.Hp,
+            actor.MaxHp,
+            actor.ResourceType,
+            actor.Resource,
+            actor.MaxResource,
+            actor.AutoAttackEnabled,
+            actor.Cooldowns,
+            actor.KnownAbilityIds.OrderBy(id => id, StringComparer.Ordinal).ToArray(),
+            actor.Abilities.Select(ability => new CombatAbilityResponse(
+                ability.Id, ability.ResourceCost, ability.Cooldown.TotalSeconds)).ToArray(),
+            actor.Effects.Select(effect => new CombatEffectResponse(
+                effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray(),
+            monster?.Level ?? 1,
+            monster?.ArtId);
+    }
 
     private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(
         combatEvent.Sequence,

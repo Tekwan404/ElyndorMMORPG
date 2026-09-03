@@ -17,7 +17,9 @@ public sealed record CombatActorResponse(
     IReadOnlyDictionary<string, DateTimeOffset> Cooldowns,
     IReadOnlyList<string> KnownAbilityIds,
     IReadOnlyList<CombatAbilityResponse> Abilities,
-    IReadOnlyList<CombatEffectResponse> Effects);
+    IReadOnlyList<CombatEffectResponse> Effects,
+    int Level = 1,
+    string? ArtId = null);
 
 public sealed record CombatSnapshotResponse(
     Guid SessionId,

@@ -73,6 +73,7 @@ public static class CombatErrorCodes
     public const string ActorDead = "actor_dead";
     public const string CommandRejected = "combat_command_rejected";
     public const string AlreadyActive = "combat_already_active";
+    public const string InvalidEncounter = "combat_encounter_invalid";
     public const string UnsupportedMonster = "combat_monster_unsupported";
     public const string UnsupportedClass = "combat_class_unsupported";
     public const string InvalidLocation = "combat_location_invalid";

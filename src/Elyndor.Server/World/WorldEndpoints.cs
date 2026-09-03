@@ -21,6 +21,7 @@ public static class WorldEndpoints
                 .OrderBy(location => location.Id, StringComparer.Ordinal)
                 .Select(ToLocation)
                 .ToArray()));
+        group.MapPost("/world/explore", ExploreAsync);
         group.MapPost("/world/travel", TravelAsync);
 
         return endpoints;
@@ -40,6 +41,42 @@ public static class WorldEndpoints
             accountId,
             cancellationToken);
         return Results.Ok(ToResponse(snapshot));
+    }
+
+    private static async Task<IResult> ExploreAsync(
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        WorldEncounterService encounterService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        (WorldEncounterSnapshot? encounter, string? errorCode) = await encounterService.ExploreAsync(
+            accountId,
+            cancellationToken);
+        if (encounter is not null)
+        {
+            return Results.Ok(new WorldEncounterResponse(
+                encounter.EncounterId,
+                encounter.MonsterId,
+                encounter.Name,
+                encounter.Level,
+                encounter.Rank,
+                encounter.Description,
+                encounter.ArtId));
+        }
+
+        int statusCode = errorCode == WorldEncounterErrorCodes.CharacterNotFound
+            ? StatusCodes.Status404NotFound
+            : StatusCodes.Status422UnprocessableEntity;
+        return Results.Problem(
+            statusCode: statusCode,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = errorCode ?? WorldEncounterErrorCodes.EncounterUnavailable,
+                ["correlationId"] = httpContext.TraceIdentifier
+            });
     }
 
     private static async Task<IResult> TravelAsync(

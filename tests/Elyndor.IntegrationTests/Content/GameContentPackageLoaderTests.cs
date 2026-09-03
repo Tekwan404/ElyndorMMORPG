@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.IntegrationTests.Content;
@@ -6,12 +7,12 @@ namespace Elyndor.IntegrationTests.Content;
 public sealed class GameContentPackageLoaderTests
 {
     [Fact]
-    public async Task PhaseFiveAndMagePackageLoadsAndValidates()
+    public async Task PhaseFiveMageAndLocationEncounterPackageLoadsAndValidates()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.8.0", package.ContentVersion);
+        Assert.Equal("0.9.0", package.ContentVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Equal(9, package.Items!.Count);
         Assert.Equal(3, package.LootTables!.Count);
@@ -32,7 +33,26 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("FIRE", fire.Id);
         Assert.Equal(32, mageTree.Nodes.Count);
         Assert.Equal(69, mageTree.Nodes.Sum(node => node.MaxRank));
+
+        LocationDefinition forest = Assert.Single(
+            package.Locations,
+            location => location.Id == "WHISPERING_FOREST");
+        IReadOnlyList<LocationEncounterDefinition> encounters = forest.Encounters!;
+        Assert.Equal(
+            new[] { "WOLF", "FOREST_BOAR", "GIANT_SPIDER" },
+            encounters.Select(encounter => encounter.MonsterId));
+        Assert.All(encounters, encounter => Assert.True(encounter.Weight > 0));
+        Assert.All(
+            package.Monsters!.Where(monster => encounters.Any(encounter => encounter.MonsterId == monster.Id)),
+            monster =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(monster.DisplayName));
+                Assert.False(string.IsNullOrWhiteSpace(monster.Description));
+                Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
+            });
+
         Assert.Empty(GameContentPackageValidator.Validate(package));
+        Assert.Empty(WorldEncounterContentValidator.Validate(package));
     }
 
     [Fact]

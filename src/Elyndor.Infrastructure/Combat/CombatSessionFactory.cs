@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Talents;
 using Elyndor.Infrastructure.World;
 
@@ -25,24 +26,18 @@ public sealed class CombatSessionFactory(
     TimeProvider timeProvider)
 {
     public const string TrainingDummyId = "TRAINING_DUMMY";
-    private const string StarterTownId = "STARTER_TOWN";
-    private const string WhisperingForestId = "WHISPERING_FOREST";
+    public const string StarterTownId = "STARTER_TOWN";
     private const decimal TrainingDummyMaxHp = 10_000m;
     private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
     {
         "WARRIOR",
         "MAGE"
     };
-    private static readonly HashSet<string> WhisperingForestMonsterIds = new(StringComparer.Ordinal)
-    {
-        "WOLF",
-        "FOREST_BOAR",
-        "GIANT_SPIDER"
-    };
 
     public async Task<CombatSessionCreationResult> CreateAsync(
         Guid accountId,
         string monsterId,
+        string expectedLocationId,
         CancellationToken cancellationToken)
     {
         BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
@@ -59,17 +54,32 @@ public sealed class CombatSessionFactory(
             ? CreateTrainingDummy(character.Level)
             : content.Monsters?.SingleOrDefault(candidate =>
                 string.Equals(candidate.Id, monsterId, StringComparison.Ordinal));
-        if (monster is null
-            || !isTraining && !WhisperingForestMonsterIds.Contains(monster.Id))
+        if (monster is null || !isTraining && monster.Rank != MonsterRank.Normal)
             return Failure(CombatErrorCodes.UnsupportedMonster, character.Id);
 
-        string requiredLocationId = isTraining ? StarterTownId : WhisperingForestId;
         if (bootstrap.World is null
             || !string.Equals(
                 bootstrap.World.CurrentLocation.Id,
-                requiredLocationId,
+                expectedLocationId,
                 StringComparison.Ordinal))
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+
+        LocationDefinition? currentLocation = content.Locations.SingleOrDefault(location =>
+            string.Equals(location.Id, expectedLocationId, StringComparison.Ordinal));
+        if (currentLocation is null)
+            return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+
+        if (isTraining)
+        {
+            if (!string.Equals(expectedLocationId, StarterTownId, StringComparison.Ordinal))
+                return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+        }
+        else if (currentLocation.Encounters?.Any(encounter =>
+                     string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal)) != true)
+        {
+            return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+        }
+
         if (character.Vitals.CurrentHp <= 0)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
@@ -140,7 +150,7 @@ public sealed class CombatSessionFactory(
             enemyActor,
             CombatActorKind.Monster,
             monster.Id,
-            monster.Name,
+            monster.DisplayName ?? monster.Name,
             "NONE",
             new AutoAttackProfile(
                 monster.AutoAttackInterval,

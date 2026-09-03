@@ -19,7 +19,8 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Warrior kit: `docs/source-of-truth/phases/PHASE_03B_WARRIOR_ABILITY_KIT.md`
 - First playable combat: `docs/source-of-truth/phases/PHASE_04A_FIRST_PLAYABLE_COMBAT.md`
 - Mage slice: `docs/source-of-truth/phases/PHASE_04B_MAGE_PYROMANCER.md`
-- Current training slice: `docs/source-of-truth/phases/PHASE_04C_TRAINING_DUMMY.md`
+- Training slice: `docs/source-of-truth/phases/PHASE_04C_TRAINING_DUMMY.md`
+- Current encounter slice: `docs/source-of-truth/phases/PHASE_04D_DATA_DRIVEN_ENCOUNTERS.md`
 - Mage talent contract: `docs/source-of-truth/gameplay/25_MAGE_TALENT_TREE.md`
 - Approved phase order: Phase 3A Combat Kernel → Phase 3B Warrior Ability Kit → Phase 3C Talent Engine and Warrior Talent Content → Phase 4 CombatSession/Monsters/Whispering Forest → Phase 5 Progression/Loot/Equipment/Local Boss
 - Combat: `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`, `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`, `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`, `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`, `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`, `docs/source-of-truth/gameplay/15_MONSTER_AND_AI_SYSTEM.md`
@@ -30,7 +31,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Content: `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`, `content/README.md`
 - Infrastructure/testing: `docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md`, `.github/workflows/ci.yml`, `docs/development/getting-started.md`
 
-Phase 0 through Phase 3C are implemented. Phase 4A established the first playable Warrior combat slice and complete single-player runtime support for all 32 Berserker talent nodes. Phase 4B made Mage playable against the Whispering Forest normal-monster roster with Mana, cast timing, the three base Mage spells, and complete single-player runtime support for all 32 Fire/Pyromancer talent nodes. Phase 4C adds a `STARTER_TOWN` training dummy that runs through the same CombatSession/talent/damage/effect runtime, cannot attack or die, grants no rewards, does not persist training vitals, supports atomic resets, and exposes basic build-testing metrics. Arcane and Frost talent branches remain design contracts for later slices; Guardian hooks beyond the explicitly implemented slice and Party/Warlord talent contracts remain deferred. Do not expand into elites, bosses, party combat, or unrelated future systems without a separate approved slice.
+Phase 0 through Phase 3C are implemented. Phase 4A established the first playable Warrior combat slice and complete single-player runtime support for all 32 Berserker talent nodes. Phase 4B made Mage playable against the Whispering Forest normal-monster roster with Mana, cast timing, the three base Mage spells, and complete single-player runtime support for all 32 Fire/Pyromancer talent nodes. Phase 4C adds a `STARTER_TOWN` training dummy that runs through the same CombatSession/talent/damage/effect runtime, cannot attack or die, grants no rewards, does not persist training vitals, supports atomic resets, and exposes basic build-testing metrics. Phase 4D removes normal-monster roster hardcodes: location encounter rosters are versioned content, exploration rolls happen on the server, and normal combat starts only from a short-lived server-issued encounter id. Arcane and Frost talent branches remain design contracts for later slices; Guardian hooks beyond the explicitly implemented slice and Party/Warlord talent contracts remain deferred. Do not expand into elites, bosses, party combat, or unrelated future systems without a separate approved slice.
 
 ## Core invariants
 
