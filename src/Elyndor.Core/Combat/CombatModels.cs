@@ -57,8 +57,14 @@ public sealed class CombatActorState
         decimal? resource = null,
         CombatStats? stats = null,
         TalentCombatModifiers? talentModifiers = null) =>
-        new(Guid.NewGuid(), maxHp, maxHp, maxResource, resource ?? maxResource,
-            stats ?? CombatStats.Default, talentModifiers);
+        new(
+            Guid.NewGuid(),
+            maxHp,
+            maxHp,
+            maxResource,
+            resource ?? maxResource,
+            stats ?? CombatStats.Default,
+            talentModifiers);
 
     public void SetCurrentHp(decimal value) => CurrentHp = Math.Clamp(value, 0, MaxHp);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
@@ -118,4 +124,5 @@ public sealed record CombatEvent(
     Guid? SourceActorId = null,
     Guid? TargetActorId = null,
     long Sequence = 0,
-    bool IsPeriodic = false);
+    bool IsPeriodic = false,
+    decimal AmountBeforeShields = 0);

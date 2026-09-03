@@ -78,8 +78,7 @@ public static class AbilityEngine
         runtime.Version++;
         List<CombatEvent> events = ResolveActions(runtime, cast.Ability, cast.TargetId, now, random);
         events.Add(new CombatEvent(CombatEventType.AbilityCompleted, now, runtime.Actor.ActorId, cast.Ability.Id));
-        return new AbilityExecutionResult(true, AbilityErrorCode.None,
-            events);
+        return new AbilityExecutionResult(true, AbilityErrorCode.None, events);
     }
 
     public static AbilityExecutionResult Interrupt(
@@ -138,7 +137,9 @@ public static class AbilityEngine
             && intent.TargetId == runtime.Actor.ActorId
             && !ability.AllowSelfTarget)
             return AbilityErrorCode.InvalidTarget;
-        if (EffectEngine.HasControl(runtime.Actor, EffectKind.Stun, now)) return AbilityErrorCode.ActorStunned;
+        if (!ability.CanUseWhileStunned
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Stun, now))
+            return AbilityErrorCode.ActorStunned;
         if (!ability.CanUseWhileSilenced
             && EffectEngine.HasControl(runtime.Actor, EffectKind.Silence, now))
             return AbilityErrorCode.ActorSilenced;
@@ -184,39 +185,61 @@ public static class AbilityEngine
                         }
 
                         decimal attackPower = EffectEngine.CalculateStat(
-                            runtime.Actor, EffectStat.AttackPower,
-                            runtime.Actor.Stats.AttackPower, now);
+                            runtime.Actor,
+                            EffectStat.AttackPower,
+                            runtime.Actor.Stats.AttackPower,
+                            now);
                         decimal baseDamage = action.Amount
                             + attackPower * Math.Max(0, action.AttackPowerCoefficient);
                         DamageResult damage = DamagePipeline.Resolve(
-                            new DamageRequest(runtime.Actor, target, baseDamage, action.DamageType,
-                                CanMiss: action.CanMiss, CanDodge: action.CanDodge,
+                            new DamageRequest(
+                                runtime.Actor,
+                                target,
+                                baseDamage,
+                                action.DamageType,
+                                CanMiss: action.CanMiss,
+                                CanDodge: action.CanDodge,
                                 CanCrit: action.CanCrit,
-                                ArmorPenetrationBonus: action.ArmorPenetrationBonus), random, now);
+                                ArmorPenetrationBonus: action.ArmorPenetrationBonus),
+                            random,
+                            now);
                         events.AddRange(damage.Events);
                         break;
                     case AbilityActionType.Healing:
-                        HealingResult healing = HealingPipeline.Resolve(new HealingRequest(target, action.Amount));
-                        events.AddRange(healing.Events.Select(combatEvent => combatEvent with { OccurredAtUtc = now }));
+                        HealingResult healing = HealingPipeline.Resolve(
+                            new HealingRequest(target, action.Amount));
+                        events.AddRange(healing.Events.Select(
+                            combatEvent => combatEvent with { OccurredAtUtc = now }));
                         break;
                     case AbilityActionType.ApplyEffect:
                         if (action.Effect is null)
                         {
-                            throw new InvalidOperationException("ApplyEffect actions require an effect definition.");
+                            throw new InvalidOperationException(
+                                "ApplyEffect actions require an effect definition.");
                         }
 
-                        events.AddRange(EffectEngine.Apply(target, runtime.Actor.ActorId, action.Effect, now));
+                        events.AddRange(EffectEngine.Apply(
+                            target,
+                            runtime.Actor.ActorId,
+                            action.Effect,
+                            now));
                         break;
                     case AbilityActionType.ResourceChange:
                         decimal actualChange = runtime.Actor.AddResource(action.Amount);
                         events.Add(new CombatEvent(
-                            CombatEventType.ResourceChanged, now, runtime.Actor.ActorId,
-                            ability.Id, actualChange));
+                            CombatEventType.ResourceChanged,
+                            now,
+                            runtime.Actor.ActorId,
+                            ability.Id,
+                            actualChange));
                         break;
                     case AbilityActionType.Taunt:
                         events.Add(new CombatEvent(
-                            CombatEventType.TauntApplied, now, target.ActorId,
-                            ability.Id, (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds));
+                            CombatEventType.TauntApplied,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds));
                         break;
                 }
             }

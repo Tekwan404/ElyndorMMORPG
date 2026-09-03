@@ -2,7 +2,7 @@
 
 ## Goal
 
-Deliver the first server-authoritative Telegram Mini App combat slice in `WHISPERING_FOREST` with a small prototype monster roster.
+Deliver the first server-authoritative Telegram Mini App combat slice in `WHISPERING_FOREST` with a small prototype monster roster and a fully executable Berserker talent branch for Warrior.
 
 ## Bounded scope
 
@@ -17,7 +17,10 @@ Deliver the first server-authoritative Telegram Mini App combat slice in `WHISPE
 - These combats can be created only while the authoritative character location is `WHISPERING_FOREST`.
 - Prototype exploration cycles through the three encounters deterministically so all can be manually tested. Server-owned/random encounter selection remains deferred.
 - The client restores the combat screen from the latest authoritative snapshot after reconnect.
-- The first CombatSession-owned Warrior hooks are `G-1-2` (`ON_DAMAGE_TAKEN`), `B-3-1` (`ON_CRITICAL_HIT`, one-second ICD), and `B-1-2` (`ON_ENEMY_KILLED`).
+- `G-1-2` remains the first Guardian CombatSession hook.
+- All 32 Berserker nodes are executable in the current single-player CombatSession. The Phase 3C `Deferred -> COMBAT_SESSION` contracts for Berserker are promoted through the typed `BerserkerTalentRuntimeCatalog`; Party/Guardian/Warlord deferred contracts remain deferred.
+- Berserker runtime includes HP-threshold modifiers, Rage-spend procs, critical/auto-attack procs, Berserk-conditional behavior, cooldown reduction/reset, personal vulnerability, snapshot bleeds, periodic kills, and once-per-session next-attack state.
+- Existing Phase 3C content IDs and talent descriptions remain authoritative. No second talent system is introduced.
 
 ## Playable flow
 
@@ -29,7 +32,7 @@ Telegram Mini App
 → WOLF / FOREST_BOAR / GIANT_SPIDER encounter
 → Начать бой
 → server CombatSession snapshot
-→ Monster AI + player auto attack/abilities
+→ Monster AI + player auto attack/abilities + Berserker runtime
 → Victory / Defeat
 → return to Whispering Forest
 ```
@@ -42,10 +45,12 @@ The base package remains `content/package.json`. Phase 4A monster runtime data l
 
 The overlay currently reports content/balance versions `0.6.1 / 0.5.1`.
 
+The Berserker compatibility runtime does not redefine talent selection or progression. It interprets the already-versioned Phase 3C Berserker `COMBAT_SESSION` contracts until those legacy `Deferred` flags are regenerated into a richer content schema.
+
 ## Explicitly deferred
 
-XP, loot, equipment rewards, durable combat persistence, multiple simultaneous enemies, threat/party combat, elites, bosses, server-owned/random encounter selection, and all remaining deferred talent hooks.
+XP, loot, equipment rewards, durable combat persistence, multiple simultaneous enemies, threat/party combat, elites, bosses, server-owned/random encounter selection, Guardian CombatSession hooks beyond the currently supported slice, and Warlord/Party deferred talent hooks.
 
 ## Verification status
 
-Implementation is present. Automated deterministic session, death, ICD, post-end command, serialized command, server build, frontend typecheck, realtime-auth, and focused world/combat UI checks must be green. Telegram manual playtest is required before marking Phase 4A fully verified.
+Implementation includes deterministic coverage for the Berserker runtime catalog, low-HP conditional effects, Berserk/Frenzy/control cleanse, Double Strike, Whirlwind bleed/true-damage extension, Death's Embrace, and periodic combat-ending damage. Server build, full backend tests, content validation, frontend checks, and Telegram manual playtest remain required before marking Phase 4A fully verified.

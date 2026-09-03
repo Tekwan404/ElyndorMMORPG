@@ -7,7 +7,7 @@ using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
 
-public sealed class CombatSession
+public sealed partial class CombatSession
 {
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly CombatParticipantDefinition _player;
@@ -37,7 +37,8 @@ public sealed class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc)
     {
-        if (sessionId == Guid.Empty) throw new ArgumentException("Session id is required.", nameof(sessionId));
+        if (sessionId == Guid.Empty)
+            throw new ArgumentException("Session id is required.", nameof(sessionId));
         ArgumentNullException.ThrowIfNull(player);
         ArgumentNullException.ThrowIfNull(enemy);
         ArgumentNullException.ThrowIfNull(abilities);
@@ -64,8 +65,11 @@ public sealed class CombatSession
         _nextPlayerAutoAttackAtUtc = startedAtUtc;
         _nextEnemyActionAtUtc = startedAtUtc + enemy.AutoAttack.Interval;
         Append(new CombatEvent(
-            CombatEventType.CombatStarted, startedAtUtc, player.Actor.ActorId,
-            enemy.DefinitionId, SourceActorId: player.Actor.ActorId,
+            CombatEventType.CombatStarted,
+            startedAtUtc,
+            player.Actor.ActorId,
+            enemy.DefinitionId,
+            SourceActorId: player.Actor.ActorId,
             TargetActorId: enemy.Actor.ActorId));
     }
 
@@ -153,21 +157,29 @@ public sealed class CombatSession
                 Status = CombatSessionStatus.Cancelled;
                 _nextPlayerAutoAttackAtUtc = null;
                 _nextEnemyActionAtUtc = null;
-                Append(new CombatEvent(CombatEventType.CombatEnded, CurrentTimeUtc,
-                    _player.Actor.ActorId, Status.ToString(), SourceActorId: _player.Actor.ActorId));
+                Append(new CombatEvent(
+                    CombatEventType.CombatEnded,
+                    CurrentTimeUtc,
+                    _player.Actor.ActorId,
+                    Status.ToString(),
+                    SourceActorId: _player.Actor.ActorId));
             }
         }
 
         return Result(true, null, before);
     }
 
-    private CombatCommandResult UseAbility(UseAbilityCommand command, DateTimeOffset now, long before)
+    private CombatCommandResult UseAbility(
+        UseAbilityCommand command,
+        DateTimeOffset now,
+        long before)
     {
         if (!_player.KnownAbilityIds.Contains(command.AbilityId)
             || !_abilities.TryGetValue(command.AbilityId, out AbilityDefinition? baseAbility))
             return Result(false, CombatErrorCodes.AbilityNotKnown, before);
 
-        AbilityDefinition ability = TalentAbilityResolver.Apply(baseAbility, _playerTalents);
+        SyncBerserkerConditionalEffects(now);
+        AbilityDefinition ability = ResolvePlayerAbility(baseAbility, now);
         AbilityExecutionResult execution = AbilityEngine.Execute(
             _playerRuntime,
             ability,
@@ -177,9 +189,22 @@ public sealed class CombatSession
         if (!execution.Succeeded)
             return Result(false, MapAbilityError(execution.ErrorCode), before);
 
-        ApplyKernelEvents(execution.Events, _player.Actor.ActorId, command.TargetActorId, command.AbilityId);
-        Append(new CombatEvent(CombatEventType.AbilityUsed, now, _player.Actor.ActorId,
-            command.AbilityId, SourceActorId: _player.Actor.ActorId,
+        ApplyKernelEvents(
+            execution.Events,
+            _player.Actor.ActorId,
+            command.TargetActorId,
+            command.AbilityId);
+        OnPlayerAbilitySucceeded(
+            ability,
+            execution,
+            command.TargetActorId,
+            now);
+        Append(new CombatEvent(
+            CombatEventType.AbilityUsed,
+            now,
+            _player.Actor.ActorId,
+            command.AbilityId,
+            SourceActorId: _player.Actor.ActorId,
             TargetActorId: command.TargetActorId));
         return Result(true, null, before);
     }
@@ -207,6 +232,7 @@ public sealed class CombatSession
             healed,
             SourceActorId: _player.Actor.ActorId,
             TargetActorId: _player.Actor.ActorId));
+        SyncBerserkerConditionalEffects(now);
         return Result(true, null, before);
     }
 
@@ -216,8 +242,11 @@ public sealed class CombatSession
         {
             _playerAutoAttackEnabled = true;
             _nextPlayerAutoAttackAtUtc = now;
-            Append(new CombatEvent(CombatEventType.AutoAttackStarted, now,
-                _player.Actor.ActorId, SourceActorId: _player.Actor.ActorId,
+            Append(new CombatEvent(
+                CombatEventType.AutoAttackStarted,
+                now,
+                _player.Actor.ActorId,
+                SourceActorId: _player.Actor.ActorId,
                 TargetActorId: _enemy.Actor.ActorId));
             AdvanceCore(now);
         }
@@ -231,8 +260,11 @@ public sealed class CombatSession
         {
             _playerAutoAttackEnabled = false;
             _nextPlayerAutoAttackAtUtc = null;
-            Append(new CombatEvent(CombatEventType.AutoAttackStopped, now,
-                _player.Actor.ActorId, SourceActorId: _player.Actor.ActorId,
+            Append(new CombatEvent(
+                CombatEventType.AutoAttackStopped,
+                now,
+                _player.Actor.ActorId,
+                SourceActorId: _player.Actor.ActorId,
                 TargetActorId: _enemy.Actor.ActorId));
         }
 
@@ -242,7 +274,9 @@ public sealed class CombatSession
     private void AdvanceCore(DateTimeOffset now)
     {
         if (now < CurrentTimeUtc)
-            throw new ArgumentOutOfRangeException(nameof(now), "Combat time cannot move backwards.");
+            throw new ArgumentOutOfRangeException(
+                nameof(now),
+                "Combat time cannot move backwards.");
         if (Status != CombatSessionStatus.Active)
         {
             CurrentTimeUtc = now;
@@ -255,17 +289,29 @@ public sealed class CombatSession
         {
             CurrentTimeUtc = due;
             ProcessEffects(due);
-            CompleteReadyCast(_playerRuntime, _player.Actor.ActorId, _enemy.Actor.ActorId, due);
-            CompleteReadyCast(_enemyRuntime, _enemy.Actor.ActorId, _player.Actor.ActorId, due);
+            if (Status != CombatSessionStatus.Active) break;
+
+            SyncBerserkerConditionalEffects(due);
+            CompleteReadyCast(
+                _playerRuntime,
+                _player.Actor.ActorId,
+                _enemy.Actor.ActorId,
+                due);
+            CompleteReadyCast(
+                _enemyRuntime,
+                _enemy.Actor.ActorId,
+                _player.Actor.ActorId,
+                due);
 
             if (Status == CombatSessionStatus.Active && _nextPlayerAutoAttackAtUtc <= due)
             {
                 if (_playerRuntime.ActiveCast is null)
                 {
                     ResolveAutoAttack(_player, _enemy, due);
-                    _nextPlayerAutoAttackAtUtc = Status == CombatSessionStatus.Active && _playerAutoAttackEnabled
-                        ? due + _player.AutoAttack.Interval
-                        : null;
+                    _nextPlayerAutoAttackAtUtc =
+                        Status == CombatSessionStatus.Active && _playerAutoAttackEnabled
+                            ? due + EffectivePlayerAutoAttackInterval(due)
+                            : null;
                 }
                 else
                 {
@@ -283,11 +329,19 @@ public sealed class CombatSession
         }
 
         CurrentTimeUtc = now;
-        ProcessEffects(now);
+        if (Status == CombatSessionStatus.Active)
+        {
+            ProcessEffects(now);
+            if (Status == CombatSessionStatus.Active)
+            {
+                SyncBerserkerConditionalEffects(now);
+            }
+        }
     }
 
     private void ResolveEnemyAction(DateTimeOffset now)
     {
+        SyncBerserkerConditionalEffects(now);
         foreach (string abilityId in _enemyAi.PriorityAbilityIds)
         {
             if (!_enemy.KnownAbilityIds.Contains(abilityId)
@@ -295,12 +349,23 @@ public sealed class CombatSession
                 continue;
             string commandId = $"ai:{Sequence + 1}:{abilityId}";
             AbilityExecutionResult execution = AbilityEngine.Execute(
-                _enemyRuntime, ability,
-                new AbilityIntent(commandId, abilityId, _player.Actor.ActorId), now, _random);
+                _enemyRuntime,
+                ability,
+                new AbilityIntent(commandId, abilityId, _player.Actor.ActorId),
+                now,
+                _random);
             if (!execution.Succeeded) continue;
-            ApplyKernelEvents(execution.Events, _enemy.Actor.ActorId, _player.Actor.ActorId, abilityId);
-            Append(new CombatEvent(CombatEventType.AbilityUsed, now, _enemy.Actor.ActorId,
-                abilityId, SourceActorId: _enemy.Actor.ActorId,
+            ApplyKernelEvents(
+                execution.Events,
+                _enemy.Actor.ActorId,
+                _player.Actor.ActorId,
+                abilityId);
+            Append(new CombatEvent(
+                CombatEventType.AbilityUsed,
+                now,
+                _enemy.Actor.ActorId,
+                abilityId,
+                SourceActorId: _enemy.Actor.ActorId,
                 TargetActorId: _player.Actor.ActorId));
             return;
         }
@@ -313,20 +378,42 @@ public sealed class CombatSession
         CombatParticipantDefinition target,
         DateTimeOffset now)
     {
+        if (source.Kind == CombatActorKind.Player)
+        {
+            ResolvePlayerAutoAttack(target, now);
+            return;
+        }
+
+        SyncBerserkerConditionalEffects(now);
         decimal attackPower = EffectEngine.CalculateStat(
-            source.Actor, EffectStat.AttackPower, source.Actor.Stats.AttackPower, now);
+            source.Actor,
+            EffectStat.AttackPower,
+            source.Actor.Stats.AttackPower,
+            now);
         decimal baseDamage = source.AutoAttack.BaseDamage
             + attackPower * source.AutoAttack.AttackPowerCoefficient;
         DamageResult damage = DamagePipeline.Resolve(
-            new DamageRequest(source.Actor, target.Actor, baseDamage, DamageType.Physical),
+            new DamageRequest(
+                source.Actor,
+                target.Actor,
+                baseDamage,
+                DamageType.Physical),
             _random,
             now);
-        ApplyKernelEvents(damage.Events, source.Actor.ActorId, target.Actor.ActorId, "AUTO_ATTACK");
+        ApplyKernelEvents(
+            damage.Events,
+            source.Actor.ActorId,
+            target.Actor.ActorId,
+            "AUTO_ATTACK");
         if (damage.Avoidance == DamageAvoidance.None
             && damage.HpDamage > 0
             && source.AutoAttack.ResourceOnHit > 0)
         {
-            AddResource(source.Actor, source.AutoAttack.ResourceOnHit, now, "AUTO_ATTACK");
+            AddResource(
+                source.Actor,
+                source.AutoAttack.ResourceOnHit,
+                now,
+                "AUTO_ATTACK");
         }
     }
 
@@ -338,18 +425,34 @@ public sealed class CombatSession
     {
         if (runtime.ActiveCast?.ResolvesAtUtc > now) return;
         if (runtime.ActiveCast is null) return;
-        AbilityExecutionResult completion = AbilityEngine.CompleteCast(runtime, now, _random);
+        AbilityExecutionResult completion =
+            AbilityEngine.CompleteCast(runtime, now, _random);
         if (completion.Succeeded)
-            ApplyKernelEvents(completion.Events, sourceActorId, targetActorId,
-                completion.Events.Count > 0 ? completion.Events[0].DefinitionId : null);
+        {
+            ApplyKernelEvents(
+                completion.Events,
+                sourceActorId,
+                targetActorId,
+                completion.Events.Count > 0
+                    ? completion.Events[0].DefinitionId
+                    : null);
+        }
     }
 
     private void ProcessEffects(DateTimeOffset now)
     {
-        ApplyKernelEvents(EffectEngine.Process(_player.Actor, now),
-            _enemy.Actor.ActorId, _player.Actor.ActorId, null);
-        ApplyKernelEvents(EffectEngine.Process(_enemy.Actor, now),
-            _player.Actor.ActorId, _enemy.Actor.ActorId, null);
+        ApplyKernelEvents(
+            EffectEngine.Process(_player.Actor, now),
+            _enemy.Actor.ActorId,
+            _player.Actor.ActorId,
+            null);
+        if (Status != CombatSessionStatus.Active) return;
+
+        ApplyKernelEvents(
+            EffectEngine.Process(_enemy.Actor, now),
+            _player.Actor.ActorId,
+            _enemy.Actor.ActorId,
+            null);
     }
 
     private void ApplyKernelEvents(
@@ -373,7 +476,13 @@ public sealed class CombatSession
             Append(normalized);
             ApplyTalentHooks(normalized);
             if (normalized.Type == CombatEventType.ActorDied)
+            {
                 FinishForDeath(normalized);
+                if (Status != CombatSessionStatus.Active)
+                {
+                    break;
+                }
+            }
         }
     }
 
@@ -383,27 +492,52 @@ public sealed class CombatSession
             && combatEvent.TargetActorId == _player.Actor.ActorId
             && combatEvent.Amount > 0)
         {
-            AddResource(_player.Actor, BaseRageFromDirectDamageTaken,
-                combatEvent.OccurredAtUtc, "DIRECT_DAMAGE_TAKEN");
-            TriggerTalent(TalentModifierKeys.OnDamageTaken, combatEvent.OccurredAtUtc);
+            if (!combatEvent.IsPeriodic)
+            {
+                AddResource(
+                    _player.Actor,
+                    BaseRageFromDirectDamageTaken,
+                    combatEvent.OccurredAtUtc,
+                    "DIRECT_DAMAGE_TAKEN");
+                TriggerTalent(
+                    TalentModifierKeys.OnDamageTaken,
+                    combatEvent.OccurredAtUtc);
+            }
+
+            ApplyBerserkerDamageTakenHooks(combatEvent);
         }
         else if (combatEvent.Type == CombatEventType.CriticalHit
                  && combatEvent.SourceActorId == _player.Actor.ActorId)
         {
-            TriggerTalent(TalentModifierKeys.OnCriticalHit, combatEvent.OccurredAtUtc);
+            TriggerTalent(
+                TalentModifierKeys.OnCriticalHit,
+                combatEvent.OccurredAtUtc);
+            ApplyBerserkerCriticalHooks(combatEvent);
         }
     }
 
     private void TriggerTalent(string key, DateTimeOffset now)
     {
-        foreach (ResolvedTalentEventHook hook in _playerTalents.EventHooks.Where(item => item.Key == key))
+        foreach (ResolvedTalentEventHook hook in _playerTalents.EventHooks.Where(
+                     item => item.Key == key))
         {
-            if (_talentInternalCooldowns.TryGetValue(hook.TalentId, out DateTimeOffset readyAt)
+            if (BerserkerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _))
+            {
+                continue;
+            }
+
+            if (_talentInternalCooldowns.TryGetValue(
+                    hook.TalentId,
+                    out DateTimeOffset readyAt)
                 && readyAt > now)
                 continue;
+
             AddResource(_player.Actor, hook.Value, now, hook.TalentId);
             if (hook.InternalCooldown > TimeSpan.Zero)
-                _talentInternalCooldowns[hook.TalentId] = now + hook.InternalCooldown;
+            {
+                _talentInternalCooldowns[hook.TalentId] =
+                    now + hook.InternalCooldown;
+            }
         }
     }
 
@@ -412,12 +546,18 @@ public sealed class CombatSession
         if (Status != CombatSessionStatus.Active) return;
         if (death.ActorId == _enemy.Actor.ActorId)
         {
-            Append(new CombatEvent(CombatEventType.EnemyKilled, death.OccurredAtUtc,
-                _player.Actor.ActorId, _enemy.DefinitionId,
+            Append(new CombatEvent(
+                CombatEventType.EnemyKilled,
+                death.OccurredAtUtc,
+                _player.Actor.ActorId,
+                _enemy.DefinitionId,
                 SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
                 TargetActorId: _enemy.Actor.ActorId,
                 IsPeriodic: death.IsPeriodic));
-            if (!death.IsPeriodic) TriggerTalent(TalentModifierKeys.OnEnemyKilled, death.OccurredAtUtc);
+            TriggerTalent(
+                TalentModifierKeys.OnEnemyKilled,
+                death.OccurredAtUtc);
+            ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
             Status = CombatSessionStatus.Victory;
         }
         else
@@ -428,8 +568,12 @@ public sealed class CombatSession
         _playerAutoAttackEnabled = false;
         _nextPlayerAutoAttackAtUtc = null;
         _nextEnemyActionAtUtc = null;
-        Append(new CombatEvent(CombatEventType.CombatEnded, death.OccurredAtUtc,
-            death.ActorId, Status.ToString(), SourceActorId: death.SourceActorId,
+        Append(new CombatEvent(
+            CombatEventType.CombatEnded,
+            death.OccurredAtUtc,
+            death.ActorId,
+            Status.ToString(),
+            SourceActorId: death.SourceActorId,
             TargetActorId: death.ActorId));
     }
 
@@ -441,8 +585,14 @@ public sealed class CombatSession
     {
         decimal actual = actor.AddResource(amount);
         if (actual == 0) return;
-        Append(new CombatEvent(CombatEventType.ResourceChanged, now, actor.ActorId,
-            definitionId, actual, SourceActorId: actor.ActorId, TargetActorId: actor.ActorId));
+        Append(new CombatEvent(
+            CombatEventType.ResourceChanged,
+            now,
+            actor.ActorId,
+            definitionId,
+            actual,
+            SourceActorId: actor.ActorId,
+            TargetActorId: actor.ActorId));
     }
 
     private void Append(CombatEvent combatEvent)
@@ -451,7 +601,10 @@ public sealed class CombatSession
         _events.Add(combatEvent with { Sequence = Sequence });
     }
 
-    private CombatCommandResult Result(bool succeeded, string? errorCode, long before) =>
+    private CombatCommandResult Result(
+        bool succeeded,
+        string? errorCode,
+        long before) =>
         new(succeeded, errorCode, Snapshot(), GetEventsAfter(before));
 
     private static CombatRuntimeState CreateRuntime(
@@ -471,11 +624,13 @@ public sealed class CombatSession
         CombatAbilitySnapshot[] abilities = definition.KnownAbilityIds
             .Where(_abilities.ContainsKey)
             .Select(id => definition.Kind == CombatActorKind.Player
-                ? TalentAbilityResolver.Apply(_abilities[id], _playerTalents)
+                ? ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc)
                 : _abilities[id])
             .OrderBy(ability => ability.Id, StringComparer.Ordinal)
             .Select(ability => new CombatAbilitySnapshot(
-                ability.Id, ability.ResourceCost, ability.Cooldown))
+                ability.Id,
+                ability.ResourceCost,
+                ability.Cooldown))
             .ToArray();
         return new(
             definition.Actor.ActorId,
@@ -488,12 +643,21 @@ public sealed class CombatSession
             definition.Actor.CurrentResource,
             definition.Actor.MaxResource,
             autoAttackEnabled,
-            definition.Kind == CombatActorKind.Player ? _consumableCooldownReadyAtUtc : null,
-            new Dictionary<string, DateTimeOffset>(runtime.Cooldowns, StringComparer.Ordinal),
-            new HashSet<string>(definition.KnownAbilityIds, StringComparer.Ordinal),
+            definition.Kind == CombatActorKind.Player
+                ? _consumableCooldownReadyAtUtc
+                : null,
+            new Dictionary<string, DateTimeOffset>(
+                runtime.Cooldowns,
+                StringComparer.Ordinal),
+            new HashSet<string>(
+                definition.KnownAbilityIds,
+                StringComparer.Ordinal),
             abilities,
-            definition.Actor.ActiveEffects.Select(effect => new CombatEffectSnapshot(
-                effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray());
+            definition.Actor.ActiveEffects.Select(effect =>
+                new CombatEffectSnapshot(
+                    effect.Definition.Id,
+                    effect.Stacks,
+                    effect.ExpiresAtUtc)).ToArray());
     }
 
     private static string MapAbilityError(AbilityErrorCode code) => code switch
@@ -508,11 +672,14 @@ public sealed class CombatSession
     };
 
     private static DateTimeOffset? NextEffectDue(CombatActorState actor) =>
-        actor.ActiveEffects.Select(effect => Min(effect.NextTickAtUtc, effect.ExpiresAtUtc))
+        actor.ActiveEffects
+            .Select(effect => Min(effect.NextTickAtUtc, effect.ExpiresAtUtc))
             .Where(value => value.HasValue)
             .Min();
 
-    private static DateTimeOffset? Min(DateTimeOffset? left, DateTimeOffset? right) =>
+    private static DateTimeOffset? Min(
+        DateTimeOffset? left,
+        DateTimeOffset? right) =>
         left is null ? right : right is null ? left : left <= right ? left : right;
 
     private static void ValidateAutoAttack(AutoAttackProfile profile)
@@ -521,6 +688,8 @@ public sealed class CombatSession
             || profile.BaseDamage < 0
             || profile.AttackPowerCoefficient < 0
             || profile.ResourceOnHit < 0)
-            throw new ArgumentException("Auto attack profile is invalid.", nameof(profile));
+            throw new ArgumentException(
+                "Auto attack profile is invalid.",
+                nameof(profile));
     }
 }

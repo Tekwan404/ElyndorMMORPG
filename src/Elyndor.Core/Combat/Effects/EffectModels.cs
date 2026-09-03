@@ -28,7 +28,9 @@ public enum EffectStat
     AttackPower,
     CriticalChance,
     AttackSpeed,
-    IncomingDamageMultiplier
+    IncomingDamageMultiplier,
+    OutgoingPhysicalDamageMultiplier,
+    IncomingPhysicalDamageMultiplier
 }
 public enum EffectModifierMode { Flat, Percent, Multiplicative }
 
@@ -45,7 +47,8 @@ public sealed record EffectDefinition(
     string? DispelCategory = null,
     int Version = 1,
     EffectStat? ModifiedStat = null,
-    EffectModifierMode ModifierMode = EffectModifierMode.Flat);
+    EffectModifierMode ModifierMode = EffectModifierMode.Flat,
+    bool SourceSpecific = false);
 
 public sealed class ActiveEffect
 {

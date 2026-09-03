@@ -27,7 +27,7 @@ Read the smallest relevant set before changing code. Precedence is system rules,
 - Content: `docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md`, `content/README.md`
 - Infrastructure/testing: `docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md`, `.github/workflows/ci.yml`, `docs/development/getting-started.md`
 
-Phase 0 through Phase 3C are implemented. Phase 4A is the active bounded slice: Warrior versus `WOLF`, in-memory `CombatSession`, simple Monster AI, SignalR transport, minimal Telegram combat UI, and three explicitly owned talent hooks. Do not expand into XP, loot, equipment, elites, bosses, party combat, or the remaining Phase 4 encounter roster without a separate approved slice.
+Phase 0 through Phase 3C are implemented. Phase 4A is the active bounded slice: Warrior versus the Whispering Forest normal-monster roster, in-memory `CombatSession`, simple Monster AI, SignalR transport, minimal Telegram combat UI, and complete single-player runtime support for all 32 Berserker talent nodes. Guardian hooks beyond the explicitly implemented slice and Party/Warlord talent contracts remain deferred. Do not expand into XP, loot, equipment, elites, bosses, or party combat without a separate approved slice.
 
 ## Core invariants
 

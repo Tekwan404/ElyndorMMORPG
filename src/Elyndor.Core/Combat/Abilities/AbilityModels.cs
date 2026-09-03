@@ -51,7 +51,8 @@ public sealed record AbilityDefinition(
     bool AllowSelfTarget = true,
     bool CanUseWhileCasting = false,
     bool CanUseWhileSilenced = false,
-    IReadOnlyList<AbilityActionDefinition>? Actions = null);
+    IReadOnlyList<AbilityActionDefinition>? Actions = null,
+    bool CanUseWhileStunned = false);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,

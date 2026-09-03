@@ -11,7 +11,9 @@ public static class EffectEngine
         Validate(definition);
         List<CombatEvent> events = [];
         List<ActiveEffect> matching = target.ActiveEffects
-            .Where(effect => effect.Definition.Id == definition.Id)
+            .Where(effect =>
+                effect.Definition.Id == definition.Id
+                && (!definition.SourceSpecific || effect.SourceId == sourceId))
             .OrderBy(effect => effect.Sequence)
             .ToList();
 
@@ -32,7 +34,9 @@ public static class EffectEngine
                 Refresh(current, now);
                 break;
             case EffectStackPolicy.Replace:
-                target.ActiveEffects.RemoveAll(effect => effect.Definition.Id == definition.Id);
+                target.ActiveEffects.RemoveAll(effect =>
+                    effect.Definition.Id == definition.Id
+                    && (!definition.SourceSpecific || effect.SourceId == sourceId));
                 AddNew(target, sourceId, definition, now, events);
                 return events;
             case EffectStackPolicy.StrongestWins:
@@ -46,7 +50,13 @@ public static class EffectEngine
                 return events;
         }
 
-        events.Add(new CombatEvent(CombatEventType.EffectRefreshed, now, target.ActorId, definition.Id));
+        events.Add(new CombatEvent(
+            CombatEventType.EffectRefreshed,
+            now,
+            target.ActorId,
+            definition.Id,
+            SourceActorId: sourceId,
+            TargetActorId: target.ActorId));
         return events;
     }
 
@@ -61,23 +71,79 @@ public static class EffectEngine
 
         foreach (ActiveEffect effect in snapshot)
         {
+            if (target.IsDead) break;
+
             while (effect.NextTickAtUtc is { } tickAt
                    && tickAt <= now
-                   && tickAt <= effect.ExpiresAtUtc)
+                   && tickAt <= effect.ExpiresAtUtc
+                   && !target.IsDead)
             {
-                decimal amount = effect.Definition.Magnitude * effect.Stacks;
+                decimal requested = effect.Definition.Magnitude * effect.Stacks;
+                decimal actual = 0;
+
                 if (effect.Definition.Kind == EffectKind.DamageOverTime)
                 {
-                    target.ApplyDamage(amount);
+                    decimal previousHp = target.CurrentHp;
+                    target.ApplyDamage(requested);
+                    actual = previousHp - target.CurrentHp;
                 }
-                else if (effect.Definition.Kind == EffectKind.HealingOverTime && !target.IsDead)
+                else if (effect.Definition.Kind == EffectKind.HealingOverTime)
                 {
-                    target.ApplyHealing(amount);
+                    decimal previousHp = target.CurrentHp;
+                    target.ApplyHealing(requested);
+                    actual = target.CurrentHp - previousHp;
                 }
 
                 events.Add(new CombatEvent(
-                    CombatEventType.EffectTicked, tickAt, target.ActorId, effect.Definition.Id, amount));
+                    CombatEventType.EffectTicked,
+                    tickAt,
+                    target.ActorId,
+                    effect.Definition.Id,
+                    actual,
+                    SourceActorId: effect.SourceId,
+                    TargetActorId: target.ActorId,
+                    IsPeriodic: true,
+                    AmountBeforeShields: actual));
+
+                if (effect.Definition.Kind == EffectKind.DamageOverTime && actual > 0)
+                {
+                    events.Add(new CombatEvent(
+                        CombatEventType.DamageDealt,
+                        tickAt,
+                        target.ActorId,
+                        effect.Definition.Id,
+                        actual,
+                        SourceActorId: effect.SourceId,
+                        TargetActorId: target.ActorId,
+                        IsPeriodic: true,
+                        AmountBeforeShields: actual));
+                }
+                else if (effect.Definition.Kind == EffectKind.HealingOverTime && actual > 0)
+                {
+                    events.Add(new CombatEvent(
+                        CombatEventType.HealingApplied,
+                        tickAt,
+                        target.ActorId,
+                        effect.Definition.Id,
+                        actual,
+                        SourceActorId: effect.SourceId,
+                        TargetActorId: target.ActorId,
+                        IsPeriodic: true));
+                }
+
                 effect.NextTickAtUtc = tickAt + effect.Definition.TickInterval!.Value;
+
+                if (target.IsDead)
+                {
+                    events.Add(new CombatEvent(
+                        CombatEventType.ActorDied,
+                        tickAt,
+                        target.ActorId,
+                        effect.Definition.Id,
+                        SourceActorId: effect.SourceId,
+                        TargetActorId: target.ActorId,
+                        IsPeriodic: true));
+                }
             }
         }
 
@@ -88,7 +154,12 @@ public static class EffectEngine
         {
             target.ActiveEffects.Remove(expired);
             events.Add(new CombatEvent(
-                CombatEventType.EffectExpired, expired.ExpiresAtUtc, target.ActorId, expired.Definition.Id));
+                CombatEventType.EffectExpired,
+                expired.ExpiresAtUtc,
+                target.ActorId,
+                expired.Definition.Id,
+                SourceActorId: expired.SourceId,
+                TargetActorId: target.ActorId));
         }
 
         return events;
@@ -101,12 +172,15 @@ public static class EffectEngine
         CombatActorState target,
         EffectStat stat,
         decimal baseValue,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        Guid? sourceId = null)
     {
         ActiveEffect[] modifiers = target.ActiveEffects
             .Where(effect => effect.ExpiresAtUtc > now
                 && effect.Definition.Kind == EffectKind.StatModifier
-                && effect.Definition.ModifiedStat == stat)
+                && effect.Definition.ModifiedStat == stat
+                && (!effect.Definition.SourceSpecific
+                    || sourceId.HasValue && effect.SourceId == sourceId.Value))
             .ToArray();
         decimal flat = modifiers
             .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Flat)
@@ -126,15 +200,56 @@ public static class EffectEngine
         DateTimeOffset now)
     {
         ActiveEffect[] removed = target.ActiveEffects
-            .Where(effect => string.Equals(effect.Definition.DispelCategory, dispelCategory, StringComparison.Ordinal))
+            .Where(effect => string.Equals(
+                effect.Definition.DispelCategory,
+                dispelCategory,
+                StringComparison.Ordinal))
             .ToArray();
+        return RemoveEffects(target, removed, now);
+    }
+
+    public static IReadOnlyList<CombatEvent> Remove(
+        CombatActorState target,
+        string definitionId,
+        DateTimeOffset now)
+    {
+        ActiveEffect[] removed = target.ActiveEffects
+            .Where(effect => string.Equals(
+                effect.Definition.Id,
+                definitionId,
+                StringComparison.Ordinal))
+            .ToArray();
+        return RemoveEffects(target, removed, now);
+    }
+
+    public static IReadOnlyList<CombatEvent> RemoveByKind(
+        CombatActorState target,
+        EffectKind kind,
+        DateTimeOffset now)
+    {
+        ActiveEffect[] removed = target.ActiveEffects
+            .Where(effect => effect.Definition.Kind == kind)
+            .ToArray();
+        return RemoveEffects(target, removed, now);
+    }
+
+    private static IReadOnlyList<CombatEvent> RemoveEffects(
+        CombatActorState target,
+        IReadOnlyList<ActiveEffect> removed,
+        DateTimeOffset now)
+    {
         foreach (ActiveEffect effect in removed)
         {
             target.ActiveEffects.Remove(effect);
         }
 
         return removed.Select(effect => new CombatEvent(
-            CombatEventType.EffectRemoved, now, target.ActorId, effect.Definition.Id)).ToArray();
+            CombatEventType.EffectRemoved,
+            now,
+            target.ActorId,
+            effect.Definition.Id,
+            SourceActorId: effect.SourceId,
+            TargetActorId: target.ActorId)).ToArray();
     }
 
     private static void AddNew(
@@ -149,7 +264,13 @@ public static class EffectEngine
             : target.ActiveEffects.Max(existing => existing.Sequence) + 1;
         ActiveEffect effect = new(sequence, sourceId, target.ActorId, definition, now);
         target.ActiveEffects.Add(effect);
-        events.Add(new CombatEvent(CombatEventType.EffectApplied, now, target.ActorId, definition.Id));
+        events.Add(new CombatEvent(
+            CombatEventType.EffectApplied,
+            now,
+            target.ActorId,
+            definition.Id,
+            SourceActorId: sourceId,
+            TargetActorId: target.ActorId));
     }
 
     private static void Refresh(ActiveEffect effect, DateTimeOffset now)

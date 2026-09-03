@@ -23,14 +23,26 @@ public static class TalentModifierResolver
 
             foreach (TalentModifierDefinition modifier in node.Modifiers ?? [])
             {
-                if (modifier.Values.Count < rank)
+                if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
                 {
+                    if (BerserkerTalentRuntimeCatalog.TryResolveLegacyDeferred(
+                            node,
+                            modifier,
+                            rank,
+                            out ResolvedTalentEventHook legacyHook))
+                    {
+                        eventHooks.Add(legacyHook);
+                    }
+                    else
+                    {
+                        deferredHooks.Add(modifier);
+                    }
+
                     continue;
                 }
 
-                if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
+                if (modifier.Values.Count < rank)
                 {
-                    deferredHooks.Add(modifier);
                     continue;
                 }
 
@@ -47,6 +59,7 @@ public static class TalentModifierResolver
                         modifier.CanTriggerFromProc));
                     continue;
                 }
+
                 if (modifier.Type == TalentModifierType.StatModifier
                     || modifier.Type == TalentModifierType.ResourceModifier)
                 {
@@ -67,13 +80,21 @@ public static class TalentModifierResolver
                     continue;
                 }
 
-                TalentAbilityModifiers current = abilityModifiers.GetValueOrDefault(modifier.TargetId)
+                TalentAbilityModifiers current =
+                    abilityModifiers.GetValueOrDefault(modifier.TargetId)
                     ?? new TalentAbilityModifiers();
-                abilityModifiers[modifier.TargetId] = ApplyAbility(current, modifier.Key, value);
+                abilityModifiers[modifier.TargetId] =
+                    ApplyAbility(current, modifier.Key, value);
             }
         }
 
-        return new(stats, combat, abilities, abilityModifiers, eventHooks, deferredHooks);
+        return new(
+            stats,
+            combat,
+            abilities,
+            abilityModifiers,
+            eventHooks,
+            deferredHooks);
     }
 
     private static TalentStatModifiers ApplyStat(
@@ -81,19 +102,32 @@ public static class TalentModifierResolver
         string key,
         decimal value) => key switch
     {
-        TalentModifierKeys.StrengthPercent => stats with { StrengthPercent = stats.StrengthPercent + value },
-        TalentModifierKeys.StaminaPercent => stats with { StaminaPercent = stats.StaminaPercent + value },
-        TalentModifierKeys.AttackPowerPercent => stats with { AttackPowerPercent = stats.AttackPowerPercent + value },
-        TalentModifierKeys.ArmorPercent => stats with { ArmorPercent = stats.ArmorPercent + value },
-        TalentModifierKeys.MagicResistancePercent => stats with { MagicResistancePercent = stats.MagicResistancePercent + value },
-        TalentModifierKeys.AccuracyPercent => stats with { AccuracyPercent = stats.AccuracyPercent + value },
-        TalentModifierKeys.DodgePercent => stats with { DodgePercent = stats.DodgePercent + value },
-        TalentModifierKeys.CriticalChancePercent => stats with { CriticalChancePercent = stats.CriticalChancePercent + value },
-        TalentModifierKeys.CriticalDamagePercent => stats with { CriticalDamagePercent = stats.CriticalDamagePercent + value },
-        TalentModifierKeys.ArmorPenetrationPercent => stats with { ArmorPenetrationPercent = stats.ArmorPenetrationPercent + value },
-        TalentModifierKeys.AttackSpeedPercent => stats with { AttackSpeedPercent = stats.AttackSpeedPercent + value },
-        TalentModifierKeys.MaxHpPercent => stats with { MaxHpPercent = stats.MaxHpPercent + value },
-        TalentModifierKeys.MaxResourceFlat => stats with { MaxResourceFlat = stats.MaxResourceFlat + value },
+        TalentModifierKeys.StrengthPercent =>
+            stats with { StrengthPercent = stats.StrengthPercent + value },
+        TalentModifierKeys.StaminaPercent =>
+            stats with { StaminaPercent = stats.StaminaPercent + value },
+        TalentModifierKeys.AttackPowerPercent =>
+            stats with { AttackPowerPercent = stats.AttackPowerPercent + value },
+        TalentModifierKeys.ArmorPercent =>
+            stats with { ArmorPercent = stats.ArmorPercent + value },
+        TalentModifierKeys.MagicResistancePercent =>
+            stats with { MagicResistancePercent = stats.MagicResistancePercent + value },
+        TalentModifierKeys.AccuracyPercent =>
+            stats with { AccuracyPercent = stats.AccuracyPercent + value },
+        TalentModifierKeys.DodgePercent =>
+            stats with { DodgePercent = stats.DodgePercent + value },
+        TalentModifierKeys.CriticalChancePercent =>
+            stats with { CriticalChancePercent = stats.CriticalChancePercent + value },
+        TalentModifierKeys.CriticalDamagePercent =>
+            stats with { CriticalDamagePercent = stats.CriticalDamagePercent + value },
+        TalentModifierKeys.ArmorPenetrationPercent =>
+            stats with { ArmorPenetrationPercent = stats.ArmorPenetrationPercent + value },
+        TalentModifierKeys.AttackSpeedPercent =>
+            stats with { AttackSpeedPercent = stats.AttackSpeedPercent + value },
+        TalentModifierKeys.MaxHpPercent =>
+            stats with { MaxHpPercent = stats.MaxHpPercent + value },
+        TalentModifierKeys.MaxResourceFlat =>
+            stats with { MaxResourceFlat = stats.MaxResourceFlat + value },
         _ => stats
     };
 
