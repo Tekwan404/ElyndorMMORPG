@@ -52,7 +52,12 @@ public sealed record AbilityDefinition(
     bool CanUseWhileCasting = false,
     bool CanUseWhileSilenced = false,
     IReadOnlyList<AbilityActionDefinition>? Actions = null,
-    bool CanUseWhileStunned = false);
+    bool CanUseWhileStunned = false,
+    decimal DamageMultiplier = 1,
+    decimal AccuracyBonus = 0,
+    decimal CriticalChanceBonus = 0,
+    decimal CriticalDamageBonus = 0,
+    decimal MagicPenetrationBonus = 0);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -64,7 +69,8 @@ public sealed record AbilityActionDefinition(
     bool CanDodge = true,
     decimal AttackPowerCoefficient = 0,
     TimeSpan? Duration = null,
-    decimal ArmorPenetrationBonus = 0);
+    decimal ArmorPenetrationBonus = 0,
+    decimal SpellPowerCoefficient = 0);
 
 public sealed record AbilityIntent(string CommandId, string AbilityId, Guid TargetId);
 

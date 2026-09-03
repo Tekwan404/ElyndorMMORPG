@@ -29,9 +29,17 @@ public static class TalentModifierResolver
                             node,
                             modifier,
                             rank,
-                            out ResolvedTalentEventHook legacyHook))
+                            out ResolvedTalentEventHook berserkerHook))
                     {
-                        eventHooks.Add(legacyHook);
+                        eventHooks.Add(berserkerHook);
+                    }
+                    else if (PyromancerTalentRuntimeCatalog.TryResolveLegacyDeferred(
+                                 node,
+                                 modifier,
+                                 rank,
+                                 out ResolvedTalentEventHook pyromancerHook))
+                    {
+                        eventHooks.Add(pyromancerHook);
                     }
                     else
                     {

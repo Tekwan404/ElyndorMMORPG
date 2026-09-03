@@ -167,10 +167,12 @@ public static class TalentEndpoints
     {
         bool supported = node.Modifiers?.Any(modifier =>
             modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
-            || BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
+            || BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+            || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
         bool deferred = node.Modifiers?.Any(modifier =>
             modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
-            && !BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
+            && !BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+            && !PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
         return (supported, deferred) switch
         {
             (true, true) => "PARTIAL",

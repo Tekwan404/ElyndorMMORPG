@@ -26,9 +26,9 @@ public static class TalentAbilityResolver
 
         IReadOnlyList<AbilityActionDefinition>? actions = definition.Actions?.Select(action =>
         {
-            decimal coefficient = action.Type == AbilityActionType.Damage
-                ? action.AttackPowerCoefficient * (1 + modifier.DamagePercentBonus / 100m)
-                : action.AttackPowerCoefficient;
+            decimal damageMultiplier = action.Type == AbilityActionType.Damage
+                ? 1 + modifier.DamagePercentBonus / 100m
+                : 1;
             var effect = action.Effect;
             if (effect is not null)
             {
@@ -42,7 +42,9 @@ public static class TalentAbilityResolver
 
             return action with
             {
-                AttackPowerCoefficient = coefficient,
+                Amount = action.Amount * damageMultiplier,
+                AttackPowerCoefficient = action.AttackPowerCoefficient * damageMultiplier,
+                SpellPowerCoefficient = action.SpellPowerCoefficient * damageMultiplier,
                 ArmorPenetrationBonus = action.ArmorPenetrationBonus
                     + modifier.ArmorPenetrationPercent / 100m,
                 Effect = effect

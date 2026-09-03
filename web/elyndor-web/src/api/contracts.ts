@@ -177,7 +177,7 @@ export interface TravelResponse {
 }
 
 export type TalentLoadoutId = 'LOADOUT_1' | 'LOADOUT_2'
-export type TalentBranchId = 'GUARDIAN' | 'BERSERKER' | 'WARLORD'
+export type TalentBranchId = 'GUARDIAN' | 'BERSERKER' | 'WARLORD' | 'FIRE' | 'ARCANE' | 'FROST'
 export interface TalentPrerequisite { talentId: string; requiredRank: number }
 export interface TalentNode {
   id: string; branchId: TalentBranchId; tier: number; requiredSpentPoints: number

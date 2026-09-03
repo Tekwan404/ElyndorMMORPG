@@ -25,6 +25,11 @@ public sealed class CombatSessionFactory(
     TimeProvider timeProvider)
 {
     private const string WhisperingForestId = "WHISPERING_FOREST";
+    private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
+    {
+        "WARRIOR",
+        "MAGE"
+    };
     private static readonly HashSet<string> WhisperingForestMonsterIds = new(StringComparer.Ordinal)
     {
         "WOLF",
@@ -43,7 +48,7 @@ public sealed class CombatSessionFactory(
             checkpoint: true);
         BootstrapCharacter? character = bootstrap.Character;
         if (character is null) return Failure("character_not_found");
-        if (!string.Equals(character.ClassId, "WARRIOR", StringComparison.Ordinal))
+        if (!PlayableCombatClassIds.Contains(character.ClassId))
             return Failure(CombatErrorCodes.UnsupportedClass, character.Id);
 
         MonsterDefinition? monster = content.Monsters?.SingleOrDefault(candidate =>
@@ -65,6 +70,8 @@ public sealed class CombatSessionFactory(
         if (classProfile.CombatAutoAttack is null)
             throw new InvalidOperationException(
                 $"Class {classProfile.Id} has no combat auto attack profile.");
+        ResourceProfile resourceProfile = content.ResourceProfiles!.Single(candidate =>
+            string.Equals(candidate.Id, classProfile.ResourceProfileId, StringComparison.Ordinal));
 
         EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
             character.Inventory.Equipped.Values.Select(item => item.Definition),
@@ -110,7 +117,8 @@ public sealed class CombatSessionFactory(
             character.Name,
             character.Vitals.ResourceType,
             playerAutoAttack,
-            new HashSet<string>(character.KnownAbilityIds, StringComparer.Ordinal));
+            new HashSet<string>(character.KnownAbilityIds, StringComparer.Ordinal),
+            resourceProfile.CombatRegenPerSecond);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,

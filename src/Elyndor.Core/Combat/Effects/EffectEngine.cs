@@ -60,7 +60,10 @@ public static class EffectEngine
         return events;
     }
 
-    public static IReadOnlyList<CombatEvent> Process(CombatActorState target, DateTimeOffset now)
+    public static IReadOnlyList<CombatEvent> Process(
+        CombatActorState target,
+        DateTimeOffset now,
+        Func<ActiveEffect, DateTimeOffset, IReadOnlyList<CombatEvent>>? periodicDamageResolver = null)
     {
         List<CombatEvent> events = [];
         ActiveEffect[] snapshot = target.ActiveEffects
@@ -80,12 +83,23 @@ public static class EffectEngine
             {
                 decimal requested = effect.Definition.Magnitude * effect.Stacks;
                 decimal actual = 0;
+                IReadOnlyList<CombatEvent> resolvedDamage = [];
 
                 if (effect.Definition.Kind == EffectKind.DamageOverTime)
                 {
-                    decimal previousHp = target.CurrentHp;
-                    target.ApplyDamage(requested);
-                    actual = previousHp - target.CurrentHp;
+                    if (periodicDamageResolver is not null)
+                    {
+                        resolvedDamage = periodicDamageResolver(effect, tickAt);
+                        actual = resolvedDamage
+                            .Where(item => item.Type == CombatEventType.DamageDealt)
+                            .Sum(item => item.Amount);
+                    }
+                    else
+                    {
+                        decimal previousHp = target.CurrentHp;
+                        target.ApplyDamage(requested);
+                        actual = previousHp - target.CurrentHp;
+                    }
                 }
                 else if (effect.Definition.Kind == EffectKind.HealingOverTime)
                 {
@@ -103,20 +117,35 @@ public static class EffectEngine
                     SourceActorId: effect.SourceId,
                     TargetActorId: target.ActorId,
                     IsPeriodic: true,
-                    AmountBeforeShields: actual));
+                    AmountBeforeShields: actual,
+                    DamageType: effect.Definition.Kind == EffectKind.DamageOverTime
+                        ? effect.Definition.PeriodicDamageType
+                        : null));
 
-                if (effect.Definition.Kind == EffectKind.DamageOverTime && actual > 0)
+                if (effect.Definition.Kind == EffectKind.DamageOverTime)
                 {
-                    events.Add(new CombatEvent(
-                        CombatEventType.DamageDealt,
-                        tickAt,
-                        target.ActorId,
-                        effect.Definition.Id,
-                        actual,
-                        SourceActorId: effect.SourceId,
-                        TargetActorId: target.ActorId,
-                        IsPeriodic: true,
-                        AmountBeforeShields: actual));
+                    if (periodicDamageResolver is not null)
+                    {
+                        events.AddRange(resolvedDamage.Select(item => item with
+                        {
+                            IsPeriodic = true,
+                            DefinitionId = item.DefinitionId ?? effect.Definition.Id
+                        }));
+                    }
+                    else if (actual > 0)
+                    {
+                        events.Add(new CombatEvent(
+                            CombatEventType.DamageDealt,
+                            tickAt,
+                            target.ActorId,
+                            effect.Definition.Id,
+                            actual,
+                            SourceActorId: effect.SourceId,
+                            TargetActorId: target.ActorId,
+                            IsPeriodic: true,
+                            AmountBeforeShields: actual,
+                            DamageType: effect.Definition.PeriodicDamageType));
+                    }
                 }
                 else if (effect.Definition.Kind == EffectKind.HealingOverTime && actual > 0)
                 {
@@ -133,7 +162,9 @@ public static class EffectEngine
 
                 effect.NextTickAtUtc = tickAt + effect.Definition.TickInterval!.Value;
 
-                if (target.IsDead)
+                if (periodicDamageResolver is null
+                    && effect.Definition.Kind == EffectKind.DamageOverTime
+                    && target.IsDead)
                 {
                     events.Add(new CombatEvent(
                         CombatEventType.ActorDied,
@@ -142,7 +173,8 @@ public static class EffectEngine
                         effect.Definition.Id,
                         SourceActorId: effect.SourceId,
                         TargetActorId: target.ActorId,
-                        IsPeriodic: true));
+                        IsPeriodic: true,
+                        DamageType: effect.Definition.PeriodicDamageType));
                 }
             }
         }

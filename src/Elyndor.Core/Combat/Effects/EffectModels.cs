@@ -1,3 +1,5 @@
+using Elyndor.Core.Combat.Damage;
+
 namespace Elyndor.Core.Combat.Effects;
 
 public enum EffectKind
@@ -48,7 +50,8 @@ public sealed record EffectDefinition(
     int Version = 1,
     EffectStat? ModifiedStat = null,
     EffectModifierMode ModifierMode = EffectModifierMode.Flat,
-    bool SourceSpecific = false);
+    bool SourceSpecific = false,
+    DamageType PeriodicDamageType = DamageType.True);
 
 public sealed class ActiveEffect
 {

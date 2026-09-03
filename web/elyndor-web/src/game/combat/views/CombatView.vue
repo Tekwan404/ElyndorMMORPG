@@ -34,6 +34,15 @@ const abilityPresentation: Record<string, { name: string; art?: string }> = {
   WILD_STRIKE: { name: 'Дикий удар', art: gameArt.warriorAbilities.wildStrike },
   WHIRLWIND: { name: 'Вихрь', art: gameArt.warriorAbilities.whirlwind },
   BERSERK: { name: 'Берсерк' },
+  MAGE_FIREBALL: { name: 'Огненный шар' },
+  MAGE_ARCANE_SPARK: { name: 'Тайная искра' },
+  MAGE_ICE_SHARD: { name: 'Ледяной осколок' },
+  FLAME_FLASH: { name: 'Вспышка' },
+  FIRE_WAVE: { name: 'Огненная волна' },
+  COMBUSTION: { name: 'Возгорание' },
+  FIRE_COMET: { name: 'Огненная комета' },
+  PYRO_BURN: { name: 'Горение' },
+  PYRO_COMET_AFTERSHOCK: { name: 'Кометный удар' },
 }
 
 const enemyPresentation = computed(() => {
@@ -43,6 +52,13 @@ const enemyPresentation = computed(() => {
 })
 const displayAbilities = computed(() => snapshot.value?.player.abilities ?? [])
 const healingPotion = computed(() => session.snapshot?.character?.inventory.items.find((item) => item.definitionId === 'SMALL_HEALING_POTION') ?? null)
+const resourceName = computed(() => snapshot.value?.player.resourceType === 'MANA' ? 'Мана' : snapshot.value?.player.resourceType === 'FOCUS' ? 'Фокус' : 'Ярость')
+const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => snapshot.value?.player.resourceType === 'MANA' ? 'mana' : snapshot.value?.player.resourceType === 'FOCUS' ? 'focus' : 'rage')
+const fireballStreak = computed(() => snapshot.value?.player.effects.find((effect) => effect.id === 'PYRO_FIREBALL_STREAK')?.stacks ?? 0)
+const heatLimit = computed(() => snapshot.value?.player.effects.find((effect) => effect.id === 'PYRO_HEAT_LIMIT') ?? null)
+const combustion = computed(() => snapshot.value?.player.effects.find((effect) => effect.id === 'PYRO_COMBUSTION') ?? null)
+const targetBurn = computed(() => snapshot.value?.enemy.effects.find((effect) => effect.id === 'PYRO_BURN') ?? null)
+const isMage = computed(() => snapshot.value?.player.definitionId === 'MAGE')
 
 const logEntries = computed<CombatLogEntry[]>(() => {
   const events = combat.events.slice(-40)
@@ -87,7 +103,7 @@ const logEntries = computed<CombatLogEntry[]>(() => {
       side,
       actor: actorLabel(side),
       text: eventText(event, critical),
-      detail: resourceEvent ? `${resourceEvent.amount > 0 ? '+' : ''}${resourceEvent.amount} ярости · ${abilityName(resourceEvent.definitionId)}` : undefined,
+      detail: resourceEvent ? `${resourceEvent.amount > 0 ? '+' : ''}${Math.round(resourceEvent.amount * 10) / 10} ${resourceName.value.toLowerCase()} · ${abilityName(resourceEvent.definitionId)}` : undefined,
     })
   }
   return entries.slice(-12).reverse()
@@ -98,11 +114,16 @@ function cooldownRemaining(abilityId: string): number {
   return readyAt ? Math.max(0, (Date.parse(readyAt) - now.value) / 1_000) : 0
 }
 
+function effectRemaining(expiresAtUtc: string): number {
+  return Math.max(0, (Date.parse(expiresAtUtc) - now.value) / 1_000)
+}
+
 function abilityName(id: string | null | undefined): string {
   if (!id) return ''
   if (id === 'AUTO_ATTACK') return 'Автоатака'
   if (id === 'BITE') return 'Укус'
   if (id === 'DIRECT_DAMAGE_TAKEN') return 'Получение урона'
+  if (id === 'COMBAT_REGEN') return 'Регенерация'
   if (id === 'SMALL_HEALING_POTION') return 'Малое зелье лечения'
   return abilityPresentation[id]?.name ?? id.split('_').join(' ')
 }
@@ -132,6 +153,7 @@ function eventText(event: CombatEvent, critical = false): string {
     case 'DamageDealt': return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТ!' : ''}`
     case 'AbilityUsed': return `${definition} · действие выполнено`
     case 'EffectApplied': return `Наложен эффект «${definition}»`
+    case 'EffectRefreshed': return `Обновлён эффект «${definition}»`
     case 'HealingApplied': return `Восстановлено ${Math.round(event.amount)} здоровья`
     case 'ConsumableUsed': return `${definition} · +${Math.round(event.amount)} здоровья`
     case 'TauntApplied': return `Провокация · ${definition}`
@@ -160,7 +182,7 @@ onUnmounted(() => window.clearInterval(timer))
   <section class="combat-screen">
     <template v-if="snapshot && enemyPresentation">
       <section class="enemy-stage">
-        <div class="enemy-heading"><div><small>ПРОТИВНИК · УР. {{ enemyPresentation.level }}</small><h1>{{ enemyPresentation.name }}</h1></div></div>
+        <div class="enemy-heading"><div><small>ПРОТИВНИК · УР. {{ enemyPresentation.level }}</small><h1>{{ enemyPresentation.name }}</h1></div><span v-if="targetBurn" class="burn">🔥 Горение · {{ effectRemaining(targetBurn.expiresAtUtc).toFixed(1) }}с</span></div>
         <div class="enemy-portrait"><img :src="enemyPresentation.art" :alt="enemyPresentation.name" /></div>
         <UIHealthBar :label="`${enemyPresentation.name} · ${Math.ceil(snapshot.enemy.hp)} / ${Math.ceil(snapshot.enemy.maxHp)}`" :value="snapshot.enemy.hp" :max="snapshot.enemy.maxHp" />
       </section>
@@ -168,33 +190,26 @@ onUnmounted(() => window.clearInterval(timer))
       <section class="player-panel">
         <div class="player-heading"><div><small>ВАШ ПЕРСОНАЖ</small><strong>{{ snapshot.player.name }}</strong></div><span :class="{ active: snapshot.player.autoAttackEnabled }">{{ snapshot.player.autoAttackEnabled ? 'Автоатака включена' : 'Автоатака выключена' }}</span></div>
         <UIHealthBar label="Здоровье" :value="snapshot.player.hp" :max="snapshot.player.maxHp" />
-        <UIHealthBar label="Ярость" tone="rage" :value="snapshot.player.resource" :max="snapshot.player.maxResource" />
+        <UIHealthBar :label="resourceName" :tone="resourceTone" :value="snapshot.player.resource" :max="snapshot.player.maxResource" />
+
+        <div v-if="isMage" class="pyro-state" aria-label="Состояние пироманта">
+          <span>Fireball Crit <b>{{ fireballStreak }}/3</b></span>
+          <span v-if="heatLimit" class="hot">ПРЕДЕЛ ЖАРА · {{ effectRemaining(heatLimit.expiresAtUtc).toFixed(1) }}с</span>
+          <span v-if="combustion" class="hot">ВОЗГОРАНИЕ · {{ effectRemaining(combustion.expiresAtUtc).toFixed(1) }}с</span>
+        </div>
 
         <div class="abilities">
-          <button v-for="ability in displayAbilities" :key="ability.id" type="button" :disabled="combat.pending || cooldownRemaining(ability.id) > 0 || snapshot.player.resource < ability.resourceCost" @click="combat.useAbility(ability.id)">
+          <button v-for="ability in displayAbilities" :key="ability.id" type="button" :class="{ 'ability--comet': ability.id === 'FIRE_COMET' }" :disabled="combat.pending || cooldownRemaining(ability.id) > 0 || snapshot.player.resource < ability.resourceCost" @click="combat.useAbility(ability.id)">
             <span class="ability-icon"><img v-if="abilityPresentation[ability.id]?.art" :src="abilityPresentation[ability.id]?.art" alt="" /><b v-else>{{ abilityName(ability.id).slice(0,2) }}</b></span>
-            <span><strong>{{ abilityName(ability.id) }}</strong><small>{{ cooldownRemaining(ability.id) > 0 ? `${Math.ceil(cooldownRemaining(ability.id))} сек.` : ability.resourceCost > 0 ? `${ability.resourceCost} ярости` : 'Без затрат' }}</small></span>
+            <span><strong>{{ abilityName(ability.id) }}</strong><small>{{ cooldownRemaining(ability.id) > 0 ? `${Math.ceil(cooldownRemaining(ability.id))} сек.` : ability.resourceCost > 0 ? `${Math.round(ability.resourceCost * 10) / 10} ${resourceName.toLowerCase()}` : 'Без затрат' }}</small></span>
           </button>
         </div>
 
-        <div class="consumables">
-          <button type="button" :disabled="combat.pending || !healingPotion || snapshot.player.hp >= snapshot.player.maxHp" @click="usePotion">
-            <span>✚</span><div><strong>Малое зелье лечения</strong><small v-if="healingPotion">+{{ healingPotion.healAmount }} здоровья · в рюкзаке {{ healingPotion.quantity }}</small><small v-else>В рюкзаке нет зелий</small></div>
-          </button>
-        </div>
-
+        <div class="consumables"><button type="button" :disabled="combat.pending || !healingPotion || snapshot.player.hp >= snapshot.player.maxHp" @click="usePotion"><span>✚</span><div><strong>Малое зелье лечения</strong><small v-if="healingPotion">+{{ healingPotion.healAmount }} здоровья · в рюкзаке {{ healingPotion.quantity }}</small><small v-else>В рюкзаке нет зелий</small></div></button></div>
         <div class="controls"><UIButton variant="secondary" :disabled="combat.pending" @click="combat.toggleAutoAttack">{{ snapshot.player.autoAttackEnabled ? 'Остановить автоатаку' : 'Включить автоатаку' }}</UIButton><UIButton variant="ghost" :disabled="combat.pending" @click="leaveCombat">Покинуть бой</UIButton></div>
       </section>
 
-      <section class="combat-log">
-        <header><b>Журнал боя</b><small>Последние действия</small></header>
-        <ol>
-          <li v-for="entry in logEntries" :key="entry.key" :data-side="entry.side">
-            <span class="actor">{{ entry.actor }}</span>
-            <div><strong>{{ entry.text }}</strong><small v-if="entry.detail">↳ {{ entry.detail }}</small></div>
-          </li>
-        </ol>
-      </section>
+      <section class="combat-log"><header><b>Журнал боя</b><small>Последние действия</small></header><ol><li v-for="entry in logEntries" :key="entry.key" :data-side="entry.side"><span class="actor">{{ entry.actor }}</span><div><strong>{{ entry.text }}</strong><small v-if="entry.detail">↳ {{ entry.detail }}</small></div></li></ol></section>
       <p v-if="combat.errorCode" class="error">Не удалось выполнить действие: {{ combat.errorCode }}</p>
     </template>
     <div v-else class="missing"><h1>Бой прерван</h1><UIButton @click="emit('leave')">Вернуться в мир</UIButton></div>
@@ -202,11 +217,5 @@ onUnmounted(() => window.clearInterval(timer))
 </template>
 
 <style scoped>
-.combat-screen{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4)}
-.enemy-stage,.player-panel,.combat-log{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-1)}
-.enemy-heading h1{margin:0;font-family:var(--ui-font-display)}.enemy-heading small,.player-heading small,.combat-log header small{color:var(--ui-color-text-muted)}.enemy-portrait{display:grid;height:15rem;place-items:center;overflow:hidden;background:radial-gradient(circle,rgb(96 82 255 / 15%),transparent 60%)}.enemy-portrait img{width:100%;height:100%;object-fit:contain}
-.player-heading{display:flex;justify-content:space-between;gap:var(--ui-space-2)}.player-heading>div{display:grid}.player-heading>span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.player-heading>span.active{color:var(--ui-color-success)}
-.abilities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-2)}.abilities button,.consumables button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.abilities button>span:last-child,.consumables div{display:grid}.abilities small,.consumables small{color:var(--ui-color-text-muted)}.ability-icon,.consumables button>span{display:grid;width:2.8rem;height:2.8rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background);color:var(--ui-color-primary)}.ability-icon img{width:100%;height:100%;object-fit:cover}
-.controls{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.combat-log header{display:flex;justify-content:space-between}.combat-log ol{display:grid;gap:var(--ui-space-2);margin:0;padding:0;list-style:none}.combat-log li{display:grid;grid-template-columns:5rem 1fr;gap:var(--ui-space-2);padding:var(--ui-space-2);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.combat-log li[data-side='player']{border-left:3px solid var(--ui-color-primary)}.combat-log li[data-side='enemy']{border-left:3px solid var(--ui-color-danger)}.combat-log li[data-side='system']{border-left:3px solid var(--ui-color-border-strong)}.actor{font-size:var(--ui-font-size-xs);font-weight:700}.combat-log li div{display:grid;gap:2px}.combat-log li small{color:var(--ui-color-text-muted);font-weight:400}.error{color:var(--ui-color-danger)}.missing{display:grid;gap:var(--ui-space-3);place-items:start}
-@media(max-width:420px){.abilities{grid-template-columns:1fr}.combat-log li{grid-template-columns:4rem 1fr}.enemy-portrait{height:12rem}}
+.combat-screen{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4)}.enemy-stage,.player-panel,.combat-log{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-1)}.enemy-heading{display:flex;align-items:start;justify-content:space-between;gap:var(--ui-space-2)}.enemy-heading h1{margin:0;font-family:var(--ui-font-display)}.enemy-heading small,.player-heading small,.combat-log header small{color:var(--ui-color-text-muted)}.burn,.hot{color:var(--ui-modifier-fire);font-size:var(--ui-font-size-xs);font-weight:700}.enemy-portrait{display:grid;height:15rem;place-items:center;overflow:hidden;background:radial-gradient(circle,rgb(96 82 255 / 15%),transparent 60%)}.enemy-portrait img{width:100%;height:100%;object-fit:contain}.player-heading{display:flex;justify-content:space-between;gap:var(--ui-space-2)}.player-heading>div{display:grid}.player-heading>span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.player-heading>span.active{color:var(--ui-color-success)}.pyro-state{display:flex;flex-wrap:wrap;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid color-mix(in srgb,var(--ui-modifier-fire) 35%,var(--ui-color-border));border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-modifier-fire) 7%,transparent);color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.pyro-state b{color:var(--ui-color-text-primary)}.abilities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-2)}.abilities button,.consumables button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.abilities button.ability--comet{border-color:var(--ui-modifier-fire);box-shadow:0 0 14px color-mix(in srgb,var(--ui-modifier-fire) 35%,transparent)}.abilities button>span:last-child,.consumables div{display:grid}.abilities small,.consumables small{color:var(--ui-color-text-muted)}.ability-icon,.consumables button>span{display:grid;width:2.8rem;height:2.8rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background);color:var(--ui-color-primary)}.ability--comet .ability-icon{color:var(--ui-modifier-fire)}.ability-icon img{width:100%;height:100%;object-fit:cover}.controls{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.combat-log header{display:flex;justify-content:space-between}.combat-log ol{display:grid;gap:var(--ui-space-2);margin:0;padding:0;list-style:none}.combat-log li{display:grid;grid-template-columns:5rem 1fr;gap:var(--ui-space-2);padding:var(--ui-space-2);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.combat-log li[data-side='player']{border-left:3px solid var(--ui-color-primary)}.combat-log li[data-side='enemy']{border-left:3px solid var(--ui-color-danger)}.combat-log li[data-side='system']{border-left:3px solid var(--ui-color-border-strong)}.actor{font-size:var(--ui-font-size-xs);font-weight:700}.combat-log li div{display:grid;gap:2px}.combat-log li small{color:var(--ui-color-text-muted);font-weight:400}.error{color:var(--ui-color-danger)}.missing{display:grid;gap:var(--ui-space-3);place-items:start}@media(max-width:420px){.abilities{grid-template-columns:1fr}.combat-log li{grid-template-columns:4rem 1fr}.enemy-portrait{height:12rem}}
 </style>

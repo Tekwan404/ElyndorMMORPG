@@ -6,15 +6,32 @@ namespace Elyndor.IntegrationTests.Content;
 public sealed class GameContentPackageLoaderTests
 {
     [Fact]
-    public async Task PhaseFivePackageLoadsAndValidates()
+    public async Task PhaseFiveAndMagePackageLoadsAndValidates()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.7.0", package.ContentVersion);
+        Assert.Equal("0.8.0", package.ContentVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Equal(9, package.Items!.Count);
         Assert.Equal(3, package.LootTables!.Count);
+
+        ClassProfile mage = Assert.Single(package.ClassProfiles!, profile => profile.Id == "MAGE");
+        Assert.Equal("INTELLECT", mage.PrimaryAttribute);
+        Assert.Equal("MANA", mage.ResourceProfileId);
+        Assert.Equal(new[] { "STAFF", "WAND" }, mage.AllowedWeaponCategories);
+        Assert.Equal(new[] { "LIGHT" }, mage.AllowedArmorCategories);
+        Assert.Equal(
+            new[] { "MAGE_FIREBALL", "MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD" },
+            mage.StartingAbilityIds);
+        Assert.NotNull(mage.CombatAutoAttack);
+
+        TalentTreeDefinition mageTree = Assert.Single(
+            package.TalentTrees!, tree => tree.Id == "MAGE_TREE");
+        TalentBranchDefinition fire = Assert.Single(mageTree.Branches);
+        Assert.Equal("FIRE", fire.Id);
+        Assert.Equal(32, mageTree.Nodes.Count);
+        Assert.Equal(69, mageTree.Nodes.Sum(node => node.MaxRank));
         Assert.Empty(GameContentPackageValidator.Validate(package));
     }
 

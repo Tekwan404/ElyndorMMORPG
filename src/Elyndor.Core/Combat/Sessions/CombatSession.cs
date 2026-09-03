@@ -25,6 +25,7 @@ public sealed partial class CombatSession
     private DateTimeOffset? _nextPlayerAutoAttackAtUtc;
     private DateTimeOffset? _nextEnemyActionAtUtc;
     private DateTimeOffset? _consumableCooldownReadyAtUtc;
+    private DateTimeOffset _lastPlayerResourceRegenAtUtc;
     private bool _playerAutoAttackEnabled;
 
     public CombatSession(
@@ -49,6 +50,8 @@ public sealed partial class CombatSession
         ValidateAutoAttack(enemy.AutoAttack);
         if (player.Kind != CombatActorKind.Player || enemy.Kind != CombatActorKind.Monster)
             throw new ArgumentException("CombatSession requires one player and one monster.");
+        if (player.ResourceRegenPerSecond < 0)
+            throw new ArgumentOutOfRangeException(nameof(player), "Resource regeneration cannot be negative.");
 
         SessionId = sessionId;
         _player = player;
@@ -60,6 +63,7 @@ public sealed partial class CombatSession
         _playerRuntime = CreateRuntime(player.Actor, enemy.Actor);
         _enemyRuntime = CreateRuntime(enemy.Actor, player.Actor);
         CurrentTimeUtc = startedAtUtc;
+        _lastPlayerResourceRegenAtUtc = startedAtUtc;
         Status = CombatSessionStatus.Active;
         _playerAutoAttackEnabled = true;
         _nextPlayerAutoAttackAtUtc = startedAtUtc;
@@ -174,12 +178,14 @@ public sealed partial class CombatSession
         DateTimeOffset now,
         long before)
     {
-        if (!_player.KnownAbilityIds.Contains(command.AbilityId)
+        if (!IsPlayerAbilityKnown(command.AbilityId, now)
             || !_abilities.TryGetValue(command.AbilityId, out AbilityDefinition? baseAbility))
             return Result(false, CombatErrorCodes.AbilityNotKnown, before);
 
         SyncBerserkerConditionalEffects(now);
-        AbilityDefinition ability = ResolvePlayerAbility(baseAbility, now);
+        AbilityDefinition ability = ResolvePyromancerAbility(
+            ResolvePlayerAbility(baseAbility, now),
+            now);
         AbilityExecutionResult execution = AbilityEngine.Execute(
             _playerRuntime,
             ability,
@@ -194,11 +200,19 @@ public sealed partial class CombatSession
             _player.Actor.ActorId,
             command.TargetActorId,
             command.AbilityId);
-        OnPlayerAbilitySucceeded(
-            ability,
-            execution,
-            command.TargetActorId,
-            now);
+        OnPyromancerAbilityStarted(ability, now);
+        if (ability.Type != AbilityType.Casted)
+        {
+            OnPlayerAbilitySucceeded(
+                ability,
+                execution,
+                command.TargetActorId,
+                now);
+            OnPyromancerAbilityResolved(
+                ability,
+                execution,
+                now);
+        }
         Append(new CombatEvent(
             CombatEventType.AbilityUsed,
             now,
@@ -287,6 +301,7 @@ public sealed partial class CombatSession
                && NextDueAtUtc is { } due
                && due <= now)
         {
+            ApplyPlayerResourceRegen(due);
             CurrentTimeUtc = due;
             ProcessEffects(due);
             if (Status != CombatSessionStatus.Active) break;
@@ -295,12 +310,10 @@ public sealed partial class CombatSession
             CompleteReadyCast(
                 _playerRuntime,
                 _player.Actor.ActorId,
-                _enemy.Actor.ActorId,
                 due);
             CompleteReadyCast(
                 _enemyRuntime,
                 _enemy.Actor.ActorId,
-                _player.Actor.ActorId,
                 due);
 
             if (Status == CombatSessionStatus.Active && _nextPlayerAutoAttackAtUtc <= due)
@@ -328,6 +341,7 @@ public sealed partial class CombatSession
             }
         }
 
+        ApplyPlayerResourceRegen(now);
         CurrentTimeUtc = now;
         if (Status == CombatSessionStatus.Active)
         {
@@ -420,39 +434,84 @@ public sealed partial class CombatSession
     private void CompleteReadyCast(
         CombatRuntimeState runtime,
         Guid sourceActorId,
-        Guid targetActorId,
         DateTimeOffset now)
     {
         if (runtime.ActiveCast?.ResolvesAtUtc > now) return;
-        if (runtime.ActiveCast is null) return;
+        ActiveCast? cast = runtime.ActiveCast;
+        if (cast is null) return;
         AbilityExecutionResult completion =
             AbilityEngine.CompleteCast(runtime, now, _random);
-        if (completion.Succeeded)
+        if (!completion.Succeeded) return;
+
+        ApplyKernelEvents(
+            completion.Events,
+            sourceActorId,
+            cast.TargetId,
+            cast.Ability.Id);
+        if (runtime == _playerRuntime)
         {
-            ApplyKernelEvents(
-                completion.Events,
-                sourceActorId,
-                targetActorId,
-                completion.Events.Count > 0
-                    ? completion.Events[0].DefinitionId
-                    : null);
+            OnPlayerAbilitySucceeded(
+                cast.Ability,
+                completion,
+                cast.TargetId,
+                now);
+            OnPyromancerAbilityResolved(
+                cast.Ability,
+                completion,
+                now);
         }
     }
 
     private void ProcessEffects(DateTimeOffset now)
     {
         ApplyKernelEvents(
-            EffectEngine.Process(_player.Actor, now),
+            EffectEngine.Process(
+                _player.Actor,
+                now,
+                (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _player.Actor, tickAt)),
             _enemy.Actor.ActorId,
             _player.Actor.ActorId,
             null);
         if (Status != CombatSessionStatus.Active) return;
 
         ApplyKernelEvents(
-            EffectEngine.Process(_enemy.Actor, now),
+            EffectEngine.Process(
+                _enemy.Actor,
+                now,
+                (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _enemy.Actor, tickAt)),
             _player.Actor.ActorId,
             _enemy.Actor.ActorId,
             null);
+    }
+
+    private IReadOnlyList<CombatEvent> ResolvePeriodicEffectDamage(
+        ActiveEffect effect,
+        CombatActorState target,
+        DateTimeOffset tickAt)
+    {
+        CombatActorState? source = effect.SourceId == _player.Actor.ActorId
+            ? _player.Actor
+            : effect.SourceId == _enemy.Actor.ActorId
+                ? _enemy.Actor
+                : null;
+        if (source is null || source.IsDead || target.IsDead) return [];
+
+        DamageType type = effect.Definition.Id is "BERSERKER_BLOOD_TRAIL" or "BERSERKER_RENDING_RAMPAGE"
+            ? DamageType.Physical
+            : effect.Definition.PeriodicDamageType;
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                effect.Definition.Magnitude * effect.Stacks,
+                type,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false,
+                MinimumDamage: 0),
+            _random,
+            tickAt);
+        return result.Events;
     }
 
     private void ApplyKernelEvents(
@@ -494,11 +553,14 @@ public sealed partial class CombatSession
         {
             if (!combatEvent.IsPeriodic)
             {
-                AddResource(
-                    _player.Actor,
-                    BaseRageFromDirectDamageTaken,
-                    combatEvent.OccurredAtUtc,
-                    "DIRECT_DAMAGE_TAKEN");
+                if (string.Equals(_player.ResourceType, "RAGE", StringComparison.Ordinal))
+                {
+                    AddResource(
+                        _player.Actor,
+                        BaseRageFromDirectDamageTaken,
+                        combatEvent.OccurredAtUtc,
+                        "DIRECT_DAMAGE_TAKEN");
+                }
                 TriggerTalent(
                     TalentModifierKeys.OnDamageTaken,
                     combatEvent.OccurredAtUtc);
@@ -506,13 +568,27 @@ public sealed partial class CombatSession
 
             ApplyBerserkerDamageTakenHooks(combatEvent);
         }
-        else if (combatEvent.Type == CombatEventType.CriticalHit
-                 && combatEvent.SourceActorId == _player.Actor.ActorId)
+
+        if (combatEvent.Type == CombatEventType.CriticalHit
+            && combatEvent.SourceActorId == _player.Actor.ActorId)
         {
             TriggerTalent(
                 TalentModifierKeys.OnCriticalHit,
                 combatEvent.OccurredAtUtc);
             ApplyBerserkerCriticalHooks(combatEvent);
+            ApplyPyromancerCriticalHooks(combatEvent);
+        }
+
+        if (combatEvent.Type == CombatEventType.CriticalHit
+            && combatEvent.TargetActorId == _player.Actor.ActorId)
+        {
+            ApplyPyromancerIncomingCriticalHooks(combatEvent);
+        }
+
+        if (combatEvent.Type == CombatEventType.AbilityInterrupted
+            && combatEvent.ActorId == _player.Actor.ActorId)
+        {
+            OnPyromancerAbilityInterrupted(combatEvent);
         }
     }
 
@@ -521,7 +597,8 @@ public sealed partial class CombatSession
         foreach (ResolvedTalentEventHook hook in _playerTalents.EventHooks.Where(
                      item => item.Key == key))
         {
-            if (BerserkerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _))
+            if (BerserkerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _)
+                || PyromancerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _))
             {
                 continue;
             }
@@ -553,11 +630,13 @@ public sealed partial class CombatSession
                 _enemy.DefinitionId,
                 SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
                 TargetActorId: _enemy.Actor.ActorId,
-                IsPeriodic: death.IsPeriodic));
+                IsPeriodic: death.IsPeriodic,
+                DamageType: death.DamageType));
             TriggerTalent(
                 TalentModifierKeys.OnEnemyKilled,
                 death.OccurredAtUtc);
             ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
+            ApplyPyromancerEnemyKilledHooks(death);
             Status = CombatSessionStatus.Victory;
         }
         else
@@ -575,6 +654,17 @@ public sealed partial class CombatSession
             Status.ToString(),
             SourceActorId: death.SourceActorId,
             TargetActorId: death.ActorId));
+    }
+
+    private void ApplyPlayerResourceRegen(DateTimeOffset now)
+    {
+        if (now <= _lastPlayerResourceRegenAtUtc) return;
+        TimeSpan elapsed = now - _lastPlayerResourceRegenAtUtc;
+        _lastPlayerResourceRegenAtUtc = now;
+        if (_player.ResourceRegenPerSecond <= 0 || _player.Actor.IsDead) return;
+
+        decimal amount = _player.ResourceRegenPerSecond * (decimal)elapsed.TotalSeconds;
+        AddResource(_player.Actor, amount, now, "COMBAT_REGEN");
     }
 
     private void AddResource(
@@ -621,10 +711,15 @@ public sealed partial class CombatSession
         CombatRuntimeState runtime,
         bool autoAttackEnabled)
     {
-        CombatAbilitySnapshot[] abilities = definition.KnownAbilityIds
+        IReadOnlySet<string> knownAbilityIds = definition.Kind == CombatActorKind.Player
+            ? GetPlayerKnownAbilityIds(CurrentTimeUtc)
+            : definition.KnownAbilityIds;
+        CombatAbilitySnapshot[] abilities = knownAbilityIds
             .Where(_abilities.ContainsKey)
             .Select(id => definition.Kind == CombatActorKind.Player
-                ? ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc)
+                ? ResolvePyromancerAbility(
+                    ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
+                    CurrentTimeUtc)
                 : _abilities[id])
             .OrderBy(ability => ability.Id, StringComparer.Ordinal)
             .Select(ability => new CombatAbilitySnapshot(
@@ -649,9 +744,7 @@ public sealed partial class CombatSession
             new Dictionary<string, DateTimeOffset>(
                 runtime.Cooldowns,
                 StringComparer.Ordinal),
-            new HashSet<string>(
-                definition.KnownAbilityIds,
-                StringComparer.Ordinal),
+            new HashSet<string>(knownAbilityIds, StringComparer.Ordinal),
             abilities,
             definition.Actor.ActiveEffects.Select(effect =>
                 new CombatEffectSnapshot(

@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Talents;
 
@@ -125,4 +126,5 @@ public sealed record CombatEvent(
     Guid? TargetActorId = null,
     long Sequence = 0,
     bool IsPeriodic = false,
-    decimal AmountBeforeShields = 0);
+    decimal AmountBeforeShields = 0,
+    DamageType? DamageType = null);

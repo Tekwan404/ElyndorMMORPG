@@ -189,8 +189,10 @@ public static class AbilityEngine
                             EffectStat.AttackPower,
                             runtime.Actor.Stats.AttackPower,
                             now);
+                        decimal spellPower = runtime.Actor.Stats.SpellPower;
                         decimal baseDamage = action.Amount
-                            + attackPower * Math.Max(0, action.AttackPowerCoefficient);
+                            + attackPower * Math.Max(0, action.AttackPowerCoefficient)
+                            + spellPower * Math.Max(0, action.SpellPowerCoefficient);
                         DamageResult damage = DamagePipeline.Resolve(
                             new DamageRequest(
                                 runtime.Actor,
@@ -200,7 +202,12 @@ public static class AbilityEngine
                                 CanMiss: action.CanMiss,
                                 CanDodge: action.CanDodge,
                                 CanCrit: action.CanCrit,
-                                ArmorPenetrationBonus: action.ArmorPenetrationBonus),
+                                DamageMultiplier: ability.DamageMultiplier,
+                                ArmorPenetrationBonus: action.ArmorPenetrationBonus,
+                                AccuracyBonus: ability.AccuracyBonus,
+                                CriticalChanceBonus: ability.CriticalChanceBonus,
+                                CriticalDamageBonus: ability.CriticalDamageBonus,
+                                MagicPenetrationBonus: ability.MagicPenetrationBonus),
                             random,
                             now);
                         events.AddRange(damage.Events);
@@ -251,6 +258,7 @@ public static class AbilityEngine
     private static void EnsureExecutable(AbilityDefinition ability, IGameRandom? random)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(ability.ResourceCost);
+        ArgumentOutOfRangeException.ThrowIfNegative(ability.DamageMultiplier);
         if (ability.Actions?.Any(action => action.Type == AbilityActionType.Damage) == true
             && random is null)
         {

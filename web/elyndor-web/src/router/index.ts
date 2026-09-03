@@ -10,7 +10,7 @@ const developmentRoutes: RouteRecordRaw[] = import.meta.env.DEV
       {
         path: '/dev/talents',
         name: 'talent-tree-playground',
-        component: () => import('@/game/talents/views/WarriorTalentTreeView.vue'),
+        component: () => import('@/game/talents/views/TalentTreeView.vue'),
       },
     ]
   : []

@@ -4,6 +4,9 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -13,6 +16,7 @@ public static class GameContentPackageLoader
     private const string PhaseFiveOverlayFileName = "phase5-progression-items.json";
     private const string PhaseFiveLegacyItemsFileName = "phase5-legacy-items.json";
     private const string WarriorCombatBaselineOverlayFileName = "warrior-combat-baseline.json";
+    private const string MagePyromancerOverlayFileName = "mage-pyromancer.json";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -51,6 +55,7 @@ public static class GameContentPackageLoader
             package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
             package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
             package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
+            package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
                 GameContentPackageValidator.Validate(package);
@@ -212,6 +217,74 @@ public static class GameContentPackageLoader
         };
     }
 
+    private static async Task<GameContentPackage> ApplyMagePyromancerOverlayAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string overlayPath = Path.Combine(directory, MagePyromancerOverlayFileName);
+        if (!File.Exists(overlayPath)) return package;
+
+        await using FileStream stream = File.OpenRead(overlayPath);
+        MagePyromancerOverlay? overlay = await JsonSerializer.DeserializeAsync<MagePyromancerOverlay>(
+            stream,
+            SerializerOptions,
+            cancellationToken);
+        if (overlay is null)
+        {
+            throw new InvalidDataException($"Mage/Pyromancer content overlay '{overlayPath}' is empty.");
+        }
+
+        IReadOnlyList<ClassProfile> profiles = package.ClassProfiles
+            ?? throw new InvalidDataException("Class profiles are required for mage combat overlay.");
+        if (!profiles.Any(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)))
+        {
+            throw new InvalidDataException(
+                $"Mage combat overlay references unknown class '{overlay.ClassId}'.");
+        }
+
+        GameContentDefinition[] definitions = package.Definitions
+            .Concat(overlay.Definitions)
+            .GroupBy(item => (item.Type, item.Id))
+            .Select(group => group.Last())
+            .ToArray();
+        AbilityDefinition[] abilities = (package.Abilities ?? [])
+            .Concat(overlay.Abilities)
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .Select(group => group.Last())
+            .ToArray();
+        TalentTreeDefinition[] talentTrees = (package.TalentTrees ?? [])
+            .Concat([overlay.TalentTree])
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .Select(group => group.Last())
+            .ToArray();
+
+        return package with
+        {
+            ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+            BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+            PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+            Definitions = definitions,
+            Abilities = abilities,
+            TalentTrees = talentTrees,
+            ClassProfiles = profiles
+                .Select(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)
+                    ? profile with
+                    {
+                        StartingAbilityIds = overlay.StartingAbilityIds,
+                        AbilityUnlocks = [],
+                        CombatAutoAttack = overlay.CombatAutoAttack,
+                        AllowedWeaponCategories = overlay.AllowedWeaponCategories,
+                        AllowedArmorCategories = overlay.AllowedArmorCategories
+                    }
+                    : profile)
+                .ToArray()
+        };
+    }
+
     private static string HigherVersion(string current, string candidate)
     {
         if (Version.TryParse(current, out Version? currentVersion)
@@ -251,4 +324,17 @@ public static class GameContentPackageLoader
         DateTimeOffset PublishedAtUtc,
         string ClassId,
         IReadOnlyList<string> StartingAbilityIds);
+
+    private sealed record MagePyromancerOverlay(
+        string ContentVersion,
+        string BalanceVersion,
+        DateTimeOffset PublishedAtUtc,
+        string ClassId,
+        IReadOnlyList<string> StartingAbilityIds,
+        AutoAttackProfile CombatAutoAttack,
+        IReadOnlyList<string> AllowedWeaponCategories,
+        IReadOnlyList<string> AllowedArmorCategories,
+        IReadOnlyList<GameContentDefinition> Definitions,
+        IReadOnlyList<AbilityDefinition> Abilities,
+        TalentTreeDefinition TalentTree);
 }

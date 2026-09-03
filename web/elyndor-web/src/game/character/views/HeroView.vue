@@ -4,23 +4,23 @@ import { computed, ref } from 'vue'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
-import WarriorTalentTreeView from '@/game/talents/views/WarriorTalentTreeView.vue'
+import TalentTreeView from '@/game/talents/views/TalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
-const isWarrior = computed(() => session.snapshot?.character?.classId === 'WARRIOR')
-const tabs: readonly { id: HeroTab; label: string; available: boolean | 'warrior' }[] = [
+const hasTalentTree = computed(() => ['WARRIOR', 'MAGE'].includes(session.snapshot?.character?.classId ?? ''))
+const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
-  { id: 'talents', label: 'Таланты', available: 'warrior' },
+  { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
 
 function isAvailable(tab: (typeof tabs)[number]): boolean {
-  return tab.available === true || (tab.available === 'warrior' && isWarrior.value)
+  return tab.available === true || (tab.available === 'talents' && hasTalentTree.value)
 }
 </script>
 
@@ -41,7 +41,7 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
       </button>
     </nav>
     <CharacterOverviewView v-if="activeTab === 'character'" />
-    <WarriorTalentTreeView v-else-if="activeTab === 'talents' && isWarrior" />
+    <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
     <InventoryView v-else-if="activeTab === 'inventory'" />
     <CharacterStatsView v-else />
   </section>

@@ -30,7 +30,8 @@ public sealed record CombatParticipantDefinition(
     string Name,
     string ResourceType,
     AutoAttackProfile AutoAttack,
-    IReadOnlySet<string> KnownAbilityIds);
+    IReadOnlySet<string> KnownAbilityIds,
+    decimal ResourceRegenPerSecond = 0);
 
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
 public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
