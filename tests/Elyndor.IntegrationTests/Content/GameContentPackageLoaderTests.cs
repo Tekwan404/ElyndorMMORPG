@@ -12,10 +12,13 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.9.0", package.ContentVersion);
+        Assert.Equal("0.9.1", package.ContentVersion);
+        Assert.Equal("0.9.1", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Equal(9, package.Items!.Count);
         Assert.Equal(3, package.LootTables!.Count);
+        Assert.Equal(100, package.ResourceScaling!.ManaBase);
+        Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
 
         ClassProfile mage = Assert.Single(package.ClassProfiles!, profile => profile.Id == "MAGE");
         Assert.Equal("INTELLECT", mage.PrimaryAttribute);
