@@ -27,7 +27,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<ItemDefinition>? Items = null,
     IReadOnlyList<LootTableDefinition>? LootTables = null,
     IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
-    IReadOnlyList<MerchantDefinition>? Merchants = null);
+    IReadOnlyList<MerchantDefinition>? Merchants = null,
+    ResourceScalingProfile? ResourceScaling = null);
 
 public sealed record GameContentDefinition(
     string Type,
@@ -86,3 +87,7 @@ public sealed record ResourceProfile(
     decimal OutOfCombatRegenPerSecond,
     decimal OutOfCombatDecayPerSecond,
     decimal OutOfCombatDelaySeconds);
+
+public sealed record ResourceScalingProfile(
+    decimal ManaBase,
+    decimal ManaPerIntellect);
