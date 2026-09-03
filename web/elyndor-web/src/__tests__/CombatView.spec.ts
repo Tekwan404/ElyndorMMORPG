@@ -74,6 +74,7 @@ describe('CombatView', () => {
         targetActorId: player.actorId,
         definitionId: 'AUTO_ATTACK',
         amount: 12,
+        amountBeforeShields: 12,
         serverTimeUtc: '2026-09-01T12:00:02Z',
       },
     ]
