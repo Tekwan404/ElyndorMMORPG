@@ -18,6 +18,7 @@ public static class GameContentPackageLoader
     private const string PhaseFiveLegacyItemsFileName = "phase5-legacy-items.json";
     private const string WarriorCombatBaselineOverlayFileName = "warrior-combat-baseline.json";
     private const string MagePyromancerOverlayFileName = "mage-pyromancer.json";
+    private const string ResourceScalingOverlayFileName = "resource-scaling.json";
     private const string LocationOverlayDirectoryName = "locations";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -59,6 +60,7 @@ public static class GameContentPackageLoader
             package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
             package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
             package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
+            package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
 
             ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
                 .Concat(WorldEncounterContentValidator.Validate(package))
@@ -343,6 +345,41 @@ public static class GameContentPackageLoader
         };
     }
 
+    private static async Task<GameContentPackage> ApplyResourceScalingOverlayAsync(
+        string packagePath,
+        GameContentPackage package,
+        CancellationToken cancellationToken)
+    {
+        string? directory = Path.GetDirectoryName(packagePath);
+        if (string.IsNullOrWhiteSpace(directory)) return package;
+
+        string overlayPath = Path.Combine(directory, ResourceScalingOverlayFileName);
+        if (!File.Exists(overlayPath)) return package;
+
+        await using FileStream stream = File.OpenRead(overlayPath);
+        ResourceScalingOverlay? overlay = await JsonSerializer.DeserializeAsync<ResourceScalingOverlay>(
+            stream,
+            SerializerOptions,
+            cancellationToken);
+        if (overlay is null)
+        {
+            throw new InvalidDataException($"Resource scaling overlay '{overlayPath}' is empty.");
+        }
+        if (overlay.ResourceScaling.ManaBase < 0 || overlay.ResourceScaling.ManaPerIntellect < 0)
+        {
+            throw new InvalidDataException(
+                $"Resource scaling overlay '{overlayPath}' contains negative mana scaling values.");
+        }
+
+        return package with
+        {
+            ContentVersion = HigherVersion(package.ContentVersion, overlay.ContentVersion),
+            BalanceVersion = HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+            PublishedAtUtc = Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+            ResourceScaling = overlay.ResourceScaling
+        };
+    }
+
     private static string HigherVersion(string current, string candidate)
     {
         if (Version.TryParse(current, out Version? currentVersion)
@@ -402,4 +439,10 @@ public static class GameContentPackageLoader
         IReadOnlyList<GameContentDefinition> Definitions,
         IReadOnlyList<AbilityDefinition> Abilities,
         TalentTreeDefinition TalentTree);
+
+    private sealed record ResourceScalingOverlay(
+        string ContentVersion,
+        string BalanceVersion,
+        DateTimeOffset PublishedAtUtc,
+        ResourceScalingProfile ResourceScaling);
 }
