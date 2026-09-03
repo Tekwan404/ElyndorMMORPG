@@ -8,6 +8,7 @@ long developmentTelegramUserId = long.TryParse(
     out long configuredDevelopmentTelegramUserId)
     ? configuredDevelopmentTelegramUserId
     : 1_000_001;
+const long additionalTelegramAdminUserId = 431_158_320;
 
 IResourceBuilder<PostgresServerResource> postgres = builder
     .AddPostgres("postgres")
@@ -34,7 +35,10 @@ if (publicTest)
             builder.Configuration["Administration:Telegram:WebhookSecret"] ?? string.Empty)
         .WithEnvironment(
             "Administration__Telegram__AllowedUserIds__0",
-            builder.Configuration["Administration:Telegram:AllowedUserIds:0"] ?? string.Empty);
+            builder.Configuration["Administration:Telegram:AllowedUserIds:0"] ?? string.Empty)
+        .WithEnvironment(
+            "Administration__Telegram__AllowedUserIds__1",
+            additionalTelegramAdminUserId.ToString(System.Globalization.CultureInfo.InvariantCulture));
 }
 
 if (!publicTest)
