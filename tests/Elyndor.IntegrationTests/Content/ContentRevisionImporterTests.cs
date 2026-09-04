@@ -94,7 +94,7 @@ public sealed class ContentRevisionImporterTests(PostgresFixture postgres) : IAs
         await using (GameDbContext tamper = postgres.CreateDbContext())
         {
             await tamper.Database.ExecuteSqlInterpolatedAsync(
-                $"""UPDATE game.content_revisions SET "PayloadJson" = '{{"tampered":true}}' WHERE "Id" = {revisionId}""");
+                $"UPDATE game.content_revisions SET \"PayloadJson\" = '{{\"tampered\":true}}' WHERE \"Id\" = {revisionId}");
         }
 
         await using GameDbContext verifyContext = postgres.CreateDbContext();
