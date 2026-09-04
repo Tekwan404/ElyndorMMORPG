@@ -109,6 +109,7 @@ function update(path: JsonPath, value: unknown): void {
 
   for (let index = 0; index < path.length - 1; index++) {
     const segment = path[index]
+    if (segment === undefined) return
     if (typeof segment === 'number') {
       if (!Array.isArray(current)) return
       current = current[segment]
@@ -119,6 +120,7 @@ function update(path: JsonPath, value: unknown): void {
   }
 
   const finalSegment = path[path.length - 1]
+  if (finalSegment === undefined) return
   if (typeof finalSegment === 'number') {
     if (!Array.isArray(current)) return
     current[finalSegment] = value
