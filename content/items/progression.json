@@ -1,0 +1,317 @@
+{
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "items": [
+    {
+      "id": "WOLF_HIDE",
+      "name": "Шкура волка",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Грубая шкура лесного волка. Заготовка для будущего ремесла.",
+      "version": 1
+    },
+    {
+      "id": "WOLF_FANG",
+      "name": "Волчий клык",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Острый клык лесного волка. Пригодится для оружейного ремесла.",
+      "version": 1
+    },
+    {
+      "id": "BOAR_HIDE",
+      "name": "Шкура кабана",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Толстая прочная шкура лесного кабана. Подходит для защитной экипировки.",
+      "version": 1
+    },
+    {
+      "id": "BOAR_TUSK",
+      "name": "Кабаний клык",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Тяжёлый кабаний клык. Заготовка для будущих оружейных деталей.",
+      "version": 1
+    },
+    {
+      "id": "SPIDER_SILK",
+      "name": "Паучий шёлк",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Прочная нить гигантского паука. Основа для ткани и лёгкой брони.",
+      "version": 1
+    },
+    {
+      "id": "SPIDER_VENOM_SAC",
+      "name": "Ядовитая железа паука",
+      "type": "Material",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Железа с сохранившимся ядом гигантского паука. Ценный алхимический материал.",
+      "version": 1
+    },
+    {
+      "id": "RANGER_FANG_BLADE",
+      "name": "Клинок Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Weapon",
+      "weaponCategory": "ONE_HAND_SWORD",
+      "stats": {
+        "strength": 2,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Лёгкий клинок лесного следопыта. Базовый интервал автоатаки — 2,4 сек.",
+      "version": 1,
+      "setId": "RANGER_SET",
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "RANGER_SILK_HOOD",
+      "name": "Капюшон Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "RANGER_HIDE_VEST",
+      "name": "Куртка Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "RANGER_TRAIL_LEGGINGS",
+      "name": "Штаны Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "RANGER_TRAIL_BOOTS",
+      "name": "Ботинки Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Boots",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Тихие кожаные ботинки, удобные для преследования добычи.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "RANGER_FANG_CHARM",
+      "name": "Амулет Следопыта",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Accessory",
+      "stats": {
+        "strength": 1,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Амулет из волчьего клыка — знак удачливого охотника.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "SMALL_HEALING_POTION",
+      "name": "Малое зелье лечения",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 50 здоровья. В бою все лечебные зелья имеют общий кулдаун 30 секунд.",
+      "version": 1,
+      "healAmount": 50,
+      "consumableCooldownSeconds": 30,
+      "buyPriceGold": 20
+    },
+    {
+      "id": "WOLF_FANG_BLADE",
+      "name": "Клинок Волчьего Клыка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Weapon",
+      "weaponCategory": "ONE_HAND_SWORD",
+      "stats": {
+        "strength": 2,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Ранняя версия клинка Следопыта. Сохранена для совместимости с уже полученными предметами. Базовый интервал автоатаки — 2,4 сек.",
+      "version": 1,
+      "setId": "RANGER_SET",
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "BOAR_HIDE_VEST",
+      "name": "Жилет из шкуры кабана",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    },
+    {
+      "id": "SPIDER_SILK_HOOD",
+      "name": "Капюшон из паучьего шёлка",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "armorCategory": "MEDIUM",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "version": 1,
+      "setId": "RANGER_SET"
+    }
+  ]
+}
