@@ -26,17 +26,17 @@ vi.mock('@microsoft/signalr', () => ({
     build() {
       const connection = {
         state: 'Disconnected',
-        on: vi.fn(),
-        onreconnecting: vi.fn(),
-        onreconnected: vi.fn(),
-        onclose: vi.fn(),
-        start: vi.fn(async () => {
+        on: vi.fn<(...args: unknown[]) => void>(),
+        onreconnecting: vi.fn<(...args: unknown[]) => void>(),
+        onreconnected: vi.fn<(...args: unknown[]) => void>(),
+        onclose: vi.fn<(...args: unknown[]) => void>(),
+        start: vi.fn<() => Promise<void>>(async () => {
           signalRMock.calls.push('signalr:start')
           await signalRMock.accessTokenFactory?.()
           if (signalRMock.startError) throw signalRMock.startError
           connection.state = 'Connected'
         }),
-        invoke: vi.fn(),
+        invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
       }
       return connection
     }

@@ -13,12 +13,12 @@ vi.mock('@microsoft/signalr', () => ({
     build() {
       return {
         state: 'Connected',
-        on: vi.fn(),
-        onreconnecting: vi.fn(),
-        onreconnected: vi.fn(),
-        onclose: vi.fn(),
-        start: vi.fn().mockResolvedValue(undefined),
-        invoke: vi.fn().mockResolvedValue({
+        on: vi.fn<(...args: unknown[]) => void>(),
+        onreconnecting: vi.fn<(...args: unknown[]) => void>(),
+        onreconnected: vi.fn<(...args: unknown[]) => void>(),
+        onclose: vi.fn<(...args: unknown[]) => void>(),
+        start: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+        invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue({
           succeeded: false, errorCode: 'combat_not_found', snapshot: null, events: [],
         }),
       }

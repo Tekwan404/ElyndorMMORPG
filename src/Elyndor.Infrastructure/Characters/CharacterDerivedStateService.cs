@@ -28,6 +28,8 @@ public sealed class CharacterDerivedStateService(
     GameContentPackage content,
     InventoryEquipmentService? inventoryService)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+
     internal CharacterDerivedStateService(
         GameDbContext dbContext,
         GameContentPackage content)
@@ -47,23 +49,22 @@ public sealed class CharacterDerivedStateService(
 
         IReadOnlyList<ClassProfile> classProfiles = content.ClassProfiles
             ?? throw new InvalidOperationException("Class profiles are required.");
-        IReadOnlyList<ResourceProfile> resourceProfiles = content.ResourceProfiles
-            ?? throw new InvalidOperationException("Resource profiles are required.");
-        ClassProfile classProfile = classProfiles.Single(profile =>
-            string.Equals(profile.Id, classId, StringComparison.Ordinal));
-        ResourceProfile baseResourceProfile = resourceProfiles.Single(profile =>
-            string.Equals(
-                profile.Id,
+        if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile))
+            throw new InvalidOperationException($"Class profile '{classId}' is missing from game content.");
+        if (!indexes.ResourcesById.TryGetValue(
                 classProfile.ResourceProfileId,
-                StringComparison.Ordinal));
+                out ResourceProfile? baseResourceProfile))
+        {
+            throw new InvalidOperationException(
+                $"Resource profile '{classProfile.ResourceProfileId}' is missing from game content.");
+        }
 
         InventorySnapshot inventory = await ResolveInventoryAsync(characterId, cancellationToken);
         EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
             inventory.Equipped.Values.Select(item => item.Definition),
             content.EquipmentSets ?? []);
 
-        TalentTreeDefinition? talentTree = content.TalentTrees?.SingleOrDefault(tree =>
-            string.Equals(tree.ClassId, classId, StringComparison.Ordinal));
+        indexes.TalentTreesByClassId.TryGetValue(classId, out TalentTreeDefinition? talentTree);
         CharacterTalentState? talentState = talentTree is null
             ? null
             : await dbContext.CharacterTalentStates

@@ -11,6 +11,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20260904064000_PhaseD1MerchantMutationSafety")]
 public partial class PhaseD1MerchantMutationSafety : Migration
 {
+    private static readonly string[] CharacterCommittedAtIndexColumns =
+        ["CharacterId", "CommittedAtUtc"];
+
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
@@ -40,7 +43,7 @@ public partial class PhaseD1MerchantMutationSafety : Migration
             name: "ix_character_mutations_character_committed_at",
             schema: "game",
             table: "character_mutations",
-            columns: new[] { "CharacterId", "CommittedAtUtc" });
+            columns: CharacterCommittedAtIndexColumns);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)

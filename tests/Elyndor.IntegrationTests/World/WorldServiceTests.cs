@@ -5,6 +5,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Core.Progression;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
@@ -29,12 +30,15 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: true);
         await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
         BootstrapService service = new(
             context,
             Content,
             Map,
-            new InventoryEquipmentService(context, Content),
-            new FixedTimeProvider(Now));
+            derived,
+            timeProvider);
 
         BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
 
@@ -55,12 +59,15 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: false);
         await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
         BootstrapService service = new(
             context,
             Content,
             Map,
-            new InventoryEquipmentService(context, Content),
-            new FixedTimeProvider(Now));
+            derived,
+            timeProvider);
 
         BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
 

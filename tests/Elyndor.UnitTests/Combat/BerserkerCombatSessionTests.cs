@@ -24,10 +24,18 @@ public sealed class BerserkerCombatSessionTests
     public void LowHealthBerserkerTalentsBecomeLiveConditionalEffects()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("B-2-1", TalentModifierKeys.OnHpThreshold, 2, 12),
-            Hook("B-4-4", TalentModifierKeys.OnHpThreshold, 2, 4),
-            Hook("B-7-2", TalentModifierKeys.OnHpThreshold, 4, 12),
-            Hook("B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10));
+            Hook(
+                "B-2-1", TalentModifierKeys.OnHpThreshold, 2, 12,
+                secondaryValue: 8, threshold: 50),
+            Hook(
+                "B-4-4", TalentModifierKeys.OnHpThreshold, 2, 4,
+                secondaryValue: 2, threshold: 50),
+            Hook(
+                "B-7-2", TalentModifierKeys.OnHpThreshold, 4, 12,
+                threshold: 25),
+            Hook(
+                "B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10,
+                threshold: 20));
         TestFight fight = CreateFight(
             talents,
             playerHp: 20,
@@ -52,9 +60,13 @@ public sealed class BerserkerCombatSessionTests
     public void BerserkEnablesFrenzyAndAvatarCleansesControl()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("B-2-4", TalentModifierKeys.OnAbilityUsed, 3, 6),
+            Hook(
+                "B-2-4", TalentModifierKeys.OnAbilityUsed, 3, 6,
+                duration: TimeSpan.FromSeconds(3), threshold: 20),
             Hook("B-5-4", TalentModifierKeys.OnAbilityUsed, 2, 20, "BERSERK"),
-            Hook("B-9-1", TalentModifierKeys.OnCriticalHit, 1, 10));
+            Hook(
+                "B-9-1", TalentModifierKeys.OnCriticalHit, 1, 10,
+                chancePercent: 20));
         TestFight fight = CreateFight(
             talents,
             enemyHp: 10_000,
@@ -111,7 +123,8 @@ public sealed class BerserkerCombatSessionTests
                 TalentModifierKeys.OnAutoAttack,
                 1,
                 45,
-                internalCooldown: TimeSpan.FromSeconds(2)));
+                internalCooldown: TimeSpan.FromSeconds(2),
+                chancePercent: 15));
         TestFight fight = CreateFight(
             talents,
             enemyHp: 10_000,
@@ -141,7 +154,8 @@ public sealed class BerserkerCombatSessionTests
                 TalentModifierKeys.OnAutoAttack,
                 1,
                 45,
-                internalCooldown: TimeSpan.FromSeconds(2)),
+                internalCooldown: TimeSpan.FromSeconds(2),
+                chancePercent: 15),
             Hook("B-7-1", TalentModifierKeys.OnAutoAttack, 1, 30, "BERSERK"));
         TestFight fight = CreateFight(
             talents,
@@ -170,7 +184,10 @@ public sealed class BerserkerCombatSessionTests
     public void WhirlwindAddsRendingBleedAndDeathWhirlwindTrueComponent()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("B-7-3", TalentModifierKeys.OnAbilityUsed, 2, 8, "WHIRLWIND"),
+            Hook(
+                "B-7-3", TalentModifierKeys.OnAbilityUsed, 2, 8, "WHIRLWIND",
+                duration: TimeSpan.FromSeconds(6),
+                tickInterval: TimeSpan.FromSeconds(1)),
             Hook("B-8-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "WHIRLWIND"));
         TestFight fight = CreateFight(
             talents,
@@ -198,8 +215,13 @@ public sealed class BerserkerCombatSessionTests
     public void CriticalWildStrikeAppliesBloodTrailAndCriticalAutoAppliesVulnerability()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("B-3-4", TalentModifierKeys.OnCriticalHit, 2, 7, "WILD_STRIKE"),
-            Hook("B-6-2", TalentModifierKeys.OnCriticalHit, 1, 5, "AUTO_ATTACK"));
+            Hook(
+                "B-3-4", TalentModifierKeys.OnCriticalHit, 2, 7, "WILD_STRIKE",
+                duration: TimeSpan.FromSeconds(4),
+                tickInterval: TimeSpan.FromSeconds(1)),
+            Hook(
+                "B-6-2", TalentModifierKeys.OnCriticalHit, 1, 5, "AUTO_ATTACK",
+                duration: TimeSpan.FromSeconds(8)));
         TestFight fight = CreateFight(
             talents,
             enemyHp: 10_000,
@@ -345,14 +367,16 @@ public sealed class BerserkerCombatSessionTests
     public void DeathsEmbraceForcesExactlyOneCriticalAutoAttack()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("B-8-3", TalentModifierKeys.OnHpThreshold, 1, 200));
+            Hook(
+                "B-8-3", TalentModifierKeys.OnHpThreshold, 1, 200,
+                threshold: 10));
         TestFight fight = CreateFight(
             talents,
             playerHp: 5,
             playerMaxHp: 100,
             enemyHp: 10_000,
             playerCriticalChance: 0,
-            randomValues: [0.99m, 0.99m, 0.99m]);
+            randomValues: Enumerable.Repeat(0.99m, 12).ToArray());
 
         fight.Session.AdvanceTo(Now);
         fight.Session.AdvanceTo(Now.AddSeconds(2));
@@ -412,7 +436,12 @@ public sealed class BerserkerCombatSessionTests
         int rank,
         decimal value,
         string? targetId = null,
-        TimeSpan? internalCooldown = null) =>
+        TimeSpan? internalCooldown = null,
+        decimal secondaryValue = 0,
+        decimal threshold = 0,
+        decimal chancePercent = 100,
+        TimeSpan? duration = null,
+        TimeSpan? tickInterval = null) =>
         new(
             talentId,
             key,
@@ -420,7 +449,12 @@ public sealed class BerserkerCombatSessionTests
             value,
             targetId,
             internalCooldown ?? TimeSpan.Zero,
-            false);
+            false,
+            secondaryValue,
+            threshold,
+            chancePercent,
+            duration ?? TimeSpan.Zero,
+            tickInterval ?? TimeSpan.Zero);
 
     private static ResolvedTalentModifiers Talents(
         params ResolvedTalentEventHook[] hooks) =>

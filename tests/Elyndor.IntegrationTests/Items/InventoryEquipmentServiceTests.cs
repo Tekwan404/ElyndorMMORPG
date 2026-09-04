@@ -118,8 +118,8 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             second.UseConsumableOutOfCombatAsync(
                 accountId, itemId, Guid.CreateVersion7(), 200, Now.AddSeconds(1), CancellationToken.None));
 
-        Assert.Single(results.Where(result => result.IsSuccess));
-        Assert.Single(results.Where(result => result.ErrorCode == InventoryErrorCodes.ItemNotFound));
+        Assert.Single(results, result => result.IsSuccess);
+        Assert.Single(results, result => result.ErrorCode == InventoryErrorCodes.ItemNotFound);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(75, await verify.CharacterVitals

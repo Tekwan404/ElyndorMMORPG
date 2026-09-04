@@ -33,6 +33,8 @@ public sealed class CombatRewardService(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+
     public async Task<CombatRewardApplicationResult> ApplyVictoryAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
@@ -73,11 +75,13 @@ public sealed class CombatRewardService(
 
         Character character = await dbContext.Characters
             .SingleAsync(candidate => candidate.Id == characterId, cancellationToken);
-        MonsterDefinition monster = (content.Monsters ?? [])
-            .Single(candidate => string.Equals(
-                candidate.Id,
+        if (!indexes.MonstersById.TryGetValue(
                 snapshot.Enemy.DefinitionId,
-                StringComparison.Ordinal));
+                out MonsterDefinition? monster))
+        {
+            throw new InvalidOperationException(
+                $"Monster '{snapshot.Enemy.DefinitionId}' is missing from game content.");
+        }
         LevelProgressionDefinition progression = content.LevelProgression
             ?? throw new InvalidOperationException("Level progression content is required for combat rewards.");
 
@@ -148,11 +152,13 @@ public sealed class CombatRewardService(
         if (string.IsNullOrWhiteSpace(monster.LootTableId))
             return [];
 
-        LootTableDefinition table = (content.LootTables ?? [])
-            .Single(candidate => string.Equals(
-                candidate.Id,
+        if (!indexes.LootTablesById.TryGetValue(
                 monster.LootTableId,
-                StringComparison.Ordinal));
+                out LootTableDefinition? table))
+        {
+            throw new InvalidOperationException(
+                $"Loot table '{monster.LootTableId}' is missing from game content.");
+        }
         return LootRoller.Roll(table, randomFactory.Create());
     }
 
@@ -162,8 +168,8 @@ public sealed class CombatRewardService(
         DateTimeOffset acquiredAtUtc,
         CancellationToken cancellationToken)
     {
-        ItemDefinition definition = (content.Items ?? [])
-            .Single(candidate => string.Equals(candidate.Id, roll.ItemId, StringComparison.Ordinal));
+        if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
+            throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
 
         if (!definition.Stackable)
         {
@@ -212,8 +218,8 @@ public sealed class CombatRewardService(
 
     private CombatRewardItemResult ToRewardItem(LootRoll roll)
     {
-        ItemDefinition definition = (content.Items ?? []).Single(item =>
-            string.Equals(item.Id, roll.ItemId, StringComparison.Ordinal));
+        if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
+            throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
         return new CombatRewardItemResult(
             definition.Id,
             definition.Name,

@@ -47,6 +47,8 @@ public sealed class MerchantService(
     GameContentPackage content,
     TimeProvider timeProvider)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+
     private const string BuyOperation = "MERCHANT_BUY";
     private const string SellMaterialOperation = "MERCHANT_SELL_MATERIAL";
 
@@ -356,12 +358,10 @@ public sealed class MerchantService(
             cancellationToken);
 
     private MerchantDefinition? FindMerchant(string merchantId) =>
-        (content.Merchants ?? []).SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, merchantId, StringComparison.Ordinal));
+        indexes.MerchantsById.GetValueOrDefault(merchantId);
 
     private ItemDefinition? FindItem(string definitionId) =>
-        (content.Items ?? []).SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, definitionId, StringComparison.Ordinal));
+        indexes.ItemsById.GetValueOrDefault(definitionId);
 
     private MerchantSnapshot ToSnapshot(MerchantDefinition merchant, long gold) =>
         new(

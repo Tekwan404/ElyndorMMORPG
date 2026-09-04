@@ -67,7 +67,9 @@ public sealed class PyromancerCombatSessionTests
     public void ThreeCriticalFireballsUnlockCometAndCastingItConsumesHeatLimit()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("F-6-1", TalentModifierKeys.OnCriticalHit, 1, 3, "MAGE_FIREBALL"));
+            Hook(
+                "F-6-1", TalentModifierKeys.OnCriticalHit, 1, 3, "MAGE_FIREBALL",
+                duration: TimeSpan.FromSeconds(8)));
         TestFight fight = CreateFight(
             talents,
             playerCriticalChance: 100,
@@ -104,7 +106,10 @@ public sealed class PyromancerCombatSessionTests
     public void CriticalFireballBurnCanKillThroughNormalCombatDeathPipeline()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("F-2-2", TalentModifierKeys.OnCriticalHit, 2, 7, "MAGE_FIREBALL"));
+            Hook(
+                "F-2-2", TalentModifierKeys.OnCriticalHit, 2, 7, "MAGE_FIREBALL",
+                duration: TimeSpan.FromSeconds(4),
+                tickInterval: TimeSpan.FromSeconds(1)));
         TestFight fight = CreateFight(
             talents,
             playerSpellPower: 10,
@@ -136,9 +141,15 @@ public sealed class PyromancerCombatSessionTests
     public void AvatarExtendsCombustionAndPerfectCombustionResetsFireCooldowns()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook("F-5-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "COMBUSTION"),
+            Hook(
+                "F-5-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "COMBUSTION",
+                secondaryValue: 8,
+                duration: TimeSpan.FromSeconds(10)),
             Hook("F-8-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "COMBUSTION"),
-            Hook("F-9-1", TalentModifierKeys.OnAbilityUsed, 1, 8, "FIRE", TimeSpan.FromSeconds(6)));
+            Hook(
+                "F-9-1", TalentModifierKeys.OnAbilityUsed, 1, 8, "FIRE",
+                internalCooldown: TimeSpan.FromSeconds(6),
+                secondaryValue: 3));
         TestFight fight = CreateFight(talents, enemyHp: 10_000);
 
         DateTimeOffset cursor = Now.AddMilliseconds(1);
@@ -169,7 +180,12 @@ public sealed class PyromancerCombatSessionTests
         int rank,
         decimal value,
         string? targetId = null,
-        TimeSpan? internalCooldown = null) =>
+        TimeSpan? internalCooldown = null,
+        decimal secondaryValue = 0,
+        decimal threshold = 0,
+        decimal chancePercent = 100,
+        TimeSpan? duration = null,
+        TimeSpan? tickInterval = null) =>
         new(
             talentId,
             key,
@@ -177,7 +193,12 @@ public sealed class PyromancerCombatSessionTests
             value,
             targetId,
             internalCooldown ?? TimeSpan.Zero,
-            false);
+            false,
+            secondaryValue,
+            threshold,
+            chancePercent,
+            duration ?? TimeSpan.Zero,
+            tickInterval ?? TimeSpan.Zero);
 
     private static ResolvedTalentModifiers Talents(
         params ResolvedTalentEventHook[] hooks) =>

@@ -7,8 +7,8 @@ import { apiClient } from '@/api/apiClient'
 
 vi.mock('@/api/apiClient', () => ({
   apiClient: {
-    request: vi.fn(),
-    setReauthenticate: vi.fn(),
+    request: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+    setReauthenticate: vi.fn<(handler: () => Promise<string>) => void>(),
   },
 }))
 

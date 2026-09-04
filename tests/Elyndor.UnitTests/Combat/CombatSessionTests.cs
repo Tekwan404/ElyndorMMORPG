@@ -39,7 +39,9 @@ public sealed class CombatSessionTests
     [Fact]
     public void EnemyDeathAndCombatEndAreEmittedOnlyOnce()
     {
-        CombatSession session = CreateSession(enemyHp: 1);
+        // The session starts with auto attack enabled and resolves its first swing at Now.
+        // Leave 1 HP after that opening swing so STRIKE owns the terminal kill.
+        CombatSession session = CreateSession(enemyHp: 20);
 
         CombatCommandResult kill = session.Handle(
             new UseAbilityCommand("kill", "STRIKE", EnemyId), Now);
@@ -109,14 +111,14 @@ public sealed class CombatSessionTests
         Task<CombatOperationResult>[] commands = Enumerable.Range(0, 2)
             .Select(_ => registry.ExecuteAsync(
                 accountId,
-                (active, now) => active.Handle(new StartAutoAttackCommand("same-command"), now),
+                (active, now) => active.Handle(new StopAutoAttackCommand("same-command"), now),
                 CancellationToken.None))
             .ToArray();
         CombatOperationResult[] results = await Task.WhenAll(commands);
 
         Assert.Single(results, result => result.Succeeded);
         Assert.Single(results, result => result.ErrorCode == CombatErrorCodes.DuplicateCommand);
-        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStarted);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
     }
 
     private static CombatSession CreateSession(
