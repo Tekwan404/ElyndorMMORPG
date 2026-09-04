@@ -19,6 +19,28 @@ const damageActionIndex = computed(() => {
   return actions.findIndex((action) => isRecord(action) && action.type === 'Damage')
 })
 
+const damageCoefficient = computed<{ label: string; path: JsonPath } | null>(() => {
+  if (damageActionIndex.value < 0) return null
+  const actions = props.entity.actions
+  if (!Array.isArray(actions)) return null
+  const action = actions[damageActionIndex.value]
+  if (!isRecord(action)) return null
+
+  if (typeof action.spellPowerCoefficient === 'number') {
+    return {
+      label: 'Spell Power coefficient',
+      path: ['actions', damageActionIndex.value, 'spellPowerCoefficient'],
+    }
+  }
+  if (typeof action.attackPowerCoefficient === 'number') {
+    return {
+      label: 'Attack Power coefficient',
+      path: ['actions', damageActionIndex.value, 'attackPowerCoefficient'],
+    }
+  }
+  return null
+})
+
 function read(path: JsonPath): unknown {
   let current: unknown = props.entity
   for (const segment of path) {
@@ -172,14 +194,14 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>Cooldown</span><input :value="text(['cooldown'])" @input="setString(['cooldown'], $event)" /></label>
       <label><span>Cast time</span><input :value="text(['castTime'])" @input="setString(['castTime'], $event)" /></label>
       <label class="check"><input type="checkbox" :checked="boolValue(['usesGlobalCooldown'])" @change="setBoolean(['usesGlobalCooldown'], $event)" /><span>Uses global cooldown</span></label>
-      <label v-if="damageActionIndex >= 0">
-        <span>Damage coefficient</span>
+      <label v-if="damageCoefficient">
+        <span>{{ damageCoefficient.label }}</span>
         <input
           data-testid="ability-damage-coefficient"
           type="number"
           step="0.05"
-          :value="numberValue(['actions', damageActionIndex, 'spellPowerCoefficient'])"
-          @input="setNumber(['actions', damageActionIndex, 'spellPowerCoefficient'], $event)"
+          :value="numberValue(damageCoefficient.path)"
+          @input="setNumber(damageCoefficient.path, $event)"
         />
       </label>
     </fieldset>
