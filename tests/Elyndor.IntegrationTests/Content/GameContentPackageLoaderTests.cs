@@ -56,6 +56,79 @@ public sealed class GameContentPackageLoaderTests
 
         Assert.Empty(GameContentPackageValidator.Validate(package));
         Assert.Empty(WorldEncounterContentValidator.Validate(package));
+
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+        Assert.Same(indexes, GameContentIndexes.For(package));
+        Assert.Equal("MAGE", indexes.ClassesById["MAGE"].Id);
+        Assert.Equal("MAGE_FIREBALL", indexes.AbilitiesById["MAGE_FIREBALL"].Id);
+        Assert.Equal("WOLF", indexes.MonstersById["WOLF"].Id);
+        Assert.Equal("WHISPERING_FOREST", indexes.LocationsById["WHISPERING_FOREST"].Id);
+    }
+
+    [Fact]
+    public async Task CategoryLocationFragmentIsScannedAndIndexed()
+    {
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            $"elyndor-content-{Guid.CreateVersion7():N}");
+        string locationsDirectory = Path.Combine(directory, "locations");
+        Directory.CreateDirectory(locationsDirectory);
+        string packagePath = Path.Combine(directory, "package.json");
+
+        const string packageJson = """
+            {
+              "contentVersion": "0.1.0",
+              "balanceVersion": "0.1.0",
+              "publishedAtUtc": "2026-08-29T00:00:00+00:00",
+              "definitions": [],
+              "locations": [
+                {
+                  "id": "STARTER_TOWN",
+                  "displayName": "Starter Town",
+                  "dangerLevel": "SAFE",
+                  "recommendedLevel": 1,
+                  "transitions": []
+                }
+              ]
+            }
+            """;
+        const string locationFragment = """
+            {
+              "contentVersion": "0.1.1",
+              "balanceVersion": "0.1.0",
+              "publishedAtUtc": "2026-09-04T12:00:00+00:00",
+              "locations": [
+                {
+                  "id": "TEST_CAMP",
+                  "displayName": "Test Camp",
+                  "dangerLevel": "SAFE",
+                  "recommendedLevel": 1,
+                  "transitions": []
+                }
+              ]
+            }
+            """;
+
+        try
+        {
+            await File.WriteAllTextAsync(packagePath, packageJson);
+            await File.WriteAllTextAsync(
+                Path.Combine(locationsDirectory, "test-camp.json"),
+                locationFragment);
+
+            GameContentPackage package = await GameContentPackageLoader.LoadAsync(packagePath);
+            GameContentIndexes indexes = GameContentIndexes.For(package);
+
+            Assert.Equal("0.1.1", package.ContentVersion);
+            Assert.Equal(2, package.Locations.Count);
+            Assert.True(indexes.LocationsById.ContainsKey("STARTER_TOWN"));
+            Assert.True(indexes.LocationsById.ContainsKey("TEST_CAMP"));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]

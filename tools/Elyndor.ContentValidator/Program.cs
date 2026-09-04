@@ -9,10 +9,12 @@ string packagePath = Path.GetFullPath(
 try
 {
     GameContentPackage package = await GameContentPackageLoader.LoadAsync(packagePath);
+    GameContentIndexes indexes = GameContentIndexes.For(package);
     Console.WriteLine(
         $"Content package valid: ContentVersion={package.ContentVersion}, "
-        + $"BalanceVersion={package.BalanceVersion}, Definitions={package.Definitions.Count}, "
-        + $"Locations={package.Locations.Count}");
+        + $"BalanceVersion={package.BalanceVersion}, Definitions={indexes.DefinitionsByKey.Count}, "
+        + $"Locations={indexes.LocationsById.Count}, Monsters={indexes.MonstersById.Count}, "
+        + $"Items={indexes.ItemsById.Count}");
 
     return 0;
 }
