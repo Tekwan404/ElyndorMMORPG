@@ -53,18 +53,31 @@ public sealed class CharacterDerivedStateService(
         : this(dbContext, new StaticContentSnapshotProvider(content), null)
     {
     }
+    public Task<CharacterDerivedState> ResolveAsync(
+        Guid characterId,
+        string classId,
+        int level,
+        CancellationToken cancellationToken) =>
+        ResolveAsync(
+            characterId,
+            classId,
+            level,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
     public async Task<CharacterDerivedState> ResolveAsync(
         Guid characterId,
         string classId,
         int level,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
         if (characterId == Guid.Empty)
             throw new ArgumentException("Character id cannot be empty.", nameof(characterId));
         ArgumentException.ThrowIfNullOrWhiteSpace(classId);
         ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
 
-        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         GameContentPackage content = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
 

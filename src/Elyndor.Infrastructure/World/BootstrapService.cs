@@ -93,12 +93,23 @@ public sealed class BootstrapService(
     private const string StarterTownId = "STARTER_TOWN";
     private const decimal StarterTownHpRegenPerSecond = 5m;
 
+    public Task<BootstrapSnapshot> GetAsync(
+        Guid accountId,
+        CancellationToken cancellationToken,
+        bool checkpoint = false) =>
+        GetAsync(
+            accountId,
+            contentProvider.GetCurrent(),
+            cancellationToken,
+            checkpoint);
+
     public async Task<BootstrapSnapshot> GetAsync(
         Guid accountId,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken,
         bool checkpoint = false)
     {
-        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
         GameContentPackage contentPackage = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
         WorldMap worldMap = contentSnapshot.WorldMap;
@@ -124,6 +135,7 @@ public sealed class BootstrapService(
             character.Id,
             character.ClassId,
             character.Level,
+            contentSnapshot,
             cancellationToken);
         CharacterStats stats = derived.Stats;
         ClassProfile classProfile = derived.ClassProfile;

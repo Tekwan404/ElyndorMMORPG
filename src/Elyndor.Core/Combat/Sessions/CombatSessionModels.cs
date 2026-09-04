@@ -59,7 +59,9 @@ public sealed record CombatSessionSnapshot(
     CombatSessionStatus Status,
     DateTimeOffset ServerTimeUtc,
     CombatActorSnapshot Player,
-    CombatActorSnapshot Enemy);
+    CombatActorSnapshot Enemy,
+    string ContentVersion = "UNVERSIONED",
+    string BalanceVersion = "UNVERSIONED");
 
 public static class CombatErrorCodes
 {

@@ -36,7 +36,9 @@ public sealed partial class CombatSession
         MonsterAiProfile enemyAi,
         ResolvedTalentModifiers playerTalents,
         IGameRandom random,
-        DateTimeOffset startedAtUtc)
+        DateTimeOffset startedAtUtc,
+        string contentVersion = "UNVERSIONED",
+        string balanceVersion = "UNVERSIONED")
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -46,6 +48,8 @@ public sealed partial class CombatSession
         ArgumentNullException.ThrowIfNull(enemyAi);
         ArgumentNullException.ThrowIfNull(playerTalents);
         ArgumentNullException.ThrowIfNull(random);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentVersion);
+        ArgumentException.ThrowIfNullOrWhiteSpace(balanceVersion);
         ValidateAutoAttack(player.AutoAttack);
         ValidateAutoAttack(enemy.AutoAttack);
         if (player.Kind != CombatActorKind.Player || enemy.Kind != CombatActorKind.Monster)
@@ -54,6 +58,8 @@ public sealed partial class CombatSession
             throw new ArgumentOutOfRangeException(nameof(player), "Resource regeneration cannot be negative.");
 
         SessionId = sessionId;
+        ContentVersion = contentVersion;
+        BalanceVersion = balanceVersion;
         _player = player;
         _enemy = enemy;
         _abilities = abilities;
@@ -78,6 +84,8 @@ public sealed partial class CombatSession
     }
 
     public Guid SessionId { get; }
+    public string ContentVersion { get; }
+    public string BalanceVersion { get; }
     public long Sequence { get; private set; }
     public CombatSessionStatus Status { get; private set; }
     public DateTimeOffset CurrentTimeUtc { get; private set; }
@@ -148,7 +156,9 @@ public sealed partial class CombatSession
         Status,
         CurrentTimeUtc,
         ActorSnapshot(_player, _playerRuntime, _playerAutoAttackEnabled),
-        ActorSnapshot(_enemy, _enemyRuntime, Status == CombatSessionStatus.Active));
+        ActorSnapshot(_enemy, _enemyRuntime, Status == CombatSessionStatus.Active),
+        ContentVersion,
+        BalanceVersion);
 
     public CombatCommandResult Cancel(DateTimeOffset now)
     {
