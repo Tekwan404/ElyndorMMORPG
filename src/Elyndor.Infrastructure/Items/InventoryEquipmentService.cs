@@ -61,6 +61,7 @@ public sealed class InventoryEquipmentService(
     private const string UnequipOperation = "INVENTORY_UNEQUIP";
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
     private readonly CharacterDerivedStateService derivedStateService = new(dbContext, content);
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
 
     public async Task<InventoryOperationResult> GetAsync(
         Guid accountId,
@@ -107,13 +108,13 @@ public sealed class InventoryEquipmentService(
                 if (character.Level < definition.RequiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
 
-                ClassProfile classProfile = (content.ClassProfiles ?? [])
-                    .SingleOrDefault(profile => string.Equals(
-                        profile.Id,
+                if (!indexes.ClassesById.TryGetValue(
                         character.ClassId,
-                        StringComparison.Ordinal))
-                    ?? throw new InvalidOperationException(
+                        out ClassProfile? classProfile))
+                {
+                    throw new InvalidOperationException(
                         $"Class profile '{character.ClassId}' is missing from game content.");
+                }
 
                 if (definition.AllowedClassIds is { Count: > 0 }
                     && !definition.AllowedClassIds.Contains(character.ClassId, StringComparer.Ordinal))
@@ -393,8 +394,7 @@ public sealed class InventoryEquipmentService(
             .SingleOrDefaultAsync(cancellationToken);
 
     private ItemDefinition? FindItem(string definitionId) =>
-        (content.Items ?? []).SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, definitionId, StringComparison.Ordinal));
+        indexes.ItemsById.GetValueOrDefault(definitionId);
 
     private static string Fingerprint(params string[] parts)
     {

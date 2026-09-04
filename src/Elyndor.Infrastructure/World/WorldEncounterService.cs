@@ -94,6 +94,8 @@ public sealed class WorldEncounterService(
     IGameRandomFactory randomFactory,
     WorldEncounterRegistry registry)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+
     public async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> ExploreAsync(
         Guid accountId,
         CancellationToken cancellationToken)
@@ -130,8 +132,7 @@ public sealed class WorldEncounterService(
         LocationEncounterDefinition selected = WorldEncounterSelector.Select(
             encounters,
             randomFactory.Create().NextUnit());
-        MonsterDefinition? monster = (content.Monsters ?? []).SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, selected.MonsterId, StringComparison.Ordinal));
+        MonsterDefinition? monster = indexes.MonstersById.GetValueOrDefault(selected.MonsterId);
         if (monster is null
             || string.IsNullOrWhiteSpace(monster.DisplayName)
             || string.IsNullOrWhiteSpace(monster.ArtId))

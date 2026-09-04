@@ -75,6 +75,8 @@ public sealed class BootstrapService(
     CharacterDerivedStateService derivedStateService,
     TimeProvider timeProvider)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(contentPackage);
+
     private const string StarterTownId = "STARTER_TOWN";
     private const decimal StarterTownHpRegenPerSecond = 5m;
 
@@ -116,7 +118,7 @@ public sealed class BootstrapService(
                 derived.TalentTree,
                 derived.ActiveTalentRanks,
                 derived.TalentModifiers,
-                contentPackage.Abilities ?? []))
+                indexes))
             .ToArray();
 
         CharacterVitals vitals = await dbContext.CharacterVitals
@@ -206,10 +208,15 @@ public sealed class BootstrapService(
         TalentTreeDefinition? talentTree,
         IReadOnlyDictionary<string, int> activeTalentRanks,
         ResolvedTalentModifiers talentModifiers,
-        IReadOnlyList<AbilityDefinition> abilities)
+        GameContentIndexes indexes)
     {
-        AbilityDefinition baseDefinition = abilities.Single(ability =>
-            string.Equals(ability.Id, abilityId, StringComparison.Ordinal));
+        if (!indexes.AbilitiesById.TryGetValue(
+                abilityId,
+                out AbilityDefinition? baseDefinition))
+        {
+            throw new InvalidOperationException(
+                $"Ability '{abilityId}' is missing from game content.");
+        }
         AbilityDefinition definition = TalentAbilityResolver.Apply(baseDefinition, talentModifiers);
         TalentDefinition? sourceTalent = talentTree?.Nodes.FirstOrDefault(node =>
             activeTalentRanks.GetValueOrDefault(node.Id) > 0

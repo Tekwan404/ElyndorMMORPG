@@ -25,6 +25,8 @@ public sealed class CombatSessionFactory(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+
     public const string TrainingDummyId = "TRAINING_DUMMY";
     public const string StarterTownId = "STARTER_TOWN";
     private const decimal TrainingDummyMaxHp = 10_000m;
@@ -52,8 +54,7 @@ public sealed class CombatSessionFactory(
         bool isTraining = string.Equals(monsterId, TrainingDummyId, StringComparison.Ordinal);
         MonsterDefinition? monster = isTraining
             ? CreateTrainingDummy(character.Level)
-            : content.Monsters?.SingleOrDefault(candidate =>
-                string.Equals(candidate.Id, monsterId, StringComparison.Ordinal));
+            : indexes.MonstersById.GetValueOrDefault(monsterId);
         if (monster is null || !isTraining && monster.Rank != MonsterRank.Normal)
             return Failure(CombatErrorCodes.UnsupportedMonster, character.Id);
 
@@ -64,8 +65,8 @@ public sealed class CombatSessionFactory(
                 StringComparison.Ordinal))
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
-        LocationDefinition? currentLocation = content.Locations.SingleOrDefault(location =>
-            string.Equals(location.Id, expectedLocationId, StringComparison.Ordinal));
+        LocationDefinition? currentLocation =
+            indexes.LocationsById.GetValueOrDefault(expectedLocationId);
         if (currentLocation is null)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
@@ -106,8 +107,12 @@ public sealed class CombatSessionFactory(
 
         MonsterAiProfile ai = isTraining
             ? new MonsterAiProfile("TRAINING_DUMMY_AI", [])
-            : content.MonsterAiProfiles!.Single(candidate =>
-                string.Equals(candidate.Id, monster.AiProfileId, StringComparison.Ordinal));
+            : indexes.MonsterAiProfilesById.TryGetValue(
+                monster.AiProfileId,
+                out MonsterAiProfile? resolvedAi)
+                ? resolvedAi
+                : throw new InvalidOperationException(
+                    $"Monster AI profile '{monster.AiProfileId}' is missing from game content.");
 
         ResolvedTalentModifiers talentModifiers = derived.TalentModifiers;
 
