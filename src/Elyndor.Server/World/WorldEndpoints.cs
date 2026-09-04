@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Items;
@@ -17,8 +18,8 @@ public static class WorldEndpoints
             .WithTags("World");
 
         group.MapGet("/bootstrap", GetBootstrapAsync);
-        group.MapGet("/world/locations", (WorldMap worldMap) =>
-            Results.Ok(worldMap.Locations
+        group.MapGet("/world/locations", (IContentSnapshotProvider contentProvider) =>
+            Results.Ok(contentProvider.GetCurrent().WorldMap.Locations
                 .OrderBy(location => location.Id, StringComparer.Ordinal)
                 .Select(ToLocation)
                 .ToArray()));

@@ -46,9 +46,8 @@ builder.AddElyndorInfrastructure();
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddSingleton(gameContentPackage);
-builder.Services.AddSingleton(GameContentIndexes.For(gameContentPackage));
-builder.Services.AddSingleton(new WorldMap(gameContentPackage.Locations));
+builder.Services.AddSingleton<IContentSnapshotProvider>(
+    new StaticContentSnapshotProvider(gameContentPackage));
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());

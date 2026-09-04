@@ -12,7 +12,7 @@ namespace Elyndor.Server.Combat;
 [Authorize]
 public sealed class CombatHub(
     CombatApplicationService combat,
-    GameContentPackage content) : Hub
+    IContentSnapshotProvider contentProvider) : Hub
 {
     public async Task<CombatUpdateResponse> StartCombat(string encounterId)
     {
@@ -23,7 +23,7 @@ public sealed class CombatHub(
         {
             return CombatContractMapper.ToResponse(
                 CombatOperationResult.Failure(CombatErrorCodes.InvalidEncounter),
-                content);
+                contentProvider.GetCurrent().Package);
         }
 
         return CombatContractMapper.ToResponse(
@@ -75,7 +75,7 @@ public sealed class CombatHub(
         Guid accountId = GetAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(combat.Resume(accountId), content);
+        return CombatContractMapper.ToResponse(combat.Resume(accountId), contentProvider.GetCurrent().Package);
     }
 
     public Task<CombatUpdateResponse> LeaveCombat() => ToResponseAsync(
@@ -84,7 +84,7 @@ public sealed class CombatHub(
     internal static string GroupName(Guid accountId) => $"combat:{accountId:N}";
 
     private async Task<CombatUpdateResponse> ToResponseAsync(Task<CombatOperationResult> operation) =>
-        CombatContractMapper.ToResponse(await operation, content);
+        CombatContractMapper.ToResponse(await operation, contentProvider.GetCurrent().Package);
 
     private Guid GetAccountId() =>
         Guid.TryParse(Context.User?.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId)
