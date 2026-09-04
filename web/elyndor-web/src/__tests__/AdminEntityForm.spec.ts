@@ -45,6 +45,25 @@ describe('AdminEntityForm', () => {
     expect(next.actions[0]?.damageType).toBe('Magical')
   })
 
+  it('keeps physical ability coefficients on Attack Power', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'abilities',
+        entity: {
+          id: 'STRIKE',
+          actions: [{ type: 'Damage', damageType: 'Physical', attackPowerCoefficient: 0.8 }],
+        },
+      },
+    })
+
+    await wrapper.get('[data-testid="ability-damage-coefficient"]').setValue('0.95')
+    const emitted = wrapper.emitted('update:entity')
+    const next = emitted?.at(-1)?.[0] as { actions: Array<Record<string, unknown>> }
+
+    expect(next.actions[0]?.attackPowerCoefficient).toBe(0.95)
+    expect(next.actions[0]?.spellPowerCoefficient).toBeUndefined()
+  })
+
   it('updates nested item stats', async () => {
     const wrapper = mount(AdminEntityForm, {
       props: {
