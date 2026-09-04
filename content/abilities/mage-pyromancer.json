@@ -1,0 +1,203 @@
+{
+  "contentVersion": "0.9.3",
+  "balanceVersion": "0.7.2",
+  "publishedAtUtc": "2026-09-03T00:00:00+00:00",
+  "definitions": [
+    {
+      "type": "CLASS",
+      "id": "MAGE",
+      "references": [
+        {
+          "type": "ABILITY",
+          "id": "MAGE_FIREBALL"
+        },
+        {
+          "type": "ABILITY",
+          "id": "MAGE_ARCANE_SPARK"
+        },
+        {
+          "type": "ABILITY",
+          "id": "MAGE_ICE_SHARD"
+        }
+      ]
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_FIREBALL",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_ARCANE_SPARK",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_ICE_SHARD",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FLAME_FLASH",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FIRE_WAVE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "COMBUSTION",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FIRE_COMET",
+      "references": []
+    }
+  ],
+  "abilities": [
+    {
+      "id": "MAGE_FIREBALL",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:01.8000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.25
+        }
+      ],
+      "displayName": "Огненный шар",
+      "description": "Поток огня, наносящий магический урон одной цели."
+    },
+    {
+      "id": "MAGE_ARCANE_SPARK",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:03",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.75
+        }
+      ],
+      "displayName": "Тайная искра",
+      "description": "Мгновенный выброс тайной магии по одной цели."
+    },
+    {
+      "id": "MAGE_ICE_SHARD",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:01.5000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.05
+        }
+      ],
+      "displayName": "Ледяной осколок",
+      "description": "Ледяной снаряд, наносящий магический урон одной цели."
+    },
+    {
+      "id": "FLAME_FLASH",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.95
+        }
+      ],
+      "displayName": "Вспышка",
+      "description": "Мгновенная огненная атака Пироманта."
+    },
+    {
+      "id": "FIRE_WAVE",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.75
+        }
+      ],
+      "displayName": "Огненная волна",
+      "description": "Волна пламени, поражающая всех противников в бою."
+    },
+    {
+      "id": "COMBUSTION",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:01:40",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [],
+      "displayName": "Возгорание",
+      "description": "Вводит Пироманта в усиленное огненное состояние."
+    },
+    {
+      "id": "FIRE_COMET",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00.5000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 2.4
+        }
+      ],
+      "displayName": "Огненная комета",
+      "description": "Быстрый мощный огненный каст, открываемый Пределом жара."
+    }
+  ]
+}
