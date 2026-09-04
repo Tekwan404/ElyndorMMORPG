@@ -33,6 +33,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<ContentRevisionStore>();
+        builder.Services.AddScoped<ContentRevisionImporter>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();
         builder.Services.AddSingleton<ICombatSessionFinalizer, CombatSessionFinalizer>();
