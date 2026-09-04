@@ -2,6 +2,7 @@ using Elyndor.Contracts.Identity;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Identity.Telegram;
+using Elyndor.Server.Administration;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Server.Identity;
@@ -18,9 +19,7 @@ public static class AuthenticationEndpoints
         group.MapPost("/telegram", AuthenticateTelegramAsync);
 
         if (mapDevelopmentEndpoint)
-        {
             group.MapPost("/development", AuthenticateDevelopmentAsync);
-        }
 
         return endpoints;
     }
@@ -30,6 +29,7 @@ public static class AuthenticationEndpoints
         HttpContext httpContext,
         TelegramInitDataValidator validator,
         IOptions<AuthenticationOptions> authenticationOptions,
+        IOptions<TelegramAdminOptions> adminOptions,
         AccountResolver accountResolver,
         JwtTokenIssuer tokenIssuer,
         CancellationToken cancellationToken)
@@ -52,29 +52,50 @@ public static class AuthenticationEndpoints
                 });
         }
 
+        long telegramUserId = validation.Data!.TelegramUserId;
         Account account = await accountResolver.ResolveAsync(
-            validation.Data!.TelegramUserId,
+            telegramUserId,
             cancellationToken);
-        return CreateSuccess(account, tokenIssuer);
+        return CreateSuccess(
+            account,
+            telegramUserId,
+            adminOptions.Value,
+            tokenIssuer);
     }
 
     private static async Task<IResult> AuthenticateDevelopmentAsync(
         IOptions<AuthenticationOptions> authenticationOptions,
+        IOptions<TelegramAdminOptions> adminOptions,
         AccountResolver accountResolver,
         JwtTokenIssuer tokenIssuer,
         CancellationToken cancellationToken)
     {
+        long telegramUserId =
+            authenticationOptions.Value.Development.TelegramUserId;
         Account account = await accountResolver.ResolveAsync(
-            authenticationOptions.Value.Development.TelegramUserId,
+            telegramUserId,
             cancellationToken);
-        return CreateSuccess(account, tokenIssuer);
+        return CreateSuccess(
+            account,
+            telegramUserId,
+            adminOptions.Value,
+            tokenIssuer);
     }
 
-    private static IResult CreateSuccess(Account account, JwtTokenIssuer tokenIssuer)
+    private static IResult CreateSuccess(
+        Account account,
+        long telegramUserId,
+        TelegramAdminOptions adminOptions,
+        JwtTokenIssuer tokenIssuer)
     {
-        IssuedAccessToken token = tokenIssuer.Issue(account.Id);
+        string[] roles = adminOptions.IsAllowedUser(telegramUserId)
+            ? [AdminAuthorization.SuperAdminRole]
+            : [];
+        IssuedAccessToken token =
+            tokenIssuer.Issue(account.Id, telegramUserId, roles);
         return Results.Ok(new AuthenticationResponse(
             token.AccessToken,
-            token.ExpiresAtUtc));
+            token.ExpiresAtUtc,
+            roles));
     }
 }
