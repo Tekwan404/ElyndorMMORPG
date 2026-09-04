@@ -91,11 +91,23 @@ public sealed class InventoryEquipmentService(
     public Task<InventorySnapshot> GetForCharacterAsync(
         Guid characterId,
         CancellationToken cancellationToken) =>
-        InventorySnapshotReader.ReadAsync(
+        GetForCharacterAsync(
+            characterId,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
+    public Task<InventorySnapshot> GetForCharacterAsync(
+        Guid characterId,
+        GameContentSnapshot contentSnapshot,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
+        return InventorySnapshotReader.ReadAsync(
             dbContext,
-            contentProvider.GetCurrent().Package,
+            contentSnapshot.Package,
             characterId,
             cancellationToken);
+    }
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,

@@ -94,7 +94,7 @@ public sealed class CharacterDerivedStateService(
         }
 
         InventorySnapshot inventory = await ResolveInventoryAsync(
-            content,
+            contentSnapshot,
             characterId,
             cancellationToken);
         EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
@@ -170,14 +170,18 @@ public sealed class CharacterDerivedStateService(
     }
 
     private async Task<InventorySnapshot> ResolveInventoryAsync(
-        GameContentPackage content,
+        GameContentSnapshot contentSnapshot,
         Guid characterId,
         CancellationToken cancellationToken)
     {
+        GameContentPackage content = contentSnapshot.Package;
         if (content.Items is not null)
         {
             return inventoryService is not null
-                ? await inventoryService.GetForCharacterAsync(characterId, cancellationToken)
+                ? await inventoryService.GetForCharacterAsync(
+                    characterId,
+                    contentSnapshot,
+                    cancellationToken)
                 : await InventorySnapshotReader.ReadAsync(
                     dbContext,
                     content,

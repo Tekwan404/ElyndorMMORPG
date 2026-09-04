@@ -253,6 +253,8 @@ export interface CombatSnapshot {
   sequence: number
   status: 'Active' | 'Victory' | 'Defeat' | 'Cancelled'
   serverTimeUtc: string
+  contentVersion: string
+  balanceVersion: string
   player: CombatActorSnapshot
   enemy: CombatActorSnapshot
 }
