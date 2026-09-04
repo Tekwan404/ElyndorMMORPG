@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.6.0",
-  "balanceVersion": "0.5.0",
+  "contentVersion": "0.9.2",
+  "balanceVersion": "0.7.2",
   "publishedAtUtc": "2026-09-01T00:00:00+00:00",
   "definitions": [
     {
@@ -1492,11 +1492,16 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0
+                7,
+                12
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "secondaryValues": [
+                4,
+                8
+              ],
+              "threshold": 50
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -1565,12 +1570,14 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0,
-                0
+                2,
+                4,
+                6
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "threshold": 20,
+              "durationSeconds": 3
             }
           ],
           "iconId": "BERSERKER_SUNDERING_BLADE"
@@ -1673,11 +1680,14 @@
               "type": "EventTriggered",
               "key": "ON_CRITICAL_HIT",
               "values": [
-                0,
-                0
+                4,
+                7
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "WILD_STRIKE",
+              "durationSeconds": 4,
+              "tickIntervalSeconds": 1
             }
           ],
           "iconId": "BERSERKER_BLOOD_BLADES"
@@ -1698,10 +1708,12 @@
               "type": "EventTriggered",
               "key": "ON_AUTO_ATTACK",
               "values": [
-                0
+                45
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "chancePercent": 15,
+              "internalCooldownSeconds": 2
             }
           ],
           "iconId": "BERSERKER_SUNDERING_BLADE"
@@ -1789,11 +1801,16 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0
+                2,
+                4
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "secondaryValues": [
+                1,
+                2
+              ],
+              "threshold": 50
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -1890,11 +1907,12 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                10,
+                20
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "BERSERK"
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -1938,10 +1956,12 @@
               "type": "EventTriggered",
               "key": "ON_CRITICAL_HIT",
               "values": [
-                0
+                5
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "AUTO_ATTACK",
+              "durationSeconds": 8
             }
           ],
           "iconId": "BERSERKER_SHATTER_GUARD"
@@ -1967,11 +1987,12 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0,
-                0
+                3,
+                5
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "BERSERK"
             }
           ],
           "iconId": "BERSERKER_IRON_WILL"
@@ -1997,12 +2018,14 @@
               "type": "EventTriggered",
               "key": "ON_CRITICAL_HIT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "BERSERK",
+              "internalCooldownSeconds": 3
             }
           ],
           "iconId": "BERSERKER_RAGE_SLASH"
@@ -2032,10 +2055,12 @@
               "type": "EventTriggered",
               "key": "ON_AUTO_ATTACK",
               "values": [
-                0
+                30
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "BERSERK",
+              "chancePercent": 100
             }
           ],
           "iconId": "BERSERKER_SUNDERING_BLADE"
@@ -2056,13 +2081,14 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0,
-                0,
-                0
+                3,
+                6,
+                9,
+                12
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "threshold": 25
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -2088,11 +2114,14 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                5,
+                8
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "WHIRLWIND",
+              "durationSeconds": 6,
+              "tickIntervalSeconds": 1
             }
           ],
           "iconId": "BERSERKER_BLOOD_BLADES"
@@ -2113,11 +2142,12 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0
+                5,
+                10
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "threshold": 20
             }
           ],
           "iconId": "BERSERKER_KEEN_EYE"
@@ -2147,10 +2177,11 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0
+                15
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "targetId": "WHIRLWIND"
             }
           ],
           "iconId": "BERSERKER_RAGE_SLASH"
@@ -2211,10 +2242,11 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0
+                200
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "threshold": 10
             }
           ],
           "iconId": "BERSERKER_BLADE_GUARD"
@@ -2250,10 +2282,11 @@
               "type": "EventTriggered",
               "key": "ON_CRITICAL_HIT",
               "values": [
-                0
+                10
               ],
               "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "deferredOwner": "COMBAT_SESSION",
+              "chancePercent": 20
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"

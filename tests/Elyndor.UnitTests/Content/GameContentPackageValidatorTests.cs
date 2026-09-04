@@ -386,6 +386,53 @@ public sealed class GameContentPackageValidatorTests
         Assert.Contains(errors, error => error.Code == "INVALID_ITEM_CLASS_RESTRICTION");
     }
 
+    [Fact]
+    public void ValidateRejectsInvalidTypedTalentRuntimeParameters()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE",
+                    "WARRIOR",
+                    59,
+                    1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "", 1)],
+                    [
+                        new TalentDefinition(
+                            "B-4-1",
+                            "BERSERKER",
+                            1,
+                            0,
+                            "Double Strike",
+                            "Double Strike",
+                            1,
+                            [],
+                            "",
+                            Modifiers:
+                            [
+                                new TalentModifierDefinition(
+                                    TalentModifierType.EventTriggered,
+                                    TalentModifierKeys.OnAutoAttack,
+                                    [45],
+                                    RuntimeStatus: TalentModifierRuntimeStatus.Deferred,
+                                    DeferredOwner: TalentRuntimeOwners.CombatSession,
+                                    SecondaryValues: [1, 2],
+                                    ChancePercent: 120,
+                                    DurationSeconds: 1,
+                                    TickIntervalSeconds: 2)
+                            ])
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_TALENT_MODIFIER");
+    }
+
     private static GameContentPackage CreatePackage(params GameContentDefinition[] definitions) =>
         new("0.1.0", "0.1.0", PublishedAtUtc, definitions, []);
 

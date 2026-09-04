@@ -5,93 +5,59 @@ namespace Elyndor.UnitTests.Talents;
 public sealed class PyromancerTalentRuntimeCatalogTests
 {
     [Fact]
-    public void FireBranchResolvesEveryRuntimeContractWithoutDeferredHooks()
+    public void SupportedDeferredHookResolvesTypedRuntimeParametersFromContent()
     {
-        List<TalentDefinition> nodes = [];
-        foreach (string talentId in PyromancerTalentRuntimeCatalog.SupportedTalentIds)
-        {
-            Assert.True(PyromancerTalentRuntimeCatalog.TryGetRule(
-                talentId,
-                out PyromancerTalentRuntimeRule rule));
-
-            List<TalentModifierDefinition> modifiers =
-            [
-                new(
-                    TalentModifierType.EventTriggered,
-                    rule.EventKey,
-                    Enumerable.Repeat(0m, rule.Values.Count).ToArray(),
-                    RuntimeStatus: TalentModifierRuntimeStatus.Deferred,
-                    DeferredOwner: TalentRuntimeOwners.CombatSession)
-            ];
-            if (talentId == "F-5-1")
-            {
-                modifiers.Insert(0, new TalentModifierDefinition(
-                    TalentModifierType.AbilityModifier,
-                    TalentModifierKeys.UnlockAbility,
-                    [1],
-                    "COMBUSTION"));
-            }
-
-            nodes.Add(new TalentDefinition(
-                talentId,
-                "FIRE",
-                1,
-                0,
-                talentId,
-                talentId,
-                rule.Values.Count,
-                [],
-                string.Empty,
-                Modifiers: modifiers));
-        }
-
-        nodes.Add(Unlock("F-3-1", "FLAME_FLASH"));
-        nodes.Add(Unlock("F-4-1", "FIRE_WAVE"));
+        Assert.True(PyromancerTalentRuntimeCatalog.TryGetEventKey(
+            "F-9-1",
+            out string eventKey));
+        TalentModifierDefinition modifier = new(
+            TalentModifierType.EventTriggered,
+            eventKey,
+            [13],
+            "FIRE",
+            TalentModifierRuntimeStatus.Deferred,
+            TalentRuntimeOwners.CombatSession,
+            InternalCooldownSeconds: 9,
+            SecondaryValues: [4],
+            DurationSeconds: 7,
+            CastTimeSeconds: 1.2m,
+            ResourceCostReductionPercent: 42);
+        TalentDefinition node = new(
+            "F-9-1",
+            "FIRE",
+            1,
+            0,
+            "Avatar",
+            "Avatar",
+            1,
+            [],
+            "",
+            Modifiers: [modifier]);
         TalentTreeDefinition tree = new(
             "MAGE_TREE",
             "MAGE",
             59,
             1,
-            [new TalentBranchDefinition("FIRE", "Пламя", "Fire", 32)],
-            nodes);
-        Dictionary<string, int> selected = nodes.ToDictionary(
-            node => node.Id,
-            _ => 1,
-            StringComparer.Ordinal);
+            [new TalentBranchDefinition("FIRE", "Пламя", "Fire", 1)],
+            [node]);
 
-        ResolvedTalentModifiers result = TalentModifierResolver.Resolve(tree, selected);
+        ResolvedTalentModifiers result = TalentModifierResolver.Resolve(
+            tree,
+            new Dictionary<string, int> { [node.Id] = 1 });
 
-        Assert.Equal(32, nodes.Count);
-        Assert.Equal(30, result.EventHooks.Count);
+        ResolvedTalentEventHook hook = Assert.Single(result.EventHooks);
+        Assert.Equal(13, hook.Value);
+        Assert.Equal(4, hook.SecondaryValue);
+        Assert.Equal(TimeSpan.FromSeconds(7), hook.Duration);
+        Assert.Equal(TimeSpan.FromSeconds(9), hook.InternalCooldown);
+        Assert.Equal(1.2m, hook.CastTimeSeconds);
+        Assert.Equal(42, hook.ResourceCostReductionPercent);
         Assert.Empty(result.DeferredHooks);
-        Assert.Contains("FLAME_FLASH", result.UnlockedAbilityIds);
-        Assert.Contains("FIRE_WAVE", result.UnlockedAbilityIds);
-        Assert.Contains("COMBUSTION", result.UnlockedAbilityIds);
-        Assert.Contains(result.EventHooks, hook =>
-            hook.TalentId == "F-2-2" && hook.Value == 4 && hook.TargetId == "MAGE_FIREBALL");
-        Assert.Contains(result.EventHooks, hook =>
-            hook.TalentId == "F-6-1" && hook.Value == 3 && hook.TargetId == "MAGE_FIREBALL");
-        Assert.Contains(result.EventHooks, hook =>
-            hook.TalentId == "F-9-1" && hook.InternalCooldown == TimeSpan.FromSeconds(6));
     }
 
-    private static TalentDefinition Unlock(string talentId, string abilityId) =>
-        new(
-            talentId,
-            "FIRE",
-            1,
-            0,
-            talentId,
-            talentId,
-            1,
-            [],
-            string.Empty,
-            Modifiers:
-            [
-                new TalentModifierDefinition(
-                    TalentModifierType.AbilityModifier,
-                    TalentModifierKeys.UnlockAbility,
-                    [1],
-                    abilityId)
-            ]);
+    [Fact]
+    public void FireCatalogOwnsThirtyRuntimeContracts()
+    {
+        Assert.Equal(30, PyromancerTalentRuntimeCatalog.SupportedTalentIds.Count);
+    }
 }

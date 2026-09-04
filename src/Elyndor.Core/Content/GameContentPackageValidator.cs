@@ -265,7 +265,19 @@ public static class GameContentPackageValidator
                     || !TalentModifierKeys.All.Contains(modifier.Key)
                     || modifier.Values.Count == 0 || modifier.Values.Any(value => value < 0)
                     || modifier.Values.Count != node.MaxRank
+                    || modifier.SecondaryValues is { } secondary
+                        && (secondary.Count != node.MaxRank || secondary.Any(value => value < 0))
                     || modifier.InternalCooldownSeconds < 0
+                    || modifier.Threshold is < 0 or > 100
+                    || modifier.ChancePercent is < 0 or > 100
+                    || modifier.DurationSeconds < 0
+                    || modifier.TickIntervalSeconds < 0
+                    || modifier.TickIntervalSeconds > 0
+                        && (modifier.DurationSeconds <= 0
+                            || modifier.TickIntervalSeconds > modifier.DurationSeconds)
+                    || modifier.TriggerCount < 0
+                    || modifier.CastTimeSeconds < 0
+                    || modifier.ResourceCostReductionPercent is < 0 or > 100
                     || modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
                         && (string.IsNullOrWhiteSpace(modifier.DeferredOwner)
                             || !TalentRuntimeOwners.All.Contains(modifier.DeferredOwner))))

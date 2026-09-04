@@ -25,26 +25,13 @@ public static class TalentModifierResolver
             {
                 if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
                 {
-                    if (BerserkerTalentRuntimeCatalog.TryResolveLegacyDeferred(
-                            node,
-                            modifier,
-                            rank,
-                            out ResolvedTalentEventHook berserkerHook))
-                    {
-                        eventHooks.Add(berserkerHook);
-                    }
-                    else if (PyromancerTalentRuntimeCatalog.TryResolveLegacyDeferred(
-                                 node,
-                                 modifier,
-                                 rank,
-                                 out ResolvedTalentEventHook pyromancerHook))
-                    {
-                        eventHooks.Add(pyromancerHook);
-                    }
+                    bool runtimeOwned =
+                        BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+                    if (runtimeOwned && modifier.Values.Count >= rank)
+                        eventHooks.Add(CreateEventHook(node, modifier, rank));
                     else
-                    {
                         deferredHooks.Add(modifier);
-                    }
 
                     continue;
                 }
@@ -57,14 +44,7 @@ public static class TalentModifierResolver
                 decimal value = modifier.Values[rank - 1];
                 if (modifier.Type == TalentModifierType.EventTriggered)
                 {
-                    eventHooks.Add(new ResolvedTalentEventHook(
-                        node.Id,
-                        modifier.Key,
-                        rank,
-                        value,
-                        modifier.TargetId,
-                        TimeSpan.FromSeconds((double)modifier.InternalCooldownSeconds),
-                        modifier.CanTriggerFromProc));
+                    eventHooks.Add(CreateEventHook(node, modifier, rank));
                     continue;
                 }
 
@@ -103,6 +83,34 @@ public static class TalentModifierResolver
             abilityModifiers,
             eventHooks,
             deferredHooks);
+    }
+
+    private static ResolvedTalentEventHook CreateEventHook(
+        TalentDefinition node,
+        TalentModifierDefinition modifier,
+        int rank)
+    {
+        decimal secondaryValue = modifier.SecondaryValues is { Count: > 0 } secondary
+            && secondary.Count >= rank
+                ? secondary[rank - 1]
+                : 0;
+
+        return new ResolvedTalentEventHook(
+            node.Id,
+            modifier.Key,
+            rank,
+            modifier.Values[rank - 1],
+            modifier.TargetId,
+            TimeSpan.FromSeconds((double)modifier.InternalCooldownSeconds),
+            modifier.CanTriggerFromProc,
+            secondaryValue,
+            modifier.Threshold,
+            modifier.ChancePercent,
+            TimeSpan.FromSeconds((double)modifier.DurationSeconds),
+            TimeSpan.FromSeconds((double)modifier.TickIntervalSeconds),
+            modifier.TriggerCount,
+            modifier.CastTimeSeconds,
+            modifier.ResourceCostReductionPercent);
     }
 
     private static TalentStatModifiers ApplyStat(

@@ -38,7 +38,15 @@ public sealed record ResolvedTalentEventHook(
     decimal Value,
     string? TargetId,
     TimeSpan InternalCooldown,
-    bool CanTriggerFromProc);
+    bool CanTriggerFromProc,
+    decimal SecondaryValue = 0,
+    decimal Threshold = 0,
+    decimal ChancePercent = 100,
+    TimeSpan Duration = default,
+    TimeSpan TickInterval = default,
+    int TriggerCount = 0,
+    decimal CastTimeSeconds = 0,
+    decimal ResourceCostReductionPercent = 0);
 
 public sealed record ResolvedTalentModifiers(
     TalentStatModifiers Stats,

@@ -32,7 +32,15 @@ public sealed record TalentModifierDefinition(
     TalentModifierRuntimeStatus RuntimeStatus = TalentModifierRuntimeStatus.Supported,
     string? DeferredOwner = null,
     decimal InternalCooldownSeconds = 0,
-    bool CanTriggerFromProc = false);
+    bool CanTriggerFromProc = false,
+    IReadOnlyList<decimal>? SecondaryValues = null,
+    decimal Threshold = 0,
+    decimal ChancePercent = 100,
+    decimal DurationSeconds = 0,
+    decimal TickIntervalSeconds = 0,
+    int TriggerCount = 0,
+    decimal CastTimeSeconds = 0,
+    decimal ResourceCostReductionPercent = 0);
 
 public sealed record TalentPrerequisite(string TalentId, int RequiredRank = 1);
 

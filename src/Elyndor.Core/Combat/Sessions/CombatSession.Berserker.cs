@@ -32,12 +32,9 @@ public sealed partial class CombatSession
 
         if (IsBerserkActive(now)
             && TryGetBerserkerHook("B-5-4", out ResolvedTalentEventHook frenzy)
-            && IsAttackingAbility(ability)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                frenzy.TalentId,
-                out BerserkerTalentRuntimeRule frenzyRule))
+            && IsAttackingAbility(ability))
         {
-            decimal reduction = frenzyRule.ValueForRank(frenzy.Rank) / 100m;
+            decimal reduction = frenzy.Value / 100m;
             ability = ability with
             {
                 ResourceCost = Math.Max(0, ability.ResourceCost * (1 - reduction))
@@ -71,10 +68,7 @@ public sealed partial class CombatSession
         if (Status != CombatSessionStatus.Active) return;
 
         if (ability.ResourceCost >= 20
-            && TryGetBerserkerHook("B-2-4", out ResolvedTalentEventHook momentum)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                momentum.TalentId,
-                out BerserkerTalentRuntimeRule momentumRule))
+            && TryGetBerserkerHook("B-2-4", out ResolvedTalentEventHook momentum))
         {
             ApplyTalentEffect(
                 _player.Actor,
@@ -82,10 +76,10 @@ public sealed partial class CombatSession
                 new EffectDefinition(
                     MomentumAttackSpeedEffectId,
                     EffectKind.StatModifier,
-                    momentumRule.Duration ?? TimeSpan.FromSeconds(3),
+                    momentum.Duration,
                     1,
                     EffectStackPolicy.Refresh,
-                    momentumRule.ValueForRank(momentum.Rank) / 100m,
+                    momentum.Value / 100m,
                     ModifiedStat: EffectStat.AttackSpeed,
                     ModifierMode: EffectModifierMode.Percent),
                 now);
@@ -114,10 +108,7 @@ public sealed partial class CombatSession
 
         if (string.Equals(combatEvent.DefinitionId, "WILD_STRIKE", StringComparison.Ordinal)
             && !_enemy.Actor.IsDead
-            && TryGetBerserkerHook("B-3-4", out ResolvedTalentEventHook bloodTrail)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                bloodTrail.TalentId,
-                out BerserkerTalentRuntimeRule bloodTrailRule))
+            && TryGetBerserkerHook("B-3-4", out ResolvedTalentEventHook bloodTrail))
         {
             decimal attackPower = EffectEngine.CalculateStat(
                 _player.Actor,
@@ -125,27 +116,24 @@ public sealed partial class CombatSession
                 _player.Actor.Stats.AttackPower,
                 now);
             decimal tickDamage =
-                attackPower * bloodTrailRule.ValueForRank(bloodTrail.Rank) / 100m;
+                attackPower * bloodTrail.Value / 100m;
             ApplyTalentEffect(
                 _enemy.Actor,
                 _player.Actor.ActorId,
                 new EffectDefinition(
                     BloodTrailEffectId,
                     EffectKind.DamageOverTime,
-                    bloodTrailRule.Duration ?? TimeSpan.FromSeconds(4),
+                    bloodTrail.Duration,
                     1,
                     EffectStackPolicy.Refresh,
                     tickDamage,
-                    bloodTrailRule.TickInterval ?? TimeSpan.FromSeconds(1)),
+                    bloodTrail.TickInterval),
                 now);
         }
 
         if (string.Equals(combatEvent.DefinitionId, "AUTO_ATTACK", StringComparison.Ordinal)
             && !_enemy.Actor.IsDead
-            && TryGetBerserkerHook("B-6-2", out ResolvedTalentEventHook devastating)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                devastating.TalentId,
-                out BerserkerTalentRuntimeRule devastatingRule))
+            && TryGetBerserkerHook("B-6-2", out ResolvedTalentEventHook devastating))
         {
             ApplyTalentEffect(
                 _enemy.Actor,
@@ -153,10 +141,10 @@ public sealed partial class CombatSession
                 new EffectDefinition(
                     DevastatingVulnerabilityEffectId,
                     EffectKind.StatModifier,
-                    devastatingRule.Duration ?? TimeSpan.FromSeconds(8),
+                    devastating.Duration,
                     1,
                     EffectStackPolicy.Refresh,
-                    1 + devastatingRule.ValueForRank(devastating.Rank) / 100m,
+                    1 + devastating.Value / 100m,
                     ModifiedStat: EffectStat.IncomingPhysicalDamageMultiplier,
                     ModifierMode: EffectModifierMode.Multiplicative,
                     SourceSpecific: true),
@@ -176,14 +164,11 @@ public sealed partial class CombatSession
         }
 
         if (TryGetBerserkerHook("B-9-1", out ResolvedTalentEventHook avatar)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                avatar.TalentId,
-                out BerserkerTalentRuntimeRule avatarRule)
-            && _random.NextUnit() < avatarRule.ChancePercent / 100m)
+            && _random.NextUnit() < avatar.ChancePercent / 100m)
         {
             AddResource(
                 _player.Actor,
-                avatarRule.ValueForRank(avatar.Rank),
+                avatar.Value,
                 now,
                 avatar.TalentId);
         }
@@ -241,14 +226,8 @@ public sealed partial class CombatSession
         {
             _deathsEmbraceArmed = false;
             _deathsEmbraceConsumed = true;
-            if (TryGetBerserkerHook("B-8-3", out ResolvedTalentEventHook embrace)
-                && BerserkerTalentRuntimeCatalog.TryGetRule(
-                    embrace.TalentId,
-                    out BerserkerTalentRuntimeRule embraceRule))
-            {
-                deathsEmbraceMultiplier =
-                    embraceRule.ValueForRank(embrace.Rank) / 100m;
-            }
+            if (TryGetBerserkerHook("B-8-3", out ResolvedTalentEventHook embrace))
+                deathsEmbraceMultiplier = embrace.Value / 100m;
 
             RemoveTalentEffects(EffectEngine.Remove(
                 _player.Actor,
@@ -292,15 +271,12 @@ public sealed partial class CombatSession
         }
 
         if (IsBerserkActive(now)
-            && TryGetBerserkerHook("B-7-1", out ResolvedTalentEventHook unstoppable)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                unstoppable.TalentId,
-                out BerserkerTalentRuntimeRule unstoppableRule))
+            && TryGetBerserkerHook("B-7-1", out ResolvedTalentEventHook unstoppable))
         {
             ResolveSecondaryAutoAttack(
                 target,
                 baseDamage,
-                unstoppableRule.ValueForRank(unstoppable.Rank) / 100m,
+                unstoppable.Value / 100m,
                 unstoppable.TalentId,
                 now);
             return;
@@ -308,15 +284,12 @@ public sealed partial class CombatSession
 
         if (TryGetBerserkerHook("B-4-1", out ResolvedTalentEventHook doubleStrike)
             && TalentCooldownReady(doubleStrike.TalentId, now)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                doubleStrike.TalentId,
-                out BerserkerTalentRuntimeRule doubleStrikeRule)
-            && _random.NextUnit() < doubleStrikeRule.ChancePercent / 100m)
+            && _random.NextUnit() < doubleStrike.ChancePercent / 100m)
         {
             ResolveSecondaryAutoAttack(
                 target,
                 baseDamage,
-                doubleStrikeRule.ValueForRank(doubleStrike.Rank) / 100m,
+                doubleStrike.Value / 100m,
                 doubleStrike.TalentId,
                 now);
             StartTalentCooldown(doubleStrike, now);
@@ -357,10 +330,7 @@ public sealed partial class CombatSession
     {
         if (Status != CombatSessionStatus.Active
             || _enemy.Actor.IsDead
-            || !TryGetBerserkerHook("B-8-1", out ResolvedTalentEventHook deathWhirlwind)
-            || !BerserkerTalentRuntimeCatalog.TryGetRule(
-                deathWhirlwind.TalentId,
-                out BerserkerTalentRuntimeRule deathWhirlwindRule))
+            || !TryGetBerserkerHook("B-8-1", out ResolvedTalentEventHook deathWhirlwind))
         {
             return;
         }
@@ -375,7 +345,7 @@ public sealed partial class CombatSession
                 _player.Actor,
                 _enemy.Actor,
                 physical.AmountBeforeShields
-                    * deathWhirlwindRule.ValueForRank(deathWhirlwind.Rank)
+                    * deathWhirlwind.Value
                     / 100m,
                 DamageType.True,
                 CanMiss: false,
@@ -396,10 +366,7 @@ public sealed partial class CombatSession
         if (targetActorId != _enemy.Actor.ActorId
             || _enemy.Actor.IsDead
             || Status != CombatSessionStatus.Active
-            || !TryGetBerserkerHook("B-7-3", out ResolvedTalentEventHook rending)
-            || !BerserkerTalentRuntimeCatalog.TryGetRule(
-                rending.TalentId,
-                out BerserkerTalentRuntimeRule rendingRule))
+            || !TryGetBerserkerHook("B-7-3", out ResolvedTalentEventHook rending))
         {
             return;
         }
@@ -410,18 +377,18 @@ public sealed partial class CombatSession
             _player.Actor.Stats.AttackPower,
             now);
         decimal tickDamage =
-            attackPower * rendingRule.ValueForRank(rending.Rank) / 100m;
+            attackPower * rending.Value / 100m;
         ApplyTalentEffect(
             _enemy.Actor,
             _player.Actor.ActorId,
             new EffectDefinition(
                 RendingRampageEffectId,
                 EffectKind.DamageOverTime,
-                rendingRule.Duration ?? TimeSpan.FromSeconds(6),
+                rending.Duration,
                 1,
                 EffectStackPolicy.Refresh,
                 tickDamage,
-                rendingRule.TickInterval ?? TimeSpan.FromSeconds(1)),
+                rending.TickInterval),
             now);
     }
 
@@ -432,18 +399,15 @@ public sealed partial class CombatSession
         decimal playerHpPercent = HpPercent(_player.Actor);
         decimal enemyHpPercent = HpPercent(_enemy.Actor);
 
-        if (TryGetBerserkerHook("B-2-1", out ResolvedTalentEventHook bloodRage)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                bloodRage.TalentId,
-                out BerserkerTalentRuntimeRule bloodRageRule))
+        if (TryGetBerserkerHook("B-2-1", out ResolvedTalentEventHook bloodRage))
         {
-            bool active = playerHpPercent < bloodRageRule.Threshold;
+            bool active = playerHpPercent < bloodRage.Threshold;
             SyncStatEffect(
                 _player.Actor,
                 BloodRageAttackPowerEffectId,
                 active,
                 EffectStat.AttackPower,
-                bloodRageRule.ValueForRank(bloodRage.Rank) / 100m,
+                bloodRage.Value / 100m,
                 EffectModifierMode.Percent,
                 now);
             SyncStatEffect(
@@ -451,23 +415,20 @@ public sealed partial class CombatSession
                 BloodRageAttackSpeedEffectId,
                 active,
                 EffectStat.AttackSpeed,
-                bloodRageRule.SecondaryValueForRank(bloodRage.Rank) / 100m,
+                bloodRage.SecondaryValue / 100m,
                 EffectModifierMode.Percent,
                 now);
         }
 
-        if (TryGetBerserkerHook("B-4-4", out ResolvedTalentEventHook recklessness)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                recklessness.TalentId,
-                out BerserkerTalentRuntimeRule recklessnessRule))
+        if (TryGetBerserkerHook("B-4-4", out ResolvedTalentEventHook recklessness))
         {
-            bool active = playerHpPercent < recklessnessRule.Threshold;
+            bool active = playerHpPercent < recklessness.Threshold;
             SyncStatEffect(
                 _player.Actor,
                 RecklessnessOutgoingEffectId,
                 active,
                 EffectStat.OutgoingPhysicalDamageMultiplier,
-                1 + recklessnessRule.ValueForRank(recklessness.Rank) / 100m,
+                1 + recklessness.Value / 100m,
                 EffectModifierMode.Multiplicative,
                 now);
             SyncStatEffect(
@@ -475,48 +436,39 @@ public sealed partial class CombatSession
                 RecklessnessIncomingEffectId,
                 active,
                 EffectStat.IncomingDamageMultiplier,
-                1 + recklessnessRule.SecondaryValueForRank(recklessness.Rank) / 100m,
+                1 + recklessness.SecondaryValue / 100m,
                 EffectModifierMode.Multiplicative,
                 now);
         }
 
-        if (TryGetBerserkerHook("B-7-2", out ResolvedTalentEventHook deathStrength)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                deathStrength.TalentId,
-                out BerserkerTalentRuntimeRule deathStrengthRule))
+        if (TryGetBerserkerHook("B-7-2", out ResolvedTalentEventHook deathStrength))
         {
             SyncStatEffect(
                 _player.Actor,
                 DeathStrengthCriticalEffectId,
-                playerHpPercent < deathStrengthRule.Threshold,
+                playerHpPercent < deathStrength.Threshold,
                 EffectStat.CriticalChance,
-                deathStrengthRule.ValueForRank(deathStrength.Rank),
+                deathStrength.Value,
                 EffectModifierMode.Flat,
                 now);
         }
 
-        if (TryGetBerserkerHook("B-7-4", out ResolvedTalentEventHook executioner)
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                executioner.TalentId,
-                out BerserkerTalentRuntimeRule executionerRule))
+        if (TryGetBerserkerHook("B-7-4", out ResolvedTalentEventHook executioner))
         {
             SyncStatEffect(
                 _player.Actor,
                 ExecutionerEffectId,
-                enemyHpPercent < executionerRule.Threshold && !_enemy.Actor.IsDead,
+                enemyHpPercent < executioner.Threshold && !_enemy.Actor.IsDead,
                 EffectStat.OutgoingPhysicalDamageMultiplier,
-                1 + executionerRule.ValueForRank(executioner.Rank) / 100m,
+                1 + executioner.Value / 100m,
                 EffectModifierMode.Multiplicative,
                 now);
         }
 
         if (!_deathsEmbraceArmed
             && !_deathsEmbraceConsumed
-            && HasBerserkerTalent("B-8-3")
-            && BerserkerTalentRuntimeCatalog.TryGetRule(
-                "B-8-3",
-                out BerserkerTalentRuntimeRule embraceRule)
-            && playerHpPercent < embraceRule.Threshold)
+            && TryGetBerserkerHook("B-8-3", out ResolvedTalentEventHook embrace)
+            && playerHpPercent < embrace.Threshold)
         {
             _deathsEmbraceArmed = true;
             ApplyTalentEffect(
