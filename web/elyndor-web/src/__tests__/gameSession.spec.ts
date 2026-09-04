@@ -11,11 +11,23 @@ describe('gameSession', () => {
 
   it('authenticates with Telegram and enters character creation from bootstrap', async () => {
     const request = vi.spyOn(apiClient, 'request')
-    request.mockResolvedValueOnce({ accessToken: 'token', expiresAtUtc: '2026-08-30T00:15:00Z' }).mockResolvedValueOnce({ accountId: crypto.randomUUID(), character: null, world: null, contentVersion: '0.1.0', balanceVersion: '0.1.0', serverTimeUtc: '2026-08-30T00:00:00Z' })
+    request.mockResolvedValueOnce({ accessToken: 'token', expiresAtUtc: '2026-08-30T00:15:00Z', roles: [] }).mockResolvedValueOnce({ accountId: crypto.randomUUID(), character: null, world: null, contentVersion: '0.1.0', balanceVersion: '0.1.0', serverTimeUtc: '2026-08-30T00:00:00Z' })
     const store = useGameSessionStore()
     await store.start()
     expect(request.mock.calls[0]?.[0]).toBe('/api/v1/auth/telegram')
     expect(store.state).toBe('needs-character')
+  })
+
+  it('exposes the server-issued admin role', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      accessToken: 'admin-token',
+      expiresAtUtc: '2026-08-30T00:15:00Z',
+      roles: ['SUPER_ADMIN'],
+    })
+    const store = useGameSessionStore()
+    await store.authenticate()
+    expect(store.isAdmin).toBe(true)
+    expect(store.roles).toEqual(['SUPER_ADMIN'])
   })
 
   it('reports an offline state without inventing a snapshot', async () => {
@@ -41,7 +53,7 @@ describe('gameSession', () => {
   })
 
   it('restores the stable world state after a transparent token refresh', async () => {
-    const request = vi.spyOn(apiClient, 'request').mockResolvedValue({ accessToken: 'renewed-token', expiresAtUtc: '2026-09-01T19:15:00Z' })
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue({ accessToken: 'renewed-token', expiresAtUtc: '2026-09-01T19:15:00Z', roles: [] })
     const store = useGameSessionStore()
     store.state = 'world'
     await expect(store.authenticate(true)).resolves.toBe('renewed-token')
