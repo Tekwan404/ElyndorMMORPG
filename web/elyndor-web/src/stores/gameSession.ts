@@ -135,6 +135,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return await merchantMutation('/api/v1/inventory/merchant/buy', {
       merchantId,
       itemDefinitionId,
+      mutationId: crypto.randomUUID(),
       quantity,
     })
   }
@@ -147,6 +148,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return await merchantMutation('/api/v1/inventory/merchant/sell-material', {
       merchantId,
       characterItemId,
+      mutationId: crypto.randomUUID(),
       quantity,
     })
   }

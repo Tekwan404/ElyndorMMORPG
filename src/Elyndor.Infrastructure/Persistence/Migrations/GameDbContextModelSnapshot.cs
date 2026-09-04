@@ -143,6 +143,37 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterMutation", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MutationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CommittedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OperationType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("CharacterId", "MutationId")
+                        .HasName("pk_character_mutations");
+
+                    b.HasIndex("CharacterId", "CommittedAtUtc")
+                        .HasDatabaseName("ix_character_mutations_character_committed_at");
+
+                    b.ToTable("character_mutations", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -404,6 +435,17 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_characters_accounts_account_id");
+                });
+
+
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterMutation", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_mutations_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>
