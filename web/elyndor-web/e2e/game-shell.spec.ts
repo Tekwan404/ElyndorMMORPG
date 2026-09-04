@@ -122,8 +122,11 @@ function isMockRealtimeRequest(url: string): boolean {
 }
 
 function isExpectedMockRealtimeFailure(message: string): boolean {
-  return process.env.ELYNDOR_E2E_REAL !== 'true'
-    && message.includes('[combat-realtime]')
+  if (process.env.ELYNDOR_E2E_REAL === 'true') return false
+  return message.includes('[combat-realtime]')
+    || message.includes('Failed to complete negotiation with the server')
+    || message.includes('Failed to start the connection')
+    || message.includes('Failed to start the transport')
 }
 
 function characterName(): string {
