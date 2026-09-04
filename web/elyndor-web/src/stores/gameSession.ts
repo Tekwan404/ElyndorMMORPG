@@ -112,15 +112,15 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function equip(characterItemId: string): Promise<void> {
-    await mutate('/api/v1/inventory/equip', { characterItemId })
+    await mutate('/api/v1/inventory/equip', { characterItemId, mutationId: crypto.randomUUID() })
   }
 
   async function unequip(slot: string): Promise<void> {
-    await mutate('/api/v1/inventory/unequip', { slot })
+    await mutate('/api/v1/inventory/unequip', { slot, mutationId: crypto.randomUUID() })
   }
 
   async function useConsumable(characterItemId: string): Promise<void> {
-    await mutate('/api/v1/inventory/use-consumable', { characterItemId })
+    await mutate('/api/v1/inventory/use-consumable', { characterItemId, mutationId: crypto.randomUUID() })
   }
 
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {

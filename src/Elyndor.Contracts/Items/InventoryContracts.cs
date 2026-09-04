@@ -39,11 +39,11 @@ public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
     EquipmentSlotsResponse Equipped);
 
-public sealed record EquipItemRequest(Guid CharacterItemId);
+public sealed record EquipItemRequest(Guid CharacterItemId, Guid MutationId);
 
-public sealed record UnequipItemRequest(string Slot);
+public sealed record UnequipItemRequest(string Slot, Guid MutationId);
 
-public sealed record UseConsumableRequest(Guid CharacterItemId);
+public sealed record UseConsumableRequest(Guid CharacterItemId, Guid MutationId);
 
 public sealed record MerchantItemResponse(
     string DefinitionId,

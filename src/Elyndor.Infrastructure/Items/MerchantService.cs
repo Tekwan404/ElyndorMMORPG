@@ -190,8 +190,9 @@ public sealed class MerchantService(
             try
             {
                 Character? character = await dbContext.Characters
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+                    .FromSqlInterpolated(
+                        $"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
+                    .SingleOrDefaultAsync(cancellationToken);
                 if (character is null)
                 {
                     await transaction.RollbackAsync(cancellationToken);

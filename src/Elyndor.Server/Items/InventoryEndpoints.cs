@@ -41,7 +41,7 @@ public static class InventoryEndpoints
         CancellationToken cancellationToken) =>
         TryGetAccountId(user, out Guid accountId)
             ? ToResult(
-                await service.EquipAsync(accountId, request.CharacterItemId, cancellationToken),
+                await service.EquipAsync(accountId, request.CharacterItemId, request.MutationId, cancellationToken),
                 context)
             : Results.Unauthorized();
 
@@ -57,7 +57,7 @@ public static class InventoryEndpoints
         if (!Enum.TryParse(request.Slot, ignoreCase: false, out EquipmentSlot slot))
             return Problem(InventoryErrorCodes.InvalidSlot, context);
 
-        return ToResult(await service.UnequipAsync(accountId, slot, cancellationToken), context);
+        return ToResult(await service.UnequipAsync(accountId, slot, request.MutationId, cancellationToken), context);
     }
 
     private static async Task<IResult> UseConsumableAsync(
@@ -77,6 +77,7 @@ public static class InventoryEndpoints
             await service.UseConsumableOutOfCombatAsync(
                 accountId,
                 request.CharacterItemId,
+                request.MutationId,
                 bootstrap.Character.Vitals.MaxHp,
                 timeProvider.GetUtcNow(),
                 cancellationToken),
@@ -173,7 +174,7 @@ public static class InventoryEndpoints
             statusCode: errorCode == InventoryErrorCodes.CharacterNotFound
                 || errorCode == InventoryErrorCodes.ItemNotFound
                     ? StatusCodes.Status404NotFound
-                    : errorCode == InventoryErrorCodes.Conflict
+                    : errorCode is InventoryErrorCodes.Conflict or InventoryErrorCodes.MutationConflict
                         ? StatusCodes.Status409Conflict
                         : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
