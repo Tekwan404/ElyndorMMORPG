@@ -6,17 +6,55 @@ public sealed record ContentPublicationResult(
     ContentRelease Release,
     ActiveContentRuntimeState RuntimeState);
 
+public sealed class ContentPublicationConflictException(
+    string expectedPayloadSha256,
+    string actualPayloadSha256)
+    : Exception("Live content changed before publication.")
+{
+    public string ExpectedPayloadSha256 { get; } = expectedPayloadSha256;
+    public string ActualPayloadSha256 { get; } = actualPayloadSha256;
+}
+
 public sealed class ContentPublicationService(
     ContentRevisionStore revisionStore,
     ContentRevisionImporter revisionImporter,
     MutableContentSnapshotProvider snapshotProvider,
     ContentPublicationCoordinator coordinator)
 {
-    public async Task<ContentPublicationResult?> PublishAsync(
+    public Task<ContentPublicationResult?> PublishAsync(
         Guid revisionId,
         string actor,
         string? note,
+        CancellationToken cancellationToken = default) =>
+        PublishCoreAsync(
+            revisionId,
+            actor,
+            note,
+            expectedCurrentPayloadSha256: null,
+            cancellationToken);
+
+    public Task<ContentPublicationResult?> PublishAsync(
+        Guid revisionId,
+        string actor,
+        string? note,
+        string expectedCurrentPayloadSha256,
         CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(expectedCurrentPayloadSha256);
+        return PublishCoreAsync(
+            revisionId,
+            actor,
+            note,
+            expectedCurrentPayloadSha256,
+            cancellationToken);
+    }
+
+    private async Task<ContentPublicationResult?> PublishCoreAsync(
+        Guid revisionId,
+        string actor,
+        string? note,
+        string? expectedCurrentPayloadSha256,
+        CancellationToken cancellationToken)
     {
         if (revisionId == Guid.Empty)
             throw new ArgumentException("Revision id cannot be empty.", nameof(revisionId));
@@ -25,6 +63,23 @@ public sealed class ContentPublicationService(
         await coordinator.Gate.WaitAsync(cancellationToken);
         try
         {
+            if (expectedCurrentPayloadSha256 is not null)
+            {
+                string currentPayload = GameContentPackageCodec.SerializeCanonical(
+                    snapshotProvider.GetCurrent().Package);
+                string actualPayloadSha256 =
+                    GameContentPackageCodec.ComputeSha256(currentPayload);
+                if (!string.Equals(
+                        expectedCurrentPayloadSha256,
+                        actualPayloadSha256,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ContentPublicationConflictException(
+                        expectedCurrentPayloadSha256,
+                        actualPayloadSha256);
+                }
+            }
+
             GameContentPackage? package =
                 await revisionImporter.LoadRevisionPackageAsync(
                     revisionId,
