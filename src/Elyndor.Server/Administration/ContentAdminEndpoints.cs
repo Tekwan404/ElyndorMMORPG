@@ -36,12 +36,10 @@ public static class ContentAdminEndpoints
             current.PayloadJson));
     }
 
-    private static IResult Validate(
-        ContentAdminValidateRequest request,
-        ContentAdministrationService service)
+    private static IResult Validate(ContentAdminValidateRequest request)
     {
         ContentDraftValidationResult result =
-            service.ValidateDraft(request.PayloadJson);
+            ContentAdministrationService.ValidateDraft(request.PayloadJson);
         return Results.Ok(ToValidationResponse(result));
     }
 
