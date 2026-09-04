@@ -111,7 +111,7 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
         Assert.Contains(history.Releases, item => item.RevisionId == revision.Id);
     }
 
-    private async Task<AuthenticationResponse> AuthenticateAsync(HttpClient client)
+    private static async Task<AuthenticationResponse> AuthenticateAsync(HttpClient client)
     {
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/v1/auth/development",
