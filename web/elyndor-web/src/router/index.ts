@@ -26,6 +26,11 @@ export function createRoutes(isDevelopment: boolean): RouteRecordRaw[] {
       name: 'world',
       component: () => import('@/app/AppShell.vue'),
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/admin/AdminView.vue'),
+    },
   ]
 
   if (isDevelopment) routes.push(...developmentRoutes)
