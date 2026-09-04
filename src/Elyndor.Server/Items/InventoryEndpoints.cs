@@ -108,6 +108,7 @@ public static class InventoryEndpoints
             request.MerchantId,
             request.ItemDefinitionId,
             request.Quantity,
+            request.MutationId,
             cancellationToken);
         return ToMerchantResult(result, context);
     }
@@ -125,6 +126,7 @@ public static class InventoryEndpoints
             request.MerchantId,
             request.CharacterItemId,
             request.Quantity,
+            request.MutationId,
             cancellationToken);
         return ToMerchantResult(result, context);
     }
@@ -184,7 +186,7 @@ public static class InventoryEndpoints
         Results.Problem(
             statusCode: errorCode is MerchantErrorCodes.CharacterNotFound or MerchantErrorCodes.MerchantNotFound
                 ? StatusCodes.Status404NotFound
-                : errorCode == MerchantErrorCodes.Conflict
+                : errorCode is MerchantErrorCodes.Conflict or MerchantErrorCodes.MutationConflict
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>

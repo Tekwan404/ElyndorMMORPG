@@ -62,6 +62,14 @@ public sealed record MerchantResponse(
     long Gold,
     IReadOnlyList<MerchantItemResponse> Items);
 
-public sealed record BuyMerchantItemRequest(string MerchantId, string ItemDefinitionId, int Quantity = 1);
+public sealed record BuyMerchantItemRequest(
+    string MerchantId,
+    string ItemDefinitionId,
+    Guid MutationId,
+    int Quantity = 1);
 
-public sealed record SellMerchantItemRequest(string MerchantId, Guid CharacterItemId, int Quantity = 1);
+public sealed record SellMerchantItemRequest(
+    string MerchantId,
+    Guid CharacterItemId,
+    Guid MutationId,
+    int Quantity = 1);

@@ -17,6 +17,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<CharacterVitals> CharacterVitals => Set<CharacterVitals>();
 
+    public DbSet<CharacterMutation> CharacterMutations => Set<CharacterMutation>();
+
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
 
     public DbSet<TravelOperation> TravelOperations => Set<TravelOperation>();

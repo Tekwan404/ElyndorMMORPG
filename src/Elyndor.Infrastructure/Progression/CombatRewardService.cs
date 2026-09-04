@@ -85,7 +85,13 @@ public sealed class CombatRewardService(
             monster.XpReward,
             progression);
         int goldEarned = RollGold(monster);
-        character.AddGold(goldEarned);
+        await dbContext.Characters
+            .Where(candidate => candidate.Id == characterId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    candidate => candidate.Gold,
+                    candidate => candidate.Gold + goldEarned),
+                cancellationToken);
 
         IReadOnlyList<LootRoll> loot = RollLoot(monster);
         DateTimeOffset now = timeProvider.GetUtcNow();
