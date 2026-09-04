@@ -56,6 +56,30 @@ no longer legal for the new level.
 `TalentService` self-heals legacy class/tree mismatches by reinitializing the persisted talent
 state to the current class tree.
 
-Character operation-state guarding is the next D2 block.
+## Character operation guard
+
+`CharacterOperationGuard` is now the shared server boundary for state-changing player operations.
+It serializes combat start against out-of-combat mutations on bounded account stripes and checks the
+authoritative in-memory CombatSession registry while the stripe is held.
+
+While combat is active, the server returns HTTP 409 with:
+
+```text
+character_in_combat
+```
+
+for:
+
+- explore;
+- travel;
+- equip / unequip;
+- out-of-combat consumable use;
+- merchant buy / sell;
+- talent learn / switch / reset.
+
+Combat start and training reset use the same exclusive stripe, closing the in-process race where a
+world/inventory mutation and combat start could both pass independent prechecks.
+
+Read-only Bootstrap, inventory, merchant and talent reads remain available during combat.
 
 Do not report automated verification as green until CI or a local test run executes this branch.

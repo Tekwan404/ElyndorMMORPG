@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.Talents;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Talents;
+using Elyndor.Infrastructure.Characters;
 
 namespace Elyndor.Server.Talents;
 
@@ -23,6 +24,7 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         return TryGetAccountId(user, out Guid accountId)
@@ -35,10 +37,15 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
-        return TryGetAccountId(user, out Guid accountId)
-            ? ToResult(
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
                 await service.LearnAsync(
                     accountId,
                     request.LoadoutId,
@@ -46,8 +53,9 @@ public static class TalentEndpoints
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context)
-            : Results.Unauthorized();
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
     }
 
     private static async Task<IResult> SwitchAsync(
@@ -55,18 +63,24 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
-        return TryGetAccountId(user, out Guid accountId)
-            ? ToResult(
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
                 await service.SwitchAsync(
                     accountId,
                     request.LoadoutId,
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context)
-            : Results.Unauthorized();
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
     }
 
     private static async Task<IResult> ResetAsync(
@@ -76,17 +90,31 @@ public static class TalentEndpoints
         TalentService service,
         CancellationToken cancellationToken)
     {
-        return TryGetAccountId(user, out Guid accountId)
-            ? ToResult(
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
                 await service.ResetAsync(
                     accountId,
                     request.LoadoutId,
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context)
-            : Results.Unauthorized();
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
     }
+
+    private static IResult InCombatProblem(HttpContext context) =>
+        Results.Problem(
+            statusCode: StatusCodes.Status409Conflict,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = CharacterOperationErrorCodes.InCombat,
+                ["correlationId"] = context.TraceIdentifier
+            });
 
     private static IResult ToResult(TalentOperationResult result, HttpContext context)
     {

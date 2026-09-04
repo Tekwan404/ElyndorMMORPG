@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 
 namespace Elyndor.Infrastructure.Combat;
@@ -12,9 +13,35 @@ public sealed class CombatApplicationService(
     CombatSessionRegistry registry,
     WorldEncounterRegistry encounterRegistry,
     GameContentPackage content,
-    InventoryEquipmentService inventoryService)
+    InventoryEquipmentService inventoryService,
+    CharacterOperationGuard operationGuard)
 {
-    public async Task<CombatOperationResult> StartAsync(
+    public Task<CombatOperationResult> StartAsync(
+        Guid accountId,
+        Guid encounterId,
+        CancellationToken cancellationToken) =>
+        operationGuard.ExecuteExclusiveAsync(
+            accountId,
+            () => StartEncounterCoreAsync(accountId, encounterId, cancellationToken),
+            cancellationToken);
+
+    public Task<CombatOperationResult> StartTrainingAsync(
+        Guid accountId,
+        CancellationToken cancellationToken) =>
+        operationGuard.ExecuteExclusiveAsync(
+            accountId,
+            () => StartTrainingCoreAsync(accountId, cancellationToken),
+            cancellationToken);
+
+    public Task<CombatOperationResult> ResetTrainingAsync(
+        Guid accountId,
+        CancellationToken cancellationToken) =>
+        operationGuard.ExecuteExclusiveAsync(
+            accountId,
+            () => ResetTrainingCoreAsync(accountId, cancellationToken),
+            cancellationToken);
+
+    private async Task<CombatOperationResult> StartEncounterCoreAsync(
         Guid accountId,
         Guid encounterId,
         CancellationToken cancellationToken)
@@ -31,7 +58,7 @@ public sealed class CombatApplicationService(
             cancellationToken);
     }
 
-    public async Task<CombatOperationResult> StartTrainingAsync(
+    private async Task<CombatOperationResult> StartTrainingCoreAsync(
         Guid accountId,
         CancellationToken cancellationToken)
     {
@@ -45,7 +72,7 @@ public sealed class CombatApplicationService(
             cancellationToken);
     }
 
-    public async Task<CombatOperationResult> ResetTrainingAsync(
+    private async Task<CombatOperationResult> ResetTrainingCoreAsync(
         Guid accountId,
         CancellationToken cancellationToken)
     {
@@ -57,7 +84,7 @@ public sealed class CombatApplicationService(
 
         if (!await registry.DiscardAsync(accountId, cancellationToken))
             return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
-        return await StartTrainingAsync(accountId, cancellationToken);
+        return await StartTrainingCoreAsync(accountId, cancellationToken);
     }
 
     public Task<CombatOperationResult> UseAbilityAsync(

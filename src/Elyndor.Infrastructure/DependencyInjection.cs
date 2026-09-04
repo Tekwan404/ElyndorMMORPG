@@ -35,6 +35,9 @@ public static class DependencyInjection
         builder.Services.AddSingleton<WorldEncounterRegistry>();
         builder.Services.AddSingleton<ICombatSessionFinalizer, CombatSessionFinalizer>();
         builder.Services.AddSingleton<CombatSessionRegistry>();
+        builder.Services.AddSingleton<ICombatActivityReader>(
+            services => services.GetRequiredService<CombatSessionRegistry>());
+        builder.Services.AddSingleton<CharacterOperationGuard>();
 
         return builder;
     }

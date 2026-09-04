@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Items;
 
 namespace Elyndor.Server.World;
@@ -47,36 +48,43 @@ public static class WorldEndpoints
         ClaimsPrincipal user,
         HttpContext httpContext,
         WorldEncounterService encounterService,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
             return Results.Unauthorized();
 
-        (WorldEncounterSnapshot? encounter, string? errorCode) = await encounterService.ExploreAsync(
+        return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            cancellationToken);
-        if (encounter is not null)
-        {
-            return Results.Ok(new WorldEncounterResponse(
-                encounter.EncounterId,
-                encounter.MonsterId,
-                encounter.Name,
-                encounter.Level,
-                encounter.Rank,
-                encounter.Description,
-                encounter.ArtId));
-        }
-
-        int statusCode = errorCode == WorldEncounterErrorCodes.CharacterNotFound
-            ? StatusCodes.Status404NotFound
-            : StatusCodes.Status422UnprocessableEntity;
-        return Results.Problem(
-            statusCode: statusCode,
-            extensions: new Dictionary<string, object?>
+            async () =>
             {
-                ["code"] = errorCode ?? WorldEncounterErrorCodes.EncounterUnavailable,
-                ["correlationId"] = httpContext.TraceIdentifier
-            });
+                (WorldEncounterSnapshot? encounter, string? errorCode) =
+                    await encounterService.ExploreAsync(accountId, cancellationToken);
+                if (encounter is not null)
+                {
+                    return Results.Ok(new WorldEncounterResponse(
+                        encounter.EncounterId,
+                        encounter.MonsterId,
+                        encounter.Name,
+                        encounter.Level,
+                        encounter.Rank,
+                        encounter.Description,
+                        encounter.ArtId));
+                }
+
+                int statusCode = errorCode == WorldEncounterErrorCodes.CharacterNotFound
+                    ? StatusCodes.Status404NotFound
+                    : StatusCodes.Status422UnprocessableEntity;
+                return Results.Problem(
+                    statusCode: statusCode,
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = errorCode ?? WorldEncounterErrorCodes.EncounterUnavailable,
+                        ["correlationId"] = httpContext.TraceIdentifier
+                    });
+            },
+            () => InCombatProblem(httpContext),
+            cancellationToken);
     }
 
     private static async Task<IResult> TravelAsync(
@@ -85,6 +93,7 @@ public static class WorldEndpoints
         HttpContext httpContext,
         BootstrapService bootstrapService,
         TravelService travelService,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -92,34 +101,55 @@ public static class WorldEndpoints
             return Results.Unauthorized();
         }
 
-        await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
-
-        TravelResult result = await travelService.TravelAsync(
+        return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            request.RequestId,
-            request.TargetLocationId,
-            cancellationToken);
-        if (result.IsSuccess)
-        {
-            return Results.Ok(new TravelResponse(result.LocationId!, result.Version!.Value));
-        }
+            async () =>
+            {
+                await bootstrapService.GetAsync(
+                    accountId,
+                    cancellationToken,
+                    checkpoint: true);
 
-        int statusCode = result.ErrorCode is
-            TravelErrorCodes.Conflict or TravelErrorCodes.IdempotencyConflict
-                ? StatusCodes.Status409Conflict
-                : result.ErrorCode is TravelErrorCodes.InvalidTransition
-                    or TravelErrorCodes.UnknownLocation
-                    or TravelErrorCodes.InvalidRequest
-                        ? StatusCodes.Status422UnprocessableEntity
-                        : StatusCodes.Status404NotFound;
-        return Results.Problem(
-            statusCode: statusCode,
+                TravelResult result = await travelService.TravelAsync(
+                    accountId,
+                    request.RequestId,
+                    request.TargetLocationId,
+                    cancellationToken);
+                if (result.IsSuccess)
+                {
+                    return Results.Ok(new TravelResponse(
+                        result.LocationId!,
+                        result.Version!.Value));
+                }
+
+                int statusCode = result.ErrorCode is
+                    TravelErrorCodes.Conflict or TravelErrorCodes.IdempotencyConflict
+                        ? StatusCodes.Status409Conflict
+                        : result.ErrorCode is TravelErrorCodes.InvalidTransition
+                            or TravelErrorCodes.UnknownLocation
+                            or TravelErrorCodes.InvalidRequest
+                                ? StatusCodes.Status422UnprocessableEntity
+                                : StatusCodes.Status404NotFound;
+                return Results.Problem(
+                    statusCode: statusCode,
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = result.ErrorCode!,
+                        ["correlationId"] = httpContext.TraceIdentifier
+                    });
+            },
+            () => InCombatProblem(httpContext),
+            cancellationToken);
+    }
+
+    private static IResult InCombatProblem(HttpContext context) =>
+        Results.Problem(
+            statusCode: StatusCodes.Status409Conflict,
             extensions: new Dictionary<string, object?>
             {
-                ["code"] = result.ErrorCode!,
-                ["correlationId"] = httpContext.TraceIdentifier
+                ["code"] = CharacterOperationErrorCodes.InCombat,
+                ["correlationId"] = context.TraceIdentifier
             });
-    }
 
     private static BootstrapResponse ToResponse(BootstrapSnapshot snapshot) =>
         new(

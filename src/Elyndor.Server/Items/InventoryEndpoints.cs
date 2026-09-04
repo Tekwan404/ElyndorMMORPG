@@ -4,6 +4,7 @@ using Elyndor.Contracts.Items;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Characters;
 
 namespace Elyndor.Server.Items;
 
@@ -38,18 +39,29 @@ public static class InventoryEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         InventoryEquipmentService service,
-        CancellationToken cancellationToken) =>
-        TryGetAccountId(user, out Guid accountId)
-            ? ToResult(
-                await service.EquipAsync(accountId, request.CharacterItemId, request.MutationId, cancellationToken),
-                context)
-            : Results.Unauthorized();
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
+                await service.EquipAsync(
+                    accountId,
+                    request.CharacterItemId,
+                    request.MutationId,
+                    cancellationToken),
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
 
     private static async Task<IResult> UnequipAsync(
         UnequipItemRequest request,
         ClaimsPrincipal user,
         HttpContext context,
         InventoryEquipmentService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -57,7 +69,17 @@ public static class InventoryEndpoints
         if (!Enum.TryParse(request.Slot, ignoreCase: false, out EquipmentSlot slot))
             return Problem(InventoryErrorCodes.InvalidSlot, context);
 
-        return ToResult(await service.UnequipAsync(accountId, slot, request.MutationId, cancellationToken), context);
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
+                await service.UnequipAsync(
+                    accountId,
+                    slot,
+                    request.MutationId,
+                    cancellationToken),
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
     }
 
     private static async Task<IResult> UseConsumableAsync(
@@ -67,21 +89,32 @@ public static class InventoryEndpoints
         InventoryEquipmentService service,
         BootstrapService bootstrapService,
         TimeProvider timeProvider,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(accountId, cancellationToken);
-        if (bootstrap.Character is null) return Problem(InventoryErrorCodes.CharacterNotFound, context);
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
+                    accountId,
+                    cancellationToken);
+                if (bootstrap.Character is null)
+                    return Problem(InventoryErrorCodes.CharacterNotFound, context);
 
-        return ToResult(
-            await service.UseConsumableOutOfCombatAsync(
-                accountId,
-                request.CharacterItemId,
-                request.MutationId,
-                bootstrap.Character.Vitals.MaxHp,
-                timeProvider.GetUtcNow(),
-                cancellationToken),
-            context);
+                return ToResult(
+                    await service.UseConsumableOutOfCombatAsync(
+                        accountId,
+                        request.CharacterItemId,
+                        request.MutationId,
+                        bootstrap.Character.Vitals.MaxHp,
+                        timeProvider.GetUtcNow(),
+                        cancellationToken),
+                    context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
     }
 
     private static async Task<IResult> GetMerchantAsync(
@@ -101,17 +134,25 @@ public static class InventoryEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         MerchantService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        MerchantOperationResult result = await service.BuyAsync(
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                MerchantOperationResult result = await service.BuyAsync(
             accountId,
             request.MerchantId,
             request.ItemDefinitionId,
             request.Quantity,
-            request.MutationId,
+                    request.MutationId,
+                    cancellationToken);
+                return ToMerchantResult(result, context);
+            },
+            () => InCombatProblem(context),
             cancellationToken);
-        return ToMerchantResult(result, context);
     }
 
     private static async Task<IResult> SellMerchantMaterialAsync(
@@ -119,18 +160,35 @@ public static class InventoryEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         MerchantService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        MerchantOperationResult result = await service.SellMaterialAsync(
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                MerchantOperationResult result = await service.SellMaterialAsync(
             accountId,
             request.MerchantId,
             request.CharacterItemId,
             request.Quantity,
-            request.MutationId,
+                    request.MutationId,
+                    cancellationToken);
+                return ToMerchantResult(result, context);
+            },
+            () => InCombatProblem(context),
             cancellationToken);
-        return ToMerchantResult(result, context);
     }
+
+    private static IResult InCombatProblem(HttpContext context) =>
+        Results.Problem(
+            statusCode: StatusCodes.Status409Conflict,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = CharacterOperationErrorCodes.InCombat,
+                ["correlationId"] = context.TraceIdentifier
+            });
 
     internal static InventoryResponse ToResponse(InventorySnapshot snapshot) =>
         new(

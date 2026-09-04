@@ -9,10 +9,15 @@ public interface ICombatUpdatePublisher
     Task PublishAsync(Guid accountId, CombatOperationResult update, CancellationToken cancellationToken);
 }
 
+public interface ICombatActivityReader
+{
+    bool HasActiveCombat(Guid accountId);
+}
+
 public sealed class CombatSessionRegistry(
     TimeProvider timeProvider,
     ICombatUpdatePublisher publisher,
-    ICombatSessionFinalizer finalizer) : IDisposable
+    ICombatSessionFinalizer finalizer) : IDisposable, ICombatActivityReader
 {
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
@@ -78,6 +83,10 @@ public sealed class CombatSessionRegistry(
             entry.Gate.Release();
         }
     }
+
+    public bool HasActiveCombat(Guid accountId) =>
+        _byAccount.TryGetValue(accountId, out SessionEntry? entry)
+        && entry.Session.Status == CombatSessionStatus.Active;
 
     public CombatOperationResult Resume(Guid accountId) =>
         _byAccount.TryGetValue(accountId, out SessionEntry? entry)
