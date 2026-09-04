@@ -206,6 +206,8 @@ function combatSnapshot(): CombatSnapshot {
     sequence: 1,
     status: 'Active',
     serverTimeUtc: '2026-09-01T12:00:00Z',
+    contentVersion: '0.9.3',
+    balanceVersion: '0.9.1',
     player: combatActor('Player', 'WARRIOR', 'Arthas', 120, 120, 0, 100),
     enemy: combatActor('Monster', 'WOLF', 'Волк', 100, 100, 0, 0),
   }

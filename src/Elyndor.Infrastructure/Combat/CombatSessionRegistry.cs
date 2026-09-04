@@ -32,6 +32,21 @@ public sealed class CombatSessionRegistry(
         GameContentSnapshot? contentSnapshot = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(session);
+        if (contentSnapshot is not null
+            && (!string.Equals(
+                    session.ContentVersion,
+                    contentSnapshot.ContentVersion,
+                    StringComparison.Ordinal)
+                || !string.Equals(
+                    session.BalanceVersion,
+                    contentSnapshot.BalanceVersion,
+                    StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "Combat session content identity does not match its pinned snapshot.");
+        }
+
         SessionEntry entry = new(accountId, characterId, session, contentSnapshot);
         if (!_byAccount.TryAdd(accountId, entry)) return false;
         if (!_byCharacter.TryAdd(characterId, entry))
