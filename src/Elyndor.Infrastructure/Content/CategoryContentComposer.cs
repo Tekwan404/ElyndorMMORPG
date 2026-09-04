@@ -75,12 +75,12 @@ internal static class CategoryContentComposer
 
             if (!document.RootElement.TryGetProperty("locationId", out _))
             {
-                ContentCategoryFragment fragment =
+                ContentCategoryFragment categoryFragment =
                     JsonSerializer.Deserialize<ContentCategoryFragment>(
                         json,
                         GameContentJson.SerializerOptions)
                     ?? throw new InvalidDataException($"Content file '{path}' is empty.");
-                package = ComposeFragment(package, fragment);
+                package = ComposeFragment(package, categoryFragment);
                 continue;
             }
 
