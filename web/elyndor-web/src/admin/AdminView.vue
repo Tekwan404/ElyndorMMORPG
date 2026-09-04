@@ -3,12 +3,18 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
+import AdminPublishReview from '@/admin/AdminPublishReview.vue'
+import { diffContentJson } from '@/admin/contentDiff'
+import type { ContentDiffEntry } from '@/admin/contentDiff'
+import { createDraftEntity } from '@/admin/entityTemplates'
+import type { NewItemType } from '@/admin/entityTemplates'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type {
   ContentAdminCurrent,
   ContentAdminHistory,
   ContentAdminRelease,
   ContentAdminRevision,
+  ContentAdminRevisionDetail,
   ContentAdminValidation,
 } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -44,6 +50,12 @@ const busyAction = ref<string | null>(null)
 const errorMessage = ref('')
 const statusMessage = ref('')
 const rollbackCandidate = ref<string | null>(null)
+const createMode = ref(false)
+const newEntityId = ref('')
+const newEntityName = ref('')
+const newItemType = ref<NewItemType>('Material')
+const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
+const publishDiff = ref<ContentDiffEntry[]>([])
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
 const entityList = computed<JsonRecord[]>(() => {
@@ -53,6 +65,9 @@ const entityList = computed<JsonRecord[]>(() => {
 const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
 const hasStructuredEditor = computed(() =>
   ['monsters', 'abilities', 'items'].includes(selectedSection.value),
+)
+const canCreateEntity = computed(() =>
+  selectedSection.value === 'monsters' || selectedSection.value === 'items',
 )
 const isDirty = computed(() => {
   if (!current.value) return false
@@ -80,9 +95,62 @@ function selectEntity(entity: JsonRecord): void {
 function changeSection(): void {
   selectedEntityId.value = null
   entityJson.value = ''
+  createMode.value = false
+  newEntityId.value = ''
+  newEntityName.value = ''
   editorMode.value = ['monsters', 'abilities', 'items'].includes(selectedSection.value)
     ? 'form'
     : 'json'
+}
+
+function openCreateEntity(): void {
+  if (!canCreateEntity.value) return
+  createMode.value = true
+  newEntityId.value = ''
+  newEntityName.value = ''
+  newItemType.value = 'Material'
+  errorMessage.value = ''
+  statusMessage.value = ''
+}
+
+function cancelCreateEntity(): void {
+  createMode.value = false
+  newEntityId.value = ''
+  newEntityName.value = ''
+}
+
+function createEntity(): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject) {
+    errorMessage.value = 'Текущий package JSON некорректен.'
+    return
+  }
+  if (selectedSection.value !== 'monsters' && selectedSection.value !== 'items') {
+    errorMessage.value = 'Создание через форму пока доступно только для Monsters и Items.'
+    return
+  }
+
+  try {
+    const result = createDraftEntity(packageObject, {
+      section: selectedSection.value,
+      id: newEntityId.value,
+      name: newEntityName.value,
+      itemType: selectedSection.value === 'items' ? newItemType.value : undefined,
+    })
+    draftJson.value = JSON.stringify(result.packageObject, null, 2)
+    const id = entityId(result.entity)
+    selectedEntityId.value = id
+    entityJson.value = JSON.stringify(result.entity, null, 2)
+    editorMode.value = 'form'
+    validation.value = null
+    createMode.value = false
+    newEntityId.value = ''
+    newEntityName.value = ''
+    errorMessage.value = ''
+    statusMessage.value = `${id} добавлен в локальный draft. Настрой поля, нажми Apply to draft и Validate.`
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать сущность.'
+  }
 }
 
 function updateEntityFromForm(entity: JsonRecord): void {
@@ -196,6 +264,24 @@ async function saveDraft(): Promise<void> {
   })
 }
 
+async function reviewRevision(revisionId: string): Promise<void> {
+  if (!current.value) return
+
+  await runAction(`review:${revisionId}`, async () => {
+    const revision = await apiClient.request<ContentAdminRevisionDetail>(
+      `/api/v1/admin/content/revisions/${revisionId}`,
+    )
+    publishCandidate.value = revision
+    publishDiff.value = diffContentJson(current.value!.payloadJson, revision.payloadJson)
+  })
+}
+
+function closePublishReview(): void {
+  if (busyAction.value?.startsWith('publish:')) return
+  publishCandidate.value = null
+  publishDiff.value = []
+}
+
 async function publishRevision(revisionId: string): Promise<void> {
   if (!current.value) return
 
@@ -213,6 +299,8 @@ async function publishRevision(revisionId: string): Promise<void> {
     )
     statusMessage.value = `Revision ${shortId(revisionId)} опубликована.`
     note.value = ''
+    publishCandidate.value = null
+    publishDiff.value = []
     await refreshAll(true)
   })
 }
@@ -258,6 +346,8 @@ async function runAction(name: string, action: () => Promise<void>): Promise<voi
     ) {
       errorMessage.value =
         'Live content уже изменился. Текущий live hash обновлён; проверь draft и повтори действие.'
+      publishCandidate.value = null
+      publishDiff.value = []
       await loadRuntime(false)
     } else if (error instanceof ApiRequestError) {
       errorMessage.value = `Ошибка API: ${error.code}`
@@ -408,14 +498,43 @@ onMounted(async () => {
 
       <div class="workspace">
         <aside class="catalog">
-          <label>
-            <span>Категория</span>
-            <select v-model="selectedSection" @change="changeSection">
-              <option v-for="section in sections" :key="section.key" :value="section.key">
-                {{ section.label }}
-              </option>
-            </select>
-          </label>
+          <div class="catalog__top">
+            <label>
+              <span>Категория</span>
+              <select v-model="selectedSection" @change="changeSection">
+                <option v-for="section in sections" :key="section.key" :value="section.key">
+                  {{ section.label }}
+                </option>
+              </select>
+            </label>
+            <button v-if="canCreateEntity" type="button" @click="openCreateEntity">
+              + New {{ selectedSection === 'monsters' ? 'Monster' : 'Item' }}
+            </button>
+          </div>
+
+          <form v-if="createMode" class="create-card" @submit.prevent="createEntity">
+            <b>Новая сущность</b>
+            <label>
+              <span>ID</span>
+              <input v-model="newEntityId" placeholder="DIRE_WOLF" autocomplete="off" />
+            </label>
+            <label>
+              <span>Название</span>
+              <input v-model="newEntityName" placeholder="Лютоволк" autocomplete="off" />
+            </label>
+            <label v-if="selectedSection === 'items'">
+              <span>Тип предмета</span>
+              <select v-model="newItemType">
+                <option value="Material">Material</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Consumable">Consumable</option>
+              </select>
+            </label>
+            <div class="create-card__actions">
+              <button type="button" @click="cancelCreateEntity">Отмена</button>
+              <button class="primary" type="submit">Create draft entity</button>
+            </div>
+          </form>
 
           <div class="entity-list">
             <button
@@ -510,13 +629,15 @@ onMounted(async () => {
               <p>{{ revision.note || 'Без комментария' }}</p>
             </div>
             <button
+              v-if="revision.id !== current?.revisionId"
               class="primary"
               type="button"
               :disabled="Boolean(busyAction)"
-              @click="publishRevision(revision.id)"
+              @click="reviewRevision(revision.id)"
             >
-              {{ busyAction === `publish:${revision.id}` ? 'Publishing…' : 'Publish' }}
+              {{ busyAction === `review:${revision.id}` ? 'Loading…' : 'Review & publish' }}
             </button>
+            <span v-else class="live-badge">LIVE REVISION</span>
           </article>
         </div>
 
@@ -548,6 +669,15 @@ onMounted(async () => {
           </article>
         </div>
       </section>
+
+      <AdminPublishReview
+        v-if="publishCandidate"
+        :revision="publishCandidate"
+        :entries="publishDiff"
+        :busy="busyAction === `publish:${publishCandidate.id}`"
+        @cancel="closePublishReview"
+        @confirm="publishRevision(publishCandidate.id)"
+      />
     </template>
   </main>
 </template>
@@ -581,7 +711,11 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
 .workspace { display: grid; max-width: 86rem; margin: 0 auto; grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr); gap: var(--ui-space-3); }
 .catalog, .editor, .history__column, .errors { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-1); }
 .catalog { padding: var(--ui-space-3); }
+.catalog__top { display: grid; gap: var(--ui-space-2); }
 .catalog label { display: grid; gap: var(--ui-space-1); }
+.create-card { display: grid; gap: var(--ui-space-2); margin-top: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-primary); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); }
+.create-card input, .create-card select { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-1); color: inherit; }
+.create-card__actions { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
 .entity-list { display: grid; max-height: 38rem; margin-top: var(--ui-space-3); gap: var(--ui-space-1); overflow: auto; }
 .entity-list button { min-height: 2.5rem; text-align: left; }
 .entity-list button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); }

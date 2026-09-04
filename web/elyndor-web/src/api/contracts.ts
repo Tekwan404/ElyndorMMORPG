@@ -38,6 +38,10 @@ export interface ContentAdminRevision {
   note: string | null
 }
 
+export interface ContentAdminRevisionDetail extends ContentAdminRevision {
+  payloadJson: string
+}
+
 export interface ContentAdminRelease {
   id: string
   revisionId: string
