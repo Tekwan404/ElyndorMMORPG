@@ -7,6 +7,7 @@ using Elyndor.Infrastructure.Talents;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -31,6 +32,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<MerchantService>();
+        builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();
         builder.Services.AddSingleton<ICombatSessionFinalizer, CombatSessionFinalizer>();

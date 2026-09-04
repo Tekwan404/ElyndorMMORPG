@@ -5,6 +5,7 @@ using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.Persistence;
@@ -32,6 +33,12 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterEquipment> CharacterEquipment => Set<CharacterEquipment>();
 
     public DbSet<CombatRewardGrant> CombatRewardGrants => Set<CombatRewardGrant>();
+
+    public DbSet<ContentRevision> ContentRevisions => Set<ContentRevision>();
+
+    public DbSet<ContentRelease> ContentReleases => Set<ContentRelease>();
+
+    public DbSet<ContentAuditEntry> ContentAuditEntries => Set<ContentAuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

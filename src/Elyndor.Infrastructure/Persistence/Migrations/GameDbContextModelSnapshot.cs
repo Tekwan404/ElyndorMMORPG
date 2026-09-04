@@ -427,6 +427,163 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("travel_operations", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Content.ContentAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("DetailsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReleaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RevisionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_audit_entries");
+
+                    b.HasIndex("OccurredAtUtc")
+                        .HasDatabaseName("ix_content_audit_entries_occurred_at");
+
+                    b.HasIndex("ReleaseId")
+                        .HasDatabaseName("ix_content_audit_entries_release_id");
+
+                    b.HasIndex("RevisionId")
+                        .HasDatabaseName("ix_content_audit_entries_revision_id");
+
+                    b.ToTable("content_audit_entries", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentRelease", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<DateTimeOffset>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PublishedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("RevisionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_releases");
+
+                    b.HasIndex("PublishedAtUtc")
+                        .HasDatabaseName("ix_content_releases_published_at");
+
+                    b.HasIndex("RevisionId", "PublishedAtUtc")
+                        .HasDatabaseName("ix_content_releases_revision_published_at");
+
+                    b.ToTable("content_releases", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentRevision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BalanceVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ContentVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PayloadSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("SourcePublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_revisions");
+
+                    b.HasIndex("CreatedAtUtc")
+                        .HasDatabaseName("ix_content_revisions_created_at");
+
+                    b.HasIndex("PayloadSha256")
+                        .HasDatabaseName("ix_content_revisions_payload_sha256");
+
+                    b.HasIndex("ContentVersion", "BalanceVersion")
+                        .HasDatabaseName("ix_content_revisions_versions");
+
+                    b.ToTable("content_revisions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentAuditEntry", b =>
+                {
+                    b.HasOne("Elyndor.Core.Content.ContentRelease", null)
+                        .WithMany()
+                        .HasForeignKey("ReleaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_content_audit_entries_content_releases_release_id");
+
+                    b.HasOne("Elyndor.Core.Content.ContentRevision", null)
+                        .WithMany()
+                        .HasForeignKey("RevisionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_content_audit_entries_content_revisions_revision_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentRelease", b =>
+                {
+                    b.HasOne("Elyndor.Core.Content.ContentRevision", null)
+                        .WithMany()
+                        .HasForeignKey("RevisionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_releases_content_revisions_revision_id");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Characters.Character", b =>
                 {
                     b.HasOne("Elyndor.Core.Identity.Account", null)
