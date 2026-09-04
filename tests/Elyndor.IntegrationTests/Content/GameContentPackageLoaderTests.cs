@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 
@@ -6,6 +7,13 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class GameContentPackageLoaderTests
 {
+    private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
+    private static readonly string[] MageArmorCategories = ["LIGHT"];
+    private static readonly string[] MageStartingAbilities =
+        ["MAGE_FIREBALL", "MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD"];
+    private static readonly string[] ForestEncounterMonsters =
+        ["WOLF", "FOREST_BOAR", "GIANT_SPIDER"];
+
     [Fact]
     public async Task PhaseFiveMageAndLocationEncounterPackageLoadsAndValidates()
     {
@@ -23,10 +31,10 @@ public sealed class GameContentPackageLoaderTests
         ClassProfile mage = Assert.Single(package.ClassProfiles!, profile => profile.Id == "MAGE");
         Assert.Equal("INTELLECT", mage.PrimaryAttribute);
         Assert.Equal("MANA", mage.ResourceProfileId);
-        Assert.Equal(new[] { "STAFF", "WAND" }, mage.AllowedWeaponCategories);
-        Assert.Equal(new[] { "LIGHT" }, mage.AllowedArmorCategories);
+        Assert.Equal(MageWeaponCategories, mage.AllowedWeaponCategories);
+        Assert.Equal(MageArmorCategories, mage.AllowedArmorCategories);
         Assert.Equal(
-            new[] { "MAGE_FIREBALL", "MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD" },
+            MageStartingAbilities,
             mage.StartingAbilityIds);
         Assert.NotNull(mage.CombatAutoAttack);
 
@@ -42,7 +50,7 @@ public sealed class GameContentPackageLoaderTests
             location => location.Id == "WHISPERING_FOREST");
         IReadOnlyList<LocationEncounterDefinition> encounters = forest.Encounters!;
         Assert.Equal(
-            new[] { "WOLF", "FOREST_BOAR", "GIANT_SPIDER" },
+            ForestEncounterMonsters,
             encounters.Select(encounter => encounter.MonsterId));
         Assert.All(encounters, encounter => Assert.True(encounter.Weight > 0));
         Assert.All(
