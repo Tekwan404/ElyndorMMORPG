@@ -3,12 +3,18 @@ import { expect, test, type Page } from '@playwright/test'
 test('creates a hero, travels, and restores the world on reload', async ({ page }) => {
   const browserErrors: string[] = []
   page.on('console', (message) => {
-    if (message.type() === 'error') browserErrors.push(message.text())
+    if (
+      message.type() === 'error'
+      && !isExpectedMockRealtimeFailure(message.text())
+    ) {
+      browserErrors.push(message.text())
+    }
   })
   page.on('pageerror', (error) => browserErrors.push(error.message))
-  page.on('requestfailed', (request) =>
-    browserErrors.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`),
-  )
+  page.on('requestfailed', (request) => {
+    if (isMockRealtimeRequest(request.url())) return
+    browserErrors.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`)
+  })
   await installMockApiUnlessReal(page)
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Создание героя' })).toBeVisible()
@@ -19,9 +25,9 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByLabel('Имя').fill(characterName())
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
-  await expect(page.getByRole('heading', { name: 'Starter Town' })).toBeVisible()
-  await page.getByRole('button', { name: /Whispering Forest/ }).click()
-  await expect(page.getByRole('heading', { name: 'Whispering Forest' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
+  await page.getByRole('button', { name: /Шепчущий лес/ }).click()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   await page.getByRole('button', { name: /Deep Forest/ }).click()
   await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
   expect(
@@ -111,6 +117,15 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
   })
 }
 
+function isMockRealtimeRequest(url: string): boolean {
+  return process.env.ELYNDOR_E2E_REAL !== 'true' && url.includes('/hubs/combat')
+}
+
+function isExpectedMockRealtimeFailure(message: string): boolean {
+  return process.env.ELYNDOR_E2E_REAL !== 'true'
+    && message.includes('[combat-realtime]')
+}
+
 function characterName(): string {
   return process.env.ELYNDOR_E2E_REAL === 'true' ? `Hero${asLetters(Date.now())}` : 'Arthas'
 }
@@ -165,9 +180,13 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
           level: 1,
           experience: 35,
           xpToNextLevel: 100,
+          gold: 0,
           primaryAttribute: 'AGILITY',
           classProfileVersion: '0.2.0',
+          knownAbilityIds: [],
+          knownAbilities: [],
           stats: archerStats,
+          statBreakdown: emptyStatBreakdown,
           vitals: archerVitals,
           inventory: emptyInventory,
         }
@@ -211,5 +230,19 @@ const archerVitals = {
 
 const emptyInventory = {
   items: [],
-  equipped: { Weapon: null, Head: null, Chest: null },
+  equipped: {
+    weapon: null,
+    head: null,
+    chest: null,
+    legs: null,
+    boots: null,
+    accessory: null,
+  },
 }
+
+const emptyStatBreakdown = Object.fromEntries(
+  Object.keys(archerStats).map((key) => [
+    key,
+    { finalValue: archerStats[key as keyof typeof archerStats], contributions: [] },
+  ]),
+)
