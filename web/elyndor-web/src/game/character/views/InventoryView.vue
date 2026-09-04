@@ -115,7 +115,7 @@ async function useSelected(): Promise<void> {
 
     <UIPanel v-if="inventory" class="bag-panel">
       <template #title>{{ typeFilter === 'all' && rarityFilter === 'all' ? `Ячейки рюкзака · ${usedSlots} / ${BAG_CAPACITY}` : `Найдено: ${filteredItems.length}` }}</template>
-      <div v-if="visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all'))" class="bag-grid">
+      <div v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all'))" class="bag-grid">
         <button
           v-for="(item, index) in visibleCells"
           :key="item?.id ?? `empty-${index}`"
