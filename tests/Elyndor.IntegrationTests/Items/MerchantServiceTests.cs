@@ -128,7 +128,7 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
             s1.SellMaterialAsync(accountId, MerchantId, itemId, 1, Guid.CreateVersion7(), CancellationToken.None),
             s2.SellMaterialAsync(accountId, MerchantId, itemId, 1, Guid.CreateVersion7(), CancellationToken.None));
 
-        Assert.Single(results.Where(r => r.IsSuccess));
+        Assert.Single(results, r => r.IsSuccess);
         Assert.Single(results, r => r.ErrorCode == MerchantErrorCodes.ItemNotOwned);
 
         await using GameDbContext verify = postgres.CreateDbContext();
