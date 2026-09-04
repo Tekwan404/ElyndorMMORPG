@@ -7,6 +7,8 @@ using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
+using Elyndor.Server.Administration;
+using Elyndor.Server.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,7 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
             await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
 
         Assert.NotNull(authentication);
+        Assert.Empty(authentication.Roles);
         Assert.Equal(Now.AddMinutes(15), authentication.ExpiresAtUtc);
         Guid accountId = Guid.Parse(ReadSubject(authentication.AccessToken));
         Assert.Equal(
@@ -58,6 +61,38 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
         Account account = await context.Accounts.SingleAsync();
         Assert.Equal(account.Id, accountId);
         Assert.Equal(42, account.TelegramUserId);
+    }
+
+    [Fact]
+    public async Task TelegramAdminReceivesRoleInResponseAndJwt()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactory(
+            "PublicTest",
+            adminAllowedUserId: 42);
+        using HttpClient client = factory.CreateClient();
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/v1/auth/telegram",
+            new TelegramAuthenticationRequest(ValidInitData));
+
+        response.EnsureSuccessStatusCode();
+        AuthenticationResponse? authentication =
+            await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
+
+        Assert.NotNull(authentication);
+        Assert.Equal([AdminAuthorization.SuperAdminRole], authentication.Roles);
+
+        using JsonDocument payload = ReadPayload(authentication.AccessToken);
+        Assert.Equal(
+            AdminAuthorization.SuperAdminRole,
+            payload.RootElement
+                .GetProperty(AuthenticationClaimTypes.Role)
+                .GetString());
+        Assert.Equal(
+            "42",
+            payload.RootElement
+                .GetProperty(AuthenticationClaimTypes.TelegramUserId)
+                .GetString());
     }
 
     [Fact]
@@ -153,7 +188,8 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
         DateTimeOffset? utcNow = null,
         string? botToken = BotToken,
         bool developmentEnabled = false,
-        long developmentTelegramUserId = 0) =>
+        long developmentTelegramUserId = 0,
+        long adminAllowedUserId = 0) =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -172,6 +208,14 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
                     "Authentication:Development:TelegramUserId",
                     developmentTelegramUserId.ToString(
                         global::System.Globalization.CultureInfo.InvariantCulture));
+                if (adminAllowedUserId > 0)
+                {
+                    builder.UseSetting(
+                        "Administration:Telegram:AllowedUserIds:0",
+                        adminAllowedUserId.ToString(
+                            global::System.Globalization.CultureInfo.InvariantCulture));
+                }
+
                 builder.ConfigureServices(services =>
                 {
                     services.RemoveAll<TimeProvider>();
