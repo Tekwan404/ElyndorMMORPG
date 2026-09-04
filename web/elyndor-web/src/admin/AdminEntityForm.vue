@@ -67,8 +67,22 @@ function setBoolean(path: JsonPath, event: Event): void {
   update(path, (event.target as HTMLInputElement).checked)
 }
 
+function cloneJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(cloneJsonValue)
+  }
+  if (isRecord(value)) {
+    const clone: JsonRecord = {}
+    for (const [key, entry] of Object.entries(value)) {
+      clone[key] = cloneJsonValue(entry)
+    }
+    return clone
+  }
+  return value
+}
+
 function update(path: JsonPath, value: unknown): void {
-  const next = structuredClone(props.entity)
+  const next = cloneJsonValue(props.entity) as JsonRecord
   let current: unknown = next
 
   for (let index = 0; index < path.length - 1; index++) {
