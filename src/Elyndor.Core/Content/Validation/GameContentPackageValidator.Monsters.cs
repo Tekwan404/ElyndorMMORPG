@@ -9,53 +9,73 @@ namespace Elyndor.Core.Content;
 
 public static partial class GameContentPackageValidator
 {
-        internal static readonly HashSet<string> AllowedDangerLevels =
-            ["SAFE", "ADVENTURE", "DANGEROUS"];
-
-        public static IReadOnlyList<ContentValidationError> Validate(GameContentPackage package)
+        internal static void ValidateMonsterDefinitions(
+            GameContentPackage package,
+            List<ContentValidationError> errors)
         {
-            ArgumentNullException.ThrowIfNull(package);
-
-            List<ContentValidationError> errors = [];
-
-            ValidateMetadata(package, errors);
-
-            HashSet<ContentKey> definitions = [];
-
-            for (var index = 0; index < package.Definitions.Count; index++)
+            HashSet<string> abilityIds = (package.Abilities ?? [])
+                .Select(ability => ability.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> aiProfileIds = [];
+            for (var index = 0; index < (package.MonsterAiProfiles?.Count ?? 0); index++)
             {
-                GameContentDefinition definition = package.Definitions[index];
-                string path = $"definitions[{index}]";
-
-                bool typeIsValid = ValidateIdentifier(
-                    definition.Type,
-                    "INVALID_DEFINITION_TYPE",
-                    $"{path}.type",
-                    errors);
+                MonsterAiProfile profile = package.MonsterAiProfiles![index];
+                string path = $"monsterAiProfiles[{index}]";
                 bool idIsValid = ValidateIdentifier(
-                    definition.Id,
-                    "INVALID_DEFINITION_ID",
-                    $"{path}.id",
-                    errors);
-
-                if (typeIsValid && idIsValid && !definitions.Add(new ContentKey(definition.Type, definition.Id)))
+                    profile.Id, "INVALID_MONSTER_AI_PROFILE_ID", $"{path}.id", errors);
+                if (idIsValid && !aiProfileIds.Add(profile.Id))
                 {
-                    errors.Add(new ContentValidationError(
-                        "DUPLICATE_DEFINITION_ID",
-                        path,
-                        $"Definition '{definition.Type}:{definition.Id}' is duplicated."));
+                    errors.Add(new("DUPLICATE_MONSTER_AI_PROFILE_ID", path,
+                        $"Monster AI profile '{profile.Id}' is duplicated."));
+                }
+
+                if (profile.Version <= 0 || profile.PriorityAbilityIds.Any(id => !abilityIds.Contains(id)))
+                {
+                    errors.Add(new("INVALID_MONSTER_AI_PROFILE", path,
+                        $"Monster AI profile '{profile.Id}' is invalid."));
                 }
             }
 
-            ValidateReferences(package, definitions, errors);
-            ValidateLocations(package.Locations, errors);
-            ValidateCharacterProfiles(package, definitions, errors);
-            ValidateCombatDefinitions(package, errors);
-            ValidateMonsterDefinitions(package, errors);
-            ValidateTalentDefinitions(package.TalentTrees ?? [], package.Abilities ?? [], errors);
-            ValidateProgressionItemsAndLoot(package, errors);
+            HashSet<string> monsterIds = [];
+            for (var index = 0; index < (package.Monsters?.Count ?? 0); index++)
+            {
+                MonsterDefinition monster = package.Monsters![index];
+                string path = $"monsters[{index}]";
+                bool idIsValid = ValidateIdentifier(
+                    monster.Id, "INVALID_MONSTER_ID", $"{path}.id", errors);
+                if (idIsValid && !monsterIds.Add(monster.Id))
+                {
+                    errors.Add(new("DUPLICATE_MONSTER_ID", path,
+                        $"Monster '{monster.Id}' is duplicated."));
+                }
 
-            return errors;
+                if (string.IsNullOrWhiteSpace(monster.Name)
+                    || monster.Level <= 0
+                    || monster.MaxHp <= 0
+                    || monster.AutoAttackInterval <= TimeSpan.Zero
+                    || monster.AutoAttackBaseDamage < 0
+                    || monster.AutoAttackAttackPowerCoefficient < 0
+                    || monster.Version <= 0)
+                {
+                    errors.Add(new("INVALID_MONSTER_DEFINITION", path,
+                        $"Monster '{monster.Id}' contains values outside its valid range."));
+                }
+
+                foreach (string abilityId in monster.AbilityIds)
+                {
+                    if (!abilityIds.Contains(abilityId))
+                    {
+                        errors.Add(new("MISSING_MONSTER_ABILITY", path,
+                            $"Monster '{monster.Id}' references missing ability '{abilityId}'."));
+                    }
+                }
+
+                if (!aiProfileIds.Contains(monster.AiProfileId))
+                {
+                    errors.Add(new("MISSING_MONSTER_AI_PROFILE", path,
+                        $"Monster '{monster.Id}' references missing AI profile '{monster.AiProfileId}'."));
+                }
+            }
         }
 
 }

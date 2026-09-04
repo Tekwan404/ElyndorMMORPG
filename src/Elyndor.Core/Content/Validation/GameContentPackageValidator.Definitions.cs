@@ -9,53 +9,42 @@ namespace Elyndor.Core.Content;
 
 public static partial class GameContentPackageValidator
 {
-        internal static readonly HashSet<string> AllowedDangerLevels =
-            ["SAFE", "ADVENTURE", "DANGEROUS"];
-
-        public static IReadOnlyList<ContentValidationError> Validate(GameContentPackage package)
+        internal static void ValidateReferences(
+            GameContentPackage package,
+            IReadOnlySet<ContentKey> definitions,
+            List<ContentValidationError> errors)
         {
-            ArgumentNullException.ThrowIfNull(package);
-
-            List<ContentValidationError> errors = [];
-
-            ValidateMetadata(package, errors);
-
-            HashSet<ContentKey> definitions = [];
-
-            for (var index = 0; index < package.Definitions.Count; index++)
+            for (var definitionIndex = 0; definitionIndex < package.Definitions.Count; definitionIndex++)
             {
-                GameContentDefinition definition = package.Definitions[index];
-                string path = $"definitions[{index}]";
+                GameContentDefinition definition = package.Definitions[definitionIndex];
 
-                bool typeIsValid = ValidateIdentifier(
-                    definition.Type,
-                    "INVALID_DEFINITION_TYPE",
-                    $"{path}.type",
-                    errors);
-                bool idIsValid = ValidateIdentifier(
-                    definition.Id,
-                    "INVALID_DEFINITION_ID",
-                    $"{path}.id",
-                    errors);
-
-                if (typeIsValid && idIsValid && !definitions.Add(new ContentKey(definition.Type, definition.Id)))
+                for (var referenceIndex = 0; referenceIndex < definition.References.Count; referenceIndex++)
                 {
-                    errors.Add(new ContentValidationError(
-                        "DUPLICATE_DEFINITION_ID",
-                        path,
-                        $"Definition '{definition.Type}:{definition.Id}' is duplicated."));
+                    GameContentReference reference = definition.References[referenceIndex];
+                    string path = $"definitions[{definitionIndex}].references[{referenceIndex}]";
+
+                    bool typeIsValid = ValidateIdentifier(
+                        reference.Type,
+                        "INVALID_REFERENCE_TYPE",
+                        $"{path}.type",
+                        errors);
+                    bool idIsValid = ValidateIdentifier(
+                        reference.Id,
+                        "INVALID_REFERENCE_ID",
+                        $"{path}.id",
+                        errors);
+
+                    if (typeIsValid
+                        && idIsValid
+                        && !definitions.Contains(new ContentKey(reference.Type, reference.Id)))
+                    {
+                        errors.Add(new ContentValidationError(
+                            "MISSING_REFERENCE",
+                            path,
+                            $"Referenced definition '{reference.Type}:{reference.Id}' does not exist."));
+                    }
                 }
             }
-
-            ValidateReferences(package, definitions, errors);
-            ValidateLocations(package.Locations, errors);
-            ValidateCharacterProfiles(package, definitions, errors);
-            ValidateCombatDefinitions(package, errors);
-            ValidateMonsterDefinitions(package, errors);
-            ValidateTalentDefinitions(package.TalentTrees ?? [], package.Abilities ?? [], errors);
-            ValidateProgressionItemsAndLoot(package, errors);
-
-            return errors;
         }
 
 }

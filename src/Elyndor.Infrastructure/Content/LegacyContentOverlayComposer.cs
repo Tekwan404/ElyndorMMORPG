@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
@@ -30,304 +31,218 @@ internal static class LegacyContentOverlayComposer
         return package;
     }
 
-        private static readonly JsonGameContentJson.SerializerOptions GameContentJson.SerializerOptions = new()
+        private static async Task<GameContentPackage> ApplyPhaseFiveOverlayAsync(
+            string packagePath,
+            GameContentPackage package,
+            CancellationToken cancellationToken)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = false,
-            RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
+            string? directory = Path.GetDirectoryName(packagePath);
+            if (string.IsNullOrWhiteSpace(directory)) return package;
 
-        static GameContentPackageLoader()
-        {
-            GameContentJson.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            string overlayPath = Path.Combine(directory, PhaseFiveOverlayFileName);
+            if (!File.Exists(overlayPath)) return package;
+
+            await using FileStream stream = File.OpenRead(overlayPath);
+            PhaseFiveContentOverlay? overlay = await JsonSerializer.DeserializeAsync<PhaseFiveContentOverlay>(
+                stream,
+                GameContentJson.SerializerOptions,
+                cancellationToken);
+            if (overlay is null)
+            {
+                throw new InvalidDataException($"Phase 5 content overlay '{overlayPath}' is empty.");
+            }
+
+            return package with
+            {
+                ContentVersion = ContentCompositionRules.HigherVersion(package.ContentVersion, overlay.ContentVersion),
+                BalanceVersion = ContentCompositionRules.HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+                PublishedAtUtc = ContentCompositionRules.Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+                LevelProgression = overlay.LevelProgression,
+                Items = overlay.Items,
+                LootTables = overlay.LootTables,
+                EquipmentSets = overlay.EquipmentSets,
+                Merchants = overlay.Merchants
+            };
         }
 
-        public static async Task<GameContentPackage> LoadAsync(
-            string path,
-            CancellationToken cancellationToken = default)
+        private static async Task<GameContentPackage> ApplyPhaseFiveLegacyItemsAsync(
+            string packagePath,
+            GameContentPackage package,
+            CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            string? directory = Path.GetDirectoryName(packagePath);
+            if (string.IsNullOrWhiteSpace(directory)) return package;
 
-            try
+            string overlayPath = Path.Combine(directory, PhaseFiveLegacyItemsFileName);
+            if (!File.Exists(overlayPath)) return package;
+
+            await using FileStream stream = File.OpenRead(overlayPath);
+            LegacyItemsOverlay? overlay = await JsonSerializer.DeserializeAsync<LegacyItemsOverlay>(
+                stream,
+                GameContentJson.SerializerOptions,
+                cancellationToken);
+            if (overlay is null)
             {
-                await using FileStream stream = File.OpenRead(path);
-                GameContentPackage? package = await JsonSerializer.DeserializeAsync<GameContentPackage>(
+                throw new InvalidDataException($"Legacy item overlay '{overlayPath}' is empty.");
+            }
+
+            ItemDefinition[] items = (package.Items ?? [])
+                .Concat(overlay.Items)
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToArray();
+
+            return package with { Items = items };
+        }
+
+        private static async Task<GameContentPackage> ApplyWarriorCombatBaselineOverlayAsync(
+            string packagePath,
+            GameContentPackage package,
+            CancellationToken cancellationToken)
+        {
+            string? directory = Path.GetDirectoryName(packagePath);
+            if (string.IsNullOrWhiteSpace(directory)) return package;
+
+            string overlayPath = Path.Combine(directory, WarriorCombatBaselineOverlayFileName);
+            if (!File.Exists(overlayPath)) return package;
+
+            await using FileStream stream = File.OpenRead(overlayPath);
+            WarriorCombatBaselineOverlay? overlay =
+                await JsonSerializer.DeserializeAsync<WarriorCombatBaselineOverlay>(
                     stream,
                     GameContentJson.SerializerOptions,
                     cancellationToken);
-
-                if (package is null)
-                {
-                    throw new InvalidDataException($"Game content package '{path}' is empty.");
-                }
-
-                package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
-                package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
-                package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
-                package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
-                package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
-
-                ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
-                    .Concat(WorldEncounterContentValidator.Validate(package))
-                    .ToArray();
-
-                if (errors.Length > 0)
-                {
-                    throw new ContentPackageValidationException(errors);
-                }
-
-                return package;
+            if (overlay is null)
+            {
+                throw new InvalidDataException($"Warrior combat baseline overlay '{overlayPath}' is empty.");
             }
-            catch (JsonException exception)
+
+            IReadOnlyList<ClassProfile> profiles = package.ClassProfiles
+                ?? throw new InvalidDataException("Class profiles are required for warrior combat baseline overlay.");
+            if (!profiles.Any(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)))
             {
                 throw new InvalidDataException(
-                    $"Game content package '{path}' does not match the required JSON shape.",
-                    exception);
+                    $"Warrior combat baseline overlay references unknown class '{overlay.ClassId}'.");
             }
-        }
 
-        private static readonly JsonGameContentJson.SerializerOptions GameContentJson.SerializerOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = false,
-            RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
-
-        static GameContentPackageLoader()
-        {
-            GameContentJson.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        }
-
-        public static async Task<GameContentPackage> LoadAsync(
-            string path,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-            try
+            return package with
             {
-                await using FileStream stream = File.OpenRead(path);
-                GameContentPackage? package = await JsonSerializer.DeserializeAsync<GameContentPackage>(
-                    stream,
-                    GameContentJson.SerializerOptions,
-                    cancellationToken);
+                ContentVersion = ContentCompositionRules.HigherVersion(package.ContentVersion, overlay.ContentVersion),
+                BalanceVersion = ContentCompositionRules.HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+                PublishedAtUtc = ContentCompositionRules.Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+                ClassProfiles = profiles
+                    .Select(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)
+                        ? profile with
+                        {
+                            StartingAbilityIds = overlay.StartingAbilityIds,
+                            AbilityUnlocks = []
+                        }
+                        : profile)
+                    .ToArray()
+            };
+        }
 
-                if (package is null)
-                {
-                    throw new InvalidDataException($"Game content package '{path}' is empty.");
-                }
+        private static async Task<GameContentPackage> ApplyMagePyromancerOverlayAsync(
+            string packagePath,
+            GameContentPackage package,
+            CancellationToken cancellationToken)
+        {
+            string? directory = Path.GetDirectoryName(packagePath);
+            if (string.IsNullOrWhiteSpace(directory)) return package;
 
-                package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
-                package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
-                package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
-                package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
-                package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
+            string overlayPath = Path.Combine(directory, MagePyromancerOverlayFileName);
+            if (!File.Exists(overlayPath)) return package;
 
-                ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
-                    .Concat(WorldEncounterContentValidator.Validate(package))
-                    .ToArray();
-
-                if (errors.Length > 0)
-                {
-                    throw new ContentPackageValidationException(errors);
-                }
-
-                return package;
+            await using FileStream stream = File.OpenRead(overlayPath);
+            MagePyromancerOverlay? overlay = await JsonSerializer.DeserializeAsync<MagePyromancerOverlay>(
+                stream,
+                GameContentJson.SerializerOptions,
+                cancellationToken);
+            if (overlay is null)
+            {
+                throw new InvalidDataException($"Mage/Pyromancer content overlay '{overlayPath}' is empty.");
             }
-            catch (JsonException exception)
+
+            IReadOnlyList<ClassProfile> profiles = package.ClassProfiles
+                ?? throw new InvalidDataException("Class profiles are required for mage combat overlay.");
+            if (!profiles.Any(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)))
             {
                 throw new InvalidDataException(
-                    $"Game content package '{path}' does not match the required JSON shape.",
-                    exception);
+                    $"Mage combat overlay references unknown class '{overlay.ClassId}'.");
             }
-        }
 
-        private static readonly JsonGameContentJson.SerializerOptions GameContentJson.SerializerOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = false,
-            RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
+            GameContentDefinition[] definitions = package.Definitions
+                .Concat(overlay.Definitions)
+                .GroupBy(item => (item.Type, item.Id))
+                .Select(group => group.Last())
+                .ToArray();
+            AbilityDefinition[] abilities = (package.Abilities ?? [])
+                .Concat(overlay.Abilities)
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.Last())
+                .ToArray();
+            TalentTreeDefinition[] talentTrees = (package.TalentTrees ?? [])
+                .Concat([overlay.TalentTree])
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.Last())
+                .ToArray();
 
-        static GameContentPackageLoader()
-        {
-            GameContentJson.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        }
-
-        public static async Task<GameContentPackage> LoadAsync(
-            string path,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-            try
+            return package with
             {
-                await using FileStream stream = File.OpenRead(path);
-                GameContentPackage? package = await JsonSerializer.DeserializeAsync<GameContentPackage>(
-                    stream,
-                    GameContentJson.SerializerOptions,
-                    cancellationToken);
-
-                if (package is null)
-                {
-                    throw new InvalidDataException($"Game content package '{path}' is empty.");
-                }
-
-                package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
-                package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
-                package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
-                package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
-                package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
-
-                ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
-                    .Concat(WorldEncounterContentValidator.Validate(package))
-                    .ToArray();
-
-                if (errors.Length > 0)
-                {
-                    throw new ContentPackageValidationException(errors);
-                }
-
-                return package;
-            }
-            catch (JsonException exception)
-            {
-                throw new InvalidDataException(
-                    $"Game content package '{path}' does not match the required JSON shape.",
-                    exception);
-            }
+                ContentVersion = ContentCompositionRules.HigherVersion(package.ContentVersion, overlay.ContentVersion),
+                BalanceVersion = ContentCompositionRules.HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+                PublishedAtUtc = ContentCompositionRules.Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+                Definitions = definitions,
+                Abilities = abilities,
+                TalentTrees = talentTrees,
+                ClassProfiles = profiles
+                    .Select(profile => string.Equals(profile.Id, overlay.ClassId, StringComparison.Ordinal)
+                        ? profile with
+                        {
+                            StartingAbilityIds = overlay.StartingAbilityIds,
+                            AbilityUnlocks = [],
+                            CombatAutoAttack = overlay.CombatAutoAttack,
+                            AllowedWeaponCategories = overlay.AllowedWeaponCategories,
+                            AllowedArmorCategories = overlay.AllowedArmorCategories
+                        }
+                        : profile)
+                    .ToArray()
+            };
         }
 
-        private static readonly JsonGameContentJson.SerializerOptions GameContentJson.SerializerOptions = new()
+        private static async Task<GameContentPackage> ApplyResourceScalingOverlayAsync(
+            string packagePath,
+            GameContentPackage package,
+            CancellationToken cancellationToken)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = false,
-            RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
+            string? directory = Path.GetDirectoryName(packagePath);
+            if (string.IsNullOrWhiteSpace(directory)) return package;
 
-        static GameContentPackageLoader()
-        {
-            GameContentJson.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        }
+            string overlayPath = Path.Combine(directory, ResourceScalingOverlayFileName);
+            if (!File.Exists(overlayPath)) return package;
 
-        public static async Task<GameContentPackage> LoadAsync(
-            string path,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-            try
+            await using FileStream stream = File.OpenRead(overlayPath);
+            ResourceScalingOverlay? overlay = await JsonSerializer.DeserializeAsync<ResourceScalingOverlay>(
+                stream,
+                GameContentJson.SerializerOptions,
+                cancellationToken);
+            if (overlay is null)
             {
-                await using FileStream stream = File.OpenRead(path);
-                GameContentPackage? package = await JsonSerializer.DeserializeAsync<GameContentPackage>(
-                    stream,
-                    GameContentJson.SerializerOptions,
-                    cancellationToken);
-
-                if (package is null)
-                {
-                    throw new InvalidDataException($"Game content package '{path}' is empty.");
-                }
-
-                package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
-                package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
-                package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
-                package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
-                package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
-
-                ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
-                    .Concat(WorldEncounterContentValidator.Validate(package))
-                    .ToArray();
-
-                if (errors.Length > 0)
-                {
-                    throw new ContentPackageValidationException(errors);
-                }
-
-                return package;
+                throw new InvalidDataException($"Resource scaling overlay '{overlayPath}' is empty.");
             }
-            catch (JsonException exception)
+            if (overlay.ResourceScaling.ManaBase < 0 || overlay.ResourceScaling.ManaPerIntellect < 0)
             {
                 throw new InvalidDataException(
-                    $"Game content package '{path}' does not match the required JSON shape.",
-                    exception);
+                    $"Resource scaling overlay '{overlayPath}' contains negative mana scaling values.");
             }
-        }
 
-        private static readonly JsonGameContentJson.SerializerOptions GameContentJson.SerializerOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = false,
-            RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
-
-        static GameContentPackageLoader()
-        {
-            GameContentJson.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        }
-
-        public static async Task<GameContentPackage> LoadAsync(
-            string path,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-            try
+            return package with
             {
-                await using FileStream stream = File.OpenRead(path);
-                GameContentPackage? package = await JsonSerializer.DeserializeAsync<GameContentPackage>(
-                    stream,
-                    GameContentJson.SerializerOptions,
-                    cancellationToken);
-
-                if (package is null)
-                {
-                    throw new InvalidDataException($"Game content package '{path}' is empty.");
-                }
-
-                package = await ApplyMonsterOverlayAsync(path, package, cancellationToken);
-                package = await ApplyLocationOverlaysAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveOverlayAsync(path, package, cancellationToken);
-                package = await ApplyPhaseFiveLegacyItemsAsync(path, package, cancellationToken);
-                package = await ApplyWarriorCombatBaselineOverlayAsync(path, package, cancellationToken);
-                package = await ApplyMagePyromancerOverlayAsync(path, package, cancellationToken);
-                package = await ApplyResourceScalingOverlayAsync(path, package, cancellationToken);
-
-                ContentValidationError[] errors = GameContentPackageValidator.Validate(package)
-                    .Concat(WorldEncounterContentValidator.Validate(package))
-                    .ToArray();
-
-                if (errors.Length > 0)
-                {
-                    throw new ContentPackageValidationException(errors);
-                }
-
-                return package;
-            }
-            catch (JsonException exception)
-            {
-                throw new InvalidDataException(
-                    $"Game content package '{path}' does not match the required JSON shape.",
-                    exception);
-            }
+                ContentVersion = ContentCompositionRules.HigherVersion(package.ContentVersion, overlay.ContentVersion),
+                BalanceVersion = ContentCompositionRules.HigherVersion(package.BalanceVersion, overlay.BalanceVersion),
+                PublishedAtUtc = ContentCompositionRules.Later(package.PublishedAtUtc, overlay.PublishedAtUtc),
+                ResourceScaling = overlay.ResourceScaling
+            };
         }
 
 

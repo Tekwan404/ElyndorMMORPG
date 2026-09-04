@@ -9,56 +9,7 @@ namespace Elyndor.Core.Content;
 
 public static partial class GameContentPackageValidator
 {
-        internal static readonly HashSet<string> AllowedDangerLevels =
-            ["SAFE", "ADVENTURE", "DANGEROUS"];
-
-        public static IReadOnlyList<ContentValidationError> Validate(GameContentPackage package)
-        {
-            ArgumentNullException.ThrowIfNull(package);
-
-            List<ContentValidationError> errors = [];
-
-            ValidateMetadata(package, errors);
-
-            HashSet<ContentKey> definitions = [];
-
-            for (var index = 0; index < package.Definitions.Count; index++)
-            {
-                GameContentDefinition definition = package.Definitions[index];
-                string path = $"definitions[{index}]";
-
-                bool typeIsValid = ValidateIdentifier(
-                    definition.Type,
-                    "INVALID_DEFINITION_TYPE",
-                    $"{path}.type",
-                    errors);
-                bool idIsValid = ValidateIdentifier(
-                    definition.Id,
-                    "INVALID_DEFINITION_ID",
-                    $"{path}.id",
-                    errors);
-
-                if (typeIsValid && idIsValid && !definitions.Add(new ContentKey(definition.Type, definition.Id)))
-                {
-                    errors.Add(new ContentValidationError(
-                        "DUPLICATE_DEFINITION_ID",
-                        path,
-                        $"Definition '{definition.Type}:{definition.Id}' is duplicated."));
-                }
-            }
-
-            ValidateReferences(package, definitions, errors);
-            ValidateLocations(package.Locations, errors);
-            ValidateCharacterProfiles(package, definitions, errors);
-            ValidateCombatDefinitions(package, errors);
-            ValidateMonsterDefinitions(package, errors);
-            ValidateTalentDefinitions(package.TalentTrees ?? [], package.Abilities ?? [], errors);
-            ValidateProgressionItemsAndLoot(package, errors);
-
-            return errors;
-        }
-
-        private static void ValidateLocations(
+        internal static void ValidateLocations(
             IReadOnlyList<LocationDefinition> locations,
             List<ContentValidationError> errors)
         {
@@ -109,6 +60,59 @@ public static partial class GameContentPackageValidator
             }
 
             ValidateLocationTransitions(locations, locationIds, errors);
+        }
+
+        private static void ValidateLocationTransitions(
+            IReadOnlyList<LocationDefinition> locations,
+            HashSet<string> locationIds,
+            List<ContentValidationError> errors)
+        {
+            for (var locationIndex = 0; locationIndex < locations.Count; locationIndex++)
+            {
+                LocationDefinition location = locations[locationIndex];
+                HashSet<string> transitions = [];
+
+                for (var transitionIndex = 0;
+                     transitionIndex < location.Transitions.Count;
+                     transitionIndex++)
+                {
+                    string targetId = location.Transitions[transitionIndex];
+                    string path = $"locations[{locationIndex}].transitions[{transitionIndex}]";
+                    bool targetIsValid = ValidateIdentifier(
+                        targetId,
+                        "INVALID_LOCATION_TRANSITION_ID",
+                        path,
+                        errors);
+
+                    if (!targetIsValid)
+                    {
+                        continue;
+                    }
+
+                    if (!transitions.Add(targetId))
+                    {
+                        errors.Add(new ContentValidationError(
+                            "DUPLICATE_LOCATION_TRANSITION",
+                            path,
+                            $"Transition to '{targetId}' is duplicated."));
+                    }
+
+                    if (string.Equals(location.Id, targetId, StringComparison.Ordinal))
+                    {
+                        errors.Add(new ContentValidationError(
+                            "SELF_LOCATION_TRANSITION",
+                            path,
+                            $"Location '{location.Id}' cannot transition to itself."));
+                    }
+                    else if (!locationIds.Contains(targetId))
+                    {
+                        errors.Add(new ContentValidationError(
+                            "MISSING_LOCATION_TRANSITION",
+                            path,
+                            $"Transition target '{targetId}' does not exist."));
+                    }
+                }
+            }
         }
 
 }
