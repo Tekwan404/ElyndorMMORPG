@@ -9,6 +9,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -21,11 +22,24 @@ public sealed record CombatSessionCreationResult(
 public sealed class CombatSessionFactory(
     BootstrapService bootstrapService,
     CharacterDerivedStateService derivedStateService,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    public CombatSessionFactory(
+        BootstrapService bootstrapService,
+        CharacterDerivedStateService derivedStateService,
+        GameContentPackage content,
+        IGameRandomFactory randomFactory,
+        TimeProvider timeProvider)
+        : this(
+            bootstrapService,
+            derivedStateService,
+            new StaticContentSnapshotProvider(content),
+            randomFactory,
+            timeProvider)
+    {
+    }
 
     public const string TrainingDummyId = "TRAINING_DUMMY";
     public const string StarterTownId = "STARTER_TOWN";
@@ -42,6 +56,10 @@ public sealed class CombatSessionFactory(
         string expectedLocationId,
         CancellationToken cancellationToken)
     {
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        GameContentPackage content = contentSnapshot.Package;
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+
         BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
             accountId,
             cancellationToken,

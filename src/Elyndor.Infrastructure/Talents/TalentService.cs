@@ -3,6 +3,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -23,10 +24,22 @@ public sealed record TalentOperationResult(bool IsSuccess, string? ErrorCode, Ta
 
 public sealed class TalentService(
     GameDbContext dbContext,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
-    private readonly CharacterDerivedStateService derivedStateService = new(dbContext, content);
+    private readonly CharacterDerivedStateService derivedStateService =
+        new(dbContext, contentProvider);
+
+    public TalentService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            timeProvider)
+    {
+    }
     public Task<TalentOperationResult> GetAsync(Guid accountId, CancellationToken cancellationToken) =>
         ExecuteAsync(() => GetOrCreateCoreAsync(accountId, cancellationToken));
 
@@ -170,7 +183,8 @@ public sealed class TalentService(
         Character? character = await dbContext.Characters.SingleOrDefaultAsync(
             candidate => candidate.AccountId == accountId, cancellationToken);
         if (character is null) return TalentOperationResult.Failure("character_not_found");
-        TalentTreeDefinition? tree = content.TalentTrees?.SingleOrDefault(candidate => candidate.ClassId == character.ClassId);
+        TalentTreeDefinition? tree = contentProvider.GetCurrent().Indexes.TalentTreesByClassId
+            .GetValueOrDefault(character.ClassId);
         if (tree is null) return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
         CharacterTalentState? state = await dbContext.CharacterTalentStates.SingleOrDefaultAsync(
             candidate => candidate.CharacterId == character.Id, cancellationToken);

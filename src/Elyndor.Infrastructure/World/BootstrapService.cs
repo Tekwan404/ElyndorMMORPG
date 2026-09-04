@@ -7,6 +7,7 @@ using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.World;
@@ -71,12 +72,23 @@ public sealed record BootstrapSnapshot(
 
 public sealed class BootstrapService(
     GameDbContext dbContext,
-    GameContentPackage contentPackage,
-    WorldMap worldMap,
+    IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
     TimeProvider timeProvider)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(contentPackage);
+    public BootstrapService(
+        GameDbContext dbContext,
+        GameContentPackage contentPackage,
+        WorldMap worldMap,
+        CharacterDerivedStateService derivedStateService,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(contentPackage),
+            derivedStateService,
+            timeProvider)
+    {
+    }
 
     private const string StarterTownId = "STARTER_TOWN";
     private const decimal StarterTownHpRegenPerSecond = 5m;
@@ -86,6 +98,11 @@ public sealed class BootstrapService(
         CancellationToken cancellationToken,
         bool checkpoint = false)
     {
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        GameContentPackage contentPackage = contentSnapshot.Package;
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+        WorldMap worldMap = contentSnapshot.WorldMap;
+
         Character? character = await dbContext.Characters
             .AsNoTracking()
             .SingleOrDefaultAsync(

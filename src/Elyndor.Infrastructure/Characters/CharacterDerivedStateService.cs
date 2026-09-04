@@ -3,6 +3,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,15 +26,20 @@ public sealed record CharacterDerivedState(
 
 public sealed class CharacterDerivedStateService(
     GameDbContext dbContext,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     InventoryEquipmentService? inventoryService)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    internal CharacterDerivedStateService(
+        GameDbContext dbContext,
+        IContentSnapshotProvider contentProvider)
+        : this(dbContext, contentProvider, null)
+    {
+    }
 
     internal CharacterDerivedStateService(
         GameDbContext dbContext,
         GameContentPackage content)
-        : this(dbContext, content, null)
+        : this(dbContext, new StaticContentSnapshotProvider(content), null)
     {
     }
     public async Task<CharacterDerivedState> ResolveAsync(
@@ -47,6 +53,10 @@ public sealed class CharacterDerivedStateService(
         ArgumentException.ThrowIfNullOrWhiteSpace(classId);
         ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
 
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        GameContentPackage content = contentSnapshot.Package;
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+
         IReadOnlyList<ClassProfile> classProfiles = content.ClassProfiles
             ?? throw new InvalidOperationException("Class profiles are required.");
         if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile))
@@ -59,7 +69,10 @@ public sealed class CharacterDerivedStateService(
                 $"Resource profile '{classProfile.ResourceProfileId}' is missing from game content.");
         }
 
-        InventorySnapshot inventory = await ResolveInventoryAsync(characterId, cancellationToken);
+        InventorySnapshot inventory = await ResolveInventoryAsync(
+            content,
+            characterId,
+            cancellationToken);
         EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
             inventory.Equipped.Values.Select(item => item.Definition),
             content.EquipmentSets ?? []);
@@ -133,6 +146,7 @@ public sealed class CharacterDerivedStateService(
     }
 
     private async Task<InventorySnapshot> ResolveInventoryAsync(
+        GameContentPackage content,
         Guid characterId,
         CancellationToken cancellationToken)
     {
