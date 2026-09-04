@@ -18,7 +18,7 @@ describe('AdminEntityForm', () => {
     })
 
     await wrapper.get('[data-testid="monster-max-hp"]').setValue('240')
-    const emitted = wrapper.emitted('update:entity')
+    const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
 
     expect(next.maxHp).toBe(240)
@@ -38,7 +38,7 @@ describe('AdminEntityForm', () => {
     })
 
     await wrapper.get('[data-testid="ability-damage-coefficient"]').setValue('1.5')
-    const emitted = wrapper.emitted('update:entity')
+    const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as { actions: Array<Record<string, unknown>> }
 
     expect(next.actions[0]?.spellPowerCoefficient).toBe(1.5)
@@ -57,7 +57,7 @@ describe('AdminEntityForm', () => {
     })
 
     await wrapper.get('[data-testid="ability-damage-coefficient"]').setValue('0.95')
-    const emitted = wrapper.emitted('update:entity')
+    const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as { actions: Array<Record<string, unknown>> }
 
     expect(next.actions[0]?.attackPowerCoefficient).toBe(0.95)
@@ -76,7 +76,7 @@ describe('AdminEntityForm', () => {
     })
 
     await wrapper.get('[data-testid="item-strength"]').setValue('4')
-    const emitted = wrapper.emitted('update:entity')
+    const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as { stats: Record<string, unknown> }
 
     expect(next.stats.strength).toBe(4)
