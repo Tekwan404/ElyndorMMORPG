@@ -25,8 +25,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
   const errorCode = ref<string | null>(null)
+  const roles = ref<string[]>([])
   const mutationPending = ref(false)
   const isReady = computed(() => state.value === 'needs-character' || state.value === 'world')
+  const isAdmin = computed(() => roles.value.includes('SUPER_ADMIN'))
 
   apiClient.setReauthenticate(async () => authenticate(true))
 
@@ -58,6 +60,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         false,
       )
       apiClient.setAccessToken(authentication.accessToken)
+      roles.value = authentication.roles ?? []
       return authentication.accessToken
     } finally {
       if (isRetry && state.value === 'reauthenticating') {
@@ -214,8 +217,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     state,
     snapshot,
     errorCode,
+    roles,
     mutationPending,
     isReady,
+    isAdmin,
     authenticate,
     refreshSnapshot,
     bootstrap,
