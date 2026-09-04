@@ -57,7 +57,10 @@ public sealed record AbilityDefinition(
     decimal AccuracyBonus = 0,
     decimal CriticalChanceBonus = 0,
     decimal CriticalDamageBonus = 0,
-    decimal MagicPenetrationBonus = 0);
+    decimal MagicPenetrationBonus = 0,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,

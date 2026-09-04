@@ -1,5 +1,5 @@
 {
-  "contentVersion": "0.9.2",
+  "contentVersion": "0.9.3",
   "balanceVersion": "0.7.2",
   "publishedAtUtc": "2026-09-03T00:00:00+00:00",
   "classId": "MAGE",
@@ -87,7 +87,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 1.25
         }
-      ]
+      ],
+      "displayName": "Огненный шар",
+      "description": "Поток огня, наносящий магический урон одной цели."
     },
     {
       "id": "MAGE_ARCANE_SPARK",
@@ -106,7 +108,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 0.75
         }
-      ]
+      ],
+      "displayName": "Тайная искра",
+      "description": "Мгновенный выброс тайной магии по одной цели."
     },
     {
       "id": "MAGE_ICE_SHARD",
@@ -125,7 +129,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 1.05
         }
-      ]
+      ],
+      "displayName": "Ледяной осколок",
+      "description": "Ледяной снаряд, наносящий магический урон одной цели."
     },
     {
       "id": "FLAME_FLASH",
@@ -144,7 +150,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 0.95
         }
-      ]
+      ],
+      "displayName": "Вспышка",
+      "description": "Мгновенная огненная атака Пироманта."
     },
     {
       "id": "FIRE_WAVE",
@@ -163,7 +171,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 0.75
         }
-      ]
+      ],
+      "displayName": "Огненная волна",
+      "description": "Волна пламени, поражающая всех противников в бою."
     },
     {
       "id": "COMBUSTION",
@@ -176,7 +186,9 @@
       "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "FIRE",
-      "actions": []
+      "actions": [],
+      "displayName": "Возгорание",
+      "description": "Вводит Пироманта в усиленное огненное состояние."
     },
     {
       "id": "FIRE_COMET",
@@ -195,7 +207,9 @@
           "damageType": "Magical",
           "spellPowerCoefficient": 2.4
         }
-      ]
+      ],
+      "displayName": "Огненная комета",
+      "description": "Быстрый мощный огненный каст, открываемый Пределом жара."
     }
   ],
   "talentTree": {

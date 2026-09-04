@@ -63,8 +63,18 @@ internal static class CombatContractMapper
             actor.AutoAttackEnabled,
             actor.Cooldowns,
             actor.KnownAbilityIds.OrderBy(id => id, StringComparer.Ordinal).ToArray(),
-            actor.Abilities.Select(ability => new CombatAbilityResponse(
-                ability.Id, ability.ResourceCost, ability.Cooldown.TotalSeconds)).ToArray(),
+            actor.Abilities.Select(ability =>
+            {
+                var definition = (content.Abilities ?? []).SingleOrDefault(candidate =>
+                    string.Equals(candidate.Id, ability.Id, StringComparison.Ordinal));
+                return new CombatAbilityResponse(
+                    ability.Id,
+                    definition?.DisplayName ?? ability.Id,
+                    definition?.Description ?? string.Empty,
+                    definition?.IconId,
+                    ability.ResourceCost,
+                    ability.Cooldown.TotalSeconds);
+            }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
                 effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray(),
             monster?.Level ?? 1,

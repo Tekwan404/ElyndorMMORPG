@@ -387,6 +387,34 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void CurrentContentVersionRequiresAbilityPresentation()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            ContentVersion = "0.9.3",
+            Abilities =
+            [
+                new AbilityDefinition(
+                    "TEST_ABILITY",
+                    AbilityType.Instant,
+                    AbilityTargetType.Self,
+                    0,
+                    TimeSpan.Zero,
+                    TimeSpan.Zero,
+                    false,
+                    GlobalCooldownCategory.None,
+                    false,
+                    "PHYSICAL")
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ABILITY_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateRejectsInvalidTypedTalentRuntimeParameters()
     {
         GameContentPackage package = CreatePackage() with

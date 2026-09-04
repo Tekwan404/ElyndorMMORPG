@@ -172,6 +172,9 @@ public static class WorldEndpoints
                     snapshot.Character.KnownAbilities
                         .Select(ability => new BootstrapAbilityResponse(
                             ability.Id,
+                            ability.DisplayName,
+                            ability.Description,
+                            ability.IconId,
                             ability.ResourceCost,
                             ability.CooldownSeconds,
                             ability.Type,

@@ -32,3 +32,22 @@ content = with which values it does it
 ```
 
 The current Berserker and Pyromancer content was migrated without intended balance changes.
+
+
+## Ability presentation
+
+`AbilityDefinition` now owns:
+
+```text
+DisplayName
+Description
+IconId
+```
+
+Bootstrap and combat responses carry those fields. Combat UI no longer contains a normal-ability
+name/art dictionary; it renders server-provided presentation and resolves optional art through
+`assets/abilityArt.ts` using `import.meta.glob`.
+
+The server validator requires non-empty ability presentation for content version 0.9.3 and newer.
+Existing Warrior, monster and Mage/Pyromancer abilities were migrated to content. Missing optional
+icon assets fall back to text initials without changing gameplay.

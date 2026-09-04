@@ -1,7 +1,13 @@
 namespace Elyndor.Contracts.Combat;
 
 public sealed record CombatEffectResponse(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
-public sealed record CombatAbilityResponse(string Id, decimal ResourceCost, double CooldownSeconds);
+public sealed record CombatAbilityResponse(
+    string Id,
+    string DisplayName,
+    string Description,
+    string? IconId,
+    decimal ResourceCost,
+    double CooldownSeconds);
 
 public sealed record CombatActorResponse(
     Guid ActorId,

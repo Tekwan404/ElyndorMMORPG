@@ -1,5 +1,5 @@
 {
-  "contentVersion": "0.9.2",
+  "contentVersion": "0.9.3",
   "balanceVersion": "0.7.2",
   "publishedAtUtc": "2026-09-01T00:00:00+00:00",
   "definitions": [
@@ -278,7 +278,10 @@
           "type": "ResourceChange",
           "amount": 10
         }
-      ]
+      ],
+      "displayName": "Удар",
+      "description": "Базовая атака воина по одной цели.",
+      "iconId": "strike"
     },
     {
       "id": "SHIELD_BASH",
@@ -308,7 +311,10 @@
             "magnitude": 0
           }
         }
-      ]
+      ],
+      "displayName": "Удар щитом",
+      "description": "Удар щитом, сочетающий урон и контроль.",
+      "iconId": "shield-bash"
     },
     {
       "id": "PROVOKE",
@@ -326,7 +332,10 @@
           "type": "Taunt",
           "duration": "00:00:03"
         }
-      ]
+      ],
+      "displayName": "Провокация",
+      "description": "Заставляет противника сосредоточиться на воине.",
+      "iconId": "provoke"
     },
     {
       "id": "HEAVY_BLOW",
@@ -345,7 +354,9 @@
           "damageType": "Physical",
           "attackPowerCoefficient": 1.6
         }
-      ]
+      ],
+      "displayName": "Тяжёлый удар",
+      "description": "Мощный физический удар с повышенным уроном."
     },
     {
       "id": "BATTLE_FOCUS",
@@ -372,7 +383,9 @@
             "modifierMode": "Percent"
           }
         }
-      ]
+      ],
+      "displayName": "Боевой фокус",
+      "description": "Боевой приём, усиливающий контроль над ресурсом."
     },
     {
       "id": "BATTLE_SHOUT",
@@ -390,7 +403,9 @@
           "type": "ResourceChange",
           "amount": 20
         }
-      ]
+      ],
+      "displayName": "Боевой клич",
+      "description": "Воин использует боевой клич для усиления в бою."
     },
     {
       "id": "BASTION",
@@ -417,7 +432,10 @@
             "modifierMode": "Multiplicative"
           }
         }
-      ]
+      ],
+      "displayName": "Бастион",
+      "description": "Защитная способность воина.",
+      "iconId": "bastion"
     },
     {
       "id": "WILD_STRIKE",
@@ -436,7 +454,10 @@
           "damageType": "Physical",
           "attackPowerCoefficient": 1.35
         }
-      ]
+      ],
+      "displayName": "Дикий удар",
+      "description": "Сильный физический удар Берсерка за ярость.",
+      "iconId": "wild-strike"
     },
     {
       "id": "WHIRLWIND",
@@ -455,7 +476,10 @@
           "damageType": "Physical",
           "attackPowerCoefficient": 0.7
         }
-      ]
+      ],
+      "displayName": "Вихрь",
+      "description": "Круговая атака, поражающая всех противников в бою.",
+      "iconId": "whirlwind"
     },
     {
       "id": "BERSERK",
@@ -508,7 +532,9 @@
             "modifierMode": "Percent"
           }
         }
-      ]
+      ],
+      "displayName": "Берсерк",
+      "description": "Боевой режим Берсерка, усиливающий наступательные характеристики."
     },
     {
       "id": "BITE",
@@ -528,7 +554,9 @@
           "damageType": "Physical",
           "attackPowerCoefficient": 0.9
         }
-      ]
+      ],
+      "displayName": "Укус",
+      "description": "Базовая атака лесного зверя."
     }
   ],
   "locations": [

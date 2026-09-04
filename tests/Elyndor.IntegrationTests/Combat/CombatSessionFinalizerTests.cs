@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
@@ -62,7 +63,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
         ServiceCollection services = new();
-        services.AddScoped(_ => postgres.CreateDbContext());
+        services.AddScoped<GameDbContext>(_ => postgres.CreateDbContext());
         services.AddSingleton(content);
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
         services.AddScoped<InventoryEquipmentService>();

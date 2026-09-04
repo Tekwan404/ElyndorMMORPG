@@ -12,6 +12,9 @@ namespace Elyndor.Infrastructure.World;
 
 public sealed record BootstrapAbility(
     string Id,
+    string DisplayName,
+    string Description,
+    string? IconId,
     decimal ResourceCost,
     decimal CooldownSeconds,
     string Type,
@@ -217,6 +220,9 @@ public sealed class BootstrapService(
                 && string.Equals(modifier.TargetId, abilityId, StringComparison.Ordinal)));
         return new BootstrapAbility(
             definition.Id,
+            definition.DisplayName ?? definition.Id,
+            definition.Description ?? string.Empty,
+            definition.IconId,
             definition.ResourceCost,
             (decimal)definition.Cooldown.TotalSeconds,
             definition.Type.ToString(),

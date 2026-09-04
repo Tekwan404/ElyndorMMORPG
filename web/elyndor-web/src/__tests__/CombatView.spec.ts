@@ -93,7 +93,12 @@ describe('CombatView', () => {
 function actor(
   kind: 'Player' | 'Monster', definitionId: string, name: string,
   hp: number, maxHp: number, resource: number, maxResource: number,
-  abilities: { id: string; resourceCost: number; cooldownSeconds: number }[],
+  abilities: {
+    id: string
+    resourceCost: number
+    cooldownSeconds: number
+    displayName?: string
+  }[],
   level?: number,
   artId?: string | null,
 ) {
@@ -101,7 +106,15 @@ function actor(
     actorId: crypto.randomUUID(), kind, definitionId, name, hp, maxHp,
     resourceType: kind === 'Player' ? 'RAGE' : 'NONE', resource, maxResource,
     autoAttackEnabled: false, cooldowns: {},
-    knownAbilityIds: abilities.map((ability) => ability.id), abilities, effects: [],
+    knownAbilityIds: abilities.map((ability) => ability.id),
+    abilities: abilities.map((ability) => ({
+      ...ability,
+      displayName: ability.displayName
+        ?? (ability.id === 'STRIKE' ? 'Удар' : ability.id === 'WILD_STRIKE' ? 'Дикий удар' : ability.id),
+      description: 'Server-provided ability presentation.',
+      iconId: null,
+    })),
+    effects: [],
     level, artId,
   }
 }

@@ -373,6 +373,10 @@ public static class GameContentPackageValidator
         GameContentPackage package,
         List<ContentValidationError> errors)
     {
+        bool requiresAbilityPresentation =
+            Version.TryParse(package.ContentVersion, out Version? contentVersion)
+            && contentVersion >= new Version(0, 9, 3);
+
         HashSet<string> effectIds = [];
         for (var index = 0; index < (package.Effects?.Count ?? 0); index++)
         {
@@ -419,6 +423,9 @@ public static class GameContentPackageValidator
                 || ability.Type == AbilityType.Casted && ability.CastTime <= TimeSpan.Zero
                 || ability.Type != AbilityType.Casted && ability.CastTime != TimeSpan.Zero
                 || ability.UsesGlobalCooldown && ability.GlobalCooldownCategory == GlobalCooldownCategory.None
+                || requiresAbilityPresentation
+                    && (string.IsNullOrWhiteSpace(ability.DisplayName)
+                        || string.IsNullOrWhiteSpace(ability.Description))
                 || ability.Actions?.Any(action => action.Amount < 0
                     || action.AttackPowerCoefficient < 0
                     || action.ArmorPenetrationBonus < 0

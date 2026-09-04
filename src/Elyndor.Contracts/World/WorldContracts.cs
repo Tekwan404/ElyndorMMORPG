@@ -19,6 +19,9 @@ public sealed record WorldEncounterResponse(
 
 public sealed record BootstrapAbilityResponse(
     string Id,
+    string DisplayName,
+    string Description,
+    string? IconId,
     decimal ResourceCost,
     decimal CooldownSeconds,
     string Type,

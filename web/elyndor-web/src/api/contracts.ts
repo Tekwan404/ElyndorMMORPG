@@ -29,6 +29,9 @@ export interface WorldEncounter {
 
 export interface KnownAbility {
   id: string
+  displayName: string
+  description: string
+  iconId: string | null
   resourceCost: number
   cooldownSeconds: number
   type: string
@@ -217,6 +220,15 @@ export interface CombatEffectSnapshot {
   expiresAtUtc: string
 }
 
+export interface CombatAbility {
+  id: string
+  displayName: string
+  description: string
+  iconId: string | null
+  resourceCost: number
+  cooldownSeconds: number
+}
+
 export interface CombatActorSnapshot {
   actorId: string
   kind: 'Player' | 'Monster'
@@ -230,7 +242,7 @@ export interface CombatActorSnapshot {
   autoAttackEnabled: boolean
   cooldowns: Record<string, string>
   knownAbilityIds: string[]
-  abilities: { id: string; resourceCost: number; cooldownSeconds: number }[]
+  abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]
   level?: number
   artId?: string | null

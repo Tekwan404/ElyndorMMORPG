@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 
-import type { CombatEvent } from '@/api/contracts'
-import { gameArt } from '@/assets/gameArt'
+import type { CombatAbility, CombatEvent } from '@/api/contracts'
+import { abilityArtUrl } from '@/assets/abilityArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -21,28 +21,6 @@ interface EnemyPresentation { name: string; level: number; art?: string }
 
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 
-const abilityPresentation: Record<string, { name: string; art?: string }> = {
-  STRIKE: { name: 'Удар', art: gameArt.warriorAbilities.strike },
-  HEAVY_BLOW: { name: 'Тяжёлый удар' },
-  SHIELD_BASH: { name: 'Удар щитом', art: gameArt.warriorAbilities.shieldBash },
-  PROVOKE: { name: 'Провокация', art: gameArt.warriorAbilities.provoke },
-  BATTLE_FOCUS: { name: 'Боевой фокус' },
-  BATTLE_SHOUT: { name: 'Боевой клич' },
-  BASTION: { name: 'Бастион', art: gameArt.warriorAbilities.bastion },
-  WILD_STRIKE: { name: 'Дикий удар', art: gameArt.warriorAbilities.wildStrike },
-  WHIRLWIND: { name: 'Вихрь', art: gameArt.warriorAbilities.whirlwind },
-  BERSERK: { name: 'Берсерк' },
-  MAGE_FIREBALL: { name: 'Огненный шар' },
-  MAGE_ARCANE_SPARK: { name: 'Тайная искра' },
-  MAGE_ICE_SHARD: { name: 'Ледяной осколок' },
-  FLAME_FLASH: { name: 'Вспышка' },
-  FIRE_WAVE: { name: 'Огненная волна' },
-  COMBUSTION: { name: 'Возгорание' },
-  FIRE_COMET: { name: 'Огненная комета' },
-  PYRO_BURN: { name: 'Горение' },
-  PYRO_COMET_AFTERSHOCK: { name: 'Кометный удар' },
-}
-
 const enemyPresentation = computed<EnemyPresentation | null>(() => {
   const enemy = snapshot.value?.enemy
   if (!enemy) return null
@@ -56,6 +34,12 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
   }
 })
 const displayAbilities = computed(() => snapshot.value?.player.abilities ?? [])
+const abilityById = computed(() => new Map<string, CombatAbility>(
+  [
+    ...(snapshot.value?.player.abilities ?? []),
+    ...(snapshot.value?.enemy.abilities ?? []),
+  ].map((ability) => [ability.id, ability]),
+))
 const healingPotion = computed(() => session.snapshot?.character?.inventory.items.find((item) => item.definitionId === 'SMALL_HEALING_POTION') ?? null)
 const resourceName = computed(() => snapshot.value?.player.resourceType === 'MANA' ? 'Мана' : snapshot.value?.player.resourceType === 'FOCUS' ? 'Фокус' : 'Ярость')
 const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => snapshot.value?.player.resourceType === 'MANA' ? 'mana' : snapshot.value?.player.resourceType === 'FOCUS' ? 'focus' : 'rage')
@@ -134,12 +118,19 @@ function effectRemaining(expiresAtUtc: string): number {
 
 function abilityName(id: string | null | undefined): string {
   if (!id) return ''
+  const ability = abilityById.value.get(id)
+  if (ability) return ability.displayName
   if (id === 'AUTO_ATTACK') return 'Автоатака'
-  if (id === 'BITE') return 'Укус'
   if (id === 'DIRECT_DAMAGE_TAKEN') return 'Получение урона'
   if (id === 'COMBAT_REGEN') return 'Регенерация'
   if (id === 'SMALL_HEALING_POTION') return 'Малое зелье лечения'
-  return abilityPresentation[id]?.name ?? id.split('_').join(' ')
+  if (id === 'PYRO_BURN') return 'Горение'
+  if (id === 'PYRO_COMET_AFTERSHOCK') return 'Кометный удар'
+  return id.split('_').join(' ')
+}
+
+function abilityIcon(ability: CombatAbility): string | undefined {
+  return abilityArtUrl(ability.iconId)
 }
 
 function eventSide(event: CombatEvent): LogSide {
@@ -238,8 +229,8 @@ onUnmounted(() => window.clearInterval(timer))
 
         <div class="abilities">
           <button v-for="ability in displayAbilities" :key="ability.id" type="button" :class="{ 'ability--comet': ability.id === 'FIRE_COMET' }" :disabled="combat.pending || cooldownRemaining(ability.id) > 0 || snapshot.player.resource < ability.resourceCost" @click="combat.useAbility(ability.id)">
-            <span class="ability-icon"><img v-if="abilityPresentation[ability.id]?.art" :src="abilityPresentation[ability.id]?.art" alt="" /><b v-else>{{ abilityName(ability.id).slice(0,2) }}</b></span>
-            <span><strong>{{ abilityName(ability.id) }}</strong><small>{{ cooldownRemaining(ability.id) > 0 ? `${Math.ceil(cooldownRemaining(ability.id))} сек.` : ability.resourceCost > 0 ? `${Math.round(ability.resourceCost * 10) / 10} ${resourceName.toLowerCase()}` : 'Без затрат' }}</small></span>
+            <span class="ability-icon"><img v-if="abilityIcon(ability)" :src="abilityIcon(ability)" :alt="ability.displayName" /><b v-else>{{ ability.displayName.slice(0,2) }}</b></span>
+            <span><strong>{{ ability.displayName }}</strong><small>{{ cooldownRemaining(ability.id) > 0 ? `${Math.ceil(cooldownRemaining(ability.id))} сек.` : ability.resourceCost > 0 ? `${Math.round(ability.resourceCost * 10) / 10} ${resourceName.toLowerCase()}` : 'Без затрат' }}</small></span>
           </button>
         </div>
 
