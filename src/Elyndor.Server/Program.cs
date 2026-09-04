@@ -111,18 +111,29 @@ builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublish
 
 WebApplication app = builder.Build();
 
-await using (AsyncServiceScope startupScope = app.Services.CreateAsyncScope())
+bool migrateOnStartup =
+    app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+bool restorePublishedOnStartup =
+    app.Configuration.GetValue<bool?>("Content:RestorePublishedOnStartup")
+    ?? migrateOnStartup;
+
+if (migrateOnStartup || restorePublishedOnStartup)
 {
-    if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+    await using AsyncServiceScope startupScope = app.Services.CreateAsyncScope();
+
+    if (migrateOnStartup)
     {
         GameDbContext dbContext =
             startupScope.ServiceProvider.GetRequiredService<GameDbContext>();
         await dbContext.Database.MigrateAsync();
     }
 
-    ContentPublicationService contentPublication =
-        startupScope.ServiceProvider.GetRequiredService<ContentPublicationService>();
-    await contentPublication.RestoreLatestReleaseAsync();
+    if (restorePublishedOnStartup)
+    {
+        ContentPublicationService contentPublication =
+            startupScope.ServiceProvider.GetRequiredService<ContentPublicationService>();
+        await contentPublication.RestoreLatestReleaseAsync();
+    }
 }
 
 if (frontendFileProvider is not null)
