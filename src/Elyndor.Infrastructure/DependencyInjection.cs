@@ -20,6 +20,7 @@ public static class DependencyInjection
         builder.AddNpgsqlDbContext<GameDbContext>("game");
         builder.Services.AddScoped<AccountResolver>();
         builder.Services.AddScoped<CharacterCreationService>();
+        builder.Services.AddScoped<CharacterDerivedStateService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
         builder.Services.AddScoped<WorldEncounterService>();

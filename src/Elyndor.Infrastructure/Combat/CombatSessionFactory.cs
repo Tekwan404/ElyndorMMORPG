@@ -7,7 +7,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
-using Elyndor.Infrastructure.Talents;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 
 namespace Elyndor.Infrastructure.Combat;
@@ -20,7 +20,7 @@ public sealed record CombatSessionCreationResult(
 
 public sealed class CombatSessionFactory(
     BootstrapService bootstrapService,
-    TalentService talentService,
+    CharacterDerivedStateService derivedStateService,
     GameContentPackage content,
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
@@ -83,17 +83,18 @@ public sealed class CombatSessionFactory(
         if (character.Vitals.CurrentHp <= 0)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
-        ClassProfile classProfile = content.ClassProfiles!.Single(candidate =>
-            string.Equals(candidate.Id, character.ClassId, StringComparison.Ordinal));
+        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
+        ClassProfile classProfile = derived.ClassProfile;
         if (classProfile.CombatAutoAttack is null)
             throw new InvalidOperationException(
                 $"Class {classProfile.Id} has no combat auto attack profile.");
-        ResourceProfile resourceProfile = content.ResourceProfiles!.Single(candidate =>
-            string.Equals(candidate.Id, classProfile.ResourceProfileId, StringComparison.Ordinal));
+        ResourceProfile resourceProfile = derived.EffectiveResourceProfile;
 
-        EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
-            character.Inventory.Equipped.Values.Select(item => item.Definition),
-            content.EquipmentSets ?? []);
+        EquipmentModifierSummary equipment = derived.Equipment;
         decimal weaponBaseIntervalSeconds = equipment.WeaponBaseAttackIntervalSeconds
             ?? (decimal)classProfile.CombatAutoAttack.Interval.TotalSeconds;
         decimal attackSpeedMultiplier = Math.Max(0.1m, character.Stats.AttackSpeed);
@@ -108,12 +109,7 @@ public sealed class CombatSessionFactory(
             : content.MonsterAiProfiles!.Single(candidate =>
                 string.Equals(candidate.Id, monster.AiProfileId, StringComparison.Ordinal));
 
-        TalentOperationResult talents = await talentService.GetAsync(accountId, cancellationToken);
-        ResolvedTalentModifiers talentModifiers = talents.IsSuccess
-            ? TalentModifierResolver.Resolve(
-                talents.Snapshot!.Tree,
-                talents.Snapshot.State.GetRanks(talents.Snapshot.State.ActiveLoadoutId))
-            : ResolvedTalentModifiers.Empty;
+        ResolvedTalentModifiers talentModifiers = derived.TalentModifiers;
 
         decimal playerHp = isTraining
             ? character.Vitals.MaxHp
@@ -144,7 +140,7 @@ public sealed class CombatSessionFactory(
             character.Name,
             character.Vitals.ResourceType,
             playerAutoAttack,
-            new HashSet<string>(character.KnownAbilityIds, StringComparer.Ordinal),
+            new HashSet<string>(derived.KnownAbilityIds, StringComparer.Ordinal),
             resourceProfile.CombatRegenPerSecond);
         CombatParticipantDefinition enemy = new(
             enemyActor,

@@ -4,7 +4,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
-using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,7 +69,7 @@ public sealed class BootstrapService(
     GameDbContext dbContext,
     GameContentPackage contentPackage,
     WorldMap worldMap,
-    InventoryEquipmentService inventoryService,
+    CharacterDerivedStateService derivedStateService,
     TimeProvider timeProvider)
 {
     private const string StarterTownId = "STARTER_TOWN";
@@ -97,78 +97,24 @@ public sealed class BootstrapService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
-        ClassProfile classProfile = (contentPackage.ClassProfiles
-            ?? throw new InvalidOperationException("Class profiles are required."))
-            .Single(profile => string.Equals(profile.Id, character.ClassId, StringComparison.Ordinal));
-        ResourceProfile resourceProfile = (contentPackage.ResourceProfiles
-            ?? throw new InvalidOperationException("Resource profiles are required."))
-            .Single(profile => string.Equals(
-                profile.Id,
-                classProfile.ResourceProfileId,
-                StringComparison.Ordinal));
-        InventorySnapshot inventory = await inventoryService.GetForCharacterAsync(
+        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
             character.Id,
+            character.ClassId,
+            character.Level,
             cancellationToken);
-        EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
-            inventory.Equipped.Values.Select(item => item.Definition),
-            contentPackage.EquipmentSets ?? []);
-        TalentPrimaryStatPercentages talentPercentages = TalentPrimaryStatPercentages.Empty;
-        ResolvedTalentModifiers talentModifiers = ResolvedTalentModifiers.Empty;
-        TalentTreeDefinition? talentTree = contentPackage.TalentTrees?
-            .SingleOrDefault(tree => tree.ClassId == character.ClassId);
-        IReadOnlyDictionary<string, int> activeTalentRanks = new Dictionary<string, int>(StringComparer.Ordinal);
-        if (talentTree is not null)
-        {
-            CharacterTalentState? talentState = await dbContext.CharacterTalentStates
-                .AsNoTracking()
-                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
-            if (talentState is not null)
-            {
-                activeTalentRanks = talentState.GetRanks(talentState.ActiveLoadoutId);
-                talentModifiers = TalentModifierResolver.Resolve(talentTree, activeTalentRanks);
-                talentPercentages = new TalentPrimaryStatPercentages(
-                    talentModifiers.Stats.StrengthPercent,
-                    0,
-                    0,
-                    talentModifiers.Stats.StaminaPercent);
-            }
-        }
-        CharacterStatCalculation statCalculation = new CharacterStatCalculator(
-            contentPackage.StatFormula
-                ?? throw new InvalidOperationException("Stat formula content is required."),
-            contentPackage.ClassProfiles).CalculateDetailed(
-                character.ClassId,
-                character.Level,
-                CharacterStatInputs.Empty with
-                {
-                    Equipment = equipment.PrimaryStats,
-                    EquipmentDerived = new CharacterEquipmentDerivedModifiers(
-                        equipment.AttackSpeedPercent,
-                        equipment.DodgePercent),
-                    TalentPercentages = talentPercentages,
-                    TalentDerived = talentModifiers.Stats
-                });
-        CharacterStats stats = statCalculation.Stats;
+        CharacterStats stats = derived.Stats;
+        ClassProfile classProfile = derived.ClassProfile;
+        ResourceProfile resourceProfile = derived.BaseResourceProfile;
+        ResourceProfile effectiveResourceProfile = derived.EffectiveResourceProfile;
 
-        string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
-            .Concat(talentModifiers.UnlockedAbilityIds)
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
-            .ToArray();
-        BootstrapAbility[] knownAbilities = knownAbilityIds
+        BootstrapAbility[] knownAbilities = derived.KnownAbilityIds
             .Select(abilityId => ToBootstrapAbility(
                 abilityId,
-                talentTree,
-                activeTalentRanks,
-                talentModifiers,
+                derived.TalentTree,
+                derived.ActiveTalentRanks,
+                derived.TalentModifiers,
                 contentPackage.Abilities ?? []))
             .ToArray();
-
-        ResourceProfile effectiveResourceProfile = CharacterResourceProfileResolver.Resolve(
-            resourceProfile,
-            contentPackage.ResourceScaling,
-            stats,
-            talentModifiers.Stats.MaxResourceFlat);
 
         CharacterVitals vitals = await dbContext.CharacterVitals
             .SingleAsync(
@@ -234,10 +180,10 @@ public sealed class BootstrapService(
                 character.Gold,
                 classProfile.PrimaryAttribute,
                 contentPackage.BalanceVersion,
-                knownAbilityIds,
+                derived.KnownAbilityIds,
                 knownAbilities,
                 stats,
-                statCalculation.Breakdown,
+                derived.StatCalculation.Breakdown,
                 new BootstrapVitals(
                     currentHp,
                     stats.MaxHp,
@@ -245,7 +191,7 @@ public sealed class BootstrapService(
                     currentResource,
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),
-                inventory),
+                derived.Inventory),
             new BootstrapWorld(ToLocation(current), location.Version, transitions),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,

@@ -4,6 +4,8 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.IntegrationTests.Postgres;
@@ -83,11 +85,15 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, content, timeProvider);
+        CharacterDerivedStateService derived = new(context, content, inventory);
         return new CombatRewardService(
             context,
             content,
+            derived,
             new FixedRandomFactory(),
-            new FixedTimeProvider(Now));
+            timeProvider);
     }
 
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)

@@ -1,6 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Sessions;
-using Elyndor.Core.Content;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Progression;
@@ -43,7 +43,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        GameContentPackage content = scope.ServiceProvider.GetRequiredService<GameContentPackage>();
+        CharacterDerivedStateService derivedStateService =
+            scope.ServiceProvider.GetRequiredService<CharacterDerivedStateService>();
         Character? character = await dbContext.Characters
             .SingleOrDefaultAsync(candidate => candidate.Id == characterId, cancellationToken);
         CharacterVitals? vitals = await dbContext.CharacterVitals
@@ -59,15 +60,11 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
             if (snapshot.Status == CombatSessionStatus.Defeat && character is not null)
             {
-                ClassProfile classProfile = (content.ClassProfiles
-                    ?? throw new InvalidOperationException("Class profiles are required."))
-                    .Single(profile => string.Equals(profile.Id, character.ClassId, StringComparison.Ordinal));
-                ResourceProfile resourceProfile = (content.ResourceProfiles
-                    ?? throw new InvalidOperationException("Resource profiles are required."))
-                    .Single(profile => string.Equals(
-                        profile.Id,
-                        classProfile.ResourceProfileId,
-                        StringComparison.Ordinal));
+                CharacterDerivedState derived = await derivedStateService.ResolveAsync(
+                    character.Id,
+                    character.ClassId,
+                    character.Level,
+                    cancellationToken);
 
                 if (location is not null)
                 {
@@ -82,8 +79,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 // Prototype respawn: defeat has no XP/item penalty. The player returns to
                 // the safe town immediately ready to play again.
                 vitals.BeginContext(
-                    snapshot.Player.MaxHp,
-                    resourceProfile.RespawnValue,
+                    derived.Stats.MaxHp,
+                    derived.EffectiveResourceProfile.RespawnValue,
                     checkpointAt);
             }
             else
