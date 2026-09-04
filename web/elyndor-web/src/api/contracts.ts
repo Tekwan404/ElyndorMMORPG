@@ -1,6 +1,54 @@
 export interface AuthenticationResponse {
   accessToken: string
   expiresAtUtc: string
+  roles: string[]
+}
+
+export interface ContentAdminCurrent {
+  contentVersion: string
+  balanceVersion: string
+  sourcePublishedAtUtc: string
+  revisionId: string | null
+  releaseId: string | null
+  payloadSha256: string
+  payloadJson: string
+}
+
+export interface ContentAdminValidationError {
+  code: string
+  path: string
+  message: string
+}
+
+export interface ContentAdminValidation {
+  isValid: boolean
+  canonicalPayloadJson: string | null
+  payloadSha256: string | null
+  errors: ContentAdminValidationError[]
+}
+
+export interface ContentAdminRevision {
+  id: string
+  contentVersion: string
+  balanceVersion: string
+  sourcePublishedAtUtc: string
+  payloadSha256: string
+  createdAtUtc: string
+  createdBy: string
+  note: string | null
+}
+
+export interface ContentAdminRelease {
+  id: string
+  revisionId: string
+  publishedAtUtc: string
+  publishedBy: string
+  note: string | null
+}
+
+export interface ContentAdminHistory {
+  revisions: ContentAdminRevision[]
+  releases: ContentAdminRelease[]
 }
 
 export interface ApiProblem {
