@@ -2,12 +2,13 @@
 
 This directory contains versioned static game data. Player state must never be stored here.
 
-`package.json` remains the base package entry point, but D3 content composition is category-first.
-The loader now executes:
+`package.json` is the base package entry point. Additional content is composed only from
+`content/<category>/*.json`.
+
+The loader executes:
 
 ```text
 package.json
-  -> legacy root overlay compatibility
   -> content/<category>/*.json scan
   -> modular validation
   -> immutable lookup indexes
@@ -17,7 +18,7 @@ IDs use uppercase ASCII letters, digits, and underscores. References are resolve
 
 ## Category directories
 
-New or migrated content belongs under the matching directory:
+Content belongs under the matching directory:
 
 ```text
 content/
@@ -29,17 +30,19 @@ content/
 ├── loot/
 ├── merchants/
 ├── monsters/
+├── progression/
+├── resources/
 ├── sets/
 └── talents/
 ```
 
 Category files may carry `contentVersion`, `balanceVersion`, `publishedAtUtc` plus the typed
-collection they contribute (for example `monsters`, `abilities`, `items`, or `locations`).
-Composition is deterministic by file path and entities are merged by stable id.
+collection or profile they contribute. Composition is deterministic by file path and entities are
+merged by stable id.
 
-The old root files such as `mage-pyromancer.json` and `phase5-progression-items.json` are
-temporary compatibility inputs. Do not create new feature-named root overlays; migrate them into
-category files instead.
+Do not add feature-named JSON overlays beside `package.json`. If a new content domain is needed,
+extend the category composer and validator explicitly so the runtime, importer, and Admin all see
+the same package.
 
 ## Adding a normal monster
 
@@ -65,6 +68,6 @@ Validate the composed snapshot from the repository root:
 dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
 ```
 
-The validator runs the same `ContentValidationPipeline` used by the server and forces
-`GameContentIndexes` construction. Balance-only number changes should normally change
+The validator runs the same `ContentValidationPipeline` used by the server and Admin publish flow,
+then forces `GameContentIndexes` construction. Balance-only number changes should normally change
 `BalanceVersion`; new definitions/schema-facing content should change `ContentVersion`.
