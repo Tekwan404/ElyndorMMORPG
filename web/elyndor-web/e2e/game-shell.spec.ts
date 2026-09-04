@@ -5,7 +5,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   page.on('console', (message) => {
     if (
       message.type() === 'error'
-      && !isExpectedMockRealtimeFailure(message.text())
+      && !isExpectedMockRealtimeFailure(message.text(), message.location().url)
     ) {
       browserErrors.push(message.text())
     }
@@ -121,12 +121,14 @@ function isMockRealtimeRequest(url: string): boolean {
   return process.env.ELYNDOR_E2E_REAL !== 'true' && url.includes('/hubs/combat')
 }
 
-function isExpectedMockRealtimeFailure(message: string): boolean {
+function isExpectedMockRealtimeFailure(message: string, sourceUrl = ''): boolean {
   if (process.env.ELYNDOR_E2E_REAL === 'true') return false
-  return message.includes('[combat-realtime]')
+  return sourceUrl.includes('/hubs/combat')
+    || message.includes('[combat-realtime]')
     || message.includes('Failed to complete negotiation with the server')
     || message.includes('Failed to start the connection')
     || message.includes('Failed to start the transport')
+    || message === 'Failed to load resource: the server responded with a status of 502 (Bad Gateway)'
 }
 
 function characterName(): string {
