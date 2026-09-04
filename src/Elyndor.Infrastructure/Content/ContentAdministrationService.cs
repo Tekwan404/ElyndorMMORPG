@@ -45,7 +45,8 @@ public sealed class ContentDraftValidationException(
 public sealed class ContentAdministrationService(
     ContentRevisionStore revisionStore,
     ContentPublicationService publicationService,
-    MutableContentSnapshotProvider snapshotProvider)
+    MutableContentSnapshotProvider snapshotProvider,
+    ContentPublicationCoordinator coordinator)
 {
     public const int MaxPayloadCharacters = 2_000_000;
 
@@ -62,7 +63,7 @@ public sealed class ContentAdministrationService(
             GameContentPackageCodec.ComputeSha256(payload));
     }
 
-    public static ContentDraftValidationResult ValidateDraft(string payloadJson)
+    public static ContentDraftValidationResult ValidateDraft(string? payloadJson)
     {
         if (string.IsNullOrWhiteSpace(payloadJson))
         {
@@ -112,8 +113,8 @@ public sealed class ContentAdministrationService(
     }
 
     public async Task<ContentRevision> CreateDraftAsync(
-        string payloadJson,
-        string basePayloadSha256,
+        string? payloadJson,
+        string? basePayloadSha256,
         string actor,
         string? note,
         CancellationToken cancellationToken = default)
@@ -121,30 +122,38 @@ public sealed class ContentAdministrationService(
         ArgumentException.ThrowIfNullOrWhiteSpace(basePayloadSha256);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
 
-        if (payloadJson.Length > MaxPayloadCharacters)
+        if (payloadJson?.Length > MaxPayloadCharacters)
             throw new ContentPayloadTooLargeException(MaxPayloadCharacters);
-
-        ContentAdminRuntimeState current = GetCurrent();
-        if (!string.Equals(
-                basePayloadSha256,
-                current.PayloadSha256,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ContentDraftConflictException(
-                basePayloadSha256,
-                current.PayloadSha256);
-        }
 
         ContentDraftValidationResult validation = ValidateDraft(payloadJson);
         if (!validation.IsValid)
             throw new ContentDraftValidationException(validation.Errors);
 
-        return await revisionStore.CreateRevisionAsync(
-            validation.Package!,
-            validation.CanonicalPayloadJson!,
-            actor,
-            note,
-            cancellationToken);
+        await coordinator.Gate.WaitAsync(cancellationToken);
+        try
+        {
+            ContentAdminRuntimeState current = GetCurrent();
+            if (!string.Equals(
+                    basePayloadSha256,
+                    current.PayloadSha256,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ContentDraftConflictException(
+                    basePayloadSha256,
+                    current.PayloadSha256);
+            }
+
+            return await revisionStore.CreateRevisionAsync(
+                validation.Package!,
+                validation.CanonicalPayloadJson!,
+                actor,
+                note,
+                cancellationToken);
+        }
+        finally
+        {
+            coordinator.Gate.Release();
+        }
     }
 
     public Task<ContentPublicationResult?> PublishAsync(
