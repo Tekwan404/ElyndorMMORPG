@@ -14,7 +14,7 @@ public sealed class ContentRevisionConfiguration : IEntityTypeConfiguration<Cont
         builder.Property(revision => revision.ContentVersion).HasMaxLength(64).IsRequired();
         builder.Property(revision => revision.BalanceVersion).HasMaxLength(64).IsRequired();
         builder.Property(revision => revision.SourcePublishedAtUtc).IsRequired();
-        builder.Property(revision => revision.PayloadJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(revision => revision.PayloadJson).HasColumnType("text").IsRequired();
         builder.Property(revision => revision.PayloadSha256).HasMaxLength(64).IsRequired();
         builder.Property(revision => revision.CreatedAtUtc).IsRequired();
         builder.Property(revision => revision.CreatedBy).HasMaxLength(128).IsRequired();

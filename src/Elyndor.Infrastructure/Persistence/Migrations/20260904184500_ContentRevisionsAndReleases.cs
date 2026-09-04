@@ -27,7 +27,7 @@ public partial class ContentRevisionsAndReleases : Migration
                 ContentVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                 BalanceVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                 SourcePublishedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                PayloadJson = table.Column<string>(type: "jsonb", nullable: false),
+                PayloadJson = table.Column<string>(type: "text", nullable: false),
                 PayloadSha256 = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                 CreatedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 CreatedBy = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),

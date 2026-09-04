@@ -534,7 +534,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("PayloadJson")
                         .IsRequired()
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
                     b.Property<string>("PayloadSha256")
                         .IsRequired()
