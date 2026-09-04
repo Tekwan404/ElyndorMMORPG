@@ -525,7 +525,9 @@ public sealed partial class CombatSession
                 0),
             now);
 
-        if (HasPyromancerTalent("F-8-1"))
+        if (TryGetPyromancerHook(
+                "F-8-1",
+                out ResolvedTalentEventHook perfectCombustion))
         {
             _playerRuntime.Cooldowns.Remove(FlameFlashId);
             _playerRuntime.Cooldowns.Remove(FireWaveId);
