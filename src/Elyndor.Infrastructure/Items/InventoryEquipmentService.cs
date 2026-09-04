@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -54,14 +55,25 @@ public sealed record InventoryOperationResult(
 
 public sealed class InventoryEquipmentService(
     GameDbContext dbContext,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
     private const string EquipOperation = "INVENTORY_EQUIP";
     private const string UnequipOperation = "INVENTORY_UNEQUIP";
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
-    private readonly CharacterDerivedStateService derivedStateService = new(dbContext, content);
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    private readonly CharacterDerivedStateService derivedStateService =
+        new(dbContext, contentProvider);
+
+    public InventoryEquipmentService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            timeProvider)
+    {
+    }
 
     public async Task<InventoryOperationResult> GetAsync(
         Guid accountId,
@@ -79,7 +91,11 @@ public sealed class InventoryEquipmentService(
     public Task<InventorySnapshot> GetForCharacterAsync(
         Guid characterId,
         CancellationToken cancellationToken) =>
-        InventorySnapshotReader.ReadAsync(dbContext, content, characterId, cancellationToken);
+        InventorySnapshotReader.ReadAsync(
+            dbContext,
+            contentProvider.GetCurrent().Package,
+            characterId,
+            cancellationToken);
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,
@@ -108,7 +124,7 @@ public sealed class InventoryEquipmentService(
                 if (character.Level < definition.RequiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
 
-                if (!indexes.ClassesById.TryGetValue(
+                if (!contentProvider.GetCurrent().Indexes.ClassesById.TryGetValue(
                         character.ClassId,
                         out ClassProfile? classProfile))
                 {
@@ -394,7 +410,7 @@ public sealed class InventoryEquipmentService(
             .SingleOrDefaultAsync(cancellationToken);
 
     private ItemDefinition? FindItem(string definitionId) =>
-        indexes.ItemsById.GetValueOrDefault(definitionId);
+        contentProvider.GetCurrent().Indexes.ItemsById.GetValueOrDefault(definitionId);
 
     private static string Fingerprint(params string[] parts)
     {

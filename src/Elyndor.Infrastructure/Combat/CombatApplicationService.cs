@@ -5,6 +5,7 @@ using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -12,10 +13,27 @@ public sealed class CombatApplicationService(
     CombatSessionFactory factory,
     CombatSessionRegistry registry,
     WorldEncounterRegistry encounterRegistry,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     InventoryEquipmentService inventoryService,
     CharacterOperationGuard operationGuard)
 {
+    public CombatApplicationService(
+        CombatSessionFactory factory,
+        CombatSessionRegistry registry,
+        WorldEncounterRegistry encounterRegistry,
+        GameContentPackage content,
+        InventoryEquipmentService inventoryService,
+        CharacterOperationGuard operationGuard)
+        : this(
+            factory,
+            registry,
+            encounterRegistry,
+            new StaticContentSnapshotProvider(content),
+            inventoryService,
+            operationGuard)
+    {
+    }
+
     public Task<CombatOperationResult> StartAsync(
         Guid accountId,
         Guid encounterId,
@@ -96,8 +114,8 @@ public sealed class CombatApplicationService(
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound,
                         session.Snapshot(), []);
-                AbilityDefinition? ability = content.Abilities?.SingleOrDefault(candidate =>
-                    string.Equals(candidate.Id, abilityId, StringComparison.Ordinal));
+                AbilityDefinition? ability = contentProvider.GetCurrent().Indexes.AbilitiesById
+                    .GetValueOrDefault(abilityId);
                 Guid targetId = ability?.TargetType is AbilityTargetType.Self or AbilityTargetType.Owner
                     ? session.PlayerActorId
                     : session.EnemyActorId;
@@ -121,8 +139,8 @@ public sealed class CombatApplicationService(
                 if (session.HasProcessedCommand(commandId))
                     return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(), []);
 
-                ItemDefinition? definition = (content.Items ?? []).SingleOrDefault(candidate =>
-                    string.Equals(candidate.Id, itemDefinitionId, StringComparison.Ordinal));
+                ItemDefinition? definition = contentProvider.GetCurrent().Indexes.ItemsById
+                    .GetValueOrDefault(itemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
                     return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
 

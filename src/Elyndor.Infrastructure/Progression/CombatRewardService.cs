@@ -7,6 +7,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -28,12 +29,25 @@ public sealed record CombatRewardItemResult(
 
 public sealed class CombatRewardService(
     GameDbContext dbContext,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    public CombatRewardService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        CharacterDerivedStateService derivedStateService,
+        IGameRandomFactory randomFactory,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            derivedStateService,
+            randomFactory,
+            timeProvider)
+    {
+    }
 
     public async Task<CombatRewardApplicationResult> ApplyVictoryAsync(
         Guid characterId,
@@ -73,6 +87,10 @@ public sealed class CombatRewardService(
                 []);
         }
 
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        GameContentPackage content = contentSnapshot.Package;
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+
         Character character = await dbContext.Characters
             .SingleAsync(candidate => candidate.Id == characterId, cancellationToken);
         if (!indexes.MonstersById.TryGetValue(
@@ -98,10 +116,10 @@ public sealed class CombatRewardService(
                     candidate => candidate.Gold + goldEarned),
                 cancellationToken);
 
-        IReadOnlyList<LootRoll> loot = RollLoot(monster);
+        IReadOnlyList<LootRoll> loot = RollLoot(monster, indexes);
         DateTimeOffset now = timeProvider.GetUtcNow();
         foreach (LootRoll roll in loot)
-            await AddItemAsync(characterId, roll, now, cancellationToken);
+            await AddItemAsync(characterId, roll, now, indexes, cancellationToken);
 
         if (progressionResult.LeveledUp)
         {
@@ -135,7 +153,7 @@ public sealed class CombatRewardService(
             monster.XpReward,
             goldEarned,
             progressionResult,
-            loot.Select(ToRewardItem).ToArray());
+            loot.Select(roll => ToRewardItem(roll, indexes)).ToArray());
     }
 
     private int RollGold(MonsterDefinition monster)
@@ -147,7 +165,9 @@ public sealed class CombatRewardService(
         return monster.GoldRewardMin + Math.Min(offset, span - 1);
     }
 
-    private IReadOnlyList<LootRoll> RollLoot(MonsterDefinition monster)
+    private IReadOnlyList<LootRoll> RollLoot(
+        MonsterDefinition monster,
+        GameContentIndexes indexes)
     {
         if (string.IsNullOrWhiteSpace(monster.LootTableId))
             return [];
@@ -166,6 +186,7 @@ public sealed class CombatRewardService(
         Guid characterId,
         LootRoll roll,
         DateTimeOffset acquiredAtUtc,
+        GameContentIndexes indexes,
         CancellationToken cancellationToken)
     {
         if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
@@ -216,7 +237,9 @@ public sealed class CombatRewardService(
         }
     }
 
-    private CombatRewardItemResult ToRewardItem(LootRoll roll)
+    private static CombatRewardItemResult ToRewardItem(
+        LootRoll roll,
+        GameContentIndexes indexes)
     {
         if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
             throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");

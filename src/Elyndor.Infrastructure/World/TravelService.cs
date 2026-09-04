@@ -1,5 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.World;
+using Elyndor.Core.Content;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -29,11 +31,33 @@ public static class TravelErrorCodes
     public const string Conflict = "travel_conflict";
 }
 
-public sealed class TravelService(
-    GameDbContext dbContext,
-    WorldMap worldMap,
-    TimeProvider timeProvider)
+public sealed class TravelService
 {
+    private readonly GameDbContext dbContext;
+    private readonly IContentSnapshotProvider? contentProvider;
+    private readonly WorldMap? fixedWorldMap;
+    private readonly TimeProvider timeProvider;
+
+    public TravelService(
+        GameDbContext dbContext,
+        IContentSnapshotProvider contentProvider,
+        TimeProvider timeProvider)
+    {
+        this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        this.contentProvider = contentProvider ?? throw new ArgumentNullException(nameof(contentProvider));
+        this.timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+    }
+
+    public TravelService(
+        GameDbContext dbContext,
+        WorldMap worldMap,
+        TimeProvider timeProvider)
+    {
+        this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        fixedWorldMap = worldMap ?? throw new ArgumentNullException(nameof(worldMap));
+        this.timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+    }
+
     public async Task<TravelResult> TravelAsync(
         Guid accountId,
         Guid requestId,
@@ -46,6 +70,10 @@ public sealed class TravelService(
         {
             return TravelResult.Failure(TravelErrorCodes.InvalidRequest);
         }
+
+        WorldMap worldMap = contentProvider?.GetCurrent().WorldMap
+            ?? fixedWorldMap
+            ?? throw new InvalidOperationException("World map content is unavailable.");
 
         try
         {
@@ -62,6 +90,7 @@ public sealed class TravelService(
                 accountId,
                 requestId,
                 targetLocationId,
+                worldMap,
                 timeProvider.GetUtcNow(),
                 cancellationToken));
     }
@@ -70,6 +99,7 @@ public sealed class TravelService(
         Guid accountId,
         Guid requestId,
         string targetLocationId,
+        WorldMap worldMap,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {

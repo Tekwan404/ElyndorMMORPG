@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -39,7 +40,7 @@ public static class CharacterCreationErrorCodes
 public sealed class CharacterCreationService(
     GameDbContext dbContext,
     TimeProvider timeProvider,
-    GameContentPackage contentPackage,
+    IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService)
 {
     private const string AccountConstraint = "uq_characters_account_id";
@@ -51,10 +52,23 @@ public sealed class CharacterCreationService(
         dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     private readonly TimeProvider _timeProvider =
         timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-    private readonly GameContentPackage _contentPackage =
-        contentPackage ?? throw new ArgumentNullException(nameof(contentPackage));
+    private readonly IContentSnapshotProvider _contentProvider =
+        contentProvider ?? throw new ArgumentNullException(nameof(contentProvider));
     private readonly CharacterDerivedStateService _derivedStateService =
         derivedStateService ?? throw new ArgumentNullException(nameof(derivedStateService));
+
+    public CharacterCreationService(
+        GameDbContext dbContext,
+        TimeProvider timeProvider,
+        GameContentPackage contentPackage,
+        CharacterDerivedStateService derivedStateService)
+        : this(
+            dbContext,
+            timeProvider,
+            new StaticContentSnapshotProvider(contentPackage),
+            derivedStateService)
+    {
+    }
 
     public async Task<CharacterCreationResult> CreateAsync(
         Guid accountId,
@@ -207,9 +221,8 @@ public sealed class CharacterCreationService(
     }
 
     private bool HasDefinition(string type, string id) =>
-        _contentPackage.Definitions.Any(
-            definition => string.Equals(definition.Type, type, StringComparison.Ordinal)
-                && string.Equals(definition.Id, id, StringComparison.Ordinal));
+        _contentProvider.GetCurrent().Indexes.DefinitionsByKey.ContainsKey(
+            new GameContentDefinitionKey(type, id));
 
     private static bool Matches(
         Character character,

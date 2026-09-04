@@ -4,6 +4,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.World;
@@ -89,17 +90,32 @@ public sealed class WorldEncounterRegistry(TimeProvider timeProvider)
 
 public sealed class WorldEncounterService(
     GameDbContext dbContext,
-    WorldMap worldMap,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
     WorldEncounterRegistry registry)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    public WorldEncounterService(
+        GameDbContext dbContext,
+        WorldMap worldMap,
+        GameContentPackage content,
+        IGameRandomFactory randomFactory,
+        WorldEncounterRegistry registry)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            randomFactory,
+            registry)
+    {
+    }
 
     public async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> ExploreAsync(
         Guid accountId,
         CancellationToken cancellationToken)
     {
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        WorldMap worldMap = contentSnapshot.WorldMap;
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+
         Character? character = await dbContext.Characters
             .AsNoTracking()
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
