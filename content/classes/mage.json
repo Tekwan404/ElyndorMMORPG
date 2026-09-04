@@ -1,0 +1,44 @@
+{
+  "contentVersion": "0.9.3",
+  "balanceVersion": "0.7.2",
+  "publishedAtUtc": "2026-09-03T00:00:00+00:00",
+  "classProfiles": [
+    {
+      "id": "MAGE",
+      "primaryAttribute": "INTELLECT",
+      "resourceProfileId": "MANA",
+      "baseStats": {
+        "strength": 3,
+        "agility": 5,
+        "intellect": 11,
+        "stamina": 6
+      },
+      "levelGrowth": {
+        "strength": 1,
+        "agility": 1,
+        "intellect": 3,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "STAFF",
+        "WAND"
+      ],
+      "allowedArmorCategories": [
+        "LIGHT"
+      ],
+      "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
+      "startingAbilityIds": [
+        "MAGE_FIREBALL",
+        "MAGE_ARCANE_SPARK",
+        "MAGE_ICE_SHARD"
+      ],
+      "abilityUnlocks": [],
+      "combatAutoAttack": {
+        "interval": "00:00:02.6000000",
+        "baseDamage": 0,
+        "attackPowerCoefficient": 0.35,
+        "resourceOnHit": 0
+      }
+    }
+  ]
+}
