@@ -49,22 +49,39 @@ public sealed class CombatRewardService(
     {
     }
 
+    public Task<CombatRewardApplicationResult> ApplyVictoryAsync(
+        Guid characterId,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken) =>
+        ApplyVictoryAsync(
+            characterId,
+            snapshot,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
     public async Task<CombatRewardApplicationResult> ApplyVictoryAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
         if (snapshot.Status != CombatSessionStatus.Victory)
             return new CombatRewardApplicationResult(false, 0, 0, null, []);
 
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(
-            () => ApplyVictoryCoreAsync(characterId, snapshot, cancellationToken));
+            () => ApplyVictoryCoreAsync(
+                characterId,
+                snapshot,
+                contentSnapshot,
+                cancellationToken));
     }
 
     private async Task<CombatRewardApplicationResult> ApplyVictoryCoreAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
@@ -87,7 +104,6 @@ public sealed class CombatRewardService(
                 []);
         }
 
-        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         GameContentPackage content = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
 
@@ -130,6 +146,7 @@ public sealed class CombatRewardService(
                 character.Id,
                 character.ClassId,
                 character.Level,
+                contentSnapshot,
                 cancellationToken);
             vitals.Checkpoint(
                 derived.Stats.MaxHp,

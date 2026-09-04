@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
@@ -15,6 +16,13 @@ public interface ICombatSessionFinalizer
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken);
+
+    Task<CombatRewardApplicationResult?> FinalizeAsync(
+        Guid characterId,
+        CombatSessionSnapshot snapshot,
+        GameContentSnapshot? contentSnapshot,
+        CancellationToken cancellationToken) =>
+        FinalizeAsync(characterId, snapshot, cancellationToken);
 }
 
 /// <summary>
@@ -25,9 +33,16 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 {
     private const string StarterTownId = "STARTER_TOWN";
 
+    public Task<CombatRewardApplicationResult?> FinalizeAsync(
+        Guid characterId,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken) =>
+        FinalizeAsync(characterId, snapshot, null, cancellationToken);
+
     public async Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
+        GameContentSnapshot? contentSnapshot,
         CancellationToken cancellationToken)
     {
         if (snapshot.Status == CombatSessionStatus.Active)
@@ -60,11 +75,18 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
             if (snapshot.Status == CombatSessionStatus.Defeat && character is not null)
             {
-                CharacterDerivedState derived = await derivedStateService.ResolveAsync(
-                    character.Id,
-                    character.ClassId,
-                    character.Level,
-                    cancellationToken);
+                CharacterDerivedState derived = contentSnapshot is null
+                    ? await derivedStateService.ResolveAsync(
+                        character.Id,
+                        character.ClassId,
+                        character.Level,
+                        cancellationToken)
+                    : await derivedStateService.ResolveAsync(
+                        character.Id,
+                        character.ClassId,
+                        character.Level,
+                        contentSnapshot,
+                        cancellationToken);
 
                 if (location is not null)
                 {
@@ -98,7 +120,16 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         {
             CombatRewardService rewards =
                 scope.ServiceProvider.GetRequiredService<CombatRewardService>();
-            return await rewards.ApplyVictoryAsync(characterId, snapshot, cancellationToken);
+            return contentSnapshot is null
+                ? await rewards.ApplyVictoryAsync(
+                    characterId,
+                    snapshot,
+                    cancellationToken)
+                : await rewards.ApplyVictoryAsync(
+                    characterId,
+                    snapshot,
+                    contentSnapshot,
+                    cancellationToken);
         }
 
         return null;

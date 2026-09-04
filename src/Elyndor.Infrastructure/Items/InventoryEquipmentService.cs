@@ -237,11 +237,23 @@ public sealed class InventoryEquipmentService(
             },
             cancellationToken);
 
+    public Task<string?> ConsumeOneForCombatAsync(
+        Guid accountId,
+        string itemDefinitionId,
+        CancellationToken cancellationToken) =>
+        ConsumeOneForCombatAsync(
+            accountId,
+            itemDefinitionId,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
     public async Task<string?> ConsumeOneForCombatAsync(
         Guid accountId,
         string itemDefinitionId,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -269,7 +281,9 @@ public sealed class InventoryEquipmentService(
                     return InventoryErrorCodes.ItemNotFound;
                 }
 
-                ItemDefinition? definition = FindItem(item.ItemDefinitionId);
+                ItemDefinition? definition =
+                    contentSnapshot.Indexes.ItemsById.GetValueOrDefault(
+                        item.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Consumable)
                 {
                     await transaction.RollbackAsync(cancellationToken);
