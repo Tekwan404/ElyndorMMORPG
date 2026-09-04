@@ -23,7 +23,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("0.9.3", package.ContentVersion);
         Assert.Equal("0.9.1", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
-        Assert.Equal(9, package.Items!.Count);
+        Assert.Equal(16, package.Items!.Count);
         Assert.Equal(3, package.LootTables!.Count);
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
