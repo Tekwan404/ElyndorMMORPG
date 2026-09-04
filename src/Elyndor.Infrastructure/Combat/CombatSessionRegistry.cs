@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Progression;
 
 namespace Elyndor.Infrastructure.Combat;
@@ -24,10 +25,29 @@ public sealed class CombatSessionRegistry(
     private readonly ConcurrentDictionary<Guid, SessionEntry> _bySession = [];
     private bool _disposed;
 
-    public bool TryAdd(Guid accountId, Guid characterId, CombatSession session)
+    public bool TryAdd(
+        Guid accountId,
+        Guid characterId,
+        CombatSession session,
+        GameContentSnapshot? contentSnapshot = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        SessionEntry entry = new(accountId, characterId, session);
+        ArgumentNullException.ThrowIfNull(session);
+        if (contentSnapshot is not null
+            && (!string.Equals(
+                    session.ContentVersion,
+                    contentSnapshot.ContentVersion,
+                    StringComparison.Ordinal)
+                || !string.Equals(
+                    session.BalanceVersion,
+                    contentSnapshot.BalanceVersion,
+                    StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "Combat session content identity does not match its pinned snapshot.");
+        }
+
+        SessionEntry entry = new(accountId, characterId, session, contentSnapshot);
         if (!_byAccount.TryAdd(accountId, entry)) return false;
         if (!_byCharacter.TryAdd(characterId, entry))
         {
@@ -50,12 +70,29 @@ public sealed class CombatSessionRegistry(
         Func<CombatSession, DateTimeOffset, CombatCommandResult> operation,
         CancellationToken cancellationToken) => ExecuteAsync(
             accountId,
-            (session, now) => Task.FromResult(operation(session, now)),
+            (session, _, now) => Task.FromResult(operation(session, now)),
+            cancellationToken);
+
+    public Task<CombatOperationResult> ExecuteAsync(
+        Guid accountId,
+        Func<CombatSession, GameContentSnapshot?, DateTimeOffset, CombatCommandResult> operation,
+        CancellationToken cancellationToken) => ExecuteAsync(
+            accountId,
+            (session, contentSnapshot, now) =>
+                Task.FromResult(operation(session, contentSnapshot, now)),
+            cancellationToken);
+
+    public Task<CombatOperationResult> ExecuteAsync(
+        Guid accountId,
+        Func<CombatSession, DateTimeOffset, Task<CombatCommandResult>> operation,
+        CancellationToken cancellationToken) => ExecuteAsync(
+            accountId,
+            (session, _, now) => operation(session, now),
             cancellationToken);
 
     public async Task<CombatOperationResult> ExecuteAsync(
         Guid accountId,
-        Func<CombatSession, DateTimeOffset, Task<CombatCommandResult>> operation,
+        Func<CombatSession, GameContentSnapshot?, DateTimeOffset, Task<CombatCommandResult>> operation,
         CancellationToken cancellationToken)
     {
         if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry))
@@ -68,13 +105,17 @@ public sealed class CombatSessionRegistry(
                 || !ReferenceEquals(current, entry))
                 return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
-            CombatCommandResult result = await operation(entry.Session, timeProvider.GetUtcNow());
+            CombatCommandResult result = await operation(
+                entry.Session,
+                entry.ContentSnapshot,
+                timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, cancellationToken);
-            CombatOperationResult operationResult = CombatOperationResult.From(result) with
-            {
-                Reward = entry.Reward
-            };
+            CombatOperationResult operationResult =
+                CombatOperationResult.From(result, entry.ContentSnapshot) with
+                {
+                    Reward = entry.Reward
+                };
             await publisher.PublishAsync(accountId, operationResult, cancellationToken);
             return operationResult;
         }
@@ -90,7 +131,9 @@ public sealed class CombatSessionRegistry(
 
     public CombatOperationResult Resume(Guid accountId) =>
         _byAccount.TryGetValue(accountId, out SessionEntry? entry)
-            ? CombatOperationResult.FromSnapshot(entry.Session.Snapshot())
+            ? CombatOperationResult.FromSnapshot(
+                entry.Session.Snapshot(),
+                entry.ContentSnapshot)
                 with { Reward = entry.Reward }
             : CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
@@ -155,7 +198,8 @@ public sealed class CombatSessionRegistry(
             await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);
             await publisher.PublishAsync(
                 entry.AccountId,
-                CombatOperationResult.From(result) with { Reward = entry.Reward },
+                CombatOperationResult.From(result, entry.ContentSnapshot)
+                    with { Reward = entry.Reward },
                 CancellationToken.None);
         }
         finally
@@ -175,6 +219,7 @@ public sealed class CombatSessionRegistry(
         entry.Reward = await finalizer.FinalizeAsync(
             entry.CharacterId,
             snapshot,
+            entry.ContentSnapshot,
             cancellationToken);
         entry.Finalized = true;
     }
@@ -197,11 +242,16 @@ public sealed class CombatSessionRegistry(
         _bySession.Clear();
     }
 
-    private sealed class SessionEntry(Guid accountId, Guid characterId, CombatSession session)
+    private sealed class SessionEntry(
+        Guid accountId,
+        Guid characterId,
+        CombatSession session,
+        GameContentSnapshot? contentSnapshot)
     {
         public Guid AccountId { get; } = accountId;
         public Guid CharacterId { get; } = characterId;
         public CombatSession Session { get; } = session;
+        public GameContentSnapshot? ContentSnapshot { get; } = contentSnapshot;
         public SemaphoreSlim Gate { get; } = new(1, 1);
         public ITimer? Timer { get; set; }
         public bool Finalized { get; set; }
@@ -214,10 +264,24 @@ public sealed record CombatOperationResult(
     string? ErrorCode,
     CombatSessionSnapshot? Snapshot,
     IReadOnlyList<Core.Combat.CombatEvent> Events,
-    CombatRewardApplicationResult? Reward = null)
+    CombatRewardApplicationResult? Reward = null,
+    GameContentSnapshot? ContentSnapshot = null)
 {
-    public static CombatOperationResult Failure(string errorCode) => new(false, errorCode, null, []);
-    public static CombatOperationResult FromSnapshot(CombatSessionSnapshot snapshot) => new(true, null, snapshot, []);
-    public static CombatOperationResult From(CombatCommandResult result) =>
-        new(result.Succeeded, result.ErrorCode, result.Snapshot, result.Events);
+    public static CombatOperationResult Failure(string errorCode) =>
+        new(false, errorCode, null, []);
+
+    public static CombatOperationResult FromSnapshot(
+        CombatSessionSnapshot snapshot,
+        GameContentSnapshot? contentSnapshot = null) =>
+        new(true, null, snapshot, [], ContentSnapshot: contentSnapshot);
+
+    public static CombatOperationResult From(
+        CombatCommandResult result,
+        GameContentSnapshot? contentSnapshot = null) =>
+        new(
+            result.Succeeded,
+            result.ErrorCode,
+            result.Snapshot,
+            result.Events,
+            ContentSnapshot: contentSnapshot);
 }

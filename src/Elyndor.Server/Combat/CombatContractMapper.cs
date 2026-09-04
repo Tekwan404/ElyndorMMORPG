@@ -11,7 +11,11 @@ internal static class CombatContractMapper
 {
     public static CombatUpdateResponse ToResponse(
         CombatOperationResult result,
-        GameContentPackage content) => new(
+        GameContentPackage fallbackContent)
+    {
+        GameContentPackage content =
+            result.ContentSnapshot?.Package ?? fallbackContent;
+        return new CombatUpdateResponse(
         result.Succeeded,
         result.ErrorCode,
         result.Snapshot is null ? null : ToResponse(result.Snapshot, content),
@@ -30,6 +34,7 @@ internal static class CombatContractMapper
                     item.Type.ToString(),
                     item.Rarity.ToString(),
                     item.Quantity)).ToArray()));
+    }
 
     private static CombatSnapshotResponse ToResponse(
         CombatSessionSnapshot snapshot,
@@ -39,7 +44,9 @@ internal static class CombatContractMapper
         snapshot.Status.ToString(),
         snapshot.ServerTimeUtc,
         ToResponse(snapshot.Player, content),
-        ToResponse(snapshot.Enemy, content));
+        ToResponse(snapshot.Enemy, content),
+        snapshot.ContentVersion,
+        snapshot.BalanceVersion);
 
     private static CombatActorResponse ToResponse(
         CombatActorSnapshot actor,

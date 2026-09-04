@@ -37,6 +37,8 @@ describe('CombatView', () => {
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
       serverTimeUtc: '2026-09-01T12:00:00Z',
+      contentVersion: '0.9.3',
+      balanceVersion: '0.9.1',
       player: actor('Player', 'WARRIOR', 'Warrior', 140, 180, 35, 100, [
         { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
         { id: 'WILD_STRIKE', resourceCost: 25, cooldownSeconds: 6 },
@@ -64,7 +66,10 @@ describe('CombatView', () => {
     player.autoAttackEnabled = false
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 3, status: 'Active',
-      serverTimeUtc: '2026-09-01T12:00:02Z', player, enemy,
+      serverTimeUtc: '2026-09-01T12:00:02Z',
+      contentVersion: '0.9.3',
+      balanceVersion: '0.9.1',
+      player, enemy,
     }
     store.events = [
       {

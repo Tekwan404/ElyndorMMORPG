@@ -109,12 +109,14 @@ public sealed class CombatApplicationService(
         Guid accountId, Guid sessionId, string commandId, string abilityId,
         CancellationToken cancellationToken) => registry.ExecuteAsync(
             accountId,
-            (session, now) =>
+            (session, pinnedContent, now) =>
             {
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound,
                         session.Snapshot(), []);
-                AbilityDefinition? ability = contentProvider.GetCurrent().Indexes.AbilitiesById
+                GameContentSnapshot contentSnapshot =
+                    pinnedContent ?? contentProvider.GetCurrent();
+                AbilityDefinition? ability = contentSnapshot.Indexes.AbilitiesById
                     .GetValueOrDefault(abilityId);
                 Guid targetId = ability?.TargetType is AbilityTargetType.Self or AbilityTargetType.Owner
                     ? session.PlayerActorId
@@ -130,7 +132,7 @@ public sealed class CombatApplicationService(
         string itemDefinitionId,
         CancellationToken cancellationToken) => registry.ExecuteAsync(
             accountId,
-            async (session, now) =>
+            async (session, pinnedContent, now) =>
             {
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []);
@@ -139,7 +141,9 @@ public sealed class CombatApplicationService(
                 if (session.HasProcessedCommand(commandId))
                     return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(), []);
 
-                ItemDefinition? definition = contentProvider.GetCurrent().Indexes.ItemsById
+                GameContentSnapshot contentSnapshot =
+                    pinnedContent ?? contentProvider.GetCurrent();
+                ItemDefinition? definition = contentSnapshot.Indexes.ItemsById
                     .GetValueOrDefault(itemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
                     return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
@@ -151,6 +155,7 @@ public sealed class CombatApplicationService(
                 string? inventoryError = await inventoryService.ConsumeOneForCombatAsync(
                     accountId,
                     itemDefinitionId,
+                    contentSnapshot,
                     cancellationToken);
                 if (inventoryError is not null)
                     return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
@@ -201,9 +206,15 @@ public sealed class CombatApplicationService(
             cancellationToken);
         if (!created.Succeeded)
             return CombatOperationResult.Failure(created.ErrorCode!);
-        if (!registry.TryAdd(accountId, created.CharacterId, created.Session!))
+        if (!registry.TryAdd(
+                accountId,
+                created.CharacterId,
+                created.Session!,
+                created.ContentSnapshot))
             return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
-        return CombatOperationResult.FromSnapshot(created.Session!.Snapshot()) with
+        return CombatOperationResult.FromSnapshot(
+            created.Session!.Snapshot(),
+            created.ContentSnapshot) with
         {
             Events = created.Session.GetEventsAfter(0)
         };

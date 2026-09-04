@@ -17,7 +17,8 @@ public sealed record CombatSessionCreationResult(
     bool Succeeded,
     string? ErrorCode,
     Guid CharacterId,
-    CombatSession? Session);
+    CombatSession? Session,
+    GameContentSnapshot? ContentSnapshot = null);
 
 public sealed class CombatSessionFactory(
     BootstrapService bootstrapService,
@@ -62,6 +63,7 @@ public sealed class CombatSessionFactory(
 
         BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
             accountId,
+            contentSnapshot,
             cancellationToken,
             checkpoint: true);
         BootstrapCharacter? character = bootstrap.Character;
@@ -106,6 +108,7 @@ public sealed class CombatSessionFactory(
             character.Id,
             character.ClassId,
             character.Level,
+            contentSnapshot,
             cancellationToken);
         ClassProfile classProfile = derived.ClassProfile;
         if (classProfile.CombatAutoAttack is null)
@@ -188,8 +191,15 @@ public sealed class CombatSessionFactory(
             ai,
             talentModifiers,
             randomFactory.Create(),
-            timeProvider.GetUtcNow());
-        return new CombatSessionCreationResult(true, null, character.Id, session);
+            timeProvider.GetUtcNow(),
+            contentSnapshot.ContentVersion,
+            contentSnapshot.BalanceVersion);
+        return new CombatSessionCreationResult(
+            true,
+            null,
+            character.Id,
+            session,
+            contentSnapshot);
     }
 
     private static MonsterDefinition CreateTrainingDummy(int level) => new(

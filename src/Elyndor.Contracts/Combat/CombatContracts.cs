@@ -33,7 +33,9 @@ public sealed record CombatSnapshotResponse(
     string Status,
     DateTimeOffset ServerTimeUtc,
     CombatActorResponse Player,
-    CombatActorResponse Enemy);
+    CombatActorResponse Enemy,
+    string ContentVersion = "UNVERSIONED",
+    string BalanceVersion = "UNVERSIONED");
 
 public sealed record CombatEventResponse(
     long Sequence,

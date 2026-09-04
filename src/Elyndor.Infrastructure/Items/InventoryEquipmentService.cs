@@ -91,11 +91,23 @@ public sealed class InventoryEquipmentService(
     public Task<InventorySnapshot> GetForCharacterAsync(
         Guid characterId,
         CancellationToken cancellationToken) =>
-        InventorySnapshotReader.ReadAsync(
+        GetForCharacterAsync(
+            characterId,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
+    public Task<InventorySnapshot> GetForCharacterAsync(
+        Guid characterId,
+        GameContentSnapshot contentSnapshot,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
+        return InventorySnapshotReader.ReadAsync(
             dbContext,
-            contentProvider.GetCurrent().Package,
+            contentSnapshot.Package,
             characterId,
             cancellationToken);
+    }
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,
@@ -237,11 +249,23 @@ public sealed class InventoryEquipmentService(
             },
             cancellationToken);
 
+    public Task<string?> ConsumeOneForCombatAsync(
+        Guid accountId,
+        string itemDefinitionId,
+        CancellationToken cancellationToken) =>
+        ConsumeOneForCombatAsync(
+            accountId,
+            itemDefinitionId,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+
     public async Task<string?> ConsumeOneForCombatAsync(
         Guid accountId,
         string itemDefinitionId,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(contentSnapshot);
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -269,7 +293,9 @@ public sealed class InventoryEquipmentService(
                     return InventoryErrorCodes.ItemNotFound;
                 }
 
-                ItemDefinition? definition = FindItem(item.ItemDefinitionId);
+                ItemDefinition? definition =
+                    contentSnapshot.Indexes.ItemsById.GetValueOrDefault(
+                        item.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Consumable)
                 {
                     await transaction.RollbackAsync(cancellationToken);

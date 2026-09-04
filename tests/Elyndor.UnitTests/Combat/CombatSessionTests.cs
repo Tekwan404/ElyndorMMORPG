@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Combat;
 
@@ -16,6 +17,84 @@ public sealed class CombatSessionTests
     private static readonly Guid SessionId = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid PlayerId = Guid.Parse("20000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyId = Guid.Parse("30000000-0000-0000-0000-000000000001");
+
+    [Fact]
+    public void SnapshotKeepsPinnedContentIdentity()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 80,
+            contentVersion: "content-old",
+            balanceVersion: "balance-old");
+
+        CombatSessionSnapshot snapshot = session.Snapshot();
+
+        Assert.Equal("content-old", snapshot.ContentVersion);
+        Assert.Equal("balance-old", snapshot.BalanceVersion);
+    }
+
+    [Fact]
+    public async Task RegistryKeepsPinnedSnapshotForWholeSession()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            contentVersion: "content-old",
+            balanceVersion: "balance-old");
+        GameContentSnapshot pinned = GameContentSnapshot.Create(
+            new GameContentPackage(
+                "content-old",
+                "balance-old",
+                Now,
+                [],
+                []));
+
+        using CombatSessionRegistry registry = new(
+            new FrozenTimeProvider(Now),
+            new NullPublisher(),
+            new NullFinalizer());
+        Guid accountId = Guid.NewGuid();
+
+        Assert.True(registry.TryAdd(accountId, PlayerId, session, pinned));
+
+        GameContentSnapshot? observed = null;
+        CombatOperationResult result = await registry.ExecuteAsync(
+            accountId,
+            (active, contentSnapshot, now) =>
+            {
+                observed = contentSnapshot;
+                return active.Handle(
+                    new StopAutoAttackCommand("pin-check"),
+                    now);
+            },
+            CancellationToken.None);
+
+        Assert.Same(pinned, observed);
+        Assert.Same(pinned, result.ContentSnapshot);
+        Assert.Equal("content-old", result.Snapshot!.ContentVersion);
+        Assert.Equal("balance-old", result.Snapshot.BalanceVersion);
+    }
+
+    [Fact]
+    public void RegistryRejectsMismatchedPinnedSnapshot()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 80,
+            contentVersion: "content-old",
+            balanceVersion: "balance-old");
+        GameContentSnapshot wrong = GameContentSnapshot.Create(
+            new GameContentPackage(
+                "content-new",
+                "balance-new",
+                Now,
+                [],
+                []));
+        using CombatSessionRegistry registry = new(
+            new FrozenTimeProvider(Now),
+            new NullPublisher(),
+            new NullFinalizer());
+
+        Assert.Throws<InvalidOperationException>(() =>
+            registry.TryAdd(Guid.NewGuid(), PlayerId, session, wrong));
+    }
 
     [Fact]
     public void SameCommandsTimeAndRandomSequenceProduceSameFight()
@@ -125,7 +204,9 @@ public sealed class CombatSessionTests
         decimal enemyHp,
         ResolvedTalentModifiers? talents = null,
         decimal playerCriticalChance = 5,
-        TimeSpan? playerAutoAttackInterval = null)
+        TimeSpan? playerAutoAttackInterval = null,
+        string contentVersion = "UNVERSIONED",
+        string balanceVersion = "UNVERSIONED")
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -172,7 +253,8 @@ public sealed class CombatSessionTests
 
         return new CombatSession(
             SessionId, player, enemy, abilities, ai,
-            talents ?? ResolvedTalentModifiers.Empty, random, Now);
+            talents ?? ResolvedTalentModifiers.Empty, random, Now,
+            contentVersion, balanceVersion);
     }
 
     private static object EventSignature(CombatEvent item) => new
