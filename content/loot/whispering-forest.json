@@ -1,0 +1,97 @@
+{
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "lootTables": [
+    {
+      "id": "WHISPERING_FOREST_WOLF",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "WOLF_HIDE",
+          "dropChance": 1,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "WOLF_FANG",
+          "dropChance": 0.4,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_FANG_BLADE",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_TRAIL_LEGGINGS",
+          "dropChance": 0.08,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "WHISPERING_FOREST_BOAR",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "BOAR_HIDE",
+          "dropChance": 1,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "BOAR_TUSK",
+          "dropChance": 0.4,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_HIDE_VEST",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_TRAIL_BOOTS",
+          "dropChance": 0.08,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "WHISPERING_FOREST_SPIDER",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "SPIDER_SILK",
+          "dropChance": 1,
+          "minQuantity": 1,
+          "maxQuantity": 3
+        },
+        {
+          "itemId": "SPIDER_VENOM_SAC",
+          "dropChance": 0.35,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_SILK_HOOD",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RANGER_FANG_CHARM",
+          "dropChance": 0.08,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
@@ -67,8 +68,11 @@ onMounted(() => {
         <p class="brand">ELYNDOR</p>
         <p class="subtitle">MMORPG в Telegram</p>
       </div>
-      <div class="server-state" :data-state="session.state" aria-live="polite">
-        <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
+      <div class="game-shell__actions">
+        <RouterLink v-if="session.isAdmin" class="admin-link" to="/admin">Admin</RouterLink>
+        <div class="server-state" :data-state="session.state" aria-live="polite">
+          <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
+        </div>
       </div>
     </header>
 
@@ -130,6 +134,9 @@ onMounted(() => {
 .game-shell { display: grid; width: min(100%, var(--ui-content-width)); height: var(--ui-viewport-height); margin-inline: auto; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; border-inline: 1px solid var(--ui-color-border); background: var(--ui-color-background); color: var(--ui-color-text-primary); }
 .game-shell__header { display: flex; min-height: var(--ui-control-height-lg); align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: calc(var(--ui-space-3) + var(--ui-safe-area-top)) calc(var(--ui-space-4) + var(--ui-safe-area-right)) var(--ui-space-3) calc(var(--ui-space-4) + var(--ui-safe-area-left)); border-bottom: 1px solid var(--ui-color-border); background: var(--ui-color-surface-1); }
 .brand, .subtitle { margin: 0; }
+.game-shell__actions { display: flex; align-items: center; gap: var(--ui-space-3); }
+.admin-link { padding: var(--ui-space-1) var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); color: var(--ui-color-primary); font-size: var(--ui-font-size-xs); text-decoration: none; }
+.admin-link:hover { border-color: var(--ui-color-primary); }
 .brand { color: var(--ui-color-primary); font-family: var(--ui-font-display); font-weight: var(--ui-font-weight-bold); letter-spacing: var(--ui-space-1); }
 .subtitle { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); text-transform: uppercase; }
 .server-state { display: flex; align-items: center; gap: var(--ui-space-2); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }

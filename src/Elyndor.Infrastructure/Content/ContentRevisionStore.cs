@@ -134,6 +134,44 @@ public sealed class ContentRevisionStore(
             .ThenByDescending(release => release.Id)
             .FirstOrDefaultAsync(cancellationToken);
 
+    public Task<ContentRelease?> GetReleaseAsync(
+        Guid releaseId,
+        CancellationToken cancellationToken)
+    {
+        if (releaseId == Guid.Empty)
+            throw new ArgumentException("Release id cannot be empty.", nameof(releaseId));
+
+        return dbContext.ContentReleases
+            .AsNoTracking()
+            .SingleOrDefaultAsync(release => release.Id == releaseId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ContentRevision>> GetRecentRevisionsAsync(
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        int take = Math.Clamp(limit, 1, 100);
+        return await dbContext.ContentRevisions
+            .AsNoTracking()
+            .OrderByDescending(revision => revision.CreatedAtUtc)
+            .ThenByDescending(revision => revision.Id)
+            .Take(take)
+            .ToArrayAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ContentRelease>> GetRecentReleasesAsync(
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        int take = Math.Clamp(limit, 1, 100);
+        return await dbContext.ContentReleases
+            .AsNoTracking()
+            .OrderByDescending(release => release.PublishedAtUtc)
+            .ThenByDescending(release => release.Id)
+            .Take(take)
+            .ToArrayAsync(cancellationToken);
+    }
+
     private static void ValidateJson(string payloadJson)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadJson);

@@ -11,8 +11,12 @@ public sealed class TelegramAdminOptions
     public long[] AllowedUserIds { get; init; } = [];
 
     public bool IsConfigured =>
-        !Enabled
-        || (WebhookSecret.Length >= 32
-            && AllowedUserIds.Length > 0
-            && AllowedUserIds.All(id => id > 0));
+        AllowedUserIds.All(id => id > 0)
+        && (!Enabled
+            || (WebhookSecret.Length >= 32
+                && AllowedUserIds.Length > 0));
+
+    public bool IsAllowedUser(long telegramUserId) =>
+        telegramUserId > 0
+        && AllowedUserIds.Contains(telegramUserId);
 }

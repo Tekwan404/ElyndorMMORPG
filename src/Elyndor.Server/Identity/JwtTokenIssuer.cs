@@ -20,12 +20,14 @@ public sealed class JwtTokenIssuer(
     private readonly TimeProvider _timeProvider =
         timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
-    public IssuedAccessToken Issue(Guid accountId)
+    public IssuedAccessToken Issue(
+        Guid accountId,
+        long telegramUserId,
+        IReadOnlyCollection<string>? roles = null)
     {
         if (accountId == Guid.Empty)
-        {
             throw new ArgumentException("Account ID cannot be empty.", nameof(accountId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(telegramUserId);
 
         DateTimeOffset issuedAtUtc = _timeProvider.GetUtcNow();
         DateTimeOffset expiresAtUtc = issuedAtUtc.AddMinutes(
@@ -35,13 +37,27 @@ public sealed class JwtTokenIssuer(
         SigningCredentials credentials = new(
             securityKey,
             SecurityAlgorithms.HmacSha256);
+
+        List<Claim> claims =
+        [
+            new(JwtRegisteredClaimNames.Sub, accountId.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
+            new(
+                AuthenticationClaimTypes.TelegramUserId,
+                telegramUserId.ToString(
+                    global::System.Globalization.CultureInfo.InvariantCulture))
+        ];
+
+        foreach (string role in roles ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+                claims.Add(new Claim(AuthenticationClaimTypes.Role, role.Trim()));
+        }
+
         JwtSecurityToken token = new(
             _authenticationOptions.Issuer,
             _authenticationOptions.Audience,
-            [
-                new Claim(JwtRegisteredClaimNames.Sub, accountId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
-            ],
+            claims,
             issuedAtUtc.UtcDateTime,
             expiresAtUtc.UtcDateTime,
             credentials);

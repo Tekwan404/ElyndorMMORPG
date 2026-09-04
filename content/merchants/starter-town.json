@@ -1,0 +1,16 @@
+{
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "merchants": [
+    {
+      "id": "MARCUS_SUPPLIES",
+      "name": "Торговец Маркус",
+      "locationId": "STARTER_TOWN",
+      "description": "Маркус снабжает начинающих искателей приключений лечебными припасами.",
+      "itemIds": [
+        "SMALL_HEALING_POTION"
+      ]
+    }
+  ]
+}

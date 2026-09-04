@@ -22,6 +22,8 @@ internal static class CategoryContentComposer
         "loot",
         "merchants",
         "monsters",
+        "progression",
+        "resources",
         "sets",
         "talents"
     ];

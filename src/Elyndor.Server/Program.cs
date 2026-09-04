@@ -99,13 +99,21 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(options.SigningKey)),
                 ValidateLifetime = true,
+                RoleClaimType = AuthenticationClaimTypes.Role,
                 ClockSkew = TimeSpan.FromSeconds(
                     AuthenticationOptions.TokenValidationClockSkewSeconds),
                 LifetimeValidator = (notBefore, expires, _, parameters) =>
                     ValidateTokenLifetime(notBefore, expires, timeProvider, parameters.ClockSkew)
             };
         });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        AdminAuthorization.PolicyName,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireRole(AdminAuthorization.SuperAdminRole));
+});
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublisher>();
 
@@ -173,6 +181,7 @@ app.MapWorldEndpoints();
 app.MapTalentEndpoints();
 app.MapInventoryEndpoints();
 app.MapTelegramAdminEndpoints();
+app.MapContentAdminEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 
 app.MapGet(
