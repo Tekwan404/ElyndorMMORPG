@@ -32,14 +32,16 @@ public sealed class CharacterOperationGuardTests
         FakeCombatActivityReader combat = new();
         CharacterOperationGuard guard = new(combat);
         Guid accountId = Guid.CreateVersion7();
-        TaskCompletionSource entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<bool> entered =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<bool> release =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         Task<string> start = guard.ExecuteExclusiveAsync(
             accountId,
             async () =>
             {
-                entered.SetResult();
+                entered.SetResult(true);
                 await release.Task;
                 combat.Active = true;
                 return "combat-started";
@@ -55,7 +57,7 @@ public sealed class CharacterOperationGuardTests
             CancellationToken.None);
 
         Assert.False(worldMutation.IsCompleted);
-        release.SetResult();
+        release.SetResult(true);
 
         Assert.Equal("combat-started", await start);
         Assert.Equal("blocked", await worldMutation);

@@ -63,6 +63,6 @@ public sealed class CharacterOperationGuard(ICombatActivityReader combatActivity
     private SemaphoreSlim GetGate(Guid accountId)
     {
         uint hash = unchecked((uint)accountId.GetHashCode());
-        return _gates[hash % StripeCount];
+        return _gates[(int)(hash % StripeCount)];
     }
 }

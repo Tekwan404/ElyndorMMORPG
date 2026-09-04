@@ -39,12 +39,14 @@ public sealed class CharacterDerivedStateService(
         ArgumentException.ThrowIfNullOrWhiteSpace(classId);
         ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
 
-        ClassProfile classProfile = (content.ClassProfiles
-            ?? throw new InvalidOperationException("Class profiles are required."))
-            .Single(profile => string.Equals(profile.Id, classId, StringComparison.Ordinal));
-        ResourceProfile baseResourceProfile = (content.ResourceProfiles
-            ?? throw new InvalidOperationException("Resource profiles are required."))
-            .Single(profile => string.Equals(
+        IReadOnlyList<ClassProfile> classProfiles = content.ClassProfiles
+            ?? throw new InvalidOperationException("Class profiles are required.");
+        IReadOnlyList<ResourceProfile> resourceProfiles = content.ResourceProfiles
+            ?? throw new InvalidOperationException("Resource profiles are required.");
+        ClassProfile classProfile = classProfiles.Single(profile =>
+            string.Equals(profile.Id, classId, StringComparison.Ordinal));
+        ResourceProfile baseResourceProfile = resourceProfiles.Single(profile =>
+            string.Equals(
                 profile.Id,
                 classProfile.ResourceProfileId,
                 StringComparison.Ordinal));
@@ -85,7 +87,7 @@ public sealed class CharacterDerivedStateService(
         CharacterStatCalculation statCalculation = new CharacterStatCalculator(
             content.StatFormula
                 ?? throw new InvalidOperationException("Stat formula content is required."),
-            content.ClassProfiles).CalculateDetailed(
+            classProfiles).CalculateDetailed(
                 classId,
                 level,
                 CharacterStatInputs.Empty with

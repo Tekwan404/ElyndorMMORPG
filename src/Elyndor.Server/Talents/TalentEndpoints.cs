@@ -24,7 +24,6 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
-        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         return TryGetAccountId(user, out Guid accountId)
@@ -88,6 +87,7 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
+        CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
