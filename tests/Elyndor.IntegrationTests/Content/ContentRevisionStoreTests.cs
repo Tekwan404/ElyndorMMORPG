@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
@@ -37,7 +39,9 @@ public sealed class ContentRevisionStoreTests(PostgresFixture postgres) : IAsync
 
         Assert.Equal(revision.Id, persisted.Id);
         Assert.Equal(payload, persisted.PayloadJson);
-        Assert.Equal(64, persisted.PayloadSha256.Length);
+        Assert.Equal(
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))),
+            persisted.PayloadSha256);
         Assert.Equal(package.PublishedAtUtc, persisted.SourcePublishedAtUtc);
         Assert.Equal("integration-test", persisted.CreatedBy);
         Assert.Equal(ContentAuditActions.RevisionCreated, audit.Action);
