@@ -18,10 +18,6 @@ public static class GameContentPackageLoader
                     path,
                     cancellationToken);
 
-            package = await LegacyContentOverlayComposer.ComposeAsync(
-                path,
-                package,
-                cancellationToken);
             package = await CategoryContentComposer.ComposeAsync(
                 path,
                 package,
