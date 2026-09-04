@@ -53,7 +53,7 @@ public sealed class GameContentIndexes
         return Cache.GetValue(package, static value => new GameContentIndexes(value));
     }
 
-    private static IReadOnlyDictionary<string, T> ToDictionary<T>(
+    private static Dictionary<string, T> ToDictionary<T>(
         IReadOnlyList<T>? source,
         Func<T, string> keySelector) =>
         (source ?? []).ToDictionary(keySelector, StringComparer.Ordinal);
