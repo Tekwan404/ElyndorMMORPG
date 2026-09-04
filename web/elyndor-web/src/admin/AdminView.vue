@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import AdminEntityForm from '@/admin/AdminEntityForm.vue'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type {
   ContentAdminCurrent,
@@ -36,6 +37,7 @@ const draftJson = ref('')
 const selectedSection = ref<(typeof sections)[number]['key']>('monsters')
 const selectedEntityId = ref<string | null>(null)
 const entityJson = ref('')
+const editorMode = ref<'form' | 'json'>('form')
 const note = ref('')
 const validation = ref<ContentAdminValidation | null>(null)
 const busyAction = ref<string | null>(null)
@@ -48,6 +50,10 @@ const entityList = computed<JsonRecord[]>(() => {
   const value = draftPackage.value?.[selectedSection.value]
   return Array.isArray(value) ? value.filter(isRecord) : []
 })
+const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
+const hasStructuredEditor = computed(() =>
+  ['monsters', 'abilities', 'items'].includes(selectedSection.value),
+)
 const isDirty = computed(() => {
   if (!current.value) return false
   return draftJson.value !== prettyJson(current.value.payloadJson)
@@ -65,7 +71,24 @@ function entityId(entity: JsonRecord): string {
 function selectEntity(entity: JsonRecord): void {
   selectedEntityId.value = entityId(entity)
   entityJson.value = JSON.stringify(entity, null, 2)
+  editorMode.value = ['monsters', 'abilities', 'items'].includes(selectedSection.value)
+    ? 'form'
+    : 'json'
   validation.value = null
+}
+
+function changeSection(): void {
+  selectedEntityId.value = null
+  entityJson.value = ''
+  editorMode.value = ['monsters', 'abilities', 'items'].includes(selectedSection.value)
+    ? 'form'
+    : 'json'
+}
+
+function updateEntityFromForm(entity: JsonRecord): void {
+  entityJson.value = JSON.stringify(entity, null, 2)
+  validation.value = null
+  statusMessage.value = ''
 }
 
 function applyEntity(): void {
@@ -387,7 +410,7 @@ onMounted(async () => {
         <aside class="catalog">
           <label>
             <span>Категория</span>
-            <select v-model="selectedSection" @change="selectedEntityId = null; entityJson = ''">
+            <select v-model="selectedSection" @change="changeSection">
               <option v-for="section in sections" :key="section.key" :value="section.key">
                 {{ section.label }}
               </option>
@@ -414,15 +437,40 @@ onMounted(async () => {
               <small>ENTITY EDITOR</small>
               <h2>{{ selectedEntityId ?? 'Выбери сущность' }}</h2>
             </div>
-            <button
-              type="button"
-              :disabled="!selectedEntityId"
-              @click="applyEntity"
-            >
-              Apply to draft
-            </button>
+            <div class="editor__actions">
+              <div v-if="selectedEntityId && hasStructuredEditor" class="editor-mode" aria-label="Режим редактора">
+                <button
+                  type="button"
+                  :class="{ active: editorMode === 'form' }"
+                  @click="editorMode = 'form'"
+                >
+                  Form
+                </button>
+                <button
+                  type="button"
+                  :class="{ active: editorMode === 'json' }"
+                  @click="editorMode = 'json'"
+                >
+                  JSON
+                </button>
+              </div>
+              <button
+                type="button"
+                :disabled="!selectedEntityId"
+                @click="applyEntity"
+              >
+                Apply to draft
+              </button>
+            </div>
           </div>
+          <AdminEntityForm
+            v-if="selectedEntityId && selectedEntity && hasStructuredEditor && editorMode === 'form'"
+            :section-key="selectedSection"
+            :entity="selectedEntity"
+            @update:entity="updateEntityFromForm"
+          />
           <textarea
+            v-else
             v-model="entityJson"
             class="code-editor code-editor--entity"
             spellcheck="false"
@@ -539,6 +587,10 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
 .entity-list button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); }
 .editor { min-width: 0; padding: var(--ui-space-3); }
 .editor__header { margin-bottom: var(--ui-space-2); }
+.editor__actions { display: flex; align-items: center; gap: var(--ui-space-2); }
+.editor-mode { display: flex; gap: var(--ui-space-1); }
+.editor-mode button { min-height: 2.25rem; padding: var(--ui-space-1) var(--ui-space-2); }
+.editor-mode button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); background: var(--ui-color-surface-2); }
 .code-editor { width: 100%; resize: vertical; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: #090b12; color: #d9e0ff; font: .78rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
 .code-editor--entity { min-height: 24rem; }
 .code-editor--package { min-height: 36rem; margin-top: var(--ui-space-2); }
