@@ -84,7 +84,7 @@ public static class ContentPackageParityVerifier
 public sealed class ContentPackageParityException(
     string sourceSha256,
     string roundTripSha256)
-    : InvalidDataException(
+    : Exception(
         $"Content package parity failed. Source SHA-256: {sourceSha256}; round-trip SHA-256: {roundTripSha256}.")
 {
     public string SourceSha256 { get; } = sourceSha256;
