@@ -114,12 +114,22 @@ public sealed class TalentService(
         if (tree is null) return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
         CharacterTalentState? state = await dbContext.CharacterTalentStates.SingleOrDefaultAsync(
             candidate => candidate.CharacterId == character.Id, cancellationToken);
+        bool changed = false;
         if (state is null)
         {
             state = new CharacterTalentState(character.Id, tree.Id, tree.Version, timeProvider.GetUtcNow());
             dbContext.CharacterTalentStates.Add(state);
-            if (saveCreated) await dbContext.SaveChangesAsync(cancellationToken);
+            changed = true;
         }
+        else if (!string.Equals(state.TalentTreeId, tree.Id, StringComparison.Ordinal))
+        {
+            state.Reinitialize(tree.Id, tree.Version, timeProvider.GetUtcNow());
+            changed = true;
+        }
+
+        if (changed && saveCreated)
+            await dbContext.SaveChangesAsync(cancellationToken);
+
         return TalentOperationResult.Success(ToSnapshot(character, tree, state));
     }
 

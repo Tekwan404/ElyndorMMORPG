@@ -51,4 +51,26 @@ public sealed class CharacterTalentStateTests
         Assert.False(state.HasProcessedMutation("another-mutation"));
         Assert.Equal(2, state.StateVersion);
     }
+    [Fact]
+    public void ReinitializeClearsOldClassRanksAndMutationIdentity()
+    {
+        DateTimeOffset now = new(2026, 9, 4, 9, 45, 0, TimeSpan.Zero);
+        CharacterTalentState state = new(Guid.NewGuid(), "WARRIOR_TREE", 1, now);
+        state.ReplaceRanks(
+            TalentLoadoutIds.Loadout1,
+            new Dictionary<string, int> { ["B-1-1"] = 1 },
+            now,
+            "old-mutation");
+
+        state.Reinitialize("MAGE_TREE", 2, now.AddSeconds(1));
+
+        Assert.Equal("MAGE_TREE", state.TalentTreeId);
+        Assert.Equal(2, state.TalentVersion);
+        Assert.Equal(TalentLoadoutIds.Loadout1, state.ActiveLoadoutId);
+        Assert.Empty(state.GetRanks(TalentLoadoutIds.Loadout1));
+        Assert.Empty(state.GetRanks(TalentLoadoutIds.Loadout2));
+        Assert.False(state.HasProcessedMutation("old-mutation"));
+        Assert.Equal(3, state.StateVersion);
+    }
+
 }

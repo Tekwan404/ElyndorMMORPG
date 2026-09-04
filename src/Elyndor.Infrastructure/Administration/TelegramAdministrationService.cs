@@ -2,8 +2,11 @@ using Elyndor.Core.Administration;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Items;
+using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -44,6 +47,7 @@ public sealed class TelegramAdministrationService(
     GameDbContext dbContext,
     TimeProvider timeProvider,
     GameContentPackage content,
+    CharacterDerivedStateService derivedStateService,
     ITelegramMessageSender? messageSender = null)
 {
     public Task<AdministrationResult> ExecuteAsync(
@@ -171,9 +175,14 @@ public sealed class TelegramAdministrationService(
                     $"{character.Name} | {character.RaceId} {character.ClassId} | ур. {character.Level} | "
                     + $"HP {vitals.CurrentHp:0.##} | ресурс {vitals.CurrentResource:0.##} | {location.LocationId}");
             case AdministrationOperationType.SetLevel:
-                return SetLevel(character, vitals, operation.NumericValue!.Value, now);
+                return await SetLevelAsync(
+                    character,
+                    vitals,
+                    operation.NumericValue!.Value,
+                    now,
+                    cancellationToken);
             case AdministrationOperationType.Restore:
-                return Restore(character, vitals, now);
+                return await RestoreAsync(character, vitals, now, cancellationToken);
             case AdministrationOperationType.SetLocation:
                 if (!content.Locations.Any(candidate => candidate.Id == operation.Value))
                 {
@@ -185,7 +194,12 @@ public sealed class TelegramAdministrationService(
             case AdministrationOperationType.Rename:
                 return Rename(character, operation.Value!);
             case AdministrationOperationType.SetClass:
-                return SetClass(character, vitals, operation.Value!, now);
+                return await SetClassAsync(
+                    character,
+                    vitals,
+                    operation.Value!,
+                    now,
+                    cancellationToken);
             case AdministrationOperationType.SetRace:
                 if (!HasDefinition("RACE", operation.Value!))
                 {
@@ -207,28 +221,52 @@ public sealed class TelegramAdministrationService(
         }
     }
 
-    private AdministrationResult SetLevel(
+    private async Task<AdministrationResult> SetLevelAsync(
         Character character,
         CharacterVitals vitals,
         int level,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
     {
-        CharacterStats oldStats = StatCalculator().Calculate(character.ClassId, character.Level);
-        decimal oldResourceMax = GetResourceMax(character.ClassId);
+        CharacterDerivedState oldState = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
+
         character.SetLevel(level);
-        CharacterStats newStats = StatCalculator().Calculate(character.ClassId, character.Level);
-        decimal newResourceMax = GetResourceMax(character.ClassId);
+        await NormalizeTalentsForLevelAsync(character, now, cancellationToken);
+
+        CharacterDerivedState newState = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
         vitals.Checkpoint(
-            Scale(vitals.CurrentHp, oldStats.MaxHp, newStats.MaxHp),
-            Scale(vitals.CurrentResource, oldResourceMax, newResourceMax),
+            Scale(vitals.CurrentHp, oldState.Stats.MaxHp, newState.Stats.MaxHp),
+            Scale(
+                vitals.CurrentResource,
+                oldState.EffectiveResourceProfile.MaxValue,
+                newState.EffectiveResourceProfile.MaxValue),
             now);
         return Success("admin_level_updated", $"{character.Name}: уровень → {level}.");
     }
 
-    private AdministrationResult Restore(Character character, CharacterVitals vitals, DateTimeOffset now)
+    private async Task<AdministrationResult> RestoreAsync(
+        Character character,
+        CharacterVitals vitals,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
     {
-        CharacterStats stats = StatCalculator().Calculate(character.ClassId, character.Level);
-        vitals.Checkpoint(stats.MaxHp, GetResourceMax(character.ClassId), now);
+        CharacterDerivedState state = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
+        vitals.Checkpoint(
+            state.Stats.MaxHp,
+            state.EffectiveResourceProfile.MaxValue,
+            now);
         return Success("admin_character_restored", $"{character.Name}: HP и ресурс восстановлены.");
     }
 
@@ -244,11 +282,12 @@ public sealed class TelegramAdministrationService(
         return Success("admin_name_updated", $"Персонаж переименован в {name.DisplayName}.");
     }
 
-    private AdministrationResult SetClass(
+    private async Task<AdministrationResult> SetClassAsync(
         Character character,
         CharacterVitals vitals,
         string classId,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
     {
         if (!HasDefinition("CLASS", classId)
             || content.ClassProfiles?.Any(profile => profile.Id == classId) != true)
@@ -256,15 +295,94 @@ public sealed class TelegramAdministrationService(
             return Failure("admin_class_invalid", "Класс отсутствует в content package.");
         }
 
-        CharacterStats oldStats = StatCalculator().Calculate(character.ClassId, character.Level);
-        decimal oldResourceMax = GetResourceMax(character.ClassId);
+        if (string.Equals(character.ClassId, classId, StringComparison.Ordinal))
+            return Success("admin_class_updated", $"{character.Name}: класс уже {classId}.");
+
+        CharacterDerivedState oldState = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
+
         character.ChangeClass(classId);
-        CharacterStats newStats = StatCalculator().Calculate(character.ClassId, character.Level);
+
+        CharacterEquipment[] equipped = await dbContext.CharacterEquipment
+            .Where(candidate => candidate.CharacterId == character.Id)
+            .ToArrayAsync(cancellationToken);
+        dbContext.CharacterEquipment.RemoveRange(equipped);
+
+        CharacterTalentState? talentState = await dbContext.CharacterTalentStates
+            .SingleOrDefaultAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+        TalentTreeDefinition? newTree = content.TalentTrees?.SingleOrDefault(tree =>
+            string.Equals(tree.ClassId, classId, StringComparison.Ordinal));
+        if (newTree is null)
+        {
+            if (talentState is not null)
+                dbContext.CharacterTalentStates.Remove(talentState);
+        }
+        else if (talentState is null)
+        {
+            dbContext.CharacterTalentStates.Add(new CharacterTalentState(
+                character.Id,
+                newTree.Id,
+                newTree.Version,
+                now));
+        }
+        else
+        {
+            talentState.Reinitialize(newTree.Id, newTree.Version, now);
+        }
+
+        // Persist the new class/equipment/talent shape inside the enclosing admin transaction
+        // before resolving the new authoritative state.
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        CharacterDerivedState newState = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
         vitals.Checkpoint(
-            Scale(vitals.CurrentHp, oldStats.MaxHp, newStats.MaxHp),
-            Scale(vitals.CurrentResource, oldResourceMax, GetResourceMax(character.ClassId)),
+            Scale(vitals.CurrentHp, oldState.Stats.MaxHp, newState.Stats.MaxHp),
+            Scale(
+                vitals.CurrentResource,
+                oldState.EffectiveResourceProfile.MaxValue,
+                newState.EffectiveResourceProfile.MaxValue),
             now);
-        return Success("admin_class_updated", $"{character.Name}: класс → {classId}.");
+
+        return Success(
+            "admin_class_updated",
+            $"{character.Name}: класс → {classId}; экипировка снята, таланты сброшены.");
+    }
+
+    private async Task NormalizeTalentsForLevelAsync(
+        Character character,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        TalentTreeDefinition? tree = content.TalentTrees?.SingleOrDefault(candidate =>
+            string.Equals(candidate.ClassId, character.ClassId, StringComparison.Ordinal));
+        if (tree is null) return;
+
+        CharacterTalentState? state = await dbContext.CharacterTalentStates
+            .SingleOrDefaultAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+        if (state is null) return;
+
+        if (!string.Equals(state.TalentTreeId, tree.Id, StringComparison.Ordinal))
+        {
+            state.Reinitialize(tree.Id, tree.Version, now);
+            return;
+        }
+
+        foreach (string loadoutId in new[] { TalentLoadoutIds.Loadout1, TalentLoadoutIds.Loadout2 })
+        {
+            if (TalentRules.ValidateBuild(tree, character.Level, state.GetRanks(loadoutId)).Count > 0)
+                state.Reset(loadoutId, now);
+        }
     }
 
     private async Task<AdministrationResult> DeliverMessageAsync(
@@ -312,14 +430,6 @@ public sealed class TelegramAdministrationService(
         dbContext.AdminCommandAudits.Add(audit);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Failure(code, message);
-    }
-
-    private CharacterStatCalculator StatCalculator() => new(content.StatFormula!, content.ClassProfiles!);
-
-    private decimal GetResourceMax(string classId)
-    {
-        ClassProfile profile = content.ClassProfiles!.Single(candidate => candidate.Id == classId);
-        return content.ResourceProfiles!.Single(candidate => candidate.Id == profile.ResourceProfileId).MaxValue;
     }
 
     private bool HasDefinition(string type, string id) => content.Definitions.Any(

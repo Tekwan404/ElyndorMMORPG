@@ -82,6 +82,25 @@ public sealed class CharacterTalentState
         string? mutationId = null) =>
         ReplaceRanks(loadoutId, new Dictionary<string, int>(), changedAtUtc, mutationId);
 
+    public void Reinitialize(
+        string talentTreeId,
+        int talentVersion,
+        DateTimeOffset changedAtUtc)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(talentTreeId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(talentVersion);
+        EnsureUtc(changedAtUtc);
+
+        TalentTreeId = talentTreeId;
+        ActiveLoadoutId = TalentLoadoutIds.Loadout1;
+        Loadout1RanksJson = "{}";
+        Loadout2RanksJson = "{}";
+        TalentVersion = talentVersion;
+        StateVersion++;
+        LastChangedAtUtc = changedAtUtc;
+        LastMutationId = null;
+    }
+
     public bool HasProcessedMutation(string mutationId) =>
         !string.IsNullOrWhiteSpace(mutationId)
         && string.Equals(LastMutationId, mutationId, StringComparison.Ordinal);

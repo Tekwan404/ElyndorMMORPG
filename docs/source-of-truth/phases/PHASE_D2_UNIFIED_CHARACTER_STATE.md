@@ -41,6 +41,21 @@ so equipment/talent changes feed the same formula.
 Defeat now uses the effective derived resource profile, therefore a level-60 Mage respawns at the
 scaled Mana maximum instead of the raw base profile value.
 
-Administration and operation-state guarding are the next D2 block.
+## Administration lifecycle
+
+Telegram admin operations now use the same derived state:
+
+- `/level` scales HP/resource between old and new authoritative maxima;
+- `/restore` restores the effective maximum resource, including Mana scaling;
+- `/class` removes incompatible equipped state, resets/reinitializes the talent tree and then
+  resolves the new class from the same pipeline.
+
+Lowering a level also validates both talent loadouts and resets a loadout if the persisted build is
+no longer legal for the new level.
+
+`TalentService` self-heals legacy class/tree mismatches by reinitializing the persisted talent
+state to the current class tree.
+
+Character operation-state guarding is the next D2 block.
 
 Do not report automated verification as green until CI or a local test run executes this branch.
