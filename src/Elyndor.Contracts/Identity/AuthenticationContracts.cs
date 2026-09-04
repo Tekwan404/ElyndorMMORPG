@@ -4,7 +4,8 @@ public sealed record TelegramAuthenticationRequest(string InitData);
 
 public sealed record AuthenticationResponse(
     string AccessToken,
-    DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset ExpiresAtUtc,
+    IReadOnlyList<string> Roles);
 
 public sealed record ApiErrorResponse(
     string Code,
