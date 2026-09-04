@@ -237,6 +237,11 @@ public sealed class TelegramAdministrationService(
         character.SetLevel(level);
         await NormalizeTalentsForLevelAsync(character, now, cancellationToken);
 
+        // ResolveAsync intentionally reads persisted talent/inventory state using no-tracking
+        // queries, so persist the level/talent normalization inside the current admin
+        // transaction before resolving the new authoritative state.
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         CharacterDerivedState newState = await derivedStateService.ResolveAsync(
             character.Id,
             character.ClassId,

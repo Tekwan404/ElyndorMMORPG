@@ -98,3 +98,10 @@ StartingMana = 155
 ```
 
 The old private stat/resource calculator path was removed from `CharacterCreationService`.
+
+
+## Respawn regression coverage
+
+PostgreSQL integration coverage now includes a level-60 Mage defeat from Whispering Forest.
+The finalizer must relocate the character to `STARTER_TOWN`, restore positive authoritative HP
+and set current Mana to the derived respawn maximum of `1040`.
