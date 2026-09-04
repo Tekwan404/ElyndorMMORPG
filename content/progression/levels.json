@@ -1,0 +1,11 @@
+{
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "levelProgression": {
+    "id": "DEFAULT_LEVELING",
+    "maxLevel": 60,
+    "baseXpToNext": 100,
+    "growthFactor": 1.5
+  }
+}
