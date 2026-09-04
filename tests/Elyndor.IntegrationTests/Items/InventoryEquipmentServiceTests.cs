@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
@@ -154,7 +155,90 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.Equal(2, await verify.CharacterMutations.CountAsync());
     }
 
-    private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(decimal currentHp)
+    [Fact]
+    public async Task MageCannotEquipOneHandSword()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "MAGE");
+        Guid itemId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.WeaponCategoryRestricted, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterEquipment.Where(e => e.CharacterId == characterId).ToArrayAsync());
+        Assert.Equal(0, await verify.CharacterMutations.CountAsync());
+    }
+
+    [Fact]
+    public async Task MageCannotEquipMediumArmor()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "MAGE");
+        Guid itemId = await AddItemAsync(characterId, "RANGER_HIDE_VEST", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ArmorCategoryRestricted, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterEquipment.Where(e => e.CharacterId == characterId).ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task ExplicitAllowedClassRestrictionIsEnforced()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
+        Guid itemId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        content = content with
+        {
+            Items = content.Items!.Select(item =>
+                item.Id == "RANGER_FANG_BLADE"
+                    ? item with { AllowedClassIds = ["ARCHER"] }
+                    : item).ToArray()
+        };
+        InventoryEquipmentService service =
+            new(context, content, new FixedTimeProvider(Now));
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ClassRestricted, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task ArcherCanEquipAllowedWeaponAndArmorCategories()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "ARCHER");
+        Guid weaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        Guid chestId = await AddItemAsync(characterId, "RANGER_HIDE_VEST", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId, weaponId, Guid.CreateVersion7(), CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EquipAsync(
+            accountId, chestId, Guid.CreateVersion7(), CancellationToken.None)).IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(2, await verify.CharacterEquipment.CountAsync(e => e.CharacterId == characterId));
+    }
+
+    private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
+        decimal currentHp,
+        string classId = "WARRIOR")
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -163,7 +247,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
         context.Characters.Add(new Character(
             characterId, accountId, Guid.CreateVersion7(), "Inventory", $"INV{characterId:N}"[..16],
-            "HUMAN", "MALE", "WARRIOR", Now));
+            "HUMAN", "MALE", classId, Now));
         context.CharacterVitals.Add(new CharacterVitals(
             characterId, currentHp, 0, Now, Now));
         await context.SaveChangesAsync();

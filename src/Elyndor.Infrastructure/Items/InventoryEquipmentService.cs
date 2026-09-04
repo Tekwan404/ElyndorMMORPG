@@ -20,6 +20,9 @@ public static class InventoryErrorCodes
     public const string ConsumableNotNeeded = "inventory_consumable_not_needed";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
+    public const string ClassRestricted = "inventory_class_restricted";
+    public const string WeaponCategoryRestricted = "inventory_weapon_category_restricted";
+    public const string ArmorCategoryRestricted = "inventory_armor_category_restricted";
     public const string InvalidMutationId = "inventory_mutation_id_invalid";
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
@@ -138,6 +141,38 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSlot);
                 if (character.Level < definition.RequiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
+
+                ClassProfile classProfile = (content.ClassProfiles ?? [])
+                    .SingleOrDefault(profile => string.Equals(
+                        profile.Id,
+                        character.ClassId,
+                        StringComparison.Ordinal))
+                    ?? throw new InvalidOperationException(
+                        $"Class profile '{character.ClassId}' is missing from game content.");
+
+                if (definition.AllowedClassIds is { Count: > 0 }
+                    && !definition.AllowedClassIds.Contains(character.ClassId, StringComparer.Ordinal))
+                {
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.ClassRestricted);
+                }
+
+                if (definition.WeaponCategory is not null
+                    && !classProfile.AllowedWeaponCategories.Contains(
+                        definition.WeaponCategory,
+                        StringComparer.Ordinal))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.WeaponCategoryRestricted);
+                }
+
+                if (definition.ArmorCategory is not null
+                    && !classProfile.AllowedArmorCategories.Contains(
+                        definition.ArmorCategory,
+                        StringComparer.Ordinal))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ArmorCategoryRestricted);
+                }
 
                 CharacterEquipment? equipped = await dbContext.CharacterEquipment
                     .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id

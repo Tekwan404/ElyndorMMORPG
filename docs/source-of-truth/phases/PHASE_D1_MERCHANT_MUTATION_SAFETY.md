@@ -47,3 +47,33 @@ consumption cannot race on one character's item stacks.
 Integration coverage includes duplicate consumable replay, cross-operation mutation conflicts,
 two concurrent uses from one stack, two requests racing for the final consumable, and concurrent
 writes to one equipment slot.
+
+
+## Equipment class restrictions
+
+Equipment definitions now carry optional class restrictions plus typed category ids:
+
+```text
+WeaponCategory
+ArmorCategory
+AllowedClassIds
+```
+
+Server equip validation applies, in order:
+
+```text
+ownership
+→ equipment type / slot
+→ required level
+→ explicit AllowedClassIds
+→ class AllowedWeaponCategories
+→ class AllowedArmorCategories
+→ equip
+```
+
+Weapon and armor category vocabularies are game rules in C#; concrete item category assignments live
+in content. Current Ranger weapons are `ONE_HAND_SWORD` and Ranger armor pieces are `MEDIUM`.
+Accessories remain category-neutral unless an explicit class restriction is added.
+
+Content validation rejects unknown categories, invalid slot/category shapes, duplicate class
+restrictions and references to classes that do not exist.

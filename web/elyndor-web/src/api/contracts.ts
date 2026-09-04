@@ -81,6 +81,9 @@ export interface InventoryItem {
   stats: ItemStats
   description: string
   setId: string | null
+  weaponCategory: string | null
+  armorCategory: string | null
+  allowedClassIds: string[]
   weaponBaseAttackIntervalSeconds: number | null
   attackSpeedPercent: number
   dodgePercent: number

@@ -83,6 +83,9 @@ public static class GameContentPackageValidator
 
         IReadOnlyList<ItemDefinition> items = package.Items ?? [];
         Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
+        HashSet<string> itemClassIds = (package.ClassProfiles ?? [])
+            .Select(profile => profile.Id)
+            .ToHashSet(StringComparer.Ordinal);
         for (var index = 0; index < items.Count; index++)
         {
             ItemDefinition item = items[index];
@@ -92,6 +95,25 @@ public static class GameContentPackageValidator
             if (!itemsById.TryAdd(item.Id, item))
             {
                 errors.Add(new("DUPLICATE_ITEM_ID", path, $"Item '{item.Id}' is duplicated."));
+            }
+
+            IReadOnlyList<string> allowedClassIds = item.AllowedClassIds ?? [];
+            if (allowedClassIds.Count != allowedClassIds.Distinct(StringComparer.Ordinal).Count()
+                || allowedClassIds.Any(classId => !itemClassIds.Contains(classId)))
+            {
+                errors.Add(new("INVALID_ITEM_CLASS_RESTRICTION", path,
+                    $"Item '{item.Id}' contains an invalid or unknown class restriction."));
+            }
+
+            bool invalidEquipmentCategory = item.Type == ItemType.Equipment
+                ? !HasValidEquipmentCategoryShape(item)
+                : item.WeaponCategory is not null
+                    || item.ArmorCategory is not null
+                    || allowedClassIds.Count > 0;
+            if (invalidEquipmentCategory)
+            {
+                errors.Add(new("INVALID_ITEM_EQUIPMENT_CATEGORY", path,
+                    $"Item '{item.Id}' contains an invalid equipment category shape."));
             }
 
             bool negativeStats = item.Stats.Strength < 0
@@ -173,6 +195,20 @@ public static class GameContentPackageValidator
             }
         }
     }
+
+    private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>
+        item.Slot switch
+        {
+            EquipmentSlot.Weapon =>
+                EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
+                && item.ArmorCategory is null,
+            EquipmentSlot.Head or EquipmentSlot.Chest or EquipmentSlot.Legs or EquipmentSlot.Boots =>
+                EquipmentCategoryIds.IsArmor(item.ArmorCategory)
+                && item.WeaponCategory is null,
+            EquipmentSlot.Accessory =>
+                item.WeaponCategory is null && item.ArmorCategory is null,
+            _ => false
+        };
 
     private static void ValidateTalentDefinitions(
         IReadOnlyList<TalentTreeDefinition> trees,
@@ -548,6 +584,24 @@ public static class GameContentPackageValidator
                     "INVALID_CLASS_STATS",
                     path,
                     $"Class profile '{profile.Id}' contains negative stats."));
+            }
+
+            bool invalidWeaponCategories = profile.AllowedWeaponCategories.Count == 0
+                || profile.AllowedWeaponCategories.Distinct(StringComparer.Ordinal).Count()
+                    != profile.AllowedWeaponCategories.Count
+                || profile.AllowedWeaponCategories.Any(category =>
+                    !EquipmentCategoryIds.IsWeapon(category));
+            bool invalidArmorCategories = profile.AllowedArmorCategories.Count == 0
+                || profile.AllowedArmorCategories.Distinct(StringComparer.Ordinal).Count()
+                    != profile.AllowedArmorCategories.Count
+                || profile.AllowedArmorCategories.Any(category =>
+                    !EquipmentCategoryIds.IsArmor(category));
+            if (invalidWeaponCategories || invalidArmorCategories)
+            {
+                errors.Add(new ContentValidationError(
+                    "INVALID_CLASS_EQUIPMENT_CATEGORIES",
+                    path,
+                    $"Class profile '{profile.Id}' contains invalid equipment categories."));
             }
 
             if (profile.CombatAutoAttack is { } autoAttack
