@@ -35,6 +35,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();
         builder.Services.AddScoped<ContentPublicationService>();
+        builder.Services.AddScoped<ContentAdministrationService>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();
