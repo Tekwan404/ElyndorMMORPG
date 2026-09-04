@@ -44,8 +44,8 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Герой' }).click()
   await expect(page.getByRole('heading', { name: 'Arthas' })).toBeVisible()
   await page.getByRole('button', { name: 'Инвентарь' }).click()
-  await expect(page.getByRole('heading', { name: 'Инвентарь' })).toBeVisible()
-  await expect(page.getByText('Сумка пуста')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Рюкзак' })).toBeVisible()
+  await expect(page.getByText('Рюкзак пуст')).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
