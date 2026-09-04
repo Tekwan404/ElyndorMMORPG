@@ -122,6 +122,9 @@ function snapshot(
       knownAbilities: [
         {
           id: 'STRIKE',
+          displayName: 'Strike',
+          description: 'A basic melee strike.',
+          iconId: null,
           resourceCost: 0,
           cooldownSeconds: 0,
           type: 'Instant',
@@ -216,7 +219,7 @@ function combatActor(
   maxHp: number,
   resource: number,
   maxResource: number,
-) {
+): CombatActorSnapshot {
   return {
     actorId: crypto.randomUUID(),
     kind,
@@ -230,7 +233,19 @@ function combatActor(
     autoAttackEnabled: false,
     cooldowns: {},
     knownAbilityIds: kind === 'Player' ? ['STRIKE'] : [],
-    abilities: kind === 'Player' ? [{ id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 }] : [],
+    abilities:
+      kind === 'Player'
+        ? [
+            {
+              id: 'STRIKE',
+              displayName: 'Strike',
+              description: 'A basic melee strike.',
+              iconId: null,
+              resourceCost: 0,
+              cooldownSeconds: 0,
+            },
+          ]
+        : [],
     effects: [],
   }
 }
