@@ -89,6 +89,13 @@ public static class ContentAdminEndpoints
                 },
                 statusCode: StatusCodes.Status422UnprocessableEntity);
         }
+        catch (ArgumentException)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "content_request_invalid");
+        }
     }
 
     private static async Task<IResult> GetHistoryAsync(
@@ -139,6 +146,13 @@ public static class ContentAdminEndpoints
                 StatusCodes.Status422UnprocessableEntity,
                 "content_revision_invalid");
         }
+        catch (ArgumentException)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "content_request_invalid");
+        }
     }
 
     private static async Task<IResult> RollbackAsync(
@@ -176,6 +190,13 @@ public static class ContentAdminEndpoints
                 context,
                 StatusCodes.Status422UnprocessableEntity,
                 "content_revision_invalid");
+        }
+        catch (ArgumentException)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "content_request_invalid");
         }
     }
 
