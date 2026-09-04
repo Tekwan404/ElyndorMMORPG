@@ -17,6 +17,7 @@ public static class ContentAdminEndpoints
         group.MapGet("/current", GetCurrent);
         group.MapPost("/validate", Validate);
         group.MapPost("/revisions", CreateRevisionAsync);
+        group.MapGet("/revisions/{revisionId:guid}", GetRevisionAsync);
         group.MapGet("/history", GetHistoryAsync);
         group.MapPost("/revisions/{revisionId:guid}/publish", PublishAsync);
         group.MapPost("/releases/{releaseId:guid}/rollback", RollbackAsync);
@@ -88,6 +89,32 @@ public static class ContentAdminEndpoints
                     })
                 },
                 statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+        catch (ArgumentException)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "content_request_invalid");
+        }
+    }
+
+    private static async Task<IResult> GetRevisionAsync(
+        Guid revisionId,
+        HttpContext context,
+        ContentAdministrationService service,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            ContentRevision? revision =
+                await service.GetRevisionAsync(revisionId, cancellationToken);
+            return revision is null
+                ? Problem(
+                    context,
+                    StatusCodes.Status404NotFound,
+                    "content_revision_not_found")
+                : Results.Ok(ToRevisionDetailResponse(revision));
         }
         catch (ArgumentException)
         {
@@ -224,6 +251,19 @@ public static class ContentAdminEndpoints
             revision.CreatedAtUtc,
             revision.CreatedBy,
             revision.Note);
+
+    private static ContentAdminRevisionDetailResponse ToRevisionDetailResponse(
+        ContentRevision revision) =>
+        new(
+            revision.Id,
+            revision.ContentVersion,
+            revision.BalanceVersion,
+            revision.SourcePublishedAtUtc,
+            revision.PayloadSha256,
+            revision.CreatedAtUtc,
+            revision.CreatedBy,
+            revision.Note,
+            revision.PayloadJson);
 
     private static ContentAdminReleaseResponse ToReleaseResponse(
         ContentRelease release) =>

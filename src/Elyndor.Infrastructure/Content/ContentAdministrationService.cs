@@ -156,6 +156,16 @@ public sealed class ContentAdministrationService(
         }
     }
 
+    public Task<ContentRevision?> GetRevisionAsync(
+        Guid revisionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (revisionId == Guid.Empty)
+            throw new ArgumentException("Revision id cannot be empty.", nameof(revisionId));
+
+        return revisionStore.GetRevisionAsync(revisionId, cancellationToken);
+    }
+
     public Task<ContentPublicationResult?> PublishAsync(
         Guid revisionId,
         string expectedLivePayloadSha256,

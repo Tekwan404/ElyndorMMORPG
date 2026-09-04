@@ -91,6 +91,14 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
             (await draftResponse.Content
                 .ReadFromJsonAsync<ContentAdminRevisionResponse>())!;
 
+        ContentAdminRevisionDetailResponse revisionDetail =
+            (await client.GetFromJsonAsync<ContentAdminRevisionDetailResponse>(
+                $"/api/v1/admin/content/revisions/{revision.Id}"))!;
+        Assert.Equal(revision.Id, revisionDetail.Id);
+        Assert.Equal(revision.PayloadSha256, revisionDetail.PayloadSha256);
+        JsonObject revisionPayload = JsonNode.Parse(revisionDetail.PayloadJson)!.AsObject();
+        Assert.Equal("0.9.97", revisionPayload["balanceVersion"]!.GetValue<string>());
+
         HttpResponseMessage publishResponse = await client.PostAsJsonAsync(
             $"/api/v1/admin/content/revisions/{revision.Id}/publish",
             new ContentAdminPublishRequest(
