@@ -7,6 +7,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -46,10 +47,25 @@ public interface ITelegramMessageSender
 public sealed class TelegramAdministrationService(
     GameDbContext dbContext,
     TimeProvider timeProvider,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
     ITelegramMessageSender? messageSender = null)
 {
+    public TelegramAdministrationService(
+        GameDbContext dbContext,
+        TimeProvider timeProvider,
+        GameContentPackage content,
+        CharacterDerivedStateService derivedStateService,
+        ITelegramMessageSender? messageSender = null)
+        : this(
+            dbContext,
+            timeProvider,
+            new StaticContentSnapshotProvider(content),
+            derivedStateService,
+            messageSender)
+    {
+    }
+
     public Task<AdministrationResult> ExecuteAsync(
         long updateId,
         long administratorTelegramUserId,
@@ -184,7 +200,7 @@ public sealed class TelegramAdministrationService(
             case AdministrationOperationType.Restore:
                 return await RestoreAsync(character, vitals, now, cancellationToken);
             case AdministrationOperationType.SetLocation:
-                if (!content.Locations.Any(candidate => candidate.Id == operation.Value))
+                if (!contentProvider.GetCurrent().Indexes.LocationsById.ContainsKey(operation.Value!))
                 {
                     return Failure("admin_location_invalid", "Локация отсутствует в content package.");
                 }
@@ -295,7 +311,7 @@ public sealed class TelegramAdministrationService(
         CancellationToken cancellationToken)
     {
         if (!HasDefinition("CLASS", classId)
-            || content.ClassProfiles?.Any(profile => profile.Id == classId) != true)
+            || !contentProvider.GetCurrent().Indexes.ClassesById.ContainsKey(classId))
         {
             return Failure("admin_class_invalid", "Класс отсутствует в content package.");
         }
@@ -320,8 +336,8 @@ public sealed class TelegramAdministrationService(
             .SingleOrDefaultAsync(
                 candidate => candidate.CharacterId == character.Id,
                 cancellationToken);
-        TalentTreeDefinition? newTree = content.TalentTrees?.SingleOrDefault(tree =>
-            string.Equals(tree.ClassId, classId, StringComparison.Ordinal));
+        TalentTreeDefinition? newTree = contentProvider.GetCurrent().Indexes.TalentTreesByClassId
+            .GetValueOrDefault(classId);
         if (newTree is null)
         {
             if (talentState is not null)
@@ -367,8 +383,8 @@ public sealed class TelegramAdministrationService(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        TalentTreeDefinition? tree = content.TalentTrees?.SingleOrDefault(candidate =>
-            string.Equals(candidate.ClassId, character.ClassId, StringComparison.Ordinal));
+        TalentTreeDefinition? tree = contentProvider.GetCurrent().Indexes.TalentTreesByClassId
+            .GetValueOrDefault(character.ClassId);
         if (tree is null) return;
 
         CharacterTalentState? state = await dbContext.CharacterTalentStates
@@ -437,8 +453,9 @@ public sealed class TelegramAdministrationService(
         return Failure(code, message);
     }
 
-    private bool HasDefinition(string type, string id) => content.Definitions.Any(
-        definition => definition.Type == type && definition.Id == id);
+    private bool HasDefinition(string type, string id) =>
+        contentProvider.GetCurrent().Indexes.DefinitionsByKey.ContainsKey(
+            new GameContentDefinitionKey(type, id));
 
     private static AdministrationResult Success(string code, string message) => new(true, code, message);
 
