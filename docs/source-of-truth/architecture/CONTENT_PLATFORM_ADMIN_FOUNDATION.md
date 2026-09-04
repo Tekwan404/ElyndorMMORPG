@@ -62,6 +62,7 @@ The supported content lifecycle endpoints are:
 GET  /api/v1/admin/content/current
 POST /api/v1/admin/content/validate
 POST /api/v1/admin/content/revisions
+GET  /api/v1/admin/content/revisions/{revisionId}
 GET  /api/v1/admin/content/history
 POST /api/v1/admin/content/revisions/{revisionId}/publish
 POST /api/v1/admin/content/releases/{releaseId}/rollback
@@ -75,10 +76,12 @@ There is deliberately no endpoint that mutates live content directly.
 
 - live content/balance identity and payload hash;
 - structured form editing for common Monster, Ability, and Item balance fields;
+- creation of new Monster and Item entities inside the local draft, including a dedicated basic AI profile for new monsters;
 - category/entity JSON editing for advanced or not-yet-structured fields;
 - full-package JSON fallback;
 - server validation errors;
 - immutable draft creation;
+- read-only revision detail and an entity-aware diff against current LIVE before publish confirmation;
 - revision publishing;
 - release history and confirmed rollback.
 

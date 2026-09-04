@@ -64,6 +64,33 @@ describe('AdminEntityForm', () => {
     expect(next.actions[0]?.spellPowerCoefficient).toBeUndefined()
   })
 
+  it('normalizes item shape when changing a material into equipment', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'items',
+        entity: {
+          id: 'OLD_RING',
+          type: 'Material',
+          stackable: true,
+          maxStack: 99,
+          slot: null,
+          stats: { strength: 0, agility: 0, intellect: 0, stamina: 0 },
+          healAmount: 0,
+          consumableCooldownSeconds: 0,
+        },
+      },
+    })
+
+    await wrapper.get('[data-testid="item-type"]').setValue('Equipment')
+    const emitted = wrapper.emitted('update:entity') ?? []
+    const next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+
+    expect(next.type).toBe('Equipment')
+    expect(next.stackable).toBe(false)
+    expect(next.maxStack).toBe(1)
+    expect(next.slot).toBe('Accessory')
+  })
+
   it('updates nested item stats', async () => {
     const wrapper = mount(AdminEntityForm, {
       props: {

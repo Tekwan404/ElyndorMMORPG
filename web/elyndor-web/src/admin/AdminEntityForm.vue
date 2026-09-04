@@ -89,6 +89,46 @@ function setBoolean(path: JsonPath, event: Event): void {
   update(path, (event.target as HTMLInputElement).checked)
 }
 
+function setItemType(event: Event): void {
+  const type = (event.target as HTMLSelectElement).value
+  const next = cloneJsonValue(props.entity) as JsonRecord
+  next.type = type
+
+  if (type === 'Equipment') {
+    next.stackable = false
+    next.maxStack = 1
+    if (typeof next.slot !== 'string') next.slot = 'Accessory'
+    next.healAmount = 0
+    next.consumableCooldownSeconds = 0
+  } else {
+    next.stackable = true
+    next.slot = null
+    next.weaponCategory = null
+    next.armorCategory = null
+    next.allowedClassIds = []
+    next.setId = null
+    next.weaponBaseAttackIntervalSeconds = null
+    next.attackSpeedPercent = 0
+    next.dodgePercent = 0
+    next.stats = { strength: 0, agility: 0, intellect: 0, stamina: 0 }
+
+    if (type === 'Consumable') {
+      next.maxStack = typeof next.maxStack === 'number' && next.maxStack >= 2 ? next.maxStack : 20
+      next.healAmount = typeof next.healAmount === 'number' && next.healAmount > 0 ? next.healAmount : 50
+      next.consumableCooldownSeconds =
+        typeof next.consumableCooldownSeconds === 'number' && next.consumableCooldownSeconds > 0
+          ? next.consumableCooldownSeconds
+          : 30
+    } else {
+      next.maxStack = typeof next.maxStack === 'number' && next.maxStack >= 2 ? next.maxStack : 99
+      next.healAmount = 0
+      next.consumableCooldownSeconds = 0
+    }
+  }
+
+  emit('update:entity', next)
+}
+
 function cloneJsonValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(cloneJsonValue)
@@ -215,7 +255,7 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>Название</span><input :value="text(['name'])" @input="setString(['name'], $event)" /></label>
       <label>
         <span>Тип</span>
-        <select :value="text(['type'])" @change="setString(['type'], $event)">
+        <select data-testid="item-type" :value="text(['type'])" @change="setItemType">
           <option value="Equipment">Equipment</option>
           <option value="Material">Material</option>
           <option value="Consumable">Consumable</option>

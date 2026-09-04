@@ -45,6 +45,17 @@ public sealed record ContentAdminRevisionResponse(
     string CreatedBy,
     string? Note);
 
+public sealed record ContentAdminRevisionDetailResponse(
+    Guid Id,
+    string ContentVersion,
+    string BalanceVersion,
+    DateTimeOffset SourcePublishedAtUtc,
+    string PayloadSha256,
+    DateTimeOffset CreatedAtUtc,
+    string CreatedBy,
+    string? Note,
+    string PayloadJson);
+
 public sealed record ContentAdminReleaseResponse(
     Guid Id,
     Guid RevisionId,
