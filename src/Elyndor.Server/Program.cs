@@ -46,8 +46,11 @@ builder.AddElyndorInfrastructure();
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
+MutableContentSnapshotProvider contentSnapshotProvider =
+    new(gameContentPackage);
+builder.Services.AddSingleton(contentSnapshotProvider);
 builder.Services.AddSingleton<IContentSnapshotProvider>(
-    new StaticContentSnapshotProvider(gameContentPackage));
+    services => services.GetRequiredService<MutableContentSnapshotProvider>());
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
@@ -108,11 +111,29 @@ builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublish
 
 WebApplication app = builder.Build();
 
-if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+bool migrateOnStartup =
+    app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+bool restorePublishedOnStartup =
+    app.Configuration.GetValue<bool?>("Content:RestorePublishedOnStartup")
+    ?? migrateOnStartup;
+
+if (migrateOnStartup || restorePublishedOnStartup)
 {
-    await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-    await dbContext.Database.MigrateAsync();
+    await using AsyncServiceScope startupScope = app.Services.CreateAsyncScope();
+
+    if (migrateOnStartup)
+    {
+        GameDbContext dbContext =
+            startupScope.ServiceProvider.GetRequiredService<GameDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+
+    if (restorePublishedOnStartup)
+    {
+        ContentPublicationService contentPublication =
+            startupScope.ServiceProvider.GetRequiredService<ContentPublicationService>();
+        await contentPublication.RestoreLatestReleaseAsync();
+    }
 }
 
 if (frontendFileProvider is not null)
