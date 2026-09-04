@@ -14,7 +14,7 @@ describe('CharacterStatsView', () => {
 
     const wrapper = mount(CharacterStatsView, { attachTo: document.body })
 
-    expect(wrapper.get('[data-stat="agility"]').text()).toContain('основной')
+    expect(wrapper.get('[data-stat="agility"]').text()).toContain('Основная характеристика класса')
     expect(wrapper.get('[data-stat="agility"]').text()).toContain('9')
 
     await wrapper.get('[data-stat="agility"]').trigger('click')

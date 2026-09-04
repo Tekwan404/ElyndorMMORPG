@@ -82,7 +82,7 @@ describe('WarriorTalentTreeView', () => {
     const learnButton = document.body.querySelector<HTMLButtonElement>('[data-learn-talent]')
     expect(learnButton).not.toBeNull()
     expect(learnButton?.disabled).toBe(true)
-    expect(document.body.textContent).toContain('Нет очков')
+    expect(document.body.textContent).toContain('Нет свободных очков талантов')
 
     learnButton?.click()
     await flushPromises()
