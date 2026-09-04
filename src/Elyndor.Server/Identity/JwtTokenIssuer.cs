@@ -27,8 +27,7 @@ public sealed class JwtTokenIssuer(
     {
         if (accountId == Guid.Empty)
             throw new ArgumentException("Account ID cannot be empty.", nameof(accountId));
-        if (telegramUserId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(telegramUserId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(telegramUserId);
 
         DateTimeOffset issuedAtUtc = _timeProvider.GetUtcNow();
         DateTimeOffset expiresAtUtc = issuedAtUtc.AddMinutes(
