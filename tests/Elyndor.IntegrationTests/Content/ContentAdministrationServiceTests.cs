@@ -24,14 +24,8 @@ public sealed class ContentAdministrationServiceTests(PostgresFixture postgres)
         MutableContentSnapshotProvider provider = new(initial);
 
         await using GameDbContext context = postgres.CreateDbContext();
-        ContentRevisionStore store = new(context, new FixedTimeProvider(Now));
-        ContentPublicationService publication = new(
-            store,
-            new ContentRevisionImporter(store),
-            provider,
-            new ContentPublicationCoordinator());
         ContentAdministrationService service =
-            new(store, publication, provider);
+            CreateService(context, provider);
 
         ContentAdminRuntimeState original = service.GetCurrent();
 
@@ -110,15 +104,8 @@ public sealed class ContentAdministrationServiceTests(PostgresFixture postgres)
         MutableContentSnapshotProvider provider = new(initial);
 
         await using GameDbContext context = postgres.CreateDbContext();
-        ContentRevisionStore store = new(context, new FixedTimeProvider(Now));
-        ContentAdministrationService service = new(
-            store,
-            new ContentPublicationService(
-                store,
-                new ContentRevisionImporter(store),
-                provider,
-                new ContentPublicationCoordinator()),
-            provider);
+        ContentAdministrationService service =
+            CreateService(context, provider);
 
         ContentAdminRuntimeState current = service.GetCurrent();
         string payload = GameContentPackageCodec.SerializeCanonical(
@@ -139,16 +126,8 @@ public sealed class ContentAdministrationServiceTests(PostgresFixture postgres)
         MutableContentSnapshotProvider provider =
             new(new GameContentPackage("1.0.0", "1.0.0", Now, [], []));
         using GameDbContext context = postgres.CreateDbContext();
-        ContentRevisionStore store =
-            new(context, new FixedTimeProvider(Now));
-        ContentAdministrationService service = new(
-            store,
-            new ContentPublicationService(
-                store,
-                new ContentRevisionImporter(store),
-                provider,
-                new ContentPublicationCoordinator()),
-            provider);
+        ContentAdministrationService service =
+            CreateService(context, provider);
 
         ContentDraftValidationResult result =
             ContentAdministrationService.ValidateDraft("{not-json");
@@ -157,6 +136,25 @@ public sealed class ContentAdministrationServiceTests(PostgresFixture postgres)
         Assert.Contains(
             result.Errors,
             error => error.Code == "CONTENT_JSON_INVALID");
+    }
+
+    private static ContentAdministrationService CreateService(
+        GameDbContext context,
+        MutableContentSnapshotProvider provider)
+    {
+        ContentRevisionStore store =
+            new(context, new FixedTimeProvider(Now));
+        ContentPublicationCoordinator coordinator = new();
+        ContentPublicationService publication = new(
+            store,
+            new ContentRevisionImporter(store),
+            provider,
+            coordinator);
+        return new ContentAdministrationService(
+            store,
+            publication,
+            provider,
+            coordinator);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
