@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { BootstrapSnapshot, CombatSnapshot, WorldEncounter } from '@/api/contracts'
+import type { BootstrapSnapshot, CombatActorSnapshot, CombatSnapshot, WorldEncounter } from '@/api/contracts'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
