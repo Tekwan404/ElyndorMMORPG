@@ -156,6 +156,68 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task EquipAndUnequipRescaleMageManaThroughDerivedState()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition staff = new(
+            "TEST_MAGE_LIFECYCLE_STAFF",
+            "Test Mage Lifecycle Staff",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.Weapon,
+            new PrimaryStats(0, 0, 10, 0),
+            "D2 equipment lifecycle integration test staff.",
+            WeaponCategory: EquipmentCategoryIds.Staff,
+            AllowedClassIds: ["MAGE"]);
+        content = content with
+        {
+            Items = (content.Items ?? []).Concat([staff]).ToArray()
+        };
+
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "MAGE",
+            currentResource: 520,
+            level: 60);
+        Guid itemId = await AddItemAsync(characterId, staff.Id, 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = new(context, content, new FixedTimeProvider(Now));
+
+        InventoryOperationResult equip = await service.EquipAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(equip.IsSuccess);
+        await using (GameDbContext verifyEquip = postgres.CreateDbContext())
+        {
+            Assert.Equal(545, await verifyEquip.CharacterVitals
+                .Where(vitals => vitals.CharacterId == characterId)
+                .Select(vitals => vitals.CurrentResource)
+                .SingleAsync());
+        }
+
+        InventoryOperationResult unequip = await service.UnequipAsync(
+            accountId,
+            EquipmentSlot.Weapon,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(unequip.IsSuccess);
+        await using GameDbContext verifyUnequip = postgres.CreateDbContext();
+        Assert.Equal(520, await verifyUnequip.CharacterVitals
+            .Where(vitals => vitals.CharacterId == characterId)
+            .Select(vitals => vitals.CurrentResource)
+            .SingleAsync());
+    }
+
+    [Fact]
     public async Task MageCannotEquipOneHandSword()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "MAGE");
@@ -238,18 +300,22 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
         decimal currentHp,
-        string classId = "WARRIOR")
+        string classId = "WARRIOR",
+        decimal currentResource = 0,
+        int level = 1)
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
         await using GameDbContext context = postgres.CreateDbContext();
 
         context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
-        context.Characters.Add(new Character(
+        Character character = new(
             characterId, accountId, Guid.CreateVersion7(), "Inventory", $"INV{characterId:N}"[..16],
-            "HUMAN", "MALE", classId, Now));
+            "HUMAN", "MALE", classId, Now);
+        character.SetLevel(level);
+        context.Characters.Add(character);
         context.CharacterVitals.Add(new CharacterVitals(
-            characterId, currentHp, 0, Now, Now));
+            characterId, currentHp, currentResource, Now, Now));
         await context.SaveChangesAsync();
         return (accountId, characterId);
     }

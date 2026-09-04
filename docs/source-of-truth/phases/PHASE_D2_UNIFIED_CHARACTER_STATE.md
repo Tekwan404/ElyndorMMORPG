@@ -105,3 +105,28 @@ The old private stat/resource calculator path was removed from `CharacterCreatio
 PostgreSQL integration coverage now includes a level-60 Mage defeat from Whispering Forest.
 The finalizer must relocate the character to `STARTER_TOWN`, restore positive authoritative HP
 and set current Mana to the derived respawn maximum of `1040`.
+
+
+## Equipment and talent mutation lifecycle
+
+Equipment and talent mutations now close the remaining derived-vitals lifecycle gap.
+
+For equip / unequip and talent learn / switch / reset, the server:
+
+```text
+resolve old CharacterDerivedState
+→ apply mutation
+→ persist inside the same transaction
+→ resolve new CharacterDerivedState
+→ proportionally scale current HP/resource
+→ commit
+```
+
+The scaling policy is shared with Telegram administration through `CharacterVitalsScaler`, so
+level, class, equipment and talent transitions no longer carry separate implementations.
+
+PostgreSQL integration coverage verifies:
+
+- level-60 Mage Mana scaling on equip and unequip;
+- MaxResource talent learn and reset;
+- switching to a loadout with a MaxResource talent.

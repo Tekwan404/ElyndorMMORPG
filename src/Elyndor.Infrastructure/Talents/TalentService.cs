@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -25,6 +26,7 @@ public sealed class TalentService(
     GameContentPackage content,
     TimeProvider timeProvider)
 {
+    private readonly CharacterDerivedStateService derivedStateService = new(dbContext, content);
     public Task<TalentOperationResult> GetAsync(Guid accountId, CancellationToken cancellationToken) =>
         ExecuteAsync(() => GetOrCreateCoreAsync(accountId, cancellationToken));
 
@@ -42,8 +44,18 @@ public sealed class TalentService(
         IReadOnlyDictionary<string, int> ranks = snapshot.State.GetRanks(loadoutId);
         TalentLearnResult learned = TalentRules.TryLearn(snapshot.Tree, snapshot.Character.Level, ranks, talentId);
         if (!learned.IsSuccess) return TalentOperationResult.Failure(learned.ErrorCode!);
-        snapshot.State.ReplaceRanks(loadoutId, learned.SelectedRanks, timeProvider.GetUtcNow(), mutationId);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        CharacterDerivedState oldDerivedState = await derivedStateService.ResolveAsync(
+            snapshot.Character.Id,
+            snapshot.Character.ClassId,
+            snapshot.Character.Level,
+            cancellationToken);
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        snapshot.State.ReplaceRanks(loadoutId, learned.SelectedRanks, now, mutationId);
+        await SaveWithDerivedVitalsAsync(
+            snapshot.Character,
+            oldDerivedState,
+            now,
+            cancellationToken);
         return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
     });
 
@@ -61,8 +73,18 @@ public sealed class TalentService(
             if (snapshot.State.StateVersion != expectedStateVersion) return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
             if (TalentRules.ValidateBuild(snapshot.Tree, snapshot.Character.Level, snapshot.State.GetRanks(loadoutId)).Count > 0)
                 return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
-            snapshot.State.SwitchLoadout(loadoutId, timeProvider.GetUtcNow(), mutationId);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            CharacterDerivedState oldDerivedState = await derivedStateService.ResolveAsync(
+                snapshot.Character.Id,
+                snapshot.Character.ClassId,
+                snapshot.Character.Level,
+                cancellationToken);
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            snapshot.State.SwitchLoadout(loadoutId, now, mutationId);
+            await SaveWithDerivedVitalsAsync(
+                snapshot.Character,
+                oldDerivedState,
+                now,
+                cancellationToken);
             return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
         });
 
@@ -78,10 +100,48 @@ public sealed class TalentService(
             if (!TalentLoadoutIds.IsValid(loadoutId)) return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
             if (snapshot.State.HasProcessedMutation(mutationId)) return TalentOperationResult.Success(snapshot);
             if (snapshot.State.StateVersion != expectedStateVersion) return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
-            snapshot.State.Reset(loadoutId, timeProvider.GetUtcNow(), mutationId);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            CharacterDerivedState oldDerivedState = await derivedStateService.ResolveAsync(
+                snapshot.Character.Id,
+                snapshot.Character.ClassId,
+                snapshot.Character.Level,
+                cancellationToken);
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            snapshot.State.Reset(loadoutId, now, mutationId);
+            await SaveWithDerivedVitalsAsync(
+                snapshot.Character,
+                oldDerivedState,
+                now,
+                cancellationToken);
             return TalentOperationResult.Success(ToSnapshot(snapshot.Character, snapshot.Tree, snapshot.State));
         });
+
+    private async Task SaveWithDerivedVitalsAsync(
+        Character character,
+        CharacterDerivedState oldDerivedState,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        // Persist the talent mutation inside the current transaction before resolving the
+        // new authoritative derived state. A failure later still rolls the whole transaction back.
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        CharacterDerivedState newDerivedState = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            cancellationToken);
+        CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
+            candidate => candidate.CharacterId == character.Id,
+            cancellationToken);
+        CharacterVitalsScaler.ScaleToDerivedMaximums(
+            vitals,
+            oldDerivedState.Stats.MaxHp,
+            newDerivedState.Stats.MaxHp,
+            oldDerivedState.EffectiveResourceProfile.MaxValue,
+            newDerivedState.EffectiveResourceProfile.MaxValue,
+            now);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 
     private Task<TalentOperationResult> ExecuteAsync(Func<Task<TalentOperationResult>> operation)
     {
