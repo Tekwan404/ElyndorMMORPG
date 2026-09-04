@@ -1,6 +1,7 @@
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
@@ -90,6 +91,21 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
             result => result.ErrorCode == CharacterCreationErrorCodes.AlreadyExists);
     }
 
+    [Fact]
+    public async Task MageStartsWithIntellectScaledMana()
+    {
+        Guid accountId = await CreateAccountAsync(550);
+
+        CharacterCreationResult result = await CreateAsync(
+            accountId,
+            CreateCommand(Guid.CreateVersion7(), "Jaina", classId: "MAGE"));
+
+        Assert.True(result.IsSuccess);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterVitals vitals = await context.CharacterVitals.AsNoTracking().SingleAsync();
+        Assert.Equal(155, vitals.CurrentResource);
+    }
+
     [Theory]
     [InlineData("ORC", "MALE", "WARRIOR")]
     [InlineData("HUMAN", "UNKNOWN", "WARRIOR")]
@@ -130,10 +146,15 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
         CreateCharacterCommand command)
     {
         await using GameDbContext context = postgres.CreateDbContext();
+        GameContentPackage content = CreateContentPackage();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, content, timeProvider);
+        CharacterDerivedStateService derived = new(context, content, inventory);
         CharacterCreationService service = new(
             context,
-            new FixedTimeProvider(Now),
-            CreateContentPackage());
+            timeProvider,
+            content,
+            derived);
         return await service.CreateAsync(accountId, command, CancellationToken.None);
     }
 
@@ -157,7 +178,10 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
                 new GameContentDefinition("CLASS", "ARCHER", []),
                 new GameContentDefinition("CLASS", "MAGE", [])
             ],
-            []);
+            []) with
+        {
+            ResourceScaling = new ResourceScalingProfile(100, 5)
+        };
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

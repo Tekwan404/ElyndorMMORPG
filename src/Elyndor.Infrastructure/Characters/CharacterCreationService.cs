@@ -39,7 +39,8 @@ public static class CharacterCreationErrorCodes
 public sealed class CharacterCreationService(
     GameDbContext dbContext,
     TimeProvider timeProvider,
-    GameContentPackage contentPackage)
+    GameContentPackage contentPackage,
+    CharacterDerivedStateService derivedStateService)
 {
     private const string AccountConstraint = "uq_characters_account_id";
     private const string CreationRequestConstraint = "uq_characters_creation_request_id";
@@ -52,6 +53,8 @@ public sealed class CharacterCreationService(
         timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     private readonly GameContentPackage _contentPackage =
         contentPackage ?? throw new ArgumentNullException(nameof(contentPackage));
+    private readonly CharacterDerivedStateService _derivedStateService =
+        derivedStateService ?? throw new ArgumentNullException(nameof(derivedStateService));
 
     public async Task<CharacterCreationResult> CreateAsync(
         Guid accountId,
@@ -140,15 +143,15 @@ public sealed class CharacterCreationService(
             command.ClassId,
             now);
         CharacterLocation location = new(character.Id, InitialLocationId, 1, now);
-        CharacterStats stats = CreateCalculator().Calculate(command.ClassId, character.Level);
-        ResourceProfile resource = CharacterResourceProfileResolver.Resolve(
-            GetResourceProfile(command.ClassId),
-            _contentPackage.ResourceScaling,
-            stats);
+        CharacterDerivedState derived = await _derivedStateService.ResolveAsync(
+            character.Id,
+            command.ClassId,
+            character.Level,
+            cancellationToken);
         CharacterVitals vitals = new(
             character.Id,
-            stats.MaxHp,
-            resource.StartValue,
+            derived.Stats.MaxHp,
+            derived.EffectiveResourceProfile.StartValue,
             now,
             now);
         _dbContext.Characters.Add(character);
@@ -207,26 +210,6 @@ public sealed class CharacterCreationService(
         _contentPackage.Definitions.Any(
             definition => string.Equals(definition.Type, type, StringComparison.Ordinal)
                 && string.Equals(definition.Id, id, StringComparison.Ordinal));
-
-    private CharacterStatCalculator CreateCalculator() =>
-        new(
-            _contentPackage.StatFormula
-                ?? throw new InvalidOperationException("Stat formula content is required."),
-            _contentPackage.ClassProfiles
-                ?? throw new InvalidOperationException("Class profiles are required."));
-
-    private ResourceProfile GetResourceProfile(string classId)
-    {
-        ClassProfile profile = (_contentPackage.ClassProfiles
-            ?? throw new InvalidOperationException("Class profiles are required."))
-            .Single(candidate => string.Equals(candidate.Id, classId, StringComparison.Ordinal));
-        return (_contentPackage.ResourceProfiles
-            ?? throw new InvalidOperationException("Resource profiles are required."))
-            .Single(candidate => string.Equals(
-                candidate.Id,
-                profile.ResourceProfileId,
-                StringComparison.Ordinal));
-    }
 
     private static bool Matches(
         Character character,

@@ -36,7 +36,8 @@ so equipment/talent changes feed the same formula.
 - Bootstrap;
 - CombatSessionFactory;
 - CombatRewardService level-up recalculation;
-- CombatSessionFinalizer defeat/respawn.
+- CombatSessionFinalizer defeat/respawn;
+- CharacterCreationService.
 
 Defeat now uses the effective derived resource profile, therefore a level-60 Mage respawns at the
 scaled Mana maximum instead of the raw base profile value.
@@ -83,3 +84,17 @@ world/inventory mutation and combat start could both pass independent prechecks.
 Read-only Bootstrap, inventory, merchant and talent reads remain available during combat.
 
 Do not report automated verification as green until CI or a local test run executes this branch.
+
+
+## Creation path
+
+New-character HP and starting resource now come from `CharacterDerivedStateService` as well.
+A level-1 Mage therefore starts from the same formula used by Bootstrap/Combat/Admin:
+
+```text
+Intellect = 11
+MaxMana = 100 + 11 × 5 = 155
+StartingMana = 155
+```
+
+The old private stat/resource calculator path was removed from `CharacterCreationService`.
