@@ -4,6 +4,7 @@ using System.Text;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -59,6 +60,7 @@ public sealed class InventoryEquipmentService(
     private const string EquipOperation = "INVENTORY_EQUIP";
     private const string UnequipOperation = "INVENTORY_UNEQUIP";
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
+    private readonly CharacterDerivedStateService derivedStateService = new(dbContext, content);
 
     public async Task<InventoryOperationResult> GetAsync(
         Guid accountId,
@@ -73,47 +75,10 @@ public sealed class InventoryEquipmentService(
                 await GetForCharacterAsync(character.Id, cancellationToken));
     }
 
-    public async Task<InventorySnapshot> GetForCharacterAsync(
+    public Task<InventorySnapshot> GetForCharacterAsync(
         Guid characterId,
-        CancellationToken cancellationToken)
-    {
-        CharacterItem[] items = await dbContext.CharacterItems
-            .AsNoTracking()
-            .Where(item => item.CharacterId == characterId)
-            .OrderByDescending(item => item.AcquiredAtUtc)
-            .ThenBy(item => item.Id)
-            .ToArrayAsync(cancellationToken);
-        CharacterEquipment[] equipment = await dbContext.CharacterEquipment
-            .AsNoTracking()
-            .Where(item => item.CharacterId == characterId)
-            .ToArrayAsync(cancellationToken);
-        Dictionary<Guid, EquipmentSlot> equippedSlots = equipment
-            .ToDictionary(item => item.CharacterItemId, item => item.Slot);
-        Dictionary<string, ItemDefinition> definitions = RequiredDefinitions();
-
-        InventoryItemSnapshot[] snapshots = items.Select(item =>
-        {
-            if (!definitions.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
-            {
-                throw new InvalidOperationException(
-                    $"Inventory item '{item.ItemDefinitionId}' is missing from game content.");
-            }
-
-            EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
-                ? slot
-                : null;
-            return new InventoryItemSnapshot(
-                item.Id,
-                definition,
-                item.Quantity,
-                item.AcquiredAtUtc,
-                equippedSlot);
-        }).ToArray();
-        Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots
-            .Where(item => item.EquippedSlot.HasValue)
-            .ToDictionary(item => item.EquippedSlot!.Value);
-        return new InventorySnapshot(snapshots, equipped);
-    }
+        CancellationToken cancellationToken) =>
+        InventorySnapshotReader.ReadAsync(dbContext, content, characterId, cancellationToken);
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,
@@ -360,6 +325,16 @@ public sealed class InventoryEquipmentService(
                         await GetForCharacterAsync(character.Id, cancellationToken));
                 }
 
+                CharacterDerivedState? oldDerivedState = null;
+                if (operationType == EquipOperation || operationType == UnequipOperation)
+                {
+                    oldDerivedState = await derivedStateService.ResolveAsync(
+                        character.Id,
+                        character.ClassId,
+                        character.Level,
+                        cancellationToken);
+                }
+
                 dbContext.CharacterMutations.Add(new CharacterMutation(
                     character.Id,
                     mutationId,
@@ -376,6 +351,27 @@ public sealed class InventoryEquipmentService(
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken);
+
+                if (oldDerivedState is not null)
+                {
+                    CharacterDerivedState newDerivedState = await derivedStateService.ResolveAsync(
+                        character.Id,
+                        character.ClassId,
+                        character.Level,
+                        cancellationToken);
+                    CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
+                        candidate => candidate.CharacterId == character.Id,
+                        cancellationToken);
+                    CharacterVitalsScaler.ScaleToDerivedMaximums(
+                        vitals,
+                        oldDerivedState.Stats.MaxHp,
+                        newDerivedState.Stats.MaxHp,
+                        oldDerivedState.EffectiveResourceProfile.MaxValue,
+                        newDerivedState.EffectiveResourceProfile.MaxValue,
+                        timeProvider.GetUtcNow());
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                }
+
                 await transaction.CommitAsync(cancellationToken);
                 return InventoryOperationResult.Success(
                     await GetForCharacterAsync(character.Id, cancellationToken));
@@ -399,10 +395,6 @@ public sealed class InventoryEquipmentService(
     private ItemDefinition? FindItem(string definitionId) =>
         (content.Items ?? []).SingleOrDefault(candidate =>
             string.Equals(candidate.Id, definitionId, StringComparison.Ordinal));
-
-    private Dictionary<string, ItemDefinition> RequiredDefinitions() =>
-        (content.Items ?? throw new InvalidOperationException("Item content is required."))
-            .ToDictionary(item => item.Id, StringComparer.Ordinal);
 
     private static string Fingerprint(params string[] parts)
     {

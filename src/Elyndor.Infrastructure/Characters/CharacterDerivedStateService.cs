@@ -26,8 +26,14 @@ public sealed record CharacterDerivedState(
 public sealed class CharacterDerivedStateService(
     GameDbContext dbContext,
     GameContentPackage content,
-    InventoryEquipmentService inventoryService)
+    InventoryEquipmentService? inventoryService)
 {
+    internal CharacterDerivedStateService(
+        GameDbContext dbContext,
+        GameContentPackage content)
+        : this(dbContext, content, null)
+    {
+    }
     public async Task<CharacterDerivedState> ResolveAsync(
         Guid characterId,
         string classId,
@@ -130,7 +136,15 @@ public sealed class CharacterDerivedStateService(
         CancellationToken cancellationToken)
     {
         if (content.Items is not null)
-            return await inventoryService.GetForCharacterAsync(characterId, cancellationToken);
+        {
+            return inventoryService is not null
+                ? await inventoryService.GetForCharacterAsync(characterId, cancellationToken)
+                : await InventorySnapshotReader.ReadAsync(
+                    dbContext,
+                    content,
+                    characterId,
+                    cancellationToken);
+        }
 
         bool hasPersistedInventory = await dbContext.CharacterItems
             .AsNoTracking()

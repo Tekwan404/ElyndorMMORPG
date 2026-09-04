@@ -247,12 +247,12 @@ public sealed class TelegramAdministrationService(
             character.ClassId,
             character.Level,
             cancellationToken);
-        vitals.Checkpoint(
-            Scale(vitals.CurrentHp, oldState.Stats.MaxHp, newState.Stats.MaxHp),
-            Scale(
-                vitals.CurrentResource,
-                oldState.EffectiveResourceProfile.MaxValue,
-                newState.EffectiveResourceProfile.MaxValue),
+        CharacterVitalsScaler.ScaleToDerivedMaximums(
+            vitals,
+            oldState.Stats.MaxHp,
+            newState.Stats.MaxHp,
+            oldState.EffectiveResourceProfile.MaxValue,
+            newState.EffectiveResourceProfile.MaxValue,
             now);
         return Success("admin_level_updated", $"{character.Name}: уровень → {level}.");
     }
@@ -349,12 +349,12 @@ public sealed class TelegramAdministrationService(
             character.ClassId,
             character.Level,
             cancellationToken);
-        vitals.Checkpoint(
-            Scale(vitals.CurrentHp, oldState.Stats.MaxHp, newState.Stats.MaxHp),
-            Scale(
-                vitals.CurrentResource,
-                oldState.EffectiveResourceProfile.MaxValue,
-                newState.EffectiveResourceProfile.MaxValue),
+        CharacterVitalsScaler.ScaleToDerivedMaximums(
+            vitals,
+            oldState.Stats.MaxHp,
+            newState.Stats.MaxHp,
+            oldState.EffectiveResourceProfile.MaxValue,
+            newState.EffectiveResourceProfile.MaxValue,
             now);
 
         return Success(
@@ -439,11 +439,6 @@ public sealed class TelegramAdministrationService(
 
     private bool HasDefinition(string type, string id) => content.Definitions.Any(
         definition => definition.Type == type && definition.Id == id);
-
-    private static decimal Scale(decimal current, decimal oldMax, decimal newMax) =>
-        oldMax <= 0
-            ? decimal.Min(current, newMax)
-            : decimal.Clamp(decimal.Round(current / oldMax * newMax, 3, MidpointRounding.AwayFromZero), 0, newMax);
 
     private static AdministrationResult Success(string code, string message) => new(true, code, message);
 
