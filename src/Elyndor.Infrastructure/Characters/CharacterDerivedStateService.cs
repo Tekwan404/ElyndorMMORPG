@@ -36,6 +36,17 @@ public sealed class CharacterDerivedStateService(
     {
     }
 
+    public CharacterDerivedStateService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        InventoryEquipmentService? inventoryService)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            inventoryService)
+    {
+    }
+
     internal CharacterDerivedStateService(
         GameDbContext dbContext,
         GameContentPackage content)
