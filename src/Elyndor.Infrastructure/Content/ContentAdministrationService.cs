@@ -62,7 +62,7 @@ public sealed class ContentAdministrationService(
             GameContentPackageCodec.ComputeSha256(payload));
     }
 
-    public ContentDraftValidationResult ValidateDraft(string payloadJson)
+    public static ContentDraftValidationResult ValidateDraft(string payloadJson)
     {
         if (string.IsNullOrWhiteSpace(payloadJson))
         {
