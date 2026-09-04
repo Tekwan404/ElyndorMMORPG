@@ -27,6 +27,7 @@ The AppHost generates the local PostgreSQL password and passes the `game` connec
 Double-click `Elyndor-Control.cmd` to manage the complete Telegram test runtime from one menu:
 
 - save or replace the Telegram Bot Token;
+- configure one or more Telegram administrator user IDs;
 - start the game through Tailscale Funnel;
 - open the local Aspire Dashboard with server logs, traces, metrics, and resource health;
 - inspect API/PostgreSQL status, CPU, memory, and URLs;
@@ -37,7 +38,9 @@ Windows DPAPI encryption for the current Windows user. The launcher generates a
 separate JWT signing key. Neither secret is committed to Git.
 
 To create or retrieve a token, open `@BotFather` in Telegram and use `/newbot` or
-`/token`. In Elyndor Control Center select `6`, paste the token, then select `1`.
+`/token`. In Elyndor Control Center select `6`, paste the token, then select `7` to configure
+administrator numeric Telegram user IDs. Multiple IDs are entered as a comma-separated list, for
+example `123456789,987654321`. Select `1` to start the public test runtime.
 After Funnel starts, copy the printed public HTTPS URL into:
 
 ```text

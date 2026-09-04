@@ -74,7 +74,8 @@ There is deliberately no endpoint that mutates live content directly.
 `/admin` is a minimal operational UI, not a second game client. It provides:
 
 - live content/balance identity and payload hash;
-- category/entity JSON editing;
+- structured form editing for common Monster, Ability, and Item balance fields;
+- category/entity JSON editing for advanced or not-yet-structured fields;
 - full-package JSON fallback;
 - server validation errors;
 - immutable draft creation;
