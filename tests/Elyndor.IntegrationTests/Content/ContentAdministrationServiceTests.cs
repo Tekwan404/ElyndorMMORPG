@@ -151,7 +151,7 @@ public sealed class ContentAdministrationServiceTests(PostgresFixture postgres)
             provider);
 
         ContentDraftValidationResult result =
-            service.ValidateDraft("{not-json");
+            ContentAdministrationService.ValidateDraft("{not-json");
 
         Assert.False(result.IsValid);
         Assert.Contains(
