@@ -5,6 +5,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -44,10 +45,19 @@ public sealed record MerchantOperationResult(
 
 public sealed class MerchantService(
     GameDbContext dbContext,
-    GameContentPackage content,
+    IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
-    private readonly GameContentIndexes indexes = GameContentIndexes.For(content);
+    public MerchantService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            timeProvider)
+    {
+    }
 
     private const string BuyOperation = "MERCHANT_BUY";
     private const string SellMaterialOperation = "MERCHANT_SELL_MATERIAL";
@@ -358,10 +368,10 @@ public sealed class MerchantService(
             cancellationToken);
 
     private MerchantDefinition? FindMerchant(string merchantId) =>
-        indexes.MerchantsById.GetValueOrDefault(merchantId);
+        contentProvider.GetCurrent().Indexes.MerchantsById.GetValueOrDefault(merchantId);
 
     private ItemDefinition? FindItem(string definitionId) =>
-        indexes.ItemsById.GetValueOrDefault(definitionId);
+        contentProvider.GetCurrent().Indexes.ItemsById.GetValueOrDefault(definitionId);
 
     private MerchantSnapshot ToSnapshot(MerchantDefinition merchant, long gold) =>
         new(
