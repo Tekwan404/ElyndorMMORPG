@@ -28,7 +28,7 @@ public sealed class CombatHub(
 
         return CombatContractMapper.ToResponse(
             await combat.StartAsync(accountId, parsedEncounterId, cancellationToken),
-            content);
+            contentProvider.GetCurrent().Package);
     }
 
     public async Task<CombatUpdateResponse> StartTraining()
@@ -38,7 +38,7 @@ public sealed class CombatHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
         return CombatContractMapper.ToResponse(
             await combat.StartTrainingAsync(accountId, cancellationToken),
-            content);
+            contentProvider.GetCurrent().Package);
     }
 
     public Task<CombatUpdateResponse> ResetTraining() => ToResponseAsync(
