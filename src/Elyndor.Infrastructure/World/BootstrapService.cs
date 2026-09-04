@@ -5,6 +5,7 @@ using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
