@@ -597,8 +597,8 @@ public sealed partial class CombatSession
         foreach (ResolvedTalentEventHook hook in _playerTalents.EventHooks.Where(
                      item => item.Key == key))
         {
-            if (BerserkerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _)
-                || PyromancerTalentRuntimeCatalog.TryGetRule(hook.TalentId, out _))
+            if (BerserkerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
+                || PyromancerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _))
             {
                 continue;
             }
