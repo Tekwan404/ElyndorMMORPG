@@ -10,7 +10,8 @@ param(
     [string]$ControlDirectory,
     [ValidateRange(1, [long]::MaxValue)]
     [long]$DevelopmentTelegramUserId = 1000001,
-    [long]$AdminTelegramUserId = 0
+    [long]$AdminTelegramUserId = 0,
+    [long[]]$AdminTelegramUserIds = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,6 +27,7 @@ $controlDirectory = if ([string]::IsNullOrWhiteSpace($ControlDirectory)) {
 }
 $secretPath = Join-Path $controlDirectory 'launcher-secrets.json'
 $runtimeStatePath = Join-Path $controlDirectory 'runtime-state.json'
+$legacyAdditionalTelegramAdminUserId = 431158320
 
 function Ensure-ControlDirectory {
     if (-not (Test-Path -LiteralPath $controlDirectory -PathType Container)) {
@@ -46,12 +48,55 @@ function ConvertFrom-ProtectedString {
     return [Net.NetworkCredential]::new('', $secureValue).Password
 }
 
+function Resolve-AdministratorTelegramUserIds {
+    param([long[]]$ExistingIds = @())
+
+    if ($AdminTelegramUserIds.Count -gt 0) {
+        $candidateIds = @($AdminTelegramUserIds)
+    }
+    elseif ($AdminTelegramUserId -gt 0) {
+        $candidateIds = @($AdminTelegramUserId)
+    }
+    else {
+        $defaultText = if ($ExistingIds.Count -gt 0) { $ExistingIds -join ',' } else { '' }
+        $prompt = if ([string]::IsNullOrWhiteSpace($defaultText)) {
+            'Telegram numeric user IDs, comma-separated'
+        } else {
+            "Telegram numeric user IDs, comma-separated [$defaultText]"
+        }
+        $inputText = Read-Host $prompt
+        if ([string]::IsNullOrWhiteSpace($inputText) -and $ExistingIds.Count -gt 0) {
+            return @($ExistingIds | Select-Object -Unique)
+        }
+
+        $candidateIds = @()
+        foreach ($token in ($inputText -split '[,;\s]+')) {
+            if ([string]::IsNullOrWhiteSpace($token)) {
+                continue
+            }
+
+            $parsedId = 0L
+            if (-not [long]::TryParse($token, [ref]$parsedId) -or $parsedId -le 0) {
+                throw "Invalid Telegram user ID: '$token'."
+            }
+            $candidateIds += $parsedId
+        }
+    }
+
+    $resolvedIds = @($candidateIds | Where-Object { $_ -gt 0 } | Select-Object -Unique)
+    if ($resolvedIds.Count -eq 0) {
+        throw 'At least one positive Telegram administrator user ID is required.'
+    }
+
+    return $resolvedIds
+}
+
 function Save-LauncherSecrets {
     param(
         [Parameter(Mandatory)][Security.SecureString]$BotToken,
         [Parameter(Mandatory)][Security.SecureString]$SigningKey,
         [Parameter(Mandatory)][Security.SecureString]$WebhookSecret,
-        [Parameter(Mandatory)][long]$AdministratorTelegramUserId
+        [Parameter(Mandatory)][long[]]$AdministratorTelegramUserIds
     )
 
     Ensure-ControlDirectory
@@ -59,7 +104,7 @@ function Save-LauncherSecrets {
         BotToken = ConvertTo-ProtectedString $BotToken
         SigningKey = ConvertTo-ProtectedString $SigningKey
         WebhookSecret = ConvertTo-ProtectedString $WebhookSecret
-        AdministratorTelegramUserId = $AdministratorTelegramUserId
+        AdministratorTelegramUserIds = @($AdministratorTelegramUserIds)
     } | ConvertTo-Json | Set-Content -LiteralPath $secretPath -Encoding UTF8
 }
 
@@ -70,19 +115,30 @@ function Get-LauncherSecrets {
 
     try {
         $protected = Get-Content -LiteralPath $secretPath -Raw | ConvertFrom-Json
+        $adminIds = if ($null -ne $protected.AdministratorTelegramUserIds) {
+            @($protected.AdministratorTelegramUserIds | ForEach-Object { [long]$_ })
+        }
+        elseif ($null -ne $protected.AdministratorTelegramUserId) {
+            @(
+                [long]$protected.AdministratorTelegramUserId
+                $legacyAdditionalTelegramAdminUserId
+            ) | Select-Object -Unique
+        }
+        else {
+            @()
+        }
+
         return @{
             BotToken = ConvertFrom-ProtectedString $protected.BotToken
             SigningKey = ConvertFrom-ProtectedString $protected.SigningKey
             WebhookSecret = if ($null -ne $protected.WebhookSecret) {
                 ConvertFrom-ProtectedString $protected.WebhookSecret
             } else { '' }
-            AdministratorTelegramUserId = if ($null -ne $protected.AdministratorTelegramUserId) {
-                [long]$protected.AdministratorTelegramUserId
-            } else { 0 }
+            AdministratorTelegramUserIds = @($adminIds)
         }
     }
     catch {
-        throw 'Unable to read local secrets. Use menu option 4 to save the token again.'
+        throw 'Unable to read local secrets. Use menu option 6 to save the token again.'
     }
 }
 
@@ -105,13 +161,7 @@ function Set-TelegramSecrets {
     }
     $plainSigningKey = [Convert]::ToBase64String($signingBytes)
     $signingKey = ConvertTo-SecureString -String $plainSigningKey -AsPlainText -Force
-    $configuredAdminId = $AdminTelegramUserId
-    if ($configuredAdminId -le 0) {
-        $configuredAdminId = [long](Read-Host 'Your Telegram numeric user ID')
-    }
-    if ($configuredAdminId -le 0) {
-        throw 'Administrator Telegram user ID must be positive.'
-    }
+    $configuredAdminIds = Resolve-AdministratorTelegramUserIds
     $plainWebhookSecret = New-RandomSecret
     $webhookSecret = ConvertTo-SecureString -String $plainWebhookSecret -AsPlainText -Force
 
@@ -120,7 +170,7 @@ function Set-TelegramSecrets {
             -BotToken $botToken `
             -SigningKey $signingKey `
             -WebhookSecret $webhookSecret `
-            -AdministratorTelegramUserId $configuredAdminId
+            -AdministratorTelegramUserIds $configuredAdminIds
     }
     finally {
         $plainBotToken = $null
@@ -129,6 +179,7 @@ function Set-TelegramSecrets {
     }
 
     Write-Host 'Telegram Bot Token was encrypted for the current Windows user and saved locally.'
+    Write-Host "Administrators: $($configuredAdminIds -join ', ')"
     Write-Host "File: $secretPath"
 }
 
@@ -150,14 +201,7 @@ function Set-TelegramAdminConfiguration {
         throw 'Configure the Telegram Bot Token first.'
     }
 
-    $configuredAdminId = $AdminTelegramUserId
-    if ($configuredAdminId -le 0) {
-        $configuredAdminId = [long](Read-Host 'Your Telegram numeric user ID')
-    }
-    if ($configuredAdminId -le 0) {
-        throw 'Administrator Telegram user ID must be positive.'
-    }
-
+    $configuredAdminIds = Resolve-AdministratorTelegramUserIds -ExistingIds $secrets.AdministratorTelegramUserIds
     $botToken = ConvertTo-SecureString -String $secrets.BotToken -AsPlainText -Force
     $signingKey = ConvertTo-SecureString -String $secrets.SigningKey -AsPlainText -Force
     $plainWebhookSecret = New-RandomSecret
@@ -166,10 +210,10 @@ function Set-TelegramAdminConfiguration {
         -BotToken $botToken `
         -SigningKey $signingKey `
         -WebhookSecret $webhookSecret `
-        -AdministratorTelegramUserId $configuredAdminId
+        -AdministratorTelegramUserIds $configuredAdminIds
     $secrets = $null
     $plainWebhookSecret = $null
-    Write-Host 'Telegram administrator and webhook secret were saved locally.'
+    Write-Host "Telegram administrators saved: $($configuredAdminIds -join ', ')"
 }
 
 function Reset-LauncherSecrets {
@@ -600,22 +644,34 @@ function Invoke-PublicStart {
         Set-TelegramSecrets
         $secrets = Get-LauncherSecrets
     }
-    if ([string]::IsNullOrWhiteSpace($secrets.WebhookSecret) -or $secrets.AdministratorTelegramUserId -le 0) {
+    if ([string]::IsNullOrWhiteSpace($secrets.WebhookSecret) -or $secrets.AdministratorTelegramUserIds.Count -eq 0) {
         throw 'Telegram admin is not configured. Run ConfigureAdmin once.'
     }
 
     $previousSigningKey = [Environment]::GetEnvironmentVariable('Authentication__SigningKey', 'Process')
     $previousBotToken = [Environment]::GetEnvironmentVariable('Authentication__Telegram__BotToken', 'Process')
     $previousWebhookSecret = [Environment]::GetEnvironmentVariable('Administration__Telegram__WebhookSecret', 'Process')
-    $previousAdminId = [Environment]::GetEnvironmentVariable('Administration__Telegram__AllowedUserIds__0', 'Process')
+    $previousAdminEnvironment = @{}
+    Get-ChildItem Env: |
+        Where-Object { $_.Name -like 'Administration__Telegram__AllowedUserIds__*' } |
+        ForEach-Object { $previousAdminEnvironment[$_.Name] = $_.Value }
+
     try {
         [Environment]::SetEnvironmentVariable('Authentication__SigningKey', $secrets.SigningKey, 'Process')
         [Environment]::SetEnvironmentVariable('Authentication__Telegram__BotToken', $secrets.BotToken, 'Process')
         [Environment]::SetEnvironmentVariable('Administration__Telegram__WebhookSecret', $secrets.WebhookSecret, 'Process')
-        [Environment]::SetEnvironmentVariable(
-            'Administration__Telegram__AllowedUserIds__0',
-            $secrets.AdministratorTelegramUserId.ToString([System.Globalization.CultureInfo]::InvariantCulture),
-            'Process')
+
+        Get-ChildItem Env: |
+            Where-Object { $_.Name -like 'Administration__Telegram__AllowedUserIds__*' } |
+            ForEach-Object { [Environment]::SetEnvironmentVariable($_.Name, $null, 'Process') }
+
+        for ($index = 0; $index -lt $secrets.AdministratorTelegramUserIds.Count; $index++) {
+            [Environment]::SetEnvironmentVariable(
+                "Administration__Telegram__AllowedUserIds__$index",
+                $secrets.AdministratorTelegramUserIds[$index].ToString([System.Globalization.CultureInfo]::InvariantCulture),
+                'Process')
+        }
+
         $script:Public = $true
         Start-Elyndor
     }
@@ -623,7 +679,14 @@ function Invoke-PublicStart {
         [Environment]::SetEnvironmentVariable('Authentication__SigningKey', $previousSigningKey, 'Process')
         [Environment]::SetEnvironmentVariable('Authentication__Telegram__BotToken', $previousBotToken, 'Process')
         [Environment]::SetEnvironmentVariable('Administration__Telegram__WebhookSecret', $previousWebhookSecret, 'Process')
-        [Environment]::SetEnvironmentVariable('Administration__Telegram__AllowedUserIds__0', $previousAdminId, 'Process')
+
+        Get-ChildItem Env: |
+            Where-Object { $_.Name -like 'Administration__Telegram__AllowedUserIds__*' } |
+            ForEach-Object { [Environment]::SetEnvironmentVariable($_.Name, $null, 'Process') }
+        foreach ($entry in $previousAdminEnvironment.GetEnumerator()) {
+            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
+        }
+
         $secrets = $null
         $script:Public = $false
     }

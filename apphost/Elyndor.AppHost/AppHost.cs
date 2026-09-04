@@ -8,7 +8,21 @@ long developmentTelegramUserId = long.TryParse(
     out long configuredDevelopmentTelegramUserId)
     ? configuredDevelopmentTelegramUserId
     : 1_000_001;
-const long additionalTelegramAdminUserId = 431_158_320;
+
+long[] telegramAdminUserIds = builder.Configuration
+    .GetSection("Administration:Telegram:AllowedUserIds")
+    .GetChildren()
+    .Select(item =>
+        long.TryParse(
+            item.Value,
+            System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out long telegramUserId)
+            ? telegramUserId
+            : 0)
+    .Where(telegramUserId => telegramUserId > 0)
+    .Distinct()
+    .ToArray();
 
 IResourceBuilder<PostgresServerResource> postgres = builder
     .AddPostgres("postgres")
@@ -32,13 +46,14 @@ if (publicTest)
         .WithEnvironment("Administration__Telegram__Enabled", "true")
         .WithEnvironment(
             "Administration__Telegram__WebhookSecret",
-            builder.Configuration["Administration:Telegram:WebhookSecret"] ?? string.Empty)
-        .WithEnvironment(
-            "Administration__Telegram__AllowedUserIds__0",
-            builder.Configuration["Administration:Telegram:AllowedUserIds:0"] ?? string.Empty)
-        .WithEnvironment(
-            "Administration__Telegram__AllowedUserIds__1",
-            additionalTelegramAdminUserId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            builder.Configuration["Administration:Telegram:WebhookSecret"] ?? string.Empty);
+
+    for (int index = 0; index < telegramAdminUserIds.Length; index++)
+    {
+        server.WithEnvironment(
+            $"Administration__Telegram__AllowedUserIds__{index}",
+            telegramAdminUserIds[index].ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
 }
 
 if (!publicTest)
