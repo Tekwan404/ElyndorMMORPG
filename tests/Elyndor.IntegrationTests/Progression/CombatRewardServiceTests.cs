@@ -62,6 +62,49 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
     }
 
+    [Fact]
+    public async Task ConcurrentSameSessionGrantsXpGoldAndLootExactlyOnce()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        Guid sessionId = Guid.CreateVersion7();
+        CombatSessionSnapshot snapshot = VictorySnapshot(sessionId);
+
+        await using GameDbContext firstContext = postgres.CreateDbContext();
+        await using GameDbContext secondContext = postgres.CreateDbContext();
+        CombatRewardService firstService = await CreateServiceAsync(firstContext);
+        CombatRewardService secondService = await CreateServiceAsync(secondContext);
+
+        CombatRewardApplicationResult[] results = await Task.WhenAll(
+            firstService.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None),
+            secondService.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None));
+
+        CombatRewardApplicationResult granted = Assert.Single(
+            results.Where(result => result.Granted));
+        CombatRewardApplicationResult replay = Assert.Single(
+            results.Where(result => !result.Granted));
+
+        Assert.Equal(granted.XpEarned, replay.XpEarned);
+        Assert.Equal(granted.GoldEarned, replay.GoldEarned);
+        Assert.NotEmpty(granted.Items);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Character character = await verify.Characters.AsNoTracking().SingleAsync();
+        Assert.Equal(granted.XpEarned, character.Experience);
+        Assert.Equal(granted.GoldEarned, character.Gold);
+        Assert.Equal(1, await verify.CombatRewardGrants.CountAsync());
+
+        int persistedLootQuantity = await verify.CharacterItems
+            .AsNoTracking()
+            .SumAsync(item => item.Quantity);
+        Assert.Equal(granted.Items.Sum(item => item.Quantity), persistedLootQuantity);
+    }
+
     private async Task<(Guid CharacterId, Guid AccountId)> CreateCharacterAsync(
         long experience,
         decimal currentHp)
