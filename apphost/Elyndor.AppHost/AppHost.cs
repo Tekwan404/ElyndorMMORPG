@@ -31,6 +31,16 @@ IResourceBuilder<PostgresServerResource> postgres = builder
 
 IResourceBuilder<PostgresDatabaseResource> gameDatabase = postgres.AddDatabase("game");
 
+const string postgresStabilityHealthCheckName = "game-postgres-stability";
+builder.Services
+    .AddHealthChecks()
+    .AddCheck(
+        postgresStabilityHealthCheckName,
+        new PostgresStabilityHealthCheck(
+            cancellationToken =>
+                gameDatabase.Resource.GetConnectionStringAsync(cancellationToken)));
+gameDatabase.WithHealthCheck(postgresStabilityHealthCheckName);
+
 IResourceBuilder<ProjectResource> server = builder
     .AddProject<Projects.Elyndor_Server>("server")
     .WithReference(gameDatabase)
