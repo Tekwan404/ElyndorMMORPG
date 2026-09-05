@@ -100,7 +100,7 @@ public sealed class CharacterStatCalculatorTests
 
         Assert.Equal(236.5m, result.MaxHp);
         Assert.Equal(56.1m, result.AttackPower);
-        Assert.Equal(43, result.SpellPower);
+        Assert.Equal(19, result.SpellPower);
         Assert.Equal(10, result.CriticalChance);
         Assert.Equal(110, result.CriticalDamage);
         Assert.Equal(96, result.Accuracy);
@@ -108,8 +108,8 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(6, result.MagicPenetration);
         Assert.Equal(1.05m, result.AttackSpeed);
         Assert.Equal(76.8m, result.Armor);
-        Assert.Equal(45, result.MagicResistance);
-        Assert.Equal(4.4m, result.Dodge);
+        Assert.Equal(30, result.MagicResistance);
+        Assert.Equal(4.6m, result.Dodge);
     }
 
     private static StatFormulaProfile Formula() => new(
