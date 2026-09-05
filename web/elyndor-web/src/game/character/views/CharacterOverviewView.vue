@@ -9,7 +9,6 @@ import {
   abilityTargetLabel,
   abilityTypeLabel,
   classLabel,
-  genderLabel,
   raceLabel,
   resourceLabel,
 } from '@/game/character/characterPresentation'
