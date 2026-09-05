@@ -10,6 +10,11 @@ import AdminLootTableForm from '@/admin/AdminLootTableForm.vue'
 import AdminMerchantForm from '@/admin/AdminMerchantForm.vue'
 import AdminPublishReview from '@/admin/AdminPublishReview.vue'
 import AdminTalentTreeForm from '@/admin/AdminTalentTreeForm.vue'
+import {
+  filterAdminEntities,
+  presentAdminEntity,
+  replaceDraftEntity,
+} from '@/admin/adminWorkspace'
 import { diffContentJson } from '@/admin/contentDiff'
 import type { ContentDiffEntry } from '@/admin/contentDiff'
 import { createDraftEntity } from '@/admin/entityTemplates'
@@ -63,11 +68,24 @@ const newItemType = ref<NewItemType>('Material')
 const newMerchantLocationId = ref('')
 const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
+const entitySearch = ref('')
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
 const entityList = computed<JsonRecord[]>(() => {
   const value = draftPackage.value?.[selectedSection.value]
   return Array.isArray(value) ? value.filter(isRecord) : []
+})
+const filteredEntityList = computed(() =>
+  filterAdminEntities(entityList.value, entitySearch.value),
+)
+const sectionCounts = computed<Record<string, number>>(() => {
+  const packageObject = draftPackage.value
+  return Object.fromEntries(
+    sections.map(section => {
+      const value = packageObject?.[section.key]
+      return [section.key, Array.isArray(value) ? value.length : 0]
+    }),
+  )
 })
 const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
 const structuredSections = ['monsters', 'abilities', 'items', 'talentTrees', 'locations', 'classProfiles', 'lootTables', 'merchants']
@@ -149,6 +167,15 @@ const validationLabel = computed(() => {
   if (!validation.value) return 'Не проверено'
   return validation.value.isValid ? 'VALID' : 'INVALID'
 })
+const selectedEntityDraft = computed<JsonRecord | null>(() =>
+  entityList.value.find(entity => entityId(entity) === selectedEntityId.value) ?? null,
+)
+const entityNeedsApply = computed(() => {
+  if (!selectedEntityId.value || editorMode.value !== 'json' || !selectedEntityDraft.value) {
+    return false
+  }
+  return entityJson.value !== JSON.stringify(selectedEntityDraft.value, null, 2)
+})
 
 function entityId(entity: JsonRecord): string {
   const id = entity.id
@@ -162,6 +189,12 @@ function selectEntity(entity: JsonRecord): void {
   validation.value = null
 }
 
+function selectSection(section: (typeof sections)[number]['key']): void {
+  if (section === selectedSection.value) return
+  selectedSection.value = section
+  changeSection()
+}
+
 function changeSection(): void {
   selectedEntityId.value = null
   entityJson.value = ''
@@ -169,6 +202,7 @@ function changeSection(): void {
   newEntityId.value = ''
   newEntityName.value = ''
   newMerchantLocationId.value = ''
+  entitySearch.value = ''
   editorMode.value = structuredSections.includes(selectedSection.value) ? 'form' : 'json'
 }
 
@@ -235,6 +269,29 @@ function updateEntityFromForm(entity: JsonRecord): void {
   entityJson.value = JSON.stringify(entity, null, 2)
   validation.value = null
   statusMessage.value = ''
+
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || !selectedEntityId.value) {
+    errorMessage.value = 'Не удалось синхронизировать форму с локальным draft.'
+    return
+  }
+
+  try {
+    const previousId = selectedEntityId.value
+    const nextPackage = replaceDraftEntity(
+      packageObject,
+      selectedSection.value,
+      previousId,
+      entity,
+    )
+    draftJson.value = JSON.stringify(nextPackage, null, 2)
+    selectedEntityId.value = entityId(entity)
+    errorMessage.value = ''
+  } catch (error) {
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Не удалось синхронизировать форму с локальным draft.'
+  }
 }
 
 function applyEntity(): void {
@@ -242,38 +299,27 @@ function applyEntity(): void {
   statusMessage.value = ''
   const packageObject = parseRecord(draftJson.value)
   const entity = parseRecord(entityJson.value)
-  if (!packageObject || !entity) {
+  if (!packageObject || !entity || !selectedEntityId.value) {
     errorMessage.value = 'JSON сущности или пакета некорректен.'
     return
   }
 
-  const id = entity.id
-  if (typeof id !== 'string' || !id) {
-    errorMessage.value = 'У сущности должен быть строковый id.'
-    return
+  try {
+    const nextPackage = replaceDraftEntity(
+      packageObject,
+      selectedSection.value,
+      selectedEntityId.value,
+      entity,
+    )
+    draftJson.value = JSON.stringify(nextPackage, null, 2)
+    selectedEntityId.value = entityId(entity)
+    validation.value = null
+    statusMessage.value = 'JSON применён к локальному draft.'
+  } catch (error) {
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Не удалось применить JSON к локальному draft.'
   }
-
-  const source = packageObject[selectedSection.value]
-  if (!Array.isArray(source)) {
-    errorMessage.value = 'В выбранной категории нет массива сущностей.'
-    return
-  }
-
-  const index = source.findIndex(
-    (item) => isRecord(item) && item.id === selectedEntityId.value,
-  )
-  if (index < 0) {
-    errorMessage.value = 'Сущность больше не найдена в текущем draft.'
-    return
-  }
-
-  const next = [...source]
-  next[index] = entity
-  packageObject[selectedSection.value] = next
-  draftJson.value = JSON.stringify(packageObject, null, 2)
-  selectedEntityId.value = id
-  validation.value = null
-  statusMessage.value = 'Изменение применено к локальному draft.'
 }
 
 async function loadRuntime(resetDraft: boolean): Promise<void> {
@@ -599,17 +645,30 @@ onMounted(async () => {
       <div class="workspace">
         <aside class="catalog">
           <div class="catalog__top">
-            <label>
-              <span>Категория</span>
-              <select v-model="selectedSection" @change="changeSection">
-                <option v-for="section in sections" :key="section.key" :value="section.key">
-                  {{ section.label }}
-                </option>
-              </select>
-            </label>
-            <button v-if="canCreateEntity" type="button" @click="openCreateEntity">
+            <div class="section-tabs" aria-label="Content categories">
+              <button
+                v-for="section in sections"
+                :key="section.key"
+                type="button"
+                :class="{ active: selectedSection === section.key }"
+                @click="selectSection(section.key)"
+              >
+                <span>{{ section.label }}</span>
+                <small>{{ sectionCounts[section.key] ?? 0 }}</small>
+              </button>
+            </div>
+            <button v-if="canCreateEntity" class="new-entity" type="button" @click="openCreateEntity">
               + New {{ createEntityLabel() }}
             </button>
+            <label class="entity-search">
+              <span>Поиск · {{ filteredEntityList.length }}/{{ entityList.length }}</span>
+              <input
+                v-model="entitySearch"
+                type="search"
+                placeholder="ID, название, тип…"
+                autocomplete="off"
+              />
+            </label>
           </div>
 
           <form v-if="createMode" class="create-card" @submit.prevent="createEntity">
@@ -647,15 +706,22 @@ onMounted(async () => {
 
           <div class="entity-list">
             <button
-              v-for="entity in entityList"
+              v-for="entity in filteredEntityList"
               :key="entityId(entity)"
               type="button"
               :class="{ active: selectedEntityId === entityId(entity) }"
               @click="selectEntity(entity)"
             >
-              {{ entityId(entity) }}
+              <span>
+                <b>{{ presentAdminEntity(entity).title }}</b>
+                <small>{{ presentAdminEntity(entity).id }}</small>
+              </span>
+              <em v-if="presentAdminEntity(entity).subtitle">
+                {{ presentAdminEntity(entity).subtitle }}
+              </em>
             </button>
             <p v-if="entityList.length === 0" class="muted">Нет сущностей.</p>
+            <p v-else-if="filteredEntityList.length === 0" class="muted">Ничего не найдено.</p>
           </div>
         </aside>
 
@@ -666,6 +732,13 @@ onMounted(async () => {
               <h2>{{ selectedEntityId ?? 'Выбери сущность' }}</h2>
             </div>
             <div class="editor__actions">
+              <span
+                v-if="selectedEntityId"
+                class="sync-badge"
+                :data-pending="entityNeedsApply"
+              >
+                {{ editorMode === 'form' ? 'AUTO-SYNC DRAFT' : entityNeedsApply ? 'APPLY REQUIRED' : 'JSON SYNCED' }}
+              </span>
               <div v-if="selectedEntityId && hasStructuredEditor" class="editor-mode" aria-label="Режим редактора">
                 <button
                   type="button"
@@ -683,11 +756,12 @@ onMounted(async () => {
                 </button>
               </div>
               <button
+                v-if="editorMode === 'json' || !hasStructuredEditor"
                 type="button"
-                :disabled="!selectedEntityId"
+                :disabled="!selectedEntityId || !entityNeedsApply"
                 @click="applyEntity"
               >
-                Apply to draft
+                Apply JSON
               </button>
             </div>
           </div>
@@ -847,7 +921,7 @@ onMounted(async () => {
 .live-bar > div { display: grid; gap: var(--ui-space-1); }
 .live-bar small, .editor small, .history-card small, .note-field span, .catalog label span { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .live-bar__hash { margin-left: auto; }
-.toolbar { max-width: 86rem; margin: 0 auto var(--ui-space-3); align-items: end; }
+.toolbar { position: sticky; top: var(--ui-space-2); z-index: 10; max-width: 86rem; margin: 0 auto var(--ui-space-3); padding: var(--ui-space-2); align-items: end; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: color-mix(in srgb, var(--ui-color-background) 92%, transparent); backdrop-filter: blur(12px); }
 .note-field { display: grid; flex: 1; gap: var(--ui-space-1); }
 .note-field input, .catalog select { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-1); color: inherit; }
 .toolbar__actions { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
@@ -861,18 +935,30 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
 .validation-strip[data-valid='false'] b { color: var(--ui-color-danger); }
 .workspace { display: grid; max-width: 86rem; margin: 0 auto; grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr); gap: var(--ui-space-3); }
 .catalog, .editor, .history__column, .errors { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-1); }
-.catalog { padding: var(--ui-space-3); }
+.catalog { align-self: start; padding: var(--ui-space-3); }
 .catalog__top { display: grid; gap: var(--ui-space-2); }
 .catalog label { display: grid; gap: var(--ui-space-1); }
+.section-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-1); }
+.section-tabs button { display: flex; justify-content: space-between; gap: var(--ui-space-1); min-height: 2.35rem; padding: var(--ui-space-1) var(--ui-space-2); }
+.section-tabs button small { color: var(--ui-color-text-muted); }
+.section-tabs button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); }
+.new-entity { width: 100%; }
+.entity-search input { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-1); color: inherit; }
 .create-card { display: grid; gap: var(--ui-space-2); margin-top: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-primary); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); }
 .create-card input, .create-card select { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-1); color: inherit; }
 .create-card__actions { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
 .entity-list { display: grid; max-height: 38rem; margin-top: var(--ui-space-3); gap: var(--ui-space-1); overflow: auto; }
-.entity-list button { min-height: 2.5rem; text-align: left; }
+.entity-list button { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-2); min-height: 3.1rem; text-align: left; }
+.entity-list button > span { display: grid; gap: .1rem; min-width: 0; }
+.entity-list button b, .entity-list button small, .entity-list button em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entity-list button small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
+.entity-list button em { max-width: 6rem; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); font-style: normal; }
 .entity-list button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); }
 .editor { min-width: 0; padding: var(--ui-space-3); }
 .editor__header { margin-bottom: var(--ui-space-2); }
-.editor__actions { display: flex; align-items: center; gap: var(--ui-space-2); }
+.editor__actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ui-space-2); }
+.sync-badge { padding: var(--ui-space-1) var(--ui-space-2); border: 1px solid var(--ui-color-success); border-radius: var(--ui-radius-round); color: var(--ui-color-success); font-size: var(--ui-font-size-xs); }
+.sync-badge[data-pending='true'] { border-color: var(--ui-color-warning); color: var(--ui-color-warning); }
 .editor-mode { display: flex; gap: var(--ui-space-1); }
 .editor-mode button { min-height: 2.25rem; padding: var(--ui-space-1) var(--ui-space-2); }
 .editor-mode button.active { border-color: var(--ui-color-primary); color: var(--ui-color-primary); background: var(--ui-color-surface-2); }
@@ -898,7 +984,12 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
   .live-bar__hash { margin-left: 0; }
   .toolbar { align-items: stretch; flex-direction: column; }
   .workspace, .history { grid-template-columns: 1fr; }
+  .section-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .entity-list { max-height: 14rem; }
   .code-editor--entity { min-height: 18rem; }
+}
+@media (max-width: 520px) {
+  .section-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .editor__header { align-items: stretch; flex-direction: column; }
 }
 </style>

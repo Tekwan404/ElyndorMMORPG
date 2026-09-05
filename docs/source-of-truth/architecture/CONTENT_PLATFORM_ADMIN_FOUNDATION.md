@@ -79,6 +79,10 @@ There is deliberately no endpoint that mutates live content directly.
 - structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters; Class Profiles intentionally cannot grant active abilities;
 - creation of new Monster, Item, Loot Table, and Merchant entities inside the local draft, including a dedicated basic AI profile for new monsters;
 - category/entity JSON editing for advanced or not-yet-structured fields;
+- fast category navigation with per-category counts and entity search by id/name/metadata;
+- structured Form editors auto-sync changes into the local draft only; they never save or publish automatically;
+- JSON editing keeps an explicit Apply JSON step so incomplete JSON is not silently applied;
+- sticky Validate / Save draft / Reset controls for long editing sessions;
 - full-package JSON fallback;
 - server validation errors, including merchant location/item/buy-price reference validation;
 - deterministic headless combat simulation against the current local draft before it is saved or published;
@@ -133,3 +137,14 @@ This lets a designer change draft balance, select skill-granting talent nodes, r
 Admin preserves one grant path for player active skills: Talent Tree UNLOCK_ABILITY.
 Class Profile forms do not expose starting abilities or level-based ability unlocks, and content validation rejects non-empty ClassProfile grant lists.
 JSON fallback therefore cannot bypass the talent-owned skill rule.
+
+
+## Admin editing ergonomics
+
+The editor intentionally distinguishes local editing convenience from publication safety.
+
+- Form changes are immediately synchronized into the in-memory local draft so switching fields does not require a separate Apply step.
+- This auto-sync does not call the server and does not create a revision.
+- Validate, Save draft, Review Diff, and Publish remain explicit operations.
+- JSON entity editing remains manual-apply because JSON is frequently invalid while it is being typed.
+- Category counts and entity search are derived from the current local draft, so newly created or renamed content is visible immediately.
