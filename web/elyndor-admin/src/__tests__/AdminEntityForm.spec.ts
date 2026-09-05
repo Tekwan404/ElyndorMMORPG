@@ -188,6 +188,8 @@ describe('AdminEntityForm', () => {
         sectionKey: 'items',
         entity: {
           id: 'RANGER_FANG_BLADE',
+          type: 'Equipment',
+          slot: 'MainHand',
           stats: { strength: 2, agility: 0, intellect: 0, stamina: 0 },
         },
       },
