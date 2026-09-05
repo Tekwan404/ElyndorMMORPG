@@ -2,7 +2,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 
 internal sealed class PostgresStabilityHealthCheck(
-    Func<CancellationToken, Task<string?>> connectionStringFactory)
+    Func<CancellationToken, ValueTask<string?>> connectionStringFactory)
     : IHealthCheck
 {
     private const int RequiredSuccessfulProbes = 6;
