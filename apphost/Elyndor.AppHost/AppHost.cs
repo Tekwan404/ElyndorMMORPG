@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 bool publicTest = bool.TryParse(
     builder.Configuration["Elyndor:PublicTest"],
@@ -30,6 +32,17 @@ IResourceBuilder<PostgresServerResource> postgres = builder
     .WithDataVolume();
 
 IResourceBuilder<PostgresDatabaseResource> gameDatabase = postgres.AddDatabase("game");
+
+const string postgresStabilityHealthCheckName = "game-postgres-stability";
+builder.Services
+    .AddHealthChecks()
+    .AddCheck(
+        postgresStabilityHealthCheckName,
+        new PostgresStabilityHealthCheck(
+            cancellationToken =>
+                ((IResourceWithConnectionString)gameDatabase.Resource)
+                    .GetConnectionStringAsync(cancellationToken)));
+gameDatabase.WithHealthCheck(postgresStabilityHealthCheckName);
 
 IResourceBuilder<ProjectResource> server = builder
     .AddProject<Projects.Elyndor_Server>("server")
