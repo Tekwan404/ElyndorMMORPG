@@ -14,7 +14,8 @@ public static class AuthenticationEndpoints
         bool mapDevelopmentEndpoint)
     {
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1/auth")
-            .WithTags("Authentication");
+            .WithTags("Authentication")
+            .RequireRateLimiting(ServerRateLimitPolicies.Authentication);
 
         group.MapPost("/telegram", AuthenticateTelegramAsync);
 
