@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
 import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
@@ -10,8 +10,10 @@ import AdminPublishReview from '@/admin/AdminPublishReview.vue'
 import AdminTalentTreeForm from '@/admin/AdminTalentTreeForm.vue'
 import {
   filterAdminEntities,
+  findAdminEntityReferences,
   presentAdminEntity,
   replaceDraftEntity,
+  searchAdminPackage,
 } from '@/admin/adminWorkspace'
 import { diffContentJson } from '@/admin/contentDiff'
 import type { ContentDiffEntry } from '@/admin/contentDiff'
@@ -42,11 +44,21 @@ const sections = [
   { key: 'equipmentSets', label: 'Sets' },
 ] as const
 
+type SectionKey = (typeof sections)[number]['key']
+
+const props = defineProps<{
+  initialSection?: string
+}>()
+
 const accessState = ref<AccessState>('loading')
 const current = ref<ContentAdminCurrent | null>(null)
 const history = ref<ContentAdminHistory>({ revisions: [], releases: [] })
 const draftJson = ref('')
-const selectedSection = ref<(typeof sections)[number]['key']>('monsters')
+const selectedSection = ref<SectionKey>(
+  sections.some(section => section.key === props.initialSection)
+    ? props.initialSection as SectionKey
+    : 'monsters',
+)
 const selectedEntityId = ref<string | null>(null)
 const entityJson = ref('')
 const editorMode = ref<'form' | 'json'>('form')
@@ -64,6 +76,7 @@ const newMerchantLocationId = ref('')
 const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 const entitySearch = ref('')
+const globalSearch = ref('')
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
 const entityList = computed<JsonRecord[]>(() => {
@@ -72,6 +85,11 @@ const entityList = computed<JsonRecord[]>(() => {
 })
 const filteredEntityList = computed(() =>
   filterAdminEntities(entityList.value, entitySearch.value),
+)
+const globalSearchResults = computed(() =>
+  draftPackage.value
+    ? searchAdminPackage(draftPackage.value, sections, globalSearch.value, 14)
+    : [],
 )
 const sectionCounts = computed<Record<string, number>>(() => {
   const packageObject = draftPackage.value
@@ -165,6 +183,17 @@ const validationLabel = computed(() => {
 const selectedEntityDraft = computed<JsonRecord | null>(() =>
   entityList.value.find(entity => entityId(entity) === selectedEntityId.value) ?? null,
 )
+const selectedEntityReferences = computed(() =>
+  draftPackage.value && selectedEntityId.value
+    ? findAdminEntityReferences(
+        draftPackage.value,
+        sections,
+        selectedEntityId.value,
+        30,
+      )
+    : [],
+)
+
 const entityNeedsApply = computed(() => {
   if (!selectedEntityId.value || editorMode.value !== 'json' || !selectedEntityDraft.value) {
     return false
@@ -188,6 +217,24 @@ function selectSection(section: (typeof sections)[number]['key']): void {
   if (section === selectedSection.value) return
   selectedSection.value = section
   changeSection()
+}
+
+function openEntityLocation(sectionKey: string, targetEntityId: string): void {
+  const section = sections.find(candidate => candidate.key === sectionKey)
+  if (!section) return
+
+  selectedSection.value = section.key
+  changeSection()
+
+  const source = draftPackage.value?.[section.key]
+  if (!Array.isArray(source)) return
+  const entity = source.find(
+    candidate => isRecord(candidate) && entityId(candidate) === targetEntityId,
+  )
+  if (isRecord(entity)) {
+    selectEntity(entity)
+    globalSearch.value = ''
+  }
 }
 
 function changeSection(): void {
@@ -539,6 +586,16 @@ function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
 
+watch(
+  () => props.initialSection,
+  sectionKey => {
+    const section = sections.find(candidate => candidate.key === sectionKey)
+    if (!section || section.key === selectedSection.value) return
+    selectedSection.value = section.key
+    changeSection()
+  },
+)
+
 onMounted(async () => {
   try {
     await refreshAll(true)
@@ -598,6 +655,35 @@ onMounted(async () => {
         <div class="live-bar__hash">
           <small>LIVE SHA</small>
           <code>{{ current.payloadSha256.slice(0, 12) }}</code>
+        </div>
+      </section>
+
+      <section class="global-search">
+        <label>
+          <span>GLOBAL CONTENT SEARCH</span>
+          <input
+            v-model="globalSearch"
+            type="search"
+            placeholder="Wolf, WOLF_LOOT, Fireball…"
+            autocomplete="off"
+          />
+        </label>
+        <div v-if="globalSearch.trim()" class="global-search__results">
+          <button
+            v-for="result in globalSearchResults"
+            :key="`${result.section}:${result.entityId}`"
+            type="button"
+            @click="openEntityLocation(result.section, result.entityId)"
+          >
+            <span>
+              <small>{{ result.sectionLabel }}</small>
+              <b>{{ result.title }}</b>
+            </span>
+            <code>{{ result.entityId }}</code>
+          </button>
+          <p v-if="globalSearchResults.length === 0" class="muted">
+            Ничего не найдено во всём content package.
+          </p>
         </div>
       </section>
 
@@ -754,6 +840,34 @@ onMounted(async () => {
               </button>
             </div>
           </div>
+
+          <section v-if="selectedEntityId" class="relations-panel">
+            <div class="relations-panel__heading">
+              <div>
+                <small>RELATIONS</small>
+                <b>Где используется {{ selectedEntityId }}</b>
+              </div>
+              <span>{{ selectedEntityReferences.length }}</span>
+            </div>
+            <div v-if="selectedEntityReferences.length" class="relations-list">
+              <button
+                v-for="reference in selectedEntityReferences"
+                :key="`${reference.section}:${reference.entityId}:${reference.path}`"
+                type="button"
+                @click="openEntityLocation(reference.section, reference.entityId)"
+              >
+                <span>
+                  <small>{{ reference.sectionLabel }}</small>
+                  <b>{{ reference.title }}</b>
+                </span>
+                <code>{{ reference.path }}</code>
+              </button>
+            </div>
+            <p v-else class="muted">
+              Прямых ссылок из редактируемых content-сущностей не найдено.
+            </p>
+          </section>
+
           <AdminEntityForm
             v-if="selectedEntityId && selectedEntity && ['monsters', 'abilities', 'items'].includes(selectedSection) && editorMode === 'form'"
             :section-key="selectedSection"
@@ -980,5 +1094,102 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
 @media (max-width: 520px) {
   .section-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .editor__header { align-items: stretch; flex-direction: column; }
+}
+.global-search {
+  position: relative;
+  max-width: 86rem;
+  margin: 0 auto var(--ui-space-3);
+}
+.global-search > label {
+  display: grid;
+  gap: var(--ui-space-1);
+}
+.global-search > label > span {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+  letter-spacing: .08em;
+}
+.global-search input {
+  min-height: var(--ui-touch-target);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-color-surface-1);
+  color: inherit;
+}
+.global-search__results {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + var(--ui-space-1));
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: 28rem;
+  padding: var(--ui-space-2);
+  overflow: auto;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: #0b0e17;
+  box-shadow: 0 18px 55px rgba(0,0,0,.42);
+}
+.global-search__results button,
+.relations-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  min-height: 3rem;
+  text-align: left;
+}
+.global-search__results button > span,
+.relations-list button > span {
+  display: grid;
+  gap: .15rem;
+  min-width: 0;
+}
+.global-search__results small,
+.relations-panel small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+.global-search__results code,
+.relations-list code {
+  color: var(--ui-color-primary);
+  font-size: var(--ui-font-size-xs);
+  overflow-wrap: anywhere;
+}
+.relations-panel {
+  margin-bottom: var(--ui-space-3);
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: color-mix(in srgb, var(--ui-color-surface-2) 72%, transparent);
+}
+.relations-panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+}
+.relations-panel__heading > div {
+  display: grid;
+  gap: var(--ui-space-1);
+}
+.relations-panel__heading > span {
+  min-width: 2rem;
+  padding: var(--ui-space-1) var(--ui-space-2);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-text-muted);
+  text-align: center;
+  font-size: var(--ui-font-size-xs);
+}
+.relations-list {
+  display: grid;
+  gap: var(--ui-space-1);
+  margin-top: var(--ui-space-2);
+}
+.relations-list button {
+  width: 100%;
 }
 </style>

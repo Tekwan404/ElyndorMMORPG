@@ -26,9 +26,21 @@ const content = ref<ContentAdminCurrent | null>(null)
 const history = ref<ContentAdminHistory | null>(null)
 const tokenExpiresAtUtc = ref<string | null>(null)
 const now = ref(Date.now())
+const contentSection = ref('monsters')
+
+const contentNavigation = [
+  { key: 'monsters', label: 'Monsters' },
+  { key: 'items', label: 'Items' },
+  { key: 'abilities', label: 'Abilities' },
+  { key: 'talentTrees', label: 'Talents' },
+  { key: 'classProfiles', label: 'Classes' },
+  { key: 'locations', label: 'Locations' },
+  { key: 'lootTables', label: 'Loot Tables' },
+  { key: 'merchants', label: 'Merchants' },
+  { key: 'equipmentSets', label: 'Equipment Sets' },
+] as const
 
 const sections = [
-  { group: 'CONTENT', items: ['Monsters', 'Items', 'Abilities', 'Talents', 'Classes', 'Locations', 'Loot Tables', 'Merchants', 'Equipment Sets'] },
   { group: 'BALANCE', items: ['Combat Simulator'] },
   { group: 'RELEASES', items: ['Drafts', 'Revisions', 'Releases'] },
   { group: 'OPERATIONS', items: ['Players', 'Server'] },
@@ -138,6 +150,11 @@ function backToId(): void {
   code.value = ''
   errorMessage.value = ''
   view.value = 'login'
+}
+
+function openContent(section: string): void {
+  contentSection.value = section
+  view.value = 'content'
 }
 
 async function run(action: () => Promise<void>): Promise<void> {
@@ -271,14 +288,19 @@ function formatDate(value: string | null | undefined): string {
         >
           <span>Dashboard</span>
         </button>
-        <button
-          class="nav-item"
-          :class="{ active: view === 'content' }"
-          type="button"
-          @click="view = 'content'"
-        >
-          <span>Content Workspace</span>
-        </button>
+        <div class="nav-group">
+          <p>CONTENT</p>
+          <button
+            v-for="item in contentNavigation"
+            :key="item.key"
+            type="button"
+            class="nav-item"
+            :class="{ active: view === 'content' && contentSection === item.key }"
+            @click="openContent(item.key)"
+          >
+            <span>{{ item.label }}</span>
+          </button>
+        </div>
 
         <div v-for="section in sections" :key="section.group" class="nav-group">
           <p>{{ section.group }}</p>
@@ -393,7 +415,7 @@ function formatDate(value: string | null | undefined): string {
           Validation, Revisions, Publish и Rollback уже доступны в отдельном Content Workspace.
           Следующий блок — global search, filters, relations и улучшение editor UX.
         </p>
-        <button class="primary-link" type="button" @click="view = 'content'">
+        <button class="primary-link" type="button" @click="openContent('monsters')">
           Открыть Content Workspace
         </button>
       </section>
@@ -401,7 +423,10 @@ function formatDate(value: string | null | undefined): string {
       <p v-if="errorMessage" class="error-message error-message--dashboard">{{ errorMessage }}</p>
       </template>
 
-      <AdminView v-else-if="view === 'content'" />
+      <AdminView
+        v-else-if="view === 'content'"
+        :initial-section="contentSection"
+      />
     </section>
   </div>
 </template>

@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
   filterAdminEntities,
+  findAdminEntityReferences,
   presentAdminEntity,
   replaceDraftEntity,
+  searchAdminPackage,
 } from '@/admin/adminWorkspace'
 
 describe('admin workspace helpers', () => {
@@ -74,4 +76,63 @@ describe('admin workspace helpers', () => {
       { id: 'NEW_RING' },
     )).toThrow('уже существует')
   })
+  it('searches across configured content sections', () => {
+    const packageObject = {
+      monsters: [{ id: 'WOLF', displayName: 'Лесной волк' }],
+      items: [{ id: 'WOLF_FANG', name: 'Волчий клык' }],
+      lootTables: [{ id: 'WOLF_LOOT', entries: [] }],
+    }
+    const sections = [
+      { key: 'monsters', label: 'Monsters' },
+      { key: 'items', label: 'Items' },
+      { key: 'lootTables', label: 'Loot' },
+    ]
+
+    expect(searchAdminPackage(packageObject, sections, 'wolf')).toEqual([
+      expect.objectContaining({ section: 'monsters', entityId: 'WOLF' }),
+      expect.objectContaining({ section: 'items', entityId: 'WOLF_FANG' }),
+      expect.objectContaining({ section: 'lootTables', entityId: 'WOLF_LOOT' }),
+    ])
+  })
+
+  it('finds direct entity references without counting the entity own id', () => {
+    const packageObject = {
+      monsters: [
+        { id: 'WOLF', lootTableId: 'WOLF_LOOT' },
+        { id: 'DIRE_WOLF', lootTableId: 'WOLF_LOOT' },
+      ],
+      locations: [
+        { id: 'FOREST', encounters: [{ monsterId: 'WOLF', weight: 1 }] },
+      ],
+      lootTables: [
+        { id: 'WOLF_LOOT', entries: [{ itemId: 'WOLF_FANG' }] },
+      ],
+    }
+    const sections = [
+      { key: 'monsters', label: 'Monsters' },
+      { key: 'locations', label: 'Locations' },
+      { key: 'lootTables', label: 'Loot' },
+    ]
+
+    expect(findAdminEntityReferences(packageObject, sections, 'WOLF')).toEqual([
+      expect.objectContaining({
+        section: 'locations',
+        entityId: 'FOREST',
+        path: 'encounters[0].monsterId',
+      }),
+    ])
+    expect(findAdminEntityReferences(packageObject, sections, 'WOLF_LOOT')).toEqual([
+      expect.objectContaining({
+        section: 'monsters',
+        entityId: 'WOLF',
+        path: 'lootTableId',
+      }),
+      expect.objectContaining({
+        section: 'monsters',
+        entityId: 'DIRE_WOLF',
+        path: 'lootTableId',
+      }),
+    ])
+  })
+
 })
