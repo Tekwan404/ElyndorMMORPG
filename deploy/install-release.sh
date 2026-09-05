@@ -12,7 +12,8 @@ if [[ ! -f "$archive" ]]; then
   exit 1
 fi
 
-if tar -tzf "$archive" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then
+archive_listing="$(tar -tzf "$archive")"
+if grep -Eq '(^/|(^|/)\.\.(/|$))' <<<"$archive_listing"; then
   echo "Release archive contains unsafe paths." >&2
   exit 1
 fi
