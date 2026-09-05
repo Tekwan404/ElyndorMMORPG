@@ -683,7 +683,6 @@ onMounted(async () => {
             v-else-if="selectedEntityId && selectedEntity && selectedSection === 'classProfiles' && editorMode === 'form'"
             :entity="selectedEntity"
             :resource-ids="resourceIds"
-            :ability-ids="abilityIds"
             @update:entity="updateEntityFromForm"
           />
           <AdminTalentTreeForm

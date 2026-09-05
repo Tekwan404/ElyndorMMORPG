@@ -13,8 +13,8 @@ function baseClass() {
     allowedWeaponCategories: ['ONE_HAND_SWORD'],
     allowedArmorCategories: ['HEAVY'],
     prototypeIdentity: 'Warrior',
-    startingAbilityIds: ['STRIKE'],
-    abilityUnlocks: [{ abilityId: 'HEAVY_BLOW', unlockLevel: 2 }],
+    startingAbilityIds: [],
+    abilityUnlocks: [],
     combatAutoAttack: {
       interval: '00:00:02',
       baseDamage: 0,
@@ -27,7 +27,7 @@ function baseClass() {
 describe('AdminClassProfileForm', () => {
   it('updates class growth without dropping sibling stats', async () => {
     const wrapper = mount(AdminClassProfileForm, {
-      props: { entity: baseClass(), resourceIds: ['RAGE', 'MANA'], abilityIds: ['STRIKE', 'HEAVY_BLOW'] },
+      props: { entity: baseClass(), resourceIds: ['RAGE', 'MANA'] },
     })
 
     await wrapper.get('[data-testid="class-growth-strength"]').setValue('3.5')
@@ -38,32 +38,14 @@ describe('AdminClassProfileForm', () => {
     expect(next.levelGrowth.stamina).toBe(2)
   })
 
-  it('adds only available starting abilities', async () => {
+  it('does not expose class-based ability grants', () => {
     const wrapper = mount(AdminClassProfileForm, {
-      props: {
-        entity: baseClass(),
-        resourceIds: ['RAGE'],
-        abilityIds: ['STRIKE', 'HEAVY_BLOW', 'PROVOKE'],
-      },
+      props: { entity: baseClass(), resourceIds: ['RAGE'] },
     })
 
-    await wrapper.get('[data-testid="class-starting-ability"]').setValue('PROVOKE')
-    await wrapper.get('[data-testid="class-add-starting-ability"]').trigger('click')
-    const emitted = wrapper.emitted('update:entity') ?? []
-    const next = emitted[emitted.length - 1]?.[0] as { startingAbilityIds: string[] }
-
-    expect(next.startingAbilityIds).toEqual(['STRIKE', 'PROVOKE'])
+    expect(wrapper.text()).toContain('Только через Talents')
+    expect(wrapper.find('[data-testid="class-starting-ability"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="class-unlock-level"]').exists()).toBe(false)
   })
 
-  it('clamps unlock level to the supported 2-60 range', async () => {
-    const wrapper = mount(AdminClassProfileForm, {
-      props: { entity: baseClass(), resourceIds: ['RAGE'], abilityIds: ['STRIKE', 'HEAVY_BLOW'] },
-    })
-
-    await wrapper.get('[data-testid="class-unlock-level"]').setValue('99')
-    const emitted = wrapper.emitted('update:entity') ?? []
-    const next = emitted[emitted.length - 1]?.[0] as { abilityUnlocks: Array<{ unlockLevel: number }> }
-
-    expect(next.abilityUnlocks[0]?.unlockLevel).toBe(60)
-  })
 })

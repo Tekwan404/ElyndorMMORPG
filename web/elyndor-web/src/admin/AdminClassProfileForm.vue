@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-
 type JsonRecord = Record<string, unknown>
 
 const weaponCategories = [
@@ -12,36 +10,11 @@ const armorCategories = ['LIGHT', 'MEDIUM', 'HEAVY']
 const props = defineProps<{
   entity: JsonRecord
   resourceIds: string[]
-  abilityIds: string[]
 }>()
 
 const emit = defineEmits<{
   'update:entity': [entity: JsonRecord]
 }>()
-
-const newStartingAbilityId = ref('')
-const newUnlockAbilityId = ref('')
-
-const startingAbilityIds = computed<string[]>(() => stringArray(props.entity.startingAbilityIds))
-const abilityUnlocks = computed<JsonRecord[]>(() =>
-  Array.isArray(props.entity.abilityUnlocks) ? props.entity.abilityUnlocks.filter(isRecord) : [],
-)
-
-const availableStartingAbilities = computed(() => {
-  const used = new Set([
-    ...startingAbilityIds.value,
-    ...abilityUnlocks.value.map(unlock => stringValue(unlock.abilityId)),
-  ])
-  return props.abilityIds.filter(id => !used.has(id))
-})
-
-const availableUnlockAbilities = computed(() => {
-  const used = new Set([
-    ...startingAbilityIds.value,
-    ...abilityUnlocks.value.map(unlock => stringValue(unlock.abilityId)),
-  ])
-  return props.abilityIds.filter(id => !used.has(id))
-})
 
 function update(key: string, value: unknown): void {
   const next = cloneRecord(props.entity)
@@ -212,40 +185,10 @@ function isRecord(value: unknown): value is JsonRecord {
       </div>
     </fieldset>
 
-    <fieldset class="stack">
-      <legend>Starting Abilities</legend>
-      <article v-for="id in startingAbilityIds" :key="id" class="row">
-        <code>{{ id }}</code>
-        <button class="danger" type="button" @click="removeStartingAbility(id)">Убрать</button>
-      </article>
-      <div class="add-row">
-        <select v-model="newStartingAbilityId" data-testid="class-starting-ability">
-          <option value="">Выбери ability…</option>
-          <option v-for="id in availableStartingAbilities" :key="id" :value="id">{{ id }}</option>
-        </select>
-        <button data-testid="class-add-starting-ability" type="button" :disabled="availableStartingAbilities.length === 0" @click="addStartingAbility">+ Starting Ability</button>
-      </div>
-    </fieldset>
-
-    <fieldset class="stack">
-      <legend>Ability Unlocks</legend>
-      <article v-for="(unlock, index) in abilityUnlocks" :key="`${stringValue(unlock.abilityId)}-${index}`" class="unlock-row">
-        <select :value="stringValue(unlock.abilityId)" @change="setUnlockAbility(index, $event)">
-          <option v-for="id in abilityIds" :key="id" :value="id">{{ id }}</option>
-        </select>
-        <label>
-          <span>Level</span>
-          <input data-testid="class-unlock-level" type="number" min="2" max="60" :value="unlock.unlockLevel" @input="setUnlockLevel(index, $event)" />
-        </label>
-        <button class="danger" type="button" @click="removeUnlock(index)">Удалить</button>
-      </article>
-      <div class="add-row">
-        <select v-model="newUnlockAbilityId" data-testid="class-unlock-ability">
-          <option value="">Выбери ability…</option>
-          <option v-for="id in availableUnlockAbilities" :key="id" :value="id">{{ id }}</option>
-        </select>
-        <button type="button" :disabled="availableUnlockAbilities.length === 0" @click="addUnlock">+ Unlock</button>
-      </div>
+    <fieldset class="stack ability-rule">
+      <legend>Active abilities</legend>
+      <strong>Только через Talents</strong>
+      <p>Class Profile не выдаёт стартовые скиллы и не открывает их по уровню. Новый активный skill появляется только через <code>UNLOCK_ABILITY</code> в дереве талантов.</p>
     </fieldset>
 
     <fieldset v-if="entity.combatAutoAttack" class="auto-attack">
@@ -272,12 +215,10 @@ textarea { min-height: 6rem; resize: vertical; }
 .checks { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); margin-top: var(--ui-space-2); }
 label.check { display: flex; align-items: center; gap: var(--ui-space-1); min-height: 2rem; padding: 0 var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); }
 .check input { width: auto; min-height: auto; }
-.row, .add-row, .unlock-row { display: grid; align-items: center; gap: var(--ui-space-2); }
-.row { grid-template-columns: 1fr auto; }
-.add-row { grid-template-columns: 1fr auto; }
-.unlock-row { grid-template-columns: 2fr 1fr auto; }
-.danger { color: var(--ui-color-danger); border-color: var(--ui-color-danger); }
+.ability-rule strong { color: var(--ui-color-success); }
+.ability-rule p { margin: 0; color: var(--ui-color-text-muted); }
+.ability-rule code { color: var(--ui-color-primary); }
 .hint { margin: 0; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 @media (max-width: 850px) { fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 620px) { fieldset, .row, .add-row, .unlock-row { grid-template-columns: 1fr; } label.wide { grid-column: auto; } }
+@media (max-width: 620px) { fieldset { grid-template-columns: 1fr; } label.wide { grid-column: auto; } }
 </style>
