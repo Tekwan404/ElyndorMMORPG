@@ -151,6 +151,9 @@ public sealed class CharacterDerivedStateService(
             talentModifiers.Stats.MaxResourceFlat);
 
         string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
+            .Concat((classProfile.AbilityUnlocks ?? [])
+                .Where(unlock => unlock.UnlockLevel <= level)
+                .Select(unlock => unlock.AbilityId))
             .Concat(talentModifiers.UnlockedAbilityIds)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)

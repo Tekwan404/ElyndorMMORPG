@@ -66,6 +66,25 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
     }
 
     [Fact]
+    public async Task ClassAbilityUnlocksBecomeKnownAtTheirConfiguredLevel()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        (Guid characterId, _) = await CreateCharacterAsync("WARRIOR", 4);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterDerivedStateService service = CreateService(context, content);
+        CharacterDerivedState state = await service.ResolveAsync(
+            characterId, "WARRIOR", 4, CancellationToken.None);
+
+        Assert.Contains("STRIKE", state.KnownAbilityIds);
+        Assert.Contains("PROVOKE", state.KnownAbilityIds);
+        Assert.Contains("HEAVY_BLOW", state.KnownAbilityIds);
+        Assert.Contains("SHIELD_BASH", state.KnownAbilityIds);
+        Assert.DoesNotContain("BATTLE_FOCUS", state.KnownAbilityIds);
+        Assert.DoesNotContain("BATTLE_SHOUT", state.KnownAbilityIds);
+    }
+
+    [Fact]
     public async Task TalentStateFromPreviousClassIsIgnored()
     {
         GameContentPackage content = await LoadContentAsync();
