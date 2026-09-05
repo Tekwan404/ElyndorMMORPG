@@ -155,7 +155,7 @@ if (migrateOnStartup || restorePublishedOnStartup)
                 .CreateLogger("Elyndor.ContentStartup");
             GameContentSnapshot fileSnapshot = contentSnapshotProvider.GetCurrent();
 
-            StartupLogMessages.LogPublishedContentFallback(
+            Elyndor.Server.StartupLogMessages.LogPublishedContentFallback(
                 startupLogger,
                 fileSnapshot.ContentVersion,
                 fileSnapshot.BalanceVersion,
