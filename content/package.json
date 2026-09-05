@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.9.3",
+  "contentVersion": "0.9.4",
   "balanceVersion": "0.7.2",
-  "publishedAtUtc": "2026-09-01T00:00:00+00:00",
+  "publishedAtUtc": "2026-09-05T14:52:35+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -561,6 +561,12 @@
       "transitions": [
         "STARTER_TOWN",
         "DEEP_FOREST"
+      ],
+      "encounters": [
+        {
+          "monsterId": "WOLF",
+          "weight": 1
+        }
       ]
     },
     {
@@ -570,6 +576,12 @@
       "recommendedLevel": 3,
       "transitions": [
         "WHISPERING_FOREST"
+      ],
+      "encounters": [
+        {
+          "monsterId": "WOLF",
+          "weight": 1
+        }
       ]
     }
   ],
@@ -3162,6 +3174,9 @@
     {
       "id": "WOLF",
       "name": "Forest Wolf",
+      "displayName": "Волк",
+      "description": "Голодный лесной волк, защищающий свою территорию.",
+      "artId": "wolf",
       "rank": "Normal",
       "level": 3,
       "maxHp": 180,

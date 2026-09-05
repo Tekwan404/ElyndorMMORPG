@@ -18,9 +18,19 @@ public static class WorldEncounterContentValidator
         {
             LocationDefinition location = package.Locations[locationIndex];
             IReadOnlyList<LocationEncounterDefinition> encounters = location.Encounters ?? [];
+            bool isSafe = string.Equals(location.DangerLevel, "SAFE", StringComparison.Ordinal);
+            if (!isSafe && encounters.Count == 0)
+            {
+                errors.Add(new(
+                    "HOSTILE_LOCATION_HAS_NO_ENCOUNTERS",
+                    $"locations[{locationIndex}].encounters",
+                    $"Non-safe location '{location.Id}' must define at least one ordinary encounter."));
+                continue;
+            }
+
             if (encounters.Count == 0) continue;
 
-            if (string.Equals(location.DangerLevel, "SAFE", StringComparison.Ordinal))
+            if (isSafe)
             {
                 errors.Add(new(
                     "SAFE_LOCATION_HAS_HOSTILE_ENCOUNTERS",
