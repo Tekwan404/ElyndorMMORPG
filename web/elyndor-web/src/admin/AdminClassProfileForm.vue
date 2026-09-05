@@ -219,7 +219,7 @@ function isRecord(value: unknown): value is JsonRecord {
           <option value="">Выбери ability…</option>
           <option v-for="id in availableStartingAbilities" :key="id" :value="id">{{ id }}</option>
         </select>
-        <button type="button" :disabled="availableStartingAbilities.length === 0" @click="addStartingAbility">+ Starting Ability</button>
+        <button data-testid="class-add-starting-ability" type="button" :disabled="availableStartingAbilities.length === 0" @click="addStartingAbility">+ Starting Ability</button>
       </div>
     </fieldset>
 

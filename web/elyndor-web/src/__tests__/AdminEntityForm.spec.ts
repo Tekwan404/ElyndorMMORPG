@@ -25,6 +25,36 @@ describe('AdminEntityForm', () => {
     expect(next.customFutureField).toBe('keep-me')
   })
 
+  it('uses content-backed monster loot and ability relations', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'monsters',
+        entity: {
+          id: 'WOLF',
+          lootTableId: null,
+          aiProfileId: 'WOLF_BASIC_AI',
+          abilityIds: [],
+          stats: {},
+        },
+        lootTableIds: ['WOLF_LOOT'],
+        aiProfileIds: ['WOLF_BASIC_AI'],
+        abilityIds: ['BITE'],
+      },
+    })
+
+    await wrapper.get('[data-testid="monster-loot-table"]').setValue('WOLF_LOOT')
+    let emitted = wrapper.emitted('update:entity') ?? []
+    let next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+    expect(next.lootTableId).toBe('WOLF_LOOT')
+
+    await wrapper.setProps({ entity: next })
+    await wrapper.get('[data-testid="monster-add-ability"]').setValue('BITE')
+    await wrapper.get('[data-testid="monster-add-ability"]').trigger('change')
+    emitted = wrapper.emitted('update:entity') ?? []
+    next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+    expect(next.abilityIds).toEqual(['BITE'])
+  })
+
   it('updates an ability damage coefficient inside the existing damage action', async () => {
     const wrapper = mount(AdminEntityForm, {
       props: {
@@ -89,6 +119,34 @@ describe('AdminEntityForm', () => {
     expect(next.stackable).toBe(false)
     expect(next.maxStack).toBe(1)
     expect(next.slot).toBe('Accessory')
+  })
+
+  it('normalizes equipment category shape when slot changes', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'items',
+        entity: {
+          id: 'OLD_RING',
+          type: 'Equipment',
+          stackable: false,
+          maxStack: 1,
+          slot: 'Accessory',
+          weaponCategory: null,
+          armorCategory: null,
+          allowedClassIds: [],
+          stats: { strength: 1, agility: 0, intellect: 0, stamina: 0 },
+        },
+        classIds: ['WARRIOR', 'MAGE'],
+      },
+    })
+
+    await wrapper.get('[data-testid="item-slot"]').setValue('Weapon')
+    const emitted = wrapper.emitted('update:entity') ?? []
+    const next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+
+    expect(next.slot).toBe('Weapon')
+    expect(next.weaponCategory).toBe('ONE_HAND_SWORD')
+    expect(next.armorCategory).toBeNull()
   })
 
   it('updates nested item stats', async () => {

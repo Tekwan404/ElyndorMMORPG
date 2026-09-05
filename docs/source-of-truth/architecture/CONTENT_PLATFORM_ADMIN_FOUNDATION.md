@@ -75,7 +75,7 @@ There is deliberately no endpoint that mutates live content directly.
 `/admin` is a minimal operational UI, not a second game client. It provides:
 
 - live content/balance identity and payload hash;
-- structured form editing for Monster, Ability, Item, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters;
+- structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters;
 - creation of new Monster, Item, Loot Table, and Merchant entities inside the local draft, including a dedicated basic AI profile for new monsters;
 - category/entity JSON editing for advanced or not-yet-structured fields;
 - full-package JSON fallback;

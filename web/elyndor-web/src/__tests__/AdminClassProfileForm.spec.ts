@@ -48,7 +48,7 @@ describe('AdminClassProfileForm', () => {
     })
 
     await wrapper.get('[data-testid="class-starting-ability"]').setValue('PROVOKE')
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('[data-testid="class-add-starting-ability"]').trigger('click')
     const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as { startingAbilityIds: string[] }
 

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
 import AdminLocationForm from '@/admin/AdminLocationForm.vue'
 import AdminLootTableForm from '@/admin/AdminLootTableForm.vue'
@@ -68,7 +69,7 @@ const entityList = computed<JsonRecord[]>(() => {
   return Array.isArray(value) ? value.filter(isRecord) : []
 })
 const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
-const structuredSections = ['monsters', 'abilities', 'items', 'talentTrees', 'locations', 'lootTables', 'merchants']
+const structuredSections = ['monsters', 'abilities', 'items', 'talentTrees', 'locations', 'classProfiles', 'lootTables', 'merchants']
 const hasStructuredEditor = computed(() => structuredSections.includes(selectedSection.value))
 const canCreateEntity = computed(() =>
   ['monsters', 'items', 'lootTables', 'merchants'].includes(selectedSection.value),
@@ -92,6 +93,18 @@ const monsterOptions = computed(() => recordArray(draftPackage.value?.monsters)
   .filter(monster => monster.id))
 const abilityIds = computed(() => recordArray(draftPackage.value?.abilities)
   .map(ability => stringProperty(ability, 'id'))
+  .filter(Boolean))
+const resourceIds = computed(() => recordArray(draftPackage.value?.resourceProfiles)
+  .map(resource => stringProperty(resource, 'id'))
+  .filter(Boolean))
+const lootTableIds = computed(() => recordArray(draftPackage.value?.lootTables)
+  .map(table => stringProperty(table, 'id'))
+  .filter(Boolean))
+const aiProfileIds = computed(() => recordArray(draftPackage.value?.monsterAiProfiles)
+  .map(profile => stringProperty(profile, 'id'))
+  .filter(Boolean))
+const classIds = computed(() => recordArray(draftPackage.value?.classProfiles)
+  .map(profile => stringProperty(profile, 'id'))
   .filter(Boolean))
 const isDirty = computed(() => {
   if (!current.value) return false
@@ -647,6 +660,17 @@ onMounted(async () => {
             v-if="selectedEntityId && selectedEntity && ['monsters', 'abilities', 'items'].includes(selectedSection) && editorMode === 'form'"
             :section-key="selectedSection"
             :entity="selectedEntity"
+            :loot-table-ids="lootTableIds"
+            :ai-profile-ids="aiProfileIds"
+            :ability-ids="abilityIds"
+            :class-ids="classIds"
+            @update:entity="updateEntityFromForm"
+          />
+          <AdminClassProfileForm
+            v-else-if="selectedEntityId && selectedEntity && selectedSection === 'classProfiles' && editorMode === 'form'"
+            :entity="selectedEntity"
+            :resource-ids="resourceIds"
+            :ability-ids="abilityIds"
             @update:entity="updateEntityFromForm"
           />
           <AdminTalentTreeForm
