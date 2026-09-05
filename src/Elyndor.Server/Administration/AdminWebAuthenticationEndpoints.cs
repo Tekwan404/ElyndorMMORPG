@@ -17,6 +17,7 @@ public static class AdminWebAuthenticationEndpoints
 
         group.MapPost("/request-code", RequestCodeAsync);
         group.MapPost("/verify-code", VerifyCodeAsync);
+        group.MapPost("/password", VerifyPasswordAsync);
         return endpoints;
     }
 
@@ -65,6 +66,62 @@ public static class AdminWebAuthenticationEndpoints
         };
     }
 
+    private static async Task<IResult> VerifyPasswordAsync(
+        AdminWebAuthenticationPasswordRequest request,
+        HttpContext context,
+        AdminWebAuthenticationService service,
+        AccountResolver accountResolver,
+        JwtTokenIssuer tokenIssuer,
+        CancellationToken cancellationToken)
+    {
+        if (request.TelegramUserId <= 0
+            || string.IsNullOrEmpty(request.Password)
+            || request.Password.Length > 512)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "admin_login_request_invalid");
+        }
+
+        AdminWebPasswordVerificationStatus verification =
+            service.VerifyEmergencyPassword(
+                request.TelegramUserId,
+                request.Password);
+
+        if (verification != AdminWebPasswordVerificationStatus.Success)
+        {
+            return verification switch
+            {
+                AdminWebPasswordVerificationStatus.NotAllowed =>
+                    Problem(
+                        context,
+                        StatusCodes.Status403Forbidden,
+                        "admin_login_not_allowed"),
+                AdminWebPasswordVerificationStatus.RateLimited =>
+                    Problem(
+                        context,
+                        StatusCodes.Status429TooManyRequests,
+                        "admin_login_password_rate_limited"),
+                AdminWebPasswordVerificationStatus.Disabled =>
+                    Problem(
+                        context,
+                        StatusCodes.Status503ServiceUnavailable,
+                        "admin_login_password_disabled"),
+                _ => Problem(
+                    context,
+                    StatusCodes.Status401Unauthorized,
+                    "admin_login_password_invalid")
+            };
+        }
+
+        return await IssueAdminTokenAsync(
+            request.TelegramUserId,
+            accountResolver,
+            tokenIssuer,
+            cancellationToken);
+    }
+
     private static async Task<IResult> VerifyCodeAsync(
         AdminWebAuthenticationVerifyRequest request,
         HttpContext context,
@@ -108,12 +165,25 @@ public static class AdminWebAuthenticationEndpoints
             return Problem(context, status, code);
         }
 
-        Account account = await accountResolver.ResolveAsync(
+        return await IssueAdminTokenAsync(
             request.TelegramUserId,
+            accountResolver,
+            tokenIssuer,
+            cancellationToken);
+    }
+
+    private static async Task<IResult> IssueAdminTokenAsync(
+        long telegramUserId,
+        AccountResolver accountResolver,
+        JwtTokenIssuer tokenIssuer,
+        CancellationToken cancellationToken)
+    {
+        Account account = await accountResolver.ResolveAsync(
+            telegramUserId,
             cancellationToken);
         IssuedAccessToken token = tokenIssuer.Issue(
             account.Id,
-            request.TelegramUserId,
+            telegramUserId,
             [AdminAuthorization.SuperAdminRole]);
 
         return Results.Ok(new AuthenticationResponse(
