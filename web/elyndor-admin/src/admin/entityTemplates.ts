@@ -253,27 +253,28 @@ function createMonster(
     artId: null,
   }
 
-  for (const locationId of request.locationIds ?? []) {
-    packageObject = attachMonsterToLocation(
-      packageObject,
-      id,
-      locationId,
-      request.encounterWeight ?? 1,
-    )
-  }
+  const requestedLocations = request.locationIds ?? []
+  if (requestedLocations.length) {
+    const locations = recordArray(packageObject.locations)
+    const weight = request.encounterWeight ?? 1
+    if (!Number.isFinite(weight) || weight <= 0) {
+      throw new Error('Encounter weight должен быть больше нуля.')
+    }
 
-  // attachMonsterToLocation clones the package, so carry its mutated location list back.
-  if (request.locationIds?.length) {
-    const updated = request.locationIds.reduce(
-      (current, locationId) => attachMonsterToLocation(
-        current,
-        id,
-        locationId,
-        request.encounterWeight ?? 1,
-      ),
-      { ...packageObject, monsters: [monster] } as JsonRecord,
-    )
-    packageObject.locations = updated.locations
+    for (const locationId of requestedLocations) {
+      const location = locations.find(candidate => candidate.id === locationId)
+      if (!location) throw new Error(`Локация ${locationId} не найдена.`)
+      if (location.dangerLevel === 'SAFE') {
+        throw new Error(`Нельзя добавить hostile encounter в SAFE-локацию ${locationId}.`)
+      }
+      const encounters = recordArray(location.encounters)
+      if (!encounters.some(entry => entry.monsterId === id)) {
+        encounters.push({ monsterId: id, weight })
+        location.encounters = encounters
+      }
+    }
+
+    packageObject.locations = locations
   }
 
   return monster
@@ -485,7 +486,7 @@ function duplicateMonsterRelations(
   aiProfiles.push({
     id: nextAiId,
     priorityAbilityIds: Array.isArray(sourceAi?.priorityAbilityIds)
-      ? cloneJson(sourceAi!.priorityAbilityIds as unknown as JsonRecord)
+      ? cloneJson(sourceAi!.priorityAbilityIds)
       : [],
     version: 1,
   })
