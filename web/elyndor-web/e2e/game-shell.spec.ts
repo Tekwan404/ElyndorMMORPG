@@ -50,7 +50,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
-  await page.getByRole('button', { name: 'Мир' }).click()
+  await page.getByRole('button', { name: 'Локация' }).click()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
