@@ -121,7 +121,8 @@ public static class TalentEndpoints
         if (result.IsSuccess) return Results.Ok(ToResponse(result.Snapshot!));
         int status = result.ErrorCode switch
         {
-            TalentErrorCodes.Conflict => StatusCodes.Status409Conflict,
+            TalentErrorCodes.Conflict or TalentErrorCodes.MutationConflict =>
+                StatusCodes.Status409Conflict,
             "character_not_found" => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status422UnprocessableEntity
         };
