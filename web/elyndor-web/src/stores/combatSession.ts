@@ -34,6 +34,11 @@ export interface TrainingStats {
   maxHit: number
 }
 
+interface InvokeOutcome {
+  succeeded: boolean
+  receivedResponse: boolean
+}
+
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const emptyTrainingStats = (): TrainingStats => ({
   startedAtUtc: null,
@@ -56,6 +61,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
+  const retryCommandIds = new Map<string, string>()
 
   async function connect(): Promise<void> {
     if (connection?.state === HubConnectionState.Connected) return
@@ -137,20 +143,29 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   async function useAbility(abilityId: string): Promise<void> {
     if (!snapshot.value) return
-    await invoke('UseAbility', snapshot.value.sessionId, abilityId, crypto.randomUUID())
+    const sessionId = snapshot.value.sessionId
+    await invokeRetryableCommand(
+      `UseAbility:${sessionId}:${abilityId}`,
+      commandId => invokeWithOutcome('UseAbility', sessionId, abilityId, commandId),
+    )
   }
 
   async function useConsumable(itemDefinitionId: string): Promise<void> {
     if (!snapshot.value || isTraining.value) return
-    await invoke('UseConsumable', snapshot.value.sessionId, itemDefinitionId, crypto.randomUUID())
+    const sessionId = snapshot.value.sessionId
+    await invokeRetryableCommand(
+      `UseConsumable:${sessionId}:${itemDefinitionId}`,
+      commandId => invokeWithOutcome('UseConsumable', sessionId, itemDefinitionId, commandId),
+    )
   }
 
   async function toggleAutoAttack(): Promise<void> {
     if (!snapshot.value) return
-    await invoke(
-      snapshot.value.player.autoAttackEnabled ? 'StopAutoAttack' : 'StartAutoAttack',
-      snapshot.value.sessionId,
-      crypto.randomUUID(),
+    const sessionId = snapshot.value.sessionId
+    const method = snapshot.value.player.autoAttackEnabled ? 'StopAutoAttack' : 'StartAutoAttack'
+    await invokeRetryableCommand(
+      `${method}:${sessionId}`,
+      commandId => invokeWithOutcome(method, sessionId, commandId),
     )
   }
 
@@ -163,6 +178,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         events.value = []
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
+        retryCommandIds.clear()
         errorCode.value = null
         diagnostic.value = null
         return true
@@ -182,12 +198,17 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       events.value = []
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
+      retryCommandIds.clear()
     }
     return succeeded
   }
 
   async function invoke(method: string, ...args: unknown[]): Promise<boolean> {
-    if (pending.value) return false
+    return (await invokeWithOutcome(method, ...args)).succeeded
+  }
+
+  async function invokeWithOutcome(method: string, ...args: unknown[]): Promise<InvokeOutcome> {
+    if (pending.value) return { succeeded: false, receivedResponse: false }
     pending.value = true
     errorCode.value = null
     diagnostic.value = null
@@ -197,15 +218,26 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       connected = true
       const update = await connection!.invoke<CombatUpdate>(method, ...args)
       applyUpdate(update)
-      return update.succeeded
+      return { succeeded: update.succeeded, receivedResponse: true }
     } catch (error) {
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)
       }
-      return false
+      return { succeeded: false, receivedResponse: false }
     } finally {
       pending.value = false
     }
+  }
+
+  async function invokeRetryableCommand(
+    key: string,
+    operation: (commandId: string) => Promise<InvokeOutcome>,
+  ): Promise<boolean> {
+    const commandId = retryCommandIds.get(key) ?? crypto.randomUUID()
+    retryCommandIds.set(key, commandId)
+    const outcome = await operation(commandId)
+    if (outcome.receivedResponse) retryCommandIds.delete(key)
+    return outcome.succeeded
   }
 
   function applyUpdate(update: CombatUpdate): void {
@@ -221,6 +253,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const newSession = incomingSnapshot !== null
       && snapshot.value?.sessionId !== incomingSnapshot.sessionId
     if (newSession && incomingSnapshot) {
+      retryCommandIds.clear()
       snapshot.value = null
       events.value = []
       reward.value = null
@@ -238,6 +271,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
     if (incomingSnapshot && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
       snapshot.value = incomingSnapshot
+    }
+    if (incomingSnapshot && incomingSnapshot.status !== 'Active') {
+      retryCommandIds.clear()
     }
     const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
