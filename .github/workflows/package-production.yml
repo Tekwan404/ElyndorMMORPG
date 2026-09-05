@@ -25,7 +25,9 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: web/elyndor-web/package-lock.json
+          cache-dependency-path: |
+            web/elyndor-web/package-lock.json
+            web/elyndor-admin/package-lock.json
 
       - name: Build production release
         run: ./deploy/build-release.sh artifacts/elyndor-linux-x64.tar.gz

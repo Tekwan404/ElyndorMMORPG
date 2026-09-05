@@ -1,4 +1,25 @@
-game.example.com {
+game.elyndor.su {
     encode zstd gzip
+
+    @internalAdmin path /__admin*
+    respond @internalAdmin 404
+
     reverse_proxy 127.0.0.1:5080
+}
+
+admin.elyndor.su {
+    encode zstd gzip
+
+    handle /api/* {
+        reverse_proxy 127.0.0.1:5080
+    }
+
+    handle /hubs/* {
+        reverse_proxy 127.0.0.1:5080
+    }
+
+    handle {
+        rewrite * /__admin{uri}
+        reverse_proxy 127.0.0.1:5080
+    }
 }

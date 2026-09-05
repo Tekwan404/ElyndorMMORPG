@@ -15,6 +15,8 @@ mkdir -p "$(dirname "$output_path")"
 
 npm ci --prefix "$repo_root/web/elyndor-web"
 npm run build --prefix "$repo_root/web/elyndor-web"
+npm ci --prefix "$repo_root/web/elyndor-admin"
+npm run build --prefix "$repo_root/web/elyndor-admin"
 
 dotnet restore "$repo_root/Elyndor.slnx"
 dotnet publish "$repo_root/src/Elyndor.Server/Elyndor.Server.csproj" \
@@ -25,14 +27,16 @@ dotnet publish "$repo_root/src/Elyndor.Server/Elyndor.Server.csproj" \
   -p:DebugSymbols=false \
   --output "$publish_dir"
 
-mkdir -p "$publish_dir/frontend"
+mkdir -p "$publish_dir/frontend" "$publish_dir/frontend-admin"
 cp -a "$repo_root/web/elyndor-web/dist/." "$publish_dir/frontend/"
+cp -a "$repo_root/web/elyndor-admin/dist/." "$publish_dir/frontend-admin/"
 
 revision="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || printf 'unknown')"
 printf '%s\n' "$revision" > "$publish_dir/REVISION"
 
 test -f "$publish_dir/Elyndor.Server.dll"
 test -f "$publish_dir/frontend/index.html"
+test -f "$publish_dir/frontend-admin/index.html"
 test -f "$publish_dir/content/package.json"
 
 tar -C "$publish_dir" -czf "$output_path" .

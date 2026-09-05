@@ -41,6 +41,20 @@ PhysicalFileProvider? frontendFileProvider = File.Exists(
         ? new PhysicalFileProvider(frontendDistPath)
         : null;
 
+string adminFrontendDistPath = Path.GetFullPath(
+    builder.Configuration["AdminFrontend:DistPath"]
+        ?? Path.Combine(
+            builder.Environment.ContentRootPath,
+            "..",
+            "..",
+            "web",
+            "elyndor-admin",
+            "dist"));
+PhysicalFileProvider? adminFrontendFileProvider = File.Exists(
+    Path.Combine(adminFrontendDistPath, "index.html"))
+        ? new PhysicalFileProvider(adminFrontendDistPath)
+        : null;
+
 builder.AddServiceDefaults();
 builder.AddElyndorInfrastructure();
 
@@ -55,6 +69,7 @@ builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
 builder.Services.AddSingleton<ITelegramMessageSender, TelegramBotMessageSender>();
+builder.Services.AddSingleton<AdminWebAuthenticationService>();
 builder.Services.AddOptions<TelegramAdminOptions>()
     .BindConfiguration(TelegramAdminOptions.SectionName)
     .Validate(options => options.IsConfigured, "Telegram administration configuration is invalid.")
@@ -185,6 +200,24 @@ if (frontendFileProvider is not null)
     });
 }
 
+if (adminFrontendFileProvider is not null)
+{
+    app.Lifetime.ApplicationStopped.Register(adminFrontendFileProvider.Dispose);
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = adminFrontendFileProvider,
+        RequestPath = "/__admin",
+        OnPrepareResponse = context =>
+        {
+            if (context.Context.Request.Path.StartsWithSegments("/__admin/assets"))
+            {
+                context.Context.Response.Headers.CacheControl =
+                    "public,max-age=31536000,immutable";
+            }
+        }
+    });
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -196,6 +229,7 @@ app.UseAuthorization();
 bool mapDevelopmentAuthentication = app.Environment.IsDevelopment()
     && app.Configuration.GetValue<bool>("Authentication:Development:Enabled");
 app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
+app.MapAdminWebAuthenticationEndpoints();
 app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
 app.MapTalentEndpoints();
@@ -216,6 +250,17 @@ app.MapGet(
 app.MapDefaultEndpoints();
 app.Map("/api/{**path}", () => Results.NotFound());
 app.Map("/hubs/{**path}", () => Results.NotFound());
+
+if (adminFrontendFileProvider is not null)
+{
+    app.MapFallbackToFile(
+        "/__admin/{*path:nonfile}",
+        "index.html",
+        new StaticFileOptions
+        {
+            FileProvider = adminFrontendFileProvider
+        });
+}
 
 if (frontendFileProvider is not null)
 {

@@ -33,9 +33,11 @@ fi
 mkdir "$release_dir"
 tar -xzf "$archive" -C "$release_dir"
 
-if [[ ! -f "$release_dir/Elyndor.Server.dll" || ! -f "$release_dir/frontend/index.html" ]]; then
+if [[ ! -f "$release_dir/Elyndor.Server.dll" \
+    || ! -f "$release_dir/frontend/index.html" \
+    || ! -f "$release_dir/frontend-admin/index.html" ]]; then
   rm -rf "$release_dir"
-  echo "Release is incomplete: server or frontend is missing." >&2
+  echo "Release is incomplete: server, game frontend, or admin frontend is missing." >&2
   exit 1
 fi
 
