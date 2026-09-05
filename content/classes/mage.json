@@ -27,11 +27,7 @@
         "LIGHT"
       ],
       "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
-      "startingAbilityIds": [
-        "MAGE_FIREBALL",
-        "MAGE_ARCANE_SPARK",
-        "MAGE_ICE_SHARD"
-      ],
+      "startingAbilityIds": [],
       "abilityUnlocks": [],
       "combatAutoAttack": {
         "interval": "00:00:02.6000000",
