@@ -2,26 +2,29 @@
   color-scheme: dark;
 
   /* Arcane Minimal semantic colors */
-  --ui-color-background: var(--tg-theme-bg-color, #070911);
-  --ui-color-surface-1: #0d1220;
-  --ui-color-surface-2: #121827;
-  --ui-color-surface-3: #182033;
+  --ui-color-background: var(--tg-theme-bg-color, #05070d);
+  --ui-color-surface-1: #0a0f19;
+  --ui-color-surface-2: #101725;
+  --ui-color-surface-3: #172033;
   --ui-color-overlay: rgb(3 5 10 / 82%);
-  --ui-color-border: rgb(137 151 185 / 22%);
-  --ui-color-border-strong: rgb(146 164 206 / 42%);
-  --ui-color-primary: #7f7bea;
-  --ui-color-primary-hover: #918df4;
-  --ui-color-primary-active: #6864c9;
-  --ui-color-secondary: #3da7bd;
+  --ui-color-border: rgb(148 163 196 / 16%);
+  --ui-color-border-strong: rgb(159 176 216 / 34%);
+  --ui-color-primary: #9288ff;
+  --ui-color-primary-hover: #a198ff;
+  --ui-color-primary-active: #7b72dd;
+  --ui-color-secondary: #4ab8cf;
   --ui-color-danger: #d85f72;
   --ui-color-warning: #d0a458;
   --ui-color-success: #4fb996;
   --ui-color-text-primary: var(--tg-theme-text-color, #e6e9f2);
-  --ui-color-text-secondary: #b2bbce;
-  --ui-color-text-muted: var(--tg-theme-hint-color, #8993a9);
+  --ui-color-text-secondary: #bcc5d8;
+  --ui-color-text-muted: var(--tg-theme-hint-color, #818da6);
   --ui-color-text-inverse: #080a12;
   --ui-color-disabled: #596275;
-  --ui-color-focus: #aaa7ff;
+  --ui-color-focus: #b8b2ff;
+  --ui-color-gold: #c9a760;
+  --ui-color-gold-muted: #9a8050;
+  --ui-color-surface-glass: rgb(12 18 30 / 88%);
 
   /* Resource colors */
   --ui-color-hp: #b84152;
@@ -61,15 +64,15 @@
   --ui-space-7: 2rem;
   --ui-space-8: 2.5rem;
   --ui-radius-xs: 2px;
-  --ui-radius-sm: 4px;
-  --ui-radius-md: 6px;
-  --ui-radius-lg: 10px;
+  --ui-radius-sm: 6px;
+  --ui-radius-md: 10px;
+  --ui-radius-lg: 16px;
   --ui-radius-round: 999px;
   --ui-touch-target: 44px;
   --ui-control-height-sm: 44px;
   --ui-control-height-md: 48px;
   --ui-control-height-lg: 54px;
-  --ui-content-width: 540px;
+  --ui-content-width: 580px;
   --ui-icon-slot-sm: 44px;
   --ui-icon-slot-md: 56px;
   --ui-icon-slot-lg: 72px;
@@ -94,11 +97,16 @@
   --ui-line-height-relaxed: 1.7;
 
   /* Effects and layers */
-  --ui-shadow-panel: 0 12px 30px rgb(0 0 0 / 28%);
+  --ui-shadow-panel: 0 16px 42px rgb(0 0 0 / 34%);
   --ui-shadow-modal: 0 24px 70px rgb(0 0 0 / 48%);
-  --ui-glow-selected: 0 0 0 1px rgb(127 123 234 / 55%), 0 0 12px rgb(127 123 234 / 22%);
+  --ui-shadow-elevated: 0 10px 28px rgb(0 0 0 / 32%);
+  --ui-shadow-inset: inset 0 1px 0 rgb(255 255 255 / 4%);
+  --ui-gradient-panel: linear-gradient(180deg, rgb(20 29 46 / 92%), rgb(10 15 25 / 96%));
+  --ui-gradient-primary: linear-gradient(135deg, #9a91ff, #7770de);
+  --ui-gradient-world: radial-gradient(circle at 50% -10%, rgb(87 75 180 / 18%), transparent 42%);
+  --ui-glow-selected: 0 0 0 1px rgb(146 136 255 / 58%), 0 0 20px rgb(146 136 255 / 18%);
   --ui-glow-danger: 0 0 13px rgb(216 95 114 / 25%);
-  --ui-glow-magic: 0 0 12px rgb(127 123 234 / 20%);
+  --ui-glow-magic: 0 0 22px rgb(146 136 255 / 18%);
   --ui-transition-fast: 120ms ease;
   --ui-transition-normal: 180ms ease;
   --ui-transition-slow: 280ms ease;
