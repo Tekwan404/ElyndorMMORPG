@@ -315,6 +315,24 @@ function Invoke-CheckedCommand {
     }
 }
 
+function Show-AspireResourceFailureDiagnostics {
+    param(
+        [Parameter(Mandatory)][string]$AspirePath,
+        [Parameter(Mandatory)][string]$ResourceName
+    )
+
+    Write-Host ''
+    Write-Host "Recent Aspire logs for failed resource '$ResourceName':" -ForegroundColor Yellow
+    try {
+        & $AspirePath logs $ResourceName `
+            --apphost $appHostProject `
+            --non-interactive
+    }
+    catch {
+        Write-Warning "Unable to read Aspire resource logs: $($_.Exception.Message)"
+    }
+}
+
 function Test-DockerReady {
     param([Parameter(Mandatory)][string]$DockerPath)
 
@@ -551,12 +569,22 @@ function Start-Elyndor {
     }
 
     foreach ($resource in @('postgres', 'game', 'server')) {
-        Invoke-CheckedCommand $aspire @(
-            'wait', $resource,
-            '--status', 'healthy',
-            '--timeout', '180',
-            '--apphost', $appHostProject,
-            '--non-interactive')
+        try {
+            Invoke-CheckedCommand $aspire @(
+                'wait', $resource,
+                '--status', 'healthy',
+                '--timeout', '180',
+                '--apphost', $appHostProject,
+                '--non-interactive')
+        }
+        catch {
+            if ($resource -eq 'server') {
+                Show-AspireResourceFailureDiagnostics `
+                    -AspirePath $aspire `
+                    -ResourceName $resource
+            }
+            throw
+        }
     }
 
     $response = Invoke-WebRequest -Uri "$localUrl/alive" -UseBasicParsing -TimeoutSec 10

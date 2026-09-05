@@ -36,6 +36,7 @@ IResourceBuilder<ProjectResource> server = builder
     .WithReference(gameDatabase)
     .WaitFor(gameDatabase)
     .WithEnvironment("Database__MigrateOnStartup", "true")
+    .WithEnvironment("Content__AllowFileFallbackOnRestoreFailure", "true")
     .WithHttpHealthCheck("/health");
 
 if (publicTest)

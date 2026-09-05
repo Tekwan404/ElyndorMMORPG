@@ -158,6 +158,89 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
         Assert.Equal(1, provider.CachedRevisionCount);
     }
 
+    [Fact]
+    public async Task StartupRestoreFallsBackToFileContentForIncompatiblePublishedRevision()
+    {
+        MutableTimeProvider timeProvider = new(Start);
+
+        await using (GameDbContext seedContext = postgres.CreateDbContext())
+        {
+            ContentRevisionStore seedStore = new(seedContext, timeProvider);
+            ContentRevision staleRevision = await CreateRevisionAsync(
+                seedStore,
+                CreatePackage("0.2.0", "balance-stale", Start.AddMinutes(1)),
+                "published before validation rules changed");
+            _ = await seedStore.PublishAsync(
+                staleRevision.Id,
+                "integration-test",
+                "stale live content",
+                CancellationToken.None);
+        }
+
+        await using GameDbContext runtimeContext = postgres.CreateDbContext();
+        ContentRevisionStore runtimeStore = new(runtimeContext, timeProvider);
+        MutableContentSnapshotProvider provider =
+            new(CreatePackage("content-file", "balance-file", Start));
+        ContentPublicationService service = new(
+            runtimeStore,
+            new ContentRevisionImporter(runtimeStore),
+            provider,
+            new ContentPublicationCoordinator());
+
+        ContentStartupRestoreResult result =
+            await ContentStartupRestore.RestoreAsync(
+                service,
+                allowFileFallback: true,
+                CancellationToken.None);
+
+        Assert.True(result.UsedFileFallback);
+        Assert.False(result.RestoredPublishedContent);
+        Assert.IsType<ContentPackageValidationException>(result.FileFallbackReason);
+        Assert.Equal("content-file", provider.GetCurrent().ContentVersion);
+        Assert.Equal("balance-file", provider.GetCurrent().BalanceVersion);
+        Assert.Null(provider.GetRuntimeState().RevisionId);
+        Assert.Null(provider.GetRuntimeState().ReleaseId);
+    }
+
+    [Fact]
+    public async Task StartupRestoreStillFailsFastForIncompatiblePublishedRevisionWhenFallbackDisabled()
+    {
+        MutableTimeProvider timeProvider = new(Start);
+
+        await using (GameDbContext seedContext = postgres.CreateDbContext())
+        {
+            ContentRevisionStore seedStore = new(seedContext, timeProvider);
+            ContentRevision staleRevision = await CreateRevisionAsync(
+                seedStore,
+                CreatePackage("0.2.0", "balance-stale", Start.AddMinutes(1)),
+                "published before validation rules changed");
+            _ = await seedStore.PublishAsync(
+                staleRevision.Id,
+                "integration-test",
+                "stale live content",
+                CancellationToken.None);
+        }
+
+        await using GameDbContext runtimeContext = postgres.CreateDbContext();
+        ContentRevisionStore runtimeStore = new(runtimeContext, timeProvider);
+        MutableContentSnapshotProvider provider =
+            new(CreatePackage("content-file", "balance-file", Start));
+        ContentPublicationService service = new(
+            runtimeStore,
+            new ContentRevisionImporter(runtimeStore),
+            provider,
+            new ContentPublicationCoordinator());
+
+        await Assert.ThrowsAsync<ContentPackageValidationException>(
+            () => ContentStartupRestore.RestoreAsync(
+                service,
+                allowFileFallback: false,
+                CancellationToken.None));
+
+        Assert.Equal("content-file", provider.GetCurrent().ContentVersion);
+        Assert.Null(provider.GetRuntimeState().RevisionId);
+    }
+
     private static async Task<ContentRevision> CreateRevisionAsync(
         ContentRevisionStore store,
         GameContentPackage package,

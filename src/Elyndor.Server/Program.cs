@@ -124,6 +124,9 @@ bool migrateOnStartup =
 bool restorePublishedOnStartup =
     app.Configuration.GetValue<bool?>("Content:RestorePublishedOnStartup")
     ?? migrateOnStartup;
+bool allowFileFallbackOnRestoreFailure =
+    app.Configuration.GetValue<bool>(
+        "Content:AllowFileFallbackOnRestoreFailure");
 
 if (migrateOnStartup || restorePublishedOnStartup)
 {
@@ -140,7 +143,24 @@ if (migrateOnStartup || restorePublishedOnStartup)
     {
         ContentPublicationService contentPublication =
             startupScope.ServiceProvider.GetRequiredService<ContentPublicationService>();
-        await contentPublication.RestoreLatestReleaseAsync();
+        ContentStartupRestoreResult restoreResult =
+            await ContentStartupRestore.RestoreAsync(
+                contentPublication,
+                allowFileFallbackOnRestoreFailure);
+
+        if (restoreResult.UsedFileFallback)
+        {
+            ILogger startupLogger = app.Services
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Elyndor.ContentStartup");
+            GameContentSnapshot fileSnapshot = contentSnapshotProvider.GetCurrent();
+
+            Elyndor.Server.StartupLogMessages.LogPublishedContentFallback(
+                startupLogger,
+                fileSnapshot.ContentVersion,
+                fileSnapshot.BalanceVersion,
+                restoreResult.FileFallbackReason!);
+        }
     }
 }
 
