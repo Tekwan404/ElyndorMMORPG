@@ -168,19 +168,39 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.ArmorCategoryRestricted);
                 }
 
-                CharacterEquipment? equipped = await dbContext.CharacterEquipment
-                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
-                        && candidate.Slot == definition.Slot.Value, cancellationToken);
-                if (equipped is null)
+                EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
+                EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
+
+                CharacterEquipment[] equippedAliases = await dbContext.CharacterEquipment
+                    .Where(candidate => candidate.CharacterId == character.Id
+                        && aliases.Contains(candidate.Slot))
+                    .ToArrayAsync(cancellationToken);
+                CharacterEquipment? canonicalEquipment = equippedAliases
+                    .SingleOrDefault(candidate => candidate.Slot == canonicalSlot);
+
+                if (canonicalEquipment is null)
                 {
+                    if (equippedAliases.Length > 0)
+                    {
+                        dbContext.CharacterEquipment.RemoveRange(equippedAliases);
+                    }
+
                     dbContext.CharacterEquipment.Add(new CharacterEquipment(
                         character.Id,
-                        definition.Slot.Value,
+                        canonicalSlot,
                         item.Id));
                 }
                 else
                 {
-                    equipped.Equip(item.Id);
+                    canonicalEquipment.Equip(item.Id);
+
+                    CharacterEquipment[] legacyAliases = equippedAliases
+                        .Where(candidate => candidate != canonicalEquipment)
+                        .ToArray();
+                    if (legacyAliases.Length > 0)
+                    {
+                        dbContext.CharacterEquipment.RemoveRange(legacyAliases);
+                    }
                 }
 
                 return null;
@@ -199,11 +219,14 @@ public sealed class InventoryEquipmentService(
             Fingerprint(UnequipOperation, slot.ToString()),
             async character =>
             {
-                CharacterEquipment? equipped = await dbContext.CharacterEquipment
-                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
-                        && candidate.Slot == slot, cancellationToken);
-                if (equipped is not null)
-                    dbContext.CharacterEquipment.Remove(equipped);
+                EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(slot);
+                EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
+                CharacterEquipment[] equipped = await dbContext.CharacterEquipment
+                    .Where(candidate => candidate.CharacterId == character.Id
+                        && aliases.Contains(candidate.Slot))
+                    .ToArrayAsync(cancellationToken);
+                if (equipped.Length > 0)
+                    dbContext.CharacterEquipment.RemoveRange(equipped);
                 return null;
             },
             cancellationToken);
@@ -314,6 +337,24 @@ public sealed class InventoryEquipmentService(
             }
         });
     }
+
+    private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
+        slot switch
+        {
+            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+            EquipmentSlot.Boots => EquipmentSlot.Feet,
+            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
+            _ => slot
+        };
+
+    private static EquipmentSlot[] EquivalentEquipmentSlots(EquipmentSlot canonicalSlot) =>
+        canonicalSlot switch
+        {
+            EquipmentSlot.MainHand => [EquipmentSlot.MainHand, EquipmentSlot.Weapon],
+            EquipmentSlot.Feet => [EquipmentSlot.Feet, EquipmentSlot.Boots],
+            EquipmentSlot.Amulet => [EquipmentSlot.Amulet, EquipmentSlot.Accessory],
+            _ => [canonicalSlot]
+        };
 
     private void ConsumeOne(CharacterItem item)
     {

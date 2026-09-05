@@ -199,7 +199,15 @@ public static class InventoryEndpoints
                 GetEquipped(snapshot, EquipmentSlot.Chest),
                 GetEquipped(snapshot, EquipmentSlot.Legs),
                 GetEquipped(snapshot, EquipmentSlot.Boots),
-                GetEquipped(snapshot, EquipmentSlot.Accessory)));
+                GetEquipped(snapshot, EquipmentSlot.Accessory),
+                GetEquipped(snapshot, EquipmentSlot.MainHand),
+                GetEquipped(snapshot, EquipmentSlot.OffHand),
+                GetEquipped(snapshot, EquipmentSlot.Hands),
+                GetEquipped(snapshot, EquipmentSlot.Feet),
+                GetEquipped(snapshot, EquipmentSlot.Cloak),
+                GetEquipped(snapshot, EquipmentSlot.Amulet),
+                GetEquipped(snapshot, EquipmentSlot.Ring1),
+                GetEquipped(snapshot, EquipmentSlot.Ring2)));
 
     private static IResult ToResult(InventoryOperationResult result, HttpContext context) =>
         result.IsSuccess
@@ -276,7 +284,20 @@ public static class InventoryEndpoints
                 item.Definition.Stats.Strength,
                 item.Definition.Stats.Agility,
                 item.Definition.Stats.Intellect,
-                item.Definition.Stats.Stamina),
+                item.Definition.Stats.Stamina,
+                item.Definition.MaxHpFlat,
+                item.Definition.AttackPowerFlat,
+                item.Definition.SpellPowerFlat,
+                item.Definition.CriticalChancePercent,
+                item.Definition.CriticalDamagePercent,
+                item.Definition.AccuracyPercent,
+                item.Definition.ArmorFlat,
+                item.Definition.MagicResistanceFlat,
+                item.Definition.DodgePercent,
+                item.Definition.ArmorPenetrationPercent,
+                item.Definition.MagicPenetrationPercent,
+                item.Definition.AttackSpeedPercent,
+                item.Definition.MaxResourceFlat),
             item.Definition.Description,
             item.Definition.SetId,
             item.Definition.WeaponCategory,
@@ -288,7 +309,9 @@ public static class InventoryEndpoints
             item.Definition.HealAmount,
             item.Definition.ConsumableCooldownSeconds,
             item.Definition.BuyPriceGold,
-            MerchantService.ResolveSellPrice(item.Definition));
+            MerchantService.ResolveSellPrice(item.Definition),
+            item.Definition.IconId,
+            item.Definition.AppearanceProfileId);
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)

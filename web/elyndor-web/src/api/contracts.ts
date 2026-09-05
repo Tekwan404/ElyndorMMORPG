@@ -143,11 +143,27 @@ export interface ItemStats {
   agility: number
   intellect: number
   stamina: number
+  maxHp: number
+  attackPower: number
+  spellPower: number
+  criticalChance: number
+  criticalDamage: number
+  accuracy: number
+  armor: number
+  magicResistance: number
+  dodge: number
+  armorPenetration: number
+  magicPenetration: number
+  attackSpeed: number
+  maxResource: number
 }
 
-export type EquipmentSlot = 'Weapon' | 'Head' | 'Chest' | 'Legs' | 'Boots' | 'Accessory'
+export type EquipmentSlot =
+  | 'MainHand' | 'OffHand' | 'Head' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
+  | 'Cloak' | 'Amulet' | 'Ring1' | 'Ring2'
+  | 'Weapon' | 'Boots' | 'Accessory'
 export type ItemType = 'Equipment' | 'Material' | 'Consumable'
-export type ItemRarity = 'Common' | 'Uncommon' | 'Rare'
+export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
 export interface InventoryItem {
   id: string
@@ -172,6 +188,8 @@ export interface InventoryItem {
   consumableCooldownSeconds: number
   buyPriceGold: number
   sellPriceGold: number
+  iconId: string | null
+  appearanceProfileId: string | null
 }
 
 export interface InventorySnapshot {
@@ -183,6 +201,14 @@ export interface InventorySnapshot {
     legs: InventoryItem | null
     boots: InventoryItem | null
     accessory: InventoryItem | null
+    mainHand?: InventoryItem | null
+    offHand?: InventoryItem | null
+    hands?: InventoryItem | null
+    feet?: InventoryItem | null
+    cloak?: InventoryItem | null
+    amulet?: InventoryItem | null
+    ring1?: InventoryItem | null
+    ring2?: InventoryItem | null
   }
 }
 
@@ -226,7 +252,7 @@ export interface CharacterStats {
 
 export interface CharacterStatContribution {
   source: 'CLASS_BASE' | 'LEVEL_GROWTH' | 'EQUIPMENT' | 'TALENT_FLAT' | 'TALENT_PERCENT'
-    | 'EFFECTS' | 'FORMULA_BASE' | 'STRENGTH' | 'AGILITY' | 'INTELLECT' | 'STAMINA' | 'TALENT_BONUS'
+    | 'EFFECTS' | 'FORMULA_BASE' | 'STRENGTH' | 'AGILITY' | 'INTELLECT' | 'STAMINA' | 'TALENT_BONUS' | 'EQUIPMENT_BONUS'
   value: number
 }
 

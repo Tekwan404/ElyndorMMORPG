@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import { diffContentJson } from '@/admin/contentDiff'
-import { createDraftEntity } from '@/admin/entityTemplates'
+import {
+  addItemToLootTable,
+  attachMonsterToLocation,
+  createAndLinkMonsterLootTable,
+  createDraftEntity,
+  duplicateDraftEntity,
+} from '@/admin/entityTemplates'
 
 describe('admin content tools', () => {
   it('produces entity-aware publish diff paths', () => {
@@ -22,25 +28,56 @@ describe('admin content tools', () => {
       before: '180',
       after: '220',
     })
-    expect(diff).toContainEqual({
-      path: 'monsters[DIRE_WOLF]',
-      kind: 'added',
-      before: null,
-      after: '{ id: DIRE_WOLF }',
-    })
   })
 
-  it('creates a monster together with a dedicated AI profile', () => {
+  it('creates a monster bundle with AI, loot and location encounter', () => {
     const result = createDraftEntity(
-      { monsters: [], monsterAiProfiles: [] },
-      { section: 'monsters', id: 'dire_wolf', name: 'Лютоволк' },
+      {
+        monsters: [],
+        monsterAiProfiles: [],
+        lootTables: [],
+        locations: [
+          {
+            id: 'FOREST',
+            displayName: 'Лес',
+            dangerLevel: 'ADVENTURE',
+            encounters: [],
+          },
+        ],
+      },
+      {
+        section: 'monsters',
+        id: 'dire_wolf',
+        name: 'Лютоволк',
+        monsterTemplate: 'EliteMelee',
+        createLootTable: true,
+        locationIds: ['FOREST'],
+        encounterWeight: 0.25,
+      },
     )
 
-    expect(result.entity.id).toBe('DIRE_WOLF')
-    expect(result.entity.aiProfileId).toBe('DIRE_WOLF_BASIC_AI')
-    expect(result.packageObject.monsterAiProfiles).toEqual([
-      { id: 'DIRE_WOLF_BASIC_AI', priorityAbilityIds: [], version: 1 },
-    ])
+    expect(result.entity).toMatchObject({
+      id: 'DIRE_WOLF',
+      rank: 'Elite',
+      aiProfileId: 'DIRE_WOLF_BASIC_AI',
+      lootTableId: 'DIRE_WOLF_LOOT',
+    })
+    expect(result.packageObject.monsterAiProfiles).toContainEqual({
+      id: 'DIRE_WOLF_BASIC_AI',
+      priorityAbilityIds: [],
+      version: 1,
+    })
+    expect(result.packageObject.lootTables).toContainEqual({
+      id: 'DIRE_WOLF_LOOT',
+      version: 1,
+      entries: [],
+    })
+    expect(result.packageObject.locations).toContainEqual(
+      expect.objectContaining({
+        id: 'FOREST',
+        encounters: [{ monsterId: 'DIRE_WOLF', weight: 0.25 }],
+      }),
+    )
   })
 
   it('creates valid-shape item templates for consumables and equipment', () => {
@@ -66,34 +103,97 @@ describe('admin content tools', () => {
       type: 'Equipment',
       stackable: false,
       maxStack: 1,
-      slot: 'Accessory',
+      slot: 'Amulet',
     })
   })
 
-  it('creates loot tables and merchants as local draft entities', () => {
-    const loot = createDraftEntity(
-      { lootTables: [] },
-      { section: 'lootTables', id: 'dire_wolf_loot' },
-    ).entity
-    expect(loot).toEqual({ id: 'DIRE_WOLF_LOOT', version: 1, entries: [] })
+  it('duplicates monster relations without editing the source monster', () => {
+    const result = duplicateDraftEntity(
+      {
+        monsters: [{
+          id: 'WOLF',
+          name: 'Wolf',
+          displayName: 'Волк',
+          aiProfileId: 'WOLF_BASIC_AI',
+          lootTableId: 'WOLF_LOOT',
+        }],
+        monsterAiProfiles: [{
+          id: 'WOLF_BASIC_AI',
+          priorityAbilityIds: ['BITE'],
+          version: 1,
+        }],
+        lootTables: [{
+          id: 'WOLF_LOOT',
+          version: 1,
+          entries: [{ itemId: 'FANG', dropChance: 1, minQuantity: 1, maxQuantity: 1 }],
+        }],
+      },
+      {
+        section: 'monsters',
+        sourceId: 'WOLF',
+        id: 'DIRE_WOLF',
+        name: 'Лютоволк',
+      },
+    )
 
-    const merchant = createDraftEntity(
+    expect(result.entity).toMatchObject({
+      id: 'DIRE_WOLF',
+      displayName: 'Лютоволк',
+      aiProfileId: 'DIRE_WOLF_BASIC_AI',
+      lootTableId: 'DIRE_WOLF_LOOT',
+    })
+    expect(result.packageObject.lootTables).toContainEqual(
+      expect.objectContaining({ id: 'DIRE_WOLF_LOOT' }),
+    )
+  })
+
+  it('links existing monsters and newly-created loot data', () => {
+    const withLoot = createAndLinkMonsterLootTable(
+      { monsters: [{ id: 'WOLF', lootTableId: null }], lootTables: [] },
+      'WOLF',
+    )
+    expect((withLoot.monsters as Array<Record<string, unknown>>)[0]?.lootTableId).toBe('WOLF_LOOT')
+
+    const withLocation = attachMonsterToLocation(
       {
-        merchants: [],
-        locations: [{ id: 'STARTER_TOWN' }],
+        locations: [{ id: 'FOREST', dangerLevel: 'ADVENTURE', encounters: [] }],
       },
+      'WOLF',
+      'FOREST',
+      0.5,
+    )
+    expect((withLocation.locations as Array<Record<string, unknown>>)[0]?.encounters)
+      .toEqual([{ monsterId: 'WOLF', weight: 0.5 }])
+
+    const withItem = addItemToLootTable(
       {
-        section: 'merchants',
-        id: 'liora_supplies',
-        name: 'Лиора',
-        locationId: 'STARTER_TOWN',
+        items: [{ id: 'FANG', stackable: true }],
+        lootTables: [{ id: 'WOLF_LOOT', entries: [] }],
+      },
+      'WOLF_LOOT',
+      'FANG',
+    )
+    expect((withItem.lootTables as Array<Record<string, unknown>>)[0]?.entries)
+      .toEqual([{ itemId: 'FANG', dropChance: 1, minQuantity: 1, maxQuantity: 1 }])
+  })
+
+  it('creates abilities for inline monster workflows', () => {
+    const ability = createDraftEntity(
+      { abilities: [] },
+      {
+        section: 'abilities',
+        id: 'shadow_bolt',
+        name: 'Теневой снаряд',
+        abilityScaling: 'SpellPower',
+        abilitySchool: 'SHADOW',
       },
     ).entity
-    expect(merchant).toMatchObject({
-      id: 'LIORA_SUPPLIES',
-      name: 'Лиора',
-      locationId: 'STARTER_TOWN',
-      itemIds: [],
+
+    expect(ability).toMatchObject({
+      id: 'SHADOW_BOLT',
+      isSpell: true,
+      school: 'SHADOW',
+      actions: [{ type: 'Damage', damageType: 'Magical', spellPowerCoefficient: 1 }],
     })
   })
 

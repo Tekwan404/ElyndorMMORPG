@@ -69,6 +69,49 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(55.2m, result.Armor);
     }
 
+    [Fact]
+    public void AppliesEquipmentSecondaryStatsBeforeTalentDerivedModifiers()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                MaxHpFlat: 25,
+                AttackPowerFlat: 7,
+                SpellPowerFlat: 9,
+                CriticalChancePercent: 2,
+                CriticalDamagePercent: 10,
+                AccuracyPercent: 1,
+                AttackSpeedPercent: 5,
+                ArmorFlat: 18,
+                MagicResistanceFlat: 11,
+                DodgePercent: 3,
+                ArmorPenetrationPercent: 4,
+                MagicPenetrationPercent: 6),
+            TalentDerived = new TalentStatModifiers(
+                AttackPowerPercent: 10,
+                ArmorPercent: 20,
+                CriticalChancePercent: 1,
+                ArmorPenetrationPercent: 2,
+                MaxHpPercent: 10)
+        };
+
+        CharacterStats result = calculator.Calculate("WARRIOR", 3, inputs);
+
+        Assert.Equal(236.5m, result.MaxHp);
+        Assert.Equal(56.1m, result.AttackPower);
+        Assert.Equal(19, result.SpellPower);
+        Assert.Equal(10, result.CriticalChance);
+        Assert.Equal(110, result.CriticalDamage);
+        Assert.Equal(96, result.Accuracy);
+        Assert.Equal(6, result.ArmorPenetration);
+        Assert.Equal(6, result.MagicPenetration);
+        Assert.Equal(1.05m, result.AttackSpeed);
+        Assert.Equal(76.8m, result.Armor);
+        Assert.Equal(30, result.MagicResistance);
+        Assert.Equal(4.6m, result.Dodge);
+    }
+
     private static StatFormulaProfile Formula() => new(
         "PROTOTYPE_STATS_V1",
         MaxHpBase: 50,

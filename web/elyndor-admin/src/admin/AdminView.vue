@@ -5,6 +5,8 @@ import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
 import AdminLocationForm from '@/admin/AdminLocationForm.vue'
 import AdminLootTableForm from '@/admin/AdminLootTableForm.vue'
+import AdminMonsterCreateWizard from '@/admin/AdminMonsterCreateWizard.vue'
+import type { MonsterCreateRequest } from '@/admin/AdminMonsterCreateWizard.vue'
 import AdminMerchantForm from '@/admin/AdminMerchantForm.vue'
 import AdminPublishReview from '@/admin/AdminPublishReview.vue'
 import AdminTalentTreeForm from '@/admin/AdminTalentTreeForm.vue'
@@ -15,9 +17,16 @@ import {
   replaceDraftEntity,
   searchAdminPackage,
 } from '@/admin/adminWorkspace'
+import { evaluateEntityCompleteness } from '@/admin/adminCompleteness'
 import { diffContentJson } from '@/admin/contentDiff'
 import type { ContentDiffEntry } from '@/admin/contentDiff'
-import { createDraftEntity } from '@/admin/entityTemplates'
+import {
+  addItemToLootTable,
+  attachMonsterToLocation,
+  createAndLinkMonsterLootTable,
+  createDraftEntity,
+  duplicateDraftEntity,
+} from '@/admin/entityTemplates'
 import type { NewItemType } from '@/admin/entityTemplates'
 import {
   clearLocalContentDraft,
@@ -82,6 +91,15 @@ const newEntityId = ref('')
 const newEntityName = ref('')
 const newItemType = ref<NewItemType>('Material')
 const newMerchantLocationId = ref('')
+const duplicateMode = ref(false)
+const duplicateId = ref('')
+const duplicateName = ref('')
+const monsterLocationId = ref('')
+const monsterLocationWeight = ref(1)
+const inlineAbilityId = ref('')
+const inlineAbilityName = ref('')
+const inlineAbilityScaling = ref<'AttackPower' | 'SpellPower'>('AttackPower')
+const inlineAbilitySchool = ref('PHYSICAL')
 const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 const entitySearch = ref('')
@@ -114,7 +132,7 @@ const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.
 const structuredSections = ['monsters', 'abilities', 'items', 'talentTrees', 'locations', 'classProfiles', 'lootTables', 'merchants']
 const hasStructuredEditor = computed(() => structuredSections.includes(selectedSection.value))
 const canCreateEntity = computed(() =>
-  ['monsters', 'items', 'lootTables', 'merchants'].includes(selectedSection.value),
+  ['monsters', 'items', 'abilities', 'lootTables', 'merchants'].includes(selectedSection.value),
 )
 const itemOptions = computed(() => recordArray(draftPackage.value?.items).map(item => ({
   id: stringProperty(item, 'id'),
@@ -125,12 +143,13 @@ const itemOptions = computed(() => recordArray(draftPackage.value?.items).map(it
 const locationOptions = computed(() => recordArray(draftPackage.value?.locations).map(location => ({
   id: stringProperty(location, 'id'),
   name: stringProperty(location, 'displayName'),
+  dangerLevel: stringProperty(location, 'dangerLevel'),
 })).filter(location => location.id))
 const monsterOptions = computed(() => recordArray(draftPackage.value?.monsters)
-  .filter(monster => stringProperty(monster, 'rank') === 'Normal')
   .map(monster => ({
     id: stringProperty(monster, 'id'),
     name: stringProperty(monster, 'displayName') || stringProperty(monster, 'name'),
+    rank: stringProperty(monster, 'rank') || 'Normal',
   }))
   .filter(monster => monster.id))
 const abilityIds = computed(() => recordArray(draftPackage.value?.abilities)
@@ -147,6 +166,9 @@ const aiProfileIds = computed(() => recordArray(draftPackage.value?.monsterAiPro
   .filter(Boolean))
 const classIds = computed(() => recordArray(draftPackage.value?.classProfiles)
   .map(profile => stringProperty(profile, 'id'))
+  .filter(Boolean))
+const equipmentSetIds = computed(() => recordArray(draftPackage.value?.equipmentSets)
+  .map(set => stringProperty(set, 'id'))
   .filter(Boolean))
 const simulationClassOptions = computed(() => recordArray(draftPackage.value?.classProfiles)
   .filter(profile => isRecord(profile.combatAutoAttack))
@@ -193,6 +215,37 @@ const validationLabel = computed(() => {
 const selectedEntityDraft = computed<JsonRecord | null>(() =>
   entityList.value.find(entity => entityId(entity) === selectedEntityId.value) ?? null,
 )
+const selectedEntityCompleteness = computed(() =>
+  draftPackage.value && selectedEntityDraft.value
+    ? evaluateEntityCompleteness(
+        draftPackage.value,
+        selectedSection.value,
+        selectedEntityDraft.value,
+      )
+    : null,
+)
+const selectedEntityValidationErrors = computed(() => {
+  if (!validation.value?.errors.length || !selectedEntityId.value) return []
+  const index = entityList.value.findIndex(entity => entityId(entity) === selectedEntityId.value)
+  if (index < 0) return []
+  const prefix = `${selectedSection.value}[${index}]`
+  return validation.value.errors.filter(error => error.path.startsWith(prefix))
+})
+const monsterLootId = computed(() =>
+  selectedSection.value === 'monsters' && selectedEntityDraft.value
+    ? stringProperty(selectedEntityDraft.value, 'lootTableId')
+    : '',
+)
+const monsterLocationLinks = computed(() => {
+  if (selectedSection.value !== 'monsters' || !selectedEntityId.value) return []
+  return locationOptions.value.filter(location =>
+    recordArray(
+      recordArray(draftPackage.value?.locations)
+        .find(entry => entry.id === location.id)?.encounters,
+    ).some(encounter => encounter.monsterId === selectedEntityId.value),
+  )
+})
+
 const selectedEntityReferences = computed(() =>
   draftPackage.value && selectedEntityId.value
     ? findAdminEntityReferences(
@@ -218,6 +271,7 @@ function entityId(entity: JsonRecord): string {
 
 function selectEntity(entity: JsonRecord): void {
   selectedEntityId.value = entityId(entity)
+  duplicateMode.value = false
   entityJson.value = JSON.stringify(entity, null, 2)
   editorMode.value = structuredSections.includes(selectedSection.value) ? 'form' : 'json'
   validation.value = null
@@ -254,6 +308,10 @@ function changeSection(): void {
   newEntityId.value = ''
   newEntityName.value = ''
   newMerchantLocationId.value = ''
+  duplicateMode.value = false
+  duplicateId.value = ''
+  duplicateName.value = ''
+  monsterLocationId.value = ''
   entitySearch.value = ''
   editorMode.value = structuredSections.includes(selectedSection.value) ? 'form' : 'json'
 }
@@ -267,6 +325,34 @@ function openCreateEntity(): void {
   newMerchantLocationId.value = locationOptions.value[0]?.id ?? ''
   errorMessage.value = ''
   statusMessage.value = ''
+}
+
+function createMonsterBundle(request: MonsterCreateRequest): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject) {
+    errorMessage.value = 'Текущий package JSON некорректен.'
+    return
+  }
+
+  try {
+    const result = createDraftEntity(packageObject, {
+      section: 'monsters',
+      id: request.id,
+      name: request.name,
+      monsterTemplate: request.template,
+      monsterRank: request.rank,
+      createLootTable: request.createLootTable,
+      locationIds: request.locationIds,
+      encounterWeight: request.encounterWeight,
+    })
+    applyCreatedEntity(result.packageObject, result.entity)
+    statusMessage.value = `${entityId(result.entity)} создан вместе с AI`
+      + (request.createLootTable ? ', Loot Table' : '')
+      + (request.locationIds.length ? ` и ${request.locationIds.length} location link(s)` : '')
+      + '. Заполни недостающие поля и Validate.'
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать monster bundle.'
+  }
 }
 
 function cancelCreateEntity(): void {
@@ -284,8 +370,8 @@ function createEntity(): void {
   }
   const section = selectedSection.value
   if (
-    section !== 'monsters'
-    && section !== 'items'
+    section !== 'items'
+    && section !== 'abilities'
     && section !== 'lootTables'
     && section !== 'merchants'
   ) {
@@ -301,20 +387,175 @@ function createEntity(): void {
       itemType: section === 'items' ? newItemType.value : undefined,
       locationId: section === 'merchants' ? newMerchantLocationId.value : undefined,
     })
-    draftJson.value = JSON.stringify(result.packageObject, null, 2)
-    const id = entityId(result.entity)
-    selectedEntityId.value = id
-    entityJson.value = JSON.stringify(result.entity, null, 2)
-    editorMode.value = 'form'
-    validation.value = null
-    createMode.value = false
-    newEntityId.value = ''
-    newEntityName.value = ''
-    errorMessage.value = ''
-    statusMessage.value = `${id} добавлен в локальный draft. Настрой поля, нажми Apply to draft и Validate.`
+    applyCreatedEntity(result.packageObject, result.entity)
+    statusMessage.value = `${entityId(result.entity)} добавлен в локальный draft. Настрой поля и Validate.`
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать сущность.'
   }
+}
+
+function applyCreatedEntity(packageObject: JsonRecord, entity: JsonRecord): void {
+  draftJson.value = JSON.stringify(packageObject, null, 2)
+  selectedEntityId.value = entityId(entity)
+  entityJson.value = JSON.stringify(entity, null, 2)
+  editorMode.value = 'form'
+  validation.value = null
+  createMode.value = false
+  duplicateMode.value = false
+  newEntityId.value = ''
+  newEntityName.value = ''
+  errorMessage.value = ''
+}
+
+function duplicateSelectedEntity(): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || !selectedEntityId.value) return
+
+  try {
+    const result = duplicateDraftEntity(packageObject, {
+      section: selectedSection.value,
+      sourceId: selectedEntityId.value,
+      id: duplicateId.value,
+      name: duplicateName.value,
+      copyMonsterLoot: true,
+    })
+    applyCreatedEntity(result.packageObject, result.entity)
+    statusMessage.value = `${entityId(result.entity)} создан как копия. Проверь баланс, art и location links.`
+    duplicateId.value = ''
+    duplicateName.value = ''
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось дублировать сущность.'
+  }
+}
+
+function ensureSelectedMonsterLoot(): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || !selectedEntityId.value) return
+  try {
+    applyPackageAndRefreshSelected(
+      createAndLinkMonsterLootTable(packageObject, selectedEntityId.value),
+      'Loot Table создана и привязана к Monster.',
+    )
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать Loot Table.'
+  }
+}
+
+function attachSelectedMonsterToLocation(): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || !selectedEntityId.value || !monsterLocationId.value) return
+  try {
+    applyPackageAndRefreshSelected(
+      attachMonsterToLocation(
+        packageObject,
+        selectedEntityId.value,
+        monsterLocationId.value,
+        monsterLocationWeight.value,
+      ),
+      `Monster добавлен в ${monsterLocationId.value}.`,
+    )
+    monsterLocationId.value = ''
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось добавить Monster в Location.'
+  }
+}
+
+function createAbilityForSelectedMonster(): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || !selectedEntityId.value) return
+
+  try {
+    const result = createDraftEntity(packageObject, {
+      section: 'abilities',
+      id: inlineAbilityId.value,
+      name: inlineAbilityName.value,
+      abilityScaling: inlineAbilityScaling.value,
+      abilitySchool: inlineAbilitySchool.value,
+    })
+    const nextPackage = result.packageObject
+    const monsters = recordArray(nextPackage.monsters)
+    const monster = monsters.find(candidate => candidate.id === selectedEntityId.value)
+    if (!monster) throw new Error('Monster больше не найден в draft.')
+
+    const abilities = Array.isArray(monster.abilityIds)
+      ? monster.abilityIds.filter((id): id is string => typeof id === 'string')
+      : []
+    if (!abilities.includes(entityId(result.entity))) {
+      monster.abilityIds = [...abilities, entityId(result.entity)]
+    }
+    nextPackage.monsters = monsters
+
+    const aiProfiles = recordArray(nextPackage.monsterAiProfiles)
+    const ai = aiProfiles.find(candidate => candidate.id === monster.aiProfileId)
+    if (ai) {
+      const priority = Array.isArray(ai.priorityAbilityIds)
+        ? ai.priorityAbilityIds.filter((id): id is string => typeof id === 'string')
+        : []
+      if (!priority.includes(entityId(result.entity))) {
+        ai.priorityAbilityIds = [...priority, entityId(result.entity)]
+      }
+      nextPackage.monsterAiProfiles = aiProfiles
+    }
+
+    applyPackageAndRefreshSelected(
+      nextPackage,
+      `${entityId(result.entity)} создана и привязана к Monster + AI priority.`,
+    )
+    inlineAbilityId.value = ''
+    inlineAbilityName.value = ''
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать Ability.'
+  }
+}
+
+function createItemForCurrentLoot(request: { id: string; name: string; itemType: NewItemType }): void {
+  const packageObject = parseRecord(draftJson.value)
+  if (!packageObject || selectedSection.value !== 'lootTables' || !selectedEntityId.value) return
+
+  try {
+    const created = createDraftEntity(packageObject, {
+      section: 'items',
+      id: request.id,
+      name: request.name,
+      itemType: request.itemType,
+    })
+    const nextPackage = addItemToLootTable(
+      created.packageObject,
+      selectedEntityId.value,
+      entityId(created.entity),
+    )
+    applyPackageAndRefreshSelected(
+      nextPackage,
+      `${entityId(created.entity)} создан и добавлен в Loot Table с шансом 100%. Настрой шанс и количество.`,
+    )
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Не удалось создать Item.'
+  }
+}
+
+function applyPackageAndRefreshSelected(packageObject: JsonRecord, message: string): void {
+  draftJson.value = JSON.stringify(packageObject, null, 2)
+  const source = packageObject[selectedSection.value]
+  if (selectedEntityId.value && Array.isArray(source)) {
+    const entity = source.find(candidate =>
+      isRecord(candidate) && entityId(candidate) === selectedEntityId.value)
+    if (isRecord(entity)) {
+      entityJson.value = JSON.stringify(entity, null, 2)
+    }
+  }
+  validation.value = null
+  errorMessage.value = ''
+  statusMessage.value = message
+}
+
+function entityCompleteness(entity: JsonRecord) {
+  return draftPackage.value
+    ? evaluateEntityCompleteness(draftPackage.value, selectedSection.value, entity)
+    : null
+}
+
+async function quickValidateSelected(): Promise<void> {
+  await validateDraft()
 }
 
 function updateEntityFromForm(entity: JsonRecord): void {
@@ -605,6 +846,7 @@ function numberProperty(record: JsonRecord, key: string): number {
 function createEntityLabel(): string {
   if (selectedSection.value === 'monsters') return 'Monster'
   if (selectedSection.value === 'items') return 'Item'
+  if (selectedSection.value === 'abilities') return 'Ability'
   if (selectedSection.value === 'lootTables') return 'Loot Table'
   if (selectedSection.value === 'merchants') return 'Merchant'
   return 'Entity'
@@ -814,7 +1056,13 @@ onBeforeUnmount(() => {
             </label>
           </div>
 
-          <form v-if="createMode" class="create-card" @submit.prevent="createEntity">
+          <AdminMonsterCreateWizard
+            v-if="createMode && selectedSection === 'monsters'"
+            :locations="locationOptions"
+            @create="createMonsterBundle"
+            @cancel="cancelCreateEntity"
+          />
+          <form v-else-if="createMode" class="create-card" @submit.prevent="createEntity">
             <b>Новая сущность</b>
             <label>
               <span>ID</span>
@@ -822,7 +1070,7 @@ onBeforeUnmount(() => {
             </label>
             <label v-if="selectedSection !== 'lootTables'">
               <span>Название</span>
-              <input v-model="newEntityName" :placeholder="selectedSection === 'merchants' ? 'Торговец Лиора' : 'Лютоволк'" autocomplete="off" />
+              <input v-model="newEntityName" :placeholder="selectedSection === 'merchants' ? 'Торговец Лиора' : selectedSection === 'abilities' ? 'Укус' : 'Новый предмет'" autocomplete="off" />
             </label>
             <label v-if="selectedSection === 'items'">
               <span>Тип предмета</span>
@@ -862,6 +1110,13 @@ onBeforeUnmount(() => {
               <em v-if="presentAdminEntity(entity).subtitle">
                 {{ presentAdminEntity(entity).subtitle }}
               </em>
+              <small
+                v-if="entityCompleteness(entity)"
+                class="completeness-badge"
+                :data-ready="entityCompleteness(entity)?.ready"
+              >
+                {{ entityCompleteness(entity)?.completed }}/{{ entityCompleteness(entity)?.total }}
+              </small>
             </button>
             <p v-if="entityList.length === 0" class="muted">Нет сущностей.</p>
             <p v-else-if="filteredEntityList.length === 0" class="muted">Ничего не найдено.</p>
@@ -899,6 +1154,20 @@ onBeforeUnmount(() => {
                 </button>
               </div>
               <button
+                v-if="selectedEntityId"
+                type="button"
+                @click="duplicateMode = !duplicateMode"
+              >
+                Duplicate
+              </button>
+              <button
+                v-if="selectedEntityId"
+                type="button"
+                @click="quickValidateSelected"
+              >
+                Quick Validate
+              </button>
+              <button
                 v-if="editorMode === 'json' || !hasStructuredEditor"
                 type="button"
                 :disabled="!selectedEntityId || !entityNeedsApply"
@@ -908,6 +1177,38 @@ onBeforeUnmount(() => {
               </button>
             </div>
           </div>
+
+          <form v-if="selectedEntityId && duplicateMode" class="duplicate-panel" @submit.prevent="duplicateSelectedEntity">
+            <div>
+              <small>DUPLICATE ENTITY</small>
+              <b>Создать копию {{ selectedEntityId }}</b>
+            </div>
+            <input v-model="duplicateId" placeholder="NEW_ID" />
+            <input v-model="duplicateName" placeholder="Новое название" />
+            <button class="primary" type="submit">Duplicate</button>
+          </form>
+
+          <section v-if="selectedEntityCompleteness" class="completeness-panel" :data-ready="selectedEntityCompleteness.ready">
+            <div class="completeness-panel__header">
+              <div>
+                <small>CONTENT COMPLETENESS</small>
+                <b>{{ selectedEntityCompleteness.completed }} / {{ selectedEntityCompleteness.total }}</b>
+              </div>
+              <strong>{{ selectedEntityCompleteness.ready ? 'READY' : 'NEEDS WORK' }}</strong>
+            </div>
+            <div class="completeness-checks">
+              <span v-for="check in selectedEntityCompleteness.checks" :key="check.key" :data-ok="check.complete">
+                {{ check.complete ? '✓' : '○' }} {{ check.label }}
+                <small v-if="check.detail">{{ check.detail }}</small>
+              </span>
+            </div>
+            <div v-if="selectedEntityValidationErrors.length" class="entity-validation-errors">
+              <b>Server validation</b>
+              <code v-for="error in selectedEntityValidationErrors" :key="`${error.code}-${error.path}`">
+                {{ error.code }} · {{ error.path }}
+              </code>
+            </div>
+          </section>
 
           <section v-if="selectedEntityId" class="relations-panel">
             <div class="relations-panel__heading">
@@ -936,6 +1237,74 @@ onBeforeUnmount(() => {
             </p>
           </section>
 
+          <section v-if="selectedSection === 'monsters' && selectedEntityId && selectedEntity" class="monster-workflow-panel">
+            <div class="workflow-heading">
+              <div>
+                <small>MONSTER WORKFLOW</small>
+                <b>AI · Loot · Locations · Abilities</b>
+              </div>
+              <code>{{ stringProperty(selectedEntity, 'aiProfileId') }}</code>
+            </div>
+
+            <div class="workflow-grid">
+              <article>
+                <small>LOOT</small>
+                <b>{{ monsterLootId || 'Не назначен' }}</b>
+                <button v-if="monsterLootId" type="button" @click="openEntityLocation('lootTables', monsterLootId)">
+                  Open Loot
+                </button>
+                <button v-else class="primary" type="button" @click="ensureSelectedMonsterLoot">
+                  + Create & link Loot
+                </button>
+              </article>
+
+              <article>
+                <small>LOCATIONS</small>
+                <div class="workflow-chips">
+                  <button
+                    v-for="location in monsterLocationLinks"
+                    :key="location.id"
+                    type="button"
+                    @click="openEntityLocation('locations', location.id)"
+                  >
+                    {{ location.id }}
+                  </button>
+                  <span v-if="monsterLocationLinks.length === 0">Не добавлен</span>
+                </div>
+                <div class="workflow-inline">
+                  <select v-model="monsterLocationId">
+                    <option value="">Добавить в location…</option>
+                    <option
+                      v-for="location in locationOptions.filter(location => location.dangerLevel !== 'SAFE' && !monsterLocationLinks.some(link => link.id === location.id))"
+                      :key="location.id"
+                      :value="location.id"
+                    >
+                      {{ location.id }} · {{ location.name }}
+                    </option>
+                  </select>
+                  <input v-model.number="monsterLocationWeight" type="number" min="0.01" step="0.01" title="Encounter weight" />
+                  <button type="button" :disabled="!monsterLocationId" @click="attachSelectedMonsterToLocation">+ Add</button>
+                </div>
+              </article>
+
+              <article class="workflow-ability">
+                <small>CREATE ABILITY INLINE</small>
+                <div class="workflow-inline workflow-inline--ability">
+                  <input v-model="inlineAbilityId" placeholder="DIRE_WOLF_BITE" />
+                  <input v-model="inlineAbilityName" placeholder="Разрывающий укус" />
+                  <select v-model="inlineAbilityScaling" @change="inlineAbilitySchool = inlineAbilityScaling === 'SpellPower' ? 'ARCANE' : 'PHYSICAL'">
+                    <option value="AttackPower">Attack Power</option>
+                    <option value="SpellPower">Spell Power</option>
+                  </select>
+                  <input v-model="inlineAbilitySchool" placeholder="School" />
+                  <button type="button" :disabled="!inlineAbilityId.trim() || !inlineAbilityName.trim()" @click="createAbilityForSelectedMonster">
+                    Create & link
+                  </button>
+                </div>
+              </article>
+            </div>
+          </section>
+
           <AdminEntityForm
             v-if="selectedEntityId && selectedEntity && ['monsters', 'abilities', 'items'].includes(selectedSection) && editorMode === 'form'"
             :section-key="selectedSection"
@@ -944,6 +1313,7 @@ onBeforeUnmount(() => {
             :ai-profile-ids="aiProfileIds"
             :ability-ids="abilityIds"
             :class-ids="classIds"
+            :set-ids="equipmentSetIds"
             @update:entity="updateEntityFromForm"
           />
           <AdminClassProfileForm
@@ -963,6 +1333,7 @@ onBeforeUnmount(() => {
             :entity="selectedEntity"
             :items="itemOptions"
             @update:entity="updateEntityFromForm"
+            @create-item="createItemForCurrentLoot"
           />
           <AdminMerchantForm
             v-else-if="selectedEntityId && selectedEntity && selectedSection === 'merchants' && editorMode === 'form'"
@@ -1260,4 +1631,26 @@ button.danger { border-color: var(--ui-color-danger); color: var(--ui-color-dang
 .relations-list button {
   width: 100%;
 }
+.completeness-badge { margin-left:auto; padding:.1rem .35rem; border:1px solid var(--ui-color-border); border-radius:var(--ui-radius-round); color:var(--ui-color-text-muted); font-size:var(--ui-font-size-xs); }
+.completeness-badge[data-ready='true'] { color:var(--ui-color-success); border-color:var(--ui-color-success); }
+.duplicate-panel,.completeness-panel,.monster-workflow-panel { display:grid; gap:var(--ui-space-2); margin-bottom:var(--ui-space-3); padding:var(--ui-space-3); border:1px solid var(--ui-color-border); border-radius:var(--ui-radius-md); background:var(--ui-color-surface-1); }
+.duplicate-panel { grid-template-columns:minmax(12rem,1fr) minmax(10rem,1fr) minmax(10rem,1fr) auto; align-items:end; }
+.duplicate-panel > div { display:grid; gap:.15rem; }
+.duplicate-panel small,.completeness-panel small,.monster-workflow-panel small { color:var(--ui-color-text-muted); font-size:var(--ui-font-size-xs); }
+.duplicate-panel input,.monster-workflow-panel input,.monster-workflow-panel select { min-height:var(--ui-touch-target); padding:var(--ui-space-2); border:1px solid var(--ui-color-border); border-radius:var(--ui-radius-sm); background:var(--ui-color-surface-2); color:var(--ui-color-text-primary); }
+.completeness-panel[data-ready='true'] { border-color:var(--ui-color-success); }
+.completeness-panel__header,.workflow-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--ui-space-2); }
+.completeness-panel__header > div,.workflow-heading > div { display:grid; gap:.15rem; }
+.completeness-checks { display:flex; flex-wrap:wrap; gap:var(--ui-space-1); }
+.completeness-checks > span { display:grid; gap:.1rem; padding:var(--ui-space-1) var(--ui-space-2); border:1px solid var(--ui-color-border); border-radius:var(--ui-radius-round); color:var(--ui-color-text-muted); font-size:var(--ui-font-size-xs); }
+.completeness-checks > span[data-ok='true'] { color:var(--ui-color-success); border-color:color-mix(in srgb,var(--ui-color-success) 40%,var(--ui-color-border)); }
+.entity-validation-errors { display:grid; gap:var(--ui-space-1); padding-top:var(--ui-space-2); border-top:1px solid var(--ui-color-border); }
+.entity-validation-errors code { color:var(--ui-color-danger); }
+.workflow-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--ui-space-2); }
+.workflow-grid article { display:grid; align-content:start; gap:var(--ui-space-2); padding:var(--ui-space-2); border:1px solid var(--ui-color-border); border-radius:var(--ui-radius-sm); }
+.workflow-ability { grid-column:1/-1; }
+.workflow-chips { display:flex; flex-wrap:wrap; gap:var(--ui-space-1); }
+.workflow-inline { display:grid; grid-template-columns:minmax(0,1fr) 7rem auto; gap:var(--ui-space-1); }
+.workflow-inline--ability { grid-template-columns:1fr 1fr 10rem 9rem auto; }
+@media(max-width:900px){.duplicate-panel,.workflow-grid,.workflow-inline,.workflow-inline--ability{grid-template-columns:1fr}.workflow-ability{grid-column:auto}}
 </style>

@@ -138,8 +138,18 @@ public sealed class CharacterDerivedStateService(
                 {
                     Equipment = equipment.PrimaryStats,
                     EquipmentDerived = new CharacterEquipmentDerivedModifiers(
-                        equipment.AttackSpeedPercent,
-                        equipment.DodgePercent),
+                        MaxHpFlat: equipment.MaxHpFlat,
+                        AttackPowerFlat: equipment.AttackPowerFlat,
+                        SpellPowerFlat: equipment.SpellPowerFlat,
+                        CriticalChancePercent: equipment.CriticalChancePercent,
+                        CriticalDamagePercent: equipment.CriticalDamagePercent,
+                        AccuracyPercent: equipment.AccuracyPercent,
+                        AttackSpeedPercent: equipment.AttackSpeedPercent,
+                        ArmorFlat: equipment.ArmorFlat,
+                        MagicResistanceFlat: equipment.MagicResistanceFlat,
+                        DodgePercent: equipment.DodgePercent,
+                        ArmorPenetrationPercent: equipment.ArmorPenetrationPercent,
+                        MagicPenetrationPercent: equipment.MagicPenetrationPercent),
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });
@@ -148,7 +158,7 @@ public sealed class CharacterDerivedStateService(
             baseResourceProfile,
             content.ResourceScaling,
             statCalculation.Stats,
-            talentModifiers.Stats.MaxResourceFlat);
+            talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat);
 
         string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)

@@ -6,6 +6,7 @@ type JsonRecord = Record<string, unknown>
 interface MonsterOption {
   id: string
   name: string
+  rank: string
 }
 
 const props = defineProps<{
@@ -82,6 +83,11 @@ function setEncounterNumber(index: number, key: string, event: Event): void {
   if (Number.isFinite(input.valueAsNumber)) updateEncounter(index, key, input.valueAsNumber)
 }
 
+function monsterLabel(id: unknown): string {
+  const monster = props.monsters.find(candidate => candidate.id === id)
+  return monster ? `[${monster.rank}] ${monster.id} · ${monster.name}` : stringValue(id)
+}
+
 function stringValue(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
@@ -116,29 +122,34 @@ function isRecord(value: unknown): value is JsonRecord {
     </fieldset>
 
     <fieldset class="encounters">
-      <legend>Обычные встречи</legend>
+      <legend>Hostile encounters · Normal / Elite / Boss</legend>
       <article v-for="(encounter, index) in encounters" :key="`${stringValue(encounter.monsterId)}-${index}`" class="encounter-row">
         <label>
           <span>Монстр</span>
           <select :value="stringValue(encounter.monsterId)" @change="setEncounterMonster(index, $event)">
-            <option v-for="monster in monsters" :key="monster.id" :value="monster.id">{{ monster.id }} · {{ monster.name }}</option>
+            <option v-for="monster in monsters" :key="monster.id" :value="monster.id">
+              [{{ monster.rank }}] {{ monster.id }} · {{ monster.name }}
+            </option>
           </select>
         </label>
         <label>
           <span>Weight</span>
           <input data-testid="encounter-weight" type="number" min="0.01" step="0.01" :value="numberValue(encounter.weight, 1)" @input="setEncounterNumber(index, 'weight', $event)" />
         </label>
+        <div class="encounter-meta">{{ monsterLabel(encounter.monsterId) }}</div>
         <button class="danger" type="button" @click="removeEncounter(index)">Убрать</button>
       </article>
       <div class="add-row">
         <select v-model="newMonsterId" data-testid="location-new-monster">
-          <option value="">Выбери Normal-моба…</option>
-          <option v-for="monster in availableMonsters" :key="monster.id" :value="monster.id">{{ monster.id }} · {{ monster.name }}</option>
+          <option value="">Выбери моба…</option>
+          <option v-for="monster in availableMonsters" :key="monster.id" :value="monster.id">
+            [{{ monster.rank }}] {{ monster.id }} · {{ monster.name }}
+          </option>
         </select>
         <button type="button" :disabled="availableMonsters.length === 0 || entity.dangerLevel === 'SAFE'" @click="addEncounter">+ Добавить встречу</button>
       </div>
       <p v-if="entity.dangerLevel === 'SAFE'" class="hint">SAFE-локации не могут содержать hostile encounters.</p>
-      <p class="hint">Для моба в encounter обязательны displayName, description и artId — это проверяет сервер.</p>
+      <p class="hint">Rank хранится на Monster. Одна локация может содержать Normal, Elite и Boss encounters с разными weight.</p>
     </fieldset>
   </div>
 </template>
@@ -150,9 +161,10 @@ fieldset { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:
 legend { padding: 0 var(--ui-space-1); color: var(--ui-color-primary); font-family: var(--ui-font-display); }
 label { display: grid; gap: var(--ui-space-1); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 input, select, button { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); color: var(--ui-color-text-primary); font: inherit; }
-.encounter-row { display: grid; grid-template-columns: 2fr 1fr auto; align-items: end; gap: var(--ui-space-2); }
+.encounter-row { display: grid; grid-template-columns: 2fr 1fr minmax(10rem,1fr) auto; align-items: end; gap: var(--ui-space-2); }
+.encounter-meta { align-self:center; color:var(--ui-color-text-muted); font-size:var(--ui-font-size-xs); }
 .add-row { display: grid; grid-template-columns: 1fr auto; gap: var(--ui-space-2); }
 .danger { color: var(--ui-color-danger); border-color: var(--ui-color-danger); }
 .hint { margin: 0; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
-@media (max-width: 680px) { fieldset, .encounter-row, .add-row { grid-template-columns: 1fr; } }
+@media (max-width: 850px) { fieldset, .encounter-row, .add-row { grid-template-columns: 1fr; } }
 </style>

@@ -4,7 +4,20 @@ public sealed record ItemStatsResponse(
     decimal Strength,
     decimal Agility,
     decimal Intellect,
-    decimal Stamina);
+    decimal Stamina,
+    decimal MaxHp,
+    decimal AttackPower,
+    decimal SpellPower,
+    decimal CriticalChance,
+    decimal CriticalDamage,
+    decimal Accuracy,
+    decimal Armor,
+    decimal MagicResistance,
+    decimal Dodge,
+    decimal ArmorPenetration,
+    decimal MagicPenetration,
+    decimal AttackSpeed,
+    decimal MaxResource);
 
 public sealed record InventoryItemResponse(
     Guid Id,
@@ -28,7 +41,9 @@ public sealed record InventoryItemResponse(
     decimal HealAmount,
     decimal ConsumableCooldownSeconds,
     int BuyPriceGold,
-    int SellPriceGold);
+    int SellPriceGold,
+    string? IconId = null,
+    string? AppearanceProfileId = null);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
@@ -36,7 +51,15 @@ public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Chest,
     InventoryItemResponse? Legs,
     InventoryItemResponse? Boots,
-    InventoryItemResponse? Accessory);
+    InventoryItemResponse? Accessory,
+    InventoryItemResponse? MainHand = null,
+    InventoryItemResponse? OffHand = null,
+    InventoryItemResponse? Hands = null,
+    InventoryItemResponse? Feet = null,
+    InventoryItemResponse? Cloak = null,
+    InventoryItemResponse? Amulet = null,
+    InventoryItemResponse? Ring1 = null,
+    InventoryItemResponse? Ring2 = null);
 
 public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
