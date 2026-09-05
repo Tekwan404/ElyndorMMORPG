@@ -70,6 +70,33 @@ describe('admin content tools', () => {
     })
   })
 
+  it('creates loot tables and merchants as local draft entities', () => {
+    const loot = createDraftEntity(
+      { lootTables: [] },
+      { section: 'lootTables', id: 'dire_wolf_loot' },
+    ).entity
+    expect(loot).toEqual({ id: 'DIRE_WOLF_LOOT', version: 1, entries: [] })
+
+    const merchant = createDraftEntity(
+      {
+        merchants: [],
+        locations: [{ id: 'STARTER_TOWN' }],
+      },
+      {
+        section: 'merchants',
+        id: 'liora_supplies',
+        name: 'Лиора',
+        locationId: 'STARTER_TOWN',
+      },
+    ).entity
+    expect(merchant).toMatchObject({
+      id: 'LIORA_SUPPLIES',
+      name: 'Лиора',
+      locationId: 'STARTER_TOWN',
+      itemIds: [],
+    })
+  })
+
   it('rejects duplicate or non-canonical ids', () => {
     expect(() =>
       createDraftEntity(

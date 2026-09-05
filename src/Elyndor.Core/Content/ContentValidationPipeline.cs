@@ -20,6 +20,7 @@ public sealed class ContentValidationPipeline
             new AbilityValidator(),
             new TalentValidator(),
             new ItemValidator(),
+            new MerchantValidator(),
             new MonsterValidator(),
             new WorldValidator()
         ]);
@@ -100,6 +101,12 @@ public sealed class ItemValidator : IContentValidationStage
 {
     public void Validate(ContentValidationContext context) =>
         GameContentPackageValidator.ValidateProgressionItemsAndLoot(context.Package, context.Errors);
+}
+
+public sealed class MerchantValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        GameContentPackageValidator.ValidateMerchantDefinitions(context.Package, context.Errors);
 }
 
 public sealed class MonsterValidator : IContentValidationStage
