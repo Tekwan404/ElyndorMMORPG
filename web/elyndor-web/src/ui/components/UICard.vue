@@ -27,32 +27,40 @@ defineEmits<{ activate: [] }>()
   display: block;
   width: 100%;
   min-height: var(--ui-touch-target);
-  padding: var(--ui-space-3);
+  padding: var(--ui-space-4);
   border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-2);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-gradient-panel);
+  box-shadow: var(--ui-shadow-inset);
   color: var(--ui-color-text-primary);
   text-align: left;
 }
+
 .ui-card--interactive {
   font: inherit;
   cursor: pointer;
   transition:
     border-color var(--ui-transition-fast),
     background var(--ui-transition-fast),
-    box-shadow var(--ui-transition-fast);
+    box-shadow var(--ui-transition-fast),
+    transform var(--ui-transition-fast);
 }
+
 .ui-card--interactive:hover:not(:disabled) {
   border-color: var(--ui-color-border-strong);
-  background: var(--ui-color-surface-3);
+  box-shadow: var(--ui-shadow-inset), var(--ui-shadow-elevated);
+  transform: translateY(-1px);
 }
+
 .ui-card--selected {
-  border-color: var(--ui-color-primary);
-  box-shadow: var(--ui-glow-selected);
+  border-color: color-mix(in srgb, var(--ui-color-primary) 78%, white 8%);
+  box-shadow: var(--ui-shadow-inset), var(--ui-glow-selected);
 }
+
 .ui-card:disabled,
 .ui-card[aria-disabled='true'] {
-  opacity: 0.45;
+  opacity: .42;
   cursor: not-allowed;
+  filter: saturate(.7);
 }
 </style>
