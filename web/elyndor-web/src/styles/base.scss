@@ -16,10 +16,28 @@ body,
   margin: 0;
 }
 
+html {
+  background: #03050a;
+}
+
 body {
   min-height: 100dvh;
-  background: var(--ui-color-background);
+  overflow: hidden;
+  background:
+    var(--ui-gradient-world),
+    linear-gradient(180deg, #060913 0%, var(--ui-color-background) 40%, #04060b 100%);
   color: var(--ui-color-text-primary);
+}
+
+body::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 20%, rgb(74 184 207 / 7%), transparent 26rem),
+    radial-gradient(circle at 88% 82%, rgb(146 136 255 / 8%), transparent 24rem);
+  content: '';
+  pointer-events: none;
 }
 
 button,
@@ -27,7 +45,32 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgb(146 136 255 / 30%);
+  color: var(--ui-color-text-primary);
+}
+
 :focus-visible {
   outline: 2px solid var(--ui-color-focus);
   outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-color-border-strong) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }
