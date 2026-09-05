@@ -60,3 +60,14 @@ For each feature:
 9. Report unverified or blocked checks explicitly.
 
 Use the repo-local `elyndor-*` skills for feature, architecture, combat, testing, and review workflows. Use Superpowers for planning/TDD/debugging/verification/review, Game Studio only for game UX/playtesting workflows, and Playwright for actual browser verification.
+
+
+## Repository workflow
+
+Repository contribution and Git rules live in `CONTRIBUTING.md` and `docs/development/git-workflow.md`.
+
+- Do not do feature work directly on `main`.
+- Use a short-lived branch for one logical change set.
+- Open a PR and merge only after required CI is green.
+- Do not force-push or rewrite `main` history.
+- Close superseded PRs and delete merged/abandoned branches instead of reusing stale branches.
