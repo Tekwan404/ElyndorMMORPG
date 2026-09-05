@@ -45,6 +45,10 @@ function updateEncounter(index: number, key: string, value: unknown): void {
   emit('update:entity', next)
 }
 
+function setEncounterMonster(index: number, event: Event): void {
+  updateEncounter(index, 'monsterId', (event.target as HTMLSelectElement).value)
+}
+
 function addEncounter(): void {
   const id = newMonsterId.value || availableMonsters.value[0]?.id
   if (!id) return
@@ -116,7 +120,7 @@ function isRecord(value: unknown): value is JsonRecord {
       <article v-for="(encounter, index) in encounters" :key="`${stringValue(encounter.monsterId)}-${index}`" class="encounter-row">
         <label>
           <span>Монстр</span>
-          <select :value="stringValue(encounter.monsterId)" @change="updateEncounter(index, 'monsterId', ($event.target as HTMLSelectElement).value)">
+          <select :value="stringValue(encounter.monsterId)" @change="setEncounterMonster(index, $event)">
             <option v-for="monster in monsters" :key="monster.id" :value="monster.id">{{ monster.id }} · {{ monster.name }}</option>
           </select>
         </label>

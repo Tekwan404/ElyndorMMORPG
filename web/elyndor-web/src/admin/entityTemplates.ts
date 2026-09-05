@@ -1,12 +1,13 @@
-export type CreatableSection = 'monsters' | 'items'
+export type CreatableSection = 'monsters' | 'items' | 'lootTables' | 'merchants'
 export type NewItemType = 'Material' | 'Equipment' | 'Consumable'
 export type JsonRecord = Record<string, unknown>
 
 export interface CreateEntityRequest {
   section: CreatableSection
   id: string
-  name: string
+  name?: string
   itemType?: NewItemType
+  locationId?: string
 }
 
 export interface CreateEntityResult {
@@ -19,11 +20,11 @@ export function createDraftEntity(
   request: CreateEntityRequest,
 ): CreateEntityResult {
   const id = request.id.trim().toUpperCase()
-  const name = request.name.trim()
+  const name = request.name?.trim() ?? ''
   if (!/^[A-Z][A-Z0-9_]*$/.test(id)) {
     throw new Error('ID: только A-Z, 0-9 и _, первый символ — буква.')
   }
-  if (!name) {
+  if (request.section !== 'lootTables' && !name) {
     throw new Error('Укажи название новой сущности.')
   }
 
@@ -38,7 +39,11 @@ export function createDraftEntity(
 
   const entity = request.section === 'monsters'
     ? createMonster(packageObject, id, name)
-    : createItem(id, name, request.itemType ?? 'Material')
+    : request.section === 'items'
+      ? createItem(id, name, request.itemType ?? 'Material')
+      : request.section === 'lootTables'
+        ? createLootTable(id)
+        : createMerchant(packageObject, id, name, request.locationId)
 
   packageObject[request.section] = [...source, entity]
   return { packageObject, entity }
@@ -95,6 +100,40 @@ function createMonster(packageObject: JsonRecord, id: string, name: string): Jso
     displayName: name,
     description: 'Новый противник Elyndor.',
     artId: null,
+  }
+}
+
+function createLootTable(id: string): JsonRecord {
+  return {
+    id,
+    version: 1,
+    entries: [],
+  }
+}
+
+function createMerchant(
+  packageObject: JsonRecord,
+  id: string,
+  name: string,
+  requestedLocationId?: string,
+): JsonRecord {
+  const locations = Array.isArray(packageObject.locations)
+    ? packageObject.locations.filter(isRecord)
+    : []
+  const fallbackLocationId = locations
+    .map(location => location.id)
+    .find((value): value is string => typeof value === 'string')
+  const locationId = requestedLocationId?.trim() || fallbackLocationId
+  if (!locationId) {
+    throw new Error('Для нового торговца нужна существующая локация.')
+  }
+
+  return {
+    id,
+    name,
+    locationId,
+    description: 'Новый торговец Elyndor.',
+    itemIds: [],
   }
 }
 

@@ -97,6 +97,17 @@ function updatePrerequisite(index: number, key: string, value: unknown): void {
   })
 }
 
+function setPrerequisiteTalent(index: number, event: Event): void {
+  updatePrerequisite(index, 'talentId', (event.target as HTMLSelectElement).value)
+}
+
+function setPrerequisiteRank(index: number, event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (Number.isFinite(input.valueAsNumber)) {
+    updatePrerequisite(index, 'requiredRank', input.valueAsNumber)
+  }
+}
+
 function addPrerequisite(): void {
   const used = new Set(prerequisites.value.map(item => stringValue(item.talentId)))
   const candidate = nodes.value.find(node =>
@@ -314,12 +325,12 @@ function isRecord(value: unknown): value is JsonRecord {
         <fieldset class="stack">
           <legend>Prerequisites</legend>
           <article v-for="(prerequisite, index) in prerequisites" :key="`${stringValue(prerequisite.talentId)}-${index}`" class="row">
-            <select :value="stringValue(prerequisite.talentId)" @change="updatePrerequisite(index, 'talentId', ($event.target as HTMLSelectElement).value)">
+            <select :value="stringValue(prerequisite.talentId)" @change="setPrerequisiteTalent(index, $event)">
               <option v-for="node in nodes.filter(candidate => stringValue(candidate.id) !== selectedNodeId)" :key="stringValue(node.id)" :value="stringValue(node.id)">
                 {{ stringValue(node.id) }} · {{ stringValue(node.name) }}
               </option>
             </select>
-            <input type="number" min="1" :value="numberValue(prerequisite.requiredRank, 1)" @input="updatePrerequisite(index, 'requiredRank', ($event.target as HTMLInputElement).valueAsNumber)" />
+            <input type="number" min="1" :value="numberValue(prerequisite.requiredRank, 1)" @input="setPrerequisiteRank(index, $event)" />
             <button class="danger" type="button" @click="removePrerequisite(index)">Удалить</button>
           </article>
           <button type="button" @click="addPrerequisite">+ Prerequisite</button>

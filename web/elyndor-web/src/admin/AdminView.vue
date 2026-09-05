@@ -3,7 +3,11 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
+import AdminLocationForm from '@/admin/AdminLocationForm.vue'
+import AdminLootTableForm from '@/admin/AdminLootTableForm.vue'
+import AdminMerchantForm from '@/admin/AdminMerchantForm.vue'
 import AdminPublishReview from '@/admin/AdminPublishReview.vue'
+import AdminTalentTreeForm from '@/admin/AdminTalentTreeForm.vue'
 import { diffContentJson } from '@/admin/contentDiff'
 import type { ContentDiffEntry } from '@/admin/contentDiff'
 import { createDraftEntity } from '@/admin/entityTemplates'
@@ -54,6 +58,7 @@ const createMode = ref(false)
 const newEntityId = ref('')
 const newEntityName = ref('')
 const newItemType = ref<NewItemType>('Material')
+const newMerchantLocationId = ref('')
 const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 
@@ -63,12 +68,31 @@ const entityList = computed<JsonRecord[]>(() => {
   return Array.isArray(value) ? value.filter(isRecord) : []
 })
 const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
-const hasStructuredEditor = computed(() =>
-  ['monsters', 'abilities', 'items'].includes(selectedSection.value),
-)
+const structuredSections = ['monsters', 'abilities', 'items', 'talentTrees', 'locations', 'lootTables', 'merchants']
+const hasStructuredEditor = computed(() => structuredSections.includes(selectedSection.value))
 const canCreateEntity = computed(() =>
-  selectedSection.value === 'monsters' || selectedSection.value === 'items',
+  ['monsters', 'items', 'lootTables', 'merchants'].includes(selectedSection.value),
 )
+const itemOptions = computed(() => recordArray(draftPackage.value?.items).map(item => ({
+  id: stringProperty(item, 'id'),
+  name: stringProperty(item, 'name'),
+  stackable: item.stackable === true,
+  buyPriceGold: numberProperty(item, 'buyPriceGold'),
+})).filter(item => item.id))
+const locationOptions = computed(() => recordArray(draftPackage.value?.locations).map(location => ({
+  id: stringProperty(location, 'id'),
+  name: stringProperty(location, 'displayName'),
+})).filter(location => location.id))
+const monsterOptions = computed(() => recordArray(draftPackage.value?.monsters)
+  .filter(monster => stringProperty(monster, 'rank') === 'Normal')
+  .map(monster => ({
+    id: stringProperty(monster, 'id'),
+    name: stringProperty(monster, 'displayName') || stringProperty(monster, 'name'),
+  }))
+  .filter(monster => monster.id))
+const abilityIds = computed(() => recordArray(draftPackage.value?.abilities)
+  .map(ability => stringProperty(ability, 'id'))
+  .filter(Boolean))
 const isDirty = computed(() => {
   if (!current.value) return false
   return draftJson.value !== prettyJson(current.value.payloadJson)
@@ -86,9 +110,7 @@ function entityId(entity: JsonRecord): string {
 function selectEntity(entity: JsonRecord): void {
   selectedEntityId.value = entityId(entity)
   entityJson.value = JSON.stringify(entity, null, 2)
-  editorMode.value = ['monsters', 'abilities', 'items'].includes(selectedSection.value)
-    ? 'form'
-    : 'json'
+  editorMode.value = structuredSections.includes(selectedSection.value) ? 'form' : 'json'
   validation.value = null
 }
 
@@ -98,9 +120,8 @@ function changeSection(): void {
   createMode.value = false
   newEntityId.value = ''
   newEntityName.value = ''
-  editorMode.value = ['monsters', 'abilities', 'items'].includes(selectedSection.value)
-    ? 'form'
-    : 'json'
+  newMerchantLocationId.value = ''
+  editorMode.value = structuredSections.includes(selectedSection.value) ? 'form' : 'json'
 }
 
 function openCreateEntity(): void {
@@ -109,6 +130,7 @@ function openCreateEntity(): void {
   newEntityId.value = ''
   newEntityName.value = ''
   newItemType.value = 'Material'
+  newMerchantLocationId.value = locationOptions.value[0]?.id ?? ''
   errorMessage.value = ''
   statusMessage.value = ''
 }
@@ -117,6 +139,7 @@ function cancelCreateEntity(): void {
   createMode.value = false
   newEntityId.value = ''
   newEntityName.value = ''
+  newMerchantLocationId.value = ''
 }
 
 function createEntity(): void {
@@ -125,8 +148,8 @@ function createEntity(): void {
     errorMessage.value = 'Текущий package JSON некорректен.'
     return
   }
-  if (selectedSection.value !== 'monsters' && selectedSection.value !== 'items') {
-    errorMessage.value = 'Создание через форму пока доступно только для Monsters и Items.'
+  if (!canCreateEntity.value) {
+    errorMessage.value = 'Создание через форму недоступно для этой категории.'
     return
   }
 
@@ -136,6 +159,7 @@ function createEntity(): void {
       id: newEntityId.value,
       name: newEntityName.value,
       itemType: selectedSection.value === 'items' ? newItemType.value : undefined,
+      locationId: selectedSection.value === 'merchants' ? newMerchantLocationId.value : undefined,
     })
     draftJson.value = JSON.stringify(result.packageObject, null, 2)
     const id = entityId(result.entity)
@@ -369,6 +393,28 @@ function resetDraft(): void {
   statusMessage.value = 'Локальные изменения сброшены до live.'
 }
 
+function recordArray(value: unknown): JsonRecord[] {
+  return Array.isArray(value) ? value.filter(isRecord) : []
+}
+
+function stringProperty(record: JsonRecord, key: string): string {
+  const value = record[key]
+  return typeof value === 'string' ? value : ''
+}
+
+function numberProperty(record: JsonRecord, key: string): number {
+  const value = record[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+function createEntityLabel(): string {
+  if (selectedSection.value === 'monsters') return 'Monster'
+  if (selectedSection.value === 'items') return 'Item'
+  if (selectedSection.value === 'lootTables') return 'Loot Table'
+  if (selectedSection.value === 'merchants') return 'Merchant'
+  return 'Entity'
+}
+
 function prettyJson(value: string): string {
   try {
     return JSON.stringify(JSON.parse(value), null, 2)
@@ -508,7 +554,7 @@ onMounted(async () => {
               </select>
             </label>
             <button v-if="canCreateEntity" type="button" @click="openCreateEntity">
-              + New {{ selectedSection === 'monsters' ? 'Monster' : 'Item' }}
+              + New {{ createEntityLabel() }}
             </button>
           </div>
 
@@ -518,9 +564,9 @@ onMounted(async () => {
               <span>ID</span>
               <input v-model="newEntityId" placeholder="DIRE_WOLF" autocomplete="off" />
             </label>
-            <label>
+            <label v-if="selectedSection !== 'lootTables'">
               <span>Название</span>
-              <input v-model="newEntityName" placeholder="Лютоволк" autocomplete="off" />
+              <input v-model="newEntityName" :placeholder="selectedSection === 'merchants' ? 'Торговец Лиора' : 'Лютоволк'" autocomplete="off" />
             </label>
             <label v-if="selectedSection === 'items'">
               <span>Тип предмета</span>
@@ -530,6 +576,15 @@ onMounted(async () => {
                 <option value="Consumable">Consumable</option>
               </select>
             </label>
+            <label v-if="selectedSection === 'merchants'">
+              <span>Локация</span>
+              <select v-model="newMerchantLocationId">
+                <option v-for="location in locationOptions" :key="location.id" :value="location.id">
+                  {{ location.id }} · {{ location.name }}
+                </option>
+              </select>
+            </label>
+            <p v-if="selectedSection === 'lootTables'" class="muted">После создания добавь хотя бы один предмет в таблицу дропа.</p>
             <div class="create-card__actions">
               <button type="button" @click="cancelCreateEntity">Отмена</button>
               <button class="primary" type="submit">Create draft entity</button>
@@ -583,9 +638,34 @@ onMounted(async () => {
             </div>
           </div>
           <AdminEntityForm
-            v-if="selectedEntityId && selectedEntity && hasStructuredEditor && editorMode === 'form'"
+            v-if="selectedEntityId && selectedEntity && ['monsters', 'abilities', 'items'].includes(selectedSection) && editorMode === 'form'"
             :section-key="selectedSection"
             :entity="selectedEntity"
+            @update:entity="updateEntityFromForm"
+          />
+          <AdminTalentTreeForm
+            v-else-if="selectedEntityId && selectedEntity && selectedSection === 'talentTrees' && editorMode === 'form'"
+            :entity="selectedEntity"
+            :ability-ids="abilityIds"
+            @update:entity="updateEntityFromForm"
+          />
+          <AdminLootTableForm
+            v-else-if="selectedEntityId && selectedEntity && selectedSection === 'lootTables' && editorMode === 'form'"
+            :entity="selectedEntity"
+            :items="itemOptions"
+            @update:entity="updateEntityFromForm"
+          />
+          <AdminMerchantForm
+            v-else-if="selectedEntityId && selectedEntity && selectedSection === 'merchants' && editorMode === 'form'"
+            :entity="selectedEntity"
+            :items="itemOptions"
+            :locations="locationOptions"
+            @update:entity="updateEntityFromForm"
+          />
+          <AdminLocationForm
+            v-else-if="selectedEntityId && selectedEntity && selectedSection === 'locations' && editorMode === 'form'"
+            :entity="selectedEntity"
+            :monsters="monsterOptions"
             @update:entity="updateEntityFromForm"
           />
           <textarea
