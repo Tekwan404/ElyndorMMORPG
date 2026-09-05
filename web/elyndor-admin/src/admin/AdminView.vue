@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
 import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
@@ -19,6 +19,11 @@ import { diffContentJson } from '@/admin/contentDiff'
 import type { ContentDiffEntry } from '@/admin/contentDiff'
 import { createDraftEntity } from '@/admin/entityTemplates'
 import type { NewItemType } from '@/admin/entityTemplates'
+import {
+  clearLocalContentDraft,
+  loadLocalContentDraft,
+  saveLocalContentDraft,
+} from '@/admin/localDraft'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type {
   ContentAdminCurrent,
@@ -50,6 +55,10 @@ const props = defineProps<{
   initialSection?: string
 }>()
 
+const emit = defineEmits<{
+  'dirty-change': [dirty: boolean]
+}>()
+
 const accessState = ref<AccessState>('loading')
 const current = ref<ContentAdminCurrent | null>(null)
 const history = ref<ContentAdminHistory>({ revisions: [], releases: [] })
@@ -77,6 +86,7 @@ const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 const entitySearch = ref('')
 const globalSearch = ref('')
+let localDraftSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
 const entityList = computed<JsonRecord[]>(() => {
@@ -370,10 +380,18 @@ async function loadRuntime(resetDraft: boolean): Promise<void> {
   )
   current.value = next
   if (resetDraft) {
-    draftJson.value = prettyJson(next.payloadJson)
+    const liveJson = prettyJson(next.payloadJson)
+    const savedDraft = loadLocalContentDraft(next.payloadSha256)
+    draftJson.value = savedDraft?.payloadJson ?? liveJson
     selectedEntityId.value = null
     entityJson.value = ''
     validation.value = null
+
+    if (savedDraft && savedDraft.payloadJson !== liveJson) {
+      statusMessage.value =
+        `Восстановлен локальный autosave от ${formatDate(savedDraft.savedAtUtc)}. `
+        + 'Проверь изменения и сохрани revision.'
+    }
   }
 }
 
@@ -467,6 +485,8 @@ async function publishRevision(revisionId: string): Promise<void> {
     note.value = ''
     publishCandidate.value = null
     publishDiff.value = []
+    cancelLocalDraftSave()
+    clearLocalContentDraft(current.value!.payloadSha256)
     await refreshAll(true)
   })
 }
@@ -494,6 +514,8 @@ async function rollbackRelease(releaseId: string): Promise<void> {
     rollbackCandidate.value = null
     note.value = ''
     statusMessage.value = `Rollback к release ${shortId(releaseId)} опубликован новым release.`
+    cancelLocalDraftSave()
+    clearLocalContentDraft(current.value!.payloadSha256)
     await refreshAll(true)
   })
 }
@@ -527,12 +549,43 @@ async function runAction(name: string, action: () => Promise<void>): Promise<voi
 
 function resetDraft(): void {
   if (!current.value) return
+  cancelLocalDraftSave()
+  clearLocalContentDraft(current.value.payloadSha256)
   draftJson.value = prettyJson(current.value.payloadJson)
   selectedEntityId.value = null
   entityJson.value = ''
   validation.value = null
   errorMessage.value = ''
   statusMessage.value = 'Локальные изменения сброшены до live.'
+}
+
+function scheduleLocalDraftSave(payloadJson: string): void {
+  if (!current.value) return
+
+  cancelLocalDraftSave()
+  const basePayloadSha256 = current.value.payloadSha256
+  if (payloadJson === prettyJson(current.value.payloadJson)) {
+    clearLocalContentDraft(basePayloadSha256)
+    return
+  }
+
+  localDraftSaveTimer = setTimeout(() => {
+    saveLocalContentDraft(basePayloadSha256, payloadJson)
+    localDraftSaveTimer = null
+  }, 400)
+}
+
+function cancelLocalDraftSave(): void {
+  if (localDraftSaveTimer !== null) {
+    clearTimeout(localDraftSaveTimer)
+    localDraftSaveTimer = null
+  }
+}
+
+function handleBeforeUnload(event: BeforeUnloadEvent): void {
+  if (!isDirty.value) return
+  event.preventDefault()
+  event.returnValue = ''
 }
 
 function recordArray(value: unknown): JsonRecord[] {
@@ -586,6 +639,14 @@ function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
 
+watch(isDirty, dirty => {
+  emit('dirty-change', dirty)
+}, { immediate: true })
+
+watch(draftJson, payloadJson => {
+  scheduleLocalDraftSave(payloadJson)
+})
+
 watch(
   () => props.initialSection,
   sectionKey => {
@@ -597,6 +658,7 @@ watch(
 )
 
 onMounted(async () => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
   try {
     await refreshAll(true)
     accessState.value = 'ready'
@@ -607,6 +669,12 @@ onMounted(async () => {
     errorMessage.value =
       error instanceof ApiRequestError ? error.code : 'network_unavailable'
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  cancelLocalDraftSave()
+  emit('dirty-change', false)
 })
 </script>
 

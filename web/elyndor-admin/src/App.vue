@@ -27,6 +27,7 @@ const history = ref<ContentAdminHistory | null>(null)
 const tokenExpiresAtUtc = ref<string | null>(null)
 const now = ref(Date.now())
 const contentSection = ref('monsters')
+const contentDirty = ref(false)
 
 const contentNavigation = [
   { key: 'monsters', label: 'Monsters' },
@@ -138,10 +139,12 @@ async function loadDashboard(): Promise<void> {
 }
 
 function logout(): void {
+  if (!confirmWorkspaceNavigation()) return
   setAdminAccessToken(null)
   tokenExpiresAtUtc.value = null
   challenge.value = null
   code.value = ''
+  contentDirty.value = false
   view.value = 'login'
 }
 
@@ -152,9 +155,23 @@ function backToId(): void {
   view.value = 'login'
 }
 
+function openDashboard(): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  view.value = 'dashboard'
+}
+
 function openContent(section: string): void {
   contentSection.value = section
   view.value = 'content'
+}
+
+function confirmWorkspaceNavigation(): boolean {
+  if (view.value !== 'content' || !contentDirty.value) return true
+  return window.confirm(
+    'Есть изменения, которые ещё не сохранены как revision. '
+    + 'Локальный autosave сохранится. Перейти?',
+  )
 }
 
 async function run(action: () => Promise<void>): Promise<void> {
@@ -284,7 +301,7 @@ function formatDate(value: string | null | undefined): string {
           class="nav-item"
           :class="{ active: view === 'dashboard' }"
           type="button"
-          @click="view = 'dashboard'"
+          @click="openDashboard"
         >
           <span>Dashboard</span>
         </button>
@@ -426,6 +443,7 @@ function formatDate(value: string | null | undefined): string {
       <AdminView
         v-else-if="view === 'content'"
         :initial-section="contentSection"
+        @dirty-change="contentDirty = $event"
       />
     </section>
   </div>
