@@ -6,6 +6,27 @@ export interface AdminEntityPresentation {
   subtitle: string
 }
 
+export interface AdminSectionDescriptor {
+  key: string
+  label: string
+}
+
+export interface AdminGlobalSearchResult {
+  section: string
+  sectionLabel: string
+  entityId: string
+  title: string
+  subtitle: string
+}
+
+export interface AdminEntityReference {
+  section: string
+  sectionLabel: string
+  entityId: string
+  title: string
+  path: string
+}
+
 export function presentAdminEntity(entity: JsonRecord): AdminEntityPresentation {
   const id = stringValue(entity.id) || '(without id)'
   const title = firstNonEmpty(
@@ -77,6 +98,107 @@ export function replaceDraftEntity(
     ...packageObject,
     [section]: source.map((item, itemIndex) =>
       itemIndex === index ? entity : item),
+  }
+}
+
+export function searchAdminPackage(
+  packageObject: JsonRecord,
+  sections: readonly AdminSectionDescriptor[],
+  query: string,
+  limit = 20,
+): AdminGlobalSearchResult[] {
+  const normalized = normalize(query)
+  if (!normalized || limit <= 0) return []
+
+  const results: AdminGlobalSearchResult[] = []
+  for (const section of sections) {
+    const source = packageObject[section.key]
+    if (!Array.isArray(source)) continue
+
+    for (const entry of source) {
+      if (!isRecord(entry)) continue
+      if (!searchableValues(entry).some(value => normalize(value).includes(normalized))) {
+        continue
+      }
+
+      const presentation = presentAdminEntity(entry)
+      results.push({
+        section: section.key,
+        sectionLabel: section.label,
+        entityId: presentation.id,
+        title: presentation.title,
+        subtitle: presentation.subtitle,
+      })
+
+      if (results.length >= limit) return results
+    }
+  }
+
+  return results
+}
+
+export function findAdminEntityReferences(
+  packageObject: JsonRecord,
+  sections: readonly AdminSectionDescriptor[],
+  targetId: string,
+  limit = 50,
+): AdminEntityReference[] {
+  if (!targetId || limit <= 0) return []
+
+  const results: AdminEntityReference[] = []
+
+  for (const section of sections) {
+    const source = packageObject[section.key]
+    if (!Array.isArray(source)) continue
+
+    for (const entry of source) {
+      if (!isRecord(entry)) continue
+
+      const presentation = presentAdminEntity(entry)
+      const paths: string[] = []
+      collectReferencePaths(entry, targetId, '', paths, true)
+
+      for (const path of paths) {
+        results.push({
+          section: section.key,
+          sectionLabel: section.label,
+          entityId: presentation.id,
+          title: presentation.title,
+          path,
+        })
+        if (results.length >= limit) return results
+      }
+    }
+  }
+
+  return results
+}
+
+function collectReferencePaths(
+  value: unknown,
+  targetId: string,
+  path: string,
+  output: string[],
+  isEntityRoot = false,
+): void {
+  if (typeof value === 'string') {
+    if (value === targetId) output.push(path || '(value)')
+    return
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => {
+      collectReferencePaths(entry, targetId, `${path}[${index}]`, output)
+    })
+    return
+  }
+
+  if (!isRecord(value)) return
+
+  for (const [key, nested] of Object.entries(value)) {
+    if (isEntityRoot && key === 'id' && nested === targetId) continue
+    const nextPath = path ? `${path}.${key}` : key
+    collectReferencePaths(nested, targetId, nextPath, output)
   }
 }
 
