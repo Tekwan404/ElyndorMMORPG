@@ -118,13 +118,15 @@ The simulator deliberately does not use `GameDbContext`, the live combat registr
 MVP boundaries:
 
 - Normal monsters only.
-- class base stats, level growth, resource scaling, starting abilities, and level-based class ability unlocks are included;
-- equipment and selected talent loadouts are not included yet;
+- class base stats, level growth, and resource scaling are included;
+- active abilities are included only when the simulation request selects talent ranks whose resolved modifiers contain UNLOCK_ABILITY;
+- selected skill talents flow through the same TalentModifierResolver used by authoritative character derived state;
+- equipment presets and a complete passive-talent build editor are not included yet;
 - runs are deterministic for the same content, scenario, and seed;
 - 1–1000 iterations per request and 1–180 seconds maximum simulated fight duration;
 - results include W/L/timeout counts, win rate, average/P50/P95 duration, player/enemy DPS, average remaining HP, and player damage-source breakdown.
 
-This lets a designer change draft balance, run simulations, inspect metrics, adjust again, and only then create/publish a revision. It must never become a second implementation of combat formulas.
+This lets a designer change draft balance, select skill-granting talent nodes, run simulations, inspect metrics, adjust again, and only then create/publish a revision. It must never become a second implementation of combat formulas.
 
 ## Active ability ownership
 

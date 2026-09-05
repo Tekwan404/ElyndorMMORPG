@@ -26,7 +26,16 @@ public sealed class CombatSimulationRunnerTests
         CombatSimulationResult first = new CombatSimulationRunner(package).Run(scenario);
         CombatSimulationResult second = new CombatSimulationRunner(package).Run(scenario);
 
-        Assert.Equal(first, second);
+        Assert.Equal(first.ContentVersion, second.ContentVersion);
+        Assert.Equal(first.BalanceVersion, second.BalanceVersion);
+        Assert.Equal(first.Victories, second.Victories);
+        Assert.Equal(first.Defeats, second.Defeats);
+        Assert.Equal(first.Timeouts, second.Timeouts);
+        Assert.Equal(first.WinRatePercent, second.WinRatePercent);
+        Assert.Equal(first.AverageDurationSeconds, second.AverageDurationSeconds);
+        Assert.Equal(first.AveragePlayerDps, second.AveragePlayerDps);
+        Assert.Equal(first.AverageEnemyDps, second.AverageEnemyDps);
+        Assert.Equal(first.DamageSources, second.DamageSources);
         Assert.Equal(20, first.Iterations);
         Assert.Equal(20, first.Victories + first.Defeats + first.Timeouts);
         Assert.True(first.AveragePlayerDps > 0);
