@@ -58,7 +58,15 @@ export async function runReplaySafeGameMutation<T>(
 export async function reconcilePendingGameMutation(): Promise<void> {
   const pending = loadPendingMutation()
   if (!pending) return
-  await executePending<unknown>(pending)
+
+  try {
+    await executePending<unknown>(pending)
+  } catch (error) {
+    // An acknowledged rejection resolves uncertainty just as a success does. Bootstrap or
+    // the next mutation may continue from authoritative state after the journal is cleared.
+    if (error instanceof ApiRequestError) return
+    throw error
+  }
 }
 
 export function hasPendingGameMutation(): boolean {
