@@ -159,6 +159,19 @@ function createItem(id: string, name: string, type: NewItemType): JsonRecord {
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,
+    maxHpFlat: 0,
+    attackPowerFlat: 0,
+    spellPowerFlat: 0,
+    criticalChancePercent: 0,
+    criticalDamagePercent: 0,
+    accuracyPercent: 0,
+    armorFlat: 0,
+    magicResistanceFlat: 0,
+    armorPenetrationPercent: 0,
+    magicPenetrationPercent: 0,
+    maxResourceFlat: 0,
+    iconId: null,
+    appearanceProfileId: null,
     healAmount: 0,
     consumableCooldownSeconds: 0,
     buyPriceGold: 0,
@@ -171,7 +184,7 @@ function createItem(id: string, name: string, type: NewItemType): JsonRecord {
   if (type === 'Equipment') {
     base.stackable = false
     base.maxStack = 1
-    base.slot = 'Accessory'
+    base.slot = 'Amulet'
   } else if (type === 'Consumable') {
     base.maxStack = 20
     base.healAmount = 50

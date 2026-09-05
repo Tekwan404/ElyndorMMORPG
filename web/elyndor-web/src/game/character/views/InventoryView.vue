@@ -11,7 +11,7 @@ const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const selectedItem = ref<InventoryItem | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
-const rarityFilter = ref<'all' | 'Common' | 'Uncommon' | 'Rare'>('all')
+const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
@@ -34,12 +34,26 @@ function statRows(item: InventoryItem): string[] {
     item.stats.agility ? `Ловкость +${item.stats.agility}` : '',
     item.stats.intellect ? `Интеллект +${item.stats.intellect}` : '',
     item.stats.stamina ? `Выносливость +${item.stats.stamina}` : '',
-    item.attackSpeedPercent ? `Скорость атаки +${item.attackSpeedPercent}%` : '',
-    item.dodgePercent ? `Уклонение +${item.dodgePercent}%` : '',
+    item.stats.maxHp ? `Макс. здоровье +${item.stats.maxHp}` : '',
+    item.stats.attackPower ? `Сила атаки +${item.stats.attackPower}` : '',
+    item.stats.spellPower ? `Сила заклинаний +${item.stats.spellPower}` : '',
+    item.stats.criticalChance ? `Крит. шанс +${item.stats.criticalChance}%` : '',
+    item.stats.criticalDamage ? `Крит. урон +${item.stats.criticalDamage}%` : '',
+    item.stats.accuracy ? `Точность +${item.stats.accuracy}%` : '',
+    item.stats.attackSpeed ? `Скорость атаки +${item.stats.attackSpeed}%` : '',
+    item.stats.armor ? `Броня +${item.stats.armor}` : '',
+    item.stats.magicResistance ? `Сопротивление магии +${item.stats.magicResistance}` : '',
+    item.stats.dodge ? `Уклонение +${item.stats.dodge}%` : '',
+    item.stats.armorPenetration ? `Пробивание брони +${item.stats.armorPenetration}%` : '',
+    item.stats.magicPenetration ? `Пробивание магии +${item.stats.magicPenetration}%` : '',
+    item.stats.maxResource ? `Макс. ресурс +${item.stats.maxResource}` : '',
   ].filter(Boolean)
 }
 
 function rarityLabel(item: InventoryItem): string {
+  if (item.rarity === 'Unique') return 'Уникальный'
+  if (item.rarity === 'Legendary') return 'Легендарный'
+  if (item.rarity === 'Epic') return 'Эпический'
   if (item.rarity === 'Rare') return 'Редкий'
   if (item.rarity === 'Uncommon') return 'Необычный'
   return 'Обычный'
@@ -49,7 +63,10 @@ function typeLabel(item: InventoryItem): string {
   if (item.type === 'Material') return 'Материал'
   if (item.type === 'Consumable') return 'Расходник'
   const labels: Record<string, string> = {
-    Weapon: 'Оружие', Head: 'Шлем', Chest: 'Нагрудник', Legs: 'Штаны', Boots: 'Ботинки', Accessory: 'Аксессуар',
+    MainHand: 'Основная рука', OffHand: 'Вторая рука', Weapon: 'Оружие',
+    Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Штаны',
+    Feet: 'Обувь', Boots: 'Ботинки', Cloak: 'Плащ', Amulet: 'Амулет',
+    Ring1: 'Кольцо', Ring2: 'Кольцо', Accessory: 'Аксессуар',
   }
   return item.slot ? labels[item.slot] ?? 'Снаряжение' : 'Снаряжение'
 }
@@ -57,11 +74,14 @@ function typeLabel(item: InventoryItem): string {
 function itemGlyph(item: InventoryItem): string {
   if (item.type === 'Material') return '◆'
   if (item.type === 'Consumable') return '✚'
-  if (item.slot === 'Weapon') return '⚔'
+  if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return '⚔'
   if (item.slot === 'Head') return '◈'
   if (item.slot === 'Chest') return '⬟'
   if (item.slot === 'Legs') return '▥'
-  if (item.slot === 'Boots') return '⌁'
+  if (item.slot === 'Boots' || item.slot === 'Feet') return '⌁'
+  if (item.slot === 'Hands') return '◫'
+  if (item.slot === 'Cloak') return '◒'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return '✧'
   return '✦'
 }
 
@@ -109,6 +129,9 @@ async function useSelected(): Promise<void> {
           <button type="button" :class="{ active: rarityFilter === 'Common' }" @click="rarityFilter = 'Common'">Обычная</button>
           <button type="button" :class="{ active: rarityFilter === 'Uncommon' }" @click="rarityFilter = 'Uncommon'">Необычная</button>
           <button type="button" :class="{ active: rarityFilter === 'Rare' }" @click="rarityFilter = 'Rare'">Редкая</button>
+          <button type="button" :class="{ active: rarityFilter === 'Epic' }" @click="rarityFilter = 'Epic'">Эпическая</button>
+          <button type="button" :class="{ active: rarityFilter === 'Legendary' }" @click="rarityFilter = 'Legendary'">Легендарная</button>
+          <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
         </div>
       </div>
     </UIPanel>
@@ -178,6 +201,7 @@ async function useSelected(): Promise<void> {
 .bag-cell { position:relative; aspect-ratio:1; border:1px solid var(--ui-color-border-strong); border-radius:var(--ui-radius-md); background:var(--ui-color-surface-2); color:var(--ui-color-text-primary); }
 .bag-cell[data-rarity='Uncommon'] { border-color:var(--ui-color-success); }
 .bag-cell[data-rarity='Rare'] { border-color:var(--ui-color-primary); }
+.bag-cell[data-rarity='Epic'], .bag-cell[data-rarity='Legendary'], .bag-cell[data-rarity='Unique'] { border-color:var(--ui-color-accent, var(--ui-color-primary)); }
 .bag-cell--empty { opacity:.28; }
 .bag-cell__icon { display:grid; height:100%; place-items:center; font-size:1.45rem; }
 .bag-cell__quantity { position:absolute; right:3px; bottom:2px; padding:0 4px; border-radius:4px; background:#080b14dd; color:white; font-size:.7rem; }

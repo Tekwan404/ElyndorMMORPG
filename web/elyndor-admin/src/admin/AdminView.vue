@@ -148,6 +148,9 @@ const aiProfileIds = computed(() => recordArray(draftPackage.value?.monsterAiPro
 const classIds = computed(() => recordArray(draftPackage.value?.classProfiles)
   .map(profile => stringProperty(profile, 'id'))
   .filter(Boolean))
+const equipmentSetIds = computed(() => recordArray(draftPackage.value?.equipmentSets)
+  .map(set => stringProperty(set, 'id'))
+  .filter(Boolean))
 const simulationClassOptions = computed(() => recordArray(draftPackage.value?.classProfiles)
   .filter(profile => isRecord(profile.combatAutoAttack))
   .map(profile => ({ id: stringProperty(profile, 'id') }))
@@ -944,6 +947,7 @@ onBeforeUnmount(() => {
             :ai-profile-ids="aiProfileIds"
             :ability-ids="abilityIds"
             :class-ids="classIds"
+            :set-ids="equipmentSetIds"
             @update:entity="updateEntityFromForm"
           />
           <AdminClassProfileForm

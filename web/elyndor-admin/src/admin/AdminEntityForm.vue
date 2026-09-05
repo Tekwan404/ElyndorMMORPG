@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 type JsonRecord = Record<string, unknown>
 type JsonPath = Array<string | number>
@@ -11,12 +11,36 @@ const props = withDefaults(defineProps<{
   aiProfileIds?: string[]
   abilityIds?: string[]
   classIds?: string[]
+  setIds?: string[]
 }>(), {
   lootTableIds: () => [],
   aiProfileIds: () => [],
   abilityIds: () => [],
   classIds: () => [],
+  setIds: () => [],
 })
+
+const itemModifierDefinitions = [
+  { key: 'strength', label: 'Strength', path: ['stats', 'strength'] as JsonPath, suffix: '' },
+  { key: 'agility', label: 'Agility', path: ['stats', 'agility'] as JsonPath, suffix: '' },
+  { key: 'intellect', label: 'Intellect', path: ['stats', 'intellect'] as JsonPath, suffix: '' },
+  { key: 'stamina', label: 'Stamina', path: ['stats', 'stamina'] as JsonPath, suffix: '' },
+  { key: 'maxHpFlat', label: 'Max HP', path: ['maxHpFlat'] as JsonPath, suffix: '' },
+  { key: 'attackPowerFlat', label: 'Attack Power', path: ['attackPowerFlat'] as JsonPath, suffix: '' },
+  { key: 'spellPowerFlat', label: 'Spell Power', path: ['spellPowerFlat'] as JsonPath, suffix: '' },
+  { key: 'criticalChancePercent', label: 'Critical Chance', path: ['criticalChancePercent'] as JsonPath, suffix: '%' },
+  { key: 'criticalDamagePercent', label: 'Critical Damage', path: ['criticalDamagePercent'] as JsonPath, suffix: '%' },
+  { key: 'accuracyPercent', label: 'Accuracy', path: ['accuracyPercent'] as JsonPath, suffix: '%' },
+  { key: 'attackSpeedPercent', label: 'Attack Speed', path: ['attackSpeedPercent'] as JsonPath, suffix: '%' },
+  { key: 'armorFlat', label: 'Armor', path: ['armorFlat'] as JsonPath, suffix: '' },
+  { key: 'magicResistanceFlat', label: 'Magic Resistance', path: ['magicResistanceFlat'] as JsonPath, suffix: '' },
+  { key: 'dodgePercent', label: 'Dodge', path: ['dodgePercent'] as JsonPath, suffix: '%' },
+  { key: 'armorPenetrationPercent', label: 'Armor Penetration', path: ['armorPenetrationPercent'] as JsonPath, suffix: '%' },
+  { key: 'magicPenetrationPercent', label: 'Magic Penetration', path: ['magicPenetrationPercent'] as JsonPath, suffix: '%' },
+  { key: 'maxResourceFlat', label: 'Max Resource', path: ['maxResourceFlat'] as JsonPath, suffix: '' },
+] as const
+
+const newItemModifierKey = ref('')
 
 const emit = defineEmits<{
   'update:entity': [entity: JsonRecord]
@@ -133,19 +157,24 @@ function setItemSlot(event: Event): void {
   const slot = (event.target as HTMLSelectElement).value
   const next = cloneJsonValue(props.entity) as JsonRecord
   next.slot = slot || null
-  if (slot === 'Weapon') {
+  if (['Weapon', 'MainHand', 'OffHand'].includes(slot)) {
     next.weaponCategory = typeof next.weaponCategory === 'string' && next.weaponCategory
       ? next.weaponCategory
       : 'ONE_HAND_SWORD'
     next.armorCategory = null
-  } else if (['Head', 'Chest', 'Legs', 'Boots'].includes(slot)) {
+    if (typeof next.weaponBaseAttackIntervalSeconds !== 'number' || next.weaponBaseAttackIntervalSeconds <= 0) {
+      next.weaponBaseAttackIntervalSeconds = 2.5
+    }
+  } else if (['Head', 'Chest', 'Hands', 'Legs', 'Boots', 'Feet'].includes(slot)) {
     next.weaponCategory = null
     next.armorCategory = typeof next.armorCategory === 'string' && next.armorCategory
       ? next.armorCategory
       : 'LIGHT'
+    next.weaponBaseAttackIntervalSeconds = null
   } else {
     next.weaponCategory = null
     next.armorCategory = null
+    next.weaponBaseAttackIntervalSeconds = null
   }
   emit('update:entity', next)
 }
@@ -158,7 +187,7 @@ function setItemType(event: Event): void {
   if (type === 'Equipment') {
     next.stackable = false
     next.maxStack = 1
-    if (typeof next.slot !== 'string') next.slot = 'Accessory'
+    if (typeof next.slot !== 'string') next.slot = 'Amulet'
     next.healAmount = 0
     next.consumableCooldownSeconds = 0
   } else {
@@ -171,6 +200,17 @@ function setItemType(event: Event): void {
     next.weaponBaseAttackIntervalSeconds = null
     next.attackSpeedPercent = 0
     next.dodgePercent = 0
+    next.maxHpFlat = 0
+    next.attackPowerFlat = 0
+    next.spellPowerFlat = 0
+    next.criticalChancePercent = 0
+    next.criticalDamagePercent = 0
+    next.accuracyPercent = 0
+    next.armorFlat = 0
+    next.magicResistanceFlat = 0
+    next.armorPenetrationPercent = 0
+    next.magicPenetrationPercent = 0
+    next.maxResourceFlat = 0
     next.stats = { strength: 0, agility: 0, intellect: 0, stamina: 0 }
 
     if (type === 'Consumable') {
@@ -188,6 +228,25 @@ function setItemType(event: Event): void {
   }
 
   emit('update:entity', next)
+}
+
+function activeItemModifiers() {
+  return itemModifierDefinitions.filter(definition => numberValue(definition.path) !== 0)
+}
+
+function availableItemModifiers() {
+  return itemModifierDefinitions.filter(definition => numberValue(definition.path) === 0)
+}
+
+function addItemModifier(): void {
+  const definition = itemModifierDefinitions.find(candidate => candidate.key === newItemModifierKey.value)
+  if (!definition) return
+  update(definition.path, 1)
+  newItemModifierKey.value = ''
+}
+
+function removeItemModifier(path: JsonPath): void {
+  update(path, 0)
 }
 
 function cloneJsonValue(value: unknown): unknown {
@@ -350,27 +409,44 @@ function isRecord(value: unknown): value is JsonRecord {
           <option value="Consumable">Consumable</option>
         </select>
       </label>
-      <label><span>Rarity</span><input :value="text(['rarity'])" @input="setString(['rarity'], $event)" /></label>
+      <label>
+        <span>Rarity</span>
+        <select :value="text(['rarity'])" @change="setString(['rarity'], $event)">
+          <option v-for="rarity in ['Common','Uncommon','Rare','Epic','Legendary','Unique']" :key="rarity" :value="rarity">{{ rarity }}</option>
+        </select>
+      </label>
       <label><span>Required level</span><input type="number" min="1" :value="numberValue(['requiredLevel'])" @input="setNumber(['requiredLevel'], $event)" /></label>
       <label><span>Max stack</span><input type="number" min="1" :value="numberValue(['maxStack'])" @input="setNumber(['maxStack'], $event)" /></label>
       <label v-if="text(['type']) === 'Equipment'">
         <span>Slot</span>
         <select data-testid="item-slot" :value="text(['slot'])" @change="setItemSlot">
-          <option value="Weapon">Weapon</option>
-          <option value="Head">Head</option>
-          <option value="Chest">Chest</option>
-          <option value="Legs">Legs</option>
-          <option value="Boots">Boots</option>
-          <option value="Accessory">Accessory</option>
+          <optgroup label="Canonical">
+            <option value="MainHand">Main Hand</option>
+            <option value="OffHand">Off Hand</option>
+            <option value="Head">Head</option>
+            <option value="Chest">Chest</option>
+            <option value="Hands">Hands</option>
+            <option value="Legs">Legs</option>
+            <option value="Feet">Feet</option>
+            <option value="Cloak">Cloak</option>
+            <option value="Amulet">Amulet</option>
+            <option value="Ring1">Ring 1</option>
+            <option value="Ring2">Ring 2</option>
+          </optgroup>
+          <optgroup label="Legacy content">
+            <option value="Weapon">Weapon (legacy)</option>
+            <option value="Boots">Boots (legacy)</option>
+            <option value="Accessory">Accessory (legacy)</option>
+          </optgroup>
         </select>
       </label>
-      <label v-if="text(['type']) === 'Equipment' && text(['slot']) === 'Weapon'">
+      <label v-if="text(['type']) === 'Equipment' && ['Weapon','MainHand','OffHand'].includes(text(['slot']))">
         <span>Weapon category</span>
         <select data-testid="item-weapon-category" :value="text(['weaponCategory'])" @change="setOptionalSelection(['weaponCategory'], $event)">
           <option v-for="category in ['ONE_HAND_SWORD','TWO_HAND_SWORD','AXE','MACE','SHIELD','BOW','DAGGER','STAFF','WAND']" :key="category" :value="category">{{ category }}</option>
         </select>
       </label>
-      <label v-if="text(['type']) === 'Equipment' && ['Head','Chest','Legs','Boots'].includes(text(['slot']))">
+      <label v-if="text(['type']) === 'Equipment' && ['Head','Chest','Hands','Legs','Boots','Feet'].includes(text(['slot']))">
         <span>Armor category</span>
         <select data-testid="item-armor-category" :value="text(['armorCategory'])" @change="setOptionalSelection(['armorCategory'], $event)">
           <option value="LIGHT">LIGHT</option>
@@ -378,15 +454,55 @@ function isRecord(value: unknown): value is JsonRecord {
           <option value="HEAVY">HEAVY</option>
         </select>
       </label>
+      <label v-if="text(['type']) === 'Equipment' && ['Weapon','MainHand','OffHand'].includes(text(['slot']))">
+        <span>Base attack interval, sec</span>
+        <input
+          type="number"
+          min="0.1"
+          step="0.1"
+          :value="numberValue(['weaponBaseAttackIntervalSeconds'])"
+          @input="setNumber(['weaponBaseAttackIntervalSeconds'], $event)"
+        />
+      </label>
+      <label v-if="text(['type']) === 'Equipment'">
+        <span>Equipment Set</span>
+        <select :value="text(['setId'])" @change="setOptionalSelection(['setId'], $event)">
+          <option value="">— no set —</option>
+          <option v-for="id in relationOptions(setIds, text(['setId']))" :key="id" :value="id">{{ id }}</option>
+        </select>
+      </label>
+      <label><span>Icon ID</span><input :value="text(['iconId'])" @input="setString(['iconId'], $event)" /></label>
+      <label v-if="text(['type']) === 'Equipment'"><span>Appearance Profile</span><input :value="text(['appearanceProfileId'])" @input="setString(['appearanceProfileId'], $event)" /></label>
       <label class="wide"><span>Описание</span><textarea :value="text(['description'])" @input="setString(['description'], $event)" /></label>
     </fieldset>
 
-    <fieldset>
-      <legend>Характеристики</legend>
-      <label><span>Strength</span><input data-testid="item-strength" type="number" :value="numberValue(['stats', 'strength'])" @input="setNumber(['stats', 'strength'], $event)" /></label>
-      <label><span>Agility</span><input type="number" :value="numberValue(['stats', 'agility'])" @input="setNumber(['stats', 'agility'], $event)" /></label>
-      <label><span>Intellect</span><input type="number" :value="numberValue(['stats', 'intellect'])" @input="setNumber(['stats', 'intellect'], $event)" /></label>
-      <label><span>Stamina</span><input type="number" :value="numberValue(['stats', 'stamina'])" @input="setNumber(['stats', 'stamina'], $event)" /></label>
+    <fieldset v-if="text(['type']) === 'Equipment'" class="modifier-fieldset">
+      <legend>Stat modifiers</legend>
+      <div class="modifier-list wide">
+        <div v-for="definition in activeItemModifiers()" :key="definition.key" class="modifier-row">
+          <label>
+            <span>{{ definition.label }}{{ definition.suffix ? ` (${definition.suffix})` : '' }}</span>
+            <input
+              :data-testid="definition.key === 'strength' ? 'item-strength' : undefined"
+              type="number"
+              step="0.1"
+              :value="numberValue(definition.path)"
+              @input="setNumber(definition.path, $event)"
+            />
+          </label>
+          <button class="danger compact" type="button" @click="removeItemModifier(definition.path)">×</button>
+        </div>
+      </div>
+      <div class="add-modifier wide">
+        <select v-model="newItemModifierKey">
+          <option value="">Добавить характеристику…</option>
+          <option v-for="definition in availableItemModifiers()" :key="definition.key" :value="definition.key">
+            {{ definition.label }}{{ definition.suffix ? ` (${definition.suffix})` : '' }}
+          </option>
+        </select>
+        <button type="button" :disabled="!newItemModifierKey" @click="addItemModifier">+ Add modifier</button>
+      </div>
+      <p class="wide relation-hint">Нулевые модификаторы скрываются. Все значения проходят через authoritative equipment stat pipeline.</p>
     </fieldset>
 
     <fieldset v-if="text(['type']) === 'Equipment'">
@@ -428,6 +544,11 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--ui-color-pr
 .relation-chip { display: inline-flex; align-items: center; gap: var(--ui-space-1); padding: var(--ui-space-1) var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); }
 .relation-chip button { min-height: 1.5rem; padding: 0 .35rem; border: 0; background: transparent; color: var(--ui-color-danger); cursor: pointer; }
 .relation-hint { margin: 0; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
+.modifier-fieldset { grid-template-columns: 1fr; }
+.modifier-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-2); }
+.modifier-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--ui-space-1); }
+.modifier-row .compact { width: var(--ui-touch-target); min-height: var(--ui-touch-target); }
+.add-modifier { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--ui-space-2); }
 @media (max-width: 900px) { fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { fieldset { grid-template-columns: 1fr; } label.wide { grid-column: auto; } }
+@media (max-width: 560px) { fieldset, .modifier-list, .add-modifier { grid-template-columns: 1fr; } label.wide { grid-column: auto; } }
 </style>

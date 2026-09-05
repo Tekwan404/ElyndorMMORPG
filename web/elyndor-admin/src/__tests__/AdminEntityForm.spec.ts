@@ -118,7 +118,7 @@ describe('AdminEntityForm', () => {
     expect(next.type).toBe('Equipment')
     expect(next.stackable).toBe(false)
     expect(next.maxStack).toBe(1)
-    expect(next.slot).toBe('Accessory')
+    expect(next.slot).toBe('Amulet')
   })
 
   it('normalizes equipment category shape when slot changes', async () => {
@@ -130,7 +130,7 @@ describe('AdminEntityForm', () => {
           type: 'Equipment',
           stackable: false,
           maxStack: 1,
-          slot: 'Accessory',
+          slot: 'Amulet',
           weaponCategory: null,
           armorCategory: null,
           allowedClassIds: [],
@@ -140,13 +140,46 @@ describe('AdminEntityForm', () => {
       },
     })
 
-    await wrapper.get('[data-testid="item-slot"]').setValue('Weapon')
+    await wrapper.get('[data-testid="item-slot"]').setValue('MainHand')
     const emitted = wrapper.emitted('update:entity') ?? []
     const next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
 
-    expect(next.slot).toBe('Weapon')
+    expect(next.slot).toBe('MainHand')
     expect(next.weaponCategory).toBe('ONE_HAND_SWORD')
     expect(next.armorCategory).toBeNull()
+  })
+
+  it('adds and updates secondary equipment modifiers', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'items',
+        entity: {
+          id: 'WOLF_CHEST',
+          type: 'Equipment',
+          slot: 'Chest',
+          stats: { strength: 4, agility: 0, intellect: 0, stamina: 7 },
+          armorFlat: 18,
+          criticalChancePercent: 0,
+        },
+      },
+    })
+
+    const modifierSelect = wrapper.find('.add-modifier select')
+    await modifierSelect.setValue('criticalChancePercent')
+    await wrapper.get('.add-modifier button').trigger('click')
+
+    let emitted = wrapper.emitted('update:entity') ?? []
+    let next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+    expect(next.criticalChancePercent).toBe(1)
+
+    await wrapper.setProps({ entity: next })
+    const critInput = wrapper.findAll('.modifier-row input')
+      .find(input => input.element.parentElement?.textContent?.includes('Critical Chance'))
+    expect(critInput).toBeDefined()
+    await critInput!.setValue('2.5')
+    emitted = wrapper.emitted('update:entity') ?? []
+    next = emitted[emitted.length - 1]?.[0] as Record<string, unknown>
+    expect(next.criticalChancePercent).toBe(2.5)
   })
 
   it('updates nested item stats', async () => {
