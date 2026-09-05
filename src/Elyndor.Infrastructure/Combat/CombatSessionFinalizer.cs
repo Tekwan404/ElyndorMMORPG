@@ -58,6 +58,28 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+
+        // A terminal victory may be observed again after reconnect/retry. Rewards are already
+        // idempotent by CombatSessionId, but replaying the pre-reward combat vitals here would
+        // overwrite authoritative post-reward state (for example a level-up full heal).
+        if (snapshot.Status == CombatSessionStatus.Victory)
+        {
+            var existingReward = await dbContext.CombatRewardGrants
+                .AsNoTracking()
+                .SingleOrDefaultAsync(
+                    grant => grant.CombatSessionId == snapshot.SessionId,
+                    cancellationToken);
+            if (existingReward is not null)
+            {
+                return new CombatRewardApplicationResult(
+                    false,
+                    existingReward.XpEarned,
+                    existingReward.GoldEarned,
+                    null,
+                    []);
+            }
+        }
+
         CharacterDerivedStateService derivedStateService =
             scope.ServiceProvider.GetRequiredService<CharacterDerivedStateService>();
         Character? character = await dbContext.Characters
