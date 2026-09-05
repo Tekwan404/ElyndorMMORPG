@@ -134,6 +134,40 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
     }
 
     [Fact]
+    public async Task AuthenticationRateLimitReturnsStableProblemAndRetryAfter()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactory("PublicTest");
+        using HttpClient client = factory.CreateClient();
+        string invalidInitData = ValidInitData.Replace(
+            "b56cf8",
+            "a56cf8",
+            StringComparison.Ordinal);
+
+        HttpResponseMessage? response = null;
+        for (int attempt = 0; attempt < 21; attempt++)
+        {
+            response?.Dispose();
+            response = await client.PostAsJsonAsync(
+                "/api/v1/auth/telegram",
+                new TelegramAuthenticationRequest(invalidInitData));
+        }
+
+        using (response)
+        {
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+            Assert.True(response.Headers.TryGetValues("Retry-After", out IEnumerable<string>? values));
+            Assert.NotEmpty(values);
+
+            ApiErrorResponse? error =
+                await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+            Assert.NotNull(error);
+            Assert.Equal("rate_limited", error.Code);
+            Assert.False(string.IsNullOrWhiteSpace(error.CorrelationId));
+        }
+    }
+
+    [Fact]
     public void MissingBotTokenFailsApplicationStartup()
     {
         using WebApplicationFactory<Program> factory = CreateFactory(
