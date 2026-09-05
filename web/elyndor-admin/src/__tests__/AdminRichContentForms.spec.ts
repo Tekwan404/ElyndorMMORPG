@@ -60,7 +60,7 @@ describe('rich admin content forms', () => {
           transitions: [],
           encounters: [],
         },
-        monsters: [{ id: 'DIRE_WOLF', name: 'Лютоволк' }],
+        monsters: [{ id: 'DIRE_WOLF', name: 'Лютоволк', rank: 'Elite' }],
       },
     })
 
