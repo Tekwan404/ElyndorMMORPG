@@ -13,7 +13,8 @@ public static class AdminWebAuthenticationEndpoints
     {
         RouteGroupBuilder group = endpoints
             .MapGroup("/api/v1/admin/auth")
-            .WithTags("Admin Authentication");
+            .WithTags("Admin Authentication")
+            .RequireRateLimiting(ServerRateLimitPolicies.Authentication);
 
         group.MapPost("/request-code", RequestCodeAsync);
         group.MapPost("/verify-code", VerifyCodeAsync);
