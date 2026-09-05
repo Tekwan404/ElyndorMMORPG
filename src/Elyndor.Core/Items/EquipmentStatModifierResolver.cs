@@ -34,6 +34,10 @@ public static class EquipmentStatModifierResolver
 
         ItemDefinition[] items = equippedItems
             .Where(item => item.Type == ItemType.Equipment)
+            .GroupBy(item => CanonicalSlot(item.Slot))
+            .Select(group => group
+                .OrderByDescending(item => item.Slot == CanonicalSlot(item.Slot))
+                .First())
             .ToArray();
 
         decimal strength = items.Sum(item => item.Stats.Strength);
@@ -55,7 +59,7 @@ public static class EquipmentStatModifierResolver
         decimal maxResourceFlat = items.Sum(item => item.MaxResourceFlat);
 
         decimal? weaponBaseAttackIntervalSeconds = items
-            .Where(item => item.Slot is EquipmentSlot.Weapon or EquipmentSlot.MainHand)
+            .Where(item => CanonicalSlot(item.Slot) == EquipmentSlot.MainHand)
             .Select(item => item.WeaponBaseAttackIntervalSeconds)
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
@@ -105,4 +109,13 @@ public static class EquipmentStatModifierResolver
             weaponBaseAttackIntervalSeconds,
             activeBonuses);
     }
+
+    private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) =>
+        slot switch
+        {
+            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+            EquipmentSlot.Boots => EquipmentSlot.Feet,
+            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
+            _ => slot
+        };
 }
