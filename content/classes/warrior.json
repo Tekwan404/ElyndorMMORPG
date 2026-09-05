@@ -31,9 +31,7 @@
         "HEAVY"
       ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
-      "startingAbilityIds": [
-        "STRIKE"
-      ],
+      "startingAbilityIds": [],
       "abilityUnlocks": [],
       "combatAutoAttack": {
         "interval": "00:00:02",

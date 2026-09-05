@@ -62,7 +62,40 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
         Assert.Equal(198, state.Stats.Intellect);
         Assert.Equal(1090, state.EffectiveResourceProfile.MaxValue);
         Assert.Equal("MANA", state.BaseResourceProfile.Id);
-        Assert.Contains("MAGE_FIREBALL", state.KnownAbilityIds);
+        Assert.Empty(state.KnownAbilityIds);
+    }
+
+    [Fact]
+    public async Task ActiveAbilitiesComeOnlyFromSelectedTalents()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        (Guid characterId, _) = await CreateCharacterAsync("WARRIOR", 60);
+        TalentTreeDefinition warriorTree =
+            content.TalentTrees!.Single(tree => tree.Id == "WARRIOR_TREE");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterTalentState state = new(
+                characterId,
+                warriorTree.Id,
+                warriorTree.Version,
+                Now);
+            state.ReplaceRanks(
+                TalentLoadoutIds.Loadout1,
+                new Dictionary<string, int> { ["B-2-2"] = 1 },
+                Now);
+            setup.CharacterTalentStates.Add(state);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterDerivedStateService service = CreateService(context, content);
+        CharacterDerivedState resolved = await service.ResolveAsync(
+            characterId, "WARRIOR", 60, CancellationToken.None);
+
+        Assert.Contains("WILD_STRIKE", resolved.KnownAbilityIds);
+        Assert.DoesNotContain("STRIKE", resolved.KnownAbilityIds);
+        Assert.DoesNotContain("HEAVY_BLOW", resolved.KnownAbilityIds);
     }
 
     [Fact]

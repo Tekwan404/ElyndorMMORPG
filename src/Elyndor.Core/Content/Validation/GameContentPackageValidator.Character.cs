@@ -143,28 +143,14 @@ public static partial class GameContentPackageValidator
                         $"Class profile '{profile.Id}' contains an invalid combat auto attack."));
                 }
 
-                HashSet<string> ownedAbilityIds = [];
-                foreach (string abilityId in profile.StartingAbilityIds ?? [])
+                if ((profile.StartingAbilityIds?.Count ?? 0) > 0
+                    || (profile.AbilityUnlocks?.Count ?? 0) > 0)
                 {
-                    if (!ownedAbilityIds.Add(abilityId)
-                        || package.Abilities?.Any(ability => ability.Id == abilityId) != true)
-                    {
-                        errors.Add(new ContentValidationError(
-                            "INVALID_CLASS_ABILITY", path,
-                            $"Class profile '{profile.Id}' references invalid ability '{abilityId}'."));
-                    }
-                }
-
-                foreach (AbilityUnlockDefinition unlock in profile.AbilityUnlocks ?? [])
-                {
-                    if (unlock.UnlockLevel is < 2 or > 60
-                        || !ownedAbilityIds.Add(unlock.AbilityId)
-                        || package.Abilities?.Any(ability => ability.Id == unlock.AbilityId) != true)
-                    {
-                        errors.Add(new ContentValidationError(
-                            "INVALID_CLASS_ABILITY_UNLOCK", path,
-                            $"Class profile '{profile.Id}' contains invalid unlock '{unlock.AbilityId}'."));
-                    }
+                    errors.Add(new ContentValidationError(
+                        "CLASS_ABILITY_GRANT_FORBIDDEN",
+                        path,
+                        $"Class profile '{profile.Id}' cannot grant active abilities. "
+                        + "Active skills must be unlocked through talent modifiers."));
                 }
             }
 

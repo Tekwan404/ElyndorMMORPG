@@ -1,4 +1,5 @@
 using Elyndor.Contracts.Administration;
+using Elyndor.Core.Combat.Simulation;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Content;
 
@@ -16,6 +17,7 @@ public static class ContentAdminEndpoints
 
         group.MapGet("/current", GetCurrent);
         group.MapPost("/validate", Validate);
+        group.MapPost("/simulate", Simulate);
         group.MapPost("/revisions", CreateRevisionAsync);
         group.MapGet("/revisions/{revisionId:guid}", GetRevisionAsync);
         group.MapGet("/history", GetHistoryAsync);
@@ -42,6 +44,84 @@ public static class ContentAdminEndpoints
         ContentDraftValidationResult result =
             ContentAdministrationService.ValidateDraft(request.PayloadJson);
         return Results.Ok(ToValidationResponse(result));
+    }
+
+    private static IResult Simulate(
+        ContentAdminSimulationRequest request,
+        HttpContext context,
+        CancellationToken cancellationToken)
+    {
+        ContentDraftValidationResult validation =
+            ContentAdministrationService.ValidateDraft(request.PayloadJson);
+        if (!validation.IsValid)
+        {
+            return Results.Json(
+                new
+                {
+                    code = "content_invalid",
+                    correlationId = context.TraceIdentifier,
+                    errors = validation.Errors.Select(error => new
+                    {
+                        error.Code,
+                        error.Path,
+                        error.Message
+                    })
+                },
+                statusCode: StatusCodes.Status422UnprocessableEntity);
+        }
+
+        try
+        {
+            CombatSimulationResult result =
+                new CombatSimulationRunner(validation.Package!).Run(
+                    new CombatSimulationScenario(
+                        request.ClassId,
+                        request.PlayerLevel,
+                        request.MonsterId,
+                        request.Iterations,
+                        request.Seed,
+                        request.MaxDurationSeconds,
+                        request.AbilityPriority,
+                        request.SelectedTalentRanks),
+                    cancellationToken);
+
+            return Results.Ok(new ContentAdminSimulationResponse(
+                result.ContentVersion,
+                result.BalanceVersion,
+                result.ClassId,
+                result.PlayerLevel,
+                result.MonsterId,
+                result.Iterations,
+                result.Victories,
+                result.Defeats,
+                result.Timeouts,
+                result.WinRatePercent,
+                result.AverageDurationSeconds,
+                result.P50DurationSeconds,
+                result.P95DurationSeconds,
+                result.AveragePlayerDps,
+                result.AverageEnemyDps,
+                result.AveragePlayerRemainingHp,
+                result.DamageSources.Select(source =>
+                    new ContentAdminSimulationDamageSourceResponse(
+                        source.DefinitionId,
+                        source.AverageDamage,
+                        source.DamageSharePercent)).ToArray()));
+        }
+        catch (CombatSimulationException exception)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status422UnprocessableEntity,
+                exception.Code);
+        }
+        catch (ArgumentException)
+        {
+            return Problem(
+                context,
+                StatusCodes.Status400BadRequest,
+                "content_simulation_request_invalid");
+        }
     }
 
     private static async Task<IResult> CreateRevisionAsync(

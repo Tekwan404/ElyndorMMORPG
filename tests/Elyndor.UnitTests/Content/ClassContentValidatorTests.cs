@@ -1,5 +1,4 @@
 using Elyndor.Core.Combat;
-using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 
@@ -29,7 +28,7 @@ public sealed class ClassContentValidatorTests
     }
 
     [Fact]
-    public void ValidateRejectsAbilityUnlockBeyondLevelSixty()
+    public void ValidateRejectsClassBasedAbilityGrants()
     {
         ClassProfile warrior = CreateProfile(
             "WARRIOR",
@@ -38,29 +37,14 @@ public sealed class ClassContentValidatorTests
             "ONE_HAND_SWORD",
             "HEAVY") with
         {
-            AbilityUnlocks = [new AbilityUnlockDefinition("TEST_ABILITY", 61)]
-        };
-        GameContentPackage package = CreatePackage(warrior) with
-        {
-            Abilities =
-            [
-                new AbilityDefinition(
-                    "TEST_ABILITY",
-                    AbilityType.Instant,
-                    AbilityTargetType.Self,
-                    0,
-                    TimeSpan.Zero,
-                    TimeSpan.Zero,
-                    false,
-                    GlobalCooldownCategory.None,
-                    false,
-                    "PHYSICAL")
-            ]
+            StartingAbilityIds = ["STRIKE"],
+            AbilityUnlocks = [new AbilityUnlockDefinition("HEAVY_BLOW", 2)]
         };
 
-        IReadOnlyList<ContentValidationError> errors = GameContentPackageValidator.Validate(package);
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(CreatePackage(warrior));
 
-        Assert.Contains(errors, error => error.Code == "INVALID_CLASS_ABILITY_UNLOCK");
+        Assert.Contains(errors, error => error.Code == "CLASS_ABILITY_GRANT_FORBIDDEN");
     }
 
     private static GameContentPackage CreatePackage(ClassProfile warrior) =>

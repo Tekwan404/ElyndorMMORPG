@@ -9,8 +9,6 @@ public sealed class GameContentPackageLoaderTests
 {
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["LIGHT"];
-    private static readonly string[] MageStartingAbilities =
-        ["MAGE_FIREBALL", "MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD"];
     private static readonly string[] ForestEncounterMonsters =
         ["WOLF", "FOREST_BOAR", "GIANT_SPIDER"];
 
@@ -33,9 +31,8 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("MANA", mage.ResourceProfileId);
         Assert.Equal(MageWeaponCategories, mage.AllowedWeaponCategories);
         Assert.Equal(MageArmorCategories, mage.AllowedArmorCategories);
-        Assert.Equal(
-            MageStartingAbilities,
-            mage.StartingAbilityIds);
+        Assert.Empty(mage.StartingAbilityIds ?? []);
+        Assert.Empty(mage.AbilityUnlocks ?? []);
         Assert.NotNull(mage.CombatAutoAttack);
 
         TalentTreeDefinition mageTree = Assert.Single(

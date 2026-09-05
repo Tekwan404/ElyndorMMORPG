@@ -150,9 +150,7 @@ public sealed class CharacterDerivedStateService(
             statCalculation.Stats,
             talentModifiers.Stats.MaxResourceFlat);
 
-        string[] knownAbilityIds = (classProfile.StartingAbilityIds ?? [])
-            .Concat(talentModifiers.UnlockedAbilityIds)
-            .Distinct(StringComparer.Ordinal)
+        string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
             .ToArray();
 

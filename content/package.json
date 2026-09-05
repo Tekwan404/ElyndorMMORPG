@@ -123,28 +123,8 @@
         "HEAVY"
       ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
-      "startingAbilityIds": [
-        "STRIKE",
-        "PROVOKE"
-      ],
-      "abilityUnlocks": [
-        {
-          "abilityId": "HEAVY_BLOW",
-          "unlockLevel": 2
-        },
-        {
-          "abilityId": "SHIELD_BASH",
-          "unlockLevel": 3
-        },
-        {
-          "abilityId": "BATTLE_FOCUS",
-          "unlockLevel": 5
-        },
-        {
-          "abilityId": "BATTLE_SHOUT",
-          "unlockLevel": 7
-        }
-      ],
+      "startingAbilityIds": [],
+      "abilityUnlocks": [],
       "combatAutoAttack": {
         "interval": "00:00:02",
         "baseDamage": 0,
@@ -177,7 +157,9 @@
         "LIGHT",
         "MEDIUM"
       ],
-      "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs."
+      "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs.",
+      "startingAbilityIds": [],
+      "abilityUnlocks": []
     },
     {
       "id": "MAGE",
@@ -203,7 +185,9 @@
       "allowedArmorCategories": [
         "LIGHT"
       ],
-      "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk."
+      "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
+      "startingAbilityIds": [],
+      "abilityUnlocks": []
     }
   ],
   "statFormula": {

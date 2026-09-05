@@ -119,6 +119,42 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
         Assert.Contains(history.Releases, item => item.RevisionId == revision.Id);
     }
 
+    [Fact]
+    public async Task SuperAdminCanSimulateCurrentDraftWithoutPublishingIt()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+        AuthenticationResponse authentication = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authentication.AccessToken);
+
+        ContentAdminCurrentResponse current =
+            (await client.GetFromJsonAsync<ContentAdminCurrentResponse>(
+                "/api/v1/admin/content/current"))!;
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/v1/admin/content/simulate",
+            new ContentAdminSimulationRequest(
+                current.PayloadJson,
+                "WARRIOR",
+                5,
+                "WOLF",
+                5,
+                1234,
+                30));
+        response.EnsureSuccessStatusCode();
+
+        ContentAdminSimulationResponse result =
+            (await response.Content.ReadFromJsonAsync<ContentAdminSimulationResponse>())!;
+
+        Assert.Equal(5, result.Iterations);
+        Assert.Equal(5, result.Victories + result.Defeats + result.Timeouts);
+        Assert.Equal(current.ContentVersion, result.ContentVersion);
+        Assert.Equal(current.BalanceVersion, result.BalanceVersion);
+        Assert.True(result.AveragePlayerDps >= 0);
+    }
+
     private static async Task<AuthenticationResponse> AuthenticateAsync(HttpClient client)
     {
         HttpResponseMessage response = await client.PostAsJsonAsync(

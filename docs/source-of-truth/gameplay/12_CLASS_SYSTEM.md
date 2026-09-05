@@ -67,8 +67,6 @@ ClassDefinition
   ├── AllowedWeaponTags
   ├── AllowedArmorTags
   ├── AllowUnarmed
-  ├── StartingAbilityIds
-  ├── AbilityUnlockProfileId
   ├── TalentTreeId
   ├── CompanionProfileId, optional
   ├── ClassTags
@@ -646,3 +644,17 @@ RoleProfile = Magical Damage
 ```
 
 School tags do not create new DamageTypes; FIRE/ARCANE/FROST abilities use MAGICAL damage by default.
+
+## Source of Truth Revision v3 — Talent-owned active abilities (2026-09-05)
+
+- Active player abilities are never granted by ClassProfile, character creation, or character level alone.
+- StartingAbilityIds and AbilityUnlocks remain serialization-compatibility fields only and must be empty in valid current content.
+- TalentModifierType.AbilityModifier with UNLOCK_ABILITY is the only supported grant path for active player skills.
+- CharacterDerivedState.KnownAbilityIds is derived from the active talent loadout.
+- Auto Attack is a combat mechanic and is not treated as an unlocked active skill.
+- Level Up may award Talent Points or satisfy a talent RequiredLevel, but does not directly grant an active ability.
+- A respec or active-loadout change changes the known active ability set on the next authoritative derived-state resolution.
+
+### Superseding rule
+
+Sections describing StartingAbilityIds, AbilityUnlockProfile, automatic class-ability learning by level, or free Level-1 abilities are superseded by Revision v3 above. Ability definitions may still belong thematically to a class kit, but runtime access is talent-owned.

@@ -66,3 +66,39 @@ public sealed record ContentAdminReleaseResponse(
 public sealed record ContentAdminHistoryResponse(
     IReadOnlyList<ContentAdminRevisionResponse> Revisions,
     IReadOnlyList<ContentAdminReleaseResponse> Releases);
+
+
+public sealed record ContentAdminSimulationRequest(
+    string PayloadJson,
+    string ClassId,
+    int PlayerLevel,
+    string MonsterId,
+    int Iterations,
+    int Seed,
+    int MaxDurationSeconds,
+    IReadOnlyList<string>? AbilityPriority = null,
+    IReadOnlyDictionary<string, int>? SelectedTalentRanks = null);
+
+public sealed record ContentAdminSimulationDamageSourceResponse(
+    string DefinitionId,
+    decimal AverageDamage,
+    decimal DamageSharePercent);
+
+public sealed record ContentAdminSimulationResponse(
+    string ContentVersion,
+    string BalanceVersion,
+    string ClassId,
+    int PlayerLevel,
+    string MonsterId,
+    int Iterations,
+    int Victories,
+    int Defeats,
+    int Timeouts,
+    decimal WinRatePercent,
+    decimal AverageDurationSeconds,
+    decimal P50DurationSeconds,
+    decimal P95DurationSeconds,
+    decimal AveragePlayerDps,
+    decimal AverageEnemyDps,
+    decimal AveragePlayerRemainingHp,
+    IReadOnlyList<ContentAdminSimulationDamageSourceResponse> DamageSources);

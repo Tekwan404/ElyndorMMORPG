@@ -61,6 +61,7 @@ The supported content lifecycle endpoints are:
 ```text
 GET  /api/v1/admin/content/current
 POST /api/v1/admin/content/validate
+POST /api/v1/admin/content/simulate
 POST /api/v1/admin/content/revisions
 GET  /api/v1/admin/content/revisions/{revisionId}
 GET  /api/v1/admin/content/history
@@ -75,11 +76,12 @@ There is deliberately no endpoint that mutates live content directly.
 `/admin` is a minimal operational UI, not a second game client. It provides:
 
 - live content/balance identity and payload hash;
-- structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters;
+- structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters; Class Profiles intentionally cannot grant active abilities;
 - creation of new Monster, Item, Loot Table, and Merchant entities inside the local draft, including a dedicated basic AI profile for new monsters;
 - category/entity JSON editing for advanced or not-yet-structured fields;
 - full-package JSON fallback;
 - server validation errors, including merchant location/item/buy-price reference validation;
+- deterministic headless combat simulation against the current local draft before it is saved or published;
 - immutable draft creation;
 - read-only revision detail and an entity-aware diff against current LIVE before publish confirmation;
 - revision publishing;
@@ -105,3 +107,29 @@ Redis, microservices, distributed invalidation, and per-entity revision database
 out of scope for the current single-instance modular monolith. If Elyndor becomes multi-instance,
 publish propagation must gain a durable version notification mechanism before horizontal scaling is
 considered safe.
+
+
+## Combat Simulator MVP
+
+`POST /api/v1/admin/content/simulate` is an admin-only, stateless balance tool. It validates the submitted full draft package first and then builds temporary Core `CombatSession` instances directly from that package.
+
+The simulator deliberately does not use `GameDbContext`, the live combat registry, reward finalization, inventory mutation, XP, gold, or loot grants. It therefore cannot mutate player state. It reuses the same `CharacterStatCalculator`, resource scaling, `AbilityEngine`, Damage/Effect kernel, Monster AI, and `CombatSession` scheduling used by gameplay.
+
+MVP boundaries:
+
+- Normal monsters only.
+- class base stats, level growth, and resource scaling are included;
+- active abilities are included only when the simulation request selects talent ranks whose resolved modifiers contain UNLOCK_ABILITY;
+- selected skill talents flow through the same TalentModifierResolver used by authoritative character derived state;
+- equipment presets and a complete passive-talent build editor are not included yet;
+- runs are deterministic for the same content, scenario, and seed;
+- 1–1000 iterations per request and 1–180 seconds maximum simulated fight duration;
+- results include W/L/timeout counts, win rate, average/P50/P95 duration, player/enemy DPS, average remaining HP, and player damage-source breakdown.
+
+This lets a designer change draft balance, select skill-granting talent nodes, run simulations, inspect metrics, adjust again, and only then create/publish a revision. It must never become a second implementation of combat formulas.
+
+## Active ability ownership
+
+Admin preserves one grant path for player active skills: Talent Tree UNLOCK_ABILITY.
+Class Profile forms do not expose starting abilities or level-based ability unlocks, and content validation rejects non-empty ClassProfile grant lists.
+JSON fallback therefore cannot bypass the talent-owned skill rule.
