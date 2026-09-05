@@ -1,0 +1,31 @@
+[Unit]
+Description=Elyndor MMORPG server
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=elyndor
+Group=elyndor
+WorkingDirectory=/opt/elyndor/current
+EnvironmentFile=/etc/elyndor/elyndor.env
+ExecStart=/usr/bin/dotnet /opt/elyndor/current/Elyndor.Server.dll
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+KillSignal=SIGINT
+SyslogIdentifier=elyndor
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/var/lib/elyndor
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

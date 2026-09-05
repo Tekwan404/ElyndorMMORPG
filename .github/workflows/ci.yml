@@ -34,6 +34,9 @@ jobs:
             exit 1
           }
 
+      - name: Check production deploy scripts
+        run: bash -n deploy/*.sh
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -68,6 +71,22 @@ jobs:
           npm run lint
           npm run test:unit
           npm run build
+
+      - name: Validate production publish layout
+        run: |
+          rm -rf .artifacts/production
+          dotnet publish src/Elyndor.Server/Elyndor.Server.csproj \
+            --configuration Release \
+            --no-restore \
+            --self-contained false \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            --output .artifacts/production
+          mkdir -p .artifacts/production/frontend
+          cp -a web/elyndor-web/dist/. .artifacts/production/frontend/
+          test -f .artifacts/production/Elyndor.Server.dll
+          test -f .artifacts/production/frontend/index.html
+          test -f .artifacts/production/content/package.json
 
       - name: Install Playwright Chromium
         working-directory: web/elyndor-web
