@@ -85,9 +85,11 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
                 CancellationToken.None));
 
         CombatRewardApplicationResult granted = Assert.Single(
-            results.Where(result => result.Granted));
+            results,
+            result => result.Granted);
         CombatRewardApplicationResult replay = Assert.Single(
-            results.Where(result => !result.Granted));
+            results,
+            result => !result.Granted);
 
         Assert.Equal(granted.XpEarned, replay.XpEarned);
         Assert.Equal(granted.GoldEarned, replay.GoldEarned);
