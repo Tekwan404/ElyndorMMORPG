@@ -23,9 +23,11 @@ export interface AuthenticationResponse {
 export interface ContentAdminCurrent {
   contentVersion: string
   balanceVersion: string
+  sourcePublishedAtUtc: string
   revisionId: string | null
   releaseId: string | null
   payloadSha256: string
+  payloadJson: string
 }
 
 export interface ContentAdminValidationError {
