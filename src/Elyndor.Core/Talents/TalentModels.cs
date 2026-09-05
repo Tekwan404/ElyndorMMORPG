@@ -86,6 +86,7 @@ public static class TalentErrorCodes
     public const string InvalidLoadout = "talent_invalid_loadout";
     public const string Conflict = "talent_state_conflict";
     public const string InvalidMutationId = "talent_invalid_mutation_id";
+    public const string MutationConflict = "talent_mutation_conflict";
 }
 
 public sealed record TalentLearnResult(
