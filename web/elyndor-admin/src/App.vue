@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
+import AdminView from '@/admin/AdminView.vue'
 import {
   adminRequest,
   AdminApiError,
@@ -12,7 +13,7 @@ import {
   type ContentAdminHistory,
 } from './api'
 
-type ViewState = 'login' | 'code' | 'dashboard'
+type ViewState = 'login' | 'code' | 'dashboard' | 'content'
 
 const view = ref<ViewState>('login')
 const telegramId = ref('')
@@ -179,7 +180,7 @@ function formatDate(value: string | null | undefined): string {
 </script>
 
 <template>
-  <main v-if="view !== 'dashboard'" class="auth-page">
+  <main v-if="view === 'login' || view === 'code'" class="auth-page">
     <section class="auth-brand">
       <span class="brand-mark">E</span>
       <div>
@@ -262,8 +263,21 @@ function formatDate(value: string | null | undefined): string {
       </div>
 
       <nav>
-        <button class="nav-item active" type="button">
+        <button
+          class="nav-item"
+          :class="{ active: view === 'dashboard' }"
+          type="button"
+          @click="view = 'dashboard'"
+        >
           <span>Dashboard</span>
+        </button>
+        <button
+          class="nav-item"
+          :class="{ active: view === 'content' }"
+          type="button"
+          @click="view = 'content'"
+        >
+          <span>Content Workspace</span>
         </button>
 
         <div v-for="section in sections" :key="section.group" class="nav-group">
@@ -285,6 +299,7 @@ function formatDate(value: string | null | undefined): string {
     </aside>
 
     <section class="admin-main">
+      <template v-if="view === 'dashboard'">
       <header class="topbar">
         <div>
           <p class="eyebrow">ADMIN V2 / FOUNDATION</p>
@@ -375,12 +390,18 @@ function formatDate(value: string | null | undefined): string {
         <h2>Content Workspace migration</h2>
         <p>
           Monsters, Items, Abilities, Talents, Locations, Loot, Merchants, Simulator,
-          Validation, Revisions, Publish и Rollback будут перенесены сюда без потери
-          текущего рабочего /admin до завершения миграции.
+          Validation, Revisions, Publish и Rollback уже доступны в отдельном Content Workspace.
+          Следующий блок — global search, filters, relations и улучшение editor UX.
         </p>
+        <button class="primary-link" type="button" @click="view = 'content'">
+          Открыть Content Workspace
+        </button>
       </section>
 
       <p v-if="errorMessage" class="error-message error-message--dashboard">{{ errorMessage }}</p>
+      </template>
+
+      <AdminView v-else-if="view === 'content'" />
     </section>
   </div>
 </template>

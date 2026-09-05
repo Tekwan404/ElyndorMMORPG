@@ -15,6 +15,28 @@
   --green: #62e8ae;
   --danger: #ff6e83;
   --gold: #e7c477;
+
+  --ui-color-background: var(--bg);
+  --ui-color-surface-1: var(--surface);
+  --ui-color-surface-2: var(--surface-2);
+  --ui-color-border: var(--border);
+  --ui-color-primary: var(--violet);
+  --ui-color-danger: var(--danger);
+  --ui-color-success: var(--green);
+  --ui-color-warning: var(--gold);
+  --ui-color-text-primary: var(--text);
+  --ui-color-text-muted: var(--muted);
+  --ui-font-display: Marcellus, Georgia, serif;
+  --ui-font-size-xs: 0.69rem;
+  --ui-radius-sm: 9px;
+  --ui-radius-md: 14px;
+  --ui-radius-round: 999px;
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-touch-target: 42px;
+
   font-family: Inter, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -162,4 +184,30 @@ code { color: var(--cyan); }
   .topbar, .hero-panel { align-items: stretch; flex-direction: column; }
   .topbar-actions { flex-wrap: wrap; }
   .dashboard-grid, .metric-grid { grid-template-columns: 1fr; }
+}
+
+.primary-link {
+  min-height: 40px;
+  margin-top: 16px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: rgba(112,84,233,.13);
+  color: #eeeaff;
+  font-weight: 600;
+}
+.admin-layout .admin-main .admin-shell {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
+.admin-layout .admin-main .admin-shell .admin-header {
+  max-width: none;
+}
+.admin-layout .admin-main .admin-shell .live-bar,
+.admin-layout .admin-main .admin-shell .toolbar,
+.admin-layout .admin-main .admin-shell .workspace,
+.admin-layout .admin-main .admin-shell .errors,
+.admin-layout .admin-main .admin-shell .history {
+  max-width: none;
 }

@@ -23,24 +23,78 @@ export interface AuthenticationResponse {
 export interface ContentAdminCurrent {
   contentVersion: string
   balanceVersion: string
+  sourcePublishedAtUtc: string
   revisionId: string | null
   releaseId: string | null
   payloadSha256: string
+  payloadJson: string
+}
+
+export interface ContentAdminValidationError {
+  code: string
+  path: string
+  message: string
+}
+
+export interface ContentAdminValidation {
+  isValid: boolean
+  canonicalPayloadJson: string | null
+  payloadSha256: string | null
+  errors: ContentAdminValidationError[]
+}
+
+export interface ContentAdminRevision {
+  id: string
+  contentVersion: string
+  balanceVersion: string
+  sourcePublishedAtUtc: string
+  payloadSha256: string
+  createdAtUtc: string
+  createdBy: string
+  note: string | null
+}
+
+export interface ContentAdminRevisionDetail extends ContentAdminRevision {
+  payloadJson: string
+}
+
+export interface ContentAdminRelease {
+  id: string
+  revisionId: string
+  publishedAtUtc: string
+  publishedBy: string
+  note: string | null
 }
 
 export interface ContentAdminHistory {
-  revisions: Array<{
-    id: string
-    createdAtUtc: string
-    createdBy: string
-    note: string | null
-  }>
-  releases: Array<{
-    id: string
-    publishedAtUtc: string
-    publishedBy: string
-    note: string | null
-  }>
+  revisions: ContentAdminRevision[]
+  releases: ContentAdminRelease[]
+}
+
+export interface ContentAdminSimulationDamageSource {
+  definitionId: string
+  averageDamage: number
+  damageSharePercent: number
+}
+
+export interface ContentAdminSimulation {
+  contentVersion: string
+  balanceVersion: string
+  classId: string
+  playerLevel: number
+  monsterId: string
+  iterations: number
+  victories: number
+  defeats: number
+  timeouts: number
+  winRatePercent: number
+  averageDurationSeconds: number
+  p50DurationSeconds: number
+  p95DurationSeconds: number
+  averagePlayerDps: number
+  averageEnemyDps: number
+  averagePlayerRemainingHp: number
+  damageSources: ContentAdminSimulationDamageSource[]
 }
 
 export class AdminApiError extends Error {
