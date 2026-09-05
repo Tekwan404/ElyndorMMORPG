@@ -12,11 +12,11 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'hero'
+type ShellView = 'location' | 'hero'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
-const activeView = ref<ShellView>('world')
+const activeView = ref<ShellView>('location')
 const character = computed(() => session.snapshot?.character)
 const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
   const value = character.value?.vitals.resourceType.toLowerCase()
@@ -24,8 +24,8 @@ const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
 })
 const resourceName = computed(() => resourceLabel(character.value?.vitals.resourceType ?? ''))
 const connectionLabel = computed(() => {
-  if (session.state === 'world') return 'Мир доступен'
-  if (session.state === 'offline' || session.state === 'error') return 'Связь потеряна'
+  if (session.state === 'world') return 'Онлайн'
+  if (session.state === 'offline' || session.state === 'error') return 'Нет связи'
   return 'Синхронизация'
 })
 const sessionErrorMessage = computed(() => {
@@ -38,19 +38,21 @@ const sessionErrorMessage = computed(() => {
 })
 
 const navigation: readonly {
-  id: ShellView | 'quests' | 'menu'
+  id: ShellView | 'world' | 'quests' | 'menu'
   label: string
   icon: string
   enabled: boolean
+  primary?: boolean
 }[] = [
-  { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
+  { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: false },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
+  { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
   { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'world' || item.id === 'hero')) {
+  if (item.enabled && (item.id === 'location' || item.id === 'hero')) {
     activeView.value = item.id
   }
 }
@@ -64,9 +66,9 @@ onMounted(() => {
 <template>
   <div class="game-shell">
     <header class="game-shell__header">
-      <div>
+      <div class="brand-lockup">
         <p class="brand">ELYNDOR</p>
-        <p class="subtitle">MMORPG в Telegram</p>
+        <small>Telegram MMORPG</small>
       </div>
       <div class="game-shell__actions">
         <RouterLink v-if="session.isAdmin" class="admin-link" to="/admin">Admin</RouterLink>
@@ -77,17 +79,26 @@ onMounted(() => {
     </header>
 
     <section v-if="session.state === 'world' && character && !combat.isActive" class="hud" aria-label="Состояние героя">
-      <div class="hud__identity">
-        <b>{{ character.name }}</b>
-        <small>ур. {{ character.level }} · {{ classLabel(character.classId) }}</small>
-        <span class="hud__gold">{{ character.gold }} золота</span>
+      <div class="hud__topline">
+        <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="activeView = 'hero'">
+          {{ character.name.slice(0, 1).toUpperCase() }}
+        </button>
+        <button class="hud__identity" type="button" @click="activeView = 'hero'">
+          <b>{{ character.name }}</b>
+          <small>ур. {{ character.level }} · {{ classLabel(character.classId) }}</small>
+        </button>
+        <div class="hud__wallet" aria-label="Валюта">
+          <span aria-hidden="true">●</span>
+          <strong>{{ character.gold }}</strong>
+        </div>
       </div>
+
       <div class="hud__bars">
         <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
         <UIHealthBar :label="resourceName" :tone="resourceTone" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
         <div class="xp" role="progressbar" aria-label="Опыт" :aria-valuenow="character.experience" :aria-valuemax="character.xpToNextLevel || 1">
           <span :style="{ width: `${character.xpToNextLevel ? Math.min(100, character.experience / character.xpToNextLevel * 100) : 100}%` }" />
-          <small>Опыт {{ character.experience }} / {{ character.xpToNextLevel || 'МАКС.' }}</small>
+          <small>{{ character.experience }} / {{ character.xpToNextLevel || 'МАКС.' }} XP</small>
         </div>
       </div>
     </section>
@@ -108,8 +119,8 @@ onMounted(() => {
         <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
-      <WorldView v-else-if="session.state === 'world' && activeView === 'world'" />
-      <HeroView v-else-if="session.state === 'world'" />
+      <WorldView v-else-if="session.state === 'world' && activeView === 'location'" />
+      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
     </main>
 
     <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">
@@ -117,14 +128,19 @@ onMounted(() => {
         v-for="item in navigation"
         :key="item.id"
         class="navigation__item"
-        :class="{ 'navigation__item--active': item.id === activeView }"
+        :class="{
+          'navigation__item--active': item.id === activeView,
+          'navigation__item--primary': item.primary,
+        }"
         :data-nav="item.id"
         type="button"
         :disabled="!item.enabled"
         :aria-current="item.id === activeView ? 'page' : undefined"
         @click="selectView(item)"
       >
-        <img class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
+        <span class="navigation__icon-wrap">
+          <img class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
+        </span>
         <small>{{ item.label }}</small>
       </button>
     </nav>
@@ -151,32 +167,27 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   display: flex;
-  min-height: var(--ui-control-height-lg);
+  min-height: 42px;
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-3);
   padding:
-    calc(var(--ui-space-3) + var(--ui-safe-area-top))
-    calc(var(--ui-space-4) + var(--ui-safe-area-right))
-    var(--ui-space-3)
-    calc(var(--ui-space-4) + var(--ui-safe-area-left));
-  border-bottom: 1px solid var(--ui-color-border);
-  background: linear-gradient(180deg, rgb(14 20 33 / 97%), rgb(8 12 21 / 94%));
-  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+    calc(var(--ui-space-2) + var(--ui-safe-area-top))
+    calc(var(--ui-space-3) + var(--ui-safe-area-right))
+    var(--ui-space-2)
+    calc(var(--ui-space-3) + var(--ui-safe-area-left));
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  background: linear-gradient(180deg, rgb(13 19 31 / 98%), rgb(8 12 21 / 96%));
 }
 
-.game-shell__header::after {
-  position: absolute;
-  right: 18%;
-  bottom: -1px;
-  left: 18%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(146 136 255 / 55%), transparent);
-  content: '';
+.brand-lockup {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ui-space-2);
 }
 
 .brand,
-.subtitle {
+.brand-lockup small {
   margin: 0;
 }
 
@@ -185,118 +196,147 @@ onMounted(() => {
   background-clip: text;
   color: transparent;
   font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-lg);
+  font-size: var(--ui-font-size-md);
   font-weight: var(--ui-font-weight-bold);
-  letter-spacing: .18em;
+  letter-spacing: .16em;
   line-height: 1;
 }
 
-.subtitle {
-  margin-top: 4px;
+.brand-lockup small {
   color: var(--ui-color-text-muted);
-  font-size: .59rem;
-  font-weight: var(--ui-font-weight-medium);
-  letter-spacing: .12em;
+  font-size: .54rem;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
 .game-shell__actions {
   display: flex;
   align-items: center;
-  gap: var(--ui-space-3);
+  gap: var(--ui-space-2);
 }
 
 .admin-link {
-  padding: 5px 8px;
+  padding: 4px 7px;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-sm);
-  background: rgb(255 255 255 / 2%);
   color: var(--ui-color-primary);
-  font-size: var(--ui-font-size-xs);
+  font-size: .65rem;
   text-decoration: none;
-}
-
-.admin-link:hover {
-  border-color: var(--ui-color-primary);
-  background: rgb(146 136 255 / 7%);
 }
 
 .server-state {
   display: flex;
   align-items: center;
-  gap: var(--ui-space-2);
+  gap: 5px;
   color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-xs);
+  font-size: .62rem;
   white-space: nowrap;
 }
 
 .server-state i {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: var(--ui-radius-round);
   background: var(--ui-color-warning);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-color-warning) 10%, transparent);
 }
 
 .server-state[data-state='world'] i {
   background: var(--ui-color-success);
-  box-shadow: 0 0 0 3px rgb(79 185 150 / 10%), 0 0 10px rgb(79 185 150 / 30%);
+  box-shadow: 0 0 9px rgb(79 185 150 / 40%);
 }
 
 .server-state[data-state='offline'] i,
 .server-state[data-state='error'] i {
   background: var(--ui-color-danger);
-  box-shadow: 0 0 0 3px rgb(216 95 114 / 10%), var(--ui-glow-danger);
+  box-shadow: var(--ui-glow-danger);
 }
 
 .hud {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr);
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-2) var(--ui-space-4) var(--ui-space-3);
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-2) var(--ui-space-3) var(--ui-space-3);
   border-bottom: 1px solid var(--ui-color-border);
-  background: linear-gradient(180deg, rgb(15 22 36 / 92%), rgb(9 14 24 / 94%));
-  box-shadow: 0 8px 22px rgb(0 0 0 / 12%);
+  background:
+    radial-gradient(circle at 12% 50%, rgb(146 136 255 / 9%), transparent 10rem),
+    linear-gradient(180deg, rgb(15 22 36 / 96%), rgb(9 14 24 / 96%));
+  box-shadow: 0 8px 22px rgb(0 0 0 / 14%);
+}
+
+.hud__topline {
+  display: grid;
+  grid-template-columns: 2.3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-2);
+}
+
+.hud__portrait {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 25%, rgb(255 255 255 / 10%), transparent 36%),
+    var(--ui-color-surface-2);
+  box-shadow: 0 0 0 2px rgb(146 136 255 / 8%);
+  color: #d8d4ff;
+  font: inherit;
+  font-family: var(--ui-font-display);
+  font-weight: 700;
 }
 
 .hud__identity {
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
-  justify-content: center;
+  gap: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
 }
 
 .hud__identity b {
   overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-md);
+  font-size: var(--ui-font-size-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .hud__identity small {
   color: var(--ui-color-text-muted);
-  font-size: .64rem;
+  font-size: .61rem;
 }
 
-.hud__gold {
-  margin-top: 2px;
+.hud__wallet {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid rgb(232 200 102 / 16%);
+  border-radius: var(--ui-radius-round);
+  background: rgb(232 200 102 / 5%);
   color: var(--ui-color-gold);
-  font-size: .65rem;
-  font-weight: var(--ui-font-weight-semibold);
+  font-size: .69rem;
   font-variant-numeric: tabular-nums;
 }
 
 .hud__bars {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px var(--ui-space-2);
 }
 
 .xp {
   position: relative;
-  min-height: 13px;
+  grid-column: 1 / -1;
+  min-height: 11px;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 6%);
   border-radius: var(--ui-radius-round);
@@ -309,17 +349,16 @@ onMounted(() => {
   inset-block: 0;
   left: 0;
   background: linear-gradient(90deg, #645dc7, var(--ui-color-primary), var(--ui-color-secondary));
-  box-shadow: 0 0 12px rgb(146 136 255 / 24%);
 }
 
 .xp small {
   position: relative;
   z-index: 1;
   display: block;
-  color: rgb(242 244 255 / 92%);
-  font-size: .57rem;
+  color: rgb(242 244 255 / 88%);
+  font-size: .53rem;
   font-weight: 600;
-  line-height: 11px;
+  line-height: 9px;
   text-align: center;
   text-shadow: 0 1px 2px black;
 }
@@ -340,38 +379,28 @@ onMounted(() => {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
   padding:
-    var(--ui-space-1)
-    calc(var(--ui-space-2) + var(--ui-safe-area-right))
-    calc(var(--ui-space-1) + var(--ui-safe-area-bottom))
-    calc(var(--ui-space-2) + var(--ui-safe-area-left));
+    4px
+    calc(var(--ui-space-1) + var(--ui-safe-area-right))
+    calc(4px + var(--ui-safe-area-bottom))
+    calc(var(--ui-space-1) + var(--ui-safe-area-left));
   border-top: 1px solid var(--ui-color-border);
-  background: linear-gradient(180deg, rgb(13 19 31 / 96%), rgb(7 10 18 / 99%));
+  background: linear-gradient(180deg, rgb(13 19 31 / 97%), rgb(7 10 18 / 99%));
   box-shadow: 0 -12px 28px rgb(0 0 0 / 24%);
-}
-
-.navigation::before {
-  position: absolute;
-  top: -1px;
-  right: 24%;
-  left: 24%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(146 136 255 / 45%), transparent);
-  content: '';
 }
 
 .navigation__item {
   position: relative;
   display: grid;
-  min-width: var(--ui-touch-target);
-  min-height: 56px;
+  min-width: 0;
+  min-height: 54px;
   place-items: center;
   align-content: center;
-  gap: 2px;
-  padding: var(--ui-space-1);
-  border: 1px solid transparent;
+  gap: 1px;
+  padding: 2px;
+  border: 0;
   border-radius: var(--ui-radius-md);
   background: transparent;
   color: var(--ui-color-text-muted);
@@ -382,9 +411,9 @@ onMounted(() => {
 
 .navigation__item::after {
   position: absolute;
-  right: 30%;
-  bottom: 1px;
-  left: 30%;
+  right: 31%;
+  bottom: 0;
+  left: 31%;
   height: 2px;
   border-radius: var(--ui-radius-round);
   background: transparent;
@@ -394,12 +423,12 @@ onMounted(() => {
 .navigation__item:disabled {
   color: var(--ui-color-disabled);
   cursor: not-allowed;
-  opacity: .34;
+  opacity: .36;
 }
 
 .navigation__item--active {
   background: linear-gradient(180deg, rgb(146 136 255 / 11%), transparent);
-  color: #c9c5ff;
+  color: #d0ccff;
 }
 
 .navigation__item--active::after {
@@ -407,15 +436,32 @@ onMounted(() => {
   box-shadow: 0 0 9px rgb(146 136 255 / 55%);
 }
 
+.navigation__item--primary .navigation__icon-wrap {
+  width: 34px;
+  height: 34px;
+  margin-top: -9px;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 45%, var(--ui-color-border));
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgb(28 31 55 / 98%), rgb(10 14 25 / 98%));
+  box-shadow: 0 -6px 18px rgb(0 0 0 / 26%), 0 0 12px rgb(146 136 255 / 10%);
+}
+
 .navigation__item:active:not(:disabled) {
   transform: scale(.97);
 }
 
+.navigation__icon-wrap {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+}
+
 .navigation__icon {
-  width: 27px;
-  height: 27px;
+  width: 25px;
+  height: 25px;
   object-fit: contain;
-  filter: grayscale(.15) saturate(.72) brightness(.88);
+  filter: grayscale(.18) saturate(.72) brightness(.88);
   transition: filter var(--ui-transition-fast), transform var(--ui-transition-fast);
 }
 
@@ -425,22 +471,22 @@ onMounted(() => {
 }
 
 .navigation small {
-  font-size: .63rem;
+  overflow: hidden;
+  max-width: 100%;
+  font-size: .56rem;
   font-weight: var(--ui-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 390px) {
-  .game-shell__header {
-    padding-inline: calc(var(--ui-space-3) + var(--ui-safe-area-left));
-  }
-
+  .brand-lockup small,
   .server-state span {
     display: none;
   }
 
   .hud {
-    grid-template-columns: 5.5rem minmax(0, 1fr);
-    padding-inline: var(--ui-space-3);
+    padding-inline: var(--ui-space-2);
   }
 }
 

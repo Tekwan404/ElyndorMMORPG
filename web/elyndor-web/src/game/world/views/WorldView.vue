@@ -227,24 +227,44 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
-    <section v-if="isStarterTown" class="town-grid">
-      <UICard class="town-service town-service--training">
-        <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
-        <h2>Тренировочный манекен</h2>
-        <p>Проверяйте билды, криты, DoT и ротацию без риска, расхода зелий и наград.</p>
+    <section v-if="isStarterTown" class="town-services">
+      <header class="town-services__header">
+        <div>
+          <small>ЛОКАЦИЯ · СЕРВИСЫ</small>
+          <strong>Стартовый город</strong>
+        </div>
+        <span>SAFE</span>
+      </header>
+
+      <article class="service-row service-row--training">
+        <span class="service-row__icon" aria-hidden="true">⚔</span>
+        <div class="service-row__copy">
+          <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
+          <strong>Тренировочный манекен</strong>
+          <p>Проверьте билд и ротацию без риска, зелий и наград.</p>
+        </div>
         <UIButton data-start-training :loading="combat.pending" @click="startTraining">Тренироваться</UIButton>
-      </UICard>
-      <UICard class="town-service">
-        <small>ТОРГОВЕЦ</small>
-        <h2>Маркус</h2>
-        <p>Лечебные припасы, покупка зелий и скупка добытых материалов.</p>
-        <UIButton @click="merchantOpen = true">Открыть лавку</UIButton>
-      </UICard>
-      <UICard class="town-service">
-        <small>ОТДЫХ</small>
-        <h2>Городская площадь</h2>
-        <p>Здесь здоровье постепенно восстанавливается. Подготовьте экипировку и таланты.</p>
-      </UICard>
+      </article>
+
+      <article class="service-row">
+        <span class="service-row__icon" aria-hidden="true">◆</span>
+        <div class="service-row__copy">
+          <small>ТОРГОВЕЦ</small>
+          <strong>Маркус</strong>
+          <p>Припасы, лечебные зелья и продажа добытых материалов.</p>
+        </div>
+        <UIButton @click="merchantOpen = true">Открыть</UIButton>
+      </article>
+
+      <article class="service-row service-row--passive">
+        <span class="service-row__icon" aria-hidden="true">✦</span>
+        <div class="service-row__copy">
+          <small>ОТДЫХ</small>
+          <strong>Городская площадь</strong>
+          <p>В безопасной зоне здоровье постепенно восстанавливается.</p>
+        </div>
+        <span class="service-row__status">Активно</span>
+      </article>
     </section>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
@@ -505,6 +525,115 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   gap: var(--ui-space-3);
 }
 
+.town-services {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-lg);
+  background: linear-gradient(180deg, rgb(13 18 30 / 78%), rgb(7 10 17 / 82%));
+  box-shadow: var(--ui-shadow-inset);
+}
+
+.town-services__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  border-bottom: 1px solid var(--ui-color-border);
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.town-services__header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.town-services__header small {
+  color: var(--ui-color-primary);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.town-services__header strong {
+  margin: 0;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-lg);
+}
+
+.town-services__header > span {
+  padding: 4px 7px;
+  border: 1px solid rgb(79 185 150 / 28%);
+  border-radius: var(--ui-radius-round);
+  color: #84d5bb;
+  font-size: .56rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.service-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+.service-row:last-child {
+  border-bottom: 0;
+}
+
+.service-row--training {
+  background: linear-gradient(90deg, rgb(146 136 255 / 7%), transparent 62%);
+}
+
+.service-row__icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-surface-2);
+  color: var(--ui-color-primary);
+  font-size: 1.25rem;
+}
+
+.service-row__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.service-row__copy small {
+  color: var(--ui-color-primary);
+  font-size: .55rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.service-row__copy strong {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-sm);
+}
+
+.service-row__copy p {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.service-row__status {
+  padding: 4px 7px;
+  border: 1px solid rgb(79 185 150 / 22%);
+  border-radius: var(--ui-radius-round);
+  color: #84d5bb;
+  font-size: .58rem;
+}
+
 .town-service {
   position: relative;
   display: grid;
@@ -619,6 +748,28 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
   .town-service :deep(.ui-button) {
     width: 100%;
+  }
+
+  .service-row {
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+    gap: var(--ui-space-2);
+    padding-inline: var(--ui-space-3);
+  }
+
+  .service-row__icon {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+
+  .service-row :deep(.ui-button),
+  .service-row__status {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .service-row__status {
+    box-sizing: border-box;
+    text-align: center;
   }
 }
 </style>

@@ -15,7 +15,7 @@ const hasTalentTree = computed(() => ['WARRIOR', 'MAGE'].includes(session.snapsh
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
-  { id: 'stats', label: 'Характеристики', available: true },
+  { id: 'stats', label: 'Статы', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
 
@@ -56,12 +56,13 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
   position: sticky;
   z-index: var(--ui-z-sticky);
   top: 0;
-  display: flex;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(max-content, 1fr));
+  gap: 2px;
   overflow-x: auto;
-  padding: var(--ui-space-2) var(--ui-space-3);
+  padding: 6px var(--ui-space-3);
   border-bottom: 1px solid var(--ui-color-border);
-  background: linear-gradient(180deg, rgb(12 18 30 / 98%), rgb(8 12 20 / 94%));
+  background: linear-gradient(180deg, rgb(12 18 30 / 98%), rgb(8 12 20 / 95%));
   box-shadow: 0 8px 20px rgb(0 0 0 / 15%);
   backdrop-filter: blur(14px);
   scrollbar-width: none;
@@ -74,9 +75,8 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
 .hero-tabs button {
   position: relative;
   min-width: max-content;
-  min-height: 40px;
-  flex: 1 0 auto;
-  padding: var(--ui-space-2) var(--ui-space-3);
+  min-height: 36px;
+  padding: 6px var(--ui-space-2);
   border: 1px solid transparent;
   border-radius: var(--ui-radius-md);
   background: transparent;
