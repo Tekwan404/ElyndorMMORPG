@@ -201,14 +201,14 @@ export interface InventorySnapshot {
     legs: InventoryItem | null
     boots: InventoryItem | null
     accessory: InventoryItem | null
-    mainHand: InventoryItem | null
-    offHand: InventoryItem | null
-    hands: InventoryItem | null
-    feet: InventoryItem | null
-    cloak: InventoryItem | null
-    amulet: InventoryItem | null
-    ring1: InventoryItem | null
-    ring2: InventoryItem | null
+    mainHand?: InventoryItem | null
+    offHand?: InventoryItem | null
+    hands?: InventoryItem | null
+    feet?: InventoryItem | null
+    cloak?: InventoryItem | null
+    amulet?: InventoryItem | null
+    ring1?: InventoryItem | null
+    ring2?: InventoryItem | null
   }
 }
 
