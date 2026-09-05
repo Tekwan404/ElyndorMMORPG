@@ -83,11 +83,6 @@ function setString(path: JsonPath, event: Event): void {
   update(path, target.value)
 }
 
-function setOptionalString(path: JsonPath, event: Event): void {
-  const target = event.target as HTMLInputElement
-  update(path, target.value.trim() ? target.value : null)
-}
-
 function setNumber(path: JsonPath, event: Event): void {
   const target = event.target as HTMLInputElement
   if (!Number.isFinite(target.valueAsNumber)) return
