@@ -69,6 +69,75 @@ public sealed class AdminWebAuthenticationServiceTests
     }
 
     [Fact]
+    public void EmergencyPasswordAuthenticatesAllowedAdministrator()
+    {
+        AdminWebAuthenticationService service = CreateServiceWithPassword(
+            new RecordingSender(),
+            new MutableTimeProvider(Now),
+            "temporary-admin-password-123",
+            42);
+
+        Assert.Equal(
+            AdminWebPasswordVerificationStatus.Success,
+            service.VerifyEmergencyPassword(42, "temporary-admin-password-123"));
+    }
+
+    [Fact]
+    public void EmergencyPasswordRejectsDisallowedAdministrator()
+    {
+        AdminWebAuthenticationService service = CreateServiceWithPassword(
+            new RecordingSender(),
+            new MutableTimeProvider(Now),
+            "temporary-admin-password-123",
+            42);
+
+        Assert.Equal(
+            AdminWebPasswordVerificationStatus.NotAllowed,
+            service.VerifyEmergencyPassword(99, "temporary-admin-password-123"));
+    }
+
+    [Fact]
+    public void EmergencyPasswordLocksOutAfterFiveFailures()
+    {
+        MutableTimeProvider timeProvider = new(Now);
+        AdminWebAuthenticationService service = CreateServiceWithPassword(
+            new RecordingSender(),
+            timeProvider,
+            "temporary-admin-password-123",
+            42);
+
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            Assert.Equal(
+                AdminWebPasswordVerificationStatus.Invalid,
+                service.VerifyEmergencyPassword(42, "wrong-password"));
+        }
+
+        Assert.Equal(
+            AdminWebPasswordVerificationStatus.RateLimited,
+            service.VerifyEmergencyPassword(42, "temporary-admin-password-123"));
+
+        timeProvider.UtcNow = Now.AddMinutes(6);
+
+        Assert.Equal(
+            AdminWebPasswordVerificationStatus.Success,
+            service.VerifyEmergencyPassword(42, "temporary-admin-password-123"));
+    }
+
+    [Fact]
+    public void EmergencyPasswordIsDisabledByDefault()
+    {
+        AdminWebAuthenticationService service = CreateService(
+            new RecordingSender(),
+            new MutableTimeProvider(Now),
+            42);
+
+        Assert.Equal(
+            AdminWebPasswordVerificationStatus.Disabled,
+            service.VerifyEmergencyPassword(42, "anything"));
+    }
+
+    [Fact]
     public async Task ExpiredCodeCannotBeUsed()
     {
         RecordingSender sender = new();
@@ -97,6 +166,25 @@ public sealed class AdminWebAuthenticationServiceTests
             Options.Create(new TelegramAdminOptions
             {
                 AllowedUserIds = allowedUserIds
+            }),
+            Options.Create(new AdminWebAuthenticationOptions()),
+            timeProvider);
+
+    private static AdminWebAuthenticationService CreateServiceWithPassword(
+        ITelegramMessageSender sender,
+        TimeProvider timeProvider,
+        string emergencyPassword,
+        params long[] allowedUserIds) =>
+        new(
+            sender,
+            Options.Create(new TelegramAdminOptions
+            {
+                AllowedUserIds = allowedUserIds
+            }),
+            Options.Create(new AdminWebAuthenticationOptions
+            {
+                EmergencyPasswordEnabled = true,
+                EmergencyPassword = emergencyPassword
             }),
             timeProvider);
 

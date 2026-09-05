@@ -1009,6 +1009,39 @@ short-lived SUPER_ADMIN JWT in tab memory
 неверные попытки. Для получения сообщения администратор должен ранее открыть
 Elyndor Bot в Telegram.
 
+### Временный break-glass вход при недоступности Telegram
+
+Если production VPS временно не может установить исходящее соединение с Telegram Bot API,
+можно явно включить резервный вход по паролю. Это аварийный режим, а не замена Telegram
+авторизации.
+
+В `/etc/elyndor/elyndor.env` добавить:
+
+```dotenv
+Administration__WebAuthentication__EmergencyPasswordEnabled=true
+Administration__WebAuthentication__EmergencyPassword=<LONG_RANDOM_PASSWORD>
+```
+
+Пароль должен быть не короче 20 UTF-8 байт. Он не коммитится в Git и не должен попадать
+в issue, PR, screenshots или chat history. После изменения:
+
+```bash
+systemctl restart elyndor
+curl -fsS http://127.0.0.1:5080/api/v1/status
+```
+
+Резервный вход всё равно требует Telegram ID из
+`Administration__Telegram__AllowedUserIds`. После пяти неверных попыток этот ID блокируется
+для password-login на 5 минут в текущем процессе сервера. Когда доступ до Telegram восстановлен,
+выключить аварийный режим:
+
+```dotenv
+Administration__WebAuthentication__EmergencyPasswordEnabled=false
+Administration__WebAuthentication__EmergencyPassword=
+```
+
+и снова перезапустить `elyndor`.
+
 Игровой host специально блокирует внутренний static route `/__admin`, поэтому
 Admin JS не доступен как обычная часть `game.elyndor.su`.
 

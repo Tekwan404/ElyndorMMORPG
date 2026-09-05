@@ -49,6 +49,14 @@ by expected state; gameplay mutations are retry-safe per character.
 The normal short-lived account JWT is also the Admin authentication token. Telegram users in
 `Administration:Telegram:AllowedUserIds` receive the `SUPER_ADMIN` role claim.
 
+Browser Admin normally authenticates with a Telegram-delivered one-time code. A temporary
+break-glass password path may be enabled with
+`Administration:WebAuthentication:EmergencyPasswordEnabled`. It still requires the submitted
+Telegram user id to be present in the same server-side allowlist, issues the same short-lived JWT,
+and rate-limits failed password attempts. The emergency password is a production secret and must
+exist only in runtime configuration; it is disabled by default and should be disabled again when
+Telegram connectivity is restored.
+
 `/api/v1/admin/content/*` requires the server-side `elyndor-content-admin` authorization policy.
 Frontend visibility is convenience only and never an authorization boundary.
 
