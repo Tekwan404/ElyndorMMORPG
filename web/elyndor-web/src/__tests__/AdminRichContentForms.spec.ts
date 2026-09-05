@@ -72,6 +72,63 @@ describe('rich admin content forms', () => {
     expect(next.encounters).toEqual([{ monsterId: 'DIRE_WOLF', weight: 1 }])
   })
 
+  it('keeps talent branch node counts consistent when moving a node', async () => {
+    const wrapper = mount(AdminTalentTreeForm, {
+      props: {
+        entity: {
+          id: 'TEST_TREE',
+          classId: 'MAGE',
+          maxSpendablePoints: 10,
+          version: 1,
+          branches: [
+            { id: 'FIRE', name: 'Fire', fantasy: '', nodeCount: 1 },
+            { id: 'ARCANE', name: 'Arcane', fantasy: '', nodeCount: 1 },
+          ],
+          nodes: [
+            {
+              id: 'F-1-1',
+              branchId: 'FIRE',
+              tier: 1,
+              requiredSpentPoints: 0,
+              name: 'Heat',
+              englishName: 'Heat',
+              maxRank: 1,
+              prerequisites: [],
+              description: 'Test',
+              version: 1,
+              modifiers: [{ type: 'StatModifier', key: 'ATTACK_POWER_PERCENT', values: [1] }],
+            },
+            {
+              id: 'A-1-1',
+              branchId: 'ARCANE',
+              tier: 1,
+              requiredSpentPoints: 0,
+              name: 'Arcane',
+              englishName: 'Arcane',
+              maxRank: 1,
+              prerequisites: [],
+              description: 'Test',
+              version: 1,
+              modifiers: [{ type: 'StatModifier', key: 'ATTACK_POWER_PERCENT', values: [1] }],
+            },
+          ],
+        },
+        abilityIds: [],
+      },
+    })
+
+    await wrapper.get('[data-testid="talent-branch"]').setValue('ARCANE')
+    const emitted = wrapper.emitted('update:entity') ?? []
+    const next = emitted[emitted.length - 1]?.[0] as {
+      branches: Array<{ id: string; nodeCount: number }>
+      nodes: Array<{ id: string; branchId: string }>
+    }
+
+    expect(next.nodes.find(node => node.id === 'F-1-1')?.branchId).toBe('ARCANE')
+    expect(next.branches.find(branch => branch.id === 'FIRE')?.nodeCount).toBe(0)
+    expect(next.branches.find(branch => branch.id === 'ARCANE')?.nodeCount).toBe(2)
+  })
+
   it('resizes talent rank values when max rank changes', async () => {
     const wrapper = mount(AdminTalentTreeForm, {
       props: {

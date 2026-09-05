@@ -76,6 +76,27 @@ function updateTreeField(key: string, value: unknown): void {
   emit('update:entity', next)
 }
 
+function setNodeBranch(event: Event): void {
+  if (selectedNodeIndex.value < 0) return
+  const branchId = (event.target as HTMLSelectElement).value
+  const next = cloneRecord(props.entity)
+  const source = Array.isArray(next.nodes) ? next.nodes : []
+  const node = source[selectedNodeIndex.value]
+  if (!isRecord(node)) return
+  node.branchId = branchId
+  next.nodes = source
+
+  const branchSource = Array.isArray(next.branches) ? next.branches : []
+  for (const branch of branchSource) {
+    if (!isRecord(branch)) continue
+    const id = stringValue(branch.id)
+    branch.nodeCount = source.filter(candidate => isRecord(candidate) && candidate.branchId === id).length
+  }
+  next.branches = branchSource
+  selectedBranchId.value = branchId
+  emit('update:entity', next)
+}
+
 function updateNodeField(key: string, value: unknown): void {
   if (selectedNodeIndex.value < 0) return
   const next = cloneRecord(props.entity)
@@ -226,6 +247,11 @@ function setNodeString(key: string, event: Event): void {
   updateNodeField(key, (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value)
 }
 
+function setNodeOptionalString(key: string, event: Event): void {
+  const value = (event.target as HTMLInputElement).value.trim()
+  updateNodeField(key, value || null)
+}
+
 function setNodeOptionalNumber(key: string, event: Event): void {
   const input = event.target as HTMLInputElement
   updateNodeField(key, input.value.trim() === '' ? null : input.valueAsNumber)
@@ -251,7 +277,9 @@ function setModifierNumber(index: number, key: string, event: Event): void {
 }
 
 function setModifierCsv(index: number, key: string, event: Event): void {
-  updateModifier(index, key, parseCsv((event.target as HTMLInputElement).value))
+  const value = (event.target as HTMLInputElement).value
+  const parsed = parseCsv(value)
+  updateModifier(index, key, key === 'secondaryValues' && !value.trim() ? null : parsed)
 }
 
 function stringValue(value: unknown): string {
@@ -310,7 +338,7 @@ function isRecord(value: unknown): value is JsonRecord {
           <label><span>English</span><input :value="stringValue(selectedNode.englishName)" @input="setNodeString('englishName', $event)" /></label>
           <label>
             <span>Branch</span>
-            <select :value="stringValue(selectedNode.branchId)" @change="setNodeString('branchId', $event)">
+            <select data-testid="talent-branch" :value="stringValue(selectedNode.branchId)" @change="setNodeBranch">
               <option v-for="branch in branches" :key="stringValue(branch.id)" :value="stringValue(branch.id)">{{ stringValue(branch.id) }}</option>
             </select>
           </label>
@@ -318,7 +346,7 @@ function isRecord(value: unknown): value is JsonRecord {
           <label><span>Required spent</span><input type="number" min="0" :value="numberValue(selectedNode.requiredSpentPoints)" @input="setNodeNumber('requiredSpentPoints', $event)" /></label>
           <label><span>Max rank</span><input data-testid="talent-max-rank" type="number" min="1" :value="numberValue(selectedNode.maxRank, 1)" @input="setMaxRank" /></label>
           <label><span>Required level</span><input type="number" min="1" :value="selectedNode.requiredLevel ?? ''" @input="setNodeOptionalNumber('requiredLevel', $event)" /></label>
-          <label><span>Icon ID</span><input :value="stringValue(selectedNode.iconId)" @input="setNodeString('iconId', $event)" /></label>
+          <label><span>Icon ID</span><input :value="stringValue(selectedNode.iconId)" @input="setNodeOptionalString('iconId', $event)" /></label>
           <label class="wide"><span>Описание</span><textarea :value="stringValue(selectedNode.description)" @input="setNodeString('description', $event)" /></label>
         </fieldset>
 
