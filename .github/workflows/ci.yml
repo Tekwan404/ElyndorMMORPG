@@ -47,7 +47,9 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: web/elyndor-web/package-lock.json
+          cache-dependency-path: |
+            web/elyndor-web/package-lock.json
+            web/elyndor-admin/package-lock.json
 
       - name: Restore backend
         run: dotnet restore Elyndor.slnx
@@ -72,6 +74,17 @@ jobs:
           npm run test:unit
           npm run build
 
+      - name: Install admin frontend dependencies
+        working-directory: web/elyndor-admin
+        run: npm ci
+
+      - name: Check admin frontend
+        working-directory: web/elyndor-admin
+        run: |
+          npm run lint
+          npm run test:unit
+          npm run build
+
       - name: Validate production publish layout
         run: |
           rm -rf .artifacts/production
@@ -82,10 +95,12 @@ jobs:
             -p:DebugType=None \
             -p:DebugSymbols=false \
             --output .artifacts/production
-          mkdir -p .artifacts/production/frontend
+          mkdir -p .artifacts/production/frontend .artifacts/production/frontend-admin
           cp -a web/elyndor-web/dist/. .artifacts/production/frontend/
+          cp -a web/elyndor-admin/dist/. .artifacts/production/frontend-admin/
           test -f .artifacts/production/Elyndor.Server.dll
           test -f .artifacts/production/frontend/index.html
+          test -f .artifacts/production/frontend-admin/index.html
           test -f .artifacts/production/content/package.json
 
       - name: Install Playwright Chromium
