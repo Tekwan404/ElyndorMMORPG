@@ -388,4 +388,6 @@ dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
 
 Подробности окружения, secrets policy и команды проверки: `docs/development/getting-started.md`.
 
+Полный production runbook для REG.RU VPS, PostgreSQL, Caddy, DNS, Telegram, backup/rollback и выкладки обновлений: `docs/deployment/vps-production.md`.
+
 Правила внесения изменений: `CONTRIBUTING.md`. Git/PR policy: `docs/development/git-workflow.md`.
