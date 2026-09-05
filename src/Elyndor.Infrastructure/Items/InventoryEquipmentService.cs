@@ -168,19 +168,30 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.ArmorCategoryRestricted);
                 }
 
+                EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
+                EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
+
                 CharacterEquipment? equipped = await dbContext.CharacterEquipment
                     .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
-                        && candidate.Slot == definition.Slot.Value, cancellationToken);
+                        && aliases.Contains(candidate.Slot), cancellationToken);
                 if (equipped is null)
                 {
                     dbContext.CharacterEquipment.Add(new CharacterEquipment(
                         character.Id,
-                        definition.Slot.Value,
+                        canonicalSlot,
                         item.Id));
+                }
+                else if (equipped.Slot == canonicalSlot)
+                {
+                    equipped.Equip(item.Id);
                 }
                 else
                 {
-                    equipped.Equip(item.Id);
+                    dbContext.CharacterEquipment.Remove(equipped);
+                    dbContext.CharacterEquipment.Add(new CharacterEquipment(
+                        character.Id,
+                        canonicalSlot,
+                        item.Id));
                 }
 
                 return null;
@@ -314,6 +325,24 @@ public sealed class InventoryEquipmentService(
             }
         });
     }
+
+    private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
+        slot switch
+        {
+            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+            EquipmentSlot.Boots => EquipmentSlot.Feet,
+            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
+            _ => slot
+        };
+
+    private static EquipmentSlot[] EquivalentEquipmentSlots(EquipmentSlot canonicalSlot) =>
+        canonicalSlot switch
+        {
+            EquipmentSlot.MainHand => [EquipmentSlot.MainHand, EquipmentSlot.Weapon],
+            EquipmentSlot.Feet => [EquipmentSlot.Feet, EquipmentSlot.Boots],
+            EquipmentSlot.Amulet => [EquipmentSlot.Amulet, EquipmentSlot.Accessory],
+            _ => [canonicalSlot]
+        };
 
     private void ConsumeOne(CharacterItem item)
     {

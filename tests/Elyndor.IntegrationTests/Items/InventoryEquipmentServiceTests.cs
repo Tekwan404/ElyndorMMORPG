@@ -298,6 +298,55 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.Equal(2, await verify.CharacterEquipment.CountAsync(e => e.CharacterId == characterId));
     }
 
+
+    [Fact]
+    public async Task EquippingCanonicalMainHandReplacesLegacyWeaponAlias()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
+        Guid legacyWeaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        Guid canonicalWeaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+
+        await using (GameDbContext seed = postgres.CreateDbContext())
+        {
+            seed.CharacterEquipment.Add(new CharacterEquipment(
+                characterId,
+                EquipmentSlot.Weapon,
+                legacyWeaponId));
+            await seed.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        GameContentPackage content =
+            await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        ItemDefinition source = content.Items!.Single(item => item.Id == "RANGER_FANG_BLADE");
+        content = content with
+        {
+            Items = content.Items.Select(item =>
+                item.Id == source.Id
+                    ? item with { Slot = EquipmentSlot.MainHand }
+                    : item).ToArray()
+        };
+        InventoryEquipmentService service =
+            new(context, content, new FixedTimeProvider(Now));
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            canonicalWeaponId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verify.CharacterEquipment
+            .Where(e => e.CharacterId == characterId)
+            .ToArrayAsync();
+
+        CharacterEquipment entry = Assert.Single(equipped);
+        Assert.Equal(EquipmentSlot.MainHand, entry.Slot);
+        Assert.Equal(canonicalWeaponId, entry.CharacterItemId);
+    }
+
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
         decimal currentHp,
         string classId = "WARRIOR",
