@@ -171,27 +171,36 @@ public sealed class InventoryEquipmentService(
                 EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
                 EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
 
-                CharacterEquipment? equipped = await dbContext.CharacterEquipment
-                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
-                        && aliases.Contains(candidate.Slot), cancellationToken);
-                if (equipped is null)
+                CharacterEquipment[] equippedAliases = await dbContext.CharacterEquipment
+                    .Where(candidate => candidate.CharacterId == character.Id
+                        && aliases.Contains(candidate.Slot))
+                    .ToArrayAsync(cancellationToken);
+                CharacterEquipment? canonicalEquipment = equippedAliases
+                    .SingleOrDefault(candidate => candidate.Slot == canonicalSlot);
+
+                if (canonicalEquipment is null)
                 {
+                    if (equippedAliases.Length > 0)
+                    {
+                        dbContext.CharacterEquipment.RemoveRange(equippedAliases);
+                    }
+
                     dbContext.CharacterEquipment.Add(new CharacterEquipment(
                         character.Id,
                         canonicalSlot,
                         item.Id));
-                }
-                else if (equipped.Slot == canonicalSlot)
-                {
-                    equipped.Equip(item.Id);
                 }
                 else
                 {
-                    dbContext.CharacterEquipment.Remove(equipped);
-                    dbContext.CharacterEquipment.Add(new CharacterEquipment(
-                        character.Id,
-                        canonicalSlot,
-                        item.Id));
+                    canonicalEquipment.Equip(item.Id);
+
+                    CharacterEquipment[] legacyAliases = equippedAliases
+                        .Where(candidate => candidate != canonicalEquipment)
+                        .ToArray();
+                    if (legacyAliases.Length > 0)
+                    {
+                        dbContext.CharacterEquipment.RemoveRange(legacyAliases);
+                    }
                 }
 
                 return null;
@@ -210,11 +219,14 @@ public sealed class InventoryEquipmentService(
             Fingerprint(UnequipOperation, slot.ToString()),
             async character =>
             {
-                CharacterEquipment? equipped = await dbContext.CharacterEquipment
-                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
-                        && candidate.Slot == slot, cancellationToken);
-                if (equipped is not null)
-                    dbContext.CharacterEquipment.Remove(equipped);
+                EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(slot);
+                EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
+                CharacterEquipment[] equipped = await dbContext.CharacterEquipment
+                    .Where(candidate => candidate.CharacterId == character.Id
+                        && aliases.Contains(candidate.Slot))
+                    .ToArrayAsync(cancellationToken);
+                if (equipped.Length > 0)
+                    dbContext.CharacterEquipment.RemoveRange(equipped);
                 return null;
             },
             cancellationToken);

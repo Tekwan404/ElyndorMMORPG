@@ -150,7 +150,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         await using GameDbContext verify = postgres.CreateDbContext();
         CharacterEquipment equipment = await verify.CharacterEquipment
-            .SingleAsync(e => e.CharacterId == characterId && e.Slot == EquipmentSlot.Weapon);
+            .SingleAsync(e => e.CharacterId == characterId && e.Slot == EquipmentSlot.MainHand);
         Assert.Contains(equipment.CharacterItemId, new[] { firstItemId, secondItemId });
         Assert.Equal(2, await verify.CharacterMutations.CountAsync());
     }
