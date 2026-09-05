@@ -89,6 +89,15 @@ public static partial class GameContentPackageValidator
                         $"Resource profile '{profile.ResourceProfileId}' does not exist."));
                 }
 
+                if (profile.PrimaryAttribute is not ("STRENGTH" or "AGILITY" or "INTELLECT")
+                    || string.IsNullOrWhiteSpace(profile.PrototypeIdentity))
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_CLASS_IDENTITY",
+                        path,
+                        $"Class profile '{profile.Id}' contains an invalid primary attribute or identity."));
+                }
+
                 if (profile.BaseStats.Strength < 0
                     || profile.BaseStats.Agility < 0
                     || profile.BaseStats.Intellect < 0
@@ -148,7 +157,7 @@ public static partial class GameContentPackageValidator
 
                 foreach (AbilityUnlockDefinition unlock in profile.AbilityUnlocks ?? [])
                 {
-                    if (unlock.UnlockLevel < 2
+                    if (unlock.UnlockLevel is < 2 or > 60
                         || !ownedAbilityIds.Add(unlock.AbilityId)
                         || package.Abilities?.Any(ability => ability.Id == unlock.AbilityId) != true)
                     {

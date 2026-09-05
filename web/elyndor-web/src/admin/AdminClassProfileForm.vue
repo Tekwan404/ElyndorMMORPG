@@ -61,6 +61,10 @@ function setString(key: string, event: Event): void {
   update(key, (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value)
 }
 
+function setNestedString(group: string, key: string, event: Event): void {
+  updateNested(group, key, (event.target as HTMLInputElement).value)
+}
+
 function setNestedNumber(group: string, key: string, event: Event): void {
   const input = event.target as HTMLInputElement
   if (Number.isFinite(input.valueAsNumber)) updateNested(group, key, input.valueAsNumber)
@@ -246,7 +250,7 @@ function isRecord(value: unknown): value is JsonRecord {
 
     <fieldset v-if="entity.combatAutoAttack" class="auto-attack">
       <legend>Combat Auto Attack</legend>
-      <label><span>Interval</span><input :value="stringValue((entity.combatAutoAttack as JsonRecord).interval)" @input="updateNested('combatAutoAttack', 'interval', ($event.target as HTMLInputElement).value)" /></label>
+      <label><span>Interval</span><input :value="stringValue(isRecord(entity.combatAutoAttack) ? entity.combatAutoAttack.interval : '')" @input="setNestedString('combatAutoAttack', 'interval', $event)" /></label>
       <label><span>Base Damage</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'baseDamage')" @input="setNestedNumber('combatAutoAttack', 'baseDamage', $event)" /></label>
       <label><span>AP coefficient</span><input type="number" min="0" step="0.05" :value="numberValue('combatAutoAttack', 'attackPowerCoefficient')" @input="setNestedNumber('combatAutoAttack', 'attackPowerCoefficient', $event)" /></label>
       <label><span>Resource on hit</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'resourceOnHit')" @input="setNestedNumber('combatAutoAttack', 'resourceOnHit', $event)" /></label>
