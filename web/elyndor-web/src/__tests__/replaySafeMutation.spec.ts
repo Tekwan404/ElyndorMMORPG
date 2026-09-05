@@ -34,8 +34,8 @@ describe('replaySafeMutation', () => {
       version: 2,
     })
 
-    const first = bodyAt(request, 0)
-    const second = bodyAt(request, 1)
+    const first = bodyAt(request.mock.calls, 0)
+    const second = bodyAt(request.mock.calls, 1)
     expect(first.requestId).toBe(second.requestId)
     expect(first.targetLocationId).toBe('WHISPERING_FOREST')
     expect(hasPendingGameMutation()).toBe(false)
@@ -55,7 +55,7 @@ describe('replaySafeMutation', () => {
 
     await expect(reconcilePendingGameMutation()).resolves.toBeUndefined()
 
-    expect(bodyAt(request, 0).requestId).toBe(bodyAt(request, 1).requestId)
+    expect(bodyAt(request.mock.calls, 0).requestId).toBe(bodyAt(request.mock.calls, 1).requestId)
     expect(hasPendingGameMutation()).toBe(false)
   })
 
@@ -78,7 +78,7 @@ describe('replaySafeMutation', () => {
 
     await runReplaySafeGameMutation(options)
 
-    expect(bodyAt(request, 0).mutationId).not.toBe(bodyAt(request, 1).mutationId)
+    expect(bodyAt(request.mock.calls, 0).mutationId).not.toBe(bodyAt(request.mock.calls, 1).mutationId)
   })
 
   it('resolves an older uncertain mutation before accepting a different mutation', async () => {
@@ -106,16 +106,16 @@ describe('replaySafeMutation', () => {
       '/api/v1/world/travel',
       '/api/v1/inventory/equip',
     ])
-    expect(bodyAt(request, 0).requestId).toBe(bodyAt(request, 1).requestId)
+    expect(bodyAt(request.mock.calls, 0).requestId).toBe(bodyAt(request.mock.calls, 1).requestId)
     expect(hasPendingGameMutation()).toBe(false)
   })
 })
 
 function bodyAt(
-  request: ReturnType<typeof vi.spyOn<typeof apiClient, 'request'>>,
+  calls: readonly (readonly unknown[])[],
   index: number,
 ): Record<string, unknown> {
-  const init = request.mock.calls[index]?.[1]
+  const init = calls[index]?.[1] as RequestInit | undefined
   expect(typeof init?.body).toBe('string')
   return JSON.parse(init?.body as string) as Record<string, unknown>
 }
