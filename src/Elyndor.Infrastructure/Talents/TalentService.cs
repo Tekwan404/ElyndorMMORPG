@@ -59,8 +59,8 @@ public sealed class TalentService(
 
             return await GetOrCreateCoreAsync(
                 character,
-                cancellationToken,
-                saveCreated: true);
+                saveCreated: true,
+                cancellationToken);
         });
 
     public Task<TalentOperationResult> LearnAsync(
@@ -234,8 +234,8 @@ public sealed class TalentService(
 
                 TalentOperationResult loaded = await GetOrCreateCoreAsync(
                     character,
-                    cancellationToken,
-                    saveCreated: existing is not null);
+                    saveCreated: existing is not null,
+                    cancellationToken);
                 if (!loaded.IsSuccess)
                 {
                     await transaction.RollbackAsync(cancellationToken);
@@ -350,8 +350,8 @@ public sealed class TalentService(
 
     private async Task<TalentOperationResult> GetOrCreateCoreAsync(
         Character character,
-        CancellationToken cancellationToken,
-        bool saveCreated)
+        bool saveCreated,
+        CancellationToken cancellationToken)
     {
         TalentTreeDefinition? tree = contentProvider.GetCurrent().Indexes.TalentTreesByClassId
             .GetValueOrDefault(character.ClassId);
@@ -407,11 +407,14 @@ public sealed class TalentService(
 
     private static bool TryParseMutationId(
         string mutationId,
-        out Guid parsedMutationId) =>
-        !string.IsNullOrWhiteSpace(mutationId)
-        && mutationId.Length <= 64
-        && Guid.TryParse(mutationId, out parsedMutationId)
-        && parsedMutationId != Guid.Empty;
+        out Guid parsedMutationId)
+    {
+        parsedMutationId = Guid.Empty;
+        return !string.IsNullOrWhiteSpace(mutationId)
+            && mutationId.Length <= 64
+            && Guid.TryParse(mutationId, out parsedMutationId)
+            && parsedMutationId != Guid.Empty;
+    }
 
     private static string Fingerprint(params string[] parts)
     {
