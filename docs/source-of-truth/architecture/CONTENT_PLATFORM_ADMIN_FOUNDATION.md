@@ -76,7 +76,7 @@ There is deliberately no endpoint that mutates live content directly.
 `/admin` is a minimal operational UI, not a second game client. It provides:
 
 - live content/balance identity and payload hash;
-- structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters;
+- structured form editing for Monster, Ability, Item, Class Profiles, Talent Tree nodes/modifiers, Loot Tables, Merchants, and Location encounter rosters; Class Profiles intentionally cannot grant active abilities;
 - creation of new Monster, Item, Loot Table, and Merchant entities inside the local draft, including a dedicated basic AI profile for new monsters;
 - category/entity JSON editing for advanced or not-yet-structured fields;
 - full-package JSON fallback;
@@ -125,3 +125,9 @@ MVP boundaries:
 - results include W/L/timeout counts, win rate, average/P50/P95 duration, player/enemy DPS, average remaining HP, and player damage-source breakdown.
 
 This lets a designer change draft balance, run simulations, inspect metrics, adjust again, and only then create/publish a revision. It must never become a second implementation of combat formulas.
+
+## Active ability ownership
+
+Admin preserves one grant path for player active skills: Talent Tree UNLOCK_ABILITY.
+Class Profile forms do not expose starting abilities or level-based ability unlocks, and content validation rejects non-empty ClassProfile grant lists.
+JSON fallback therefore cannot bypass the talent-owned skill rule.

@@ -2,6 +2,13 @@
 
 Status: approved for implementation on 2026-08-31.
 
+## Runtime access update — 2026-09-05
+
+The six Phase 3B ability definitions remain valid combat content and kernel fixtures, but ClassProfile no longer grants them automatically and character level no longer unlocks them.
+Production player access to active abilities is talent-owned: an ability becomes known only through a selected talent modifier with UNLOCK_ABILITY.
+
+The historical phrase "known kit" in this phase describes ability definitions validated against the combat kernel, not free abilities granted to every Warrior. Auto Attack remains available independently of active skill unlocks.
+
 ## Goal
 
 Connect the first production class kit to the shared Combat Kernel without introducing CombatSession, monsters, talents, progression, or rewards.
