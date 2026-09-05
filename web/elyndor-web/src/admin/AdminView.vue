@@ -81,12 +81,10 @@ const filteredEntityList = computed(() =>
 const sectionCounts = computed<Record<string, number>>(() => {
   const packageObject = draftPackage.value
   return Object.fromEntries(
-    sections.map(section => [
-      section.key,
-      packageObject && Array.isArray(packageObject[section.key])
-        ? packageObject[section.key].length
-        : 0,
-    ]),
+    sections.map(section => {
+      const value = packageObject?.[section.key]
+      return [section.key, Array.isArray(value) ? value.length : 0]
+    }),
   )
 })
 const selectedEntity = computed<JsonRecord | null>(() => parseRecord(entityJson.value))
