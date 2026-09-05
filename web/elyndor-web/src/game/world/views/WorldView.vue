@@ -231,7 +231,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       <header class="town-services__header">
         <div>
           <small>ЛОКАЦИЯ · СЕРВИСЫ</small>
-          <h2>Стартовый город</h2>
+          <strong>Стартовый город</strong>
         </div>
         <span>SAFE</span>
       </header>
@@ -556,7 +556,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   letter-spacing: .08em;
 }
 
-.town-services__header h2 {
+.town-services__header strong {
   margin: 0;
   font-family: var(--ui-font-display);
   font-size: var(--ui-font-size-lg);
