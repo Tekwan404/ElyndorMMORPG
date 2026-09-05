@@ -160,7 +160,7 @@ The deploy script:
 - extracts to a versioned directory under `/opt/elyndor/releases`;
 - changes the `current` symlink atomically;
 - restarts the systemd service;
-- checks `http://127.0.0.1:5080/alive`;
+- checks `http://127.0.0.1:5080/api/v1/status` and requires `"status":"ready"`;
 - automatically restores the previous release when the health check fails;
 - retains the three newest successful release directories.
 
@@ -169,7 +169,7 @@ Useful commands:
 ```bash
 systemctl status elyndor
 journalctl -u elyndor -n 200 --no-pager
-curl -fsS http://127.0.0.1:5080/alive
+curl -fsS http://127.0.0.1:5080/api/v1/status
 ```
 
 ## 7. HTTPS with Caddy

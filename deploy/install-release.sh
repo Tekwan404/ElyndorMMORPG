@@ -51,7 +51,7 @@ systemctl daemon-reload
 systemctl restart elyndor
 
 for _ in $(seq 1 60); do
-  if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:5080/alive >/dev/null; then
+  if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:5080/api/v1/status | grep -q '"status":"ready"'; then
     echo "Elyndor release is healthy: $release_id"
     mapfile -t old_releases < <(find "$releases_dir" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' | sort -nr | tail -n +4 | cut -d' ' -f2-)
     if [[ "${#old_releases[@]}" -gt 0 ]]; then
