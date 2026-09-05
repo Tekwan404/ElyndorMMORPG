@@ -77,6 +77,12 @@ builder.Services.AddOptions<TelegramAdminOptions>()
     .BindConfiguration(TelegramAdminOptions.SectionName)
     .Validate(options => options.IsConfigured, "Telegram administration configuration is invalid.")
     .ValidateOnStart();
+builder.Services.AddOptions<AdminWebAuthenticationOptions>()
+    .BindConfiguration(AdminWebAuthenticationOptions.SectionName)
+    .Validate(
+        options => options.IsConfigured,
+        $"Emergency admin password must be at least {AdminWebAuthenticationOptions.MinimumEmergencyPasswordBytes} UTF-8 bytes when enabled.")
+    .ValidateOnStart();
 builder.Services.AddOptions<AuthenticationOptions>()
     .BindConfiguration(AuthenticationOptions.SectionName)
     .Validate(
