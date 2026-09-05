@@ -551,12 +551,6 @@
       "recommendedLevel": 1,
       "transitions": [
         "WHISPERING_FOREST"
-      ],
-      "encounters": [
-        {
-          "monsterId": "WOLF",
-          "weight": 1
-        }
       ]
     },
     {
@@ -582,6 +576,12 @@
       "recommendedLevel": 3,
       "transitions": [
         "WHISPERING_FOREST"
+      ],
+      "encounters": [
+        {
+          "monsterId": "WOLF",
+          "weight": 1
+        }
       ]
     }
   ],
