@@ -4,10 +4,19 @@ import { computed } from 'vue'
 type JsonRecord = Record<string, unknown>
 type JsonPath = Array<string | number>
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   sectionKey: string
   entity: JsonRecord
-}>()
+  lootTableIds?: string[]
+  aiProfileIds?: string[]
+  abilityIds?: string[]
+  classIds?: string[]
+}>(), {
+  lootTableIds: () => [],
+  aiProfileIds: () => [],
+  abilityIds: () => [],
+  classIds: () => [],
+})
 
 const emit = defineEmits<{
   'update:entity': [entity: JsonRecord]
@@ -74,11 +83,6 @@ function setString(path: JsonPath, event: Event): void {
   update(path, target.value)
 }
 
-function setOptionalString(path: JsonPath, event: Event): void {
-  const target = event.target as HTMLInputElement
-  update(path, target.value.trim() ? target.value : null)
-}
-
 function setNumber(path: JsonPath, event: Event): void {
   const target = event.target as HTMLInputElement
   if (!Number.isFinite(target.valueAsNumber)) return
@@ -87,6 +91,63 @@ function setNumber(path: JsonPath, event: Event): void {
 
 function setBoolean(path: JsonPath, event: Event): void {
   update(path, (event.target as HTMLInputElement).checked)
+}
+
+function stringArray(path: JsonPath): string[] {
+  const value = read(path)
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string')
+    : []
+}
+
+function setOptionalSelection(path: JsonPath, event: Event): void {
+  const value = (event.target as HTMLSelectElement).value
+  update(path, value || null)
+}
+
+function toggleString(path: JsonPath, value: string): void {
+  const current = stringArray(path)
+  update(path, current.includes(value)
+    ? current.filter(entry => entry !== value)
+    : [...current, value])
+}
+
+function addRelation(path: JsonPath, event: Event): void {
+  const select = event.target as HTMLSelectElement
+  const value = select.value
+  if (!value) return
+  const current = stringArray(path)
+  if (!current.includes(value)) update(path, [...current, value])
+  select.value = ''
+}
+
+function removeRelation(path: JsonPath, value: string): void {
+  update(path, stringArray(path).filter(entry => entry !== value))
+}
+
+function relationOptions(options: string[], current: string): string[] {
+  return current && !options.includes(current) ? [current, ...options] : options
+}
+
+function setItemSlot(event: Event): void {
+  const slot = (event.target as HTMLSelectElement).value
+  const next = cloneJsonValue(props.entity) as JsonRecord
+  next.slot = slot || null
+  if (slot === 'Weapon') {
+    next.weaponCategory = typeof next.weaponCategory === 'string' && next.weaponCategory
+      ? next.weaponCategory
+      : 'ONE_HAND_SWORD'
+    next.armorCategory = null
+  } else if (['Head', 'Chest', 'Legs', 'Boots'].includes(slot)) {
+    next.weaponCategory = null
+    next.armorCategory = typeof next.armorCategory === 'string' && next.armorCategory
+      ? next.armorCategory
+      : 'LIGHT'
+  } else {
+    next.weaponCategory = null
+    next.armorCategory = null
+  }
+  emit('update:entity', next)
 }
 
 function setItemType(event: Event): void {
@@ -208,9 +269,37 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>XP</span><input type="number" min="0" :value="numberValue(['xpReward'])" @input="setNumber(['xpReward'], $event)" /></label>
       <label><span>Gold min</span><input type="number" min="0" :value="numberValue(['goldRewardMin'])" @input="setNumber(['goldRewardMin'], $event)" /></label>
       <label><span>Gold max</span><input type="number" min="0" :value="numberValue(['goldRewardMax'])" @input="setNumber(['goldRewardMax'], $event)" /></label>
-      <label><span>Loot table</span><input :value="text(['lootTableId'])" @input="setString(['lootTableId'], $event)" /></label>
-      <label><span>AI profile</span><input :value="text(['aiProfileId'])" @input="setString(['aiProfileId'], $event)" /></label>
+      <label>
+        <span>Loot table</span>
+        <select data-testid="monster-loot-table" :value="text(['lootTableId'])" @change="setOptionalSelection(['lootTableId'], $event)">
+          <option value="">— none —</option>
+          <option v-for="id in relationOptions(lootTableIds, text(['lootTableId']))" :key="id" :value="id">{{ id }}</option>
+        </select>
+      </label>
+      <label>
+        <span>AI profile</span>
+        <select data-testid="monster-ai-profile" :value="text(['aiProfileId'])" @change="setString(['aiProfileId'], $event)">
+          <option v-for="id in relationOptions(aiProfileIds, text(['aiProfileId']))" :key="id" :value="id">{{ id }}</option>
+        </select>
+      </label>
       <label><span>Art ID</span><input :value="text(['artId'])" @input="setString(['artId'], $event)" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Abilities</legend>
+      <div class="relation-list wide">
+        <span v-for="id in stringArray(['abilityIds'])" :key="id" class="relation-chip">
+          <code>{{ id }}</code>
+          <button type="button" @click="removeRelation(['abilityIds'], id)">×</button>
+        </span>
+      </div>
+      <label class="wide">
+        <span>Добавить ability</span>
+        <select data-testid="monster-add-ability" value="" @change="addRelation(['abilityIds'], $event)">
+          <option value="">Выбери ability…</option>
+          <option v-for="id in abilityIds.filter(id => !stringArray(['abilityIds']).includes(id))" :key="id" :value="id">{{ id }}</option>
+        </select>
+      </label>
     </fieldset>
   </div>
 
@@ -264,9 +353,31 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>Rarity</span><input :value="text(['rarity'])" @input="setString(['rarity'], $event)" /></label>
       <label><span>Required level</span><input type="number" min="1" :value="numberValue(['requiredLevel'])" @input="setNumber(['requiredLevel'], $event)" /></label>
       <label><span>Max stack</span><input type="number" min="1" :value="numberValue(['maxStack'])" @input="setNumber(['maxStack'], $event)" /></label>
-      <label><span>Slot</span><input :value="text(['slot'])" @input="setOptionalString(['slot'], $event)" /></label>
-      <label><span>Weapon category</span><input :value="text(['weaponCategory'])" @input="setOptionalString(['weaponCategory'], $event)" /></label>
-      <label><span>Armor category</span><input :value="text(['armorCategory'])" @input="setOptionalString(['armorCategory'], $event)" /></label>
+      <label v-if="text(['type']) === 'Equipment'">
+        <span>Slot</span>
+        <select data-testid="item-slot" :value="text(['slot'])" @change="setItemSlot">
+          <option value="Weapon">Weapon</option>
+          <option value="Head">Head</option>
+          <option value="Chest">Chest</option>
+          <option value="Legs">Legs</option>
+          <option value="Boots">Boots</option>
+          <option value="Accessory">Accessory</option>
+        </select>
+      </label>
+      <label v-if="text(['type']) === 'Equipment' && text(['slot']) === 'Weapon'">
+        <span>Weapon category</span>
+        <select data-testid="item-weapon-category" :value="text(['weaponCategory'])" @change="setOptionalSelection(['weaponCategory'], $event)">
+          <option v-for="category in ['ONE_HAND_SWORD','TWO_HAND_SWORD','AXE','MACE','SHIELD','BOW','DAGGER','STAFF','WAND']" :key="category" :value="category">{{ category }}</option>
+        </select>
+      </label>
+      <label v-if="text(['type']) === 'Equipment' && ['Head','Chest','Legs','Boots'].includes(text(['slot']))">
+        <span>Armor category</span>
+        <select data-testid="item-armor-category" :value="text(['armorCategory'])" @change="setOptionalSelection(['armorCategory'], $event)">
+          <option value="LIGHT">LIGHT</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="HEAVY">HEAVY</option>
+        </select>
+      </label>
       <label class="wide"><span>Описание</span><textarea :value="text(['description'])" @input="setString(['description'], $event)" /></label>
     </fieldset>
 
@@ -276,6 +387,20 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>Agility</span><input type="number" :value="numberValue(['stats', 'agility'])" @input="setNumber(['stats', 'agility'], $event)" /></label>
       <label><span>Intellect</span><input type="number" :value="numberValue(['stats', 'intellect'])" @input="setNumber(['stats', 'intellect'], $event)" /></label>
       <label><span>Stamina</span><input type="number" :value="numberValue(['stats', 'stamina'])" @input="setNumber(['stats', 'stamina'], $event)" /></label>
+    </fieldset>
+
+    <fieldset v-if="text(['type']) === 'Equipment'">
+      <legend>Class restrictions</legend>
+      <label v-for="id in classIds" :key="id" class="check">
+        <input
+          data-testid="item-class-restriction"
+          type="checkbox"
+          :checked="stringArray(['allowedClassIds']).includes(id)"
+          @change="toggleString(['allowedClassIds'], id)"
+        />
+        <span>{{ id }}</span>
+      </label>
+      <p class="wide relation-hint">Пустой список = предмет не ограничен конкретным классом.</p>
     </fieldset>
 
     <fieldset>
@@ -299,6 +424,10 @@ input, select, textarea { width: 100%; min-height: var(--ui-touch-target); paddi
 textarea { min-height: 6rem; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 1px solid var(--ui-color-primary); border-color: var(--ui-color-primary); }
 .check input { width: 1rem; min-height: auto; }
+.relation-list { display: flex; flex-wrap: wrap; gap: var(--ui-space-1); }
+.relation-chip { display: inline-flex; align-items: center; gap: var(--ui-space-1); padding: var(--ui-space-1) var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); }
+.relation-chip button { min-height: 1.5rem; padding: 0 .35rem; border: 0; background: transparent; color: var(--ui-color-danger); cursor: pointer; }
+.relation-hint { margin: 0; color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 @media (max-width: 900px) { fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { fieldset { grid-template-columns: 1fr; } label.wide { grid-column: auto; } }
 </style>
