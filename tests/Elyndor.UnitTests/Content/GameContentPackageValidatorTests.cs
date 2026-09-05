@@ -387,6 +387,66 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateRejectsMerchantWithMissingLocationAndItem()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            Merchants =
+            [
+                new MerchantDefinition(
+                    "TEST_MERCHANT",
+                    "Test Merchant",
+                    "MISSING_LOCATION",
+                    "Test inventory.",
+                    ["MISSING_ITEM"])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "MISSING_MERCHANT_LOCATION");
+        Assert.Contains(errors, error => error.Code == "MISSING_MERCHANT_ITEM_REFERENCE");
+    }
+
+    [Fact]
+    public void ValidateRejectsMerchantItemWithoutBuyPrice()
+    {
+        GameContentPackage package = CreatePackageWithLocations(
+            CreateLocation("STARTER_TOWN")) with
+        {
+            Items =
+            [
+                new ItemDefinition(
+                    "FREE_ITEM",
+                    "Free Item",
+                    ItemType.Material,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    99,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "Not actually for sale.")
+            ],
+            Merchants =
+            [
+                new MerchantDefinition(
+                    "TEST_MERCHANT",
+                    "Test Merchant",
+                    "STARTER_TOWN",
+                    "Test inventory.",
+                    ["FREE_ITEM"])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_MERCHANT_BUY_PRICE");
+    }
+
+    [Fact]
     public void CurrentContentVersionRequiresAbilityPresentation()
     {
         GameContentPackage package = CreatePackage() with
