@@ -27,3 +27,17 @@ Reusable primitives live in `src/ui/components`: `UIButton`, `UIPanel`, `UICard`
 In development, `/dev/ui` is the visual playground for component variants, rarity, modifiers, cooldown, feedback, and system states. It must never appear in the production route table or game navigation.
 
 Session 2A migrated the implemented production shell, character creation, character stats, and location flow. Combat and Inventory do not yet have authoritative production flows: Combat belongs to Phase 4 and Inventory to Phase 5. Their UI migration happens with those implementations rather than introducing fake client-only gameplay state.
+
+## Mobile game hierarchy
+
+Production screens follow a three-layer hierarchy:
+
+1. **Scene** — world, character art, enemy, or the primary gameplay object gets the strongest visual weight.
+2. **HUD / action layer** — health, resource, XP, gold, primary actions, and navigation stay compact and immediately reachable.
+3. **System detail** — logs, stats, metadata, raw IDs, and secondary controls use quieter panels and lower contrast.
+
+Do not repeat authoritative HUD information inside a child screen when AppShell already presents it. On mobile, vertical space belongs to gameplay.
+
+User-facing failures should lead with a localized explanation. Stable server error codes remain visible as secondary diagnostic text when useful, rather than being the primary message.
+
+Primary actions use the elevated Arcane treatment; secondary/ghost actions stay quieter. Avoid giving every card, button, and section equal glow or contrast.
