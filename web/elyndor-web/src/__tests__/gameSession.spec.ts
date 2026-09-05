@@ -2,12 +2,17 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { apiClient } from '@/api/apiClient'
+import { clearPendingGameMutation } from '@/api/replaySafeMutation'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 vi.mock('@/telegram/telegramWebApp', () => ({ getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data') }))
 
 describe('gameSession', () => {
-  beforeEach(() => { setActivePinia(createPinia()); vi.restoreAllMocks() })
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    clearPendingGameMutation()
+    vi.restoreAllMocks()
+  })
 
   it('authenticates with Telegram and enters character creation from bootstrap', async () => {
     const request = vi.spyOn(apiClient, 'request')
@@ -50,6 +55,36 @@ describe('gameSession', () => {
     await Promise.resolve()
     resolveRequest?.({ accountId: crypto.randomUUID(), character: null, world: null, contentVersion: '0.1.0', balanceVersion: '0.1.0', serverTimeUtc: '2026-08-30T00:00:00Z' })
     await Promise.all([first, second])
+  })
+
+  it('reuses the travel request id after a lost response', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockRejectedValueOnce(new TypeError('response lost'))
+      .mockResolvedValueOnce({ locationId: 'WHISPERING_FOREST', version: 2 })
+      .mockResolvedValueOnce({
+        accountId: crypto.randomUUID(),
+        character: null,
+        world: null,
+        contentVersion: '0.1.0',
+        balanceVersion: '0.1.0',
+        serverTimeUtc: '2026-09-06T00:00:00Z',
+      })
+
+    const store = useGameSessionStore()
+    store.state = 'world'
+
+    await store.travel('WHISPERING_FOREST')
+    expect(store.errorCode).toBe('network_unavailable')
+
+    await store.travel('WHISPERING_FOREST')
+
+    const firstBody = JSON.parse(request.mock.calls[0]?.[1]?.body as string) as {
+      requestId: string
+    }
+    const retryBody = JSON.parse(request.mock.calls[1]?.[1]?.body as string) as {
+      requestId: string
+    }
+    expect(firstBody.requestId).toBe(retryBody.requestId)
   })
 
   it('restores the stable world state after a transparent token refresh', async () => {
