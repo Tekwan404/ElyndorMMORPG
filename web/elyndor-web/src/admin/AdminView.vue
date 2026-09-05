@@ -111,6 +111,28 @@ const simulationClassOptions = computed(() => recordArray(draftPackage.value?.cl
   .filter(profile => isRecord(profile.combatAutoAttack))
   .map(profile => ({ id: stringProperty(profile, 'id') }))
   .filter(option => option.id))
+const simulationTalentSkills = computed(() => {
+  const result: Array<{ classId: string; talentId: string; name: string; abilityId: string }> = []
+  for (const tree of recordArray(draftPackage.value?.talentTrees)) {
+    const classId = stringProperty(tree, 'classId')
+    for (const node of recordArray(tree.nodes)) {
+      for (const modifier of recordArray(node.modifiers)) {
+        if (
+          stringProperty(modifier, 'key') === 'UNLOCK_ABILITY'
+          && stringProperty(modifier, 'targetId')
+        ) {
+          result.push({
+            classId,
+            talentId: stringProperty(node, 'id'),
+            name: stringProperty(node, 'name') || stringProperty(node, 'englishName'),
+            abilityId: stringProperty(modifier, 'targetId'),
+          })
+        }
+      }
+    }
+  }
+  return result.filter(option => option.classId && option.talentId && option.abilityId)
+})
 const simulationMonsterOptions = computed(() => recordArray(draftPackage.value?.monsters)
   .filter(monster => stringProperty(monster, 'rank') === 'Normal')
   .map(monster => ({
@@ -744,6 +766,7 @@ onMounted(async () => {
         :payload-json="draftJson"
         :classes="simulationClassOptions"
         :monsters="simulationMonsterOptions"
+        :talent-skills="simulationTalentSkills"
       />
 
       <section class="history">

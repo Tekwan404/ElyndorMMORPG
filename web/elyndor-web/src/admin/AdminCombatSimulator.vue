@@ -14,10 +14,18 @@ interface MonsterOption {
   level: number
 }
 
+interface TalentSkillOption {
+  classId: string
+  talentId: string
+  name: string
+  abilityId: string
+}
+
 const props = defineProps<{
   payloadJson: string
   classes: ClassOption[]
   monsters: MonsterOption[]
+  talentSkills: TalentSkillOption[]
 }>()
 
 const classId = ref('')
@@ -26,9 +34,14 @@ const monsterId = ref('')
 const iterations = ref(100)
 const seed = ref(1337)
 const maxDurationSeconds = ref(90)
+const selectedTalentIds = ref<string[]>([])
 const running = ref(false)
 const result = ref<ContentAdminSimulation | null>(null)
 const errorMessage = ref('')
+
+const currentTalentSkills = computed(() =>
+  props.talentSkills.filter(option => option.classId === classId.value),
+)
 
 const canRun = computed(() =>
   Boolean(classId.value && monsterId.value)
@@ -45,9 +58,18 @@ watch(
   (classes) => {
     if (!classes.some(option => option.id === classId.value)) {
       classId.value = classes[0]?.id ?? ''
+      selectedTalentIds.value = []
     }
   },
   { immediate: true },
+)
+
+watch(
+  classId,
+  () => {
+    selectedTalentIds.value = []
+    result.value = null
+  },
 )
 
 watch(
@@ -89,6 +111,9 @@ async function runSimulation(): Promise<void> {
           seed: seed.value,
           maxDurationSeconds: maxDurationSeconds.value,
           abilityPriority: null,
+          selectedTalentRanks: Object.fromEntries(
+            selectedTalentIds.value.map(talentId => [talentId, 1]),
+          ),
         }),
       },
     )
@@ -99,6 +124,13 @@ async function runSimulation(): Promise<void> {
   } finally {
     running.value = false
   }
+}
+
+function toggleTalent(talentId: string): void {
+  selectedTalentIds.value = selectedTalentIds.value.includes(talentId)
+    ? selectedTalentIds.value.filter(id => id !== talentId)
+    : [...selectedTalentIds.value, talentId]
+  result.value = null
 }
 
 function formatNumber(value: number, digits = 1): string {
@@ -153,8 +185,29 @@ function formatNumber(value: number, digits = 1): string {
       </button>
     </div>
 
+    <div class="talent-skills">
+      <div>
+        <b>Skill talents</b>
+        <span>Скилл участвует в симуляции только если выбран talent с UNLOCK_ABILITY.</span>
+      </div>
+      <label
+        v-for="skill in currentTalentSkills"
+        :key="skill.talentId"
+        class="talent-skill"
+      >
+        <input
+          data-testid="simulation-talent"
+          type="checkbox"
+          :checked="selectedTalentIds.includes(skill.talentId)"
+          @change="toggleTalent(skill.talentId)"
+        />
+        <span><b>{{ skill.name }}</b><small>{{ skill.talentId }} → {{ skill.abilityId }}</small></span>
+      </label>
+      <p v-if="currentTalentSkills.length === 0" class="muted">Для этого класса в текущем draft нет talent nodes с UNLOCK_ABILITY.</p>
+    </div>
+
     <p class="scope-note">
-      MVP: base class stats + level growth + resource scaling + class starting/unlock abilities. Equipment и talent loadout пока не применяются.
+      MVP применяет выбранные skill talents через реальный TalentModifierResolver. Полный passive talent build и equipment presets добавим следующим слоем.
     </p>
 
     <p v-if="errorMessage" class="message message--danger">{{ errorMessage }}</p>
@@ -219,6 +272,13 @@ function formatNumber(value: number, digits = 1): string {
 .controls input, .controls select, .controls button { min-height: var(--ui-touch-target); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); color: inherit; font: inherit; }
 .controls button.primary { border-color: var(--ui-color-primary); color: var(--ui-color-primary); cursor: pointer; }
 .controls button:disabled { opacity: .45; cursor: not-allowed; }
+.talent-skills { display: grid; gap: var(--ui-space-2); margin-top: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); }
+.talent-skills > div { display: grid; gap: var(--ui-space-1); }
+.talent-skills > div span { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
+.talent-skill { display: flex; align-items: center; gap: var(--ui-space-2); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); }
+.talent-skill input { width: 1rem; min-height: auto; }
+.talent-skill span { display: grid; gap: var(--ui-space-1); }
+.talent-skill small { color: var(--ui-color-text-muted); }
 .result-meta { display: flex; flex-wrap: wrap; gap: var(--ui-space-1); margin-top: var(--ui-space-3); }
 .result-meta span { padding: var(--ui-space-1) var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ui-space-2); margin-top: var(--ui-space-2); }

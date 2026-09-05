@@ -28,7 +28,7 @@ describe('AdminCombatSimulator', () => {
       averageEnemyDps: 8.2,
       averagePlayerRemainingHp: 54,
       damageSources: [
-        { definitionId: 'STRIKE', averageDamage: 160, damageSharePercent: 62 },
+        { definitionId: 'WILD_STRIKE', averageDamage: 160, damageSharePercent: 62 },
       ],
     })
 
@@ -37,9 +37,13 @@ describe('AdminCombatSimulator', () => {
         payloadJson: '{"balanceVersion":"1.0.1"}',
         classes: [{ id: 'WARRIOR' }],
         monsters: [{ id: 'WOLF', name: 'Волк', level: 3 }],
+        talentSkills: [
+          { classId: 'WARRIOR', talentId: 'B-2-2', name: 'Дикий Удар', abilityId: 'WILD_STRIKE' },
+        ],
       },
     })
 
+    await wrapper.get('[data-testid="simulation-talent"]').setValue(true)
     await wrapper.get('[data-testid="simulation-run"]').trigger('click')
     await flushPromises()
 
@@ -47,10 +51,10 @@ describe('AdminCombatSimulator', () => {
       '/api/v1/admin/content/simulate',
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('"payloadJson":"{\\\"balanceVersion\\\":\\\"1.0.1\\\"}"'),
+        body: expect.stringContaining('"selectedTalentRanks":{"B-2-2":1}'),
       }),
     )
     expect(wrapper.get('[data-testid="simulation-win-rate"]').text()).toBe('72.0%')
-    expect(wrapper.text()).toContain('STRIKE')
+    expect(wrapper.text()).toContain('WILD_STRIKE')
   })
 })
