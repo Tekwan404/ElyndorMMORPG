@@ -321,7 +321,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         ItemDefinition source = content.Items!.Single(item => item.Id == "RANGER_FANG_BLADE");
         content = content with
         {
-            Items = content.Items.Select(item =>
+            Items = content.Items!.Select(item =>
                 item.Id == source.Id
                     ? item with { Slot = EquipmentSlot.MainHand }
                     : item).ToArray()
