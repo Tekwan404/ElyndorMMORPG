@@ -26,17 +26,29 @@ public enum AdminWebAuthenticationVerificationStatus
     NotAllowed
 }
 
+public enum AdminWebPasswordVerificationStatus
+{
+    Success,
+    Invalid,
+    RateLimited,
+    Disabled,
+    NotAllowed
+}
+
 public sealed class AdminWebAuthenticationService(
     ITelegramMessageSender messageSender,
     IOptions<TelegramAdminOptions> adminOptions,
+    IOptions<AdminWebAuthenticationOptions> webAuthenticationOptions,
     TimeProvider timeProvider)
 {
     public const int CodeLifetimeMinutes = 5;
     public const int RequestCooldownSeconds = 30;
     public const int MaximumFailedAttempts = 5;
+    public const int PasswordLockoutMinutes = 5;
 
     private readonly object _gate = new();
     private readonly Dictionary<long, Challenge> _challenges = [];
+    private readonly Dictionary<long, PasswordFailureState> _passwordFailures = [];
 
     public async Task<AdminWebAuthenticationIssueResult> IssueCodeAsync(
         long telegramUserId,
@@ -152,6 +164,67 @@ public sealed class AdminWebAuthenticationService(
         }
     }
 
+    public AdminWebPasswordVerificationStatus VerifyEmergencyPassword(
+        long telegramUserId,
+        string? password)
+    {
+        if (!adminOptions.Value.IsAllowedUser(telegramUserId))
+        {
+            return AdminWebPasswordVerificationStatus.NotAllowed;
+        }
+
+        AdminWebAuthenticationOptions options = webAuthenticationOptions.Value;
+        if (!options.EmergencyPasswordEnabled)
+        {
+            return AdminWebPasswordVerificationStatus.Disabled;
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+
+        lock (_gate)
+        {
+            if (_passwordFailures.TryGetValue(
+                    telegramUserId,
+                    out PasswordFailureState? failureState)
+                && failureState.LockedUntilUtc is DateTimeOffset lockedUntilUtc)
+            {
+                if (now < lockedUntilUtc)
+                {
+                    return AdminWebPasswordVerificationStatus.RateLimited;
+                }
+
+                _passwordFailures.Remove(telegramUserId);
+            }
+
+            bool passwordShapeValid = password is { Length: > 0 and <= 512 };
+            bool isValid = passwordShapeValid
+                && CryptographicOperations.FixedTimeEquals(
+                    HashPassword(options.EmergencyPassword),
+                    HashPassword(password!));
+
+            if (isValid)
+            {
+                _passwordFailures.Remove(telegramUserId);
+                return AdminWebPasswordVerificationStatus.Success;
+            }
+
+            PasswordFailureState state = _passwordFailures.TryGetValue(
+                telegramUserId,
+                out PasswordFailureState? existing)
+                    ? existing
+                    : new PasswordFailureState();
+            state.FailedAttempts++;
+
+            if (state.FailedAttempts >= MaximumFailedAttempts)
+            {
+                state.LockedUntilUtc = now.AddMinutes(PasswordLockoutMinutes);
+            }
+
+            _passwordFailures[telegramUserId] = state;
+            return AdminWebPasswordVerificationStatus.Invalid;
+        }
+    }
+
     private void RemoveExpiredUnsafe(DateTimeOffset now)
     {
         long[] expired = _challenges
@@ -168,6 +241,16 @@ public sealed class AdminWebAuthenticationService(
     private static byte[] Hash(Guid challengeId, string code) =>
         SHA256.HashData(
             Encoding.UTF8.GetBytes($"{challengeId:N}:{code}"));
+
+    private static byte[] HashPassword(string password) =>
+        SHA256.HashData(Encoding.UTF8.GetBytes(password));
+
+    private sealed class PasswordFailureState
+    {
+        public int FailedAttempts { get; set; }
+
+        public DateTimeOffset? LockedUntilUtc { get; set; }
+    }
 
     private sealed class Challenge(
         Guid id,
