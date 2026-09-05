@@ -410,10 +410,22 @@ public sealed class TalentService(
         out Guid parsedMutationId)
     {
         parsedMutationId = Guid.Empty;
-        return !string.IsNullOrWhiteSpace(mutationId)
-            && mutationId.Length <= 64
-            && Guid.TryParse(mutationId, out parsedMutationId)
-            && parsedMutationId != Guid.Empty;
+        if (string.IsNullOrWhiteSpace(mutationId) || mutationId.Length > 64)
+            return false;
+
+        if (Guid.TryParse(mutationId, out parsedMutationId)
+            && parsedMutationId != Guid.Empty)
+        {
+            return true;
+        }
+
+        // Talent mutation identifiers were historically opaque strings. Preserve that
+        // public contract while storing them in the shared Guid-based durable journal.
+        // The namespace prefix prevents accidental equivalence with other hash uses.
+        byte[] digest = SHA256.HashData(
+            Encoding.UTF8.GetBytes($"ELYNDOR:TALENT:MUTATION:{mutationId}"));
+        parsedMutationId = new Guid(digest.AsSpan(0, 16));
+        return parsedMutationId != Guid.Empty;
     }
 
     private static string Fingerprint(params string[] parts)
