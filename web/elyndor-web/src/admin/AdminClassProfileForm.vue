@@ -50,53 +50,6 @@ function toggleCategory(key: 'allowedWeaponCategories' | 'allowedArmorCategories
     : [...current, value])
 }
 
-function addStartingAbility(): void {
-  const id = newStartingAbilityId.value || availableStartingAbilities.value[0]
-  if (!id) return
-  update('startingAbilityIds', [...startingAbilityIds.value, id])
-  newStartingAbilityId.value = ''
-}
-
-function removeStartingAbility(id: string): void {
-  update('startingAbilityIds', startingAbilityIds.value.filter(candidate => candidate !== id))
-}
-
-function addUnlock(): void {
-  const id = newUnlockAbilityId.value || availableUnlockAbilities.value[0]
-  if (!id) return
-  update('abilityUnlocks', [...abilityUnlocks.value, { abilityId: id, unlockLevel: 2 }])
-  newUnlockAbilityId.value = ''
-}
-
-function updateUnlock(index: number, key: string, value: unknown): void {
-  const next = cloneRecord(props.entity)
-  const unlocks = Array.isArray(next.abilityUnlocks) ? next.abilityUnlocks : []
-  const unlock = unlocks[index]
-  if (!isRecord(unlock)) return
-  unlock[key] = value
-  next.abilityUnlocks = unlocks
-  emit('update:entity', next)
-}
-
-function setUnlockAbility(index: number, event: Event): void {
-  updateUnlock(index, 'abilityId', (event.target as HTMLSelectElement).value)
-}
-
-function setUnlockLevel(index: number, event: Event): void {
-  const input = event.target as HTMLInputElement
-  if (Number.isFinite(input.valueAsNumber)) {
-    updateUnlock(index, 'unlockLevel', Math.max(2, Math.min(60, Math.trunc(input.valueAsNumber))))
-  }
-}
-
-function removeUnlock(index: number): void {
-  const next = cloneRecord(props.entity)
-  const unlocks = Array.isArray(next.abilityUnlocks) ? next.abilityUnlocks : []
-  unlocks.splice(index, 1)
-  next.abilityUnlocks = unlocks
-  emit('update:entity', next)
-}
-
 function hasCategory(key: 'allowedWeaponCategories' | 'allowedArmorCategories', value: string): boolean {
   return stringArray(props.entity[key]).includes(value)
 }
