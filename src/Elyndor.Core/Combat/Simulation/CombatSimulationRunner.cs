@@ -208,7 +208,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         ResourceProfile resource,
         MonsterDefinition monster,
         MonsterAiProfile enemyAi,
-        IReadOnlyDictionary<string, AbilityDefinition> abilities,
+        Dictionary<string, AbilityDefinition> abilities,
         IReadOnlyList<string> knownAbilityIds,
         IReadOnlyList<AbilityDefinition> abilityPriority,
         CancellationToken cancellationToken)
@@ -356,7 +356,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
     private static string[] ResolveKnownAbilityIds(
         ClassProfile classProfile,
         int level,
-        IReadOnlyDictionary<string, AbilityDefinition> abilities) =>
+        Dictionary<string, AbilityDefinition> abilities) =>
         (classProfile.StartingAbilityIds ?? [])
             .Concat((classProfile.AbilityUnlocks ?? [])
                 .Where(unlock => unlock.UnlockLevel <= level)
@@ -368,7 +368,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
     private static AbilityDefinition[] ResolveAbilityPriority(
         IReadOnlyList<string>? requested,
         IReadOnlyList<string> knownAbilityIds,
-        IReadOnlyDictionary<string, AbilityDefinition> abilities)
+        Dictionary<string, AbilityDefinition> abilities)
     {
         HashSet<string> known = new(knownAbilityIds, StringComparer.Ordinal);
         if (requested is { Count: > 0 })
@@ -413,7 +413,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         stats.AttackPower,
         stats.SpellPower);
 
-    private static decimal Percentile(IReadOnlyList<decimal> sorted, decimal percentile)
+    private static decimal Percentile(List<decimal> sorted, decimal percentile)
     {
         if (sorted.Count == 0) return 0;
         int index = (int)Math.Ceiling((double)(percentile * sorted.Count)) - 1;
@@ -425,11 +425,17 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         ArgumentException.ThrowIfNullOrWhiteSpace(scenario.ClassId);
         ArgumentException.ThrowIfNullOrWhiteSpace(scenario.MonsterId);
         if (scenario.PlayerLevel is < 1 or > 60)
-            throw new ArgumentOutOfRangeException(nameof(scenario.PlayerLevel));
+            throw new ArgumentOutOfRangeException(
+                nameof(scenario),
+                "Player level must be between 1 and 60.");
         if (scenario.Iterations is < 1 or > 1000)
-            throw new ArgumentOutOfRangeException(nameof(scenario.Iterations));
+            throw new ArgumentOutOfRangeException(
+                nameof(scenario),
+                "Iterations must be between 1 and 1000.");
         if (scenario.MaxDurationSeconds is < 1 or > 180)
-            throw new ArgumentOutOfRangeException(nameof(scenario.MaxDurationSeconds));
+            throw new ArgumentOutOfRangeException(
+                nameof(scenario),
+                "Maximum duration must be between 1 and 180 seconds.");
     }
 
     private static CombatSimulationException Invalid(string code, string message) =>
