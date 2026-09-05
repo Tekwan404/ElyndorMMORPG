@@ -21,7 +21,8 @@ Swap:             1 GiB
 Disk:             8.6 GiB usable
 Public IPv4:      194.226.97.122
 Private IPv4:     192.168.0.135
-Production host:  game.elyndor.su
+Game host:        game.elyndor.su
+Admin host:       admin.elyndor.su
 ```
 
 Порты 25 и 465, заблокированные провайдером, Elyndor не нужны.
@@ -425,6 +426,7 @@ Database__MigrateOnStartup=true
 Content__RestorePublishedOnStartup=true
 Content__AllowFileFallbackOnRestoreFailure=false
 Frontend__DistPath=/opt/elyndor/current/frontend
+AdminFrontend__DistPath=/opt/elyndor/current/frontend-admin
 
 Authentication__Development__Enabled=false
 Authentication__SigningKey=CHANGE_ME_AT_LEAST_32_BYTES
@@ -814,7 +816,8 @@ Resource records:
 
 ```text
 A  @     -> 194.226.97.122
-A  game  -> 194.226.97.122
+A  game   -> 194.226.97.122
+A  admin  -> 194.226.97.122
 ```
 
 Корневой домен можно использовать позже под landing page.
@@ -823,6 +826,7 @@ A  game  -> 194.226.97.122
 
 ```powershell
 nslookup game.elyndor.su ns1.reg.ru
+nslookup admin.elyndor.su ns1.reg.ru
 ```
 
 Ожидается:
@@ -836,6 +840,7 @@ nslookup game.elyndor.su ns1.reg.ru
 ```powershell
 nslookup -type=ns elyndor.su 1.1.1.1
 nslookup game.elyndor.su 1.1.1.1
+nslookup admin.elyndor.su 1.1.1.1
 ```
 
 Перед выпуском public TLS публичный resolver должен возвращать:
@@ -868,7 +873,28 @@ apt install -y caddy
 cat >/etc/caddy/Caddyfile <<'EOF'
 game.elyndor.su {
     encode zstd gzip
+
+    @internalAdmin path /__admin*
+    respond @internalAdmin 404
+
     reverse_proxy 127.0.0.1:5080
+}
+
+admin.elyndor.su {
+    encode zstd gzip
+
+    handle /api/* {
+        reverse_proxy 127.0.0.1:5080
+    }
+
+    handle /hubs/* {
+        reverse_proxy 127.0.0.1:5080
+    }
+
+    handle {
+        rewrite * /__admin{uri}
+        reverse_proxy 127.0.0.1:5080
+    }
 }
 EOF
 ```
@@ -917,6 +943,74 @@ https://game.elyndor.su
 в обычном браузере и проверить загрузку UI.
 
 ---
+
+
+## 30A. Отдельный Admin V2 в браузере
+
+Admin V2 публикуется вместе с обычным production release:
+
+```text
+frontend/       -> game.elyndor.su
+frontend-admin/ -> admin.elyndor.su
+```
+
+Начиная с Admin V2 production package, Elyndor.Server автоматически находит
+`frontend` и `frontend-admin` рядом с опубликованным server binary. Явные
+`Frontend__DistPath` / `AdminFrontend__DistPath` остаются поддерживаемыми и
+имеют приоритет, но старый production env не требуется переписывать только ради
+Admin V2.
+
+DNS:
+
+```text
+A admin -> 194.226.97.122
+```
+
+После публичного распространения DNS:
+
+```powershell
+nslookup admin.elyndor.su 1.1.1.1
+```
+
+должен вернуть:
+
+```text
+194.226.97.122
+```
+
+После deploy проверить:
+
+```bash
+curl -fsS https://admin.elyndor.su/api/v1/status
+curl -I https://admin.elyndor.su/
+```
+
+Открыть в обычном браузере:
+
+```text
+https://admin.elyndor.su
+```
+
+Авторизация Admin V2 не зависит от Telegram WebView:
+
+```text
+Telegram ID
+    ↓
+server-side admin allowlist
+    ↓
+Elyndor Bot sends one-time 6-digit code
+    ↓
+browser verifies code
+    ↓
+short-lived SUPER_ADMIN JWT in tab memory
+```
+
+Код одноразовый, действует 5 минут и имеет ограничения на повторные запросы и
+неверные попытки. Для получения сообщения администратор должен ранее открыть
+Elyndor Bot в Telegram.
+
+Игровой host специально блокирует внутренний static route `/__admin`, поэтому
+Admin JS не доступен как обычная часть `game.elyndor.su`.
 
 # Telegram
 

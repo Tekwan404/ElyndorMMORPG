@@ -2,6 +2,13 @@ name: package-production
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: package-production-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

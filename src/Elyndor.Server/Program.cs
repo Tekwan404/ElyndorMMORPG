@@ -27,29 +27,31 @@ string contentPackagePath = builder.Configuration["Content:PackagePath"]
 GameContentPackage gameContentPackage =
     await GameContentPackageLoader.LoadAsync(contentPackagePath);
 
-string frontendDistPath = Path.GetFullPath(
-    builder.Configuration["Frontend:DistPath"]
-        ?? Path.Combine(
-            builder.Environment.ContentRootPath,
-            "..",
-            "..",
-            "web",
-            "elyndor-web",
-            "dist"));
+string frontendDistPath = FrontendDistPathResolver.Resolve(
+    builder.Configuration["Frontend:DistPath"],
+    "frontend",
+    Path.Combine(
+        builder.Environment.ContentRootPath,
+        "..",
+        "..",
+        "web",
+        "elyndor-web",
+        "dist"));
 PhysicalFileProvider? frontendFileProvider = File.Exists(
     Path.Combine(frontendDistPath, "index.html"))
         ? new PhysicalFileProvider(frontendDistPath)
         : null;
 
-string adminFrontendDistPath = Path.GetFullPath(
-    builder.Configuration["AdminFrontend:DistPath"]
-        ?? Path.Combine(
-            builder.Environment.ContentRootPath,
-            "..",
-            "..",
-            "web",
-            "elyndor-admin",
-            "dist"));
+string adminFrontendDistPath = FrontendDistPathResolver.Resolve(
+    builder.Configuration["AdminFrontend:DistPath"],
+    "frontend-admin",
+    Path.Combine(
+        builder.Environment.ContentRootPath,
+        "..",
+        "..",
+        "web",
+        "elyndor-admin",
+        "dist"));
 PhysicalFileProvider? adminFrontendFileProvider = File.Exists(
     Path.Combine(adminFrontendDistPath, "index.html"))
         ? new PhysicalFileProvider(adminFrontendDistPath)
