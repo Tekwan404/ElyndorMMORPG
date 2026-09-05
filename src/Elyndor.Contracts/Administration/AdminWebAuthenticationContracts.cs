@@ -10,3 +10,7 @@ public sealed record AdminWebAuthenticationVerifyRequest(
     Guid ChallengeId,
     long TelegramUserId,
     string Code);
+
+public sealed record AdminWebAuthenticationPasswordRequest(
+    long TelegramUserId,
+    string Password);
