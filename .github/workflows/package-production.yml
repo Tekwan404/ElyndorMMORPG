@@ -1,0 +1,39 @@
+name: package-production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/elyndor-web/package-lock.json
+
+      - name: Build production release
+        run: ./deploy/build-release.sh artifacts/elyndor-linux-x64.tar.gz
+
+      - name: Upload production release
+        uses: actions/upload-artifact@v4
+        with:
+          name: elyndor-linux-x64
+          path: artifacts/elyndor-linux-x64.tar.gz
+          if-no-files-found: error
+          retention-days: 7
