@@ -106,3 +106,10 @@ npm run test:unit --prefix web/elyndor-web
 npm run build --prefix web/elyndor-web
 npm run test:e2e --prefix web/elyndor-web
 ```
+
+
+## PostgreSQL 18 startup stability
+
+Local Aspire uses PostgreSQL 18 with a persistent data volume. PostgreSQL 18 can briefly accept TCP connections during its first initialization and then restart before the final listener is stable. The AppHost therefore keeps the `game` database unhealthy until one connection survives six consecutive `SELECT 1` probes; `server` waits for that stronger readiness signal.
+
+If authentication hangs with Npgsql connection timeouts, do not delete the PostgreSQL volume as a first response. Stop the Elyndor runtime cleanly, update `main`, and start it again so the AppHost stability gate is active.
