@@ -6,6 +6,7 @@ const signalRMock = vi.hoisted(() => ({
   calls: [] as string[],
   transport: null as number | null,
   startError: null as Error | null,
+  invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }))
 
 vi.mock('@microsoft/signalr', () => ({
@@ -36,7 +37,7 @@ vi.mock('@microsoft/signalr', () => ({
           if (signalRMock.startError) throw signalRMock.startError
           connection.state = 'Connected'
         }),
-        invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+        invoke: signalRMock.invoke,
       }
       return connection
     }
@@ -53,6 +54,7 @@ describe('combatSession realtime authentication', () => {
     signalRMock.accessTokenFactory = null
     signalRMock.transport = null
     signalRMock.startError = null
+    signalRMock.invoke.mockReset()
     vi.restoreAllMocks()
   })
 
@@ -72,6 +74,52 @@ describe('combatSession realtime authentication', () => {
     expect(signalRMock.transport).toBe(4)
     expect(store.connectionState).toBe('connected')
     expect(store.diagnostic).toBeNull()
+  })
+
+  it('reuses the same command id after a lost ability response and rotates it after acknowledgement', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    signalRMock.invoke
+      .mockResolvedValueOnce({
+        succeeded: true,
+        errorCode: null,
+        snapshot: {
+          sessionId: '00000000-0000-0000-0000-000000000101',
+          status: 'Active',
+          sequence: 1,
+          serverTimeUtc: '2026-09-05T18:00:00Z',
+          player: {
+            actorId: '00000000-0000-0000-0000-000000000201',
+            autoAttackEnabled: false,
+          },
+          enemy: {
+            actorId: '00000000-0000-0000-0000-000000000301',
+            definitionId: 'WOLF',
+          },
+        },
+        events: [],
+        reward: null,
+      })
+      .mockRejectedValueOnce(new Error('response lost after server accepted command'))
+      .mockResolvedValueOnce({
+        succeeded: false,
+        errorCode: 'combat_duplicate_command',
+      })
+      .mockResolvedValueOnce({
+        succeeded: false,
+        errorCode: 'combat_ability_on_cooldown',
+      })
+
+    const store = useCombatSessionStore()
+    expect(await store.startTraining()).toBe(true)
+
+    await store.useAbility('HEROIC_STRIKE')
+    await store.useAbility('HEROIC_STRIKE')
+    await store.useAbility('HEROIC_STRIKE')
+
+    const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(abilityCalls).toHaveLength(3)
+    expect(abilityCalls[0]?.[3]).toBe(abilityCalls[1]?.[3])
+    expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
   })
 
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
