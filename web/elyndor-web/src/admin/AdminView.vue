@@ -148,18 +148,24 @@ function createEntity(): void {
     errorMessage.value = 'Текущий package JSON некорректен.'
     return
   }
-  if (!canCreateEntity.value) {
+  const section = selectedSection.value
+  if (
+    section !== 'monsters'
+    && section !== 'items'
+    && section !== 'lootTables'
+    && section !== 'merchants'
+  ) {
     errorMessage.value = 'Создание через форму недоступно для этой категории.'
     return
   }
 
   try {
     const result = createDraftEntity(packageObject, {
-      section: selectedSection.value,
+      section,
       id: newEntityId.value,
       name: newEntityName.value,
-      itemType: selectedSection.value === 'items' ? newItemType.value : undefined,
-      locationId: selectedSection.value === 'merchants' ? newMerchantLocationId.value : undefined,
+      itemType: section === 'items' ? newItemType.value : undefined,
+      locationId: section === 'merchants' ? newMerchantLocationId.value : undefined,
     })
     draftJson.value = JSON.stringify(result.packageObject, null, 2)
     const id = entityId(result.entity)
