@@ -155,13 +155,11 @@ if (migrateOnStartup || restorePublishedOnStartup)
                 .CreateLogger("Elyndor.ContentStartup");
             GameContentSnapshot fileSnapshot = contentSnapshotProvider.GetCurrent();
 
-            startupLogger.LogWarning(
-                restoreResult.FileFallbackReason,
-                "Latest published content revision is incompatible with the current runtime. "
-                + "Starting with validated file content {ContentVersion}/{BalanceVersion}. "
-                + "Publish a new valid content revision to repair persisted LIVE content.",
+            StartupLogMessages.LogPublishedContentFallback(
+                startupLogger,
                 fileSnapshot.ContentVersion,
-                fileSnapshot.BalanceVersion);
+                fileSnapshot.BalanceVersion,
+                restoreResult.FileFallbackReason!);
         }
     }
 }
