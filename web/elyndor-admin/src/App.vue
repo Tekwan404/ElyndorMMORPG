@@ -13,11 +13,12 @@ import {
   type ContentAdminHistory,
 } from './api'
 
-type ViewState = 'login' | 'code' | 'dashboard' | 'content'
+type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content'
 
 const view = ref<ViewState>('login')
 const telegramId = ref('')
 const code = ref('')
+const password = ref('')
 const challenge = ref<AdminChallenge | null>(null)
 const busy = ref(false)
 const errorMessage = ref('')
@@ -96,6 +97,50 @@ async function requestCode(): Promise<void> {
   })
 }
 
+function openPasswordLogin(): void {
+  const normalized = telegramId.value.trim()
+  if (!/^\d+$/.test(normalized)) {
+    errorMessage.value = 'Укажи числовой Telegram ID.'
+    return
+  }
+
+  password.value = ''
+  errorMessage.value = ''
+  view.value = 'password'
+}
+
+async function verifyPassword(): Promise<void> {
+  const normalized = telegramId.value.trim()
+  if (!/^\d+$/.test(normalized) || password.value.length === 0) {
+    errorMessage.value = 'Укажи Telegram ID и резервный пароль.'
+    return
+  }
+
+  await run(async () => {
+    const authentication = await adminRequest<AuthenticationResponse>(
+      '/api/v1/admin/auth/password',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telegramUserId: Number(normalized),
+          password: password.value,
+        }),
+      },
+    )
+
+    if (!authentication.roles.includes('SUPER_ADMIN')) {
+      throw new Error('admin_role_missing')
+    }
+
+    password.value = ''
+    setAdminAccessToken(authentication.accessToken)
+    tokenExpiresAtUtc.value = authentication.expiresAtUtc
+    await loadDashboard()
+    view.value = 'dashboard'
+  })
+}
+
 async function verifyCode(): Promise<void> {
   if (!challenge.value || !/^\d{6}$/.test(code.value.trim())) {
     errorMessage.value = 'Введи шестизначный код из Telegram.'
@@ -151,6 +196,7 @@ function logout(): void {
 function backToId(): void {
   challenge.value = null
   code.value = ''
+  password.value = ''
   errorMessage.value = ''
   view.value = 'login'
 }
@@ -200,6 +246,9 @@ function friendlyError(error: unknown): string {
     admin_login_delivery_failed: 'Telegram не подтвердил отправку кода. Проверь, что бот запущен.',
     admin_login_code_invalid: 'Код неверный или уже использован.',
     admin_login_code_expired: 'Срок действия кода истёк. Запроси новый.',
+    admin_login_password_invalid: 'Неверный резервный пароль.',
+    admin_login_password_rate_limited: 'Слишком много неверных попыток. Попробуй через 5 минут.',
+    admin_login_password_disabled: 'Резервный вход по паролю отключён на сервере.',
   }
   return messages[error.code] ?? `Ошибка: ${error.code}`
 }
@@ -214,7 +263,7 @@ function formatDate(value: string | null | undefined): string {
 </script>
 
 <template>
-  <main v-if="view === 'login' || view === 'code'" class="auth-page">
+  <main v-if="view === 'login' || view === 'code' || view === 'password'" class="auth-page">
     <section class="auth-brand">
       <span class="brand-mark">E</span>
       <div>
@@ -250,9 +299,13 @@ function formatDate(value: string | null | undefined): string {
         <button class="primary" type="button" :disabled="busy" @click="requestCode">
           {{ busy ? 'Отправляем…' : 'Получить код' }}
         </button>
+
+        <button class="text-button" type="button" :disabled="busy" @click="openPasswordLogin">
+          Telegram недоступен? Войти по резервному паролю
+        </button>
       </template>
 
-      <template v-else>
+      <template v-else-if="view === 'code'">
         <button class="text-button" type="button" @click="backToId">← Другой Telegram ID</button>
         <p class="eyebrow">ONE-TIME CODE</p>
         <h2>Проверь Telegram</h2>
@@ -275,6 +328,31 @@ function formatDate(value: string | null | undefined): string {
 
         <button class="primary" type="button" :disabled="busy" @click="verifyCode">
           {{ busy ? 'Проверяем…' : 'Войти в Admin' }}
+        </button>
+      </template>
+
+      <template v-else>
+        <button class="text-button" type="button" @click="backToId">← Назад</button>
+        <p class="eyebrow">BREAK-GLASS ACCESS</p>
+        <h2>Резервный вход</h2>
+        <p class="muted">
+          Используй временный пароль только пока Telegram недоступен.
+          Telegram ID всё равно должен находиться в server-side allowlist.
+        </p>
+
+        <label>
+          <span>Резервный пароль</span>
+          <input
+            v-model="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Введите пароль"
+            @keyup.enter="verifyPassword"
+          />
+        </label>
+
+        <button class="primary" type="button" :disabled="busy" @click="verifyPassword">
+          {{ busy ? 'Проверяем…' : 'Войти по паролю' }}
         </button>
       </template>
 
