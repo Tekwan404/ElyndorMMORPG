@@ -48,41 +48,70 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
 </template>
 
 <style scoped>
-.hero-view { min-height: 100%; }
+.hero-view {
+  min-height: 100%;
+}
+
 .hero-tabs {
   position: sticky;
   z-index: var(--ui-z-sticky);
   top: 0;
   display: flex;
+  gap: 3px;
   overflow-x: auto;
+  padding: var(--ui-space-2) var(--ui-space-3);
   border-bottom: 1px solid var(--ui-color-border);
-  background: rgb(13 18 32 / 96%);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgb(12 18 30 / 98%), rgb(8 12 20 / 94%));
+  box-shadow: 0 8px 20px rgb(0 0 0 / 15%);
+  backdrop-filter: blur(14px);
   scrollbar-width: none;
 }
-.hero-tabs::-webkit-scrollbar { display: none; }
+
+.hero-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .hero-tabs button {
   position: relative;
   min-width: max-content;
-  min-height: var(--ui-touch-target);
+  min-height: 40px;
   flex: 1 0 auto;
   padding: var(--ui-space-2) var(--ui-space-3);
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-md);
   background: transparent;
   color: var(--ui-color-text-muted);
   font: inherit;
   font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-medium);
+  cursor: pointer;
+  transition:
+    color var(--ui-transition-fast),
+    border-color var(--ui-transition-fast),
+    background var(--ui-transition-fast);
 }
-.hero-tabs button.active { color: var(--ui-color-text-primary); }
+
+.hero-tabs button.active {
+  border-color: var(--ui-color-border);
+  background: linear-gradient(180deg, rgb(146 136 255 / 13%), rgb(255 255 255 / 2%));
+  box-shadow: var(--ui-shadow-inset);
+  color: #d5d2ff;
+}
+
 .hero-tabs button.active::after {
   position: absolute;
-  right: var(--ui-space-3);
-  bottom: 0;
-  left: var(--ui-space-3);
+  right: 28%;
+  bottom: 3px;
+  left: 28%;
   height: 2px;
+  border-radius: var(--ui-radius-round);
   background: var(--ui-color-primary);
-  box-shadow: var(--ui-glow-magic);
+  box-shadow: 0 0 9px rgb(146 136 255 / 48%);
   content: '';
 }
-.hero-tabs button:disabled { opacity: 0.38; }
+
+.hero-tabs button:disabled {
+  cursor: not-allowed;
+  opacity: .3;
+}
 </style>
