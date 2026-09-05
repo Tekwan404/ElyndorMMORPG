@@ -250,5 +250,456 @@ onUnmounted(() => window.clearInterval(timer))
 </template>
 
 <style scoped>
-.combat-screen{display:grid;width:min(100%,var(--ui-content-width));margin-inline:auto;gap:var(--ui-space-4);padding:var(--ui-space-4)}.enemy-stage,.player-panel,.combat-log,.training-stats{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-4);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:var(--ui-color-surface-1)}.enemy-stage--training{border-color:color-mix(in srgb,var(--ui-color-primary) 45%,var(--ui-color-border))}.enemy-heading{display:flex;align-items:start;justify-content:space-between;gap:var(--ui-space-2)}.enemy-heading h1{margin:0;font-family:var(--ui-font-display)}.enemy-heading small,.player-heading small,.combat-log header small,.training-stats small{color:var(--ui-color-text-muted)}.burn,.hot{color:var(--ui-modifier-fire);font-size:var(--ui-font-size-xs);font-weight:700}.enemy-portrait{display:grid;height:15rem;place-items:center;overflow:hidden;background:radial-gradient(circle,rgb(96 82 255 / 15%),transparent 60%)}.enemy-portrait img{width:100%;height:100%;object-fit:contain}.enemy-placeholder{display:grid;width:7rem;height:7rem;place-items:center;border:1px solid var(--ui-color-border-strong);border-radius:50%;background:var(--ui-color-surface-2);color:var(--ui-color-text-muted);font-size:2rem}.training-dummy{display:grid;width:7rem;height:11rem;place-items:center;align-content:center;gap:var(--ui-space-2);border:2px solid var(--ui-color-border-strong);border-radius:45% 45% 18% 18%;background:linear-gradient(180deg,#6f5b43,#2c241c);box-shadow:0 1rem 2rem rgb(0 0 0 / 35%);color:#d5b783;text-align:center}.training-dummy span{font-size:2.5rem}.training-dummy b{font-size:var(--ui-font-size-xs);letter-spacing:.12em}.training-note{margin:0;color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.training-stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--ui-space-2);background:color-mix(in srgb,var(--ui-color-primary) 5%,var(--ui-color-surface-1))}.training-stats>div{display:grid;gap:2px;text-align:center}.training-stats strong{font-family:var(--ui-font-display);font-size:var(--ui-font-size-lg)}.player-heading{display:flex;justify-content:space-between;gap:var(--ui-space-2)}.player-heading>div{display:grid}.player-heading>span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.player-heading>span.active{color:var(--ui-color-success)}.pyro-state{display:flex;flex-wrap:wrap;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid color-mix(in srgb,var(--ui-modifier-fire) 35%,var(--ui-color-border));border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-modifier-fire) 7%,transparent);color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.pyro-state b{color:var(--ui-color-text-primary)}.abilities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-2)}.abilities button,.consumables button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-2);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);color:inherit;font:inherit;text-align:left}.abilities button.ability--comet{border-color:var(--ui-modifier-fire);box-shadow:0 0 14px color-mix(in srgb,var(--ui-modifier-fire) 35%,transparent)}.abilities button>span:last-child,.consumables div{display:grid}.abilities small,.consumables small{color:var(--ui-color-text-muted)}.ability-icon,.consumables button>span{display:grid;width:2.8rem;height:2.8rem;place-items:center;overflow:hidden;border-radius:var(--ui-radius-md);background:var(--ui-color-background);color:var(--ui-color-primary)}.ability--comet .ability-icon{color:var(--ui-modifier-fire)}.ability-icon img{width:100%;height:100%;object-fit:cover}.controls{display:flex;flex-wrap:wrap;gap:var(--ui-space-2)}.combat-log header{display:flex;justify-content:space-between}.combat-log ol{display:grid;gap:var(--ui-space-2);margin:0;padding:0;list-style:none}.combat-log li{display:grid;grid-template-columns:5rem 1fr;gap:var(--ui-space-2);padding:var(--ui-space-2);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2)}.combat-log li[data-side='player']{border-left:3px solid var(--ui-color-primary)}.combat-log li[data-side='enemy']{border-left:3px solid var(--ui-color-danger)}.combat-log li[data-side='system']{border-left:3px solid var(--ui-color-border-strong)}.actor{font-size:var(--ui-font-size-xs);font-weight:700}.combat-log li div{display:grid;gap:2px}.combat-log li small{color:var(--ui-color-text-muted);font-weight:400}.error{color:var(--ui-color-danger)}.missing{display:grid;gap:var(--ui-space-3);place-items:start}@media(max-width:520px){.training-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.training-stats>div:last-child{grid-column:1/-1}}@media(max-width:420px){.abilities{grid-template-columns:1fr}.combat-log li{grid-template-columns:4rem 1fr}.enemy-portrait{height:12rem}}
+.combat-screen {
+  display: grid;
+  width: min(100%, var(--ui-content-width));
+  margin-inline: auto;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-6);
+}
+
+.enemy-stage,
+.player-panel,
+.combat-log,
+.training-stats {
+  display: grid;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-gradient-panel);
+  box-shadow: var(--ui-shadow-inset);
+}
+
+.enemy-stage {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--ui-color-danger) 28%, var(--ui-color-border));
+  background:
+    radial-gradient(circle at 50% 42%, rgb(135 48 64 / 11%), transparent 42%),
+    var(--ui-gradient-panel);
+  box-shadow: var(--ui-shadow-inset), 0 16px 36px rgb(0 0 0 / 24%);
+}
+
+.enemy-stage::after {
+  position: absolute;
+  right: 18%;
+  bottom: 0;
+  left: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(216 95 114 / 50%), transparent);
+  content: '';
+}
+
+.enemy-stage--training {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 40%, var(--ui-color-border));
+  background:
+    radial-gradient(circle at 50% 42%, rgb(146 136 255 / 12%), transparent 44%),
+    var(--ui-gradient-panel);
+}
+
+.enemy-stage--training::after {
+  background: linear-gradient(90deg, transparent, rgb(146 136 255 / 50%), transparent);
+}
+
+.enemy-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.enemy-heading h1 {
+  margin: 2px 0 0;
+  font-family: var(--ui-font-display);
+  font-size: clamp(1.65rem, 7vw, 2.15rem);
+  line-height: 1;
+}
+
+.enemy-heading small,
+.player-heading small,
+.combat-log header small,
+.training-stats small {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+}
+
+.burn,
+.hot {
+  color: #f08b63;
+  font-size: var(--ui-font-size-xs);
+  font-weight: 700;
+}
+
+.enemy-portrait {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  height: 14rem;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 60%, rgb(255 255 255 / 4%), transparent 55%);
+}
+
+.enemy-portrait::after {
+  position: absolute;
+  right: 20%;
+  bottom: 8%;
+  left: 20%;
+  height: 12%;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 30%);
+  filter: blur(12px);
+  content: '';
+}
+
+.enemy-portrait img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 .8rem 1.2rem rgb(0 0 0 / 42%));
+}
+
+.enemy-placeholder {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 7rem;
+  height: 7rem;
+  place-items: center;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: 50%;
+  background: rgb(4 7 12 / 65%);
+  color: var(--ui-color-text-muted);
+  font-size: 2rem;
+}
+
+.training-dummy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 7rem;
+  height: 11rem;
+  place-items: center;
+  align-content: center;
+  gap: var(--ui-space-2);
+  border: 2px solid rgb(188 161 114 / 38%);
+  border-radius: 45% 45% 18% 18%;
+  background: linear-gradient(180deg, #705b42, #2a2119);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 35%);
+  color: #d5b783;
+  text-align: center;
+}
+
+.training-dummy span {
+  font-size: 2.5rem;
+}
+
+.training-dummy b {
+  font-size: var(--ui-font-size-xs);
+  letter-spacing: .12em;
+}
+
+.training-note {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.training-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--ui-space-2);
+  background:
+    linear-gradient(135deg, rgb(146 136 255 / 7%), transparent 55%),
+    var(--ui-gradient-panel);
+}
+
+.training-stats > div {
+  display: grid;
+  gap: 2px;
+  padding: var(--ui-space-2);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(255 255 255 / 1.5%);
+  text-align: center;
+}
+
+.training-stats strong {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.player-panel {
+  background:
+    radial-gradient(circle at 8% 0, rgb(74 184 207 / 6%), transparent 18rem),
+    var(--ui-gradient-panel);
+}
+
+.player-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.player-heading > div {
+  display: grid;
+}
+
+.player-heading > div strong {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-lg);
+}
+
+.player-heading > span {
+  align-self: center;
+  padding: 4px 7px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-text-muted);
+  font-size: .6rem;
+}
+
+.player-heading > span.active {
+  border-color: rgb(79 185 150 / 34%);
+  background: rgb(79 185 150 / 6%);
+  color: #84d5bb;
+}
+
+.pyro-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-2);
+  border: 1px solid color-mix(in srgb, var(--ui-modifier-fire) 35%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--ui-modifier-fire) 7%, transparent);
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.pyro-state b {
+  color: var(--ui-color-text-primary);
+}
+
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ui-space-2);
+}
+
+.abilities button,
+.consumables button {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--ui-space-2);
+  min-height: 4rem;
+  padding: var(--ui-space-2);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(3 6 11 / 35%));
+  box-shadow: var(--ui-shadow-inset);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--ui-transition-fast),
+    background var(--ui-transition-fast),
+    transform var(--ui-transition-fast),
+    opacity var(--ui-transition-fast);
+}
+
+.abilities button:hover:not(:disabled),
+.consumables button:hover:not(:disabled) {
+  border-color: var(--ui-color-border-strong);
+  background: linear-gradient(180deg, rgb(146 136 255 / 7%), rgb(3 6 11 / 35%));
+}
+
+.abilities button:active:not(:disabled),
+.consumables button:active:not(:disabled) {
+  transform: scale(.99);
+}
+
+.abilities button:disabled,
+.consumables button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+  filter: saturate(.65);
+}
+
+.abilities button.ability--comet {
+  border-color: color-mix(in srgb, var(--ui-modifier-fire) 70%, var(--ui-color-border));
+  background: linear-gradient(180deg, rgb(219 117 72 / 11%), rgb(3 6 11 / 35%));
+  box-shadow: var(--ui-shadow-inset), 0 0 18px color-mix(in srgb, var(--ui-modifier-fire) 22%, transparent);
+}
+
+.abilities button > span:last-child,
+.consumables div {
+  display: grid;
+  gap: 2px;
+}
+
+.abilities small,
+.consumables small {
+  color: var(--ui-color-text-muted);
+  font-size: .66rem;
+}
+
+.ability-icon,
+.consumables button > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: rgb(3 5 10 / 85%);
+  color: var(--ui-color-primary);
+}
+
+.ability--comet .ability-icon {
+  border-color: color-mix(in srgb, var(--ui-modifier-fire) 50%, var(--ui-color-border));
+  color: var(--ui-modifier-fire);
+}
+
+.ability-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+}
+
+.combat-log {
+  background: linear-gradient(180deg, rgb(12 17 28 / 92%), rgb(7 10 17 / 96%));
+}
+
+.combat-log header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.combat-log ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.combat-log li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-2);
+  border-left: 2px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(255 255 255 / 1.8%);
+}
+
+.combat-log li[data-side='player'] {
+  border-left-color: var(--ui-color-primary);
+}
+
+.combat-log li[data-side='enemy'] {
+  border-left-color: var(--ui-color-danger);
+}
+
+.actor {
+  color: var(--ui-color-text-muted);
+  font-size: .6rem;
+  font-weight: 700;
+}
+
+.combat-log li div {
+  display: grid;
+  gap: 2px;
+}
+
+.combat-log li strong {
+  font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-medium);
+}
+
+.combat-log li small {
+  color: var(--ui-color-text-muted);
+  font-size: .65rem;
+  font-weight: 400;
+}
+
+.error {
+  margin: 0;
+  padding: var(--ui-space-3);
+  border: 1px solid rgb(216 95 114 / 32%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(216 95 114 / 6%);
+  color: #ef9bab;
+  font-size: var(--ui-font-size-sm);
+}
+
+.missing {
+  display: grid;
+  gap: var(--ui-space-3);
+  place-items: start;
+}
+
+@media (max-width: 520px) {
+  .combat-screen {
+    padding-inline: var(--ui-space-3);
+  }
+
+  .training-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .training-stats > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .controls :deep(.ui-button) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .abilities {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-log li {
+    grid-template-columns: 3.8rem 1fr;
+  }
+
+  .enemy-portrait {
+    height: 12rem;
+  }
+
+  .enemy-stage,
+  .player-panel,
+  .combat-log,
+  .training-stats {
+    padding: var(--ui-space-3);
+  }
+}
 </style>
