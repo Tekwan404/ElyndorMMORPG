@@ -88,6 +88,14 @@ public sealed class CombatRewardService(
         await using IDbContextTransaction transaction =
             await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
+        // Serialize permanent rewards per character before checking the session grant.
+        // This turns concurrent finalization into a normal replay instead of allowing both
+        // transactions to race until the unique CombatSessionId constraint rejects one.
+        Character character = await dbContext.Characters
+            .FromSqlInterpolated(
+                $"SELECT * FROM game.characters WHERE \"Id\" = {characterId} FOR UPDATE")
+            .SingleAsync(cancellationToken);
+
         CombatRewardGrant? existingGrant = await dbContext.CombatRewardGrants
             .AsNoTracking()
             .SingleOrDefaultAsync(
@@ -106,9 +114,6 @@ public sealed class CombatRewardService(
 
         GameContentPackage content = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
-
-        Character character = await dbContext.Characters
-            .SingleAsync(candidate => candidate.Id == characterId, cancellationToken);
         if (!indexes.MonstersById.TryGetValue(
                 snapshot.Enemy.DefinitionId,
                 out MonsterDefinition? monster))
