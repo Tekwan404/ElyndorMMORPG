@@ -2,7 +2,7 @@
 
 **Telegram Mini App MMORPG — MASTER Source of Truth v7.1**
 
-Этот архив — текущая единая база проекта Elyndor: игровые системы, архитектура, балансные правила, UI/UX-спецификации и утверждённые визуальные референсы.
+Этот репозиторий — текущая единая база проекта Elyndor: игровые системы, архитектура, балансные правила, UI/UX-спецификации, код, контент и утверждённые визуальные референсы.
 
 > Если открываешь проект впервые — начни с этого файла.
 
@@ -371,7 +371,7 @@ docs/archive/00_MANIFEST.md
 
 Первый компилируемый foundation находится в `src/`, `apphost/`, `web/`, `tests/` и `content/`.
 
-Engineering foundation завершён и зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Текущая реализация — `docs/source-of-truth/phases/PHASE_01_TELEGRAM_IDENTITY_WORLD.md`; общий roadmap находится в `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`. Для работы через Codex сначала читать `AGENTS.md`.
+Engineering foundation зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Актуальный implementation status намеренно не дублируется в README: его нужно сверять по `AGENTS.md` и документам в `docs/source-of-truth/phases/`. Общий roadmap находится в `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`. Для работы через coding agents сначала читать `AGENTS.md`.
 
 Локальный стек запускается через Aspire:
 
@@ -387,3 +387,5 @@ dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
 ```
 
 Подробности окружения, secrets policy и команды проверки: `docs/development/getting-started.md`.
+
+Правила внесения изменений: `CONTRIBUTING.md`. Git/PR policy: `docs/development/git-workflow.md`.
