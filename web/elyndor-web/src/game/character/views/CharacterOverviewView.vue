@@ -72,45 +72,98 @@ function abilityInitials(ability: KnownAbility): string {
 
 <template>
   <section v-if="character" class="overview">
-    <header class="hero-card">
-      <div class="hero-card__copy">
-        <p class="eyebrow">Персонаж</p>
-        <h1>{{ character.name }}</h1>
-        <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }} · уровень {{ character.level }}</p>
-        <small>{{ genderLabel(character.genderId) }} персонаж</small>
-        <strong class="gold">● {{ character.gold }} золота</strong>
+    <section class="paperdoll">
+      <header class="paperdoll__identity">
+        <div>
+          <p class="eyebrow">Герой</p>
+          <h1>{{ character.name }}</h1>
+          <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }}</p>
+        </div>
+        <div class="paperdoll__meta">
+          <strong>Уровень {{ character.level }}</strong>
+          <span class="gold">● {{ character.gold }}</span>
+        </div>
+      </header>
+
+      <div class="paperdoll__stage">
+        <div class="equipment-column equipment-column--left" aria-label="Снаряжение слева">
+          <button
+            v-for="slot in equipment.slice(0, 3)"
+            :key="slot.id"
+            type="button"
+            class="equipment-slot"
+            :class="{ filled: slot.item }"
+            :disabled="!slot.item"
+            @click="selectedItem = slot.item"
+          >
+            <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
+            <span class="equipment-slot__copy">
+              <small>{{ slot.label }}</small>
+              <strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
+            </span>
+          </button>
+        </div>
+
+        <div class="paperdoll__figure">
+          <div class="hero-figure">
+            <img v-if="character.classId === 'WARRIOR'" :src="gameArt.characters.warrior" alt="Воин" />
+            <div v-else class="hero-figure__fallback" role="img" :aria-label="classLabel(character.classId)">
+              <span>{{ character.name.slice(0, 1).toUpperCase() }}</span>
+              <small>{{ classLabel(character.classId) }}</small>
+            </div>
+          </div>
+          <div class="paperdoll__vitals">
+            <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
+            <UIHealthBar :label="resourceLabel(character.vitals.resourceType)" :tone="character.vitals.resourceType === 'RAGE' ? 'rage' : character.vitals.resourceType === 'MANA' ? 'mana' : 'focus'" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
+          </div>
+        </div>
+
+        <div class="equipment-column equipment-column--right" aria-label="Снаряжение справа">
+          <button
+            v-for="slot in equipment.slice(3)"
+            :key="slot.id"
+            type="button"
+            class="equipment-slot"
+            :class="{ filled: slot.item }"
+            :disabled="!slot.item"
+            @click="selectedItem = slot.item"
+          >
+            <span class="equipment-slot__copy">
+              <small>{{ slot.label }}</small>
+              <strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
+            </span>
+            <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
+          </button>
+        </div>
       </div>
-      <img v-if="character.classId === 'WARRIOR'" :src="gameArt.characters.warrior" alt="Воин" />
-    </header>
 
-    <UIPanel>
-      <template #title>Развитие героя</template>
-      <div class="xp-row"><span>Уровень {{ character.level }}</span><strong>{{ character.experience }} / {{ xpTarget }} опыта</strong></div>
-      <div class="xp-track"><i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" /></div>
-      <small>До следующего уровня: {{ xpRemaining }} опыта</small>
-    </UIPanel>
-
-    <UIPanel class="vitals-panel">
-      <template #title>Состояние</template>
-      <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-      <UIHealthBar :label="resourceLabel(character.vitals.resourceType)" :tone="character.vitals.resourceType === 'RAGE' ? 'rage' : character.vitals.resourceType === 'MANA' ? 'mana' : 'focus'" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
-    </UIPanel>
-
-    <UIPanel>
-      <template #title>Надетое снаряжение</template>
-      <div class="equipment-grid">
-        <button v-for="slot in equipment" :key="slot.id" type="button" class="equipment-slot" :class="{ filled: slot.item }" :disabled="!slot.item" @click="selectedItem = slot.item">
-          <small>{{ slot.label }}</small><span>{{ itemGlyph(slot.item, slot.glyph) }}</span><strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
-        </button>
+      <div class="progression">
+        <div class="progression__heading">
+          <div>
+            <small>Развитие героя</small>
+            <strong>{{ character.experience }} / {{ xpTarget }} опыта</strong>
+          </div>
+          <span>до уровня: {{ xpRemaining }}</span>
+        </div>
+        <div class="xp-track">
+          <i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" />
+        </div>
       </div>
-      <div class="set-progress">
-        <strong>Комплект Следопыта · {{ rangerPieces }} / 6</strong>
-        <span :class="{ active: rangerPieces >= 3 }">3 предмета: +5% скорости атаки</span>
-        <span :class="{ active: rangerPieces >= 6 }">6 предметов: ещё +10% скорости атаки и +5% уклонения</span>
-      </div>
-    </UIPanel>
 
-    <UIPanel v-if="character.classId === 'WARRIOR'">
+      <div class="equipment-summary">
+        <div>
+          <small>Надетое снаряжение</small>
+          <strong>{{ equipment.filter((slot) => slot.item).length }} / {{ equipment.length }} слотов</strong>
+        </div>
+        <div class="set-progress">
+          <span>Следопыт {{ rangerPieces }}/6</span>
+          <i :class="{ active: rangerPieces >= 3 }">3</i>
+          <i :class="{ active: rangerPieces >= 6 }">6</i>
+        </div>
+      </div>
+    </section>
+
+    <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities-panel">
       <template #title>Боевые способности</template>
       <p class="hint">Здесь только то, что реально доступно персонажу. Новые активные способности открываются талантами.</p>
       <div class="ability-grid">
@@ -151,103 +204,277 @@ function abilityInitials(ability: KnownAbility): string {
   width: min(100%, var(--ui-content-width));
   margin-inline: auto;
   gap: var(--ui-space-3);
-  padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-7);
+  padding: var(--ui-space-3) var(--ui-space-3) var(--ui-space-7);
 }
 
-.hero-card {
+.paperdoll {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 8.5rem;
-  align-items: end;
-  min-height: 13rem;
   overflow: hidden;
-  padding: var(--ui-space-5);
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 2px);
   background:
-    radial-gradient(circle at 82% 18%, rgb(146 136 255 / 25%), transparent 38%),
-    radial-gradient(circle at 18% 95%, rgb(74 184 207 / 8%), transparent 42%),
-    var(--ui-gradient-panel);
+    radial-gradient(circle at 50% 26%, rgb(146 136 255 / 18%), transparent 15rem),
+    radial-gradient(circle at 50% 70%, rgb(74 184 207 / 6%), transparent 14rem),
+    linear-gradient(180deg, rgb(15 21 35 / 98%), rgb(7 11 19 / 98%));
   box-shadow: var(--ui-shadow-inset), var(--ui-shadow-elevated);
 }
 
-.hero-card::after {
+.paperdoll::after {
   position: absolute;
-  right: 15%;
+  right: 18%;
   bottom: 0;
-  left: 15%;
+  left: 18%;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgb(146 136 255 / 55%), transparent);
   content: '';
 }
 
-.hero-card__copy {
+.paperdoll__identity {
   position: relative;
-  z-index: 1;
-  display: grid;
-  gap: var(--ui-space-1);
+  z-index: 2;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4) var(--ui-space-4) var(--ui-space-2);
 }
 
-.hero-card h1,
-.hero-card p {
+.paperdoll__identity > div:first-child {
+  min-width: 0;
+}
+
+.paperdoll__identity h1,
+.paperdoll__identity p {
   margin: 0;
 }
 
-.hero-card h1 {
+.paperdoll__identity h1 {
+  overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: clamp(1.8rem, 7vw, 2.45rem);
+  font-size: clamp(1.65rem, 7vw, 2.3rem);
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.hero-card__copy > p:not(.eyebrow),
-.hero-card__copy > small {
+.paperdoll__identity > div > p:not(.eyebrow) {
+  margin-top: 3px;
   color: var(--ui-color-text-secondary);
-}
-
-.hero-card img {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-height: 12rem;
-  object-fit: contain;
-  filter: drop-shadow(0 .8rem 1.3rem rgb(0 0 0 / 45%));
+  font-size: var(--ui-font-size-xs);
 }
 
 .eyebrow {
+  margin-bottom: 3px !important;
   color: #bcb6ff;
-  font-size: .63rem;
+  font-size: .6rem;
   font-weight: 700;
-  letter-spacing: .09em;
+  letter-spacing: .1em;
   text-transform: uppercase;
 }
 
+.paperdoll__meta {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.paperdoll__meta strong {
+  font-size: var(--ui-font-size-xs);
+}
+
 .gold {
-  margin-top: var(--ui-space-2);
   color: var(--ui-color-gold);
   font-size: var(--ui-font-size-sm);
+  font-weight: 700;
 }
 
-.xp-row {
+.paperdoll__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 1.18fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ui-space-2);
+  min-height: 18rem;
+  padding: var(--ui-space-2) var(--ui-space-3) var(--ui-space-3);
+}
+
+.equipment-column {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.equipment-slot {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 2.55rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ui-space-2);
+  min-height: 3.5rem;
+  padding: 6px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(180deg, rgb(255 255 255 / 2%), rgb(3 6 11 / 38%));
+  box-shadow: var(--ui-shadow-inset);
+  color: var(--ui-color-text-muted);
+  font: inherit;
+  text-align: left;
+}
+
+.equipment-column--right .equipment-slot {
+  grid-template-columns: minmax(0, 1fr) 2.55rem;
+  text-align: right;
+}
+
+.equipment-slot.filled {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 48%, var(--ui-color-border));
+  background: linear-gradient(180deg, rgb(146 136 255 / 8%), rgb(3 6 11 / 36%));
+  color: var(--ui-color-text-primary);
+}
+
+.equipment-slot__icon {
+  display: grid;
+  width: 2.55rem;
+  height: 2.55rem;
+  place-items: center;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  background: rgb(4 7 12 / 78%);
+  color: var(--ui-color-primary);
+  font-size: 1.2rem;
+}
+
+.equipment-slot__copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.equipment-slot__copy small {
+  color: var(--ui-color-text-muted);
+  font-size: .55rem;
+  text-transform: uppercase;
+}
+
+.equipment-slot__copy strong {
+  overflow: hidden;
+  font-size: .66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paperdoll__figure {
+  display: grid;
+  align-self: stretch;
+  align-content: end;
+  gap: var(--ui-space-2);
+}
+
+.hero-figure {
+  position: relative;
+  display: grid;
+  min-height: 13rem;
+  place-items: end center;
+}
+
+.hero-figure::after {
+  position: absolute;
+  right: 10%;
+  bottom: 0;
+  left: 10%;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(0 0 0 / 48%), transparent 70%);
+  content: '';
+}
+
+.hero-figure img {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 11rem);
+  max-height: 14rem;
+  object-fit: contain;
+  filter: drop-shadow(0 .9rem 1.3rem rgb(0 0 0 / 52%));
+}
+
+.hero-figure__fallback {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 8rem;
+  height: 12rem;
+  place-items: center;
+  align-content: center;
+  gap: var(--ui-space-2);
+  border: 1px solid rgb(146 136 255 / 16%);
+  border-radius: 48% 48% 32% 32%;
+  background: linear-gradient(180deg, rgb(146 136 255 / 10%), rgb(3 6 11 / 48%));
+  color: var(--ui-color-text-muted);
+}
+
+.hero-figure__fallback span {
+  color: #cbc7ff;
+  font-family: var(--ui-font-display);
+  font-size: 2.8rem;
+}
+
+.hero-figure__fallback small {
+  font-size: .6rem;
+}
+
+.paperdoll__vitals {
+  display: grid;
+  gap: 4px;
+}
+
+.progression,
+.equipment-summary {
+  position: relative;
+  z-index: 2;
+  margin-inline: var(--ui-space-3);
+  padding: var(--ui-space-3);
+  border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.progression__heading,
+.equipment-summary {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-3);
-  color: var(--ui-color-text-secondary);
-  font-size: var(--ui-font-size-sm);
 }
 
-.xp-row strong {
-  color: var(--ui-color-text-primary);
-  font-variant-numeric: tabular-nums;
+.progression__heading > div,
+.equipment-summary > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.progression__heading small,
+.equipment-summary small {
+  color: var(--ui-color-text-muted);
+  font-size: .57rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.progression__heading strong,
+.equipment-summary strong {
+  font-size: var(--ui-font-size-xs);
+}
+
+.progression__heading > span {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
 }
 
 .xp-track {
-  height: 9px;
-  margin: var(--ui-space-2) 0;
+  height: 8px;
+  margin-top: var(--ui-space-2);
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 6%);
   border-radius: var(--ui-radius-round);
-  background: rgb(2 4 8 / 70%);
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / 45%);
+  background: rgb(2 4 8 / 72%);
 }
 
 .xp-track i {
@@ -255,80 +482,38 @@ function abilityInitials(ability: KnownAbility): string {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #645dc7, var(--ui-color-primary), var(--ui-color-secondary));
-  box-shadow: 0 0 12px rgb(146 136 255 / 28%);
+  box-shadow: 0 0 10px rgb(146 136 255 / 28%);
 }
 
-.vitals-panel :deep(.ui-panel__body) {
-  display: grid;
-  gap: var(--ui-space-3);
-}
-
-.equipment-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ui-space-2);
-}
-
-.equipment-slot {
-  display: grid;
-  min-height: 7.25rem;
-  align-content: center;
-  justify-items: center;
-  gap: var(--ui-space-1);
-  padding: var(--ui-space-2);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: linear-gradient(180deg, rgb(255 255 255 / 2%), rgb(3 6 11 / 30%));
-  box-shadow: var(--ui-shadow-inset);
-  color: var(--ui-color-text-muted);
-  font: inherit;
-  text-align: center;
-  transition: border-color var(--ui-transition-fast), background var(--ui-transition-fast), transform var(--ui-transition-fast);
-}
-
-.equipment-slot.filled {
-  border-color: color-mix(in srgb, var(--ui-color-primary) 52%, var(--ui-color-border));
-  background: linear-gradient(180deg, rgb(146 136 255 / 9%), rgb(3 6 11 / 26%));
-  color: var(--ui-color-text-primary);
-  cursor: pointer;
-}
-
-.equipment-slot.filled:active {
-  transform: scale(.98);
-}
-
-.equipment-slot span {
-  display: grid;
-  width: 2.55rem;
-  height: 2.55rem;
-  place-items: center;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: rgb(4 7 12 / 62%);
-  color: var(--ui-color-primary);
-  font-size: 1.35rem;
-}
-
-.equipment-slot strong {
-  font-size: var(--ui-font-size-xs);
-}
-
-.set-progress {
-  display: grid;
-  gap: var(--ui-space-1);
-  margin-top: var(--ui-space-3);
-  padding: var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
+.equipment-summary {
+  margin-bottom: var(--ui-space-3);
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
   border-radius: var(--ui-radius-md);
   background: rgb(255 255 255 / 1.5%);
 }
 
-.set-progress span {
+.set-progress {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
+  font-size: .62rem;
 }
 
-.set-progress span.active {
+.set-progress i {
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  place-items: center;
+  border: 1px solid var(--ui-color-border);
+  border-radius: 50%;
+  background: var(--ui-color-background);
+  color: var(--ui-color-text-muted);
+  font-style: normal;
+}
+
+.set-progress i.active {
+  border-color: var(--ui-color-success);
   color: var(--ui-color-success);
 }
 
@@ -341,14 +526,15 @@ function abilityInitials(ability: KnownAbility): string {
 
 .ability-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ui-space-2);
 }
 
 .ability-grid button {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--ui-space-3);
+  gap: var(--ui-space-2);
   min-height: var(--ui-control-height-lg);
   padding: var(--ui-space-2);
   border: 1px solid var(--ui-color-border);
@@ -357,37 +543,34 @@ function abilityInitials(ability: KnownAbility): string {
   color: inherit;
   font: inherit;
   text-align: left;
-  cursor: pointer;
-  transition: border-color var(--ui-transition-fast), background var(--ui-transition-fast), transform var(--ui-transition-fast);
-}
-
-.ability-grid button:hover {
-  border-color: var(--ui-color-border-strong);
-  background: linear-gradient(180deg, rgb(146 136 255 / 7%), rgb(3 6 11 / 28%));
-}
-
-.ability-grid button:active {
-  transform: scale(.99);
 }
 
 .ability-grid button > span:last-child {
   display: grid;
+  min-width: 0;
+}
+
+.ability-grid button strong,
+.ability-grid small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ability-grid small {
   color: var(--ui-color-text-muted);
+  font-size: .62rem;
 }
 
 .ability-icon {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 2.8rem;
+  height: 2.8rem;
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-md);
   background: var(--ui-color-background);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
 }
 
 .ability-icon img {
@@ -425,19 +608,59 @@ function abilityInitials(ability: KnownAbility): string {
   color: var(--ui-color-text-primary);
 }
 
-@media (max-width: 420px) {
-  .overview {
-    padding-inline: var(--ui-space-3);
+@media (max-width: 430px) {
+  .paperdoll__stage {
+    grid-template-columns: minmax(0, .92fr) minmax(6.2rem, 1.08fr) minmax(0, .92fr);
+    gap: 5px;
+    min-height: 16rem;
+    padding-inline: var(--ui-space-2);
   }
 
-  .hero-card {
-    grid-template-columns: minmax(0, 1fr) 6.5rem;
+  .equipment-slot {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 5px;
+    padding: 4px;
+  }
+
+  .equipment-column--right .equipment-slot {
+    grid-template-columns: minmax(0, 1fr) 2.25rem;
+  }
+
+  .equipment-slot__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .equipment-slot__copy strong {
+    font-size: .59rem;
+  }
+
+  .hero-figure {
     min-height: 11.5rem;
-    padding: var(--ui-space-4);
   }
 
-  .equipment-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .ability-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 355px) {
+  .equipment-slot__copy {
+    display: none;
+  }
+
+  .equipment-slot,
+  .equipment-column--right .equipment-slot {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .paperdoll__stage {
+    grid-template-columns: 3.1rem minmax(7rem, 1fr) 3.1rem;
+  }
+
+  .paperdoll__identity {
+    padding-inline: var(--ui-space-3);
   }
 }
 </style>
