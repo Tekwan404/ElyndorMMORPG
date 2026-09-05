@@ -55,6 +55,32 @@ export interface ContentAdminHistory {
   releases: ContentAdminRelease[]
 }
 
+export interface ContentAdminSimulationDamageSource {
+  definitionId: string
+  averageDamage: number
+  damageSharePercent: number
+}
+
+export interface ContentAdminSimulation {
+  contentVersion: string
+  balanceVersion: string
+  classId: string
+  playerLevel: number
+  monsterId: string
+  iterations: number
+  victories: number
+  defeats: number
+  timeouts: number
+  winRatePercent: number
+  averageDurationSeconds: number
+  p50DurationSeconds: number
+  p95DurationSeconds: number
+  averagePlayerDps: number
+  averageEnemyDps: number
+  averagePlayerRemainingHp: number
+  damageSources: ContentAdminSimulationDamageSource[]
+}
+
 export interface ApiProblem {
   code?: string
   correlationId?: string
