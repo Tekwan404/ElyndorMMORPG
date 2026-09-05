@@ -24,6 +24,36 @@ public sealed class WorldEncounterContentValidatorTests
     }
 
     [Fact]
+    public void ValidateRejectsNonSafeLocationWithoutEncounters()
+    {
+        GameContentPackage package = Package(
+            new LocationDefinition(
+                "WHISPERING_FOREST",
+                "Whispering Forest",
+                "ADVENTURE",
+                1,
+                []));
+
+        IReadOnlyList<ContentValidationError> errors = WorldEncounterContentValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "HOSTILE_LOCATION_HAS_NO_ENCOUNTERS");
+    }
+
+    [Fact]
+    public void ValidateAllowsSafeLocationWithoutEncounters()
+    {
+        GameContentPackage package = Package(
+            new LocationDefinition(
+                "STARTER_TOWN",
+                "Starter Town",
+                "SAFE",
+                1,
+                []));
+
+        Assert.Empty(WorldEncounterContentValidator.Validate(package));
+    }
+
+    [Fact]
     public void ValidateRejectsSafeMissingAndDuplicateEncounters()
     {
         GameContentPackage package = Package(
