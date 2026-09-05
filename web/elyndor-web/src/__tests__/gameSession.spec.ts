@@ -45,16 +45,30 @@ describe('gameSession', () => {
   })
 
   it('prevents concurrent mutations', async () => {
-    let resolveRequest: ((value: unknown) => void) | undefined
-    vi.spyOn(apiClient, 'request').mockImplementation(() => new Promise((resolve) => (resolveRequest = resolve)))
+    const resolvers: Array<(value: unknown) => void> = []
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(
+      () => new Promise((resolve) => resolvers.push(resolve)),
+    )
     const store = useGameSessionStore()
     const first = store.travel('WHISPERING_FOREST')
     const second = store.travel('DEEP_FOREST')
+
     expect(store.mutationPending).toBe(true)
-    resolveRequest?.({ locationId: 'WHISPERING_FOREST', version: 2 })
-    await Promise.resolve()
-    resolveRequest?.({ accountId: crypto.randomUUID(), character: null, world: null, contentVersion: '0.1.0', balanceVersion: '0.1.0', serverTimeUtc: '2026-08-30T00:00:00Z' })
+    expect(request).toHaveBeenCalledTimes(1)
+
+    resolvers[0]?.({ locationId: 'WHISPERING_FOREST', version: 2 })
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+    resolvers[1]?.({
+      accountId: crypto.randomUUID(),
+      character: null,
+      world: null,
+      contentVersion: '0.1.0',
+      balanceVersion: '0.1.0',
+      serverTimeUtc: '2026-08-30T00:00:00Z',
+    })
+
     await Promise.all([first, second])
+    expect(request).toHaveBeenCalledTimes(2)
   })
 
   it('reuses the travel request id after a lost response', async () => {
