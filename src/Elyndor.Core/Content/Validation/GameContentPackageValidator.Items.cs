@@ -33,6 +33,9 @@ public static partial class GameContentPackageValidator
             }
 
             IReadOnlyList<ItemDefinition> items = package.Items ?? [];
+            HashSet<string> equipmentSetIds = (package.EquipmentSets ?? [])
+                .Select(set => set.Id)
+                .ToHashSet(StringComparer.Ordinal);
             Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
             HashSet<string> itemClassIds = (package.ClassProfiles ?? [])
                 .Select(profile => profile.Id)
@@ -67,6 +70,13 @@ public static partial class GameContentPackageValidator
                         $"Item '{item.Id}' contains an invalid equipment category shape."));
                 }
 
+                if (!string.IsNullOrWhiteSpace(item.SetId)
+                    && !equipmentSetIds.Contains(item.SetId))
+                {
+                    errors.Add(new("MISSING_ITEM_SET_REFERENCE", path,
+                        $"Item '{item.Id}' references missing equipment set '{item.SetId}'."));
+                }
+
                 bool negativeStats = item.Stats.Strength < 0
                     || item.Stats.Agility < 0
                     || item.Stats.Intellect < 0
@@ -74,10 +84,12 @@ public static partial class GameContentPackageValidator
                 bool invalidTypeShape = item.Type switch
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
-                        || item.Stats != new PrimaryStats(0, 0, 0, 0),
-                    ItemType.Equipment => item.Stackable || item.MaxStack != 1 || item.Slot is null,
+                        || HasEquipmentModifiers(item),
+                    ItemType.Equipment => item.Stackable || item.MaxStack != 1 || item.Slot is null
+                        || item.HealAmount != 0 || item.ConsumableCooldownSeconds != 0
+                        || item.WeaponBaseAttackIntervalSeconds is <= 0,
                     ItemType.Consumable => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
-                        || item.Stats != new PrimaryStats(0, 0, 0, 0)
+                        || HasEquipmentModifiers(item)
                         || item.HealAmount <= 0 || item.ConsumableCooldownSeconds <= 0,
                     _ => true
                 };
@@ -150,15 +162,36 @@ public static partial class GameContentPackageValidator
         private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>
             item.Slot switch
             {
-                EquipmentSlot.Weapon =>
+                EquipmentSlot.Weapon or EquipmentSlot.MainHand or EquipmentSlot.OffHand =>
                     EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                     && item.ArmorCategory is null,
-                EquipmentSlot.Head or EquipmentSlot.Chest or EquipmentSlot.Legs or EquipmentSlot.Boots =>
+                EquipmentSlot.Head or EquipmentSlot.Chest or EquipmentSlot.Hands
+                    or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
                     && item.WeaponCategory is null,
-                EquipmentSlot.Accessory =>
+                EquipmentSlot.Accessory or EquipmentSlot.Cloak or EquipmentSlot.Amulet
+                    or EquipmentSlot.Ring1 or EquipmentSlot.Ring2 =>
                     item.WeaponCategory is null && item.ArmorCategory is null,
                 _ => false
             };
+
+        private static bool HasEquipmentModifiers(ItemDefinition item) =>
+            item.Stats != new PrimaryStats(0, 0, 0, 0)
+            || item.SetId is not null
+            || item.WeaponBaseAttackIntervalSeconds is not null
+            || item.AttackSpeedPercent != 0
+            || item.DodgePercent != 0
+            || item.AllowedClassIds is { Count: > 0 }
+            || item.MaxHpFlat != 0
+            || item.AttackPowerFlat != 0
+            || item.SpellPowerFlat != 0
+            || item.CriticalChancePercent != 0
+            || item.CriticalDamagePercent != 0
+            || item.AccuracyPercent != 0
+            || item.ArmorFlat != 0
+            || item.MagicResistanceFlat != 0
+            || item.ArmorPenetrationPercent != 0
+            || item.MagicPenetrationPercent != 0
+            || item.MaxResourceFlat != 0;
 
 }

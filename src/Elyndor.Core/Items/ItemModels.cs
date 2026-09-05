@@ -13,15 +13,29 @@ public enum ItemRarity
 {
     Common,
     Uncommon,
-    Rare
+    Rare,
+    Epic,
+    Legendary,
+    Unique
 }
 
 public enum EquipmentSlot
 {
-    Weapon,
+    // Modern canonical slots.
+    MainHand,
+    OffHand,
     Head,
     Chest,
+    Hands,
     Legs,
+    Feet,
+    Cloak,
+    Amulet,
+    Ring1,
+    Ring2,
+
+    // Legacy slots kept during content migration.
+    Weapon,
     Boots,
     Accessory
 }
@@ -91,12 +105,36 @@ public sealed record ItemDefinition(
     int SellPriceGold = 0,
     string? WeaponCategory = null,
     string? ArmorCategory = null,
-    IReadOnlyList<string>? AllowedClassIds = null);
+    IReadOnlyList<string>? AllowedClassIds = null,
+    decimal MaxHpFlat = 0,
+    decimal AttackPowerFlat = 0,
+    decimal SpellPowerFlat = 0,
+    decimal CriticalChancePercent = 0,
+    decimal CriticalDamagePercent = 0,
+    decimal AccuracyPercent = 0,
+    decimal ArmorFlat = 0,
+    decimal MagicResistanceFlat = 0,
+    decimal ArmorPenetrationPercent = 0,
+    decimal MagicPenetrationPercent = 0,
+    decimal MaxResourceFlat = 0,
+    string? IconId = null,
+    string? AppearanceProfileId = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
     decimal AttackSpeedPercent = 0,
-    decimal DodgePercent = 0);
+    decimal DodgePercent = 0,
+    decimal MaxHpFlat = 0,
+    decimal AttackPowerFlat = 0,
+    decimal SpellPowerFlat = 0,
+    decimal CriticalChancePercent = 0,
+    decimal CriticalDamagePercent = 0,
+    decimal AccuracyPercent = 0,
+    decimal ArmorFlat = 0,
+    decimal MagicResistanceFlat = 0,
+    decimal ArmorPenetrationPercent = 0,
+    decimal MagicPenetrationPercent = 0,
+    decimal MaxResourceFlat = 0);
 
 public sealed record EquipmentSetDefinition(
     string Id,
