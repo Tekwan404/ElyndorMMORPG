@@ -81,7 +81,8 @@ public static class ContentAdminEndpoints
                         request.Iterations,
                         request.Seed,
                         request.MaxDurationSeconds,
-                        request.AbilityPriority),
+                        request.AbilityPriority,
+                        request.SelectedTalentRanks),
                     cancellationToken);
 
             return Results.Ok(new ContentAdminSimulationResponse(

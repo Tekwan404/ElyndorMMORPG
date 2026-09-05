@@ -76,7 +76,8 @@ public sealed record ContentAdminSimulationRequest(
     int Iterations,
     int Seed,
     int MaxDurationSeconds,
-    IReadOnlyList<string>? AbilityPriority = null);
+    IReadOnlyList<string>? AbilityPriority = null,
+    IReadOnlyDictionary<string, int>? SelectedTalentRanks = null);
 
 public sealed record ContentAdminSimulationDamageSourceResponse(
     string DefinitionId,

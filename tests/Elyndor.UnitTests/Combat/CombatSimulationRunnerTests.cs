@@ -5,6 +5,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Combat.Simulation;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Combat;
 
@@ -32,16 +33,30 @@ public sealed class CombatSimulationRunnerTests
     }
 
     [Fact]
-    public void UnlockLevelChangesDefaultSimulationAbilitySet()
+    public void TalentSelectionControlsActiveSkillAvailability()
     {
         GameContentPackage package = CreatePackage();
-        CombatSimulationResult levelOne = new CombatSimulationRunner(package).Run(
-            new CombatSimulationScenario("WARRIOR", 1, "WOLF", 1, 1, 10));
-        CombatSimulationResult levelFive = new CombatSimulationRunner(package).Run(
+        CombatSimulationResult withoutTalent = new CombatSimulationRunner(package).Run(
             new CombatSimulationScenario("WARRIOR", 5, "WOLF", 1, 1, 10));
+        CombatSimulationResult withTalent = new CombatSimulationRunner(package).Run(
+            new CombatSimulationScenario(
+                "WARRIOR",
+                5,
+                "WOLF",
+                1,
+                1,
+                10,
+                SelectedTalentRanks: new Dictionary<string, int>
+                {
+                    ["B-2-2"] = 1
+                }));
 
-        Assert.DoesNotContain(levelOne.DamageSources, source => source.DefinitionId == "HEAVY_BLOW");
-        Assert.Contains(levelFive.DamageSources, source => source.DefinitionId == "HEAVY_BLOW");
+        Assert.DoesNotContain(
+            withoutTalent.DamageSources,
+            source => source.DefinitionId == "HEAVY_BLOW");
+        Assert.Contains(
+            withTalent.DamageSources,
+            source => source.DefinitionId == "HEAVY_BLOW");
     }
 
     private static GameContentPackage CreatePackage()
@@ -102,8 +117,8 @@ public sealed class CombatSimulationRunnerTests
                     ["ONE_HAND_SWORD"],
                     ["HEAVY"],
                     "Simulation warrior",
-                    StartingAbilityIds: ["STRIKE"],
-                    AbilityUnlocks: [new AbilityUnlockDefinition("HEAVY_BLOW", 2)],
+                    StartingAbilityIds: [],
+                    AbilityUnlocks: [],
                     CombatAutoAttack: new AutoAttackProfile(
                         TimeSpan.FromSeconds(2),
                         2,
@@ -132,6 +147,35 @@ public sealed class CombatSimulationRunnerTests
                 new ResourceProfile("RAGE", 100, 0, 0, 0, 0, 5, 5)
             ],
             Abilities: [strike, heavy],
+            TalentTrees:
+            [
+                new TalentTreeDefinition(
+                    "WARRIOR_TREE",
+                    "WARRIOR",
+                    60,
+                    1,
+                    [new TalentBranchDefinition("BERSERKER", "Berserker", "Damage", 1)],
+                    [
+                        new TalentDefinition(
+                            "B-2-2",
+                            "BERSERKER",
+                            1,
+                            0,
+                            "Heavy Blow",
+                            "Heavy Blow",
+                            1,
+                            [],
+                            "Unlocks Heavy Blow.",
+                            Modifiers:
+                            [
+                                new TalentModifierDefinition(
+                                    TalentModifierType.AbilityModifier,
+                                    TalentModifierKeys.UnlockAbility,
+                                    [1],
+                                    "HEAVY_BLOW")
+                            ])
+                    ])
+            ],
             Monsters:
             [
                 new MonsterDefinition(

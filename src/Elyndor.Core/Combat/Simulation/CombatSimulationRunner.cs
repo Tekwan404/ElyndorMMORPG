@@ -15,7 +15,8 @@ public sealed record CombatSimulationScenario(
     int Iterations = 100,
     int Seed = 1337,
     int MaxDurationSeconds = 90,
-    IReadOnlyList<string>? AbilityPriority = null);
+    IReadOnlyList<string>? AbilityPriority = null,
+    IReadOnlyDictionary<string, int>? SelectedTalentRanks = null);
 
 public sealed record CombatSimulationDamageSource(
     string DefinitionId,
@@ -96,20 +97,35 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 "simulation_resource_missing",
                 $"Resource '{classProfile.ResourceProfileId}' does not exist.");
 
+        ResolvedTalentModifiers talentModifiers =
+            ResolveTalentModifiers(scenario);
+        TalentPrimaryStatPercentages talentPercentages = new(
+            talentModifiers.Stats.StrengthPercent,
+            0,
+            0,
+            talentModifiers.Stats.StaminaPercent);
         CharacterStats playerStats =
             new CharacterStatCalculator(formula, classProfiles)
-                .Calculate(scenario.ClassId, scenario.PlayerLevel);
+                .Calculate(
+                    scenario.ClassId,
+                    scenario.PlayerLevel,
+                    CharacterStatInputs.Empty with
+                    {
+                        TalentPercentages = talentPercentages,
+                        TalentDerived = talentModifiers.Stats
+                    });
         ResourceProfile resource = CharacterResourceProfileResolver.Resolve(
             baseResource,
             content.ResourceScaling,
-            playerStats);
+            playerStats,
+            talentModifiers.Stats.MaxResourceFlat);
 
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
-        string[] knownAbilityIds = ResolveKnownAbilityIds(
-            classProfile,
-            scenario.PlayerLevel,
-            abilities);
+        string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
+            .Where(abilities.ContainsKey)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
         AbilityDefinition[] abilityPriority = ResolveAbilityPriority(
             scenario.AbilityPriority,
             knownAbilityIds,
@@ -139,6 +155,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 abilities,
                 knownAbilityIds,
                 abilityPriority,
+                talentModifiers,
                 cancellationToken);
 
             switch (run.Status)
@@ -211,6 +228,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         Dictionary<string, AbilityDefinition> abilities,
         IReadOnlyList<string> knownAbilityIds,
         IReadOnlyList<AbilityDefinition> abilityPriority,
+        ResolvedTalentModifiers talentModifiers,
         CancellationToken cancellationToken)
     {
         Guid playerId = Guid.NewGuid();
@@ -267,7 +285,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             enemy,
             abilities,
             enemyAi,
-            ResolvedTalentModifiers.Empty,
+            talentModifiers,
             new SeededSimulationRandom(unchecked(scenario.Seed + iteration * 7919)),
             startedAt,
             content.ContentVersion,
@@ -353,17 +371,41 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             damageByDefinition);
     }
 
-    private static string[] ResolveKnownAbilityIds(
-        ClassProfile classProfile,
-        int level,
-        Dictionary<string, AbilityDefinition> abilities) =>
-        (classProfile.StartingAbilityIds ?? [])
-            .Concat((classProfile.AbilityUnlocks ?? [])
-                .Where(unlock => unlock.UnlockLevel <= level)
-                .Select(unlock => unlock.AbilityId))
-            .Distinct(StringComparer.Ordinal)
-            .Where(abilities.ContainsKey)
-            .ToArray();
+    private ResolvedTalentModifiers ResolveTalentModifiers(
+        CombatSimulationScenario scenario)
+    {
+        IReadOnlyDictionary<string, int> selected =
+            scenario.SelectedTalentRanks
+            ?? new Dictionary<string, int>(StringComparer.Ordinal);
+        if (selected.Count == 0)
+            return ResolvedTalentModifiers.Empty;
+
+        TalentTreeDefinition tree = (content.TalentTrees ?? [])
+            .SingleOrDefault(candidate =>
+                string.Equals(
+                    candidate.ClassId,
+                    scenario.ClassId,
+                    StringComparison.Ordinal))
+            ?? throw Invalid(
+                "simulation_talent_tree_missing",
+                $"Talent tree for class '{scenario.ClassId}' does not exist.");
+
+        Dictionary<string, TalentDefinition> nodes =
+            tree.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        foreach ((string talentId, int rank) in selected)
+        {
+            if (!nodes.TryGetValue(talentId, out TalentDefinition? node)
+                || rank < 1
+                || rank > node.MaxRank)
+            {
+                throw Invalid(
+                    "simulation_talent_rank_invalid",
+                    $"Talent '{talentId}' has an invalid simulation rank.");
+            }
+        }
+
+        return TalentModifierResolver.Resolve(tree, selected);
+    }
 
     private static AbilityDefinition[] ResolveAbilityPriority(
         IReadOnlyList<string>? requested,
