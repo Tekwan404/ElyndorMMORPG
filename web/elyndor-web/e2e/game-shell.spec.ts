@@ -22,7 +22,8 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
     path: '../../output/playwright/session-2a-character-creation.png',
     fullPage: true,
   })
-  await page.getByLabel('Имя').fill(characterName())
+  const heroName = characterName()
+  await page.getByLabel('Имя').fill(heroName)
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
@@ -42,7 +43,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   )
   await page.screenshot({ path: '../../output/playwright/session-2a-world.png', fullPage: true })
   await page.getByRole('button', { name: 'Герой' }).click()
-  await expect(page.getByRole('heading', { name: 'Arthas' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: heroName })).toBeVisible()
   await page.getByRole('button', { name: 'Инвентарь' }).click()
   await expect(page.getByRole('heading', { name: 'Рюкзак' })).toBeVisible()
   await expect(page.getByText('Рюкзак пуст')).toBeVisible()
@@ -69,16 +70,19 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 })
 
 async function installMockApiUnlessReal(page: Page): Promise<void> {
-  if (process.env.ELYNDOR_E2E_REAL === 'true') return
-
-  let hasCharacter = false
-  let locationId: keyof typeof locations = 'STARTER_TOWN'
+  // Keep CI independent from telegram.org availability. This only stubs the host
+  // platform bridge; in real mode every Elyndor API call still reaches ASP.NET/PostgreSQL.
   await page.route('https://telegram.org/js/telegram-web-app.js?63', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: 'window.Telegram = { WebApp: { initData: "", ready() {}, expand() {} } };',
     }),
   )
+
+  if (process.env.ELYNDOR_E2E_REAL === 'true') return
+
+  let hasCharacter = false
+  let locationId: keyof typeof locations = 'STARTER_TOWN'
   await page.route('**/api/v1/auth/development', async (route) => {
     if (process.env.ELYNDOR_E2E_LIVE_AUTH === 'true') {
       await route.fulfill({ response: await route.fetch() })
