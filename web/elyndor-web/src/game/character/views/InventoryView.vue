@@ -152,23 +152,30 @@ function rarityRank(rarity: InventoryItem['rarity']): number {
 }
 
 function equippedItemForSlot(item: InventoryItem): InventoryItem | null {
-  const equipped = inventory.value?.equipped
-  if (!equipped || !item.slot) return null
+  const targetSlot = contextualSlot.value !== null && slotsMatch(item, contextualSlot.value)
+    ? contextualSlot.value
+    : item.slot
+  return targetSlot ? equippedItemAt(targetSlot) : null
+}
 
-  if (item.slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
-  if (item.slot === 'OffHand') return equipped.offHand ?? null
-  if (item.slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
-  if (item.slot === 'Head') return equipped.head
-  if (item.slot === 'Chest') return equipped.chest
-  if (item.slot === 'Hands') return equipped.hands ?? null
-  if (item.slot === 'Legs') return equipped.legs
-  if (item.slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
-  if (item.slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
-  if (item.slot === 'Cloak') return equipped.cloak ?? null
-  if (item.slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
-  if (item.slot === 'Ring1') return equipped.ring1 ?? null
-  if (item.slot === 'Ring2') return equipped.ring2 ?? null
-  if (item.slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
+function equippedItemAt(slot: EquipmentSlot): InventoryItem | null {
+  const equipped = inventory.value?.equipped
+  if (!equipped) return null
+
+  if (slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
+  if (slot === 'OffHand') return equipped.offHand ?? null
+  if (slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
+  if (slot === 'Head') return equipped.head
+  if (slot === 'Chest') return equipped.chest
+  if (slot === 'Hands') return equipped.hands ?? null
+  if (slot === 'Legs') return equipped.legs
+  if (slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
+  if (slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
+  if (slot === 'Cloak') return equipped.cloak ?? null
+  if (slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
+  if (slot === 'Ring1') return equipped.ring1 ?? null
+  if (slot === 'Ring2') return equipped.ring2 ?? null
+  if (slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
   return null
 }
 
