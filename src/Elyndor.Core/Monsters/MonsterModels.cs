@@ -9,6 +9,15 @@ public enum MonsterRank
     Boss
 }
 
+public enum MonsterAiState
+{
+    Idle,
+    Engaged,
+    InCombat,
+    Dead,
+    Resetting
+}
+
 public sealed record MonsterDefinition(
     string Id,
     string Name,

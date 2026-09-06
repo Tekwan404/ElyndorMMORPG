@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
@@ -343,6 +344,222 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void MultipleEnemiesAutoAttackOnIndependentActionClocks()
+    {
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 3, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(2), 5, 0, 0));
+
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        CombatEvent[] attacks = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+
+        Assert.Equal(3, attacks.Length);
+        Assert.Equal(
+            [EnemyId, EnemyId, EnemyTwoId],
+            attacks.Select(item => item.SourceActorId));
+        Assert.Equal(
+            [Now.AddSeconds(1), Now.AddSeconds(2), Now.AddSeconds(2)],
+            attacks.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
+    public void MultipleEnemiesUseOwnAiProfilesInEncounterOrder()
+    {
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["BITE"] = EnemyDamageAbility("BITE", 7),
+            ["HOWL"] = EnemyDamageAbility("HOWL", 11)
+        };
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            firstKnownAbilityIds: new HashSet<string>(["BITE"], StringComparer.Ordinal),
+            secondKnownAbilityIds: new HashSet<string>(["HOWL"], StringComparer.Ordinal),
+            firstAi: new MonsterAiProfile("FIRST_AI", ["BITE"]),
+            secondAi: new MonsterAiProfile("SECOND_AI", ["HOWL"]),
+            extraAbilities: abilities);
+
+        session.AdvanceTo(Now.AddSeconds(1));
+
+        CombatEvent[] used = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.AbilityUsed)
+            .ToArray();
+        Assert.Equal(2, used.Length);
+        Assert.Equal([EnemyId, EnemyTwoId], used.Select(item => item.SourceActorId));
+        Assert.Equal(["BITE", "HOWL"], used.Select(item => item.DefinitionId));
+    }
+
+    [Fact]
+    public void SameEnemyAbilityCooldownIsIndependentPerEnemy()
+    {
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["BITE"] = EnemyDamageAbility("BITE", 7) with
+            {
+                Cooldown = TimeSpan.FromSeconds(10)
+            }
+        };
+        HashSet<string> bite = new(["BITE"], StringComparer.Ordinal);
+        MonsterAiProfile biteAi = new("BITE_AI", ["BITE"]);
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            firstKnownAbilityIds: bite,
+            secondKnownAbilityIds: bite,
+            firstAi: biteAi,
+            secondAi: biteAi,
+            extraAbilities: abilities);
+
+        session.AdvanceTo(Now.AddSeconds(1));
+
+        Assert.Equal(2, session.GetEventsAfter(0).Count(item =>
+            item.Type == CombatEventType.AbilityUsed
+            && item.DefinitionId == "BITE"));
+    }
+
+    [Fact]
+    public void EnemyCastBlocksOnlyThatEnemyWhileOthersKeepActing()
+    {
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["LONG_CAST"] = EnemyDamageAbility("LONG_CAST", 9) with
+            {
+                Type = AbilityType.Casted,
+                CastTime = TimeSpan.FromSeconds(2),
+                Cooldown = TimeSpan.FromSeconds(10)
+            }
+        };
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 4, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 2, 0, 0),
+            firstKnownAbilityIds: new HashSet<string>(["LONG_CAST"], StringComparer.Ordinal),
+            firstAi: new MonsterAiProfile("CASTER_AI", ["LONG_CAST"]),
+            extraAbilities: abilities);
+
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        Assert.DoesNotContain(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == EnemyId);
+        Assert.Equal(2, session.GetEventsAfter(0).Count(item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == EnemyTwoId
+            && item.DefinitionId == "AUTO_ATTACK"));
+
+        session.AdvanceTo(Now.AddSeconds(3));
+
+        Assert.Contains(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == EnemyId
+            && item.DefinitionId == "LONG_CAST"
+            && item.OccurredAtUtc == Now.AddSeconds(3));
+    }
+
+    [Fact]
+    public void StunBlocksOnlyAffectedEnemyAiAndFallbackAutoAttack()
+    {
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 3, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 5, 0, 0),
+            firstStunDuration: TimeSpan.FromSeconds(2));
+
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        CombatEvent[] firstAttacks = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.SourceActorId == EnemyId
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+        CombatEvent[] secondAttacks = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.SourceActorId == EnemyTwoId
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+
+        CombatEvent firstAfterStun = Assert.Single(firstAttacks);
+        Assert.Equal(Now.AddSeconds(2), firstAfterStun.OccurredAtUtc);
+        Assert.Equal(2, secondAttacks.Length);
+        Assert.Equal(
+            [Now.AddSeconds(1), Now.AddSeconds(2)],
+            secondAttacks.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
+    public void EnemySelfAbilityTargetsItsOwnActor()
+    {
+        AbilityDefinition selfBuff = new(
+            "SELF_BUFF",
+            AbilityType.Instant,
+            AbilityTargetType.Self,
+            0,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ApplyEffect,
+                    Effect: new EffectDefinition(
+                        "SELF_BUFF_EFFECT",
+                        EffectKind.Buff,
+                        TimeSpan.FromSeconds(5),
+                        1,
+                        EffectStackPolicy.Replace,
+                        1))
+            ]);
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(10), 1, 0, 0),
+            firstKnownAbilityIds: new HashSet<string>(["SELF_BUFF"], StringComparer.Ordinal),
+            firstAi: new MonsterAiProfile("SELF_BUFF_AI", ["SELF_BUFF"]),
+            extraAbilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                ["SELF_BUFF"] = selfBuff
+            });
+
+        session.AdvanceTo(Now.AddSeconds(1));
+
+        CombatActorSnapshot first = session.Snapshot().Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyId);
+        Assert.Contains(first.Effects, effect => effect.Id == "SELF_BUFF_EFFECT");
+        Assert.Contains(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.AbilityUsed
+            && item.SourceActorId == EnemyId
+            && item.TargetActorId == EnemyId
+            && item.DefinitionId == "SELF_BUFF");
+    }
+
+    [Fact]
+    public void KillingOneEnemyStopsOnlyItsAiRuntime()
+    {
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 3, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 5, 0, 0),
+            firstEnemyHp: 1);
+
+        CombatCommandResult killed = session.Handle(
+            new UseAbilityCommand("kill-ai-one", "STRIKE", EnemyId),
+            Now);
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        Assert.True(killed.Succeeded);
+        Assert.DoesNotContain(session.GetEventsAfter(killed.Snapshot.Sequence), item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == EnemyId);
+        Assert.Equal(2, session.GetEventsAfter(killed.Snapshot.Sequence).Count(item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == EnemyTwoId
+            && item.DefinitionId == "AUTO_ATTACK"));
+    }
+
+    [Fact]
     public void SingleEnemyAbilityUsesSelectedTargetInsteadOfCallerTarget()
     {
         CombatSession session = CreateTargetingSession(100, 100, 100);
@@ -512,6 +729,137 @@ public sealed class CombatSessionTests
         Assert.Single(results, result => result.ErrorCode == CombatErrorCodes.DuplicateCommand);
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
     }
+
+    private static CombatSession CreateMultiEnemyAiSession(
+        AutoAttackProfile firstAutoAttack,
+        AutoAttackProfile secondAutoAttack,
+        IReadOnlySet<string>? firstKnownAbilityIds = null,
+        IReadOnlySet<string>? secondKnownAbilityIds = null,
+        MonsterAiProfile? firstAi = null,
+        MonsterAiProfile? secondAi = null,
+        IReadOnlyDictionary<string, AbilityDefinition>? extraAbilities = null,
+        decimal firstEnemyHp = 100,
+        decimal secondEnemyHp = 100,
+        TimeSpan? firstStunDuration = null)
+    {
+        CombatStats playerStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 0, MagicResistance: 0,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 0, SpellPower: 0);
+        CombatStats enemyStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 0, MagicResistance: 0,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 0, SpellPower: 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(PlayerId, 1_000, 1_000, 100, 100, playerStats),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatParticipantDefinition firstEnemy = new(
+            new CombatActorState(EnemyId, firstEnemyHp, firstEnemyHp, 0, 0, enemyStats),
+            CombatActorKind.Monster,
+            "FIRST_ENEMY",
+            "First Enemy",
+            "NONE",
+            firstAutoAttack,
+            firstKnownAbilityIds ?? new HashSet<string>(StringComparer.Ordinal));
+        CombatParticipantDefinition secondEnemy = new(
+            new CombatActorState(EnemyTwoId, secondEnemyHp, secondEnemyHp, 0, 0, enemyStats),
+            CombatActorKind.Monster,
+            "SECOND_ENEMY",
+            "Second Enemy",
+            "NONE",
+            secondAutoAttack,
+            secondKnownAbilityIds ?? new HashSet<string>(StringComparer.Ordinal));
+
+        if (firstStunDuration is { } stunDuration)
+        {
+            EffectEngine.Apply(
+                firstEnemy.Actor,
+                PlayerId,
+                new EffectDefinition(
+                    "TEST_AI_STUN",
+                    EffectKind.Stun,
+                    stunDuration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    0),
+                Now);
+        }
+
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["STRIKE"] = new(
+                "STRIKE",
+                AbilityType.Instant,
+                AbilityTargetType.SingleEnemy,
+                0,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                false,
+                GlobalCooldownCategory.None,
+                false,
+                "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 100,
+                        DamageType: DamageType.True,
+                        CanMiss: false,
+                        CanCrit: false,
+                        CanDodge: false)
+                ])
+        };
+        foreach ((string id, AbilityDefinition ability) in
+                 extraAbilities ?? new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal))
+        {
+            abilities[id] = ability;
+        }
+
+        Dictionary<Guid, MonsterAiProfile> aiProfiles = new()
+        {
+            [EnemyId] = firstAi ?? new MonsterAiProfile("FIRST_PASSIVE_AI", []),
+            [EnemyTwoId] = secondAi ?? new MonsterAiProfile("SECOND_PASSIVE_AI", [])
+        };
+
+        return new CombatSession(
+            SessionId,
+            player,
+            [firstEnemy, secondEnemy],
+            abilities,
+            aiProfiles,
+            ResolvedTalentModifiers.Empty,
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 300).ToArray()),
+            Now);
+    }
+
+    private static AbilityDefinition EnemyDamageAbility(string id, decimal damage) =>
+        new(
+            id,
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage,
+                    Amount: damage,
+                    DamageType: DamageType.True,
+                    CanMiss: false,
+                    CanCrit: false,
+                    CanDodge: false)
+            ]);
 
     private static CombatSession CreateTargetingSession(
         decimal firstEnemyHp,
