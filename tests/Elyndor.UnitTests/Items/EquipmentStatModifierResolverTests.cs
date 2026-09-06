@@ -78,6 +78,35 @@ public sealed class EquipmentStatModifierResolverTests
         Assert.Equal(12m, result.WeaponDamageMax);
     }
 
+    [Fact]
+    public void ResolvesShieldBlockProfileFromOffHand()
+    {
+        ItemDefinition shield = new(
+            "TEST_SHIELD",
+            "Test Shield",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.OffHand,
+            new PrimaryStats(0, 0, 0, 1),
+            "Test",
+            ArmorFlat: 6,
+            OffHandCategory: EquipmentCategoryIds.Shield,
+            BlockChancePercent: 15,
+            BlockValueMin: 3,
+            BlockValueMax: 6);
+
+        EquipmentModifierSummary result =
+            EquipmentStatModifierResolver.ResolveDetailed([shield], []);
+
+        Assert.Equal(6m, result.ArmorFlat);
+        Assert.Equal(15m, result.BlockChancePercent);
+        Assert.Equal(3m, result.BlockValueMin);
+        Assert.Equal(6m, result.BlockValueMax);
+    }
+
     private static ItemDefinition Item(
         string id,
         EquipmentSlot slot,
@@ -106,6 +135,6 @@ public sealed class EquipmentStatModifierResolverTests
             DodgePercent: dodgePercent,
             MaxResourceFlat: maxResourceFlat,
             ArmorCategory: slot is EquipmentSlot.Chest or EquipmentSlot.Hands
-                ? EquipmentCategoryIds.Medium
+                ? EquipmentCategoryIds.Leather
                 : null);
 }
