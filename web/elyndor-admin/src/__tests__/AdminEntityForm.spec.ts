@@ -142,7 +142,7 @@ describe('AdminEntityForm', () => {
       },
     })
 
-    expect(wrapper.get('[data-testid="consumable-editor"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="consumable-editor"]').exists()).toBe(true)
     expect(wrapper.findAll('[data-testid="consumable-action"]')).toHaveLength(1)
 
     await wrapper.get('[data-testid="consumable-action-type-0"]').setValue('RestoreResource')
