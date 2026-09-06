@@ -422,6 +422,21 @@ Victory наступает только после смерти всех enemies
 
 Target selection не удаляет остальных enemies из runtime: эффекты и индивидуальный death state продолжают существовать независимо.
 
+### AoE / Targeting V2
+
+Player ability targeting разрешается внутри `CombatSession`:
+
+- `SINGLE_ENEMY` использует текущий живой `SelectedTargetActorId`; caller-provided target id не может подменить server-selected target;
+- `ALL_ENEMIES_IN_COMBAT` выбирает всех живых enemies в deterministic encounter order, либо первые `TargetCount`, если cap задан;
+- `N_ENEMIES_IN_COMBAT` выбирает до `TargetCount` живых enemies в deterministic encounter order;
+- dead actors никогда не попадают в новый offensive target set.
+
+Resolved target set передаётся в `AbilityEngine` явно. `AbilityEngine` не считает произвольного runtime actor врагом только потому, что это не caster.
+
+Одна AoE ability activation расходует resource и запускает GCD/cooldown ровно один раз. Каждая цель получает собственные Damage/Effect events и target-specific talent/effect modifiers.
+
+Если один AoE resolution убивает несколько enemies, death lifecycle обрабатывает каждый `ActorDied`/`EnemyKilled` в deterministic event order. Terminal `Victory` и единственный `CombatEnded` происходят только после обработки последней смерти этой пачки.
+
 На текущем переходном этапе primary/first enemy сохраняет legacy AI loop. Независимые timers/cooldowns/casts/AI state каждого enemy реализуются отдельным этапом Multi-enemy AI и не должны смешиваться с этим structural refactor.
 
 

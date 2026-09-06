@@ -19,9 +19,11 @@ public sealed class BerserkerCombatSessionTests
         Guid.Parse("22000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyId =
         Guid.Parse("33000000-0000-0000-0000-000000000001");
+    private static readonly Guid EnemyTwoId =
+        Guid.Parse("44000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public void LowHealthBerserkerTalentsBecomeLiveConditionalEffects()
+    public void LowHealthBerserkerSelfTalentsBecomeLiveConditionalEffects()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook(
@@ -32,10 +34,7 @@ public sealed class BerserkerCombatSessionTests
                 secondaryValue: 2, threshold: 50),
             Hook(
                 "B-7-2", TalentModifierKeys.OnHpThreshold, 4, 12,
-                threshold: 25),
-            Hook(
-                "B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10,
-                threshold: 20));
+                threshold: 25));
         TestFight fight = CreateFight(
             talents,
             playerHp: 20,
@@ -52,7 +51,40 @@ public sealed class BerserkerCombatSessionTests
             effect.Id == "BERSERKER_RECKLESSNESS_OUTGOING");
         Assert.Contains(snapshot.Player.Effects, effect =>
             effect.Id == "BERSERKER_DEATH_STRENGTH_CRITICAL");
-        Assert.Contains(snapshot.Player.Effects, effect =>
+    }
+
+    [Fact]
+    public void ExecutionerAppliesPerTargetInsideWhirlwind()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(
+                "B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10,
+                threshold: 20));
+        TestFight fight = CreateFight(
+            talents,
+            enemyHp: 1_000,
+            enemyMaxHp: 10_000,
+            playerResource: 100,
+            includeSecondEnemy: true,
+            secondEnemyHp: 10_000,
+            secondEnemyMaxHp: 10_000);
+        fight.Session.AdvanceTo(Now);
+
+        CombatCommandResult result = fight.Session.Handle(
+            new UseAbilityCommand("executioner-aoe", "WHIRLWIND", Guid.Empty),
+            Now.AddMilliseconds(1));
+
+        CombatEvent lowHealthHit = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.DefinitionId == "WHIRLWIND"
+            && item.TargetActorId == EnemyId);
+        CombatEvent fullHealthHit = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.DefinitionId == "WHIRLWIND"
+            && item.TargetActorId == EnemyTwoId);
+
+        Assert.True(lowHealthHit.Amount > fullHealthHit.Amount);
+        Assert.DoesNotContain(result.Snapshot.Player.Effects, effect =>
             effect.Id == "BERSERKER_EXECUTIONER");
     }
 
@@ -244,6 +276,39 @@ public sealed class BerserkerCombatSessionTests
             effect.Id == "BERSERKER_RENDING_RAMPAGE");
     }
 
+
+    [Fact]
+    public void WhirlwindTalentComponentsApplyToEveryHitEnemy()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(
+                "B-7-3", TalentModifierKeys.OnAbilityUsed, 2, 8, "WHIRLWIND",
+                duration: TimeSpan.FromSeconds(6),
+                tickInterval: TimeSpan.FromSeconds(1)),
+            Hook("B-8-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "WHIRLWIND"));
+        TestFight fight = CreateFight(
+            talents,
+            enemyHp: 10_000,
+            playerResource: 100,
+            includeSecondEnemy: true);
+        fight.Session.AdvanceTo(Now);
+
+        CombatCommandResult result = fight.Session.Handle(
+            new UseAbilityCommand("multi-whirlwind", "WHIRLWIND", Guid.Empty),
+            Now.AddMilliseconds(1));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(
+            [EnemyId, EnemyTwoId],
+            result.Events
+                .Where(item => item.Type == CombatEventType.DamageDealt
+                    && item.DefinitionId == "B-8-1")
+                .Select(item => item.TargetActorId));
+        Assert.All(result.Snapshot.Enemies!, enemy =>
+            Assert.Contains(
+                enemy.Effects,
+                effect => effect.Id == "BERSERKER_RENDING_RAMPAGE"));
+    }
 
     [Fact]
     public void CriticalWildStrikeAppliesBloodTrailAndCriticalAutoAppliesVulnerability()
@@ -505,7 +570,10 @@ public sealed class BerserkerCombatSessionTests
         decimal enemyAutoDamage = 0,
         TimeSpan? enemyAutoAttackInterval = null,
         decimal[]? randomValues = null,
-        AutoAttackProfile? offHandAutoAttack = null)
+        AutoAttackProfile? offHandAutoAttack = null,
+        bool includeSecondEnemy = false,
+        decimal? secondEnemyHp = null,
+        decimal? secondEnemyMaxHp = null)
     {
         CombatStats playerStats = new(
             Level: 20,
@@ -568,20 +636,49 @@ public sealed class BerserkerCombatSessionTests
                 0,
                 0),
             new HashSet<string>(StringComparer.Ordinal));
+        decimal secondHp = secondEnemyHp ?? enemyHp;
+        CombatParticipantDefinition secondEnemy = new(
+            new CombatActorState(
+                EnemyTwoId,
+                secondEnemyMaxHp ?? secondHp,
+                secondHp,
+                0,
+                0,
+                enemyStats),
+            CombatActorKind.Monster,
+            "WOLF_ALPHA",
+            "Alpha Wolf",
+            "NONE",
+            new AutoAttackProfile(
+                enemyAutoAttackInterval ?? TimeSpan.FromSeconds(10),
+                enemyAutoDamage,
+                0,
+                0),
+            new HashSet<string>(StringComparer.Ordinal));
         Dictionary<string, AbilityDefinition> abilities = CreateAbilities();
         MonsterAiProfile ai = new("PASSIVE_TEST_AI", []);
         decimal[] rng = randomValues
             ?? Enumerable.Repeat(0.99m, 200).ToArray();
 
-        CombatSession session = new(
-            SessionId,
-            player,
-            enemy,
-            abilities,
-            ai,
-            talents,
-            new SequenceGameRandom(rng),
-            Now);
+        CombatSession session = includeSecondEnemy
+            ? new CombatSession(
+                SessionId,
+                player,
+                [enemy, secondEnemy],
+                abilities,
+                ai,
+                talents,
+                new SequenceGameRandom(rng),
+                Now)
+            : new CombatSession(
+                SessionId,
+                player,
+                enemy,
+                abilities,
+                ai,
+                talents,
+                new SequenceGameRandom(rng),
+                Now);
         return new TestFight(session, playerActor, enemyActor);
     }
 

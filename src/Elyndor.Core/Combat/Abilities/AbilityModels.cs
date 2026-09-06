@@ -16,6 +16,7 @@ public enum AbilityTargetType
     Owner
 }
 public enum GlobalCooldownCategory { None, Reduced, Standard }
+public enum AbilityTargetSelectorProfile { EncounterOrder }
 public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Taunt }
 public enum AbilityErrorCode
 {
@@ -60,7 +61,9 @@ public sealed record AbilityDefinition(
     decimal MagicPenetrationBonus = 0,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    int TargetCount = 0,
+    AbilityTargetSelectorProfile TargetSelectorProfile = AbilityTargetSelectorProfile.EncounterOrder);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -75,14 +78,29 @@ public sealed record AbilityActionDefinition(
     decimal ArmorPenetrationBonus = 0,
     decimal SpellPowerCoefficient = 0);
 
-public sealed record AbilityIntent(string CommandId, string AbilityId, Guid TargetId);
+public sealed record AbilityTargetModifier(
+    decimal DamageMultiplier = 1,
+    decimal AccuracyBonus = 0,
+    decimal CriticalChanceBonus = 0,
+    decimal CriticalDamageBonus = 0,
+    decimal ArmorPenetrationBonus = 0,
+    decimal MagicPenetrationBonus = 0);
+
+public sealed record AbilityIntent(
+    string CommandId,
+    string AbilityId,
+    Guid TargetId,
+    IReadOnlyList<Guid>? TargetIds = null,
+    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
 
 public sealed record ActiveCast(
     Guid CastId,
     AbilityDefinition Ability,
     Guid TargetId,
     DateTimeOffset StartedAtUtc,
-    DateTimeOffset ResolvesAtUtc);
+    DateTimeOffset ResolvesAtUtc,
+    IReadOnlyList<Guid>? TargetIds = null,
+    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
 
 public sealed record AbilityExecutionResult(
     bool Succeeded,

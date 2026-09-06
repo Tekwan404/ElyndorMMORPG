@@ -57,7 +57,14 @@ public static partial class GameContentPackageValidator
                         "DUPLICATE_ABILITY_ID", path, $"Ability '{ability.Id}' is duplicated."));
                 }
 
+                bool multiEnemyTarget = ability.TargetType is
+                    AbilityTargetType.AllEnemiesInCombat
+                    or AbilityTargetType.NEnemiesInCombat;
                 if (ability.ResourceCost < 0
+                    || ability.TargetCount < 0
+                    || ability.TargetType == AbilityTargetType.NEnemiesInCombat
+                        && ability.TargetCount <= 0
+                    || !multiEnemyTarget && ability.TargetCount != 0
                     || ability.Cooldown < TimeSpan.Zero
                     || ability.CastTime < TimeSpan.Zero
                     || ability.Type == AbilityType.Casted && ability.CastTime <= TimeSpan.Zero

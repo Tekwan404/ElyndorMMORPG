@@ -40,14 +40,29 @@ public static class AbilityEngine
         ];
         StartGcd(runtime, ability, now);
 
+        Guid[] targetIds = ResolveTargetIds(ability, intent);
         if (ability.Type == AbilityType.Casted)
         {
             runtime.ActiveCast = new ActiveCast(
-                Guid.NewGuid(), ability, intent.TargetId, now, now + ability.CastTime);
+                Guid.NewGuid(),
+                ability,
+                targetIds[0],
+                now,
+                now + ability.CastTime,
+                targetIds.ToArray(),
+                intent.TargetModifiers is null
+                    ? null
+                    : new Dictionary<Guid, AbilityTargetModifier>(intent.TargetModifiers));
         }
         else
         {
-            events.AddRange(ResolveActions(runtime, ability, intent.TargetId, now, random));
+            events.AddRange(ResolveActions(
+                runtime,
+                ability,
+                targetIds,
+                intent.TargetModifiers,
+                now,
+                random));
             StartCooldown(runtime, ability, now);
             events.Add(new CombatEvent(CombatEventType.AbilityCompleted, now, runtime.Actor.ActorId, ability.Id));
         }
@@ -76,7 +91,14 @@ public static class AbilityEngine
         runtime.ActiveCast = null;
         StartCooldown(runtime, cast.Ability, now);
         runtime.Version++;
-        List<CombatEvent> events = ResolveActions(runtime, cast.Ability, cast.TargetId, now, random);
+        IReadOnlyList<Guid> targetIds = cast.TargetIds ?? [cast.TargetId];
+        List<CombatEvent> events = ResolveActions(
+            runtime,
+            cast.Ability,
+            targetIds,
+            cast.TargetModifiers,
+            now,
+            random);
         events.Add(new CombatEvent(CombatEventType.AbilityCompleted, now, runtime.Actor.ActorId, cast.Ability.Id));
         return new AbilityExecutionResult(true, AbilityErrorCode.None, events);
     }
@@ -122,20 +144,40 @@ public static class AbilityEngine
         if (ability.TargetType is not (AbilityTargetType.Self
             or AbilityTargetType.SingleAlly
             or AbilityTargetType.SingleEnemy
-            or AbilityTargetType.AllEnemiesInCombat))
+            or AbilityTargetType.AllEnemiesInCombat
+            or AbilityTargetType.NEnemiesInCombat))
             return AbilityErrorCode.InvalidTarget;
-        if (ability.TargetType == AbilityTargetType.Self && intent.TargetId != runtime.Actor.ActorId)
+
+        Guid[] targetIds = ResolveTargetIds(ability, intent);
+        if (targetIds.Length == 0
+            || targetIds.Distinct().Count() != targetIds.Length
+            || targetIds.Any(targetId =>
+                !runtime.Actors.TryGetValue(targetId, out CombatActorState? target)
+                || target.IsDead))
+        {
             return AbilityErrorCode.InvalidTarget;
-        if (!runtime.Actors.TryGetValue(intent.TargetId, out CombatActorState? target) || target.IsDead)
+        }
+
+        if (ability.TargetType == AbilityTargetType.Self
+            && (targetIds.Length != 1 || targetIds[0] != runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
-        if (ability.TargetType == AbilityTargetType.SingleEnemy && intent.TargetId == runtime.Actor.ActorId)
-            return AbilityErrorCode.InvalidTarget;
-        if (ability.TargetType == AbilityTargetType.AllEnemiesInCombat
-            && !runtime.Actors.Keys.Any(actorId => actorId != runtime.Actor.ActorId))
+        if (ability.TargetType == AbilityTargetType.SingleEnemy
+            && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.SingleAlly
-            && intent.TargetId == runtime.Actor.ActorId
-            && !ability.AllowSelfTarget)
+            && (targetIds.Length != 1
+                || targetIds[0] == runtime.Actor.ActorId && !ability.AllowSelfTarget))
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
+            or AbilityTargetType.NEnemiesInCombat
+            && targetIds.Any(targetId => targetId == runtime.Actor.ActorId))
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.AllEnemiesInCombat
+            && ability.TargetCount > 0
+            && targetIds.Length > ability.TargetCount)
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.NEnemiesInCombat
+            && (ability.TargetCount <= 0 || targetIds.Length > ability.TargetCount))
             return AbilityErrorCode.InvalidTarget;
         if (!ability.CanUseWhileStunned
             && EffectEngine.HasControl(runtime.Actor, EffectKind.Stun, now))
@@ -159,7 +201,8 @@ public static class AbilityEngine
     private static List<CombatEvent> ResolveActions(
         CombatRuntimeState runtime,
         AbilityDefinition ability,
-        Guid targetId,
+        IReadOnlyList<Guid> targetIds,
+        IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers,
         DateTimeOffset now,
         IGameRandom? random)
     {
@@ -169,11 +212,12 @@ public static class AbilityEngine
             return events;
         }
 
-        IReadOnlyList<CombatActorState> targets = ability.TargetType == AbilityTargetType.AllEnemiesInCombat
-            ? runtime.Actors.Values.Where(actor => actor.ActorId != runtime.Actor.ActorId).ToArray()
-            : [runtime.Actors[targetId]];
-        foreach (CombatActorState target in targets)
+        foreach (Guid targetId in targetIds)
         {
+            CombatActorState target = runtime.Actors[targetId];
+            AbilityTargetModifier targetModifier =
+                targetModifiers?.GetValueOrDefault(targetId)
+                ?? new AbilityTargetModifier();
             foreach (AbilityActionDefinition action in ability.Actions)
             {
                 switch (action.Type)
@@ -202,12 +246,18 @@ public static class AbilityEngine
                                 CanMiss: action.CanMiss,
                                 CanDodge: action.CanDodge,
                                 CanCrit: action.CanCrit,
-                                DamageMultiplier: ability.DamageMultiplier,
-                                ArmorPenetrationBonus: action.ArmorPenetrationBonus,
-                                AccuracyBonus: ability.AccuracyBonus,
-                                CriticalChanceBonus: ability.CriticalChanceBonus,
-                                CriticalDamageBonus: ability.CriticalDamageBonus,
-                                MagicPenetrationBonus: ability.MagicPenetrationBonus),
+                                DamageMultiplier: ability.DamageMultiplier
+                                    * Math.Max(0, targetModifier.DamageMultiplier),
+                                ArmorPenetrationBonus: action.ArmorPenetrationBonus
+                                    + targetModifier.ArmorPenetrationBonus,
+                                AccuracyBonus: ability.AccuracyBonus
+                                    + targetModifier.AccuracyBonus,
+                                CriticalChanceBonus: ability.CriticalChanceBonus
+                                    + targetModifier.CriticalChanceBonus,
+                                CriticalDamageBonus: ability.CriticalDamageBonus
+                                    + targetModifier.CriticalDamageBonus,
+                                MagicPenetrationBonus: ability.MagicPenetrationBonus
+                                    + targetModifier.MagicPenetrationBonus),
                             random,
                             now);
                         events.AddRange(damage.Events);
@@ -253,6 +303,21 @@ public static class AbilityEngine
         }
 
         return events;
+    }
+
+    private static Guid[] ResolveTargetIds(
+        AbilityDefinition ability,
+        AbilityIntent intent)
+    {
+        if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
+            or AbilityTargetType.NEnemiesInCombat)
+        {
+            return intent.TargetIds?.ToArray() ?? [];
+        }
+
+        return intent.TargetIds is { Count: > 0 }
+            ? intent.TargetIds.ToArray()
+            : [intent.TargetId];
     }
 
     private static void EnsureExecutable(AbilityDefinition ability, IGameRandom? random)

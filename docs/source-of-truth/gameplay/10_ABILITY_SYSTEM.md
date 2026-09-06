@@ -417,6 +417,26 @@ OWNER
 ### N_ENEMIES_IN_COMBAT
 До N hostile targets по явному SelectorProfile.
 
+### Targeting V2 runtime rules
+
+Для `ALL_ENEMIES_IN_COMBAT` и `N_ENEMIES_IN_COMBAT` набор ActorId всегда разрешает server-authoritative `CombatSession`. Клиент не передаёт authoritative AoE target list, а `AbilityEngine` не выводит враждебность из правила «все runtime actors кроме caster».
+
+Текущий deterministic selector profile:
+
+```text
+ENCOUNTER_ORDER
+```
+
+`AbilityDefinition.TargetCount`:
+
+- `ALL_ENEMIES_IN_COMBAT`: `0` означает все живые hostile targets; значение `> 0` является deterministic cap;
+- `N_ENEMIES_IN_COMBAT`: значение обязано быть `> 0` и задаёт максимум выбранных целей;
+- для single/self target types `TargetCount` обязан быть `0`.
+
+Один UseAbility является одной активацией независимо от количества целей: resource cost, GCD и ability cooldown списываются/запускаются один раз. Damage/effect resolution и combat events создаются отдельно для каждой реально выбранной цели в deterministic target order.
+
+Per-target talent/effect modifiers вычисляются относительно конкретного target ActorId, поэтому HP-threshold, personal debuff и другие target-specific условия не могут ошибочно наследоваться от текущей selected target на остальные AoE-цели.
+
 ### SELF_AND_PARTY_MEMBERS_IN_COMBAT
 Caster + валидные члены его Party в том же CombatSession. Случайные союзники encounter не включаются.
 
