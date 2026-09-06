@@ -1,4 +1,6 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.World;
@@ -109,6 +111,89 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task PurchasedEquipmentPersistsDefinitionVersionAndPrimaryStatRolls()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition rollingSword = new(
+            "TEST_ROLLING_SWORD",
+            "Rolling Sword",
+            ItemType.Equipment,
+            ItemRarity.Rare,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(1, 2, 7, 4),
+            "Deterministic item instance roll integration test.",
+            Version: 7,
+            BuyPriceGold: 10,
+            WeaponCategory: EquipmentCategoryIds.OneHandSword,
+            AllowedClassIds: ["WARRIOR"],
+            PrimaryStatRanges: new PrimaryStatRanges(
+                Strength: new ItemStatRange(2, 4),
+                Agility: new ItemStatRange(10, 12),
+                Stamina: new ItemStatRange(4, 8, 2)));
+
+        MerchantDefinition merchant = content.Merchants!
+            .Single(candidate => candidate.Id == MerchantId);
+        content = content with
+        {
+            Items = (content.Items ?? []).Concat([rollingSword]).ToArray(),
+            Merchants = content.Merchants!
+                .Select(candidate => candidate.Id == MerchantId
+                    ? candidate with
+                    {
+                        ItemIds = candidate.ItemIds.Concat([rollingSword.Id]).ToArray()
+                    }
+                    : candidate)
+                .ToArray()
+        };
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = new(
+            context,
+            content,
+            new FixedRandomFactory(),
+            new FixedTimeProvider(Now));
+
+        MerchantOperationResult result = await service.BuyAsync(
+            accountId,
+            MerchantId,
+            rollingSword.Id,
+            1,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem persisted = await verify.CharacterItems
+            .AsNoTracking()
+            .SingleAsync(item =>
+                item.CharacterId == characterId
+                && item.ItemDefinitionId == rollingSword.Id);
+        Assert.Equal(7, persisted.DefinitionVersion);
+        Assert.Equal(2, persisted.RolledStrength);
+        Assert.Equal(12, persisted.RolledAgility);
+        Assert.Equal(7, persisted.RolledIntellect);
+        Assert.Equal(6, persisted.RolledStamina);
+
+        InventoryEquipmentService inventory = new(
+            verify,
+            content,
+            new FixedTimeProvider(Now));
+        InventoryOperationResult inventoryResult = await inventory.GetAsync(
+            accountId,
+            CancellationToken.None);
+        InventoryItemSnapshot item = Assert.Single(
+            inventoryResult.Snapshot!.Items,
+            candidate => candidate.Id == persisted.Id);
+        Assert.Equal(new PrimaryStats(2, 12, 7, 6), item.EffectiveStats);
+    }
+
+    [Fact]
     public async Task LockedMaterialCannotBeSold()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
@@ -204,6 +289,12 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     {
         var content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
         return new MerchantService(context, content, new FixedTimeProvider(Now));
+    }
+
+    private sealed class FixedRandomFactory : IGameRandomFactory
+    {
+        public IGameRandom Create() =>
+            new SequenceGameRandom(0m, 0.999m, 0.5m);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
