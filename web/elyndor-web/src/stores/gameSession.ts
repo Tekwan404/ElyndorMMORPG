@@ -109,6 +109,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function acceptContract(contractId: string): Promise<void> {
+    await mutate('/api/v1/world/contracts/accept', { contractId })
+  }
+
   async function explore(): Promise<WorldEncounter | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
@@ -299,6 +303,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     start,
     createCharacter,
     travel,
+    acceptContract,
     explore,
     equip,
     unequip,
