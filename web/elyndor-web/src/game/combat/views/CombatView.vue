@@ -146,7 +146,7 @@ const logEntries = computed<CombatLogEntry[]>(() => {
     entries.push({
       key: event.sequence,
       side,
-      actor: actorLabel(side),
+      actor: actorLabel(side, event),
       text: eventText(event, critical),
       detail: resourceEvent
         ? `${resourceEvent.amount > 0 ? '+' : ''}${Math.round(resourceEvent.amount * 10) / 10} ${resourceName.value.toLowerCase()} · ${abilityName(resourceEvent.definitionId)}`
@@ -204,24 +204,32 @@ function effectLabel(effect: CombatEffectSnapshot): string {
 
 function eventSide(event: CombatEvent): LogSide {
   const current = snapshot.value
-  if (!current || ['CombatStarted', 'CombatEnded', 'ActorDied', 'EnemyKilled'].includes(event.type)) {
+  if (!current || ['CombatStarted', 'CombatEnded', 'ActorDied', 'EnemyKilled', 'TargetChanged'].includes(event.type)) {
     return 'system'
   }
   const source = event.sourceActorId ?? event.actorId
   if (source === current.player.actorId) return 'player'
-  if (source === current.enemy.actorId) return 'enemy'
+  if (combatEnemies.value.some((enemy) => enemy.actorId === source)) return 'enemy'
   return 'system'
 }
 
-function actorLabel(side: LogSide): string {
+function actorLabel(side: LogSide, event?: CombatEvent): string {
   if (side === 'player') return 'ВЫ'
-  if (side === 'enemy') return enemyPresentation.value?.name.toUpperCase() ?? 'ВРАГ'
+  if (side === 'enemy') {
+    const source = event?.sourceActorId ?? event?.actorId
+    return combatEnemies.value.find((enemy) => enemy.actorId === source)?.name.toUpperCase()
+      ?? enemyPresentation.value?.name.toUpperCase()
+      ?? 'ВРАГ'
+  }
   return 'СИСТЕМА'
 }
 
 function eventText(event: CombatEvent, critical = false): string {
   const definition = abilityName(event.definitionId)
   const enemyName = enemyPresentation.value?.name ?? 'Противник'
+  const eventEnemy = combatEnemies.value.find((enemy) =>
+    enemy.actorId === (event.targetActorId ?? event.actorId),
+  )
   switch (event.type) {
     case 'CombatStarted':
       return isTraining.value ? 'Тренировка началась' : `Бой с ${enemyName} начался`
@@ -245,10 +253,14 @@ function eventText(event: CombatEvent, critical = false): string {
       return `${definition} · +${Math.round(event.amount)} здоровья`
     case 'TauntApplied':
       return `Провокация · ${definition}`
-    case 'ActorDied':
-      return event.actorId === snapshot.value?.enemy.actorId ? `${enemyName} повержен` : 'Вы повержены'
+    case 'ActorDied': {
+      const deadEnemy = combatEnemies.value.find((enemy) => enemy.actorId === event.actorId)
+      return deadEnemy ? `${deadEnemy.name} повержен` : 'Вы повержены'
+    }
     case 'EnemyKilled':
-      return `${enemyName} повержен`
+      return `${eventEnemy?.name ?? enemyName} повержен`
+    case 'TargetChanged':
+      return `Новая цель · ${eventEnemy?.name ?? enemyName}`
     case 'CombatEnded':
       return event.definitionId === 'Victory'
         ? 'Победа'
