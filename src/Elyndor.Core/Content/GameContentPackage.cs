@@ -28,7 +28,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<LootTableDefinition>? LootTables = null,
     IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
     IReadOnlyList<MerchantDefinition>? Merchants = null,
-    ResourceScalingProfile? ResourceScaling = null);
+    ResourceScalingProfile? ResourceScaling = null,
+    IReadOnlyList<WorldContractDefinition>? WorldContracts = null);
 
 public sealed record GameContentDefinition(
     string Type,
