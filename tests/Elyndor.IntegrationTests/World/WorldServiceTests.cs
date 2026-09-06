@@ -119,7 +119,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             Character character = await setup.Characters.SingleAsync();
             character.SetLevel(5);
             CharacterLocation location = await setup.CharacterLocations.SingleAsync();
-            location.MoveTo("WHISPERING_FOREST", location.Version + 1, Now);
+            location.Relocate("WHISPERING_FOREST", Now);
             await setup.SaveChangesAsync();
         }
 
@@ -156,7 +156,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             characterId = character.Id;
             character.SetLevel(15);
             CharacterLocation location = await setup.CharacterLocations.SingleAsync();
-            location.MoveTo("BROODMOTHER_LAIR", location.Version + 1, Now);
+            location.Relocate("BROODMOTHER_LAIR", Now);
             await setup.SaveChangesAsync();
         }
 
