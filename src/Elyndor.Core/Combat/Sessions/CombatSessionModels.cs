@@ -21,7 +21,9 @@ public sealed record AutoAttackProfile(
     TimeSpan Interval,
     decimal BaseDamage,
     decimal AttackPowerCoefficient,
-    decimal ResourceOnHit);
+    decimal ResourceOnHit,
+    decimal? BaseDamageMin = null,
+    decimal? BaseDamageMax = null);
 
 public sealed record CombatParticipantDefinition(
     CombatActorState Actor,
