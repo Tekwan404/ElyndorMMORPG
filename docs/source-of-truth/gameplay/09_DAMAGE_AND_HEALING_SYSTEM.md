@@ -127,8 +127,9 @@ Weapon/Class Base Damage Roll
 
 - variance выполняется только сервером через injectable game RNG;
 - клиент не выбирает roll и не предсказывает итоговый урон;
-- диапазон оружия остаётся отдельным roll и не заменяется variance;
-- текущий prototype multiplier = `0.90–1.10`;
+- текущий prototype применяет variance к player Auto Attack с настроенным `BaseDamageMin–BaseDamageMax`;
+- один и тот же RNG roll выбирает точку weapon/class range и соответствующий `0.90–1.10` multiplier, поэтому не появляется скрытый дополнительный RNG consumption;
+- legacy fixed-damage profile без range сохраняет прежнее fixed-base поведение;
 - deterministic tests используют тот же `IGameRandom` abstraction;
 - secondary scripted strikes используют собственные правила и не обязаны повторно роллить этот variance.
 
