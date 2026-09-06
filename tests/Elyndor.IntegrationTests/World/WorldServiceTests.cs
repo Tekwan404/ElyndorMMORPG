@@ -111,6 +111,83 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task TravelRequiresMinimumTargetLevel()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync();
+            character.SetLevel(5);
+            CharacterLocation location = await setup.CharacterLocations.SingleAsync();
+            location.MoveTo("WHISPERING_FOREST", location.Version + 1, Now);
+            await setup.SaveChangesAsync();
+        }
+
+        TravelResult blocked = await TravelAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            "DEEP_FOREST",
+            GatedMap);
+        Assert.Equal(TravelErrorCodes.LevelRequired, blocked.ErrorCode);
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync();
+            character.SetLevel(6);
+            await setup.SaveChangesAsync();
+        }
+
+        TravelResult allowed = await TravelAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            "DEEP_FOREST",
+            GatedMap);
+        Assert.True(allowed.IsSuccess);
+    }
+
+    [Fact]
+    public async Task CompletedBossContractUnlocksNextZone()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        Guid characterId;
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync();
+            characterId = character.Id;
+            character.SetLevel(15);
+            CharacterLocation location = await setup.CharacterLocations.SingleAsync();
+            location.MoveTo("BROODMOTHER_LAIR", location.Version + 1, Now);
+            await setup.SaveChangesAsync();
+        }
+
+        TravelResult blocked = await TravelAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            "BLIGHTED_GROVE",
+            GatedMap);
+        Assert.Equal(TravelErrorCodes.ContractRequired, blocked.ErrorCode);
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CharacterContractCompletions.Add(
+                new CharacterContractCompletion(
+                    characterId,
+                    "CONTRACT_BROODMOTHER_GATE",
+                    "SPIDER_BROODMOTHER_L14",
+                    Guid.CreateVersion7(),
+                    Now));
+            await setup.SaveChangesAsync();
+        }
+
+        TravelResult allowed = await TravelAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            "BLIGHTED_GROVE",
+            GatedMap);
+        Assert.True(allowed.IsSuccess);
+    }
+
+    [Fact]
     public async Task ConcurrentTravelFromSameVersionHasOneWinnerAndNoDuplicateOperation()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: true);
@@ -135,13 +212,20 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Equal(2, location.Version);
     }
 
+    private Task<TravelResult> TravelAsync(
+        Guid accountId,
+        Guid requestId,
+        string targetLocationId) =>
+        TravelAsync(accountId, requestId, targetLocationId, Map);
+
     private async Task<TravelResult> TravelAsync(
         Guid accountId,
         Guid requestId,
-        string targetLocationId)
+        string targetLocationId,
+        WorldMap map)
     {
         await using GameDbContext context = postgres.CreateDbContext();
-        TravelService service = new(context, Map, new FixedTimeProvider(Now));
+        TravelService service = new(context, map, new FixedTimeProvider(Now));
         return await service.TravelAsync(
             accountId,
             requestId,
@@ -200,6 +284,46 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     };
 
     private static readonly WorldMap Map = new(Content.Locations);
+
+    private static readonly WorldMap GatedMap = new(
+    [
+        new("STARTER_TOWN", "Стартовый город", "SAFE", 1, ["WHISPERING_FOREST"]),
+        new(
+            "WHISPERING_FOREST",
+            "Шепчущий лес",
+            "ADVENTURE",
+            3,
+            ["STARTER_TOWN", "DEEP_FOREST"],
+            MinimumLevel: 1,
+            MaximumLevel: 5),
+        new(
+            "DEEP_FOREST",
+            "Глубокий лес",
+            "DANGEROUS",
+            9,
+            ["WHISPERING_FOREST", "BROODMOTHER_LAIR"],
+            MinimumLevel: 6,
+            MaximumLevel: 11),
+        new(
+            "BROODMOTHER_LAIR",
+            "Логово Прародительницы",
+            "DANGEROUS",
+            14,
+            ["DEEP_FOREST", "BLIGHTED_GROVE"],
+            MinimumLevel: 14,
+            MaximumLevel: 14),
+        new(
+            "BLIGHTED_GROVE",
+            "Осквернённая чаща",
+            "DANGEROUS",
+            17,
+            ["BROODMOTHER_LAIR"],
+            MinimumLevel: 15,
+            MaximumLevel: 20,
+            RequiredContractId: "CONTRACT_BROODMOTHER_GATE")
+    ]);
+
+
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
