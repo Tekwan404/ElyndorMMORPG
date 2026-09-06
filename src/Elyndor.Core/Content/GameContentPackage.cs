@@ -56,7 +56,9 @@ public sealed record ClassProfile(
     string PrototypeIdentity,
     IReadOnlyList<string>? StartingAbilityIds = null,
     IReadOnlyList<AbilityUnlockDefinition>? AbilityUnlocks = null,
-    AutoAttackProfile? CombatAutoAttack = null);
+    AutoAttackProfile? CombatAutoAttack = null,
+    IReadOnlyList<string>? AllowedOffHandCategories = null,
+    bool AllowUnarmed = false);
 
 public sealed record AbilityUnlockDefinition(string AbilityId, int UnlockLevel);
 
