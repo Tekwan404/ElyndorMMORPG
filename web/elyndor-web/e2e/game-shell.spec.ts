@@ -116,7 +116,17 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
             description: 'Мгновенно восстанавливает здоровье.',
             buyPriceGold: 20,
             sellPriceGold: 0,
-            healAmount: 50,
+            consumableActions: [
+              {
+                type: 'RestoreHp',
+                amount: 50,
+                resourceType: null,
+                effectId: null,
+                dispelCategory: null,
+              },
+            ],
+            consumableCooldownCategoryId: 'HEALING_POTION',
+            consumableCooldownSeconds: 30,
           },
         ],
       },
