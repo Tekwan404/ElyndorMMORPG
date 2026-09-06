@@ -1503,37 +1503,37 @@ Overhealing не применяется к HP.
 INVARIANT-21
 Overhealing не генерирует Threat.
 
-INVARIANT-21
+INVARIANT-22
 Лечение не может воскресить мёртвую цель по умолчанию.
 
-INVARIANT-22
+INVARIANT-23
 Critical Healing multiplier применяется до healing modifiers.
 
-INVARIANT-23
+INVARIANT-24
 HealingType не уменьшает лечение через Armor или MagicResistance.
 
-INVARIANT-24
+INVARIANT-25
 Vampiric Healing рассчитывается из EffectiveDamageToHP по умолчанию.
 
-INVARIANT-25
+INVARIANT-26
 Vampiric Healing не генерирует дополнительный Threat по умолчанию.
 
-INVARIANT-26
-ThreatRelevantDamage включает урон, применённый к HP, и урон, поглощённый щитом.
-
 INVARIANT-27
-ThreatRelevantHealing равен EffectiveHealing, если источник явно не определяет другое.
+ThreatRelevantDamage включает урон, применённый к HP, урон, заблокированный equipment Block, и урон, поглощённый щитом.
 
 INVARIANT-28
-DoT/HoT используют правила snapshot из Effects System.
+ThreatRelevantHealing равен EffectiveHealing, если источник явно не определяет другое.
 
 INVARIANT-29
-AFK Farming по умолчанию не использует полный Damage and Healing pipeline.
+DoT/HoT используют правила snapshot из Effects System.
 
 INVARIANT-30
-Offline combat использует Damage and Healing System серверно.
+AFK Farming по умолчанию не использует полный Damage and Healing pipeline.
 
 INVARIANT-31
+Offline combat использует Damage and Healing System серверно.
+
+INVARIANT-32
 DoT tick применяет Target Armor и MagicResistance по текущим значениям цели в момент tick, если эффект явно не определяет snapshot target mitigation.
 
 58. Default Balance Values
