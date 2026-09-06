@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -12,6 +12,8 @@ const inventory = computed(() => character.value?.inventory)
 const selectedItem = ref<InventoryItem | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
+const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
+const newItemIds = ref<Set<string>>(new Set())
 
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
@@ -22,11 +24,171 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
   return typeMatches && rarityMatches
 }))
+const sortedItems = computed(() => {
+  const items = [...filteredItems.value]
+  if (sortMode.value === 'rarity') {
+    items.sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity)
+      || left.name.localeCompare(right.name))
+  } else if (sortMode.value === 'level') {
+    items.sort((left, right) => right.requiredLevel - left.requiredLevel
+      || rarityRank(right.rarity) - rarityRank(left.rarity))
+  } else if (sortMode.value === 'name') {
+    items.sort((left, right) => left.name.localeCompare(right.name))
+  }
+  return items
+})
 const visibleCells = computed(() => {
-  if (typeFilter.value !== 'all' || rarityFilter.value !== 'all') return filteredItems.value
-  return Array.from({ length: BAG_CAPACITY }, (_, index) => bagItems.value[index] ?? null)
+  if (typeFilter.value !== 'all' || rarityFilter.value !== 'all') return sortedItems.value
+  return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
 })
 const usedSlots = computed(() => bagItems.value.length)
+const comparisonItem = computed(() =>
+  selectedItem.value?.type === 'Equipment'
+    ? equippedItemForSlot(selectedItem.value)
+    : null,
+)
+const comparisonRows = computed(() => {
+  const candidate = selectedItem.value
+  const equipped = comparisonItem.value
+  if (!candidate || !equipped) return []
+
+  return comparisonStats
+    .map(stat => {
+      const candidateValue = stat.value(candidate)
+      const equippedValue = stat.value(equipped)
+      const delta = candidateValue - equippedValue
+      return {
+        label: stat.label,
+        candidateValue,
+        equippedValue,
+        delta,
+      }
+    })
+    .filter(row => row.candidateValue !== 0 || row.equippedValue !== 0)
+})
+
+
+const comparisonStats: readonly {
+  label: string
+  value: (item: InventoryItem) => number
+}[] = [
+  { label: 'Сила', value: item => item.stats.strength },
+  { label: 'Ловкость', value: item => item.stats.agility },
+  { label: 'Интеллект', value: item => item.stats.intellect },
+  { label: 'Выносливость', value: item => item.stats.stamina },
+  { label: 'Макс. здоровье', value: item => item.stats.maxHp },
+  { label: 'Сила атаки', value: item => item.stats.attackPower },
+  { label: 'Сила заклинаний', value: item => item.stats.spellPower },
+  { label: 'Крит. шанс', value: item => item.stats.criticalChance },
+  { label: 'Броня', value: item => item.stats.armor },
+  { label: 'Сопротивление магии', value: item => item.stats.magicResistance },
+  { label: 'Уклонение', value: item => item.stats.dodge + item.dodgePercent },
+  { label: 'Скорость атаки', value: item => item.stats.attackSpeed + item.attackSpeedPercent },
+  { label: 'Макс. ресурс', value: item => item.stats.maxResource },
+]
+
+function rarityRank(rarity: InventoryItem['rarity']): number {
+  if (rarity === 'Unique') return 6
+  if (rarity === 'Legendary') return 5
+  if (rarity === 'Epic') return 4
+  if (rarity === 'Rare') return 3
+  if (rarity === 'Uncommon') return 2
+  return 1
+}
+
+function equippedItemForSlot(item: InventoryItem): InventoryItem | null {
+  const equipped = inventory.value?.equipped
+  if (!equipped || !item.slot) return null
+
+  if (item.slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
+  if (item.slot === 'OffHand') return equipped.offHand ?? null
+  if (item.slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
+  if (item.slot === 'Head') return equipped.head
+  if (item.slot === 'Chest') return equipped.chest
+  if (item.slot === 'Hands') return equipped.hands ?? null
+  if (item.slot === 'Legs') return equipped.legs
+  if (item.slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
+  if (item.slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
+  if (item.slot === 'Cloak') return equipped.cloak ?? null
+  if (item.slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
+  if (item.slot === 'Ring1') return equipped.ring1 ?? null
+  if (item.slot === 'Ring2') return equipped.ring2 ?? null
+  if (item.slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
+  return null
+}
+
+function comparisonDeltaLabel(delta: number): string {
+  if (delta > 0) return `+${formatNumber(delta)}`
+  if (delta < 0) return formatNumber(delta)
+  return '0'
+}
+
+function formatNumber(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
+}
+
+function openItem(item: InventoryItem | null): void {
+  selectedItem.value = item
+  if (item) markItemSeen(item.id)
+}
+
+function seenStorageKey(): string | null {
+  const characterId = character.value?.id
+  return characterId ? `elyndor.inventory.seen.${characterId}` : null
+}
+
+function syncNewItems(): void {
+  const key = seenStorageKey()
+  if (!key) {
+    newItemIds.value = new Set()
+    return
+  }
+
+  const currentIds = bagItems.value.map(item => item.id)
+  try {
+    const raw = globalThis.localStorage?.getItem(key)
+    if (raw === null) {
+      globalThis.localStorage?.setItem(key, JSON.stringify(currentIds))
+      newItemIds.value = new Set()
+      return
+    }
+
+    const parsed = JSON.parse(raw) as unknown
+    const seen = new Set(Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string')
+      : [])
+    newItemIds.value = new Set(currentIds.filter(id => !seen.has(id)))
+  } catch {
+    newItemIds.value = new Set()
+  }
+}
+
+function markItemSeen(itemId: string): void {
+  const key = seenStorageKey()
+  if (!key || !newItemIds.value.has(itemId)) return
+
+  try {
+    const raw = globalThis.localStorage?.getItem(key)
+    const parsed = raw ? JSON.parse(raw) as unknown : []
+    const seen = new Set(Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string')
+      : [])
+    seen.add(itemId)
+    globalThis.localStorage?.setItem(key, JSON.stringify([...seen]))
+  } catch {
+    // NEW is a presentation hint only; storage failure must not block inventory actions.
+  }
+
+  const next = new Set(newItemIds.value)
+  next.delete(itemId)
+  newItemIds.value = next
+}
+
+watch(
+  () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
+  syncNewItems,
+  { immediate: true },
+)
 
 function statRows(item: InventoryItem): string[] {
   return [
@@ -158,7 +320,7 @@ async function useSelected(): Promise<void> {
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
-          @click="selectedItem = item"
+          @click="openItem(item)"
         >
           <template v-if="item">
             <span class="bag-cell__icon">{{ itemGlyph(item) }}</span>
