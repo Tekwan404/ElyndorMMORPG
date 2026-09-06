@@ -66,7 +66,10 @@ public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
     EquipmentSlotsResponse Equipped);
 
-public sealed record EquipItemRequest(Guid CharacterItemId, Guid MutationId);
+public sealed record EquipItemRequest(
+    Guid CharacterItemId,
+    Guid MutationId,
+    string? TargetSlot = null);
 
 public sealed record UnequipItemRequest(string Slot, Guid MutationId);
 
