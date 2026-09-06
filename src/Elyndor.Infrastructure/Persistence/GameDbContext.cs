@@ -34,6 +34,9 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<CombatRewardGrant> CombatRewardGrants => Set<CombatRewardGrant>();
 
+    public DbSet<CharacterContractAcceptance> CharacterContractAcceptances =>
+        Set<CharacterContractAcceptance>();
+
     public DbSet<CharacterContractCompletion> CharacterContractCompletions =>
         Set<CharacterContractCompletion>();
 
