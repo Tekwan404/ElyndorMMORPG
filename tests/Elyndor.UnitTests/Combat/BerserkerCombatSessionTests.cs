@@ -23,7 +23,7 @@ public sealed class BerserkerCombatSessionTests
         Guid.Parse("44000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public void LowHealthBerserkerTalentsBecomeLiveConditionalEffects()
+    public void LowHealthBerserkerSelfTalentsBecomeLiveConditionalEffects()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook(
@@ -34,10 +34,7 @@ public sealed class BerserkerCombatSessionTests
                 secondaryValue: 2, threshold: 50),
             Hook(
                 "B-7-2", TalentModifierKeys.OnHpThreshold, 4, 12,
-                threshold: 25),
-            Hook(
-                "B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10,
-                threshold: 20));
+                threshold: 25));
         TestFight fight = CreateFight(
             talents,
             playerHp: 20,
@@ -54,7 +51,40 @@ public sealed class BerserkerCombatSessionTests
             effect.Id == "BERSERKER_RECKLESSNESS_OUTGOING");
         Assert.Contains(snapshot.Player.Effects, effect =>
             effect.Id == "BERSERKER_DEATH_STRENGTH_CRITICAL");
-        Assert.Contains(snapshot.Player.Effects, effect =>
+    }
+
+    [Fact]
+    public void ExecutionerAppliesPerTargetInsideWhirlwind()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(
+                "B-7-4", TalentModifierKeys.OnHpThreshold, 2, 10,
+                threshold: 20));
+        TestFight fight = CreateFight(
+            talents,
+            enemyHp: 1_000,
+            enemyMaxHp: 10_000,
+            playerResource: 100,
+            includeSecondEnemy: true,
+            secondEnemyHp: 10_000,
+            secondEnemyMaxHp: 10_000);
+        fight.Session.AdvanceTo(Now);
+
+        CombatCommandResult result = fight.Session.Handle(
+            new UseAbilityCommand("executioner-aoe", "WHIRLWIND", Guid.Empty),
+            Now.AddMilliseconds(1));
+
+        CombatEvent lowHealthHit = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.DefinitionId == "WHIRLWIND"
+            && item.TargetActorId == EnemyId);
+        CombatEvent fullHealthHit = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.DefinitionId == "WHIRLWIND"
+            && item.TargetActorId == EnemyTwoId);
+
+        Assert.True(lowHealthHit.Amount > fullHealthHit.Amount);
+        Assert.DoesNotContain(result.Snapshot.Player.Effects, effect =>
             effect.Id == "BERSERKER_EXECUTIONER");
     }
 
@@ -541,7 +571,9 @@ public sealed class BerserkerCombatSessionTests
         TimeSpan? enemyAutoAttackInterval = null,
         decimal[]? randomValues = null,
         AutoAttackProfile? offHandAutoAttack = null,
-        bool includeSecondEnemy = false)
+        bool includeSecondEnemy = false,
+        decimal? secondEnemyHp = null,
+        decimal? secondEnemyMaxHp = null)
     {
         CombatStats playerStats = new(
             Level: 20,
@@ -604,11 +636,12 @@ public sealed class BerserkerCombatSessionTests
                 0,
                 0),
             new HashSet<string>(StringComparer.Ordinal));
+        decimal secondHp = secondEnemyHp ?? enemyHp;
         CombatParticipantDefinition secondEnemy = new(
             new CombatActorState(
                 EnemyTwoId,
-                enemyMaxHp ?? enemyHp,
-                enemyHp,
+                secondEnemyMaxHp ?? secondHp,
+                secondHp,
                 0,
                 0,
                 enemyStats),
