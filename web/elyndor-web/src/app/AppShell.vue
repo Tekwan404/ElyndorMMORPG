@@ -564,8 +564,7 @@ onMounted(() => {
 }
 
 :global(html[data-elyndor-motion='reduced']) .navigation__item,
-:global(html[data-elyndor-motion='reduced']) .navigation__icon,
-:global(html[data-elyndor-motion='reduced']) .setting-switch > span::after {
+:global(html[data-elyndor-motion='reduced']) .navigation__icon {
   transition: none;
 }
 
