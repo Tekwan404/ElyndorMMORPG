@@ -277,9 +277,11 @@ Equip отклоняется.
 
 OFF_HAND может содержать:
 
-one-hand weapon, если Class System разрешает dual-wield;
+one-hand weapon, только если активный equipment permission разрешает dual-wield;
 shield;
 future focus/offhand accessory.
+
+Для prototype permission `DUAL_WIELD_ONE_HAND_WEAPON` является server-authoritative и может приходить из активного Talent loadout. Наличие `ONE_HAND_*` оружия в AllowedWeaponCategories само по себе не разрешает OFF_HAND. Клиент может выбрать MainHand/OffHand, но сервер повторно валидирует permission, handedness и конфликт с two-handed MAIN_HAND.
 
 Щит является отдельной off-hand категорией, а не WeaponTag:
 
