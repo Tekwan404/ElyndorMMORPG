@@ -459,6 +459,83 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void StunBlocksOnlyAffectedEnemyAiAndFallbackAutoAttack()
+    {
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 3, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 5, 0, 0),
+            firstStunDuration: TimeSpan.FromSeconds(2));
+
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        CombatEvent[] firstAttacks = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.SourceActorId == EnemyId
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+        CombatEvent[] secondAttacks = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.SourceActorId == EnemyTwoId
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+
+        CombatEvent firstAfterStun = Assert.Single(firstAttacks);
+        Assert.Equal(Now.AddSeconds(2), firstAfterStun.OccurredAtUtc);
+        Assert.Equal(2, secondAttacks.Length);
+        Assert.Equal(
+            [Now.AddSeconds(1), Now.AddSeconds(2)],
+            secondAttacks.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
+    public void EnemySelfAbilityTargetsItsOwnActor()
+    {
+        AbilityDefinition selfBuff = new(
+            "SELF_BUFF",
+            AbilityType.Instant,
+            AbilityTargetType.Self,
+            0,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ApplyEffect,
+                    Effect: new EffectDefinition(
+                        "SELF_BUFF_EFFECT",
+                        EffectKind.Buff,
+                        TimeSpan.FromSeconds(5),
+                        1,
+                        EffectStackPolicy.Replace,
+                        1))
+            ]);
+        CombatSession session = CreateMultiEnemyAiSession(
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            new AutoAttackProfile(TimeSpan.FromSeconds(10), 1, 0, 0),
+            firstKnownAbilityIds: new HashSet<string>(["SELF_BUFF"], StringComparer.Ordinal),
+            firstAi: new MonsterAiProfile("SELF_BUFF_AI", ["SELF_BUFF"]),
+            extraAbilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                ["SELF_BUFF"] = selfBuff
+            });
+
+        session.AdvanceTo(Now.AddSeconds(1));
+
+        CombatActorSnapshot first = session.Snapshot().Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyId);
+        Assert.Contains(first.Effects, effect => effect.Id == "SELF_BUFF_EFFECT");
+        Assert.Contains(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.AbilityUsed
+            && item.SourceActorId == EnemyId
+            && item.TargetActorId == EnemyId
+            && item.DefinitionId == "SELF_BUFF");
+    }
+
+    [Fact]
     public void KillingOneEnemyStopsOnlyItsAiRuntime()
     {
         CombatSession session = CreateMultiEnemyAiSession(
@@ -661,7 +738,8 @@ public sealed class CombatSessionTests
         MonsterAiProfile? secondAi = null,
         IReadOnlyDictionary<string, AbilityDefinition>? extraAbilities = null,
         decimal firstEnemyHp = 100,
-        decimal secondEnemyHp = 100)
+        decimal secondEnemyHp = 100,
+        TimeSpan? firstStunDuration = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
@@ -696,6 +774,21 @@ public sealed class CombatSessionTests
             "NONE",
             secondAutoAttack,
             secondKnownAbilityIds ?? new HashSet<string>(StringComparer.Ordinal));
+
+        if (firstStunDuration is { } stunDuration)
+        {
+            EffectEngine.Apply(
+                firstEnemy.Actor,
+                PlayerId,
+                new EffectDefinition(
+                    "TEST_AI_STUN",
+                    EffectKind.Stun,
+                    stunDuration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    0),
+                Now);
+        }
 
         Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
         {
