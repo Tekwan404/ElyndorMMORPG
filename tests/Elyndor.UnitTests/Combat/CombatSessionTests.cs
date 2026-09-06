@@ -1192,13 +1192,7 @@ public sealed class CombatSessionTests
             CriticalDamage: 1, Armor: 5, MagicResistance: 5,
             ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 8, SpellPower: 0);
         CombatParticipantDefinition player = new(
-            new CombatActorState(
-                PlayerId,
-                200,
-                playerHp,
-                100,
-                playerResource,
-                playerStats),
+            new CombatActorState(PlayerId, 200, 200, 100, 0, playerStats),
             CombatActorKind.Player,
             "WARRIOR",
             "Warrior",
@@ -1279,7 +1273,13 @@ public sealed class CombatSessionTests
             CriticalDamage: 1, Armor: 5, MagicResistance: 5,
             ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 8, SpellPower: 0);
         CombatParticipantDefinition player = new(
-            new CombatActorState(PlayerId, 200, 200, 100, 0, playerStats),
+            new CombatActorState(
+                PlayerId,
+                200,
+                playerHp,
+                100,
+                playerResource,
+                playerStats),
             CombatActorKind.Player,
             "WARRIOR",
             "Warrior",
