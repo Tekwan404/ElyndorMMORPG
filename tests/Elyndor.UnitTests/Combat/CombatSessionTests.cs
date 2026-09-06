@@ -23,6 +23,66 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void TimedSummonProfileAddsSpiderlingsAndRespectsActiveCap()
+    {
+        MonsterDefinition spiderling = new(
+            Id: "TEST_SPIDERLING",
+            Name: "Spiderling",
+            Rank: MonsterRank.Normal,
+            Level: 3,
+            MaxHp: 260,
+            Stats: new CombatStats(
+                Level: 3,
+                Accuracy: 100,
+                Dodge: 0,
+                CriticalChance: 0,
+                CriticalDamage: 1,
+                Armor: 0,
+                MagicResistance: 0,
+                ArmorPenetration: 0,
+                MagicPenetration: 0),
+            AutoAttackInterval: TimeSpan.FromHours(1),
+            AutoAttackBaseDamage: 0,
+            AbilityIds: [],
+            AiProfileId: "TEST_SPIDERLING_AI");
+
+        CombatSummonProfile summon = new(
+            "WOLF",
+            spiderling,
+            new MonsterAiProfile("TEST_SPIDERLING_AI", []),
+            TimeSpan.FromSeconds(20),
+            Count: 2,
+            MaxActive: 4);
+
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false,
+            summonProfile: summon);
+
+        CombatCommandResult firstWave = session.AdvanceTo(Now.AddSeconds(20));
+        Assert.Equal(3, firstWave.Snapshot.Enemies!.Count);
+        Assert.Equal(
+            2,
+            firstWave.Events.Count(item =>
+                item.Type == CombatEventType.ActorSummoned
+                && item.DefinitionId == spiderling.Id));
+
+        CombatCommandResult secondWave = session.AdvanceTo(Now.AddSeconds(40));
+        Assert.Equal(5, secondWave.Snapshot.Enemies!.Count);
+        Assert.Equal(
+            4,
+            secondWave.Snapshot.Enemies.Count(enemy =>
+                enemy.DefinitionId == spiderling.Id && enemy.Hp > 0));
+
+        CombatCommandResult capped = session.AdvanceTo(Now.AddSeconds(60));
+        Assert.Equal(5, capped.Snapshot.Enemies!.Count);
+        Assert.DoesNotContain(
+            capped.Events,
+            item => item.Type == CombatEventType.ActorSummoned);
+    }
+
+    [Fact]
     public void SeededAbilityCooldownBlocksSkillUntilItsOriginalReadyTime()
     {
         CombatSession session = CreateSession(
@@ -1297,7 +1357,8 @@ public sealed class CombatSessionTests
         decimal playerHp = 200,
         decimal playerResource = 0,
         bool canAutoAttack = true,
-        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null)
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
+        CombatSummonProfile? summonProfile = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -1358,7 +1419,7 @@ public sealed class CombatSessionTests
         return new CombatSession(
             SessionId, player, enemy, abilities, ai,
             talents ?? ResolvedTalentModifiers.Empty, random, Now,
-            contentVersion, balanceVersion, initialPlayerCooldowns);
+            contentVersion, balanceVersion, initialPlayerCooldowns, summonProfile);
     }
 
     private static object EventSignature(CombatEvent item) => new
