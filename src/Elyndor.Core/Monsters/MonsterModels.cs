@@ -39,7 +39,11 @@ public sealed record MonsterDefinition(
     string Description = "",
     string? ArtId = null,
     decimal? AutoAttackBaseDamageMin = null,
-    decimal? AutoAttackBaseDamageMax = null);
+    decimal? AutoAttackBaseDamageMax = null,
+    string? SummonMonsterId = null,
+    decimal SummonIntervalSeconds = 0,
+    int SummonCount = 0,
+    int MaxActiveSummons = 0);
 
 public sealed record MonsterAiProfile(
     string Id,
