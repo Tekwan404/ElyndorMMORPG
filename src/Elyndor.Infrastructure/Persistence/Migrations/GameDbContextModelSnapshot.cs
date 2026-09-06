@@ -409,6 +409,35 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.World.CharacterContractCompletion", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContractId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TargetMonsterId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("CharacterId", "ContractId")
+                        .HasName("pk_character_contract_completions");
+
+                    b.HasIndex("CombatSessionId")
+                        .HasDatabaseName("ix_character_contract_completions_combat_session_id");
+
+                    b.ToTable("character_contract_completions", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.World.CharacterLocation", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -695,6 +724,16 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_talent_states_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.CharacterContractCompletion", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_contract_completions_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.CharacterLocation", b =>
