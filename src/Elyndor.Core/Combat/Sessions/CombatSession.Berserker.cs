@@ -208,6 +208,7 @@ public sealed partial class CombatSession
 
     private void ResolvePlayerAutoAttack(
         CombatParticipantDefinition target,
+        AutoAttackProfile profile,
         DateTimeOffset now)
     {
         SyncBerserkerConditionalEffects(now);
@@ -218,7 +219,7 @@ public sealed partial class CombatSession
             _player.Actor.Stats.AttackPower,
             now);
         decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(
-            _player.AutoAttack,
+            profile,
             attackPower,
             _random);
 
@@ -251,15 +252,17 @@ public sealed partial class CombatSession
             damage.Events,
             _player.Actor.ActorId,
             target.Actor.ActorId,
-            "AUTO_ATTACK");
+            "AUTO_ATTACK",
+            profile.WeaponHand,
+            profile.WeaponDefinitionId);
 
         if (damage.Avoidance == DamageAvoidance.None
             && damage.HpDamage > 0
-            && _player.AutoAttack.ResourceOnHit > 0)
+            && profile.ResourceOnHit > 0)
         {
             AddResource(
                 _player.Actor,
-                _player.AutoAttack.ResourceOnHit,
+                profile.ResourceOnHit,
                 now,
                 "AUTO_ATTACK");
         }
@@ -277,6 +280,7 @@ public sealed partial class CombatSession
         {
             ResolveSecondaryAutoAttack(
                 target,
+                profile,
                 baseDamage,
                 unstoppable.Value / 100m,
                 unstoppable.TalentId,
@@ -290,6 +294,7 @@ public sealed partial class CombatSession
         {
             ResolveSecondaryAutoAttack(
                 target,
+                profile,
                 baseDamage,
                 doubleStrike.Value / 100m,
                 doubleStrike.TalentId,
@@ -300,6 +305,7 @@ public sealed partial class CombatSession
 
     private void ResolveSecondaryAutoAttack(
         CombatParticipantDefinition target,
+        AutoAttackProfile sourceProfile,
         decimal ordinaryBaseDamage,
         decimal multiplier,
         string definitionId,
@@ -322,7 +328,9 @@ public sealed partial class CombatSession
             secondary.Events,
             _player.Actor.ActorId,
             target.Actor.ActorId,
-            definitionId);
+            definitionId,
+            sourceProfile.WeaponHand,
+            sourceProfile.WeaponDefinitionId);
     }
 
     private void ApplyDeathWhirlwind(
@@ -547,14 +555,16 @@ public sealed partial class CombatSession
             null);
     }
 
-    private TimeSpan EffectivePlayerAutoAttackInterval(DateTimeOffset now)
+    private TimeSpan EffectivePlayerAutoAttackInterval(
+        AutoAttackProfile profile,
+        DateTimeOffset now)
     {
         decimal multiplier = EffectEngine.CalculateStat(
             _player.Actor,
             EffectStat.AttackSpeed,
             1,
             now);
-        double seconds = _player.AutoAttack.Interval.TotalSeconds
+        double seconds = profile.Interval.TotalSeconds
             / Math.Max(0.1, (double)multiplier);
         return TimeSpan.FromSeconds(Math.Max(0.05, seconds));
     }

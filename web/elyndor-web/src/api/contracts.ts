@@ -382,6 +382,8 @@ export interface CombatEvent {
   amount: number
   amountBeforeShields: number
   serverTimeUtc: string
+  weaponHand?: 'MainHand' | 'OffHand' | null
+  weaponDefinitionId?: string | null
 }
 
 export interface CombatUpdate {

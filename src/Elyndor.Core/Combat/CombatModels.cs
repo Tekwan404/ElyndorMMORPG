@@ -104,6 +104,12 @@ public sealed class CombatActorState
     }
 }
 
+public enum CombatWeaponHand
+{
+    MainHand,
+    OffHand
+}
+
 public enum CombatEventType
 {
     CombatStarted,
@@ -142,4 +148,6 @@ public sealed record CombatEvent(
     long Sequence = 0,
     bool IsPeriodic = false,
     decimal AmountBeforeShields = 0,
-    DamageType? DamageType = null);
+    DamageType? DamageType = null,
+    CombatWeaponHand? WeaponHand = null,
+    string? WeaponDefinitionId = null);

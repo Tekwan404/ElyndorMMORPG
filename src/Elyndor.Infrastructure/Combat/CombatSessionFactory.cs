@@ -10,6 +10,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Items;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -116,19 +117,32 @@ public sealed class CombatSessionFactory(
                 $"Class {classProfile.Id} has no combat auto attack profile.");
         ResourceProfile resourceProfile = derived.EffectiveResourceProfile;
 
-        EquipmentModifierSummary equipment = derived.Equipment;
-        decimal weaponBaseIntervalSeconds = equipment.WeaponBaseAttackIntervalSeconds
-            ?? (decimal)classProfile.CombatAutoAttack.Interval.TotalSeconds;
-        decimal attackSpeedMultiplier = Math.Max(0.1m, character.Stats.AttackSpeed);
-        AutoAttackProfile playerAutoAttack = classProfile.CombatAutoAttack with
-        {
-            Interval = TimeSpan.FromSeconds(
-                (double)(weaponBaseIntervalSeconds / attackSpeedMultiplier)),
-            BaseDamageMin = equipment.WeaponDamageMin
-                ?? classProfile.CombatAutoAttack.BaseDamageMin,
-            BaseDamageMax = equipment.WeaponDamageMax
-                ?? classProfile.CombatAutoAttack.BaseDamageMax
-        };
+        decimal attackSpeedMultiplier = Math.Max(0.1m, derived.Stats.AttackSpeed);
+        InventoryItemSnapshot? mainHandItem = GetEquippedItem(
+            derived.Inventory,
+            EquipmentSlot.MainHand);
+        InventoryItemSnapshot? offHandItem = GetEquippedItem(
+            derived.Inventory,
+            EquipmentSlot.OffHand);
+        AutoAttackProfile playerAutoAttack = BuildPlayerAutoAttackProfile(
+            classProfile.CombatAutoAttack,
+            mainHandItem,
+            attackSpeedMultiplier,
+            CombatWeaponHand.MainHand);
+        bool canDualWield = derived.TalentTree is not null
+            && TalentEquipmentPermissionResolver.HasPermission(
+                derived.TalentTree,
+                derived.ActiveTalentRanks,
+                EquipmentPermissionIds.DualWieldOneHandWeapon);
+        AutoAttackProfile? offHandAutoAttack = canDualWield
+            && offHandItem is not null
+            && EquipmentCategoryIds.IsOneHandedWeapon(offHandItem.Definition.WeaponCategory)
+                ? BuildPlayerAutoAttackProfile(
+                    classProfile.CombatAutoAttack,
+                    offHandItem,
+                    attackSpeedMultiplier,
+                    CombatWeaponHand.OffHand)
+                : null;
 
         MonsterAiProfile ai = isTraining
             ? new MonsterAiProfile("TRAINING_DUMMY_AI", [])
@@ -173,7 +187,8 @@ public sealed class CombatSessionFactory(
             new HashSet<string>(derived.KnownAbilityIds, StringComparer.Ordinal),
             resourceProfile.CombatRegenPerSecond,
             CanAutoAttack: classProfile.AllowUnarmed
-                || equipment.MainHandWeaponCategory is not null);
+                || mainHandItem?.Definition.WeaponCategory is not null,
+            OffHandAutoAttack: offHandAutoAttack);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,
@@ -208,6 +223,42 @@ public sealed class CombatSessionFactory(
             character.Id,
             session,
             contentSnapshot);
+    }
+
+    private static InventoryItemSnapshot? GetEquippedItem(
+        InventorySnapshot inventory,
+        EquipmentSlot slot)
+    {
+        if (inventory.Equipped.TryGetValue(slot, out InventoryItemSnapshot? item))
+            return item;
+        if (slot == EquipmentSlot.MainHand
+            && inventory.Equipped.TryGetValue(EquipmentSlot.Weapon, out item))
+        {
+            return item;
+        }
+
+        return null;
+    }
+
+    private static AutoAttackProfile BuildPlayerAutoAttackProfile(
+        AutoAttackProfile classProfile,
+        InventoryItemSnapshot? weapon,
+        decimal attackSpeedMultiplier,
+        CombatWeaponHand hand)
+    {
+        decimal baseIntervalSeconds = weapon?.Definition.WeaponBaseAttackIntervalSeconds
+            ?? (decimal)classProfile.Interval.TotalSeconds;
+        return classProfile with
+        {
+            Interval = TimeSpan.FromSeconds(
+                (double)(baseIntervalSeconds / Math.Max(0.1m, attackSpeedMultiplier))),
+            BaseDamageMin = weapon?.Definition.WeaponDamageMin
+                ?? classProfile.BaseDamageMin,
+            BaseDamageMax = weapon?.Definition.WeaponDamageMax
+                ?? classProfile.BaseDamageMax,
+            WeaponDefinitionId = weapon?.Definition.Id,
+            WeaponHand = hand
+        };
     }
 
     private static MonsterDefinition CreateTrainingDummy(int level) => new(
