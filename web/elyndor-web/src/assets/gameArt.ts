@@ -10,12 +10,12 @@ import locationNavigation from './navigation/location.png'
 import menuNavigation from './navigation/menu.png'
 import questsNavigation from './navigation/quests.png'
 import worldNavigation from './navigation/world.png'
-import capital from './world/capital.jpg'
+import starterTown from './world/starter-town.webp'
 import forest from './world/forest.jpg'
 import ruins from './world/ruins.jpg'
 
 export const gameArt = {
-  world: { capital, forest, ruins },
+  world: { starterTown, capital: starterTown, forest, ruins },
   characters: { warrior },
   navigation: {
     world: worldNavigation,
