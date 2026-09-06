@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
@@ -114,21 +115,39 @@ public sealed class CombatRewardService(
 
         GameContentPackage content = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
-        if (!indexes.MonstersById.TryGetValue(
-                snapshot.Enemy.DefinitionId,
-                out MonsterDefinition? monster))
-        {
-            throw new InvalidOperationException(
-                $"Monster '{snapshot.Enemy.DefinitionId}' is missing from game content.");
-        }
+        ResolvedRewardSource[] rewardSources = ResolveRewardSources(snapshot, indexes);
         LevelProgressionDefinition progression = content.LevelProgression
             ?? throw new InvalidOperationException("Level progression content is required for combat rewards.");
 
+        List<CombatRewardSourceAudit> sourceAudits = [];
+        List<LootRoll> rolledLoot = [];
+        int xpEarned = 0;
+        int goldEarned = 0;
+        foreach (ResolvedRewardSource source in rewardSources)
+        {
+            int sourceXp = source.Monster.XpReward;
+            int sourceGold = RollGold(source.Monster);
+            IReadOnlyList<LootRoll> sourceLoot = RollLoot(source.Monster, indexes);
+
+            xpEarned = checked(xpEarned + sourceXp);
+            goldEarned = checked(goldEarned + sourceGold);
+            rolledLoot.AddRange(sourceLoot);
+            sourceAudits.Add(new CombatRewardSourceAudit(
+                source.Enemy.ActorId,
+                source.Monster.Id,
+                sourceXp,
+                sourceGold,
+                source.EncounterOrder,
+                sourceLoot.Select(roll =>
+                    new CombatRewardSourceItemAudit(
+                        roll.ItemId,
+                        roll.Quantity)).ToArray()));
+        }
+
         CharacterProgressionResult progressionResult = CharacterProgression.GrantExperience(
             character,
-            monster.XpReward,
+            xpEarned,
             progression);
-        int goldEarned = RollGold(monster);
         await dbContext.Characters
             .Where(candidate => candidate.Id == characterId)
             .ExecuteUpdateAsync(
@@ -137,7 +156,7 @@ public sealed class CombatRewardService(
                     candidate => candidate.Gold + goldEarned),
                 cancellationToken);
 
-        IReadOnlyList<LootRoll> loot = RollLoot(monster, indexes);
+        LootRoll[] loot = AggregateLoot(rolledLoot);
         DateTimeOffset now = timeProvider.GetUtcNow();
         foreach (LootRoll roll in loot)
             await AddItemAsync(characterId, roll, now, indexes, cancellationToken);
@@ -162,21 +181,67 @@ public sealed class CombatRewardService(
         dbContext.CombatRewardGrants.Add(new CombatRewardGrant(
             snapshot.SessionId,
             characterId,
-            monster.Id,
-            monster.XpReward,
+            rewardSources[0].Monster.Id,
+            xpEarned,
             goldEarned,
-            now));
+            now,
+            JsonSerializer.Serialize(sourceAudits)));
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         return new CombatRewardApplicationResult(
             true,
-            monster.XpReward,
+            xpEarned,
             goldEarned,
             progressionResult,
             loot.Select(roll => ToRewardItem(roll, indexes)).ToArray());
     }
+
+    private static ResolvedRewardSource[] ResolveRewardSources(
+        CombatSessionSnapshot snapshot,
+        GameContentIndexes indexes)
+    {
+        CombatActorSnapshot[] enemies =
+            snapshot.Enemies?.ToArray() ?? [snapshot.Enemy];
+        if (enemies.Length == 0)
+            throw new InvalidOperationException(
+                "Victory snapshot must contain at least one defeated enemy.");
+        if (enemies.Select(enemy => enemy.ActorId).Distinct().Count() != enemies.Length)
+            throw new InvalidOperationException(
+                "Victory snapshot contains duplicate enemy actor identifiers.");
+        if (enemies.Any(enemy =>
+                enemy.Kind != CombatActorKind.Monster
+                || enemy.Hp > 0))
+        {
+            throw new InvalidOperationException(
+                "Victory rewards require only defeated monster participants.");
+        }
+
+        ResolvedRewardSource[] result = new ResolvedRewardSource[enemies.Length];
+        for (var index = 0; index < enemies.Length; index++)
+        {
+            CombatActorSnapshot enemy = enemies[index];
+            if (!indexes.MonstersById.TryGetValue(
+                    enemy.DefinitionId,
+                    out MonsterDefinition? monster))
+            {
+                throw new InvalidOperationException(
+                    $"Monster '{enemy.DefinitionId}' is missing from game content.");
+            }
+
+            result[index] = new ResolvedRewardSource(enemy, monster, index);
+        }
+
+        return result;
+    }
+
+    private static LootRoll[] AggregateLoot(IEnumerable<LootRoll> rolls) =>
+        rolls.GroupBy(roll => roll.ItemId, StringComparer.Ordinal)
+            .Select(group => new LootRoll(
+                group.Key,
+                checked(group.Sum(roll => roll.Quantity))))
+            .ToArray();
 
     private int RollGold(MonsterDefinition monster)
     {
@@ -264,6 +329,11 @@ public sealed class CombatRewardService(
             remaining -= quantity;
         }
     }
+
+    private sealed record ResolvedRewardSource(
+        CombatActorSnapshot Enemy,
+        MonsterDefinition Monster,
+        int EncounterOrder);
 
     private static CombatRewardItemResult ToRewardItem(
         LootRoll roll,
