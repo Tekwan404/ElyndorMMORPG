@@ -12,6 +12,7 @@ type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
 const STARTER_TOWN_ID = 'STARTER_TOWN'
 const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
+const DEEP_FOREST_ID = 'DEEP_FOREST'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -26,14 +27,29 @@ const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
+const isDeepForest = computed(() => currentLocationId.value === DEEP_FOREST_ID)
 const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
-const locationName = computed(() => isStarterTown.value ? 'Стартовый город' : isWhisperingForest.value ? 'Шепчущий лес' : world.value?.currentLocation.displayName ?? 'Неизвестная область')
+const locationName = computed(() =>
+  isStarterTown.value
+    ? 'Стартовый город'
+    : isWhisperingForest.value
+      ? 'Шепчущий лес'
+      : isDeepForest.value
+        ? 'Глубокий лес'
+        : world.value?.currentLocation.displayName ?? 'Неизвестная область',
+)
 const locationDescription = computed(() => isStarterTown.value
   ? 'Безопасный город для отдыха, торговли, тренировки билдов и подготовки к следующему походу.'
   : isWhisperingForest.value
     ? 'Сумрачный лес старых дорог. Исследуйте область, чтобы встретить противника.'
-    : 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.')
-const sceneBackground = computed(() => isStarterTown.value ? gameArt.world.capital : gameArt.world.forest)
+    : isDeepForest.value
+      ? 'Глубокая и более опасная часть леса: древние руины, тяжёлый туман и следы старой магии.'
+      : 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.')
+const sceneBackground = computed(() => {
+  if (isStarterTown.value) return gameArt.world.starterTown
+  if (isDeepForest.value) return gameArt.world.deepForest
+  return gameArt.world.forest
+})
 const dangerLabel = computed(() => {
   const danger = world.value?.currentLocation.dangerLevel
   if (danger === 'SAFE') return 'БЕЗОПАСНАЯ ЗОНА'
