@@ -40,7 +40,7 @@ public static class AbilityEngine
         ];
         StartGcd(runtime, ability, now);
 
-        IReadOnlyList<Guid> targetIds = ResolveTargetIds(ability, intent);
+        Guid[] targetIds = ResolveTargetIds(ability, intent);
         if (ability.Type == AbilityType.Casted)
         {
             runtime.ActiveCast = new ActiveCast(
@@ -148,7 +148,7 @@ public static class AbilityEngine
             or AbilityTargetType.NEnemiesInCombat))
             return AbilityErrorCode.InvalidTarget;
 
-        IReadOnlyList<Guid> targetIds = ResolveTargetIds(ability, intent);
+        Guid[] targetIds = ResolveTargetIds(ability, intent);
         if (targetIds.Count == 0
             || targetIds.Distinct().Count() != targetIds.Count
             || targetIds.Any(targetId =>
