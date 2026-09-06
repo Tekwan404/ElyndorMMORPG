@@ -185,8 +185,8 @@ public static partial class GameContentPackageValidator
 
         private static bool HasInvalidConsumableShape(
             ItemDefinition item,
-            IReadOnlySet<string> resourceProfileIds,
-            IReadOnlySet<string> effectIds)
+            HashSet<string> resourceProfileIds,
+            HashSet<string> effectIds)
         {
             if (item.ConsumableCooldownSeconds <= 0
                 || string.IsNullOrWhiteSpace(item.ConsumableCooldownCategoryId)
