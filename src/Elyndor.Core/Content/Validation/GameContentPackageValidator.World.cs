@@ -165,12 +165,16 @@ public static partial class GameContentPackageValidator
                     || string.IsNullOrWhiteSpace(contract.Description)
                     || contract.RequiredLevel <= 0
                     || !monsterIds.Contains(contract.TargetMonsterId)
-                    || !locationIds.Contains(contract.UnlockLocationId))
+                    || !locationIds.Contains(contract.UnlockLocationId)
+                    || contract.OfferLocationId is not null
+                        && !locationIds.Contains(contract.OfferLocationId)
+                    || contract.RewardXp < 0
+                    || contract.RewardGold < 0)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_WORLD_CONTRACT",
                         path,
-                        $"World contract '{contract.Id}' contains invalid presentation, level, monster, or unlock location."));
+                        $"World contract '{contract.Id}' contains invalid presentation, level, target, locations, or rewards."));
                 }
             }
 
