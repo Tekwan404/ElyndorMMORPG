@@ -305,7 +305,7 @@ public static class AbilityEngine
         return events;
     }
 
-    private static IReadOnlyList<Guid> ResolveTargetIds(
+    private static Guid[] ResolveTargetIds(
         AbilityDefinition ability,
         AbilityIntent intent)
     {
