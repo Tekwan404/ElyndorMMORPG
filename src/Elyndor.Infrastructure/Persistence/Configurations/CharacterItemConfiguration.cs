@@ -18,6 +18,7 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
         builder.Property(item => item.ItemDefinitionId).HasMaxLength(64).IsRequired();
         builder.Property(item => item.Quantity).IsRequired();
         builder.Property(item => item.AcquiredAtUtc).IsRequired();
+        builder.Property(item => item.IsLocked).HasDefaultValue(false).IsRequired();
 
         builder.HasOne<Character>()
             .WithMany()

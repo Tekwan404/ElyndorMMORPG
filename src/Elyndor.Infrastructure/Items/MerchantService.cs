@@ -20,6 +20,7 @@ public static class MerchantErrorCodes
     public const string ItemNotSold = "merchant_item_not_sold";
     public const string ItemNotOwned = "merchant_item_not_owned";
     public const string ItemNotSellable = "merchant_item_not_sellable";
+    public const string ItemLocked = "merchant_item_locked";
     public const string InvalidQuantity = "merchant_invalid_quantity";
     public const string InvalidMutationId = "merchant_mutation_id_invalid";
     public const string MutationConflict = "merchant_mutation_conflict";
@@ -148,6 +149,8 @@ public sealed class MerchantService(
                     .SingleOrDefaultAsync(candidate => candidate.Id == characterItemId, cancellationToken);
                 if (preview is null || preview.CharacterId != character.Id)
                     return MerchantErrorCodes.ItemNotOwned;
+                if (preview.IsLocked)
+                    return MerchantErrorCodes.ItemLocked;
 
                 ItemDefinition? definition = FindItem(preview.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Material)
@@ -173,6 +176,7 @@ public sealed class MerchantService(
                     return MerchantErrorCodes.ItemNotOwned;
                 if (!string.Equals(item.ItemDefinitionId, definition.Id, StringComparison.Ordinal))
                     return MerchantErrorCodes.Conflict;
+                if (item.IsLocked) return MerchantErrorCodes.ItemLocked;
                 if (quantity > item.Quantity) return MerchantErrorCodes.InvalidQuantity;
 
                 item.RemoveQuantity(quantity);
