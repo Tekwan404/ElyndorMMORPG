@@ -117,6 +117,7 @@ public enum CombatEventType
     ConsumableUsed,
     AutoAttackStarted,
     AutoAttackStopped,
+    TargetChanged,
     DamageDealt,
     CriticalHit,
     EnemyKilled,
