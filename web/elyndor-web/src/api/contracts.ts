@@ -368,6 +368,7 @@ export interface CombatActorSnapshot {
   abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]
   activeCast?: CombatCastSnapshot | null
+  consumableCooldowns?: Record<string, string> | null
   level?: number
   artId?: string | null
 }
