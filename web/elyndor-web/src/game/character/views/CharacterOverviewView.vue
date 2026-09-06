@@ -172,7 +172,7 @@ function abilityInitials(ability: KnownAbility): string {
             </div>
           </div>
           <div class="hero-figure__caption">
-            <strong>{{ character.name }}</strong>
+            <strong data-hero-name>{{ character.name }}</strong>
             <small>ур. {{ character.level }} · {{ classLabel(character.classId) }}</small>
           </div>
         </div>
