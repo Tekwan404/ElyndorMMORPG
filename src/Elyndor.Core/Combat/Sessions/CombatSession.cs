@@ -125,7 +125,8 @@ public sealed partial class CombatSession
             enemy => enemy.Actor.ActorId,
             enemy => CreateRuntime(
                 enemy.Actor,
-                [player.Actor, .. enemyActors.Where(actor => actor.ActorId != enemy.Actor.ActorId)]));
+                new[] { player.Actor }.Concat(
+                    enemyActors.Where(actor => actor.ActorId != enemy.Actor.ActorId))));
 
         CurrentTimeUtc = startedAtUtc;
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
