@@ -42,6 +42,7 @@ public sealed record InventoryItemResponse(
     decimal ConsumableCooldownSeconds,
     int BuyPriceGold,
     int SellPriceGold,
+    bool IsLocked,
     string? IconId = null,
     string? AppearanceProfileId = null);
 
@@ -70,6 +71,11 @@ public sealed record EquipItemRequest(Guid CharacterItemId, Guid MutationId);
 public sealed record UnequipItemRequest(string Slot, Guid MutationId);
 
 public sealed record UseConsumableRequest(Guid CharacterItemId, Guid MutationId);
+
+public sealed record SetItemLockRequest(
+    Guid CharacterItemId,
+    bool IsLocked,
+    Guid MutationId);
 
 public sealed record MerchantItemResponse(
     string DefinitionId,
