@@ -476,7 +476,11 @@ Cooldown: **10 секунд**.
 `MaxRank 1`  
 Пассив. **15% шанс** при Auto Attack нанести второй удар немедленно за **45% урона** от первого.  
 Второй удар не может критовать.  
+Также открывает **dual-wield для ONE_HAND_SWORD**: одноручный меч можно экипировать в OFF_HAND.  
+При двух мечах обычные Auto Attack чередуют Main Hand → Off Hand → Main Hand; отдельный второй
+таймер атаки не создаётся, поэтому сам dual-wield не удваивает частоту Auto Attack.  
 *Event-Triggered: OnAutoAttack → conditional second hit.*  
+*Equipment Permission: ALLOW_OFFHAND_WEAPON → ONE_HAND_SWORD.*  
 *Proc Safety: InternalCooldown = 2 sec, CanTriggerFromProc = false.*
 
 ---
