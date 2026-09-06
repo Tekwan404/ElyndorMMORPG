@@ -223,7 +223,11 @@ public sealed class CombatRewardService(
                     characterId,
                     definition.Id,
                     1,
-                    acquiredAtUtc));
+                    acquiredAtUtc,
+                    definition.Version,
+                    definition.Type == ItemType.Equipment
+                        ? ItemInstanceStatRoller.Resolve(definition, randomFactory.Create())
+                        : null));
             }
             return;
         }
@@ -232,6 +236,7 @@ public sealed class CombatRewardService(
         CharacterItem[] stacks = await dbContext.CharacterItems
             .Where(item => item.CharacterId == characterId
                 && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
                 && item.Quantity < definition.MaxStack)
             .OrderBy(item => item.AcquiredAtUtc)
             .ToArrayAsync(cancellationToken);
@@ -254,7 +259,8 @@ public sealed class CombatRewardService(
                 characterId,
                 definition.Id,
                 quantity,
-                acquiredAtUtc));
+                acquiredAtUtc,
+                definition.Version));
             remaining -= quantity;
         }
     }
