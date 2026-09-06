@@ -10,6 +10,7 @@ describe('InventoryView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     globalThis.localStorage.clear()
+    document.body.innerHTML = ''
     vi.restoreAllMocks()
   })
 
@@ -29,6 +30,7 @@ describe('InventoryView', () => {
     expect(store.snapshot.character?.inventory.items.map(item => item.id)).toEqual([
       'COMMON_BLADE',
       'EPIC_BLADE',
+      'CURRENT_WEAPON',
     ])
   })
 
@@ -41,10 +43,11 @@ describe('InventoryView', () => {
     await wrapper.get('[data-item-id="EPIC_BLADE"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('СРАВНЕНИЕ')
-    expect(wrapper.text()).toContain('Сейчас: Учебный меч')
-    expect(wrapper.text()).toContain('Сила атаки')
-    expect(wrapper.text()).toContain('+7')
+    const modalText = document.body.textContent ?? ''
+    expect(modalText).toContain('СРАВНЕНИЕ')
+    expect(modalText).toContain('Сейчас: Учебный меч')
+    expect(modalText).toContain('Сила атаки')
+    expect(modalText).toContain('+7')
   })
 
   it('marks only newly appeared server items as NEW and clears the mark after inspection', async () => {
