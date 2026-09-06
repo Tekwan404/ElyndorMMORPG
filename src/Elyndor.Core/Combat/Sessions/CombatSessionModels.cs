@@ -38,6 +38,10 @@ public sealed record CombatParticipantDefinition(
 
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
 public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
+public sealed record CombatCastSnapshot(
+    string AbilityId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset ResolvesAtUtc);
 
 public sealed record CombatActorSnapshot(
     Guid ActorId,
@@ -54,7 +58,8 @@ public sealed record CombatActorSnapshot(
     IReadOnlyDictionary<string, DateTimeOffset> Cooldowns,
     IReadOnlySet<string> KnownAbilityIds,
     IReadOnlyList<CombatAbilitySnapshot> Abilities,
-    IReadOnlyList<CombatEffectSnapshot> Effects);
+    IReadOnlyList<CombatEffectSnapshot> Effects,
+    CombatCastSnapshot? ActiveCast = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
