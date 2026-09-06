@@ -63,12 +63,13 @@ public static class WorldEncounterContentValidator
                     continue;
                 }
 
-                if (monster.Rank != MonsterRank.Normal)
+                if (monster.Rank == MonsterRank.Elite
+                    || monster.Rank == MonsterRank.Boss && encounters.Count != 1)
                 {
                     errors.Add(new(
                         "INVALID_LOCATION_ENCOUNTER_RANK",
                         path,
-                        $"Ordinary location encounter '{monster.Id}' must use Normal monster rank."));
+                        $"Location encounter '{monster.Id}' must be Normal, or the only Boss encounter in its location."));
                 }
 
                 if (string.IsNullOrWhiteSpace(monster.DisplayName)
