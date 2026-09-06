@@ -659,7 +659,7 @@ onUnmounted(() => window.clearInterval(timer))
 
 .combat-targets {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
   gap: 5px;
 }
 
