@@ -11,9 +11,19 @@ public sealed partial class CombatSession
 {
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly CombatParticipantDefinition _player;
-    private readonly CombatParticipantDefinition _enemy;
+    private readonly IReadOnlyList<CombatParticipantDefinition> _enemies;
+    private readonly IReadOnlyDictionary<Guid, CombatParticipantDefinition> _enemiesById;
     private readonly CombatRuntimeState _playerRuntime;
-    private readonly CombatRuntimeState _enemyRuntime;
+    private readonly IReadOnlyDictionary<Guid, CombatRuntimeState> _enemyRuntimes;
+    private readonly Guid _primaryEnemyActorId;
+    private Guid _selectedTargetActorId;
+
+    // Transitional compatibility projection: existing class runtimes operate on the
+    // currently selected enemy while the authoritative session state stores all enemies.
+    private CombatParticipantDefinition _enemy => _enemiesById[_selectedTargetActorId];
+    private CombatRuntimeState _enemyRuntime => _enemyRuntimes[_selectedTargetActorId];
+    private CombatParticipantDefinition _primaryEnemy => _enemiesById[_primaryEnemyActorId];
+    private CombatRuntimeState _primaryEnemyRuntime => _enemyRuntimes[_primaryEnemyActorId];
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilities;
     private readonly MonsterAiProfile _enemyAi;
     private readonly ResolvedTalentModifiers _playerTalents;
@@ -40,23 +50,59 @@ public sealed partial class CombatSession
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
         string balanceVersion = "UNVERSIONED")
+        : this(
+            sessionId,
+            player,
+            [enemy],
+            abilities,
+            enemyAi,
+            playerTalents,
+            random,
+            startedAtUtc,
+            contentVersion,
+            balanceVersion)
+    {
+    }
+
+    public CombatSession(
+        Guid sessionId,
+        CombatParticipantDefinition player,
+        IReadOnlyList<CombatParticipantDefinition> enemies,
+        IReadOnlyDictionary<string, AbilityDefinition> abilities,
+        MonsterAiProfile primaryEnemyAi,
+        ResolvedTalentModifiers playerTalents,
+        IGameRandom random,
+        DateTimeOffset startedAtUtc,
+        string contentVersion = "UNVERSIONED",
+        string balanceVersion = "UNVERSIONED")
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
         ArgumentNullException.ThrowIfNull(player);
-        ArgumentNullException.ThrowIfNull(enemy);
+        ArgumentNullException.ThrowIfNull(enemies);
         ArgumentNullException.ThrowIfNull(abilities);
-        ArgumentNullException.ThrowIfNull(enemyAi);
+        ArgumentNullException.ThrowIfNull(primaryEnemyAi);
         ArgumentNullException.ThrowIfNull(playerTalents);
         ArgumentNullException.ThrowIfNull(random);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(balanceVersion);
+        if (enemies.Count == 0)
+            throw new ArgumentException("CombatSession requires at least one enemy.", nameof(enemies));
+        if (player.Kind != CombatActorKind.Player
+            || enemies.Any(enemy => enemy.Kind != CombatActorKind.Monster))
+        {
+            throw new ArgumentException("CombatSession requires one player and monster enemies.");
+        }
+        if (enemies.Select(enemy => enemy.Actor.ActorId).Distinct().Count() != enemies.Count)
+            throw new ArgumentException("Enemy actor identifiers must be unique.", nameof(enemies));
+        if (enemies.Any(enemy => enemy.Actor.ActorId == player.Actor.ActorId))
+            throw new ArgumentException("Player and enemy actor identifiers must be unique.", nameof(enemies));
+
         ValidateAutoAttack(player.AutoAttack);
         if (player.OffHandAutoAttack is not null)
             ValidateAutoAttack(player.OffHandAutoAttack);
-        ValidateAutoAttack(enemy.AutoAttack);
-        if (player.Kind != CombatActorKind.Player || enemy.Kind != CombatActorKind.Monster)
-            throw new ArgumentException("CombatSession requires one player and one monster.");
+        foreach (CombatParticipantDefinition enemy in enemies)
+            ValidateAutoAttack(enemy.AutoAttack);
         if (player.ResourceRegenPerSecond < 0)
             throw new ArgumentOutOfRangeException(nameof(player), "Resource regeneration cannot be negative.");
 
@@ -64,13 +110,23 @@ public sealed partial class CombatSession
         ContentVersion = contentVersion;
         BalanceVersion = balanceVersion;
         _player = player;
-        _enemy = enemy;
+        _enemies = enemies.ToArray();
+        _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
+        _primaryEnemyActorId = _enemies[0].Actor.ActorId;
+        _selectedTargetActorId = _primaryEnemyActorId;
         _abilities = abilities;
-        _enemyAi = enemyAi;
+        _enemyAi = primaryEnemyAi;
         _playerTalents = playerTalents;
         _random = random;
-        _playerRuntime = CreateRuntime(player.Actor, enemy.Actor);
-        _enemyRuntime = CreateRuntime(enemy.Actor, player.Actor);
+
+        CombatActorState[] enemyActors = _enemies.Select(enemy => enemy.Actor).ToArray();
+        _playerRuntime = CreateRuntime(player.Actor, enemyActors);
+        _enemyRuntimes = _enemies.ToDictionary(
+            enemy => enemy.Actor.ActorId,
+            enemy => CreateRuntime(
+                enemy.Actor,
+                [player.Actor, .. enemyActors.Where(actor => actor.ActorId != enemy.Actor.ActorId)]));
+
         CurrentTimeUtc = startedAtUtc;
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
         Status = CombatSessionStatus.Active;
@@ -80,14 +136,14 @@ public sealed partial class CombatSession
             && player.OffHandAutoAttack is not null
                 ? startedAtUtc + InitialOffHandDelay(player.OffHandAutoAttack)
                 : null;
-        _nextEnemyActionAtUtc = startedAtUtc + enemy.AutoAttack.Interval;
+        _nextEnemyActionAtUtc = startedAtUtc + _primaryEnemy.AutoAttack.Interval;
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
             startedAtUtc,
             player.Actor.ActorId,
-            enemy.DefinitionId,
+            _primaryEnemy.DefinitionId,
             SourceActorId: player.Actor.ActorId,
-            TargetActorId: enemy.Actor.ActorId));
+            TargetActorId: _selectedTargetActorId));
     }
 
     public Guid SessionId { get; }
@@ -97,7 +153,9 @@ public sealed partial class CombatSession
     public CombatSessionStatus Status { get; private set; }
     public DateTimeOffset CurrentTimeUtc { get; private set; }
     public Guid PlayerActorId => _player.Actor.ActorId;
-    public Guid EnemyActorId => _enemy.Actor.ActorId;
+    public Guid EnemyActorId => _selectedTargetActorId;
+    public Guid SelectedTargetActorId => _selectedTargetActorId;
+    public IReadOnlyList<Guid> EnemyActorIds => _enemies.Select(enemy => enemy.Actor.ActorId).ToArray();
 
     public DateTimeOffset? NextDueAtUtc
     {
@@ -109,9 +167,13 @@ public sealed partial class CombatSession
                 _nextPlayerOffHandAutoAttackAtUtc);
             next = Min(next, _nextEnemyActionAtUtc);
             next = Min(next, _playerRuntime.ActiveCast?.ResolvesAtUtc);
-            next = Min(next, _enemyRuntime.ActiveCast?.ResolvesAtUtc);
             next = Min(next, NextEffectDue(_player.Actor));
-            return Min(next, NextEffectDue(_enemy.Actor));
+            foreach (CombatParticipantDefinition enemy in _enemies)
+            {
+                next = Min(next, _enemyRuntimes[enemy.Actor.ActorId].ActiveCast?.ResolvesAtUtc);
+                next = Min(next, NextEffectDue(enemy.Actor));
+            }
+            return next;
         }
     }
 
@@ -146,6 +208,7 @@ public sealed partial class CombatSession
             UseConsumableCommand consumable => UseConsumable(consumable, now, before),
             StartAutoAttackCommand => StartAutoAttack(now, before),
             StopAutoAttackCommand => StopAutoAttack(now, before),
+            SelectTargetCommand selectTarget => SelectTarget(selectTarget, now, before),
             _ => Result(false, CombatErrorCodes.CommandRejected, before)
         };
     }
@@ -160,15 +223,28 @@ public sealed partial class CombatSession
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>
         _events.Where(item => item.Sequence > sequence).ToArray();
 
-    public CombatSessionSnapshot Snapshot() => new(
-        SessionId,
-        Sequence,
-        Status,
-        CurrentTimeUtc,
-        ActorSnapshot(_player, _playerRuntime, _playerAutoAttackEnabled),
-        ActorSnapshot(_enemy, _enemyRuntime, Status == CombatSessionStatus.Active),
-        ContentVersion,
-        BalanceVersion);
+    public CombatSessionSnapshot Snapshot()
+    {
+        CombatActorSnapshot[] enemies = _enemies
+            .Select(enemy => ActorSnapshot(
+                enemy,
+                _enemyRuntimes[enemy.Actor.ActorId],
+                Status == CombatSessionStatus.Active && !enemy.Actor.IsDead))
+            .ToArray();
+        CombatActorSnapshot selected = enemies.Single(enemy =>
+            enemy.ActorId == _selectedTargetActorId);
+        return new CombatSessionSnapshot(
+            SessionId,
+            Sequence,
+            Status,
+            CurrentTimeUtc,
+            ActorSnapshot(_player, _playerRuntime, _playerAutoAttackEnabled),
+            selected,
+            ContentVersion,
+            BalanceVersion,
+            enemies,
+            _selectedTargetActorId);
+    }
 
     public CombatCommandResult Cancel(DateTimeOffset now)
     {
@@ -271,6 +347,34 @@ public sealed partial class CombatSession
         return Result(true, null, before);
     }
 
+    private CombatCommandResult SelectTarget(
+        SelectTargetCommand command,
+        DateTimeOffset now,
+        long before)
+    {
+        if (!_enemiesById.TryGetValue(
+                command.TargetActorId,
+                out CombatParticipantDefinition? target)
+            || target.Actor.IsDead)
+        {
+            return Result(false, CombatErrorCodes.InvalidTarget, before);
+        }
+
+        if (_selectedTargetActorId == command.TargetActorId)
+            return Result(true, null, before);
+
+        _selectedTargetActorId = command.TargetActorId;
+        Append(new CombatEvent(
+            CombatEventType.TargetChanged,
+            now,
+            _player.Actor.ActorId,
+            target.DefinitionId,
+            SourceActorId: _player.Actor.ActorId,
+            TargetActorId: target.Actor.ActorId));
+        SyncBerserkerConditionalEffects(now);
+        return Result(true, null, before);
+    }
+
     private CombatCommandResult StartAutoAttack(DateTimeOffset now, long before)
     {
         if (!_player.CanAutoAttack)
@@ -341,10 +445,14 @@ public sealed partial class CombatSession
                 _playerRuntime,
                 _player.Actor.ActorId,
                 due);
-            CompleteReadyCast(
-                _enemyRuntime,
-                _enemy.Actor.ActorId,
-                due);
+            foreach (CombatParticipantDefinition enemy in _enemies)
+            {
+                CompleteReadyCast(
+                    _enemyRuntimes[enemy.Actor.ActorId],
+                    enemy.Actor.ActorId,
+                    due);
+                if (Status != CombatSessionStatus.Active) break;
+            }
 
             if (Status == CombatSessionStatus.Active
                 && _nextPlayerMainHandAutoAttackAtUtc <= due)
@@ -369,8 +477,9 @@ public sealed partial class CombatSession
             {
                 ResolveEnemyAction(due);
                 _nextEnemyActionAtUtc = Status == CombatSessionStatus.Active
-                    ? due + _enemy.AutoAttack.Interval
-                    : null;
+                    && !_primaryEnemy.Actor.IsDead
+                        ? due + _primaryEnemy.AutoAttack.Interval
+                        : null;
             }
         }
 
@@ -405,15 +514,21 @@ public sealed partial class CombatSession
 
     private void ResolveEnemyAction(DateTimeOffset now)
     {
+        if (_primaryEnemy.Actor.IsDead)
+        {
+            _nextEnemyActionAtUtc = null;
+            return;
+        }
+
         SyncBerserkerConditionalEffects(now);
         foreach (string abilityId in _enemyAi.PriorityAbilityIds)
         {
-            if (!_enemy.KnownAbilityIds.Contains(abilityId)
+            if (!_primaryEnemy.KnownAbilityIds.Contains(abilityId)
                 || !_abilities.TryGetValue(abilityId, out AbilityDefinition? ability))
                 continue;
             string commandId = $"ai:{Sequence + 1}:{abilityId}";
             AbilityExecutionResult execution = AbilityEngine.Execute(
-                _enemyRuntime,
+                _primaryEnemyRuntime,
                 ability,
                 new AbilityIntent(commandId, abilityId, _player.Actor.ActorId),
                 now,
@@ -421,20 +536,20 @@ public sealed partial class CombatSession
             if (!execution.Succeeded) continue;
             ApplyKernelEvents(
                 execution.Events,
-                _enemy.Actor.ActorId,
+                _primaryEnemy.Actor.ActorId,
                 _player.Actor.ActorId,
                 abilityId);
             Append(new CombatEvent(
                 CombatEventType.AbilityUsed,
                 now,
-                _enemy.Actor.ActorId,
+                _primaryEnemy.Actor.ActorId,
                 abilityId,
-                SourceActorId: _enemy.Actor.ActorId,
+                SourceActorId: _primaryEnemy.Actor.ActorId,
                 TargetActorId: _player.Actor.ActorId));
             return;
         }
 
-        ResolveAutoAttack(_enemy, _player, now);
+        ResolveAutoAttack(_primaryEnemy, _player, now);
     }
 
     private void ResolveAutoAttack(
@@ -522,19 +637,23 @@ public sealed partial class CombatSession
                 _player.Actor,
                 now,
                 (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _player.Actor, tickAt)),
-            _enemy.Actor.ActorId,
+            _primaryEnemy.Actor.ActorId,
             _player.Actor.ActorId,
             null);
         if (Status != CombatSessionStatus.Active) return;
 
-        ApplyKernelEvents(
-            EffectEngine.Process(
-                _enemy.Actor,
-                now,
-                (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _enemy.Actor, tickAt)),
-            _player.Actor.ActorId,
-            _enemy.Actor.ActorId,
-            null);
+        foreach (CombatParticipantDefinition enemy in _enemies)
+        {
+            ApplyKernelEvents(
+                EffectEngine.Process(
+                    enemy.Actor,
+                    now,
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, enemy.Actor, tickAt)),
+                _player.Actor.ActorId,
+                enemy.Actor.ActorId,
+                null);
+            if (Status != CombatSessionStatus.Active) return;
+        }
     }
 
     private IReadOnlyList<CombatEvent> ResolvePeriodicEffectDamage(
@@ -544,8 +663,10 @@ public sealed partial class CombatSession
     {
         CombatActorState? source = effect.SourceId == _player.Actor.ActorId
             ? _player.Actor
-            : effect.SourceId == _enemy.Actor.ActorId
-                ? _enemy.Actor
+            : _enemiesById.TryGetValue(
+                effect.SourceId,
+                out CombatParticipantDefinition? enemySource)
+                ? enemySource.Actor
                 : null;
         if (source is null || source.IsDead || target.IsDead) return [];
 
@@ -678,44 +799,80 @@ public sealed partial class CombatSession
     private void FinishForDeath(CombatEvent death)
     {
         if (Status != CombatSessionStatus.Active) return;
-        if (death.ActorId == _enemy.Actor.ActorId)
-        {
-            Append(new CombatEvent(
-                CombatEventType.EnemyKilled,
-                death.OccurredAtUtc,
-                _player.Actor.ActorId,
-                _enemy.DefinitionId,
-                SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
-                TargetActorId: _enemy.Actor.ActorId,
-                IsPeriodic: death.IsPeriodic,
-                DamageType: death.DamageType,
-                WeaponHand: death.WeaponHand,
-                WeaponDefinitionId: death.WeaponDefinitionId));
-            TriggerTalent(
-                TalentModifierKeys.OnEnemyKilled,
-                death.OccurredAtUtc);
-            ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
-            ApplyPyromancerEnemyKilledHooks(death);
-            Status = CombatSessionStatus.Victory;
-        }
-        else
+
+        if (death.ActorId == _player.Actor.ActorId)
         {
             Status = CombatSessionStatus.Defeat;
+            EndCombat(death);
+            return;
         }
 
+        if (!_enemiesById.TryGetValue(
+                death.ActorId,
+                out CombatParticipantDefinition? killedEnemy))
+        {
+            return;
+        }
+
+        Append(new CombatEvent(
+            CombatEventType.EnemyKilled,
+            death.OccurredAtUtc,
+            _player.Actor.ActorId,
+            killedEnemy.DefinitionId,
+            SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
+            TargetActorId: killedEnemy.Actor.ActorId,
+            IsPeriodic: death.IsPeriodic,
+            DamageType: death.DamageType,
+            WeaponHand: death.WeaponHand,
+            WeaponDefinitionId: death.WeaponDefinitionId));
+        TriggerTalent(
+            TalentModifierKeys.OnEnemyKilled,
+            death.OccurredAtUtc);
+        ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
+        ApplyPyromancerEnemyKilledHooks(death);
+
+        if (killedEnemy.Actor.ActorId == _primaryEnemyActorId)
+            _nextEnemyActionAtUtc = null;
+
+        CombatParticipantDefinition? nextAlive = _enemies
+            .FirstOrDefault(enemy => !enemy.Actor.IsDead);
+        if (nextAlive is null)
+        {
+            Status = CombatSessionStatus.Victory;
+            EndCombat(death);
+            return;
+        }
+
+        if (_selectedTargetActorId == killedEnemy.Actor.ActorId)
+        {
+            _selectedTargetActorId = nextAlive.Actor.ActorId;
+            Append(new CombatEvent(
+                CombatEventType.TargetChanged,
+                death.OccurredAtUtc,
+                _player.Actor.ActorId,
+                nextAlive.DefinitionId,
+                SourceActorId: _player.Actor.ActorId,
+                TargetActorId: nextAlive.Actor.ActorId));
+        }
+
+        SyncBerserkerConditionalEffects(death.OccurredAtUtc);
+    }
+
+    private void EndCombat(CombatEvent terminalEvent)
+    {
         _playerAutoAttackEnabled = false;
         _nextPlayerMainHandAutoAttackAtUtc = null;
         _nextPlayerOffHandAutoAttackAtUtc = null;
         _nextEnemyActionAtUtc = null;
         Append(new CombatEvent(
             CombatEventType.CombatEnded,
-            death.OccurredAtUtc,
-            death.ActorId,
+            terminalEvent.OccurredAtUtc,
+            terminalEvent.ActorId,
             Status.ToString(),
-            SourceActorId: death.SourceActorId,
-            TargetActorId: death.ActorId,
-            WeaponHand: death.WeaponHand,
-            WeaponDefinitionId: death.WeaponDefinitionId));
+            SourceActorId: terminalEvent.SourceActorId,
+            TargetActorId: terminalEvent.ActorId,
+            WeaponHand: terminalEvent.WeaponHand,
+            WeaponDefinitionId: terminalEvent.WeaponDefinitionId));
     }
 
     private void ApplyPlayerResourceRegen(DateTimeOffset now)
@@ -761,10 +918,14 @@ public sealed partial class CombatSession
 
     private static CombatRuntimeState CreateRuntime(
         CombatActorState actor,
-        CombatActorState other)
+        IEnumerable<CombatActorState> others)
     {
         CombatRuntimeState runtime = new(actor);
-        runtime.AddActor(other);
+        foreach (CombatActorState other in others)
+        {
+            if (other.ActorId != actor.ActorId)
+                runtime.AddActor(other);
+        }
         return runtime;
     }
 
