@@ -10,11 +10,10 @@ import {
   abilityTypeLabel,
   classLabel,
   raceLabel,
-  resourceLabel,
 } from '@/game/character/characterPresentation'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIHealthBar, UIModal, UIPanel } from '@/ui/components'
+import { UIModal, UIPanel } from '@/ui/components'
 
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
@@ -138,27 +137,27 @@ function abilityInitials(ability: KnownAbility): string {
             :data-filled="Boolean(slot.item)"
             :data-rarity="slot.item?.rarity"
             :disabled="!slot.item"
+            :aria-label="`${slot.label}: ${slot.item?.name ?? 'пусто'}`"
+            :title="slot.item?.name ?? slot.label"
             @click="selectedItem = slot.item"
           >
             <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
-            <span class="equipment-slot__copy">
-              <small>{{ slot.label }}</small>
-              <strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
-            </span>
+            <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
         </div>
 
         <div class="paperdoll__figure">
           <div class="hero-figure">
+            <span class="hero-figure__sigil" aria-hidden="true">◆</span>
             <img v-if="character.classId === 'WARRIOR'" :src="gameArt.characters.warrior" alt="Воин" />
             <div v-else class="hero-figure__fallback" role="img" :aria-label="classLabel(character.classId)">
               <span>{{ character.name.slice(0, 1).toUpperCase() }}</span>
               <small>{{ classLabel(character.classId) }}</small>
             </div>
           </div>
-          <div class="paperdoll__vitals">
-            <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-            <UIHealthBar :label="resourceLabel(character.vitals.resourceType)" :tone="character.vitals.resourceType === 'RAGE' ? 'rage' : character.vitals.resourceType === 'MANA' ? 'mana' : 'focus'" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
+          <div class="hero-figure__caption">
+            <strong>{{ character.name }}</strong>
+            <small>ур. {{ character.level }} · {{ classLabel(character.classId) }}</small>
           </div>
         </div>
 
@@ -173,13 +172,12 @@ function abilityInitials(ability: KnownAbility): string {
             :data-filled="Boolean(slot.item)"
             :data-rarity="slot.item?.rarity"
             :disabled="!slot.item"
+            :aria-label="`${slot.label}: ${slot.item?.name ?? 'пусто'}`"
+            :title="slot.item?.name ?? slot.label"
             @click="selectedItem = slot.item"
           >
-            <span class="equipment-slot__copy">
-              <small>{{ slot.label }}</small>
-              <strong>{{ slot.item?.name ?? 'Пусто' }}</strong>
-            </span>
             <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
+            <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
         </div>
       </div>
@@ -202,7 +200,7 @@ function abilityInitials(ability: KnownAbility): string {
           <small>Надетое снаряжение</small>
           <strong>{{ equipment.filter((slot) => slot.item).length }} / {{ equipment.length }} слотов</strong>
         </div>
-        <div class="set-progress">
+        <div v-if="rangerPieces > 0" class="set-progress">
           <span>Следопыт {{ rangerPieces }}/6</span>
           <i :class="{ active: rangerPieces >= 3 }">3</i>
           <i :class="{ active: rangerPieces >= 6 }">6</i>
@@ -340,48 +338,61 @@ function abilityInitials(ability: KnownAbility): string {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 1.18fr) minmax(0, 1fr);
+  grid-template-columns: 58px minmax(9rem, 1fr) 58px;
   align-items: center;
   gap: var(--ui-space-2);
-  min-height: 18rem;
-  padding: var(--ui-space-2) var(--ui-space-3) var(--ui-space-3);
+  min-height: 22rem;
+  padding: var(--ui-space-2) var(--ui-space-3) var(--ui-space-4);
+}
+
+.paperdoll__stage::before {
+  position: absolute;
+  top: 8%;
+  right: 22%;
+  bottom: 7%;
+  left: 22%;
+  border: 1px solid rgb(146 136 255 / 8%);
+  border-radius: 48% 48% 38% 38%;
+  background:
+    radial-gradient(circle at 50% 38%, rgb(146 136 255 / 10%), transparent 54%),
+    linear-gradient(180deg, rgb(255 255 255 / 1.5%), transparent 56%);
+  content: '';
+  pointer-events: none;
 }
 
 .equipment-column {
+  position: relative;
+  z-index: 2;
   display: grid;
-  gap: var(--ui-space-2);
+  align-content: center;
+  gap: 8px;
 }
 
 .equipment-slot {
+  position: relative;
   display: grid;
-  min-width: 0;
-  grid-template-columns: 2.55rem minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ui-space-2);
-  min-height: 3.5rem;
-  padding: 6px;
+  width: 56px;
+  min-height: 58px;
+  place-items: center;
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-md);
-  background: linear-gradient(180deg, rgb(255 255 255 / 2%), rgb(3 6 11 / 38%));
-  box-shadow: var(--ui-shadow-inset);
+  background:
+    radial-gradient(circle at 50% 24%, rgb(255 255 255 / 4%), transparent 52%),
+    linear-gradient(180deg, rgb(13 18 29 / 94%), rgb(4 7 12 / 94%));
+  box-shadow: var(--ui-shadow-inset), 0 5px 12px rgb(0 0 0 / 18%);
   color: var(--ui-color-text-muted);
   font: inherit;
-  text-align: left;
-}
-
-.equipment-column--right .equipment-slot {
-  grid-template-columns: minmax(0, 1fr) 2.55rem;
-  text-align: right;
 }
 
 .equipment-slot.filled {
-  border-color: color-mix(in srgb, var(--ui-color-primary) 48%, var(--ui-color-border));
-  background: linear-gradient(180deg, rgb(146 136 255 / 8%), rgb(3 6 11 / 36%));
+  border-color: color-mix(in srgb, var(--ui-color-primary) 46%, var(--ui-color-border));
   color: var(--ui-color-text-primary);
 }
 
 .equipment-slot:not(.filled) {
-  opacity: .58;
+  opacity: .54;
 }
 
 .equipment-slot[data-rarity='Uncommon'] {
@@ -389,97 +400,118 @@ function abilityInitials(ability: KnownAbility): string {
 }
 
 .equipment-slot[data-rarity='Rare'] {
-  border-color: color-mix(in srgb, var(--ui-color-secondary) 68%, var(--ui-color-border));
+  border-color: color-mix(in srgb, var(--ui-color-secondary) 72%, var(--ui-color-border));
 }
 
 .equipment-slot[data-rarity='Epic'] {
-  border-color: color-mix(in srgb, var(--ui-color-primary) 78%, var(--ui-color-border));
-  box-shadow: var(--ui-shadow-inset), 0 0 10px rgb(146 136 255 / 8%);
+  border-color: color-mix(in srgb, var(--ui-color-primary) 82%, var(--ui-color-border));
+  box-shadow: var(--ui-shadow-inset), 0 0 12px rgb(146 136 255 / 11%);
 }
 
 .equipment-slot[data-rarity='Legendary'],
 .equipment-slot[data-rarity='Unique'] {
   border-color: var(--ui-color-gold);
-  box-shadow: var(--ui-shadow-inset), 0 0 12px rgb(232 200 102 / 10%);
+  box-shadow: var(--ui-shadow-inset), 0 0 14px rgb(232 200 102 / 13%);
 }
 
 .equipment-slot__icon {
   display: grid;
-  width: 2.55rem;
-  height: 2.55rem;
+  width: 44px;
+  height: 40px;
   place-items: center;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-md);
-  background: rgb(4 7 12 / 78%);
-  color: var(--ui-color-primary);
-  font-size: 1.2rem;
+  border: 1px solid rgb(255 255 255 / 5%);
+  border-radius: calc(var(--ui-radius-md) - 2px);
+  background: rgb(2 5 9 / 66%);
+  color: #aaa4f5;
+  font-size: 1.15rem;
 }
 
-.equipment-slot__copy {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
+.equipment-slot.filled .equipment-slot__icon {
+  background:
+    radial-gradient(circle at 50% 30%, rgb(146 136 255 / 12%), transparent 62%),
+    rgb(3 6 11 / 82%);
 }
 
-.equipment-slot__copy small {
-  color: var(--ui-color-text-muted);
-  font-size: .55rem;
-  text-transform: uppercase;
-}
-
-.equipment-slot__copy strong {
+.equipment-slot__label {
+  width: 100%;
   overflow: hidden;
-  font-size: .66rem;
+  color: var(--ui-color-text-muted);
+  font-size: .43rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1.05;
+  text-align: center;
   text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .paperdoll__figure {
+  position: relative;
+  z-index: 1;
   display: grid;
   align-self: stretch;
   align-content: end;
-  gap: var(--ui-space-2);
+  gap: 6px;
 }
 
 .hero-figure {
   position: relative;
   display: grid;
-  min-height: 13rem;
+  min-height: 17.5rem;
   place-items: end center;
+}
+
+.hero-figure::before {
+  position: absolute;
+  inset: 9% 7% 3%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(94 81 201 / 15%), transparent 64%);
+  filter: blur(8px);
+  content: '';
 }
 
 .hero-figure::after {
   position: absolute;
-  right: 10%;
+  right: 8%;
   bottom: 0;
-  left: 10%;
-  height: 1.3rem;
+  left: 8%;
+  height: 1.4rem;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgb(0 0 0 / 48%), transparent 70%);
+  background: radial-gradient(ellipse, rgb(0 0 0 / 58%), transparent 70%);
   content: '';
+}
+
+.hero-figure__sigil {
+  position: absolute;
+  top: 16%;
+  color: rgb(146 136 255 / 11%);
+  font-size: 7rem;
+  line-height: 1;
+  transform: rotate(45deg);
 }
 
 .hero-figure img {
   position: relative;
   z-index: 1;
-  width: min(100%, 11rem);
-  max-height: 14rem;
+  width: min(100%, 12.5rem);
+  max-height: 17.5rem;
   object-fit: contain;
-  filter: drop-shadow(0 .9rem 1.3rem rgb(0 0 0 / 52%));
+  filter: drop-shadow(0 1rem 1.45rem rgb(0 0 0 / 58%));
 }
 
 .hero-figure__fallback {
   position: relative;
   z-index: 1;
   display: grid;
-  width: 8rem;
-  height: 12rem;
+  width: 8.5rem;
+  height: 14rem;
   place-items: center;
   align-content: center;
   gap: var(--ui-space-2);
-  border: 1px solid rgb(146 136 255 / 16%);
-  border-radius: 48% 48% 32% 32%;
-  background: linear-gradient(180deg, rgb(146 136 255 / 10%), rgb(3 6 11 / 48%));
+  border: 1px solid rgb(146 136 255 / 15%);
+  border-radius: 48% 48% 34% 34%;
+  background: linear-gradient(180deg, rgb(146 136 255 / 9%), rgb(3 6 11 / 48%));
   color: var(--ui-color-text-muted);
 }
 
@@ -493,9 +525,27 @@ function abilityInitials(ability: KnownAbility): string {
   font-size: .6rem;
 }
 
-.paperdoll__vitals {
+.hero-figure__caption {
+  position: relative;
+  z-index: 2;
   display: grid;
-  gap: 4px;
+  justify-items: center;
+  gap: 1px;
+  text-align: center;
+}
+
+.hero-figure__caption strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--ui-font-display);
+  font-size: .78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-figure__caption small {
+  color: var(--ui-color-text-muted);
+  font-size: .5rem;
 }
 
 .progression,
@@ -680,33 +730,28 @@ function abilityInitials(ability: KnownAbility): string {
 
 @media (max-width: 430px) {
   .paperdoll__stage {
-    grid-template-columns: minmax(0, .92fr) minmax(6.2rem, 1.08fr) minmax(0, .92fr);
+    grid-template-columns: 52px minmax(7.5rem, 1fr) 52px;
     gap: 5px;
-    min-height: 16rem;
+    min-height: 20rem;
     padding-inline: var(--ui-space-2);
   }
 
   .equipment-slot {
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-    gap: 5px;
-    padding: 4px;
-  }
-
-  .equipment-column--right .equipment-slot {
-    grid-template-columns: minmax(0, 1fr) 2.25rem;
+    width: 50px;
+    min-height: 54px;
   }
 
   .equipment-slot__icon {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-
-  .equipment-slot__copy strong {
-    font-size: .59rem;
+    width: 40px;
+    height: 37px;
   }
 
   .hero-figure {
-    min-height: 11.5rem;
+    min-height: 15.5rem;
+  }
+
+  .hero-figure img {
+    max-height: 15.5rem;
   }
 
   .ability-grid {
@@ -715,18 +760,25 @@ function abilityInitials(ability: KnownAbility): string {
 }
 
 @media (max-width: 355px) {
-  .equipment-slot__copy {
-    display: none;
-  }
-
-  .equipment-slot,
-  .equipment-column--right .equipment-slot {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
   .paperdoll__stage {
-    grid-template-columns: 3.1rem minmax(7rem, 1fr) 3.1rem;
+    grid-template-columns: 47px minmax(7rem, 1fr) 47px;
+    gap: 3px;
+    padding-inline: 6px;
+  }
+
+  .equipment-slot {
+    width: 46px;
+    min-height: 51px;
+    padding-inline: 2px;
+  }
+
+  .equipment-slot__icon {
+    width: 37px;
+    height: 35px;
+  }
+
+  .equipment-slot__label {
+    font-size: .39rem;
   }
 
   .paperdoll__identity {
