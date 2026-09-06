@@ -129,7 +129,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         CombatActorSnapshot wolf = Actor(
             Guid.CreateVersion7(),
             CombatActorKind.Monster,
-            "WOLF",
+            "FOREST_WOLF_L1",
             "Wolf",
             hp: 100,
             maxHp: 100,
@@ -239,7 +239,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         CombatActorSnapshot enemy = Actor(
             Guid.CreateVersion7(),
             CombatActorKind.Monster,
-            "WOLF",
+            "FOREST_WOLF_L1",
             "Wolf",
             hp: 0,
             maxHp: 100,
@@ -268,7 +268,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         CombatActorSnapshot enemy = Actor(
             Guid.CreateVersion7(),
             CombatActorKind.Monster,
-            "WOLF",
+            "FOREST_WOLF_L1",
             "Wolf",
             hp: 100,
             maxHp: 100,
