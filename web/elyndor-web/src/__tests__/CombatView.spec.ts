@@ -63,6 +63,36 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
+  it('renders multiple enemy targets and switches the selected target', async () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Warrior', 180, 180, 0, 100, [])
+    const wolf = actor('Monster', 'WOLF', 'Волк', 80, 100, 0, 0, [], 3, 'wolf')
+    const alpha = actor('Monster', 'WOLF_ALPHA', 'Альфа-волк', 150, 150, 0, 0, [], 4, 'wolf')
+    store.snapshot = {
+      sessionId: crypto.randomUUID(),
+      sequence: 4,
+      status: 'Active',
+      serverTimeUtc: '2026-09-06T16:00:00Z',
+      contentVersion: '0.10.1',
+      balanceVersion: '0.8.0',
+      player,
+      enemy: wolf,
+      enemies: [wolf, alpha],
+      selectedTargetActorId: wolf.actorId,
+    }
+    const selectTarget = vi.spyOn(store, 'selectTarget').mockResolvedValue(undefined)
+
+    const wrapper = mount(CombatView)
+
+    const targets = wrapper.findAll('[data-combat-targets] button')
+    expect(targets).toHaveLength(2)
+    expect(targets[0]!.classes()).toContain('active')
+    expect(wrapper.text()).toContain('Альфа-волк')
+
+    await wrapper.get(`[data-target-actor-id="${alpha.actorId}"]`).trigger('click')
+    expect(selectTarget).toHaveBeenCalledWith(alpha.actorId)
+  })
+
   it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
