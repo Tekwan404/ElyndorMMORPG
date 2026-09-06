@@ -19,6 +19,7 @@ public static class InventoryEndpoints
         group.MapPost("/equip", EquipAsync);
         group.MapPost("/unequip", UnequipAsync);
         group.MapPost("/use-consumable", UseConsumableAsync);
+        group.MapPost("/set-lock", SetItemLockAsync);
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
@@ -115,6 +116,26 @@ public static class InventoryEndpoints
             },
             () => InCombatProblem(context),
             cancellationToken);
+    }
+
+    private static async Task<IResult> SetItemLockAsync(
+        SetItemLockRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        InventoryEquipmentService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return ToResult(
+            await service.SetItemLockAsync(
+                accountId,
+                request.CharacterItemId,
+                request.IsLocked,
+                request.MutationId,
+                cancellationToken),
+            context);
     }
 
     private static async Task<IResult> GetMerchantAsync(
@@ -253,7 +274,9 @@ public static class InventoryEndpoints
         Results.Problem(
             statusCode: errorCode is MerchantErrorCodes.CharacterNotFound or MerchantErrorCodes.MerchantNotFound
                 ? StatusCodes.Status404NotFound
-                : errorCode is MerchantErrorCodes.Conflict or MerchantErrorCodes.MutationConflict
+                : errorCode is MerchantErrorCodes.Conflict
+                    or MerchantErrorCodes.MutationConflict
+                    or MerchantErrorCodes.ItemLocked
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
@@ -310,6 +333,7 @@ public static class InventoryEndpoints
             item.Definition.ConsumableCooldownSeconds,
             item.Definition.BuyPriceGold,
             MerchantService.ResolveSellPrice(item.Definition),
+            item.IsLocked,
             item.Definition.IconId,
             item.Definition.AppearanceProfileId);
 
