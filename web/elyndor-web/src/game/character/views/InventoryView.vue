@@ -19,6 +19,7 @@ const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
+const equipableOnly = ref(false)
 const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
 const newItemIds = ref<Set<string>>(new Set())
 const contextualSlot = computed(() => props.slotFilter ?? null)
@@ -34,7 +35,8 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
     || (typeFilter.value === 'material' && item.type === 'Material')
     || (typeFilter.value === 'consumable' && item.type === 'Consumable')
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
-  return contextualMatches && typeMatches && rarityMatches
+  const equipableMatches = !equipableOnly.value || canEquipNow(item)
+  return contextualMatches && typeMatches && rarityMatches && equipableMatches
 }))
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
@@ -50,7 +52,7 @@ const sortedItems = computed(() => {
   return items
 })
 const visibleCells = computed(() => {
-  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all') return sortedItems.value
+  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
   return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
 })
 const usedSlots = computed(() => bagItems.value.length)
@@ -103,6 +105,26 @@ function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
   if (slot === 'Boots') return 'Feet'
   if (slot === 'Accessory') return 'Amulet'
   return slot
+}
+
+function canEquipNow(item: InventoryItem): boolean {
+  const current = character.value
+  if (!current || item.type !== 'Equipment') return false
+  if (current.level < item.requiredLevel) return false
+  if (item.allowedClassIds.length > 0 && !item.allowedClassIds.includes(current.classId)) return false
+
+  if (current.classId === 'WARRIOR') {
+    if (item.armorCategory && item.armorCategory !== 'HEAVY') return false
+    if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) return false
+  } else if (current.classId === 'ARCHER') {
+    if (item.armorCategory && item.armorCategory !== 'LEATHER') return false
+    if (item.weaponCategory && !['BOW', 'DAGGER'].includes(item.weaponCategory)) return false
+  } else if (current.classId === 'MAGE') {
+    if (item.armorCategory && item.armorCategory !== 'CLOTH') return false
+    if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) return false
+  }
+
+  return true
 }
 
 function isOneHandWeapon(item: InventoryItem): boolean {
@@ -405,6 +427,19 @@ async function toggleSelectedLock(): Promise<void> {
           <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
         </div>
       </div>
+      <div v-if="!isContextualSlotMode" class="filter-row">
+        <small>Доступность</small>
+        <div class="filter-chips">
+          <button
+            type="button"
+            data-inventory-equipable-filter
+            :class="{ active: equipableOnly }"
+            @click="equipableOnly = !equipableOnly"
+          >
+            Можно надеть
+          </button>
+        </div>
+      </div>
       <div class="filter-row filter-row--rarity">
         <small>Редкость</small>
         <div class="filter-chips filter-chips--scroll">
@@ -434,15 +469,15 @@ async function toggleSelectedLock(): Promise<void> {
     <section v-if="inventory" class="bag-surface">
       <header class="bag-surface__header">
         <div>
-          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' ? 'Все предметы' : 'Результат фильтра' }}</small>
-          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
+          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? 'Все предметы' : 'Результат фильтра' }}</small>
+          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
         </div>
         <span v-if="isContextualSlotMode">Выбор снаряжения</span>
-        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all'">Фильтр активен</span>
+        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly">Фильтр активен</span>
       </header>
 
       <div
-        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all'))"
+        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly))"
         class="bag-grid"
       >
         <button
@@ -500,6 +535,9 @@ async function toggleSelectedLock(): Promise<void> {
           </div>
         </div>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
+        <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
+          ✦ Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
+        </p>
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
         </dl>
@@ -525,8 +563,10 @@ async function toggleSelectedLock(): Promise<void> {
         </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
-        <p v-if="selectedItem.type === 'Material' && !selectedItem.isLocked" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
-        <p v-if="selectedItem.type === 'Material' && selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
+        <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">
+          Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ selectedItem.sellPriceGold }} золота.
+        </p>
+        <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
         <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
         <p
@@ -900,6 +940,17 @@ async function toggleSelectedLock(): Promise<void> {
 }
 
 .item-detail__identity p,
+.item-detail__roll {
+  margin: 0;
+  padding: 7px 9px;
+  border: 1px solid rgb(146 136 255 / 24%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(146 136 255 / 6%);
+  color: #c9c5ff;
+  font-size: .62rem;
+  line-height: 1.4;
+}
+
 .item-detail__description {
   color: var(--ui-color-text-muted);
 }
