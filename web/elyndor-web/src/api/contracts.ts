@@ -191,7 +191,7 @@ export interface InventoryItem {
   isLocked: boolean
   iconId: string | null
   appearanceProfileId: string | null
-  weaponHandsRequired: number | null
+  weaponHandsRequired?: number | null
 }
 
 export interface InventorySnapshot {
