@@ -216,6 +216,7 @@ export interface InventoryItem {
   iconId: string | null
   appearanceProfileId: string | null
   weaponHandsRequired?: number | null
+  hasRandomStats?: boolean
 }
 
 export interface InventorySnapshot {
