@@ -17,6 +17,7 @@ public sealed class CombatSessionTests
     private static readonly Guid SessionId = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid PlayerId = Guid.Parse("20000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyId = Guid.Parse("30000000-0000-0000-0000-000000000001");
+    private static readonly Guid EnemyTwoId = Guid.Parse("40000000-0000-0000-0000-000000000001");
 
     [Fact]
     public void SnapshotKeepsPinnedContentIdentity()
@@ -218,6 +219,129 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void MultiEnemySnapshotExposesCollectionAndSelectedTarget()
+    {
+        CombatSession session = CreateMultiEnemySession(
+            firstEnemyHp: 100,
+            secondEnemyHp: 100,
+            canAutoAttack: false);
+
+        CombatSessionSnapshot snapshot = session.Snapshot();
+
+        Assert.NotNull(snapshot.Enemies);
+        Assert.Equal(2, snapshot.Enemies!.Count);
+        Assert.Equal(EnemyId, snapshot.SelectedTargetActorId);
+        Assert.Equal(EnemyId, snapshot.Enemy.ActorId);
+        Assert.Equal([EnemyId, EnemyTwoId], snapshot.Enemies.Select(enemy => enemy.ActorId));
+    }
+
+    [Fact]
+    public void SelectingTargetChangesCompatibilityTargetAndNextAutoAttackTarget()
+    {
+        CombatSession session = CreateMultiEnemySession(
+            firstEnemyHp: 10_000,
+            secondEnemyHp: 10_000,
+            canAutoAttack: true);
+
+        // Opening swing owns the initial target.
+        session.AdvanceTo(Now);
+        CombatCommandResult selected = session.Handle(
+            new SelectTargetCommand("select-second", EnemyTwoId),
+            Now.AddSeconds(1));
+        session.AdvanceTo(Now.AddSeconds(2));
+
+        Assert.True(selected.Succeeded);
+        Assert.Equal(EnemyTwoId, selected.Snapshot.SelectedTargetActorId);
+        Assert.Equal(EnemyTwoId, selected.Snapshot.Enemy.ActorId);
+        Assert.Contains(selected.Events, item =>
+            item.Type == CombatEventType.TargetChanged
+            && item.TargetActorId == EnemyTwoId);
+
+        CombatEvent secondSwing = Assert.Single(
+            session.GetEventsAfter(selected.Snapshot.Sequence),
+            item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK");
+        Assert.Equal(EnemyTwoId, secondSwing.TargetActorId);
+    }
+
+    [Fact]
+    public void KillingOneEnemyKeepsCombatActiveAndRetargetsNextAliveEnemy()
+    {
+        CombatSession session = CreateMultiEnemySession(
+            firstEnemyHp: 1,
+            secondEnemyHp: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("kill-first", "STRIKE", EnemyId),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CombatSessionStatus.Active, result.Snapshot.Status);
+        Assert.Equal(EnemyTwoId, result.Snapshot.SelectedTargetActorId);
+        Assert.Equal(EnemyTwoId, result.Snapshot.Enemy.ActorId);
+        Assert.Equal(0, result.Snapshot.Enemies!.Single(enemy => enemy.ActorId == EnemyId).Hp);
+        Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy => enemy.ActorId == EnemyTwoId).Hp);
+        Assert.Single(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.EnemyKilled
+            && item.TargetActorId == EnemyId);
+        Assert.DoesNotContain(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.CombatEnded);
+        Assert.Contains(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.TargetChanged
+            && item.TargetActorId == EnemyTwoId);
+    }
+
+    [Fact]
+    public void CombatEndsOnlyAfterEveryEnemyIsDead()
+    {
+        CombatSession session = CreateMultiEnemySession(
+            firstEnemyHp: 1,
+            secondEnemyHp: 1,
+            canAutoAttack: false);
+
+        CombatCommandResult first = session.Handle(
+            new UseAbilityCommand("kill-first", "STRIKE", EnemyId),
+            Now);
+        CombatCommandResult second = session.Handle(
+            new UseAbilityCommand("kill-second", "STRIKE", EnemyTwoId),
+            Now.AddSeconds(2));
+
+        Assert.Equal(CombatSessionStatus.Active, first.Snapshot.Status);
+        Assert.Equal(CombatSessionStatus.Victory, second.Snapshot.Status);
+        Assert.Equal(2, session.GetEventsAfter(0).Count(item =>
+            item.Type == CombatEventType.EnemyKilled));
+        Assert.Single(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.CombatEnded);
+        Assert.All(second.Snapshot.Enemies!, enemy => Assert.Equal(0, enemy.Hp));
+    }
+
+    [Fact]
+    public void CannotSelectDeadOrUnknownEnemy()
+    {
+        CombatSession session = CreateMultiEnemySession(
+            firstEnemyHp: 1,
+            secondEnemyHp: 100,
+            canAutoAttack: false);
+        session.Handle(
+            new UseAbilityCommand("kill-first", "STRIKE", EnemyId),
+            Now);
+
+        CombatCommandResult dead = session.Handle(
+            new SelectTargetCommand("select-dead", EnemyId),
+            Now.AddSeconds(1));
+        CombatCommandResult unknown = session.Handle(
+            new SelectTargetCommand("select-unknown", Guid.CreateVersion7()),
+            Now.AddSeconds(1));
+
+        Assert.False(dead.Succeeded);
+        Assert.Equal(CombatErrorCodes.InvalidTarget, dead.ErrorCode);
+        Assert.False(unknown.Succeeded);
+        Assert.Equal(CombatErrorCodes.InvalidTarget, unknown.ErrorCode);
+        Assert.Equal(EnemyTwoId, unknown.Snapshot.SelectedTargetActorId);
+    }
+
+    [Fact]
     public void EnemyDeathAndCombatEndAreEmittedOnlyOnce()
     {
         // The session starts with auto attack enabled and resolves its first swing at Now.
@@ -300,6 +424,80 @@ public sealed class CombatSessionTests
         Assert.Single(results, result => result.Succeeded);
         Assert.Single(results, result => result.ErrorCode == CombatErrorCodes.DuplicateCommand);
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
+    }
+
+    private static CombatSession CreateMultiEnemySession(
+        decimal firstEnemyHp,
+        decimal secondEnemyHp,
+        bool canAutoAttack)
+    {
+        CombatStats playerStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 10, MagicResistance: 5,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 30, SpellPower: 0);
+        CombatStats enemyStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 5, MagicResistance: 5,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 8, SpellPower: 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(PlayerId, 200, 200, 100, 0, playerStats),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(2), 10, 0, 0),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: canAutoAttack);
+        CombatParticipantDefinition firstEnemy = new(
+            new CombatActorState(EnemyId, firstEnemyHp, firstEnemyHp, 0, 0, enemyStats),
+            CombatActorKind.Monster,
+            "WOLF",
+            "Forest Wolf",
+            "NONE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(10), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal));
+        CombatParticipantDefinition secondEnemy = new(
+            new CombatActorState(EnemyTwoId, secondEnemyHp, secondEnemyHp, 0, 0, enemyStats),
+            CombatActorKind.Monster,
+            "WOLF_ALPHA",
+            "Alpha Wolf",
+            "NONE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(10), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal));
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["STRIKE"] = new(
+                "STRIKE",
+                AbilityType.Instant,
+                AbilityTargetType.SingleEnemy,
+                0,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                false,
+                GlobalCooldownCategory.None,
+                false,
+                "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 100,
+                        DamageType: DamageType.Physical,
+                        CanMiss: false,
+                        CanCrit: false,
+                        CanDodge: false)
+                ])
+        };
+
+        return new CombatSession(
+            SessionId,
+            player,
+            [firstEnemy, secondEnemy],
+            abilities,
+            new MonsterAiProfile("PASSIVE_MULTI_TEST_AI", []),
+            ResolvedTalentModifiers.Empty,
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 100).ToArray()),
+            Now);
     }
 
     private static CombatSession CreateSession(

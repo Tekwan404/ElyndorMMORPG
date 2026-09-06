@@ -72,7 +72,9 @@ public sealed record CombatSessionSnapshot(
     CombatActorSnapshot Player,
     CombatActorSnapshot Enemy,
     string ContentVersion = "UNVERSIONED",
-    string BalanceVersion = "UNVERSIONED");
+    string BalanceVersion = "UNVERSIONED",
+    IReadOnlyList<CombatActorSnapshot>? Enemies = null,
+    Guid? SelectedTargetActorId = null);
 
 public static class CombatErrorCodes
 {

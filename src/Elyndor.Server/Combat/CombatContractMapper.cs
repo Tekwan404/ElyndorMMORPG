@@ -38,15 +38,24 @@ internal static class CombatContractMapper
 
     private static CombatSnapshotResponse ToResponse(
         CombatSessionSnapshot snapshot,
-        GameContentPackage content) => new(
-        snapshot.SessionId,
-        snapshot.Sequence,
-        snapshot.Status.ToString(),
-        snapshot.ServerTimeUtc,
-        ToResponse(snapshot.Player, content),
-        ToResponse(snapshot.Enemy, content),
-        snapshot.ContentVersion,
-        snapshot.BalanceVersion);
+        GameContentPackage content)
+    {
+        CombatActorResponse selected = ToResponse(snapshot.Enemy, content);
+        CombatActorResponse[] enemies = (snapshot.Enemies ?? new[] { snapshot.Enemy })
+            .Select(enemy => ToResponse(enemy, content))
+            .ToArray();
+        return new CombatSnapshotResponse(
+            snapshot.SessionId,
+            snapshot.Sequence,
+            snapshot.Status.ToString(),
+            snapshot.ServerTimeUtc,
+            ToResponse(snapshot.Player, content),
+            selected,
+            snapshot.ContentVersion,
+            snapshot.BalanceVersion,
+            enemies,
+            snapshot.SelectedTargetActorId ?? snapshot.Enemy.ActorId);
+    }
 
     private static CombatActorResponse ToResponse(
         CombatActorSnapshot actor,

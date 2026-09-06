@@ -16,6 +16,8 @@ const now = ref(Date.now())
 const logOpen = ref(false)
 const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
+const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
+const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
 
 type LogSide = 'player' | 'enemy' | 'system'
 interface CombatLogEntry {
@@ -144,7 +146,7 @@ const logEntries = computed<CombatLogEntry[]>(() => {
     entries.push({
       key: event.sequence,
       side,
-      actor: actorLabel(side),
+      actor: actorLabel(side, event),
       text: eventText(event, critical),
       detail: resourceEvent
         ? `${resourceEvent.amount > 0 ? '+' : ''}${Math.round(resourceEvent.amount * 10) / 10} ${resourceName.value.toLowerCase()} · ${abilityName(resourceEvent.definitionId)}`
@@ -202,24 +204,32 @@ function effectLabel(effect: CombatEffectSnapshot): string {
 
 function eventSide(event: CombatEvent): LogSide {
   const current = snapshot.value
-  if (!current || ['CombatStarted', 'CombatEnded', 'ActorDied', 'EnemyKilled'].includes(event.type)) {
+  if (!current || ['CombatStarted', 'CombatEnded', 'ActorDied', 'EnemyKilled', 'TargetChanged'].includes(event.type)) {
     return 'system'
   }
   const source = event.sourceActorId ?? event.actorId
   if (source === current.player.actorId) return 'player'
-  if (source === current.enemy.actorId) return 'enemy'
+  if (combatEnemies.value.some((enemy) => enemy.actorId === source)) return 'enemy'
   return 'system'
 }
 
-function actorLabel(side: LogSide): string {
+function actorLabel(side: LogSide, event?: CombatEvent): string {
   if (side === 'player') return 'ВЫ'
-  if (side === 'enemy') return enemyPresentation.value?.name.toUpperCase() ?? 'ВРАГ'
+  if (side === 'enemy') {
+    const source = event?.sourceActorId ?? event?.actorId
+    return combatEnemies.value.find((enemy) => enemy.actorId === source)?.name.toUpperCase()
+      ?? enemyPresentation.value?.name.toUpperCase()
+      ?? 'ВРАГ'
+  }
   return 'СИСТЕМА'
 }
 
 function eventText(event: CombatEvent, critical = false): string {
   const definition = abilityName(event.definitionId)
   const enemyName = enemyPresentation.value?.name ?? 'Противник'
+  const eventEnemy = combatEnemies.value.find((enemy) =>
+    enemy.actorId === (event.targetActorId ?? event.actorId),
+  )
   switch (event.type) {
     case 'CombatStarted':
       return isTraining.value ? 'Тренировка началась' : `Бой с ${enemyName} начался`
@@ -243,10 +253,14 @@ function eventText(event: CombatEvent, critical = false): string {
       return `${definition} · +${Math.round(event.amount)} здоровья`
     case 'TauntApplied':
       return `Провокация · ${definition}`
-    case 'ActorDied':
-      return event.actorId === snapshot.value?.enemy.actorId ? `${enemyName} повержен` : 'Вы повержены'
+    case 'ActorDied': {
+      const deadEnemy = combatEnemies.value.find((enemy) => enemy.actorId === event.actorId)
+      return deadEnemy ? `${deadEnemy.name} повержен` : 'Вы повержены'
+    }
     case 'EnemyKilled':
-      return `${enemyName} повержен`
+      return `${eventEnemy?.name ?? enemyName} повержен`
+    case 'TargetChanged':
+      return `Новая цель · ${eventEnemy?.name ?? enemyName}`
     case 'CombatEnded':
       return event.definitionId === 'Victory'
         ? 'Победа'
@@ -264,6 +278,11 @@ function abilityState(ability: CombatAbility): 'cooldown' | 'resource' | 'ready'
   if (cooldownRemaining(ability.id) > 0) return 'cooldown'
   if ((snapshot.value?.player.resource ?? 0) < ability.resourceCost) return 'resource'
   return 'ready'
+}
+
+async function selectCombatTarget(targetActorId: string): Promise<void> {
+  if (combat.pending) return
+  await combat.selectTarget(targetActorId)
 }
 
 async function usePotion(): Promise<void> {
@@ -319,6 +338,26 @@ onUnmounted(() => window.clearInterval(timer))
           />
         </section>
       </header>
+
+      <nav
+        v-if="aliveEnemies.length > 1"
+        class="combat-targets"
+        aria-label="Выбор цели"
+        data-combat-targets
+      >
+        <button
+          v-for="enemy in aliveEnemies"
+          :key="enemy.actorId"
+          type="button"
+          :class="{ active: enemy.actorId === (snapshot.selectedTargetActorId ?? snapshot.enemy.actorId) }"
+          :disabled="combat.pending"
+          :data-target-actor-id="enemy.actorId"
+          @click="selectCombatTarget(enemy.actorId)"
+        >
+          <span>{{ enemy.name }}</span>
+          <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }}</small>
+        </button>
+      </nav>
 
       <section class="battlefield" data-combat-battlefield>
         <div class="battlefield__vignette" />
@@ -616,6 +655,48 @@ onUnmounted(() => window.clearInterval(timer))
   font-size: .72rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.combat-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 5px;
+}
+
+.combat-targets button {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(7 10 17 / 92%);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  text-align: left;
+}
+
+.combat-targets button.active {
+  border-color: rgb(216 95 114 / 48%);
+  background: rgb(216 95 114 / 8%);
+  color: var(--ui-color-text-primary);
+}
+
+.combat-targets button span,
+.combat-targets button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-targets button span {
+  font-size: .52rem;
+  font-weight: 800;
+}
+
+.combat-targets button small {
+  color: var(--ui-color-text-muted);
+  font-size: .43rem;
 }
 
 .battlefield {
