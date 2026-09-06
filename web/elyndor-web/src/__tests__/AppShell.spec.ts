@@ -1,16 +1,34 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import AppShell from '@/app/AppShell.vue'
+import { apiClient } from '@/api/apiClient'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 vi.mock('@/telegram/telegramWebApp', () => ({ initializeTelegramWebApp: vi.fn<() => void>() }))
 
 describe('AppShell', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.restoreAllMocks()
+  })
 
-  it('presents authoritative vitals and switches between world and hero views', async () => {
+  it('presents authoritative vitals and switches between map, location and hero views', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([
+      {
+        id: 'STARTER_TOWN',
+        displayName: 'Starter Town',
+        dangerLevel: 'SAFE',
+        recommendedLevel: 1,
+      },
+      {
+        id: 'WHISPERING_FOREST',
+        displayName: 'Whispering Forest',
+        dangerLevel: 'ADVENTURE',
+        recommendedLevel: 1,
+      },
+    ])
     const store = useGameSessionStore()
     vi.spyOn(store, 'start').mockResolvedValue(undefined)
     store.state = 'world'
@@ -22,7 +40,13 @@ describe('AppShell', () => {
     expect(wrapper.find('[data-nav="combat"]').exists()).toBe(false)
     expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
     expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeUndefined()
+
+    await wrapper.get('[data-nav="world"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Карта мира')
+
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Развитие героя')
     expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
