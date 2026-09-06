@@ -11,6 +11,7 @@ import type {
   AuthenticationResponse,
   BootstrapSnapshot,
   CreateCharacterRequest,
+  EquipmentSlot,
   MerchantSnapshot,
   WorldEncounter,
 } from '@/api/contracts'
@@ -122,12 +123,12 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function equip(characterItemId: string): Promise<void> {
+  async function equip(characterItemId: string, targetSlot?: EquipmentSlot): Promise<void> {
     await replaySafeMutate(
       'inventory:equip',
       '/api/v1/inventory/equip',
       'mutationId',
-      { characterItemId },
+      targetSlot ? { characterItemId, targetSlot } : { characterItemId },
     )
   }
 

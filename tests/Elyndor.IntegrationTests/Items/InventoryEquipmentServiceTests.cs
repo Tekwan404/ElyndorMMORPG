@@ -2,9 +2,11 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
+using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Talents;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.EntityFrameworkCore;
 
@@ -416,6 +418,209 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task WarriorCannotEquipOneHandWeaponInOffHandWithoutPermission()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
+        Guid swordId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            swordId,
+            EquipmentSlot.OffHand,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.DualWieldPermissionRequired, result.ErrorCode);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterEquipment
+            .Where(e => e.CharacterId == characterId)
+            .ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task BerserkerDoubleStrikePermissionAllowsTwoOneHandWeapons()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR", level: 30);
+        Guid mainHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        Guid offHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await GrantDualWieldPermissionAsync(characterId);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            mainHandId,
+            EquipmentSlot.MainHand,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        InventoryOperationResult offHand = await service.EquipAsync(
+            accountId,
+            offHandId,
+            EquipmentSlot.OffHand,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(offHand.IsSuccess);
+        Assert.Equal(mainHandId, offHand.Snapshot!.Equipped[EquipmentSlot.MainHand].Id);
+        Assert.Equal(offHandId, offHand.Snapshot.Equipped[EquipmentSlot.OffHand].Id);
+    }
+
+    [Fact]
+    public async Task TwoHandedWeaponStillConflictsWithDualWieldOffHand()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition greatsword = new(
+            "TEST_DUAL_WIELD_GREATSWORD",
+            "Test Dual Wield Greatsword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(1, 0, 0, 0),
+            "Test",
+            WeaponCategory: EquipmentCategoryIds.TwoHandSword,
+            WeaponDamageMin: 8,
+            WeaponDamageMax: 12);
+        content = content with { Items = content.Items!.Concat([greatsword]).ToArray() };
+
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR", level: 30);
+        Guid greatswordId = await AddItemAsync(characterId, greatsword.Id, 1);
+        Guid swordId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await GrantDualWieldPermissionAsync(characterId);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = new(context, content, new FixedTimeProvider(Now));
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            greatswordId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            swordId,
+            EquipmentSlot.OffHand,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.TwoHandedConflict, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task SwitchingAwayFromDualWieldLoadoutUnequipsOffHandWeapon()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(100, "WARRIOR", level: 30);
+        Guid mainHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        Guid offHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        long stateVersion = await GrantDualWieldPermissionAsync(characterId);
+
+        await using (GameDbContext equipmentContext = postgres.CreateDbContext())
+        {
+            InventoryEquipmentService equipment =
+                new(equipmentContext, content, new FixedTimeProvider(Now));
+            Assert.True((await equipment.EquipAsync(
+                accountId,
+                mainHandId,
+                EquipmentSlot.MainHand,
+                Guid.CreateVersion7(),
+                CancellationToken.None)).IsSuccess);
+            Assert.True((await equipment.EquipAsync(
+                accountId,
+                offHandId,
+                EquipmentSlot.OffHand,
+                Guid.CreateVersion7(),
+                CancellationToken.None)).IsSuccess);
+        }
+
+        await using (GameDbContext talentContext = postgres.CreateDbContext())
+        {
+            TalentService talents = new(talentContext, content, new FixedTimeProvider(Now));
+            TalentOperationResult switched = await talents.SwitchAsync(
+                accountId,
+                TalentLoadoutIds.Loadout2,
+                stateVersion,
+                Guid.CreateVersion7().ToString(),
+                CancellationToken.None);
+            Assert.True(switched.IsSuccess);
+        }
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verify.CharacterEquipment
+            .Where(candidate => candidate.CharacterId == characterId)
+            .ToArrayAsync();
+        CharacterEquipment remaining = Assert.Single(equipped);
+        Assert.Equal(EquipmentSlot.MainHand, remaining.Slot);
+        Assert.Equal(mainHandId, remaining.CharacterItemId);
+        Assert.Equal(
+            2,
+            await verify.CharacterItems.CountAsync(item => item.CharacterId == characterId));
+    }
+
+    [Fact]
+    public async Task ResettingActiveDualWieldLoadoutUnequipsOffHandWeapon()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(100, "WARRIOR", level: 30);
+        Guid mainHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        Guid offHandId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        long stateVersion = await GrantDualWieldPermissionAsync(characterId);
+
+        await using (GameDbContext equipmentContext = postgres.CreateDbContext())
+        {
+            InventoryEquipmentService equipment =
+                new(equipmentContext, content, new FixedTimeProvider(Now));
+            Assert.True((await equipment.EquipAsync(
+                accountId,
+                mainHandId,
+                EquipmentSlot.MainHand,
+                Guid.CreateVersion7(),
+                CancellationToken.None)).IsSuccess);
+            Assert.True((await equipment.EquipAsync(
+                accountId,
+                offHandId,
+                EquipmentSlot.OffHand,
+                Guid.CreateVersion7(),
+                CancellationToken.None)).IsSuccess);
+        }
+
+        await using (GameDbContext talentContext = postgres.CreateDbContext())
+        {
+            TalentService talents = new(talentContext, content, new FixedTimeProvider(Now));
+            TalentOperationResult reset = await talents.ResetAsync(
+                accountId,
+                TalentLoadoutIds.Loadout1,
+                stateVersion,
+                Guid.CreateVersion7().ToString(),
+                CancellationToken.None);
+            Assert.True(reset.IsSuccess);
+        }
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verify.CharacterEquipment
+            .Where(candidate => candidate.CharacterId == characterId)
+            .ToArrayAsync();
+        CharacterEquipment remaining = Assert.Single(equipped);
+        Assert.Equal(EquipmentSlot.MainHand, remaining.Slot);
+        Assert.Equal(mainHandId, remaining.CharacterItemId);
+        Assert.Equal(
+            2,
+            await verify.CharacterItems.CountAsync(item => item.CharacterId == characterId));
+    }
+
+    [Fact]
     public async Task EquippingTwoHandedWeaponUnequipsExistingShield()
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
@@ -561,6 +766,22 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         CharacterEquipment entry = Assert.Single(equipped);
         Assert.Equal(EquipmentSlot.MainHand, entry.Slot);
         Assert.Equal(canonicalWeaponId, entry.CharacterItemId);
+    }
+
+    private async Task<long> GrantDualWieldPermissionAsync(Guid characterId)
+    {
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterTalentState state = new(characterId, "WARRIOR_TREE", 1, Now);
+        state.ReplaceRanks(
+            TalentLoadoutIds.Loadout1,
+            new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["B-4-1"] = 1
+            },
+            Now);
+        context.CharacterTalentStates.Add(state);
+        await context.SaveChangesAsync();
+        return state.StateVersion;
     }
 
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(

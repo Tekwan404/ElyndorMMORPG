@@ -44,7 +44,8 @@ public sealed record InventoryItemResponse(
     int SellPriceGold,
     bool IsLocked,
     string? IconId = null,
-    string? AppearanceProfileId = null);
+    string? AppearanceProfileId = null,
+    int? WeaponHandsRequired = null);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
@@ -66,7 +67,10 @@ public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
     EquipmentSlotsResponse Equipped);
 
-public sealed record EquipItemRequest(Guid CharacterItemId, Guid MutationId);
+public sealed record EquipItemRequest(
+    Guid CharacterItemId,
+    Guid MutationId,
+    string? TargetSlot = null);
 
 public sealed record UnequipItemRequest(string Slot, Guid MutationId);
 

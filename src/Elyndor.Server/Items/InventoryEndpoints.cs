@@ -44,12 +44,22 @@ public static class InventoryEndpoints
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+
+        EquipmentSlot? targetSlot = null;
+        if (request.TargetSlot is not null)
+        {
+            if (!Enum.TryParse(request.TargetSlot, ignoreCase: false, out EquipmentSlot parsedSlot))
+                return Problem(InventoryErrorCodes.InvalidSlot, context);
+            targetSlot = parsedSlot;
+        }
+
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
             async () => ToResult(
                 await service.EquipAsync(
                     accountId,
                     request.CharacterItemId,
+                    targetSlot,
                     request.MutationId,
                     cancellationToken),
                 context),
@@ -335,7 +345,10 @@ public static class InventoryEndpoints
             MerchantService.ResolveSellPrice(item.Definition),
             item.IsLocked,
             item.Definition.IconId,
-            item.Definition.AppearanceProfileId);
+            item.Definition.AppearanceProfileId,
+            item.Definition.WeaponCategory is null
+                ? null
+                : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1);
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)

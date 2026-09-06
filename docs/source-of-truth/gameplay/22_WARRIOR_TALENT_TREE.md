@@ -476,7 +476,9 @@ Cooldown: **10 секунд**.
 `MaxRank 1`  
 Пассив. **15% шанс** при Auto Attack нанести второй удар немедленно за **45% урона** от первого.  
 Второй удар не может критовать.  
+Изучение таланта также открывает equipment permission **DUAL_WIELD_ONE_HAND_WEAPON**: Warrior может экипировать второе одноручное оружие в **OFF_HAND**. Щит остаётся доступен по обычным class rules; двуручное оружие по-прежнему занимает обе руки.  
 *Event-Triggered: OnAutoAttack → conditional second hit.*  
+*Equipment Permission: DUAL_WIELD_ONE_HAND_WEAPON.*  
 *Proc Safety: InternalCooldown = 2 sec, CanTriggerFromProc = false.*
 
 ---

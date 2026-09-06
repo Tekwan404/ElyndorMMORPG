@@ -108,6 +108,9 @@ public static class EquipmentCategoryIds
 
     public static bool UsesBothHands(string? weaponCategory) =>
         weaponCategory is TwoHandSword or Bow or Staff;
+
+    public static bool IsOneHandedWeapon(string? weaponCategory) =>
+        IsWeapon(weaponCategory) && !UsesBothHands(weaponCategory);
 }
 
 public sealed record ItemDefinition(

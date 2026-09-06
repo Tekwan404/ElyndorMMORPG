@@ -79,6 +79,56 @@ describe('InventoryView', () => {
     expect(document.body.textContent).toContain('Капюшон Следопыта')
   })
 
+  it('lets a one-hand weapon choose main hand or off hand explicitly', async () => {
+    const store = useGameSessionStore()
+    const sword = item({
+      id: 'BERSERKER_SWORD',
+      name: 'Клинок Багровой Ярости',
+      type: 'Equipment',
+      rarity: 'Epic',
+      slot: 'MainHand',
+      weaponCategory: 'ONE_HAND_SWORD',
+      weaponHandsRequired: 1,
+    })
+    store.snapshot = snapshot([sword], currentWeapon())
+    const equip = vi.spyOn(store, 'equip').mockResolvedValue(undefined)
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="BERSERKER_SWORD"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.querySelector('[data-equip-target="MainHand"]')).not.toBeNull()
+    const offHand = document.body.querySelector<HTMLButtonElement>('[data-equip-target="OffHand"]')
+    expect(offHand).not.toBeNull()
+    offHand?.click()
+    await flushPromises()
+
+    expect(equip).toHaveBeenCalledWith('BERSERKER_SWORD', 'OffHand')
+  })
+
+  it('includes one-hand weapons when inventory is opened for the off-hand slot', async () => {
+    const store = useGameSessionStore()
+    const sword = item({
+      id: 'OFFHAND_CANDIDATE',
+      name: 'Запасной меч',
+      type: 'Equipment',
+      rarity: 'Rare',
+      slot: 'MainHand',
+      weaponCategory: 'ONE_HAND_SWORD',
+      weaponHandsRequired: 1,
+    })
+    store.snapshot = snapshot([sword], currentWeapon())
+
+    const wrapper = mount(InventoryView, { props: { slotFilter: 'OffHand' } })
+    await flushPromises()
+
+    expect(wrapper.find('[data-item-id="OFFHAND_CANDIDATE"]').exists()).toBe(true)
+    await wrapper.get('[data-item-id="OFFHAND_CANDIDATE"]').trigger('click')
+    await flushPromises()
+    expect(document.body.querySelector('[data-equip-target="MainHand"]')).toBeNull()
+    expect(document.body.querySelector('[data-equip-target="OffHand"]')).not.toBeNull()
+  })
+
   it('marks only newly appeared server items as NEW and clears the mark after inspection', async () => {
     const store = useGameSessionStore()
     const existing = equipment('COMMON_BLADE', 'Старый клинок', 'Common', 1, 3)
@@ -234,6 +284,7 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     isLocked: overrides.isLocked ?? false,
     iconId: overrides.iconId ?? null,
     appearanceProfileId: overrides.appearanceProfileId ?? null,
+    weaponHandsRequired: overrides.weaponHandsRequired ?? null,
   }
 }
 

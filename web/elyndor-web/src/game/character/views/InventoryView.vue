@@ -25,7 +25,7 @@ const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
   const contextualMatches = contextualSlot.value === null
-    || (item.type === 'Equipment' && item.slot !== null && slotsMatch(item.slot, contextualSlot.value))
+    || (item.type === 'Equipment' && item.slot !== null && slotsMatch(item, contextualSlot.value))
   const typeMatches = isContextualSlotMode.value
     || typeFilter.value === 'all'
     || (typeFilter.value === 'equipment' && item.type === 'Equipment')
@@ -103,8 +103,22 @@ function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
   return slot
 }
 
-function slotsMatch(itemSlot: EquipmentSlot, requestedSlot: EquipmentSlot): boolean {
-  return canonicalSlot(itemSlot) === canonicalSlot(requestedSlot)
+function isOneHandWeapon(item: InventoryItem): boolean {
+  return item.type === 'Equipment'
+    && item.weaponCategory !== null
+    && item.weaponHandsRequired === 1
+}
+
+function slotsMatch(item: InventoryItem, requestedSlot: EquipmentSlot): boolean {
+  if (!item.slot) return false
+  const itemSlot = canonicalSlot(item.slot)
+  const target = canonicalSlot(requestedSlot)
+  if (target === 'OffHand' && itemSlot === 'MainHand' && isOneHandWeapon(item)) return true
+  return itemSlot === target
+}
+
+function isContextualTarget(slot: EquipmentSlot): boolean {
+  return contextualSlot.value !== null && canonicalSlot(contextualSlot.value) === slot
 }
 
 function slotLabel(slot: EquipmentSlot | null): string {
@@ -138,23 +152,30 @@ function rarityRank(rarity: InventoryItem['rarity']): number {
 }
 
 function equippedItemForSlot(item: InventoryItem): InventoryItem | null {
-  const equipped = inventory.value?.equipped
-  if (!equipped || !item.slot) return null
+  const targetSlot = contextualSlot.value !== null && slotsMatch(item, contextualSlot.value)
+    ? contextualSlot.value
+    : item.slot
+  return targetSlot ? equippedItemAt(targetSlot) : null
+}
 
-  if (item.slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
-  if (item.slot === 'OffHand') return equipped.offHand ?? null
-  if (item.slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
-  if (item.slot === 'Head') return equipped.head
-  if (item.slot === 'Chest') return equipped.chest
-  if (item.slot === 'Hands') return equipped.hands ?? null
-  if (item.slot === 'Legs') return equipped.legs
-  if (item.slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
-  if (item.slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
-  if (item.slot === 'Cloak') return equipped.cloak ?? null
-  if (item.slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
-  if (item.slot === 'Ring1') return equipped.ring1 ?? null
-  if (item.slot === 'Ring2') return equipped.ring2 ?? null
-  if (item.slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
+function equippedItemAt(slot: EquipmentSlot): InventoryItem | null {
+  const equipped = inventory.value?.equipped
+  if (!equipped) return null
+
+  if (slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
+  if (slot === 'OffHand') return equipped.offHand ?? null
+  if (slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
+  if (slot === 'Head') return equipped.head
+  if (slot === 'Chest') return equipped.chest
+  if (slot === 'Hands') return equipped.hands ?? null
+  if (slot === 'Legs') return equipped.legs
+  if (slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
+  if (slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
+  if (slot === 'Cloak') return equipped.cloak ?? null
+  if (slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
+  if (slot === 'Ring1') return equipped.ring1 ?? null
+  if (slot === 'Ring2') return equipped.ring2 ?? null
+  if (slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
   return null
 }
 
@@ -297,14 +318,15 @@ function inventoryActionError(code: string | null): string | null {
   if (code === 'inventory_class_restricted') return 'Этот предмет предназначен для другого класса.'
   if (code === 'inventory_required_level') return 'Недостаточный уровень для этого предмета.'
   if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
-  if (code === 'inventory_two_handed_conflict') return 'Сначала освободите конфликтующий слот оружия.'
+  if (code === 'inventory_two_handed_conflict') return 'Двуручное оружие конфликтует со второй рукой.'
+  if (code === 'inventory_dual_wield_permission_required') return 'Второе одноручное оружие требует таланта «Двойной Удар» в активном билде Берсерка.'
   return 'Не удалось изменить снаряжение.'
 }
 
-async function equipSelected(): Promise<void> {
+async function equipSelected(targetSlot?: EquipmentSlot): Promise<void> {
   const item = selectedItem.value
   if (!item || item.type !== 'Equipment') return
-  await session.equip(item.id)
+  await session.equip(item.id, targetSlot)
   equipmentActionError.value = session.errorCode
   if (!equipmentActionError.value) selectedItem.value = null
 }
@@ -476,11 +498,31 @@ async function toggleSelectedLock(): Promise<void> {
         </p>
       </article>
       <template #actions>
+        <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)">
+          <UIButton
+            v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
+            data-equip-target="MainHand"
+            :loading="session.mutationPending"
+            :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
+            @click="equipSelected('MainHand')"
+          >
+            В основную руку
+          </UIButton>
+          <UIButton
+            v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
+            data-equip-target="OffHand"
+            :loading="session.mutationPending"
+            :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
+            @click="equipSelected('OffHand')"
+          >
+            Во вторую руку
+          </UIButton>
+        </template>
         <UIButton
-          v-if="selectedItem?.type === 'Equipment'"
+          v-else-if="selectedItem?.type === 'Equipment'"
           :loading="session.mutationPending"
           :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
-          @click="equipSelected"
+          @click="equipSelected()"
         >
           Надеть
         </UIButton>

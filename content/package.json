@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.0",
+  "contentVersion": "0.10.1",
   "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-06T08:45:00+00:00",
+  "publishedAtUtc": "2026-09-06T15:52:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -1728,7 +1728,7 @@
           "englishName": "Double Strike",
           "maxRank": 1,
           "prerequisites": [],
-          "description": "Пассив. 15% шанс при Auto Attack нанести второй удар немедленно за 45% урона от первого.\r\nВторой удар не может критовать.",
+          "description": "Пассив. 15% шанс при Auto Attack нанести второй удар немедленно за 45% урона от первого.\r\nВторой удар не может критовать.\r\nИзучение таланта разрешает экипировать две одноручные единицы оружия: второе оружие занимает OFF_HAND.",
           "branchId": "BERSERKER",
           "version": 1,
           "modifiers": [
@@ -1742,6 +1742,15 @@
               "deferredOwner": "COMBAT_SESSION",
               "chancePercent": 15,
               "internalCooldownSeconds": 2
+            },
+            {
+              "type": "EquipmentConditional",
+              "key": "EQUIPMENT_CONDITIONAL",
+              "values": [
+                1
+              ],
+              "targetId": "DUAL_WIELD_ONE_HAND_WEAPON",
+              "runtimeStatus": "Supported"
             }
           ],
           "iconId": "BERSERKER_SUNDERING_BLADE"
