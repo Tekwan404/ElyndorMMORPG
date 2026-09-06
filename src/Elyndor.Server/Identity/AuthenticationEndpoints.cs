@@ -4,6 +4,7 @@ using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Server.Administration;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Elyndor.Server.Identity;
 
@@ -14,7 +15,8 @@ public static class AuthenticationEndpoints
         bool mapDevelopmentEndpoint)
     {
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1/auth")
-            .WithTags("Authentication");
+            .WithTags("Authentication")
+            .RequireRateLimiting(ServerRateLimitPolicies.Authentication);
 
         group.MapPost("/telegram", AuthenticateTelegramAsync);
 

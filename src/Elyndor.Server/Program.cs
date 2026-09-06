@@ -62,6 +62,7 @@ builder.AddServiceDefaults();
 builder.AddElyndorInfrastructure();
 
 builder.Services.AddOpenApi();
+builder.Services.AddElyndorRateLimiting(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 MutableContentSnapshotProvider contentSnapshotProvider =
     new(gameContentPackage);
@@ -233,6 +234,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 bool mapDevelopmentAuthentication = app.Environment.IsDevelopment()
