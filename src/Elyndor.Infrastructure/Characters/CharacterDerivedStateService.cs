@@ -98,7 +98,8 @@ public sealed class CharacterDerivedStateService(
             characterId,
             cancellationToken);
         EquipmentModifierSummary equipment = EquipmentStatModifierResolver.ResolveDetailed(
-            inventory.Equipped.Values.Select(item => item.Definition),
+            inventory.Equipped.Values.Select(item =>
+                item.Definition with { Stats = item.EffectiveStats }),
             content.EquipmentSets ?? []);
 
         indexes.TalentTreesByClassId.TryGetValue(classId, out TalentTreeDefinition? talentTree);
