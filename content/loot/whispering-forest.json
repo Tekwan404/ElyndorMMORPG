@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.8.0",
-  "balanceVersion": "0.7.0",
-  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "contentVersion": "0.10.0",
+  "balanceVersion": "0.8.0",
+  "publishedAtUtc": "2026-09-06T08:55:00+00:00",
   "lootTables": [
     {
       "id": "WHISPERING_FOREST_WOLF",
@@ -20,7 +20,7 @@
           "maxQuantity": 1
         },
         {
-          "itemId": "RANGER_FANG_BLADE",
+          "itemId": "HUNTER_SHORTBOW",
           "dropChance": 0.12,
           "minQuantity": 1,
           "maxQuantity": 1
