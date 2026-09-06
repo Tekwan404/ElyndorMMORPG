@@ -28,7 +28,8 @@ public sealed class CombatSessionTests
         CombatSession session = CreateSession(
             enemyHp: 10_000,
             playerHp: 100,
-            playerResource: 0);
+            playerResource: 0,
+            canAutoAttack: false);
 
         CombatCommandResult result = session.Handle(
             new UseConsumableCommand(
@@ -59,7 +60,8 @@ public sealed class CombatSessionTests
         CombatSession session = CreateSession(
             enemyHp: 10_000,
             playerHp: 100,
-            playerResource: 0);
+            playerResource: 0,
+            canAutoAttack: false);
 
         CombatCommandResult heal = session.Handle(
             new UseConsumableCommand(
@@ -102,7 +104,8 @@ public sealed class CombatSessionTests
     {
         CombatSession session = CreateSession(
             enemyHp: 10_000,
-            playerResource: 0);
+            playerResource: 0,
+            canAutoAttack: false);
 
         CombatCommandResult result = session.Handle(
             new UseConsumableCommand(
@@ -125,7 +128,9 @@ public sealed class CombatSessionTests
     [Fact]
     public void ConsumableCanApplyAndCleanseEffectThroughSharedEffectPipeline()
     {
-        CombatSession session = CreateSession(enemyHp: 10_000);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            canAutoAttack: false);
         EffectDefinition poison = new(
             "TEST_POISON",
             EffectKind.Debuff,
@@ -170,7 +175,9 @@ public sealed class CombatSessionTests
     [Fact]
     public void CleanseWithNoMatchingEffectIsNotNeededAndDoesNotStartCooldown()
     {
-        CombatSession session = CreateSession(enemyHp: 10_000);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            canAutoAttack: false);
 
         CombatCommandResult result = session.Handle(
             new UseConsumableCommand(
@@ -194,7 +201,8 @@ public sealed class CombatSessionTests
         CombatSession session = CreateSession(
             enemyHp: 10_000,
             playerHp: 200,
-            playerResource: 0);
+            playerResource: 0,
+            canAutoAttack: false);
 
         CombatCommandResult result = session.Handle(
             new UseConsumableCommand(
@@ -904,7 +912,9 @@ public sealed class CombatSessionTests
     [Fact]
     public async Task ConcurrentDuplicateCommandsMutateSessionOnlyOnce()
     {
-        CombatSession session = CreateSession(enemyHp: 10_000);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            canAutoAttack: false);
         using CombatSessionRegistry registry = new(
             new FrozenTimeProvider(Now),
             new NullPublisher(),
@@ -1262,7 +1272,8 @@ public sealed class CombatSessionTests
         AutoAttackProfile? mainHandAutoAttack = null,
         AutoAttackProfile? offHandAutoAttack = null,
         decimal playerHp = 200,
-        decimal playerResource = 0)
+        decimal playerResource = 0,
+        bool canAutoAttack = true)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -1291,6 +1302,7 @@ public sealed class CombatSessionTests
                     0.65m,
                     10),
             new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: canAutoAttack,
             OffHandAutoAttack: offHandAutoAttack);
         CombatParticipantDefinition enemy = new(
             new CombatActorState(EnemyId, enemyHp, enemyHp, 0, 0, enemyStats),
