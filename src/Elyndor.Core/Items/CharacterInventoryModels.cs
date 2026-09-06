@@ -1,3 +1,5 @@
+using Elyndor.Core.Content;
+
 namespace Elyndor.Core.Items;
 
 public sealed class CharacterItem
