@@ -136,8 +136,6 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
                 Agility: new ItemStatRange(10, 12),
                 Stamina: new ItemStatRange(4, 8, 2)));
 
-        MerchantDefinition merchant = content.Merchants!
-            .Single(candidate => candidate.Id == MerchantId);
         content = content with
         {
             Items = (content.Items ?? []).Concat([rollingSword]).ToArray(),
@@ -175,10 +173,10 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
                 item.CharacterId == characterId
                 && item.ItemDefinitionId == rollingSword.Id);
         Assert.Equal(7, persisted.DefinitionVersion);
-        Assert.Equal(2, persisted.RolledStrength);
-        Assert.Equal(12, persisted.RolledAgility);
-        Assert.Equal(7, persisted.RolledIntellect);
-        Assert.Equal(6, persisted.RolledStamina);
+        Assert.Equal(2m, persisted.RolledStrength!.Value);
+        Assert.Equal(12m, persisted.RolledAgility!.Value);
+        Assert.Equal(7m, persisted.RolledIntellect!.Value);
+        Assert.Equal(6m, persisted.RolledStamina!.Value);
 
         InventoryEquipmentService inventory = new(
             verify,
