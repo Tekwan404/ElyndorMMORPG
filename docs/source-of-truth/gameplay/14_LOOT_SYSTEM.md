@@ -216,26 +216,42 @@ eligibility определяется Character participation, а не connection
 
 18. Class-Aware Loot
 
-LootTable может иметь Condition:
+Loot Table может иметь Condition:
 
 AllowedClassId
 AllowedWeaponTag
 AllowedArmorTag
 
-Рекомендуется не делать весь loot строго class-locked.
+Такие conditions допустимы для специально спроектированных reward sources, но **обычный Personal Loot не фильтруется автоматически по текущему классу персонажа**.
 
-Personal Loot boss table может использовать class-aware weighted group, чтобы уменьшить бесполезные drops.
+Базовое правило Elyndor:
 
-Текущий prototype normal-combat Personal Loot дополнительно не выдаёт equipment, которое authoritative Equipment System заведомо запретит текущему классу по:
+```text
+DROP ELIGIBILITY
+≠
+EQUIP ELIGIBILITY
+```
+
+Игрок может получить equipment, которое его текущий персонаж не способен надеть.
+
+Это намеренное поведение, потому что такой предмет остаётся экономическим активом:
+
+- продать NPC-торговцу;
+- выставить на Auction;
+- обменять;
+- передать другу / другому подходящему персонажу, когда соответствующие системы доступны.
+
+Equipment System остаётся единственным владельцем проверки возможности надеть предмет и продолжает валидировать:
 
 - `AllowedClassIds`;
 - `WeaponCategory`;
 - `ArmorCategory`;
-- `OffHandCategory`.
+- `OffHandCategory`;
+- level и другие equipment requirements.
 
-Материалы и class-neutral предметы этим фильтром не блокируются.
+Loot System не должен автоматически уничтожать разнообразие добычи только потому, что текущий получатель не может использовать предмет лично.
 
-Это eligibility-filter награды, а не ослабление Equipment validation: сервер всё равно повторно проверяет предмет при Equip.
+Class-aware weighted groups можно использовать точечно, например для гарантированных class rewards или специальных сундуков, но это content policy конкретного RewardSource, а не глобальный фильтр обычного лута.
 
 19. Quest Items
 
