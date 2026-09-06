@@ -21,39 +21,15 @@ public sealed class AutoAttackDamageRollerTests
             AutoAttackDamageRoller.RollPlayerDamage(
                 profile,
                 attackPower: 30,
-                new SequenceGameRandom(0m, 0m)));
+                new SequenceGameRandom(0m)));
         Assert.Equal(
             30m,
             AutoAttackDamageRoller.RollPlayerDamage(
                 profile,
                 attackPower: 30,
-                new SequenceGameRandom(0.5m, 0.5m)));
+                new SequenceGameRandom(0.5m)));
         Assert.Equal(
             38.5m,
-            AutoAttackDamageRoller.RollPlayerDamage(
-                profile,
-                attackPower: 30,
-                new SequenceGameRandom(0.999999m, 0.999999m)),
-            precision: 4);
-    }
-
-    [Fact]
-    public void RollPlayerDamageStillVariesWhenBaseDamageIsFixed()
-    {
-        AutoAttackProfile profile = new(
-            TimeSpan.FromSeconds(2),
-            BaseDamage: 10,
-            AttackPowerCoefficient: 0.5m,
-            ResourceOnHit: 0);
-
-        Assert.Equal(
-            22.5m,
-            AutoAttackDamageRoller.RollPlayerDamage(
-                profile,
-                attackPower: 30,
-                new SequenceGameRandom(0m)));
-        Assert.Equal(
-            27.5m,
             AutoAttackDamageRoller.RollPlayerDamage(
                 profile,
                 attackPower: 30,
