@@ -136,6 +136,48 @@ talents;
 equipment effects;
 временные боевые эффекты.
 
+6.1. Dual Wield Auto Attack
+
+Если active equipment permission разрешает Dual Wield и в OFF_HAND находится одноручное оружие, Combat Session создаёт два server-authoritative weapon profile:
+
+MainHand AutoAttackProfile;
+OffHand AutoAttackProfile.
+
+Каждый профиль хранит собственные:
+
+weapon damage range;
+weapon base attack interval;
+resource-on-hit rule;
+WeaponHand;
+WeaponDefinitionId.
+
+MainHand начинает обычный auto-attack cycle первым. OffHand получает deterministic initial stagger, равный половине собственного effective weapon interval. Поэтому при одинаковой скорости оружия удары естественно идут:
+
+MainHand → OffHand → MainHand → OffHand.
+
+После первого удара каждая рука планирует следующий swing независимо по собственной weapon speed. При разной скорости оружия строгого чередования не гарантируется: более быстрое оружие может атаковать чаще.
+
+Если две руки становятся ready в один timestamp, порядок разрешения deterministic:
+
+MainHand;
+OffHand.
+
+Casted Ability блокирует обе руки по общим правилам Auto Attack. Готовые во время каста swings ждут завершения каста.
+
+Каждый реальный MainHand/OffHand swing остаётся событием AUTO_ATTACK, чтобы существующие talent/proc hooks продолжали работать. Источник конкретного удара определяется дополнительными combat-event полями:
+
+WeaponHand = MainHand | OffHand;
+WeaponDefinitionId = equipped item definition id.
+
+Успешный swing каждой руки отдельно может:
+
+генерировать ResourceOnHit;
+критовать;
+запускать OnAutoAttack / OnCriticalHit talent hooks;
+запускать разрешённые weapon/talent procs.
+
+Proc-created secondary attack наследует WeaponHand и WeaponDefinitionId исходного swing, но не становится новым независимым weapon swing и не получает право бесконечно рекурсивно запускать proc chain без explicit content rule.
+
 7. Attack Interval
 
 Auto Attack использует временной интервал.
