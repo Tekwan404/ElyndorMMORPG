@@ -149,8 +149,8 @@ public static class AbilityEngine
             return AbilityErrorCode.InvalidTarget;
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
-        if (targetIds.Count == 0
-            || targetIds.Distinct().Count() != targetIds.Count
+        if (targetIds.Length == 0
+            || targetIds.Distinct().Count() != targetIds.Length
             || targetIds.Any(targetId =>
                 !runtime.Actors.TryGetValue(targetId, out CombatActorState? target)
                 || target.IsDead))
@@ -159,13 +159,13 @@ public static class AbilityEngine
         }
 
         if (ability.TargetType == AbilityTargetType.Self
-            && (targetIds.Count != 1 || targetIds[0] != runtime.Actor.ActorId))
+            && (targetIds.Length != 1 || targetIds[0] != runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.SingleEnemy
-            && (targetIds.Count != 1 || targetIds[0] == runtime.Actor.ActorId))
+            && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.SingleAlly
-            && (targetIds.Count != 1
+            && (targetIds.Length != 1
                 || targetIds[0] == runtime.Actor.ActorId && !ability.AllowSelfTarget))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
@@ -174,10 +174,10 @@ public static class AbilityEngine
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.AllEnemiesInCombat
             && ability.TargetCount > 0
-            && targetIds.Count > ability.TargetCount)
+            && targetIds.Length > ability.TargetCount)
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.NEnemiesInCombat
-            && (ability.TargetCount <= 0 || targetIds.Count > ability.TargetCount))
+            && (ability.TargetCount <= 0 || targetIds.Length > ability.TargetCount))
             return AbilityErrorCode.InvalidTarget;
         if (!ability.CanUseWhileStunned
             && EffectEngine.HasControl(runtime.Actor, EffectKind.Stun, now))
