@@ -49,11 +49,20 @@ public static class AbilityEngine
                 targetIds[0],
                 now,
                 now + ability.CastTime,
-                targetIds.ToArray());
+                targetIds.ToArray(),
+                intent.TargetModifiers is null
+                    ? null
+                    : new Dictionary<Guid, AbilityTargetModifier>(intent.TargetModifiers));
         }
         else
         {
-            events.AddRange(ResolveActions(runtime, ability, targetIds, now, random));
+            events.AddRange(ResolveActions(
+                runtime,
+                ability,
+                targetIds,
+                intent.TargetModifiers,
+                now,
+                random));
             StartCooldown(runtime, ability, now);
             events.Add(new CombatEvent(CombatEventType.AbilityCompleted, now, runtime.Actor.ActorId, ability.Id));
         }
@@ -83,7 +92,13 @@ public static class AbilityEngine
         StartCooldown(runtime, cast.Ability, now);
         runtime.Version++;
         IReadOnlyList<Guid> targetIds = cast.TargetIds ?? [cast.TargetId];
-        List<CombatEvent> events = ResolveActions(runtime, cast.Ability, targetIds, now, random);
+        List<CombatEvent> events = ResolveActions(
+            runtime,
+            cast.Ability,
+            targetIds,
+            cast.TargetModifiers,
+            now,
+            random);
         events.Add(new CombatEvent(CombatEventType.AbilityCompleted, now, runtime.Actor.ActorId, cast.Ability.Id));
         return new AbilityExecutionResult(true, AbilityErrorCode.None, events);
     }
@@ -187,6 +202,7 @@ public static class AbilityEngine
         CombatRuntimeState runtime,
         AbilityDefinition ability,
         IReadOnlyList<Guid> targetIds,
+        IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers,
         DateTimeOffset now,
         IGameRandom? random)
     {
@@ -228,12 +244,18 @@ public static class AbilityEngine
                                 CanMiss: action.CanMiss,
                                 CanDodge: action.CanDodge,
                                 CanCrit: action.CanCrit,
-                                DamageMultiplier: ability.DamageMultiplier,
-                                ArmorPenetrationBonus: action.ArmorPenetrationBonus,
-                                AccuracyBonus: ability.AccuracyBonus,
-                                CriticalChanceBonus: ability.CriticalChanceBonus,
-                                CriticalDamageBonus: ability.CriticalDamageBonus,
-                                MagicPenetrationBonus: ability.MagicPenetrationBonus),
+                                DamageMultiplier: ability.DamageMultiplier
+                                    * Math.Max(0, targetModifier.DamageMultiplier),
+                                ArmorPenetrationBonus: action.ArmorPenetrationBonus
+                                    + targetModifier.ArmorPenetrationBonus,
+                                AccuracyBonus: ability.AccuracyBonus
+                                    + targetModifier.AccuracyBonus,
+                                CriticalChanceBonus: ability.CriticalChanceBonus
+                                    + targetModifier.CriticalChanceBonus,
+                                CriticalDamageBonus: ability.CriticalDamageBonus
+                                    + targetModifier.CriticalDamageBonus,
+                                MagicPenetrationBonus: ability.MagicPenetrationBonus
+                                    + targetModifier.MagicPenetrationBonus),
                             random,
                             now);
                         events.AddRange(damage.Events);
