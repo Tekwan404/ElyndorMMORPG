@@ -111,7 +111,6 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
 
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
-    selectedEncounter.value = null
     merchantOpen.value = false
   }
   if (locationId) void restoreCombat()
@@ -144,8 +143,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           </div>
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
-
-
         </div>
       </div>
     </section>
