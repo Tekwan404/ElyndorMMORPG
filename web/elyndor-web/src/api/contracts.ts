@@ -442,4 +442,5 @@ export interface CombatReward {
     rarity: ItemRarity
     quantity: number
   }[]
+  completedContractIds?: string[] | null
 }
