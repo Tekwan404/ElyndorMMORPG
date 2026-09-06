@@ -53,7 +53,8 @@ public sealed record InventoryItemResponse(
     bool IsLocked,
     string? IconId = null,
     string? AppearanceProfileId = null,
-    int? WeaponHandsRequired = null);
+    int? WeaponHandsRequired = null,
+    bool HasRandomStats = false);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
