@@ -138,22 +138,30 @@ public sealed class ContentPublicationService(
                     $"Published content revision '{release.RevisionId}' is missing.");
             }
 
-            if (IsNewerContentVersion(
-                    snapshotProvider.GetCurrent().ContentVersion,
-                    revision.ContentVersion))
-            {
-                return null;
-            }
-
-            GameContentPackage? package =
+            GameContentPackage bundledPackage =
+                snapshotProvider.GetCurrent().Package;
+            GameContentPackage? publishedPackage =
                 await revisionImporter.LoadRevisionPackageAsync(
                     release.RevisionId,
                     cancellationToken);
-            if (package is null)
+            if (publishedPackage is null)
             {
                 throw new InvalidDataException(
                     $"Published content revision '{release.RevisionId}' is missing.");
             }
+
+            GameContentPackage package = IsNewerContentVersion(
+                    bundledPackage.ContentVersion,
+                    revision.ContentVersion)
+                ? MergePublishedExtensions(
+                    publishedPackage,
+                    bundledPackage)
+                : publishedPackage;
+
+            IReadOnlyList<ContentValidationError> errors =
+                ContentValidationPipeline.Default.Validate(package);
+            if (errors.Count > 0)
+                throw new ContentPackageValidationException(errors);
 
             GameContentSnapshot snapshot =
                 snapshotProvider.GetOrCreateRevisionSnapshot(
@@ -179,4 +187,67 @@ public sealed class ContentPublicationService(
         Version.TryParse(bundledContentVersion, out Version? bundled)
         && Version.TryParse(publishedContentVersion, out Version? published)
         && bundled > published;
+
+    private static GameContentPackage MergePublishedExtensions(
+        GameContentPackage published,
+        GameContentPackage bundled) =>
+        bundled with
+        {
+            Definitions = ContentCompositionRules.MergeByKey(
+                published.Definitions,
+                bundled.Definitions,
+                item => (item.Type, item.Id)),
+            Locations = ContentCompositionRules.MergeByKey(
+                published.Locations,
+                bundled.Locations,
+                item => item.Id),
+            ClassProfiles = ContentCompositionRules.MergeOptionalByKey(
+                published.ClassProfiles,
+                bundled.ClassProfiles,
+                item => item.Id),
+            ResourceProfiles = ContentCompositionRules.MergeOptionalByKey(
+                published.ResourceProfiles,
+                bundled.ResourceProfiles,
+                item => item.Id),
+            Effects = ContentCompositionRules.MergeOptionalByKey(
+                published.Effects,
+                bundled.Effects,
+                item => item.Id),
+            Abilities = ContentCompositionRules.MergeOptionalByKey(
+                published.Abilities,
+                bundled.Abilities,
+                item => item.Id),
+            TalentTrees = ContentCompositionRules.MergeOptionalByKey(
+                published.TalentTrees,
+                bundled.TalentTrees,
+                item => item.Id),
+            Monsters = ContentCompositionRules.MergeOptionalByKey(
+                published.Monsters,
+                bundled.Monsters,
+                item => item.Id),
+            MonsterAiProfiles = ContentCompositionRules.MergeOptionalByKey(
+                published.MonsterAiProfiles,
+                bundled.MonsterAiProfiles,
+                item => item.Id),
+            Items = ContentCompositionRules.MergeOptionalByKey(
+                published.Items,
+                bundled.Items,
+                item => item.Id),
+            LootTables = ContentCompositionRules.MergeOptionalByKey(
+                published.LootTables,
+                bundled.LootTables,
+                item => item.Id),
+            EquipmentSets = ContentCompositionRules.MergeOptionalByKey(
+                published.EquipmentSets,
+                bundled.EquipmentSets,
+                item => item.Id),
+            Merchants = ContentCompositionRules.MergeOptionalByKey(
+                published.Merchants,
+                bundled.Merchants,
+                item => item.Id),
+            WorldContracts = ContentCompositionRules.MergeOptionalByKey(
+                published.WorldContracts,
+                bundled.WorldContracts,
+                item => item.Id)
+        };
 }
