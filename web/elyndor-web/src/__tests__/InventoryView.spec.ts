@@ -227,7 +227,16 @@ function consumable(id: string, name: string): InventoryItem {
     rarity: 'Common',
     requiredLevel: 1,
     slot: null,
-    healAmount: 50,
+    consumableActions: [
+      {
+        type: 'RestoreHp',
+        amount: 50,
+        resourceType: null,
+        effectId: null,
+        dispelCategory: null,
+      },
+    ],
+    consumableCooldownCategoryId: 'HEALING_POTION',
     consumableCooldownSeconds: 30,
   })
 }
@@ -277,7 +286,8 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     weaponBaseAttackIntervalSeconds: overrides.weaponBaseAttackIntervalSeconds ?? null,
     attackSpeedPercent: overrides.attackSpeedPercent ?? 0,
     dodgePercent: overrides.dodgePercent ?? 0,
-    healAmount: overrides.healAmount ?? 0,
+    consumableActions: overrides.consumableActions ?? [],
+    consumableCooldownCategoryId: overrides.consumableCooldownCategoryId ?? null,
     consumableCooldownSeconds: overrides.consumableCooldownSeconds ?? 0,
     buyPriceGold: overrides.buyPriceGold ?? 0,
     sellPriceGold: overrides.sellPriceGold ?? 0,
