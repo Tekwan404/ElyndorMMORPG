@@ -12,12 +12,16 @@ const props = withDefaults(defineProps<{
   abilityIds?: string[]
   classIds?: string[]
   setIds?: string[]
+  resourceIds?: string[]
+  effectIds?: string[]
 }>(), {
   lootTableIds: () => [],
   aiProfileIds: () => [],
   abilityIds: () => [],
   classIds: () => [],
   setIds: () => [],
+  resourceIds: () => [],
+  effectIds: () => [],
 })
 
 const itemModifierDefinitions = [
@@ -153,6 +157,67 @@ function relationOptions(options: string[], current: string): string[] {
   return current && !options.includes(current) ? [current, ...options] : options
 }
 
+function consumableActions(): JsonRecord[] {
+  const value = props.entity.consumableActions
+  return Array.isArray(value) ? value.filter(isRecord) : []
+}
+
+function defaultConsumableAction(type = 'RestoreHp'): JsonRecord {
+  if (type === 'RestoreResource') {
+    return { type, amount: 50, resourceType: props.resourceIds[0] ?? 'MANA' }
+  }
+  if (type === 'ApplyEffect') {
+    return { type, effectId: props.effectIds[0] ?? '' }
+  }
+  if (type === 'RemoveEffect') {
+    return { type, dispelCategory: 'POISON' }
+  }
+  return { type: 'RestoreHp', amount: 50 }
+}
+
+function addConsumableAction(): void {
+  const next = cloneJsonValue(props.entity) as JsonRecord
+  const actions = Array.isArray(next.consumableActions) ? next.consumableActions : []
+  next.consumableActions = [...actions, defaultConsumableAction()]
+  emit('update:entity', next)
+}
+
+function removeConsumableAction(index: number): void {
+  const next = cloneJsonValue(props.entity) as JsonRecord
+  const actions = Array.isArray(next.consumableActions) ? [...next.consumableActions] : []
+  actions.splice(index, 1)
+  next.consumableActions = actions
+  emit('update:entity', next)
+}
+
+function setConsumableActionType(index: number, event: Event): void {
+  const type = (event.target as HTMLSelectElement).value
+  const next = cloneJsonValue(props.entity) as JsonRecord
+  const actions = Array.isArray(next.consumableActions) ? [...next.consumableActions] : []
+  actions[index] = defaultConsumableAction(type)
+  next.consumableActions = actions
+  emit('update:entity', next)
+}
+
+function setRemoveEffectMode(index: number, event: Event): void {
+  const mode = (event.target as HTMLSelectElement).value
+  if (mode === 'effect') {
+    update(['consumableActions', index], {
+      type: 'RemoveEffect',
+      effectId: props.effectIds[0] ?? '',
+    })
+  } else {
+    update(['consumableActions', index], {
+      type: 'RemoveEffect',
+      dispelCategory: 'POISON',
+    })
+  }
+}
+
+function removeEffectMode(index: number): string {
+  return text(['consumableActions', index, 'effectId']) ? 'effect' : 'category'
+}
+
 function setItemSlot(event: Event): void {
   const slot = (event.target as HTMLSelectElement).value
   const next = cloneJsonValue(props.entity) as JsonRecord
@@ -188,8 +253,9 @@ function setItemType(event: Event): void {
     next.stackable = false
     next.maxStack = 1
     if (typeof next.slot !== 'string') next.slot = 'Amulet'
-    next.healAmount = 0
     next.consumableCooldownSeconds = 0
+    next.consumableCooldownCategoryId = null
+    next.consumableActions = []
   } else {
     next.stackable = true
     next.slot = null
@@ -215,15 +281,23 @@ function setItemType(event: Event): void {
 
     if (type === 'Consumable') {
       next.maxStack = typeof next.maxStack === 'number' && next.maxStack >= 2 ? next.maxStack : 20
-      next.healAmount = typeof next.healAmount === 'number' && next.healAmount > 0 ? next.healAmount : 50
       next.consumableCooldownSeconds =
         typeof next.consumableCooldownSeconds === 'number' && next.consumableCooldownSeconds > 0
           ? next.consumableCooldownSeconds
           : 30
+      next.consumableCooldownCategoryId =
+        typeof next.consumableCooldownCategoryId === 'string' && next.consumableCooldownCategoryId
+          ? next.consumableCooldownCategoryId
+          : 'HEALING_POTION'
+      next.consumableActions =
+        Array.isArray(next.consumableActions) && next.consumableActions.length > 0
+          ? next.consumableActions
+          : [defaultConsumableAction()]
     } else {
       next.maxStack = typeof next.maxStack === 'number' && next.maxStack >= 2 ? next.maxStack : 99
-      next.healAmount = 0
       next.consumableCooldownSeconds = 0
+      next.consumableCooldownCategoryId = null
+      next.consumableActions = []
     }
   }
 
@@ -519,10 +593,102 @@ function isRecord(value: unknown): value is JsonRecord {
       <p class="wide relation-hint">Пустой список = предмет не ограничен конкретным классом.</p>
     </fieldset>
 
+    <fieldset v-if="text(['type']) === 'Consumable'" data-testid="consumable-editor">
+      <legend>Consumable actions</legend>
+      <label>
+        <span>Cooldown category</span>
+        <input
+          data-testid="consumable-cooldown-category"
+          :value="text(['consumableCooldownCategoryId'])"
+          @input="setString(['consumableCooldownCategoryId'], $event)"
+        />
+      </label>
+      <label>
+        <span>Cooldown, sec</span>
+        <input
+          data-testid="consumable-cooldown"
+          type="number"
+          min="0"
+          :value="numberValue(['consumableCooldownSeconds'])"
+          @input="setNumber(['consumableCooldownSeconds'], $event)"
+        />
+      </label>
+      <div class="wide consumable-actions">
+        <article
+          v-for="(action, index) in consumableActions()"
+          :key="index"
+          class="consumable-action"
+          data-testid="consumable-action"
+        >
+          <label>
+            <span>Action</span>
+            <select
+              :data-testid="`consumable-action-type-${index}`"
+              :value="text(['consumableActions', index, 'type'])"
+              @change="setConsumableActionType(index, $event)"
+            >
+              <option value="RestoreHp">Restore HP</option>
+              <option value="RestoreResource">Restore Resource</option>
+              <option value="ApplyEffect">Apply Effect</option>
+              <option value="RemoveEffect">Remove Effect</option>
+            </select>
+          </label>
+
+          <label v-if="action.type === 'RestoreHp'">
+            <span>HP amount</span>
+            <input type="number" min="0" :value="numberValue(['consumableActions', index, 'amount'])" @input="setNumber(['consumableActions', index, 'amount'], $event)" />
+          </label>
+
+          <template v-else-if="action.type === 'RestoreResource'">
+            <label>
+              <span>Resource</span>
+              <select :value="text(['consumableActions', index, 'resourceType'])" @change="setString(['consumableActions', index, 'resourceType'], $event)">
+                <option v-for="id in relationOptions(resourceIds, text(['consumableActions', index, 'resourceType']))" :key="id" :value="id">{{ id }}</option>
+              </select>
+            </label>
+            <label>
+              <span>Amount</span>
+              <input type="number" min="0" :value="numberValue(['consumableActions', index, 'amount'])" @input="setNumber(['consumableActions', index, 'amount'], $event)" />
+            </label>
+          </template>
+
+          <label v-else-if="action.type === 'ApplyEffect'">
+            <span>Effect</span>
+            <select :value="text(['consumableActions', index, 'effectId'])" @change="setString(['consumableActions', index, 'effectId'], $event)">
+              <option value="">— select effect —</option>
+              <option v-for="id in relationOptions(effectIds, text(['consumableActions', index, 'effectId']))" :key="id" :value="id">{{ id }}</option>
+            </select>
+          </label>
+
+          <template v-else-if="action.type === 'RemoveEffect'">
+            <label>
+              <span>Remove by</span>
+              <select :value="removeEffectMode(index)" @change="setRemoveEffectMode(index, $event)">
+                <option value="category">Dispel category</option>
+                <option value="effect">Effect ID</option>
+              </select>
+            </label>
+            <label v-if="removeEffectMode(index) === 'category'">
+              <span>Dispel category</span>
+              <input :value="text(['consumableActions', index, 'dispelCategory'])" @input="setString(['consumableActions', index, 'dispelCategory'], $event)" />
+            </label>
+            <label v-else>
+              <span>Effect</span>
+              <select :value="text(['consumableActions', index, 'effectId'])" @change="setString(['consumableActions', index, 'effectId'], $event)">
+                <option value="">— select effect —</option>
+                <option v-for="id in relationOptions(effectIds, text(['consumableActions', index, 'effectId']))" :key="id" :value="id">{{ id }}</option>
+              </select>
+            </label>
+          </template>
+
+          <button class="danger compact" type="button" @click="removeConsumableAction(index)">Remove action</button>
+        </article>
+        <button type="button" data-testid="add-consumable-action" @click="addConsumableAction">+ Add action</button>
+      </div>
+    </fieldset>
+
     <fieldset>
-      <legend>Экономика / расходники</legend>
-      <label><span>Heal amount</span><input type="number" min="0" :value="numberValue(['healAmount'])" @input="setNumber(['healAmount'], $event)" /></label>
-      <label><span>Consumable CD</span><input type="number" min="0" :value="numberValue(['consumableCooldownSeconds'])" @input="setNumber(['consumableCooldownSeconds'], $event)" /></label>
+      <legend>Экономика</legend>
       <label><span>Buy price</span><input type="number" min="0" :value="numberValue(['buyPriceGold'])" @input="setNumber(['buyPriceGold'], $event)" /></label>
       <label><span>Sell price</span><input type="number" min="0" :value="numberValue(['sellPriceGold'])" @input="setNumber(['sellPriceGold'], $event)" /></label>
     </fieldset>
@@ -547,6 +713,8 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--ui-color-pr
 .modifier-fieldset { grid-template-columns: 1fr; }
 .modifier-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-2); }
 .modifier-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--ui-space-1); }
+.consumable-actions { display: grid; gap: var(--ui-space-2); }
+.consumable-action { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: var(--ui-space-2); padding: var(--ui-space-2); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: var(--ui-color-surface-2); }
 .modifier-row .compact { width: var(--ui-touch-target); min-height: var(--ui-touch-target); }
 .add-modifier { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--ui-space-2); }
 @media (max-width: 900px) { fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
