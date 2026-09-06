@@ -98,7 +98,7 @@ onMounted(() => {
           <div class="server-state" :data-state="session.state" aria-live="polite">
             <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
           </div>
-          <RouterLink v-if="session.isAdmin" class="admin-link" to="/admin">Admin</RouterLink>
+          <RouterLink v-if="session.isAdmin" class="admin-link" to="/admin">Админка</RouterLink>
         </div>
       </div>
 
