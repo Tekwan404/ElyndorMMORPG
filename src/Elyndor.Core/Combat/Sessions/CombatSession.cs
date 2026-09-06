@@ -11,10 +11,10 @@ public sealed partial class CombatSession
 {
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly CombatParticipantDefinition _player;
-    private readonly IReadOnlyList<CombatParticipantDefinition> _enemies;
-    private readonly IReadOnlyDictionary<Guid, CombatParticipantDefinition> _enemiesById;
+    private readonly CombatParticipantDefinition[] _enemies;
+    private readonly Dictionary<Guid, CombatParticipantDefinition> _enemiesById;
     private readonly CombatRuntimeState _playerRuntime;
-    private readonly IReadOnlyDictionary<Guid, CombatRuntimeState> _enemyRuntimes;
+    private readonly Dictionary<Guid, CombatRuntimeState> _enemyRuntimes;
     private readonly Guid _primaryEnemyActorId;
     private Guid _selectedTargetActorId;
 
