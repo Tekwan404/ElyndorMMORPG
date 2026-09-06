@@ -88,6 +88,13 @@ const playerArt = computed(() =>
   snapshot.value?.player.definitionId === 'WARRIOR' ? gameArt.characters.warrior : null,
 )
 const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
+const battlefieldStyle = computed<Record<string, string> | undefined>(() =>
+  isTraining.value
+    ? undefined
+    : {
+        backgroundImage: `linear-gradient(180deg, rgb(3 5 9 / 12%), rgb(3 5 9 / 54%)), url(${gameArt.world.forestCombat})`,
+      },
+)
 const trainingElapsedSeconds = computed(() => {
   const startedAt = combat.trainingStats.startedAtUtc
   if (!startedAt) return 0
@@ -320,7 +327,7 @@ onUnmounted(() => window.clearInterval(timer))
         </section>
       </header>
 
-      <section class="battlefield" data-combat-battlefield>
+      <section class="battlefield" data-combat-battlefield :style="battlefieldStyle">
         <div class="battlefield__vignette" />
 
         <div class="enemy-effects effect-strip effect-strip--enemy">
