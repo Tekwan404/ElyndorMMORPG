@@ -208,6 +208,32 @@ public sealed class CombatSessionFactory(
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
 
+        CombatSummonProfile? summonProfile = null;
+        if (!isTraining && !string.IsNullOrWhiteSpace(monster.SummonMonsterId))
+        {
+            if (monster.SummonIntervalSeconds <= 0
+                || monster.SummonCount <= 0
+                || monster.MaxActiveSummons <= 0
+                || !indexes.MonstersById.TryGetValue(
+                    monster.SummonMonsterId,
+                    out MonsterDefinition? summonedMonster)
+                || !indexes.MonsterAiProfilesById.TryGetValue(
+                    summonedMonster.AiProfileId,
+                    out MonsterAiProfile? summonedAi))
+            {
+                throw new InvalidOperationException(
+                    $"Monster summon profile for '{monster.Id}' is invalid.");
+            }
+
+            summonProfile = new CombatSummonProfile(
+                monster.Id,
+                summonedMonster,
+                summonedAi,
+                TimeSpan.FromSeconds((double)monster.SummonIntervalSeconds),
+                monster.SummonCount,
+                monster.MaxActiveSummons);
+        }
+
         DateTimeOffset startedAtUtc = timeProvider.GetUtcNow();
         IReadOnlyDictionary<string, DateTimeOffset> initialCooldowns =
             isTraining || cooldownStore is null
@@ -228,7 +254,8 @@ public sealed class CombatSessionFactory(
             startedAtUtc,
             contentSnapshot.ContentVersion,
             contentSnapshot.BalanceVersion,
-            initialCooldowns);
+            initialCooldowns,
+            summonProfile);
         return new CombatSessionCreationResult(
             true,
             null,
