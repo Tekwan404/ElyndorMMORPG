@@ -1,3 +1,4 @@
+using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
