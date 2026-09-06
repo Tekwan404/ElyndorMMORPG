@@ -414,7 +414,9 @@ public sealed partial class CombatSession
             EffectStat.AttackPower,
             source.Actor.Stats.AttackPower,
             now);
-        decimal baseDamage = source.AutoAttack.BaseDamage
+        decimal baseDamage = AutoAttackDamageRoller.RollBaseDamage(
+                source.AutoAttack,
+                _random)
             + attackPower * source.AutoAttack.AttackPowerCoefficient;
         DamageResult damage = DamagePipeline.Resolve(
             new DamageRequest(
