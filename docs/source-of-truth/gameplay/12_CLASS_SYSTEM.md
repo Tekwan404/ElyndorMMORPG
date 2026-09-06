@@ -300,6 +300,10 @@ Armor:
 
 Off-hand:
 - SHIELD
+- ONE_HAND_SWORD only when an active Talent equipment permission explicitly grants dual-wield
+
+Base Warrior does not dual-wield. The Berserker talent tree may grant a one-hand weapon category
+for OFF_HAND without changing the class-wide AllowedWeaponTags contract.
 
 Weapon profiles:
 - ONE_HAND_SWORD
