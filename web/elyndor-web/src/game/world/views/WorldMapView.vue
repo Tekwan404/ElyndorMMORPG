@@ -238,6 +238,35 @@ onMounted(() => void loadLocations())
           <span><i data-state="reachable" /> Доступно</span>
           <span><i data-state="locked" /> Нет прямого пути</span>
         </div>
+
+        <div
+          v-if="selectedLocation"
+          class="map-selection-action"
+          data-map-selection-action
+        >
+          <div class="map-selection-action__copy">
+            <small>
+              {{ selectedIsCurrent ? 'ВЫ ЗДЕСЬ' : selectedIsReachable ? 'МАРШРУТ ДОСТУПЕН' : 'НЕТ ПРЯМОГО ПУТИ' }}
+            </small>
+            <strong>{{ locationName(selectedLocation) }}</strong>
+          </div>
+          <UIButton
+            v-if="selectedIsCurrent"
+            data-open-location
+            @click="emit('open-location')"
+          >
+            Открыть
+          </UIButton>
+          <UIButton
+            v-else
+            data-map-travel
+            :disabled="!selectedIsReachable"
+            :loading="session.mutationPending"
+            @click="travel"
+          >
+            {{ selectedIsReachable ? 'Отправиться' : 'Недоступно' }}
+          </UIButton>
+        </div>
       </section>
 
       <UICard v-if="selectedLocation" class="location-preview" data-map-preview>
@@ -270,24 +299,7 @@ onMounted(() => void loadLocations())
             Из текущей точки прямого перехода нет. Сначала доберитесь до соседней открытой области.
           </p>
 
-          <div class="location-preview__actions">
-            <UIButton
-              v-if="selectedIsCurrent"
-              data-open-location
-              @click="emit('open-location')"
-            >
-              Открыть локацию
-            </UIButton>
-            <UIButton
-              v-else
-              data-map-travel
-              :disabled="!selectedIsReachable"
-              :loading="session.mutationPending"
-              @click="travel"
-            >
-              {{ selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
-            </UIButton>
-          </div>
+
         </div>
       </UICard>
     </template>
@@ -564,9 +576,8 @@ onMounted(() => void loadLocations())
 
 .map-legend {
   position: absolute;
+  top: var(--ui-space-3);
   right: var(--ui-space-3);
-  bottom: var(--ui-space-3);
-  left: var(--ui-space-3);
   display: flex;
   flex-wrap: wrap;
   gap: var(--ui-space-2);
@@ -577,6 +588,50 @@ onMounted(() => void loadLocations())
   color: var(--ui-color-text-muted);
   font-size: .57rem;
   backdrop-filter: blur(8px);
+}
+
+.map-selection-action {
+  position: absolute;
+  z-index: 4;
+  right: var(--ui-space-3);
+  bottom: var(--ui-space-3);
+  left: var(--ui-space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-3);
+  min-height: 4.1rem;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid rgb(184 177 255 / 24%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 14 / 88%);
+  box-shadow: 0 .6rem 1.5rem rgb(0 0 0 / 34%);
+  backdrop-filter: blur(12px);
+}
+
+.map-selection-action__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.map-selection-action__copy small {
+  color: #aaa3ff;
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.map-selection-action__copy strong {
+  overflow: hidden;
+  font-family: var(--ui-font-display);
+  font-size: .76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-selection-action :deep(.ui-button) {
+  min-width: 6.8rem;
 }
 
 .map-legend span {
@@ -704,6 +759,21 @@ onMounted(() => void loadLocations())
 
   .map-canvas {
     min-height: 23rem;
+  }
+
+  .map-legend {
+    display: none;
+  }
+
+  .map-selection-action {
+    right: var(--ui-space-2);
+    bottom: var(--ui-space-2);
+    left: var(--ui-space-2);
+    gap: var(--ui-space-2);
+  }
+
+  .map-selection-action :deep(.ui-button) {
+    min-width: 5.8rem;
   }
 
   .map-node__label {
