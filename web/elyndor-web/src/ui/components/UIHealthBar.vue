@@ -17,13 +17,18 @@ const safeValue = computed(() => Math.min(Math.max(0, props.value), safeMax.valu
 const percentage = computed(() =>
   safeMax.value === 0 ? 0 : (safeValue.value / safeMax.value) * 100,
 )
+
+function formatBarValue(value: number): string {
+  const rounded = Math.round(value * 10) / 10
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
+}
 </script>
 
 <template>
   <div class="ui-bar" :class="`ui-bar--${tone}`">
     <div v-if="label || showValue" class="ui-bar__meta">
       <span>{{ label }}</span
-      ><span v-if="showValue">{{ safeValue }} / {{ safeMax }}</span>
+      ><span v-if="showValue">{{ formatBarValue(safeValue) }} / {{ formatBarValue(safeMax) }}</span>
     </div>
     <div
       class="ui-bar__track"
