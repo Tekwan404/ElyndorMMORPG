@@ -40,7 +40,9 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
   if (!enemy) return null
   const encounter = combat.encounterPresentation
   const matchesEncounter = encounter?.monsterId === enemy.definitionId
-  const artId = enemy.artId ?? (matchesEncounter ? encounter.artId : null)
+  const artId = enemy.definitionId === TRAINING_DUMMY_ID
+    ? 'training-dummy'
+    : enemy.artId ?? (matchesEncounter ? encounter.artId : null)
   return {
     name: enemy.name,
     level: enemy.level ?? (matchesEncounter ? encounter.level : 1),
@@ -93,6 +95,9 @@ const playerArt = computed(() =>
   snapshot.value?.player.definitionId === 'WARRIOR' ? gameArt.characters.warrior : null,
 )
 const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
+const combatBackground = computed(() =>
+  isTraining.value ? gameArt.world.starterTown : gameArt.world.combatForest,
+)
 const trainingElapsedSeconds = computed(() => {
   const startedAt = combat.trainingStats.startedAtUtc
   if (!startedAt) return 0
@@ -346,7 +351,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ snapshot.player.name }}</strong>
           </div>
           <UIHealthBar
-            :label="`HP · ${Math.ceil(snapshot.player.hp)} / ${Math.ceil(snapshot.player.maxHp)}`"
+            label="HP"
             :value="snapshot.player.hp"
             :max="snapshot.player.maxHp"
           />
@@ -364,7 +369,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ enemyPresentation.name }}</strong>
           </div>
           <UIHealthBar
-            :label="`HP · ${Math.ceil(snapshot.enemy.hp)} / ${Math.ceil(snapshot.enemy.maxHp)}`"
+            label="HP"
             :value="snapshot.enemy.hp"
             :max="snapshot.enemy.maxHp"
           />
@@ -391,7 +396,11 @@ onUnmounted(() => window.clearInterval(timer))
         </button>
       </nav>
 
-      <section class="battlefield" data-combat-battlefield>
+      <section
+        class="battlefield"
+        data-combat-battlefield
+        :style="{ '--battlefield-art': `url(${combatBackground})` }"
+      >
         <div class="battlefield__vignette" />
 
         <div class="enemy-effects effect-strip effect-strip--enemy">
@@ -741,14 +750,17 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .battlefield {
+  --battlefield-art: none;
+
   position: relative;
   min-height: 18.5rem;
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-lg);
   background:
-    radial-gradient(circle at 50% 38%, rgb(133 59 75 / 15%), transparent 32%),
-    radial-gradient(circle at 50% 100%, rgb(86 75 165 / 11%), transparent 35%),
+    linear-gradient(180deg, rgb(6 8 14 / 16%), rgb(6 8 14 / 72%) 82%),
+    radial-gradient(circle at 50% 38%, rgb(133 59 75 / 12%), transparent 32%),
+    var(--battlefield-art) center / cover no-repeat,
     linear-gradient(180deg, rgb(20 20 29), rgb(6 8 14) 82%);
   box-shadow:
     inset 0 0 35px rgb(0 0 0 / 42%),
