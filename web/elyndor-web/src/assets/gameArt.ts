@@ -10,13 +10,16 @@ import locationNavigation from './navigation/location.png'
 import menuNavigation from './navigation/menu.png'
 import questsNavigation from './navigation/quests.png'
 import worldNavigation from './navigation/world.png'
-import starterTown from './world/starter-town.webp'
-import forest from './world/forest.jpg'
-import ruins from './world/ruins.jpg'
+import marcus from './npc/marcus.webp'
+import ruins from './world/ancient-ruins-generated.png'
+import combatForest from './world/combat-whispering-forest-generated.png'
+import starterTown from './world/starter-town-generated.png'
+import forest from './world/whispering-forest-generated.png'
 
 export const gameArt = {
-  world: { starterTown, capital: starterTown, forest, ruins },
+  world: { starterTown, capital: starterTown, forest, ruins, combatForest },
   characters: { warrior },
+  npc: { marcus },
   navigation: {
     world: worldNavigation,
     hero: heroNavigation,
