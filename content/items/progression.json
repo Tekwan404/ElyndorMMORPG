@@ -150,7 +150,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Head",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
@@ -178,7 +178,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Chest",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -206,7 +206,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Legs",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 1,
@@ -239,7 +239,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Boots",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
@@ -337,7 +337,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Chest",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -365,7 +365,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Head",
-      "armorCategory": "HEAVY",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
