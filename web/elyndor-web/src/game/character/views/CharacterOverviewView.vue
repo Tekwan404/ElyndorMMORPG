@@ -23,6 +23,7 @@ const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const selectedItem = ref<InventoryItem | null>(null)
 const selectedEquipmentSlot = ref<EquipmentSlot | null>(null)
+const equipmentActionError = ref<string | null>(null)
 const selectedAbility = ref<KnownAbility | null>(null)
 
 type PaperdollSide = 'left' | 'right'
@@ -85,6 +86,7 @@ function openEquipmentSlot(slot: PaperdollSlot): void {
   if (slot.item) {
     selectedItem.value = slot.item
     selectedEquipmentSlot.value = slot.inventorySlot
+    equipmentActionError.value = null
     return
   }
 
@@ -94,7 +96,8 @@ function openEquipmentSlot(slot: PaperdollSlot): void {
 async function unequipSelected(): Promise<void> {
   if (!selectedEquipmentSlot.value || session.mutationPending) return
   await session.unequip(selectedEquipmentSlot.value)
-  if (!session.errorCode) {
+  equipmentActionError.value = session.errorCode
+  if (!equipmentActionError.value) {
     selectedItem.value = null
     selectedEquipmentSlot.value = null
   }
@@ -255,15 +258,15 @@ function abilityInitials(ability: KnownAbility): string {
     <UIModal
       :open="selectedItem !== null"
       :title="selectedItem?.name ?? ''"
-      @close="selectedItem = null; selectedEquipmentSlot = null"
+      @close="selectedItem = null; selectedEquipmentSlot = null; equipmentActionError = null"
     >
       <article v-if="selectedItem" class="detail">
         <p>{{ selectedItem.description }}</p>
         <dl><div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId">Часть комплекта Следопыта.</p>
-        <p v-if="equipmentErrorMessage(session.errorCode)" class="detail__error" role="alert">
-          {{ equipmentErrorMessage(session.errorCode) }}
+        <p v-if="equipmentErrorMessage(equipmentActionError)" class="detail__error" role="alert">
+          {{ equipmentErrorMessage(equipmentActionError) }}
         </p>
       </article>
       <template #actions>
