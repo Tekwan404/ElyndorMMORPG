@@ -44,12 +44,22 @@ public static class InventoryEndpoints
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+
+        EquipmentSlot? targetSlot = null;
+        if (request.TargetSlot is not null)
+        {
+            if (!Enum.TryParse(request.TargetSlot, ignoreCase: false, out EquipmentSlot parsedSlot))
+                return Problem(InventoryErrorCodes.InvalidSlot, context);
+            targetSlot = parsedSlot;
+        }
+
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
             async () => ToResult(
                 await service.EquipAsync(
                     accountId,
                     request.CharacterItemId,
+                    targetSlot,
                     request.MutationId,
                     cancellationToken),
                 context),
