@@ -142,26 +142,26 @@ function formatNumber(value: number, digits = 1): string {
   <section class="simulator" data-testid="combat-simulator">
     <header class="simulator__header">
       <div>
-        <small>HEADLESS BALANCE LAB</small>
-        <h2>Combat Simulator</h2>
-        <p>Запускает реальный CombatSession kernel против текущего локального draft. Никаких XP, gold, loot или сохранения персонажа.</p>
+        <small>ЛАБОРАТОРИЯ БАЛАНСА</small>
+        <h2>Симулятор боя</h2>
+        <p>Запускает реальное боевое ядро против текущего локального draft. Без опыта, золота, добычи и сохранения персонажа.</p>
       </div>
-      <span class="safe-badge">STATELESS</span>
+      <span class="safe-badge">БЕЗ СОХРАНЕНИЯ</span>
     </header>
 
     <div class="controls">
       <label>
-        <span>Class</span>
+        <span>Класс</span>
         <select v-model="classId" data-testid="simulation-class">
           <option v-for="option in classes" :key="option.id" :value="option.id">{{ option.id }}</option>
         </select>
       </label>
       <label>
-        <span>Player level</span>
+        <span>Уровень игрока</span>
         <input v-model.number="playerLevel" data-testid="simulation-level" type="number" min="1" max="60" />
       </label>
       <label>
-        <span>Monster</span>
+        <span>Монстр</span>
         <select v-model="monsterId" data-testid="simulation-monster">
           <option v-for="option in monsters" :key="option.id" :value="option.id">
             {{ option.id }} · Lv {{ option.level }} · {{ option.name }}
@@ -169,15 +169,15 @@ function formatNumber(value: number, digits = 1): string {
         </select>
       </label>
       <label>
-        <span>Iterations</span>
+        <span>Итерации</span>
         <input v-model.number="iterations" data-testid="simulation-iterations" type="number" min="1" max="1000" step="10" />
       </label>
       <label>
-        <span>Seed</span>
+        <span>Зерно случайности</span>
         <input v-model.number="seed" data-testid="simulation-seed" type="number" />
       </label>
       <label>
-        <span>Max fight, sec</span>
+        <span>Макс. бой, сек.</span>
         <input v-model.number="maxDurationSeconds" type="number" min="1" max="180" />
       </label>
       <button class="primary" data-testid="simulation-run" type="button" :disabled="!canRun || running" @click="runSimulation">
@@ -187,8 +187,8 @@ function formatNumber(value: number, digits = 1): string {
 
     <div class="talent-skills">
       <div>
-        <b>Skill talents</b>
-        <span>Скилл участвует в симуляции только если выбран talent с UNLOCK_ABILITY.</span>
+        <b>Таланты способностей</b>
+        <span>Способность участвует в симуляции только если выбран талант с UNLOCK_ABILITY.</span>
       </div>
       <label
         v-for="skill in currentTalentSkills"
@@ -203,11 +203,11 @@ function formatNumber(value: number, digits = 1): string {
         />
         <span><b>{{ skill.name }}</b><small>{{ skill.talentId }} → {{ skill.abilityId }}</small></span>
       </label>
-      <p v-if="currentTalentSkills.length === 0" class="muted">Для этого класса в текущем draft нет talent nodes с UNLOCK_ABILITY.</p>
+      <p v-if="currentTalentSkills.length === 0" class="muted">Для этого класса в текущем черновике нет талантов с UNLOCK_ABILITY.</p>
     </div>
 
     <p class="scope-note">
-      MVP применяет выбранные skill talents через реальный TalentModifierResolver. Полный passive talent build и equipment presets добавим следующим слоем.
+      Текущая версия применяет выбранные таланты способностей через реальный TalentModifierResolver. Полную пассивную сборку талантов и пресеты экипировки добавим следующим слоем.
     </p>
 
     <p v-if="errorMessage" class="message message--danger">{{ errorMessage }}</p>
@@ -223,31 +223,31 @@ function formatNumber(value: number, digits = 1): string {
 
       <div class="metrics">
         <article>
-          <small>WIN RATE</small>
+          <small>ДОЛЯ ПОБЕД</small>
           <strong data-testid="simulation-win-rate">{{ formatNumber(result.winRatePercent) }}%</strong>
           <span>{{ result.victories }}W · {{ result.defeats }}L · {{ result.timeouts }}T</span>
         </article>
         <article>
-          <small>PLAYER DPS</small>
+          <small>УРОН ИГРОКА/С</small>
           <strong>{{ formatNumber(result.averagePlayerDps) }}</strong>
           <span>enemy {{ formatNumber(result.averageEnemyDps) }}</span>
         </article>
         <article>
-          <small>AVG DURATION</small>
+          <small>СРЕДНЯЯ ДЛИТЕЛЬНОСТЬ</small>
           <strong>{{ formatNumber(result.averageDurationSeconds) }}s</strong>
           <span>P50 {{ formatNumber(result.p50DurationSeconds) }} · P95 {{ formatNumber(result.p95DurationSeconds) }}</span>
         </article>
         <article>
-          <small>AVG HP LEFT</small>
+          <small>СРЕДНЕЕ ОСТАВШЕЕСЯ ЗДОРОВЬЕ</small>
           <strong>{{ formatNumber(result.averagePlayerRemainingHp) }}</strong>
           <span>{{ result.iterations }} simulations</span>
         </article>
       </div>
 
       <div class="damage-table">
-        <h3>Player damage breakdown</h3>
+        <h3>Источники урона игрока</h3>
         <div class="damage-table__header">
-          <span>Source</span><span>Avg damage</span><span>Share</span>
+          <span>Источник</span><span>Средний урон</span><span>Доля</span>
         </div>
         <div v-for="source in result.damageSources" :key="source.definitionId" class="damage-table__row">
           <code>{{ source.definitionId }}</code>
