@@ -118,7 +118,6 @@ watch(currentLocationId, (locationId, previousLocationId) => {
 
 watch(() => combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
-    selectedEncounter.value = null
     if (combat.snapshot) lastEnemyName.value = combat.snapshot.enemy.name
     lastCombatResult.value = status
     void session.refreshSnapshot()
