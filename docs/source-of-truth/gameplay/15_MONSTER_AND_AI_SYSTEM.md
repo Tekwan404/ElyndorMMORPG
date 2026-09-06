@@ -198,6 +198,43 @@ Boss phase changed.
 
 После завершения текущей evaluation накопленные новые triggers могут инициировать следующую evaluation, только если состояние действительно изменилось.
 
+11.1. Multi-enemy Runtime
+
+В одном CombatSession каждый MonsterInstance имеет независимый AI runtime:
+
+```text
+MonsterActorId
+  -> AIProfile
+  -> AIState
+  -> NextActionAtUtc
+  -> CombatRuntimeState
+       -> Cooldowns
+       -> GlobalCooldown
+       -> ActiveCast
+       -> Effects
+```
+
+AI runtime одного monster не хранит gameplay cooldown/cast/effect state другого monster.
+
+Если несколько monsters имеют одинаковый NextActionAtUtc, CombatSession разрешает их последовательно в deterministic encounter order в рамках одного single-writer processing window.
+
+Начало Cast переносит следующую evaluation этого monster к его Cast.ResolvesAtUtc. До завершения cast fallback Auto Attack этого monster не выполняется. Другие monsters не блокируются этим cast.
+
+После смерти конкретного monster:
+
+```text
+AIState = DEAD
+NextActionAtUtc = null
+```
+
+Остальные живые monsters сохраняют собственные schedulers и продолжают бой.
+
+При Defeat/Cancel живые monster AI runtimes переходят в RESETTING, а scheduler очищается.
+
+Stun блокирует fallback action так же, как abilities. Silence не блокирует обычную Auto Attack, но Ability System остаётся окончательным validator для spell/ability action.
+
+Для текущего single-player PvE slice offensive monster target server-resolved к player ActorId; SELF ability target server-resolved к самому monster. Multi-player Threat target selection расширяет это правило позже, не меняя per-monster runtime ownership.
+
 12. Ability Validation
 
 AI может выбрать AbilityId, но окончательное решение принимает Ability System.
