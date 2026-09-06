@@ -33,7 +33,8 @@ internal static class CombatContractMapper
                     item.Name,
                     item.Type.ToString(),
                     item.Rarity.ToString(),
-                    item.Quantity)).ToArray()));
+                    item.Quantity)).ToArray(),
+                result.Reward.CompletedContractIds));
     }
 
     private static CombatSnapshotResponse ToResponse(
