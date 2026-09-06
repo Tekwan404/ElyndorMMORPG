@@ -33,7 +33,8 @@ public sealed record CombatParticipantDefinition(
     string ResourceType,
     AutoAttackProfile AutoAttack,
     IReadOnlySet<string> KnownAbilityIds,
-    decimal ResourceRegenPerSecond = 0);
+    decimal ResourceRegenPerSecond = 0,
+    bool CanAutoAttack = true);
 
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
 public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
@@ -84,6 +85,7 @@ public static class CombatErrorCodes
     public const string ConsumableOnCooldown = "combat_consumable_on_cooldown";
     public const string ConsumableNotNeeded = "combat_consumable_not_needed";
     public const string ConsumableUnavailable = "combat_consumable_unavailable";
+    public const string AutoAttackUnavailable = "combat_auto_attack_unavailable";
 }
 
 public sealed record CombatCommandResult(
