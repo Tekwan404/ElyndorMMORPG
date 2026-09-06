@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
@@ -33,7 +34,7 @@ public sealed partial class CombatSession
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset? _nextPlayerMainHandAutoAttackAtUtc;
     private DateTimeOffset? _nextPlayerOffHandAutoAttackAtUtc;
-    private DateTimeOffset? _consumableCooldownReadyAtUtc;
+    private readonly Dictionary<string, DateTimeOffset> _consumableCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset _lastPlayerResourceRegenAtUtc;
     private bool _playerAutoAttackEnabled;
 
@@ -219,15 +220,76 @@ public sealed partial class CombatSession
     public bool HasProcessedCommand(string commandId) =>
         !string.IsNullOrWhiteSpace(commandId) && _processedCommandIds.Contains(commandId);
 
-    public string? ValidateConsumableUse(DateTimeOffset now, decimal healAmount)
+    public string? ValidateConsumableUse(
+        DateTimeOffset now,
+        IReadOnlyList<ResolvedConsumableAction> actions,
+        string cooldownCategoryId,
+        TimeSpan cooldown)
     {
         if (Status != CombatSessionStatus.Active) return CombatErrorCodes.Ended;
         if (_player.Actor.IsDead) return CombatErrorCodes.ActorDead;
-        if (healAmount <= 0) return CombatErrorCodes.CommandRejected;
-        if (_player.Actor.CurrentHp >= _player.Actor.MaxHp) return CombatErrorCodes.ConsumableNotNeeded;
-        if (_consumableCooldownReadyAtUtc is { } readyAt && readyAt > now)
+        if (actions is null
+            || actions.Count == 0
+            || string.IsNullOrWhiteSpace(cooldownCategoryId)
+            || cooldown < TimeSpan.Zero)
+        {
+            return CombatErrorCodes.CommandRejected;
+        }
+        if (_consumableCooldowns.TryGetValue(cooldownCategoryId, out DateTimeOffset readyAt)
+            && readyAt > now)
+        {
             return CombatErrorCodes.ConsumableOnCooldown;
-        return null;
+        }
+
+        bool changesState = false;
+        foreach (ResolvedConsumableAction action in actions)
+        {
+            switch (action.Type)
+            {
+                case ConsumableActionType.RestoreHp:
+                    if (action.Amount <= 0)
+                        return CombatErrorCodes.CommandRejected;
+                    changesState |= _player.Actor.CurrentHp < _player.Actor.MaxHp;
+                    break;
+                case ConsumableActionType.RestoreResource:
+                    if (action.Amount <= 0
+                        || string.IsNullOrWhiteSpace(action.ResourceType)
+                        || !string.Equals(
+                            action.ResourceType,
+                            _player.ResourceType,
+                            StringComparison.Ordinal))
+                    {
+                        return CombatErrorCodes.CommandRejected;
+                    }
+                    changesState |= _player.Actor.CurrentResource < _player.Actor.MaxResource;
+                    break;
+                case ConsumableActionType.ApplyEffect:
+                    if (action.Effect is null)
+                        return CombatErrorCodes.CommandRejected;
+                    changesState = true;
+                    break;
+                case ConsumableActionType.RemoveEffect:
+                    bool byId = !string.IsNullOrWhiteSpace(action.RemoveEffectId);
+                    bool byCategory = !string.IsNullOrWhiteSpace(action.DispelCategory);
+                    if (byId == byCategory)
+                        return CombatErrorCodes.CommandRejected;
+                    changesState |= _player.Actor.ActiveEffects.Any(effect =>
+                        byId
+                            ? string.Equals(
+                                effect.Definition.Id,
+                                action.RemoveEffectId,
+                                StringComparison.Ordinal)
+                            : string.Equals(
+                                effect.Definition.DispelCategory,
+                                action.DispelCategory,
+                                StringComparison.Ordinal));
+                    break;
+                default:
+                    return CombatErrorCodes.CommandRejected;
+            }
+        }
+
+        return changesState ? null : CombatErrorCodes.ConsumableNotNeeded;
     }
 
     public CombatCommandResult Handle(CombatCommand command, DateTimeOffset now)
@@ -375,22 +437,79 @@ public sealed partial class CombatSession
         DateTimeOffset now,
         long before)
     {
-        string? validationError = ValidateConsumableUse(now, command.HealAmount);
+        string? validationError = ValidateConsumableUse(
+            now,
+            command.Actions,
+            command.CooldownCategoryId,
+            command.Cooldown);
         if (validationError is not null)
             return Result(false, validationError, before);
-        if (command.Cooldown < TimeSpan.Zero)
-            return Result(false, CombatErrorCodes.CommandRejected, before);
 
-        decimal previousHp = _player.Actor.CurrentHp;
-        _player.Actor.ApplyHealing(command.HealAmount);
-        decimal healed = _player.Actor.CurrentHp - previousHp;
-        _consumableCooldownReadyAtUtc = now + command.Cooldown;
+        foreach (ResolvedConsumableAction action in command.Actions)
+        {
+            switch (action.Type)
+            {
+                case ConsumableActionType.RestoreHp:
+                {
+                    decimal previousHp = _player.Actor.CurrentHp;
+                    _player.Actor.ApplyHealing(action.Amount);
+                    decimal healed = _player.Actor.CurrentHp - previousHp;
+                    if (healed > 0)
+                    {
+                        Append(new CombatEvent(
+                            CombatEventType.HealingApplied,
+                            now,
+                            _player.Actor.ActorId,
+                            command.ItemDefinitionId,
+                            healed,
+                            SourceActorId: _player.Actor.ActorId,
+                            TargetActorId: _player.Actor.ActorId));
+                    }
+                    break;
+                }
+                case ConsumableActionType.RestoreResource:
+                    AddResource(
+                        _player.Actor,
+                        action.Amount,
+                        now,
+                        command.ItemDefinitionId);
+                    break;
+                case ConsumableActionType.ApplyEffect:
+                    ApplyKernelEvents(
+                        EffectEngine.Apply(
+                            _player.Actor,
+                            _player.Actor.ActorId,
+                            action.Effect!,
+                            now),
+                        _player.Actor.ActorId,
+                        _player.Actor.ActorId,
+                        command.ItemDefinitionId);
+                    break;
+                case ConsumableActionType.RemoveEffect:
+                    IReadOnlyList<CombatEvent> removed = action.RemoveEffectId is not null
+                        ? EffectEngine.Remove(
+                            _player.Actor,
+                            action.RemoveEffectId,
+                            now)
+                        : EffectEngine.Dispel(
+                            _player.Actor,
+                            action.DispelCategory!,
+                            now);
+                    ApplyKernelEvents(
+                        removed,
+                        _player.Actor.ActorId,
+                        _player.Actor.ActorId,
+                        command.ItemDefinitionId);
+                    break;
+            }
+        }
+
+        _consumableCooldowns[command.CooldownCategoryId] = now + command.Cooldown;
         Append(new CombatEvent(
             CombatEventType.ConsumableUsed,
             now,
             _player.Actor.ActorId,
             command.ItemDefinitionId,
-            healed,
             SourceActorId: _player.Actor.ActorId,
             TargetActorId: _player.Actor.ActorId));
         SyncBerserkerConditionalEffects(now);
@@ -1199,7 +1318,10 @@ public sealed partial class CombatSession
             definition.Actor.MaxResource,
             autoAttackEnabled,
             definition.Kind == CombatActorKind.Player
-                ? _consumableCooldownReadyAtUtc
+                ? _consumableCooldowns.Values
+                    .Where(readyAt => readyAt > CurrentTimeUtc)
+                    .DefaultIfEmpty()
+                    .Max()
                 : null,
             new Dictionary<string, DateTimeOffset>(
                 runtime.Cooldowns,
@@ -1216,7 +1338,12 @@ public sealed partial class CombatSession
                 : new CombatCastSnapshot(
                     runtime.ActiveCast.Ability.Id,
                     runtime.ActiveCast.StartedAtUtc,
-                    runtime.ActiveCast.ResolvesAtUtc));
+                    runtime.ActiveCast.ResolvesAtUtc),
+            definition.Kind == CombatActorKind.Player
+                ? new Dictionary<string, DateTimeOffset>(
+                    _consumableCooldowns,
+                    StringComparer.Ordinal)
+                : null);
     }
 
     private static string MapAbilityError(AbilityErrorCode code) => code switch
