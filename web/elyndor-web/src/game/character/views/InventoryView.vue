@@ -67,7 +67,6 @@ const comparisonRows = computed(() => {
     .filter(row => row.candidateValue !== 0 || row.equippedValue !== 0)
 })
 
-
 const comparisonStats: readonly {
   label: string
   value: (item: InventoryItem) => number
@@ -260,6 +259,17 @@ async function useSelected(): Promise<void> {
   await session.useConsumable(item.id)
   selectedItem.value = null
 }
+
+async function toggleSelectedLock(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || session.mutationPending) return
+
+  await session.setItemLock(item.id, !item.isLocked)
+  const refreshed = session.snapshot?.character?.inventory.items.find(
+    candidate => candidate.id === item.id,
+  )
+  if (refreshed) selectedItem.value = refreshed
+}
 </script>
 
 <template>
@@ -331,6 +341,7 @@ async function useSelected(): Promise<void> {
           :data-rarity="item?.rarity"
           :data-item-id="item?.id"
           :data-new="item ? newItemIds.has(item.id) : undefined"
+          :data-locked="item?.isLocked ?? undefined"
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
@@ -338,6 +349,7 @@ async function useSelected(): Promise<void> {
         >
           <template v-if="item">
             <span v-if="newItemIds.has(item.id)" class="bag-cell__new">NEW</span>
+            <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">◆</span>
             <span class="bag-cell__icon">{{ itemGlyph(item) }}</span>
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
@@ -361,6 +373,7 @@ async function useSelected(): Promise<void> {
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
             <strong>Количество: {{ selectedItem.quantity }}</strong>
+            <span v-if="selectedItem.isLocked" class="item-detail__locked">◆ ЗАЩИЩЕНО</span>
           </div>
         </div>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
@@ -389,7 +402,8 @@ async function useSelected(): Promise<void> {
         </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
-        <p v-if="selectedItem.type === 'Material'" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
+        <p v-if="selectedItem.type === 'Material' && !selectedItem.isLocked" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
+        <p v-if="selectedItem.type === 'Material' && selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">Восстанавливает {{ selectedItem.healAmount }} здоровья. В бою общий кулдаун зелий — {{ selectedItem.consumableCooldownSeconds }} сек.</p>
       </article>
       <template #actions>
@@ -408,6 +422,16 @@ async function useSelected(): Promise<void> {
           @click="useSelected"
         >
           Использовать
+        </UIButton>
+        <UIButton
+          v-if="selectedItem"
+          variant="secondary"
+          data-item-lock-action
+          :loading="session.mutationPending"
+          :disabled="session.mutationPending"
+          @click="toggleSelectedLock"
+        >
+          {{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}
         </UIButton>
       </template>
     </UIModal>
@@ -629,6 +653,10 @@ async function useSelected(): Promise<void> {
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 12px rgb(232 200 102 / 10%);
 }
 
+.bag-cell[data-locked='true'] {
+  box-shadow: inset 0 0 0 1px rgb(232 200 102 / 12%), 0 0 12px rgb(232 200 102 / 8%);
+}
+
 .bag-cell--empty {
   opacity: .24;
 }
@@ -653,6 +681,22 @@ async function useSelected(): Promise<void> {
   font-size: .47rem;
   font-weight: 800;
   letter-spacing: .04em;
+}
+
+.bag-cell__lock {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid rgb(232 200 102 / 48%);
+  border-radius: 50%;
+  background: rgb(31 27 12 / 92%);
+  color: var(--ui-color-gold);
+  font-size: .45rem;
 }
 
 .bag-cell__quantity {
@@ -700,6 +744,18 @@ async function useSelected(): Promise<void> {
 .item-detail__identity p,
 .item-detail__description {
   color: var(--ui-color-text-muted);
+}
+
+.item-detail__locked {
+  width: fit-content;
+  margin-top: 2px;
+  padding: 3px 6px;
+  border: 1px solid rgb(232 200 102 / 38%);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-gold);
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .07em;
 }
 
 .item-detail__icon {
@@ -808,6 +864,12 @@ async function useSelected(): Promise<void> {
   background: var(--ui-color-surface-2);
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-sm);
+}
+
+.item-detail__hint--locked {
+  border-color: rgb(232 200 102 / 26%);
+  background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2));
+  color: #d8c77e;
 }
 
 @media (min-width: 520px) {
