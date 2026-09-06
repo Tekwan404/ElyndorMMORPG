@@ -24,7 +24,10 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
                     "jsonb_typeof(\"RewardSourcesJson\") = 'array'");
             });
         builder.HasKey(grant => grant.CombatSessionId).HasName("pk_combat_reward_grants");
-        builder.Property(grant => grant.MonsterId).HasMaxLength(64).IsRequired();
+        builder.Property(grant => grant.PrimaryMonsterId)
+            .HasColumnName("MonsterId")
+            .HasMaxLength(64)
+            .IsRequired();
         builder.Property(grant => grant.XpEarned).IsRequired();
         builder.Property(grant => grant.GoldEarned).HasDefaultValue(0).IsRequired();
         builder.Property(grant => grant.GrantedAtUtc).IsRequired();
