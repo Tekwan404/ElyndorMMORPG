@@ -6,7 +6,38 @@ public sealed record WorldContractDefinition(
     string Description,
     int RequiredLevel,
     string TargetMonsterId,
-    string UnlockLocationId);
+    string UnlockLocationId,
+    string? OfferLocationId = null,
+    int RewardXp = 0,
+    int RewardGold = 0);
+
+public sealed class CharacterContractAcceptance
+{
+    private CharacterContractAcceptance()
+    {
+        ContractId = null!;
+    }
+
+    public CharacterContractAcceptance(
+        Guid characterId,
+        string contractId,
+        DateTimeOffset acceptedAtUtc)
+    {
+        if (characterId == Guid.Empty)
+            throw new ArgumentException("Character id cannot be empty.", nameof(characterId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(contractId);
+        if (acceptedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Contract timestamps must be UTC.", nameof(acceptedAtUtc));
+
+        CharacterId = characterId;
+        ContractId = contractId;
+        AcceptedAtUtc = acceptedAtUtc;
+    }
+
+    public Guid CharacterId { get; private set; }
+    public string ContractId { get; private set; }
+    public DateTimeOffset AcceptedAtUtc { get; private set; }
+}
 
 public sealed class CharacterContractCompletion
 {
