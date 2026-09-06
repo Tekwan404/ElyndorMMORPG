@@ -83,7 +83,17 @@ function merchantSnapshot(): MerchantSnapshot {
         description: 'Мгновенно восстанавливает здоровье.',
         buyPriceGold: 20,
         sellPriceGold: 0,
-        healAmount: 50,
+        consumableActions: [
+          {
+            type: 'RestoreHp',
+            amount: 50,
+            resourceType: null,
+            effectId: null,
+            dispelCategory: null,
+          },
+        ],
+        consumableCooldownCategoryId: 'HEALING_POTION',
+        consumableCooldownSeconds: 30,
       },
       {
         definitionId: 'FIELD_TONIC',
@@ -93,7 +103,17 @@ function merchantSnapshot(): MerchantSnapshot {
         description: 'Редкий запас.',
         buyPriceGold: 35,
         sellPriceGold: 0,
-        healAmount: 75,
+        consumableActions: [
+          {
+            type: 'ApplyEffect',
+            amount: 0,
+            resourceType: null,
+            effectId: 'FIELD_TONIC_BUFF',
+            dispelCategory: null,
+          },
+        ],
+        consumableCooldownCategoryId: 'UTILITY_POTION',
+        consumableCooldownSeconds: 60,
       },
     ],
   }
@@ -137,7 +157,8 @@ function material(id: string, name: string, isLocked: boolean): InventoryItem {
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,
-    healAmount: 0,
+    consumableActions: [],
+    consumableCooldownCategoryId: null,
     consumableCooldownSeconds: 0,
     buyPriceGold: 0,
     sellPriceGold: 2,
