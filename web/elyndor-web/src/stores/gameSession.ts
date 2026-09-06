@@ -149,6 +149,15 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function setItemLock(characterItemId: string, isLocked: boolean): Promise<void> {
+    await replaySafeMutate(
+      'inventory:set-lock',
+      '/api/v1/inventory/set-lock',
+      'mutationId',
+      { characterItemId, isLocked },
+    )
+  }
+
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
   }
@@ -281,6 +290,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     equip,
     unequip,
     useConsumable,
+    setItemLock,
     getMerchant,
     buyMerchantItem,
     sellMerchantMaterial,
