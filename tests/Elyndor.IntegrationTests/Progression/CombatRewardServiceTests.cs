@@ -202,7 +202,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
-    public async Task BossVictoryCompletesUnlockContractExactlyOnce()
+    public async Task AcceptedBossContractCompletesExactlyOnceAndAddsContractReward()
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 14);
         Guid sessionId = Guid.CreateVersion7();
@@ -210,6 +210,12 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             sessionId,
             "SPIDER_BROODMOTHER_L14");
         await using GameDbContext context = postgres.CreateDbContext();
+        context.CharacterContractAcceptances.Add(
+            new CharacterContractAcceptance(
+                characterId,
+                "CONTRACT_BROODMOTHER_GATE",
+                Now.AddMinutes(-5)));
+        await context.SaveChangesAsync();
         CombatRewardService service = await CreateServiceAsync(context);
 
         CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
@@ -223,6 +229,11 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         Assert.True(first.Granted);
         Assert.False(replay.Granted);
+        Assert.Equal(10_500, first.XpEarned);
+        Assert.Equal(240, first.GoldEarned);
+        Assert.Contains(
+            "CONTRACT_BROODMOTHER_GATE",
+            first.CompletedContractIds ?? []);
 
         CharacterContractCompletion completion = await context.CharacterContractCompletions
             .AsNoTracking()
@@ -230,6 +241,25 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal("CONTRACT_BROODMOTHER_GATE", completion.ContractId);
         Assert.Equal("SPIDER_BROODMOTHER_L14", completion.TargetMonsterId);
         Assert.Equal(sessionId, completion.CombatSessionId);
+    }
+
+    [Fact]
+    public async Task BossKillWithoutAcceptedContractDoesNotUnlockGateOrGrantContractReward()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 14);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            VictorySnapshot(Guid.CreateVersion7(), "SPIDER_BROODMOTHER_L14"),
+            CancellationToken.None);
+
+        Assert.True(result.Granted);
+        Assert.Equal(8_500, result.XpEarned);
+        Assert.Equal(90, result.GoldEarned);
+        Assert.Empty(result.CompletedContractIds ?? []);
+        Assert.Empty(await context.CharacterContractCompletions.AsNoTracking().ToArrayAsync());
     }
 
     [Fact]
