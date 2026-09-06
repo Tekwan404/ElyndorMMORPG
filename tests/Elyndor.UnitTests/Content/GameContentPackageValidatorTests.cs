@@ -260,6 +260,39 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateRejectsInvertedMonsterAutoAttackDamageRange()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            Monsters =
+            [
+                new MonsterDefinition(
+                    "TEST_WOLF",
+                    "Test Wolf",
+                    MonsterRank.Normal,
+                    3,
+                    180,
+                    CombatStats.Default,
+                    TimeSpan.FromSeconds(2.5),
+                    6,
+                    [],
+                    "TEST_AI",
+                    AutoAttackBaseDamageMin: 10,
+                    AutoAttackBaseDamageMax: 5)
+            ],
+            MonsterAiProfiles =
+            [
+                new MonsterAiProfile("TEST_AI", [])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_MONSTER_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateRejectsMonsterWithMissingAbilityAndAiProfile()
     {
         GameContentPackage package = CreatePackage() with
@@ -337,6 +370,67 @@ public sealed class GameContentPackageValidatorTests
             GameContentPackageValidator.Validate(package);
 
         Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void ValidateAcceptsMainHandWeaponDamageRange()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_DAMAGE_SWORD",
+                    "Test Damage Sword",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.MainHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    WeaponDamageMin: 8,
+                    WeaponDamageMax: 12)
+            ],
+            LootTables = []
+        };
+
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
+    public void ValidateRejectsWeaponDamageRangeOnShield()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_DAMAGE_SHIELD",
+                    "Test Damage Shield",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.OffHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.Shield,
+                    WeaponDamageMin: 8,
+                    WeaponDamageMax: 12)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_DEFINITION");
     }
 
     [Fact]

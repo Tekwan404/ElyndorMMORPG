@@ -130,7 +130,9 @@ public sealed record ItemDefinition(
     decimal MaxResourceFlat = 0,
     string? IconId = null,
     string? AppearanceProfileId = null,
-    PrimaryStatRanges? PrimaryStatRanges = null);
+    PrimaryStatRanges? PrimaryStatRanges = null,
+    decimal? WeaponDamageMin = null,
+    decimal? WeaponDamageMax = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

@@ -82,6 +82,7 @@ public static partial class GameContentPackageValidator
                     || item.Stats.Intellect < 0
                     || item.Stats.Stamina < 0;
                 bool invalidPrimaryStatRanges = HasInvalidPrimaryStatRanges(item.PrimaryStatRanges);
+                bool invalidWeaponDamageRange = HasInvalidWeaponDamageRange(item);
                 bool invalidTypeShape = item.Type switch
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
@@ -101,6 +102,7 @@ public static partial class GameContentPackageValidator
                     || item.MaxStack < 1
                     || negativeStats
                     || invalidPrimaryStatRanges
+                    || invalidWeaponDamageRange
                     || invalidTypeShape)
                 {
                     errors.Add(new("INVALID_ITEM_DEFINITION", path,
@@ -195,7 +197,28 @@ public static partial class GameContentPackageValidator
             || item.ArmorPenetrationPercent != 0
             || item.MagicPenetrationPercent != 0
             || item.MaxResourceFlat != 0
-            || item.PrimaryStatRanges is not null;
+            || item.PrimaryStatRanges is not null
+            || item.WeaponDamageMin is not null
+            || item.WeaponDamageMax is not null;
+
+        private static bool HasInvalidWeaponDamageRange(ItemDefinition item)
+        {
+            bool hasMinimum = item.WeaponDamageMin.HasValue;
+            bool hasMaximum = item.WeaponDamageMax.HasValue;
+            if (!hasMinimum && !hasMaximum) return false;
+            if (!hasMinimum || !hasMaximum) return true;
+
+            EquipmentSlot? canonicalSlot = item.Slot switch
+            {
+                EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+                _ => item.Slot
+            };
+            return item.Type != ItemType.Equipment
+                || canonicalSlot != EquipmentSlot.MainHand
+                || string.Equals(item.WeaponCategory, EquipmentCategoryIds.Shield, StringComparison.Ordinal)
+                || item.WeaponDamageMin < 0
+                || item.WeaponDamageMax < item.WeaponDamageMin;
+        }
 
         private static bool HasInvalidPrimaryStatRanges(PrimaryStatRanges? ranges)
         {

@@ -54,6 +54,14 @@ public static partial class GameContentPackageValidator
                     || monster.MaxHp <= 0
                     || monster.AutoAttackInterval <= TimeSpan.Zero
                     || monster.AutoAttackBaseDamage < 0
+                    || monster.AutoAttackBaseDamageMin is < 0
+                    || monster.AutoAttackBaseDamageMax is < 0
+                    || monster.AutoAttackBaseDamageMin.HasValue
+                        && monster.AutoAttackBaseDamageMax.HasValue
+                        && monster.AutoAttackBaseDamageMax < monster.AutoAttackBaseDamageMin
+                    || monster.AutoAttackBaseDamageMax.HasValue
+                        && !monster.AutoAttackBaseDamageMin.HasValue
+                        && monster.AutoAttackBaseDamageMax < monster.AutoAttackBaseDamage
                     || monster.AutoAttackAttackPowerCoefficient < 0
                     || monster.Version <= 0)
                 {

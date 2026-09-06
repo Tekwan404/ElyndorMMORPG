@@ -28,7 +28,9 @@ public sealed record MonsterDefinition(
     int GoldRewardMax = 0,
     string? DisplayName = null,
     string Description = "",
-    string? ArtId = null);
+    string? ArtId = null,
+    decimal? AutoAttackBaseDamageMin = null,
+    decimal? AutoAttackBaseDamageMax = null);
 
 public sealed record MonsterAiProfile(
     string Id,
