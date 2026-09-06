@@ -51,7 +51,9 @@ public sealed record CombatEventResponse(
     string? DefinitionId,
     decimal Amount,
     DateTimeOffset ServerTimeUtc,
-    decimal AmountBeforeShields = 0);
+    decimal AmountBeforeShields = 0,
+    string? WeaponHand = null,
+    string? WeaponDefinitionId = null);
 
 public sealed record CombatRewardItemResponse(
     string ItemId,
