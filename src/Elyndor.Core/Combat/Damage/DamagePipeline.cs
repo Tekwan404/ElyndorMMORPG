@@ -291,7 +291,8 @@ public static class DamagePipeline
         decimal blockValueMax = request.Target.Stats.BlockValueMax;
         if (blockChance is < 0 or > 100
             || blockValueMin < 0
-            || blockValueMax < blockValueMin)
+            || blockValueMax < blockValueMin
+            || blockChance > 0 && blockValueMax <= 0)
         {
             throw new InvalidOperationException("Target block profile is invalid.");
         }
@@ -361,7 +362,6 @@ public static class DamagePipeline
             request.BaseAmount,
             avoidance,
             false,
-            0,
             0,
             0,
             0,
