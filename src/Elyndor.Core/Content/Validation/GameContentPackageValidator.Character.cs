@@ -135,7 +135,15 @@ public static partial class GameContentPackageValidator
                     && (autoAttack.Interval <= TimeSpan.Zero
                         || autoAttack.BaseDamage < 0
                         || autoAttack.AttackPowerCoefficient < 0
-                        || autoAttack.ResourceOnHit < 0))
+                        || autoAttack.ResourceOnHit < 0
+                        || autoAttack.BaseDamageMin is < 0
+                        || autoAttack.BaseDamageMax is < 0
+                        || autoAttack.BaseDamageMin.HasValue
+                            && autoAttack.BaseDamageMax.HasValue
+                            && autoAttack.BaseDamageMax < autoAttack.BaseDamageMin
+                        || autoAttack.BaseDamageMax.HasValue
+                            && !autoAttack.BaseDamageMin.HasValue
+                            && autoAttack.BaseDamageMax < autoAttack.BaseDamage))
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_CLASS_AUTO_ATTACK",
