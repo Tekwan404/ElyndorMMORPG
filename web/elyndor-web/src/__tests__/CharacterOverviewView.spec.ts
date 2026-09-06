@@ -26,12 +26,14 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     const wrapper = mount(CharacterOverviewView)
 
     expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(11)
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).toContain('Старый меч')
-    expect(wrapper.get('[data-equipment-slot="feet"]').text()).toContain('Старые сапоги')
-    expect(wrapper.get('[data-equipment-slot="amulet"]').text()).toContain('Старый талисман')
-    expect(wrapper.get('[data-equipment-slot="offHand"]').text()).toContain('Щит стража')
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).toContain('Старый меч')
+    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).toContain('Старые сапоги')
+    expect(wrapper.get('[data-equipment-slot="amulet"]').attributes('aria-label')).toContain('Старый талисман')
+    expect(wrapper.get('[data-equipment-slot="offHand"]').attributes('aria-label')).toContain('Щит стража')
     expect(wrapper.get('[data-equipment-slot="hands"]').attributes('data-filled')).toBe('false')
     expect(wrapper.text()).toContain('4 / 11 слотов')
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).not.toContain('Старый меч')
+    expect(wrapper.find('.paperdoll__vitals').exists()).toBe(false)
   })
 
   it('prefers canonical slots over legacy aliases when both are present', () => {
@@ -50,10 +52,10 @@ describe('CharacterOverviewView equipment paperdoll', () => {
 
     const wrapper = mount(CharacterOverviewView)
 
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).toContain('Клинок героя')
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).not.toContain('Старый меч')
-    expect(wrapper.get('[data-equipment-slot="feet"]').text()).toContain('Сапоги героя')
-    expect(wrapper.get('[data-equipment-slot="feet"]').text()).not.toContain('Старые сапоги')
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).toContain('Клинок героя')
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).not.toContain('Старый меч')
+    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).toContain('Сапоги героя')
+    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).not.toContain('Старые сапоги')
   })
 })
 
