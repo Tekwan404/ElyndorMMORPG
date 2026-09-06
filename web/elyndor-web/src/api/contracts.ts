@@ -107,7 +107,10 @@ export interface WorldContract {
   requiredLevel: number
   targetMonsterId: string
   unlockLocationId: string
-  status: 'LOCKED' | 'ACTIVE' | 'COMPLETED'
+  status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLETED'
+  offerLocationId: string | null
+  rewardXp: number
+  rewardGold: number
 }
 
 export interface WorldEncounter {
