@@ -266,7 +266,9 @@ public static class InventoryEndpoints
                 item.Definition.Description,
                 item.Definition.BuyPriceGold,
                 item.SellPriceGold,
-                item.Definition.HealAmount)).ToArray());
+                ToConsumableActions(item.Definition),
+                item.Definition.ConsumableCooldownCategoryId,
+                item.Definition.ConsumableCooldownSeconds)).ToArray());
 
     private static IResult Problem(string errorCode, HttpContext context) =>
         Results.Problem(
@@ -341,7 +343,8 @@ public static class InventoryEndpoints
             item.Definition.WeaponBaseAttackIntervalSeconds,
             item.Definition.AttackSpeedPercent,
             item.Definition.DodgePercent,
-            item.Definition.HealAmount,
+            ToConsumableActions(item.Definition),
+            item.Definition.ConsumableCooldownCategoryId,
             item.Definition.ConsumableCooldownSeconds,
             item.Definition.BuyPriceGold,
             MerchantService.ResolveSellPrice(item.Definition),
@@ -351,6 +354,17 @@ public static class InventoryEndpoints
             item.Definition.WeaponCategory is null
                 ? null
                 : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1);
+
+    private static ConsumableActionResponse[] ToConsumableActions(
+        ItemDefinition definition) =>
+        (definition.ConsumableActions ?? [])
+            .Select(action => new ConsumableActionResponse(
+                action.Type.ToString(),
+                action.Amount,
+                action.ResourceType,
+                action.EffectId,
+                action.DispelCategory))
+            .ToArray();
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
