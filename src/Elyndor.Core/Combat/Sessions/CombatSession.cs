@@ -121,10 +121,14 @@ public sealed partial class CombatSession
         if (enemies.Any(enemy => enemy.Actor.ActorId == player.Actor.ActorId))
             throw new ArgumentException("Player and enemy actor identifiers must be unique.", nameof(enemies));
         if (enemyAiProfiles.Count != enemies.Count
-            || enemies.Any(enemy => !enemyAiProfiles.ContainsKey(enemy.Actor.ActorId)))
+            || enemies.Any(enemy =>
+                !enemyAiProfiles.TryGetValue(
+                    enemy.Actor.ActorId,
+                    out MonsterAiProfile? profile)
+                || profile is null))
         {
             throw new ArgumentException(
-                "Every enemy requires exactly one AI profile keyed by actor id.",
+                "Every enemy requires exactly one non-null AI profile keyed by actor id.",
                 nameof(enemyAiProfiles));
         }
 
@@ -692,6 +696,12 @@ public sealed partial class CombatSession
                 abilityId,
                 SourceActorId: enemyActorId,
                 TargetActorId: targetIds[0]));
+            if (Status != CombatSessionStatus.Active || enemy.Actor.IsDead)
+            {
+                aiRuntime.NextActionAtUtc = null;
+                return;
+            }
+
             aiRuntime.NextActionAtUtc = runtime.ActiveCast?.ResolvesAtUtc
                 ?? NextEnemyActionAfter(enemy, now);
             return;
