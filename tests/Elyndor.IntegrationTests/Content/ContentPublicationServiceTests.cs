@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
@@ -159,43 +160,92 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
-    public async Task RestoreLatestReleaseKeepsNewerBundledContentInsteadOfOlderPublishedRevision()
+    public async Task RestoreLatestReleaseKeepsNewerBundledContentAndPreservesPublishedCustomItems()
     {
         MutableTimeProvider timeProvider = new(Start);
+        GameContentPackage bundled =
+            await GameContentPackageLoader.LoadAsync(
+                Path.GetFullPath("content/package.json"));
 
+        ItemDefinition customSword = new(
+            Id: "MECH_PIZDA",
+            Name: "Кастомный меч",
+            Type: ItemType.Equipment,
+            Rarity: ItemRarity.Epic,
+            RequiredLevel: 1,
+            Stackable: false,
+            MaxStack: 1,
+            Slot: EquipmentSlot.MainHand,
+            Stats: new PrimaryStats(5, 0, 0, 2),
+            Description: "Предмет, созданный через админ-панель.",
+            Version: 1,
+            WeaponBaseAttackIntervalSeconds: 2.2m,
+            WeaponCategory: EquipmentCategoryIds.OneHandSword,
+            AllowedClassIds: ["WARRIOR"],
+            WeaponDamageMin: 10,
+            WeaponDamageMax: 16);
+
+        ItemDefinition stalePotion = bundled.Items!
+            .Single(item => item.Id == "SMALL_HEALING_POTION") with
+        {
+            Name = "УСТАРЕВШЕЕ НАЗВАНИЕ"
+        };
+
+        GameContentPackage olderPublished = bundled with
+        {
+            ContentVersion = "0.10.2",
+            BalanceVersion = "0.8.0",
+            PublishedAtUtc = Start.AddMinutes(1),
+            Items = bundled.Items
+                .Where(item => item.Id != stalePotion.Id)
+                .Append(stalePotion)
+                .Append(customSword)
+                .ToArray()
+        };
+
+        Guid revisionId;
+        Guid releaseId;
         await using (GameDbContext seedContext = postgres.CreateDbContext())
         {
             ContentRevisionStore seedStore = new(seedContext, timeProvider);
             ContentRevision olderRevision = await CreateRevisionAsync(
                 seedStore,
-                CreatePackage("0.10.2", "0.8.0", Start.AddMinutes(1)),
-                "older published content");
-            _ = await seedStore.PublishAsync(
+                olderPublished,
+                "older published content with admin-created item");
+            ContentRelease release = (await seedStore.PublishAsync(
                 olderRevision.Id,
                 "integration-test",
                 "published before newer application release",
-                CancellationToken.None);
+                CancellationToken.None))!;
+            revisionId = olderRevision.Id;
+            releaseId = release.Id;
         }
 
         await using GameDbContext runtimeContext = postgres.CreateDbContext();
         ContentRevisionStore runtimeStore = new(runtimeContext, timeProvider);
-        MutableContentSnapshotProvider provider =
-            new(CreatePackage("0.11.0", "0.9.1", Start.AddMinutes(2)));
+        MutableContentSnapshotProvider provider = new(bundled);
         ContentPublicationService service = new(
             runtimeStore,
             new ContentRevisionImporter(runtimeStore),
             provider,
             new ContentPublicationCoordinator());
 
-        ContentPublicationResult? restored =
-            await service.RestoreLatestReleaseAsync(CancellationToken.None);
+        ContentPublicationResult restored = (await service.RestoreLatestReleaseAsync(
+            CancellationToken.None))!;
 
-        Assert.Null(restored);
-        Assert.Equal("0.11.0", provider.GetCurrent().ContentVersion);
-        Assert.Equal("0.9.1", provider.GetCurrent().BalanceVersion);
-        Assert.Null(provider.GetRuntimeState().RevisionId);
-        Assert.Null(provider.GetRuntimeState().ReleaseId);
-        Assert.Equal(0, provider.CachedRevisionCount);
+        Assert.Equal(bundled.ContentVersion, provider.GetCurrent().ContentVersion);
+        Assert.Equal(bundled.BalanceVersion, provider.GetCurrent().BalanceVersion);
+        Assert.Contains(
+            provider.GetCurrent().Package.Items!,
+            item => item.Id == customSword.Id && item.Name == customSword.Name);
+        Assert.Equal(
+            bundled.Items.Single(item => item.Id == stalePotion.Id).Name,
+            provider.GetCurrent().Package.Items!
+                .Single(item => item.Id == stalePotion.Id)
+                .Name);
+        Assert.Equal(revisionId, restored.RuntimeState.RevisionId);
+        Assert.Equal(releaseId, restored.RuntimeState.ReleaseId);
+        Assert.Equal(1, provider.CachedRevisionCount);
     }
 
     [Fact]
