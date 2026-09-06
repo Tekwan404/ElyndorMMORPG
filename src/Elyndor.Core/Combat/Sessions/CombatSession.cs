@@ -22,7 +22,8 @@ public sealed partial class CombatSession
     private readonly HashSet<Guid> _deadActors = [];
     private readonly List<CombatEvent> _events = [];
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
-    private DateTimeOffset? _nextPlayerAutoAttackAtUtc;
+    private DateTimeOffset? _nextPlayerMainHandAutoAttackAtUtc;
+    private DateTimeOffset? _nextPlayerOffHandAutoAttackAtUtc;
     private DateTimeOffset? _nextEnemyActionAtUtc;
     private DateTimeOffset? _consumableCooldownReadyAtUtc;
     private DateTimeOffset _lastPlayerResourceRegenAtUtc;
@@ -51,6 +52,8 @@ public sealed partial class CombatSession
         ArgumentException.ThrowIfNullOrWhiteSpace(contentVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(balanceVersion);
         ValidateAutoAttack(player.AutoAttack);
+        if (player.OffHandAutoAttack is not null)
+            ValidateAutoAttack(player.OffHandAutoAttack);
         ValidateAutoAttack(enemy.AutoAttack);
         if (player.Kind != CombatActorKind.Player || enemy.Kind != CombatActorKind.Monster)
             throw new ArgumentException("CombatSession requires one player and one monster.");
@@ -72,7 +75,11 @@ public sealed partial class CombatSession
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
         Status = CombatSessionStatus.Active;
         _playerAutoAttackEnabled = player.CanAutoAttack;
-        _nextPlayerAutoAttackAtUtc = player.CanAutoAttack ? startedAtUtc : null;
+        _nextPlayerMainHandAutoAttackAtUtc = player.CanAutoAttack ? startedAtUtc : null;
+        _nextPlayerOffHandAutoAttackAtUtc = player.CanAutoAttack
+            && player.OffHandAutoAttack is not null
+                ? startedAtUtc + InitialOffHandDelay(player.OffHandAutoAttack)
+                : null;
         _nextEnemyActionAtUtc = startedAtUtc + enemy.AutoAttack.Interval;
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
@@ -97,7 +104,10 @@ public sealed partial class CombatSession
         get
         {
             if (Status != CombatSessionStatus.Active) return null;
-            DateTimeOffset? next = Min(_nextPlayerAutoAttackAtUtc, _nextEnemyActionAtUtc);
+            DateTimeOffset? next = Min(
+                _nextPlayerMainHandAutoAttackAtUtc,
+                _nextPlayerOffHandAutoAttackAtUtc);
+            next = Min(next, _nextEnemyActionAtUtc);
             next = Min(next, _playerRuntime.ActiveCast?.ResolvesAtUtc);
             next = Min(next, _enemyRuntime.ActiveCast?.ResolvesAtUtc);
             next = Min(next, NextEffectDue(_player.Actor));
@@ -169,7 +179,8 @@ public sealed partial class CombatSession
             if (Status == CombatSessionStatus.Active)
             {
                 Status = CombatSessionStatus.Cancelled;
-                _nextPlayerAutoAttackAtUtc = null;
+                _nextPlayerMainHandAutoAttackAtUtc = null;
+                _nextPlayerOffHandAutoAttackAtUtc = null;
                 _nextEnemyActionAtUtc = null;
                 Append(new CombatEvent(
                     CombatEventType.CombatEnded,
@@ -270,7 +281,10 @@ public sealed partial class CombatSession
         if (!_playerAutoAttackEnabled)
         {
             _playerAutoAttackEnabled = true;
-            _nextPlayerAutoAttackAtUtc = now;
+            _nextPlayerMainHandAutoAttackAtUtc = now;
+            _nextPlayerOffHandAutoAttackAtUtc = _player.OffHandAutoAttack is null
+                ? null
+                : now + InitialOffHandDelay(_player.OffHandAutoAttack);
             Append(new CombatEvent(
                 CombatEventType.AutoAttackStarted,
                 now,
@@ -288,7 +302,8 @@ public sealed partial class CombatSession
         if (_playerAutoAttackEnabled)
         {
             _playerAutoAttackEnabled = false;
-            _nextPlayerAutoAttackAtUtc = null;
+            _nextPlayerMainHandAutoAttackAtUtc = null;
+            _nextPlayerOffHandAutoAttackAtUtc = null;
             Append(new CombatEvent(
                 CombatEventType.AutoAttackStopped,
                 now,
@@ -331,20 +346,23 @@ public sealed partial class CombatSession
                 _enemy.Actor.ActorId,
                 due);
 
-            if (Status == CombatSessionStatus.Active && _nextPlayerAutoAttackAtUtc <= due)
+            if (Status == CombatSessionStatus.Active
+                && _nextPlayerMainHandAutoAttackAtUtc <= due)
             {
-                if (_playerRuntime.ActiveCast is null)
-                {
-                    ResolveAutoAttack(_player, _enemy, due);
-                    _nextPlayerAutoAttackAtUtc =
-                        Status == CombatSessionStatus.Active && _playerAutoAttackEnabled
-                            ? due + EffectivePlayerAutoAttackInterval(due)
-                            : null;
-                }
-                else
-                {
-                    _nextPlayerAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
-                }
+                ResolveReadyPlayerAutoAttack(
+                    _player.AutoAttack,
+                    due,
+                    ref _nextPlayerMainHandAutoAttackAtUtc);
+            }
+
+            if (Status == CombatSessionStatus.Active
+                && _player.OffHandAutoAttack is not null
+                && _nextPlayerOffHandAutoAttackAtUtc <= due)
+            {
+                ResolveReadyPlayerAutoAttack(
+                    _player.OffHandAutoAttack,
+                    due,
+                    ref _nextPlayerOffHandAutoAttackAtUtc);
             }
 
             if (Status == CombatSessionStatus.Active && _nextEnemyActionAtUtc <= due)
@@ -366,6 +384,23 @@ public sealed partial class CombatSession
                 SyncBerserkerConditionalEffects(now);
             }
         }
+    }
+
+    private void ResolveReadyPlayerAutoAttack(
+        AutoAttackProfile profile,
+        DateTimeOffset due,
+        ref DateTimeOffset? nextAtUtc)
+    {
+        if (_playerRuntime.ActiveCast is null)
+        {
+            ResolveAutoAttack(_player, _enemy, due, profile);
+            nextAtUtc = Status == CombatSessionStatus.Active && _playerAutoAttackEnabled
+                ? due + EffectivePlayerAutoAttackInterval(profile, due)
+                : null;
+            return;
+        }
+
+        nextAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
     }
 
     private void ResolveEnemyAction(DateTimeOffset now)
@@ -405,11 +440,12 @@ public sealed partial class CombatSession
     private void ResolveAutoAttack(
         CombatParticipantDefinition source,
         CombatParticipantDefinition target,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        AutoAttackProfile? playerProfile = null)
     {
         if (source.Kind == CombatActorKind.Player)
         {
-            ResolvePlayerAutoAttack(target, now);
+            ResolvePlayerAutoAttack(target, playerProfile ?? source.AutoAttack, now);
             return;
         }
 
@@ -662,7 +698,8 @@ public sealed partial class CombatSession
         }
 
         _playerAutoAttackEnabled = false;
-        _nextPlayerAutoAttackAtUtc = null;
+        _nextPlayerMainHandAutoAttackAtUtc = null;
+        _nextPlayerOffHandAutoAttackAtUtc = null;
         _nextEnemyActionAtUtc = null;
         Append(new CombatEvent(
             CombatEventType.CombatEnded,
@@ -797,6 +834,12 @@ public sealed partial class CombatSession
         DateTimeOffset? left,
         DateTimeOffset? right) =>
         left is null ? right : right is null ? left : left <= right ? left : right;
+
+    private static TimeSpan InitialOffHandDelay(AutoAttackProfile profile)
+    {
+        long halfTicks = Math.Max(1, profile.Interval.Ticks / 2);
+        return TimeSpan.FromTicks(halfTicks);
+    }
 
     private static void ValidateAutoAttack(AutoAttackProfile profile)
     {
