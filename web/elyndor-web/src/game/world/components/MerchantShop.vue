@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { InventoryItem, MerchantSnapshot } from '@/api/contracts'
+import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
+import { gameArt } from '@/assets/gameArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 
@@ -12,9 +13,27 @@ const session = useGameSessionStore()
 const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
 const activeTab = ref<'buy' | 'sell'>('buy')
+const selectedOfferId = ref<string | null>(null)
 
 const materials = computed(() => session.snapshot?.character?.inventory.items
-  .filter((item) => item.type === 'Material' && !item.equippedSlot && item.sellPriceGold > 0) ?? [])
+  .filter((item) =>
+    item.type === 'Material'
+    && !item.equippedSlot
+    && !item.isLocked
+    && item.sellPriceGold > 0,
+  ) ?? [])
+const protectedMaterialsCount = computed(() => session.snapshot?.character?.inventory.items
+  .filter((item) =>
+    item.type === 'Material'
+    && !item.equippedSlot
+    && item.isLocked
+    && item.sellPriceGold > 0,
+  ).length ?? 0)
+const selectedOffer = computed(() =>
+  merchant.value?.items.find(item => item.definitionId === selectedOfferId.value)
+    ?? merchant.value?.items[0]
+    ?? null,
+)
 
 watch(() => props.open, (open) => {
   if (open) {
@@ -27,9 +46,34 @@ async function loadMerchant(): Promise<void> {
   loading.value = true
   try {
     merchant.value = await session.getMerchant(MERCHANT_ID)
+    if (
+      merchant.value
+      && !merchant.value.items.some(item => item.definitionId === selectedOfferId.value)
+    ) {
+      selectedOfferId.value = merchant.value.items[0]?.definitionId ?? null
+    }
   } finally {
     loading.value = false
   }
+}
+
+function selectOffer(item: MerchantItem): void {
+  selectedOfferId.value = item.definitionId
+}
+
+function itemGlyph(item: MerchantItem): string {
+  if (item.type === 'Consumable') return '✚'
+  if (item.type === 'Equipment') return '⚔'
+  return '◆'
+}
+
+function rarityLabel(item: MerchantItem): string {
+  if (item.rarity === 'Uncommon') return 'Необычный'
+  if (item.rarity === 'Rare') return 'Редкий'
+  if (item.rarity === 'Epic') return 'Эпический'
+  if (item.rarity === 'Legendary') return 'Легендарный'
+  if (item.rarity === 'Unique') return 'Уникальный'
+  return 'Обычный'
 }
 
 async function buy(definitionId: string): Promise<void> {
@@ -46,7 +90,11 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 <template>
   <UIModal :open="open" title="Торговец" @close="emit('close')">
     <section class="merchant">
-      <header class="merchant__npc">
+      <header
+        class="merchant__npc"
+        :style="{ '--merchant-scene': `url(${gameArt.world.capital})` }"
+      >
+        <div class="merchant__npc-shade" />
         <div class="merchant__portrait" aria-hidden="true">М</div>
         <div class="merchant__identity">
           <small>ТОРГОВЕЦ ПРИПАСАМИ</small>
@@ -60,63 +108,131 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
       </header>
 
       <nav class="merchant-tabs" aria-label="Разделы торговца">
-        <button type="button" :class="{ active: activeTab === 'buy' }" @click="activeTab = 'buy'">Купить</button>
-        <button type="button" :class="{ active: activeTab === 'sell' }" @click="activeTab = 'sell'">Продать</button>
+        <button
+          type="button"
+          data-merchant-tab="buy"
+          :class="{ active: activeTab === 'buy' }"
+          @click="activeTab = 'buy'"
+        >
+          Купить
+        </button>
+        <button
+          type="button"
+          data-merchant-tab="sell"
+          :class="{ active: activeTab === 'sell' }"
+          @click="activeTab = 'sell'"
+        >
+          Продать
+        </button>
         <button type="button" disabled title="Будет добавлено вместе с buyback-системой">Выкуп</button>
       </nav>
 
-      <section v-if="activeTab === 'buy'" class="merchant-panel">
+      <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
         <header class="merchant-panel__heading">
           <div>
-            <small>Витрина</small>
+            <small>ВИТРИНА</small>
             <strong>Припасы для следующего похода</strong>
           </div>
           <span>{{ merchant?.items.length ?? 0 }} поз.</span>
         </header>
 
-        <article v-for="item in merchant?.items ?? []" :key="item.definitionId" class="trade-row">
-          <span class="trade-row__icon">✚</span>
-          <div class="trade-row__copy">
-            <strong>{{ item.name }}</strong>
-            <small>{{ item.description }}</small>
-            <b v-if="item.healAmount">+{{ item.healAmount }} здоровья</b>
-          </div>
-          <div class="trade-row__action">
-            <span>● {{ item.buyPriceGold }}</span>
-            <UIButton
-              :loading="session.mutationPending"
-              :disabled="session.mutationPending || (merchant?.gold ?? 0) < item.buyPriceGold"
-              @click="buy(item.definitionId)"
+        <div v-if="merchant?.items.length" class="merchant-buy">
+          <div class="merchant-shelf" aria-label="Товары торговца">
+            <button
+              v-for="item in merchant.items"
+              :key="item.definitionId"
+              type="button"
+              class="offer-card"
+              :class="{ active: selectedOffer?.definitionId === item.definitionId }"
+              :data-rarity="item.rarity"
+              :data-merchant-offer="item.definitionId"
+              :aria-pressed="selectedOffer?.definitionId === item.definitionId"
+              @click="selectOffer(item)"
             >
-              Купить
-            </UIButton>
+              <span class="offer-card__icon">{{ itemGlyph(item) }}</span>
+              <span class="offer-card__copy">
+                <small>{{ rarityLabel(item) }}</small>
+                <strong>{{ item.name }}</strong>
+                <b>● {{ item.buyPriceGold }}</b>
+              </span>
+            </button>
           </div>
-        </article>
+
+          <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail>
+            <div class="merchant-detail__identity">
+              <span class="merchant-detail__icon" :data-rarity="selectedOffer.rarity">
+                {{ itemGlyph(selectedOffer) }}
+              </span>
+              <div>
+                <small>{{ rarityLabel(selectedOffer) }} · {{ selectedOffer.type }}</small>
+                <h3>{{ selectedOffer.name }}</h3>
+              </div>
+            </div>
+
+            <p>{{ selectedOffer.description }}</p>
+            <div v-if="selectedOffer.healAmount" class="merchant-detail__effect">
+              <span>Эффект</span>
+              <strong>+{{ selectedOffer.healAmount }} здоровья</strong>
+            </div>
+
+            <footer class="merchant-detail__purchase">
+              <div>
+                <small>Цена</small>
+                <strong>● {{ selectedOffer.buyPriceGold }}</strong>
+              </div>
+              <UIButton
+                data-buy-selected
+                :loading="session.mutationPending"
+                :disabled="session.mutationPending || (merchant?.gold ?? 0) < selectedOffer.buyPriceGold"
+                @click="buy(selectedOffer.definitionId)"
+              >
+                Купить
+              </UIButton>
+            </footer>
+          </article>
+        </div>
+
         <p v-if="loading" class="muted">Маркус раскладывает товар…</p>
+        <p v-else-if="merchant && merchant.items.length === 0" class="muted">На витрине пока ничего нет.</p>
       </section>
 
-      <section v-else class="merchant-panel">
+      <section v-else class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
-            <small>Продажа</small>
+            <small>ПРОДАЖА</small>
             <strong>Материалы из вашего рюкзака</strong>
           </div>
           <span>{{ materials.length }} поз.</span>
         </header>
 
-        <article v-for="item in materials" :key="item.id" class="trade-row">
-          <span class="trade-row__icon trade-row__icon--material">◆</span>
-          <div class="trade-row__copy">
-            <strong>{{ item.name }} ×{{ item.quantity }}</strong>
-            <small>Цена за штуку</small>
-            <b>● {{ item.sellPriceGold }}</b>
-          </div>
-          <div class="sell-actions">
-            <UIButton variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">1 шт.</UIButton>
-            <UIButton :disabled="session.mutationPending" @click="sell(item, item.quantity)">Всё · {{ item.sellPriceGold * item.quantity }}</UIButton>
-          </div>
-        </article>
-        <p v-if="materials.length === 0" class="muted">В рюкзаке пока нет материалов, которые Маркус готов купить.</p>
+        <p v-if="protectedMaterialsCount > 0" class="protected-hint">
+          ◆ Защищённые материалы скрыты из продажи: {{ protectedMaterialsCount }}
+        </p>
+
+        <div v-if="materials.length" class="sell-list">
+          <article v-for="item in materials" :key="item.id" class="sell-card" :data-sell-item="item.id">
+            <span class="sell-card__icon">◆</span>
+            <div class="sell-card__copy">
+              <small>МАТЕРИАЛ</small>
+              <strong>{{ item.name }}</strong>
+              <span>В рюкзаке: {{ item.quantity }}</span>
+            </div>
+            <div class="sell-card__price">
+              <small>за штуку</small>
+              <strong>● {{ item.sellPriceGold }}</strong>
+            </div>
+            <div class="sell-card__actions">
+              <UIButton variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">
+                1 шт.
+              </UIButton>
+              <UIButton :disabled="session.mutationPending" @click="sell(item, item.quantity)">
+                Всё · {{ item.sellPriceGold * item.quantity }}
+              </UIButton>
+            </div>
+          </article>
+        </div>
+
+        <p v-else class="muted">В рюкзаке пока нет материалов, которые Маркус готов купить.</p>
       </section>
     </section>
   </UIModal>
@@ -125,52 +241,79 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 <style scoped>
 .merchant {
   display: grid;
-  gap: 0;
   overflow: hidden;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-lg);
   background:
-    radial-gradient(circle at 12% 0, rgb(146 136 255 / 9%), transparent 12rem),
-    linear-gradient(180deg, rgb(13 18 30 / 92%), rgb(7 10 17 / 96%));
+    radial-gradient(circle at 15% 0, rgb(146 136 255 / 8%), transparent 14rem),
+    linear-gradient(180deg, rgb(13 18 30 / 96%), rgb(6 9 16 / 99%));
 }
 
 .merchant__npc {
+  --merchant-scene: none;
+
+  position: relative;
   display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+  align-items: end;
   gap: var(--ui-space-3);
+  min-height: 8.5rem;
   padding: var(--ui-space-4);
+  overflow: hidden;
   border-bottom: 1px solid var(--ui-color-border);
+  background:
+    var(--merchant-scene) center 42% / cover,
+    var(--ui-color-surface-1);
+}
+
+.merchant__npc-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(4 6 10 / 28%), rgb(5 8 14 / 94%)),
+    linear-gradient(90deg, rgb(7 10 17 / 28%), transparent 65%);
+  pointer-events: none;
+}
+
+.merchant__portrait,
+.merchant__identity,
+.merchant__wallet {
+  position: relative;
+  z-index: 1;
 }
 
 .merchant__portrait {
   display: grid;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 4.6rem;
+  height: 4.6rem;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 45%, var(--ui-color-border));
+  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 34%, var(--ui-color-border));
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 25%, rgb(255 255 255 / 10%), transparent 34%),
-    linear-gradient(180deg, rgb(36 37 61 / 92%), rgb(11 15 25 / 98%));
-  color: #d6d2ff;
+    radial-gradient(circle at 38% 24%, rgb(255 255 255 / 10%), transparent 33%),
+    linear-gradient(180deg, rgb(49 42 34 / 96%), rgb(12 14 20 / 99%));
+  box-shadow: 0 0 0 3px rgb(232 200 102 / 5%), 0 .6rem 1.4rem rgb(0 0 0 / 30%);
+  color: #ead9a2;
   font-family: var(--ui-font-display);
   font-size: 2rem;
-  box-shadow: 0 0 0 3px rgb(146 136 255 / 6%);
 }
 
 .merchant__identity {
   display: grid;
   min-width: 0;
   gap: 2px;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 75%);
 }
 
 .merchant__identity small,
 .merchant__wallet small,
-.merchant-panel__heading small {
+.merchant-panel__heading small,
+.offer-card small,
+.merchant-detail small,
+.sell-card small {
   color: var(--ui-color-text-muted);
-  font-size: .56rem;
-  font-weight: 700;
+  font-size: .53rem;
+  font-weight: 800;
   letter-spacing: .07em;
   text-transform: uppercase;
 }
@@ -186,25 +329,27 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant__identity p {
-  color: var(--ui-color-text-muted);
-  font-size: .7rem;
-  line-height: 1.35;
+  max-width: 30rem;
+  color: #c2c8d4;
+  font-size: .68rem;
+  line-height: 1.4;
 }
 
 .merchant__wallet {
   display: grid;
   justify-items: end;
-  gap: 3px;
-  padding: 7px 9px;
-  border: 1px solid rgb(232 200 102 / 16%);
+  gap: 2px;
+  padding: 6px 9px;
+  border: 1px solid rgb(232 200 102 / 20%);
   border-radius: var(--ui-radius-md);
-  background: rgb(232 200 102 / 4%);
+  background: rgb(8 10 14 / 72%);
   white-space: nowrap;
+  backdrop-filter: blur(7px);
 }
 
 .merchant__wallet strong {
   color: var(--ui-color-gold);
-  font-size: var(--ui-font-size-sm);
+  font-size: .75rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -217,14 +362,14 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 .merchant-tabs button {
   position: relative;
-  min-height: 2.8rem;
+  min-height: 2.85rem;
   border: 0;
   border-right: 1px solid rgb(255 255 255 / 5%);
   background: transparent;
   color: var(--ui-color-text-muted);
   font: inherit;
-  font-size: .7rem;
-  font-weight: 700;
+  font-size: .68rem;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
@@ -233,8 +378,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant-tabs button.active {
-  background: linear-gradient(180deg, rgb(146 136 255 / 8%), transparent);
-  color: #d5d2ff;
+  background: linear-gradient(180deg, rgb(232 200 102 / 7%), transparent);
+  color: #ead9a2;
 }
 
 .merchant-tabs button.active::after {
@@ -244,18 +389,17 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   left: 22%;
   height: 2px;
   border-radius: var(--ui-radius-round);
-  background: var(--ui-color-primary);
-  box-shadow: 0 0 8px rgb(146 136 255 / 42%);
+  background: var(--ui-color-gold);
+  box-shadow: 0 0 8px rgb(232 200 102 / 35%);
   content: '';
 }
 
 .merchant-tabs button:disabled {
-  opacity: .28;
+  opacity: .25;
 }
 
 .merchant-panel {
   display: grid;
-  gap: 0;
 }
 
 .merchant-panel__heading {
@@ -278,74 +422,254 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 .merchant-panel__heading > span {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: .6rem;
 }
 
-.trade-row {
+.merchant-buy {
   display: grid;
-  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+  grid-template-columns: minmax(8.5rem, .8fr) minmax(0, 1.2fr);
+  min-height: 17rem;
+}
+
+.merchant-shelf {
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  max-height: 23rem;
+  overflow-y: auto;
+  border-right: 1px solid rgb(255 255 255 / 6%);
+  background: rgb(3 6 11 / 42%);
+}
+
+.offer-card {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
   align-items: center;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-3) var(--ui-space-4);
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
-  background: linear-gradient(90deg, rgb(255 255 255 / 1.2%), transparent 68%);
+  gap: var(--ui-space-2);
+  min-width: 0;
+  padding: var(--ui-space-3);
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  background: linear-gradient(90deg, rgb(255 255 255 / 1.2%), transparent);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  text-align: left;
 }
 
-.trade-row:last-of-type {
-  border-bottom: 0;
+.offer-card.active {
+  background:
+    linear-gradient(90deg, rgb(232 200 102 / 10%), transparent 78%),
+    rgb(255 255 255 / 1.5%);
+  box-shadow: inset 2px 0 0 var(--ui-color-gold);
 }
 
-.trade-row__icon {
+.offer-card__icon {
   display: grid;
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3rem;
+  height: 3rem;
   place-items: center;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-primary);
-  font-size: 1.35rem;
+  background: rgb(5 8 14 / 92%);
+  color: #aaa3ff;
+  font-size: 1.25rem;
 }
 
-.trade-row__icon--material {
-  color: var(--ui-color-secondary);
+.offer-card[data-rarity='Uncommon'] .offer-card__icon {
+  border-color: rgb(79 185 150 / 42%);
+  color: #84d5bb;
 }
 
-.trade-row__copy {
+.offer-card[data-rarity='Rare'] .offer-card__icon {
+  border-color: rgb(88 149 205 / 46%);
+}
+
+.offer-card[data-rarity='Epic'] .offer-card__icon {
+  border-color: rgb(146 136 255 / 55%);
+}
+
+.offer-card__copy {
   display: grid;
   min-width: 0;
   gap: 2px;
 }
 
-.trade-row__copy strong {
+.offer-card__copy strong {
   overflow: hidden;
-  font-size: var(--ui-font-size-sm);
+  font-size: .7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.trade-row__copy small {
+.offer-card__copy b {
+  color: var(--ui-color-gold);
+  font-size: .64rem;
+}
+
+.merchant-detail {
+  display: grid;
+  align-content: start;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  background:
+    radial-gradient(circle at 100% 0, rgb(232 200 102 / 7%), transparent 12rem);
+}
+
+.merchant-detail__identity {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+.merchant-detail__icon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  background: rgb(4 7 12 / 86%);
+  color: #aaa3ff;
+  font-size: 1.7rem;
+}
+
+.merchant-detail__icon[data-rarity='Uncommon'] {
+  border-color: rgb(79 185 150 / 48%);
+  color: #84d5bb;
+}
+
+.merchant-detail__identity h3 {
+  margin: 2px 0 0;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-lg);
+}
+
+.merchant-detail > p {
+  margin: 0;
   color: var(--ui-color-text-muted);
-  font-size: .67rem;
-  line-height: 1.35;
+  font-size: .7rem;
+  line-height: 1.5;
 }
 
-.trade-row__copy b {
-  color: var(--ui-color-success);
-  font-size: .65rem;
+.merchant-detail__effect {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid rgb(79 185 150 / 16%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(79 185 150 / 4%);
 }
 
-.trade-row__action,
-.sell-actions {
+.merchant-detail__effect span {
+  color: var(--ui-color-text-muted);
+  font-size: .61rem;
+}
+
+.merchant-detail__effect strong {
+  color: #84d5bb;
+  font-size: .68rem;
+}
+
+.merchant-detail__purchase {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  margin-top: auto;
+  padding-top: var(--ui-space-3);
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.merchant-detail__purchase > div {
+  display: grid;
+  gap: 1px;
+}
+
+.merchant-detail__purchase strong {
+  color: var(--ui-color-gold);
+  font-size: var(--ui-font-size-md);
+}
+
+.protected-hint {
+  margin: 0;
+  padding: var(--ui-space-2) var(--ui-space-4);
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  background: rgb(146 136 255 / 4%);
+  color: #b9b4e8;
+  font-size: .62rem;
+}
+
+.sell-list {
+  display: grid;
+}
+
+.sell-card {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+.sell-card:last-child {
+  border-bottom: 0;
+}
+
+.sell-card__icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgb(75 164 178 / 30%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 14 / 78%);
+  color: #77bbc5;
+  font-size: 1.1rem;
+}
+
+.sell-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.sell-card__copy strong {
+  overflow: hidden;
+  font-size: .7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sell-card__copy span {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.sell-card__price {
   display: grid;
   justify-items: end;
-  gap: 5px;
+  gap: 1px;
+  white-space: nowrap;
 }
 
-.trade-row__action span {
+.sell-card__price strong {
   color: var(--ui-color-gold);
-  font-size: .72rem;
-  font-weight: 700;
+  font-size: .7rem;
+}
+
+.sell-card__actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ui-space-2);
+}
+
+.sell-card__actions :deep(.ui-button) {
+  width: 100%;
 }
 
 .muted {
@@ -359,6 +683,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 @media (max-width: 520px) {
   .merchant__npc {
     grid-template-columns: 3.8rem minmax(0, 1fr);
+    min-height: 8rem;
     padding: var(--ui-space-3);
   }
 
@@ -378,36 +703,74 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
     justify-self: end;
   }
 
-  .trade-row {
-    grid-template-columns: 2.8rem minmax(0, 1fr);
+  .merchant-buy {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-shelf {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 13rem;
+    border-right: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 6%);
+  }
+
+  .offer-card {
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    padding: var(--ui-space-2);
+  }
+
+  .offer-card__icon {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  .merchant-detail {
+    min-height: 12rem;
+    padding: var(--ui-space-3);
+  }
+
+  .merchant-detail__purchase {
+    align-items: center;
+  }
+
+  .sell-card {
+    grid-template-columns: 2.7rem minmax(0, 1fr) auto;
     gap: var(--ui-space-2);
     padding-inline: var(--ui-space-3);
   }
 
-  .trade-row__icon {
-    width: 2.8rem;
-    height: 2.8rem;
+  .sell-card__icon {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+}
+
+@media (max-width: 355px) {
+  .merchant-shelf {
+    grid-template-columns: 1fr;
   }
 
-  .trade-row__action,
-  .sell-actions {
-    grid-column: 1 / -1;
-    grid-template-columns: 1fr 1fr;
+  .merchant-detail__purchase {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-detail__purchase :deep(.ui-button) {
     width: 100%;
   }
 
-  .trade-row__action span {
+  .sell-card {
+    grid-template-columns: 2.7rem minmax(0, 1fr);
+  }
+
+  .sell-card__price {
     grid-column: 1 / -1;
+    grid-template-columns: 1fr auto;
+    justify-items: stretch;
+  }
+
+  .sell-card__price strong {
     justify-self: end;
-  }
-
-  .trade-row__action :deep(.ui-button) {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
-
-  .sell-actions :deep(.ui-button) {
-    width: 100%;
   }
 }
 </style>
