@@ -10,6 +10,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Items;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -128,7 +129,13 @@ public sealed class CombatSessionFactory(
             mainHandItem,
             attackSpeedMultiplier,
             CombatWeaponHand.MainHand);
-        AutoAttackProfile? offHandAutoAttack = offHandItem is not null
+        bool canDualWield = derived.TalentTree is not null
+            && TalentEquipmentPermissionResolver.HasPermission(
+                derived.TalentTree,
+                derived.ActiveTalentRanks,
+                EquipmentPermissionIds.DualWieldOneHandWeapon);
+        AutoAttackProfile? offHandAutoAttack = canDualWield
+            && offHandItem is not null
             && EquipmentCategoryIds.IsOneHandedWeapon(offHandItem.Definition.WeaponCategory)
                 ? BuildPlayerAutoAttackProfile(
                     classProfile.CombatAutoAttack,
