@@ -10,4 +10,6 @@ public sealed record LocationDefinition(
     string DangerLevel,
     int RecommendedLevel,
     IReadOnlyList<string> Transitions,
-    IReadOnlyList<LocationEncounterDefinition>? Encounters = null);
+    IReadOnlyList<LocationEncounterDefinition>? Encounters = null,
+    string? Description = null,
+    string? ArtId = null);
