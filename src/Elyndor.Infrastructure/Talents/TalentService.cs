@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
@@ -148,6 +149,11 @@ public sealed class TalentService(
                     cancellationToken);
                 DateTimeOffset now = timeProvider.GetUtcNow();
                 snapshot.State.SwitchLoadout(loadoutId, now, mutationId);
+                await NormalizeEquipmentPermissionsAsync(
+                    snapshot.Character,
+                    snapshot.Tree,
+                    snapshot.State,
+                    cancellationToken);
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
                     oldDerivedState,
@@ -187,6 +193,17 @@ public sealed class TalentService(
                     cancellationToken);
                 DateTimeOffset now = timeProvider.GetUtcNow();
                 snapshot.State.Reset(loadoutId, now, mutationId);
+                if (string.Equals(
+                        snapshot.State.ActiveLoadoutId,
+                        loadoutId,
+                        StringComparison.Ordinal))
+                {
+                    await NormalizeEquipmentPermissionsAsync(
+                        snapshot.Character,
+                        snapshot.Tree,
+                        snapshot.State,
+                        cancellationToken);
+                }
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
                     oldDerivedState,
@@ -289,6 +306,42 @@ public sealed class TalentService(
                 return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
             }
         });
+    }
+
+    private async Task NormalizeEquipmentPermissionsAsync(
+        Character character,
+        TalentTreeDefinition tree,
+        CharacterTalentState state,
+        CancellationToken cancellationToken)
+    {
+        if (TalentEquipmentPermissionResolver.HasPermission(
+                tree,
+                state,
+                EquipmentPermissionIds.DualWieldOneHandWeapon))
+        {
+            return;
+        }
+
+        CharacterEquipment? offHand = await dbContext.CharacterEquipment
+            .SingleOrDefaultAsync(
+                equipment => equipment.CharacterId == character.Id
+                    && equipment.Slot == EquipmentSlot.OffHand,
+                cancellationToken);
+        if (offHand is null) return;
+
+        string? definitionId = await dbContext.CharacterItems
+            .Where(item => item.Id == offHand.CharacterItemId
+                && item.CharacterId == character.Id)
+            .Select(item => item.ItemDefinitionId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (definitionId is null) return;
+
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        if (content.Indexes.ItemsById.TryGetValue(definitionId, out ItemDefinition? definition)
+            && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory))
+        {
+            dbContext.CharacterEquipment.Remove(offHand);
+        }
     }
 
     private async Task SaveWithDerivedVitalsAsync(
