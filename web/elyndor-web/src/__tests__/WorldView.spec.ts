@@ -194,6 +194,11 @@ function snapshot(
               displayName: 'Starter Town',
               dangerLevel: 'SAFE',
               recommendedLevel: 1,
+              minimumLevel: 1,
+              maximumLevel: 60,
+              requiredContractId: null,
+              artId: null,
+              description: 'Test location',
             },
           ]
         : [
@@ -202,6 +207,11 @@ function snapshot(
               displayName: 'Whispering Forest',
               dangerLevel: 'ADVENTURE',
               recommendedLevel: 1,
+              minimumLevel: 1,
+              maximumLevel: 5,
+              requiredContractId: null,
+              artId: null,
+              description: 'Test location',
             },
           ],
       contracts: [],
