@@ -397,8 +397,14 @@ public sealed class GameContentPackageValidatorTests
                     null,
                     new PrimaryStats(0, 0, 0, 0),
                     "Restores health.",
-                    HealAmount: 50,
                     ConsumableCooldownSeconds: 30,
+                    ConsumableActions:
+                    [
+                        new ConsumableActionDefinition(
+                            ConsumableActionType.RestoreHp,
+                            Amount: 50)
+                    ],
+                    ConsumableCooldownCategoryId: "HEALING_POTION",
                     BuyPriceGold: 20)
             ],
             LootTables = []
@@ -408,6 +414,126 @@ public sealed class GameContentPackageValidatorTests
             GameContentPackageValidator.Validate(package);
 
         Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void ValidateRejectsConsumableWithUnknownResourceReference()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "BROKEN_RESOURCE_POTION",
+                    "Broken Potion",
+                    ItemType.Consumable,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    20,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "Broken.",
+                    ConsumableCooldownSeconds: 30,
+                    ConsumableActions:
+                    [
+                        new ConsumableActionDefinition(
+                            ConsumableActionType.RestoreResource,
+                            Amount: 50,
+                            ResourceType: "ENERGY")
+                    ],
+                    ConsumableCooldownCategoryId: "RESOURCE_POTION")
+            ],
+            LootTables = []
+        };
+
+        Assert.Contains(
+            GameContentPackageValidator.Validate(package),
+            error => error.Code == "INVALID_ITEM_DEFINITION");
+    }
+
+    [Fact]
+    public void ValidateRejectsConsumableWithMissingEffectReference()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "BROKEN_BUFF_POTION",
+                    "Broken Buff",
+                    ItemType.Consumable,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    20,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "Broken.",
+                    ConsumableCooldownSeconds: 30,
+                    ConsumableActions:
+                    [
+                        new ConsumableActionDefinition(
+                            ConsumableActionType.ApplyEffect,
+                            EffectId: "MISSING_EFFECT")
+                    ],
+                    ConsumableCooldownCategoryId: "UTILITY_POTION")
+            ],
+            LootTables = []
+        };
+
+        Assert.Contains(
+            GameContentPackageValidator.Validate(package),
+            error => error.Code == "INVALID_ITEM_DEFINITION");
+    }
+
+    [Fact]
+    public void ValidateRejectsRemoveEffectWithTwoSelectors()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Effects =
+            [
+                new EffectDefinition(
+                    "TEST_DEBUFF",
+                    EffectKind.Debuff,
+                    TimeSpan.FromSeconds(10),
+                    1,
+                    EffectStackPolicy.Refresh,
+                    1)
+            ],
+            Items =
+            [
+                new ItemDefinition(
+                    "BROKEN_CLEANSE",
+                    "Broken Cleanse",
+                    ItemType.Consumable,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    20,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "Broken.",
+                    ConsumableCooldownSeconds: 30,
+                    ConsumableActions:
+                    [
+                        new ConsumableActionDefinition(
+                            ConsumableActionType.RemoveEffect,
+                            EffectId: "TEST_DEBUFF",
+                            DispelCategory: "POISON")
+                    ],
+                    ConsumableCooldownCategoryId: "UTILITY_POTION")
+            ],
+            LootTables = []
+        };
+
+        Assert.Contains(
+            GameContentPackageValidator.Validate(package),
+            error => error.Code == "INVALID_ITEM_DEFINITION");
     }
 
     [Fact]
