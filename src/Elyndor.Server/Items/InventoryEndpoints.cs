@@ -23,6 +23,7 @@ public static class InventoryEndpoints
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
+        group.MapPost("/merchant/sell-item", SellMerchantItemAsync);
         return endpoints;
     }
 
@@ -188,6 +189,34 @@ public static class InventoryEndpoints
             cancellationToken);
     }
 
+    private static async Task<IResult> SellMerchantItemAsync(
+        SellMerchantItemRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                MerchantOperationResult result = await service.SellItemAsync(
+                    accountId,
+                    request.MerchantId,
+                    request.CharacterItemId,
+                    request.Quantity,
+                    request.MutationId,
+                    cancellationToken);
+                return ToMerchantResult(result, context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
     private static async Task<IResult> SellMerchantMaterialAsync(
         SellMerchantItemRequest request,
         ClaimsPrincipal user,
@@ -292,6 +321,7 @@ public static class InventoryEndpoints
                 : errorCode is MerchantErrorCodes.Conflict
                     or MerchantErrorCodes.MutationConflict
                     or MerchantErrorCodes.ItemLocked
+                    or MerchantErrorCodes.ItemEquipped
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
@@ -354,7 +384,8 @@ public static class InventoryEndpoints
             item.Definition.AppearanceProfileId,
             item.Definition.WeaponCategory is null
                 ? null
-                : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1);
+                : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1,
+            item.Definition.PrimaryStatRanges is not null);
 
     private static ConsumableActionResponse[] ToConsumableActions(
         ItemDefinition definition) =>
