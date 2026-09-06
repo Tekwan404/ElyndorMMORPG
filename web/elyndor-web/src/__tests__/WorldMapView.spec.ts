@@ -73,6 +73,21 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('current')
   })
 
+  it('uses dedicated environment previews for known locations', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    await wrapper.get('[data-location-id="DEEP_FOREST"]').trigger('click')
+    expect(wrapper.get('[data-map-preview]').attributes('style')).toContain('deep-forest')
+
+    await wrapper.get('[data-location-id="STARTER_TOWN"]').trigger('click')
+    expect(wrapper.get('[data-map-preview]').attributes('style')).toContain('starter-town')
+  })
+
   it('travels only to a server-provided outgoing transition', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
