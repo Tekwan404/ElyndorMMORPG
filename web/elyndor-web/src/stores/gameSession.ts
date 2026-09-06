@@ -175,6 +175,18 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function sellMerchantItem(
+    merchantId: string,
+    characterItemId: string,
+    quantity = 1,
+  ): Promise<MerchantSnapshot | null> {
+    return await merchantMutation(
+      'merchant:sell-item',
+      '/api/v1/inventory/merchant/sell-item',
+      { merchantId, characterItemId, quantity },
+    )
+  }
+
   async function sellMerchantMaterial(
     merchantId: string,
     characterItemId: string,
@@ -294,6 +306,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     setItemLock,
     getMerchant,
     buyMerchantItem,
+    sellMerchantItem,
     sellMerchantMaterial,
   }
 })
