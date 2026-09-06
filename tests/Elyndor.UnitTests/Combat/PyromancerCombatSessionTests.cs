@@ -64,6 +64,25 @@ public sealed class PyromancerCombatSessionTests
     }
 
     [Fact]
+    public void CastedAbilityIsProjectedIntoAuthoritativeCombatSnapshot()
+    {
+        TestFight fight = CreateFight(
+            ResolvedTalentModifiers.Empty,
+            enemyHp: 10_000);
+
+        CombatCommandResult started = fight.Session.Handle(
+            new UseAbilityCommand("fireball-cast-state", "MAGE_FIREBALL", EnemyId),
+            Now.AddMilliseconds(1));
+
+        Assert.True(started.Succeeded);
+        CombatCastSnapshot cast = Assert.IsType<CombatCastSnapshot>(
+            started.Snapshot.Player.ActiveCast);
+        Assert.Equal("MAGE_FIREBALL", cast.AbilityId);
+        Assert.Equal(Now.AddMilliseconds(1), cast.StartedAtUtc);
+        Assert.Equal(Now.AddMilliseconds(1).AddSeconds(1.8), cast.ResolvesAtUtc);
+    }
+
+    [Fact]
     public void ThreeCriticalFireballsUnlockCometAndCastingItConsumesHeatLimit()
     {
         ResolvedTalentModifiers talents = Talents(
