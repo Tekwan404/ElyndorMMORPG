@@ -287,11 +287,23 @@ function itemGlyph(item: InventoryItem): string {
   return '✦'
 }
 
+function inventoryActionError(code: string | null): string | null {
+  if (!code) return null
+  if (code === 'inventory_armor_category_restricted') return 'Этот тип брони недоступен вашему классу.'
+  if (code === 'inventory_weapon_category_restricted') return 'Этот тип оружия недоступен вашему классу.'
+  if (code === 'inventory_off_hand_category_restricted') return 'Этот предмет нельзя взять во вторую руку вашим классом.'
+  if (code === 'inventory_class_restricted') return 'Этот предмет предназначен для другого класса.'
+  if (code === 'inventory_required_level') return 'Недостаточный уровень для этого предмета.'
+  if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
+  if (code === 'inventory_two_handed_conflict') return 'Сначала освободите конфликтующий слот оружия.'
+  return 'Не удалось изменить снаряжение.'
+}
+
 async function equipSelected(): Promise<void> {
   const item = selectedItem.value
   if (!item || item.type !== 'Equipment') return
   await session.equip(item.id)
-  selectedItem.value = null
+  if (!session.errorCode) selectedItem.value = null
 }
 
 async function useSelected(): Promise<void> {
@@ -452,6 +464,13 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.type === 'Material' && !selectedItem.isLocked" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
         <p v-if="selectedItem.type === 'Material' && selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">Восстанавливает {{ selectedItem.healAmount }} здоровья. В бою общий кулдаун зелий — {{ selectedItem.consumableCooldownSeconds }} сек.</p>
+        <p
+          v-if="selectedItem.type === 'Equipment' && inventoryActionError(session.errorCode)"
+          class="item-detail__error"
+          role="alert"
+        >
+          {{ inventoryActionError(session.errorCode) }}
+        </p>
       </article>
       <template #actions>
         <UIButton
@@ -902,6 +921,16 @@ async function toggleSelectedLock(): Promise<void> {
 
 .comparison-grid b[data-delta='down'] {
   color: var(--ui-color-danger);
+}
+
+.item-detail__error {
+  margin: 0;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid rgb(216 95 114 / 28%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(216 95 114 / 6%);
+  color: #ef9bab;
+  font-size: .68rem;
 }
 
 .item-detail__hint {
