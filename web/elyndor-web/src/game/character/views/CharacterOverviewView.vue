@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 
 import type { EquipmentSlot, InventoryItem, KnownAbility } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { itemArtUrl } from '@/assets/itemArt'
 import {
   abilityDescription,
   abilityName,
@@ -110,6 +111,31 @@ function equipmentErrorMessage(code: string | null): string | null {
   return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
+function itemArt(item: InventoryItem | null): string | undefined {
+  return itemArtUrl(item?.iconId)
+}
+
+function formatCombatNumber(value: number): string {
+  const rounded = Math.round(value * 100) / 100
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
+}
+
+function weaponTiming(item: InventoryItem | null): { interval: number; aps: number } | null {
+  if (!item?.weaponBaseAttackIntervalSeconds || item.weaponBaseAttackIntervalSeconds <= 0) return null
+  const multiplier = Math.max(0.1, character.value?.stats.attackSpeed ?? 1)
+  const interval = item.weaponBaseAttackIntervalSeconds / multiplier
+  return { interval, aps: 1 / interval }
+}
+
+const mainHandTiming = computed(() => {
+  const equipped = character.value?.inventory.equipped
+  return weaponTiming(equipped?.mainHand ?? equipped?.weapon ?? null)
+})
+const offHandTiming = computed(() => weaponTiming(character.value?.inventory.equipped.offHand ?? null))
+const totalAttacksPerSecond = computed(() =>
+  (mainHandTiming.value?.aps ?? 0) + (offHandTiming.value?.aps ?? 0),
+)
+
 function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (!item) return fallback
   if (item.slot === 'Weapon' || item.slot === 'MainHand') return '⚔'
@@ -178,7 +204,10 @@ function abilityInitials(ability: KnownAbility): string {
             :title="slot.item?.name ?? slot.label"
             @click="openEquipmentSlot(slot)"
           >
-            <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
+            <span class="equipment-slot__icon">
+              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <template v-else>{{ itemGlyph(slot.item, slot.glyph) }}</template>
+            </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
         </div>
@@ -236,6 +265,16 @@ function abilityInitials(ability: KnownAbility): string {
           <small>Надетое снаряжение</small>
           <strong>{{ equipment.filter((slot) => slot.item).length }} / {{ equipment.length }} слотов</strong>
         </div>
+        <div v-if="mainHandTiming" class="attack-timing">
+          <small>Текущая автоатака</small>
+          <strong>
+            Основная: {{ formatCombatNumber(mainHandTiming.interval) }} сек. · {{ formatCombatNumber(mainHandTiming.aps) }} уд/с
+          </strong>
+          <span v-if="offHandTiming">
+            Вторая: {{ formatCombatNumber(offHandTiming.interval) }} сек. · {{ formatCombatNumber(offHandTiming.aps) }} уд/с
+          </span>
+          <b v-if="offHandTiming">Итого: {{ formatCombatNumber(totalAttacksPerSecond) }} уд/с</b>
+        </div>
         <div v-if="rangerPieces > 0" class="set-progress">
           <span>Следопыт {{ rangerPieces }}/6</span>
           <i :class="{ active: rangerPieces >= 3 }">3</i>
@@ -263,7 +302,13 @@ function abilityInitials(ability: KnownAbility): string {
       <article v-if="selectedItem" class="detail">
         <p>{{ selectedItem.description }}</p>
         <dl><div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
-        <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
+        <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">
+          Скорость оружия: {{ formatCombatNumber(selectedItem.weaponBaseAttackIntervalSeconds) }} сек. базово
+          <template v-if="weaponTiming(selectedItem)">
+            · {{ formatCombatNumber(weaponTiming(selectedItem)!.interval) }} сек. сейчас
+            · {{ formatCombatNumber(weaponTiming(selectedItem)!.aps) }} уд/с
+          </template>
+        </p>
         <p v-if="selectedItem.setId">Часть комплекта Следопыта.</p>
         <p v-if="equipmentErrorMessage(equipmentActionError)" class="detail__error" role="alert">
           {{ equipmentErrorMessage(equipmentActionError) }}
@@ -481,6 +526,13 @@ function abilityInitials(ability: KnownAbility): string {
   font-size: 1.15rem;
 }
 
+.equipment-slot__icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 .equipment-slot.filled .equipment-slot__icon {
   background:
     radial-gradient(circle at 50% 30%, rgb(146 136 255 / 12%), transparent 62%),
@@ -604,6 +656,19 @@ function abilityInitials(ability: KnownAbility): string {
 }
 
 .progression,
+.attack-timing {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  color: var(--ui-color-text-secondary);
+  font-size: .58rem;
+}
+
+.attack-timing small { color: var(--ui-color-text-muted); }
+.attack-timing strong,
+.attack-timing b { color: #d5d2ff; font-weight: 700; }
+.attack-timing span { color: var(--ui-color-text-secondary); }
+
 .equipment-summary {
   position: relative;
   z-index: 2;
