@@ -296,6 +296,18 @@ async function useSelected(): Promise<void> {
           <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
         </div>
       </div>
+      <div class="filter-row filter-row--sort">
+        <small>Порядок</small>
+        <label class="sort-select">
+          <span class="sr-only">Сортировка предметов</span>
+          <select v-model="sortMode" data-inventory-sort>
+            <option value="default">Как получено</option>
+            <option value="rarity">По редкости</option>
+            <option value="level">По уровню</option>
+            <option value="name">По названию</option>
+          </select>
+        </label>
+      </div>
     </section>
 
     <section v-if="inventory" class="bag-surface">
@@ -323,6 +335,7 @@ async function useSelected(): Promise<void> {
           @click="openItem(item)"
         >
           <template v-if="item">
+            <span v-if="newItemIds.has(item.id)" class="bag-cell__new">NEW</span>
             <span class="bag-cell__icon">{{ itemGlyph(item) }}</span>
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
@@ -352,6 +365,26 @@ async function useSelected(): Promise<void> {
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
         </dl>
+
+        <section v-if="comparisonItem" class="item-comparison" aria-label="Сравнение с надетым предметом">
+          <header>
+            <div>
+              <small>СРАВНЕНИЕ</small>
+              <strong>Сейчас: {{ comparisonItem.name }}</strong>
+            </div>
+            <span>{{ typeLabel(comparisonItem) }}</span>
+          </header>
+          <div v-if="comparisonRows.length" class="comparison-grid">
+            <div v-for="row in comparisonRows" :key="row.label">
+              <span>{{ row.label }}</span>
+              <small>{{ formatNumber(row.equippedValue) }} → {{ formatNumber(row.candidateValue) }}</small>
+              <b :data-delta="row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same'">
+                {{ comparisonDeltaLabel(row.delta) }}
+              </b>
+            </div>
+          </div>
+          <p v-else class="item-detail__hint">Характеристики предметов совпадают.</p>
+        </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
         <p v-if="selectedItem.type === 'Material'" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
@@ -500,6 +533,32 @@ async function useSelected(): Promise<void> {
   color: #d5d2ff;
 }
 
+.sort-select {
+  display: block;
+  min-width: 0;
+}
+
+.sort-select select {
+  width: min(100%, 15rem);
+  min-height: 2rem;
+  padding: 0 var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: var(--ui-color-surface-2);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  font-size: .62rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .bag-surface {
   display: grid;
   gap: var(--ui-space-3);
@@ -579,6 +638,21 @@ async function useSelected(): Promise<void> {
   font-size: clamp(1.35rem, 7vw, 1.85rem);
 }
 
+.bag-cell__new {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 4px;
+  padding: 2px 4px;
+  border: 1px solid rgb(184 177 255 / 48%);
+  border-radius: 4px;
+  background: rgb(20 17 44 / 92%);
+  color: #c8c3ff;
+  font-size: .47rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
 .bag-cell__quantity {
   position: absolute;
   right: 4px;
@@ -656,6 +730,73 @@ async function useSelected(): Promise<void> {
 
 .item-detail dl div {
   color: var(--ui-color-success);
+}
+
+.item-comparison {
+  display: grid;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-3);
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 34%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(180deg, rgb(146 136 255 / 6%), rgb(255 255 255 / 1%));
+}
+
+.item-comparison > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.item-comparison > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.item-comparison > header small,
+.item-comparison > header > span {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.item-comparison > header small {
+  color: #b8b1ff;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.comparison-grid {
+  display: grid;
+  gap: 5px;
+}
+
+.comparison-grid > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 3.6rem;
+  align-items: center;
+  gap: var(--ui-space-2);
+  padding-top: 5px;
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  font-size: .67rem;
+}
+
+.comparison-grid small {
+  color: var(--ui-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-grid b {
+  justify-self: end;
+  color: var(--ui-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-grid b[data-delta='up'] {
+  color: var(--ui-color-success);
+}
+
+.comparison-grid b[data-delta='down'] {
+  color: var(--ui-color-danger);
 }
 
 .item-detail__hint {
