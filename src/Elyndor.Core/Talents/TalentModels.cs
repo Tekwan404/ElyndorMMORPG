@@ -15,7 +15,8 @@ public enum TalentModifierType
     EffectModifier,
     ResourceModifier,
     EventTriggered,
-    EquipmentConditional
+    EquipmentConditional,
+    EquipmentPermission
 }
 
 public enum TalentModifierRuntimeStatus
