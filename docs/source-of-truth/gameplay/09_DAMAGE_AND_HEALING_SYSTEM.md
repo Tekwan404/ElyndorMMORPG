@@ -105,6 +105,36 @@ scripted event.
 
 Каждый источник урона должен передавать серверу достаточный контекст для расчёта.
 
+5.1. Player Auto Attack Damage Variance
+
+Для обычной Auto Attack игрока текущий prototype использует server-authoritative variance итогового pre-mitigation base amount.
+
+Порядок:
+
+```text
+Weapon/Class Base Damage Roll
++ AttackPower contribution
+→ Player Auto Attack Variance: 90%–110%
+→ Hit / Dodge
+→ Critical
+→ Mitigation
+→ Damage modifiers
+→ Block / Shields
+→ HP
+```
+
+Правила:
+
+- variance выполняется только сервером через injectable game RNG;
+- клиент не выбирает roll и не предсказывает итоговый урон;
+- текущий prototype применяет variance к player Auto Attack с настроенным `BaseDamageMin–BaseDamageMax`;
+- один и тот же RNG roll выбирает точку weapon/class range и соответствующий `0.90–1.10` multiplier, поэтому не появляется скрытый дополнительный RNG consumption;
+- legacy fixed-damage profile без range сохраняет прежнее fixed-base поведение;
+- deterministic tests используют тот же `IGameRandom` abstraction;
+- secondary scripted strikes используют собственные правила и не обязаны повторно роллить этот variance.
+
+Это сделано, чтобы Auto Attack не превращалась визуально и математически в фиксированный повторяющийся урон при большом фиксированном AttackPower contribution.
+
 6. Damage Request
 
 Запрос на урон концептуально содержит:

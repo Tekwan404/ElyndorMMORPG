@@ -22,11 +22,13 @@
 
 ```text
 МИР
-→ куда игрок может отправиться
+→ единственный root-screen выбора destination и обычного travel
 
 ЛОКАЦИЯ
-→ что игрок может делать там, где находится сейчас
+→ только то, что игрок может делать там, где находится сейчас
 ```
+
+Игрок не выбирает новую локацию и не запускает обычный travel из root-screen `ЛОКАЦИЯ`. Если нужно сменить место — он открывает `МИР`.
 
 ---
 
@@ -537,9 +539,9 @@ SPECIAL ACTIVITIES
 NORMAL ENEMIES
 
 ZONE QUESTS
-
-EXITS / ROUTES
 ```
+
+Travel controls здесь отсутствуют. Текущий CharacterLocation отображается как контекст, а выбор destination принадлежит `МИР`.
 
 ---
 
@@ -887,27 +889,20 @@ Tap:
 
 ---
 
-# 38. Exits / Routes
+# 38. Travel Boundary
 
-Внизу:
+`ЛОКАЦИЯ` не дублирует World Map.
 
-```text
-ПЕРЕХОДЫ
+В обычном location root нельзя выбирать destination или запускать travel.
 
-Лесная дорога
-→ Столица
-01:20
-
-Старый тракт
-→ Чёрные болота
-02:45
-```
-
-Tap:
+Если UI нужно показать географический контекст, он может дать только compact informational hint:
 
 ```text
-→ Route preview
+Путь наружу доступен
+[ ОТКРЫТЬ МИР ]
 ```
+
+После этого destination выбирается уже на `МИР`.
 
 ---
 
@@ -931,7 +926,6 @@ Alchemy
 Cooking
 
 NPC / Quests
-Exits
 ```
 
 Не существует global shortcut:
@@ -987,7 +981,6 @@ Ordering rule:
 3. boss/dungeon/elite
 4. normal enemies
 5. optional quests
-6. exits
 ```
 
 Если World Event активен:
@@ -1039,6 +1032,17 @@ exits
 ---
 
 # 45. Combat Start
+
+Обычное `Исследовать` в опасной Location не требует второго confirmation-step после того, как сервер уже выбрал encounter:
+
+```text
+Исследовать
+→ server selects encounter
+→ Combat start request
+→ Combat UI
+```
+
+Отдельный confirmation/detail screen остаётся допустимым только для осознанных special activities: boss, dungeon, scripted high-stakes encounter.
 
 Combat может начаться:
 

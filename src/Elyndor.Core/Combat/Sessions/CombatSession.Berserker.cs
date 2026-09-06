@@ -217,10 +217,10 @@ public sealed partial class CombatSession
             EffectStat.AttackPower,
             _player.Actor.Stats.AttackPower,
             now);
-        decimal baseDamage = AutoAttackDamageRoller.RollBaseDamage(
-                _player.AutoAttack,
-                _random)
-            + attackPower * _player.AutoAttack.AttackPowerCoefficient;
+        decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(
+            _player.AutoAttack,
+            attackPower,
+            _random);
 
         bool consumeDeathsEmbrace = _deathsEmbraceArmed && !_deathsEmbraceConsumed;
         decimal deathsEmbraceMultiplier = 1;

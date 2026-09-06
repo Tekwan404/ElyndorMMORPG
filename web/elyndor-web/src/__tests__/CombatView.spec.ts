@@ -1,4 +1,6 @@
 import { mount } from '@vue/test-utils'
+
+import type { CombatActorSnapshot } from '@/api/contracts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -55,9 +57,13 @@ describe('CombatView', () => {
     expect(wrapper.text()).not.toContain('Вихрь')
     expect(wrapper.find('img[alt="Волк"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
+    expect(wrapper.find('[data-combat-battlefield]').exists()).toBe(true)
+    expect(wrapper.findAll('.ability-slot')).toHaveLength(6)
+    expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
+    expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
-  it('attributes monster damage to the server-provided monster name while player auto attack is disabled', () => {
+  it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
       { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
@@ -86,12 +92,50 @@ describe('CombatView', () => {
     ]
 
     const wrapper = mount(CombatView)
+    expect(wrapper.get('[data-combat-log-toggle]').text()).toContain('12 урона')
+    expect(wrapper.find('.combat-log li').exists()).toBe(false)
+
+    await wrapper.get('[data-combat-log-toggle]').trigger('click')
     const row = wrapper.get('.combat-log li')
     expect(row.attributes('data-side')).toBe('enemy')
     expect(row.text()).toContain('ВОЛК')
     expect(row.text()).toContain('12 урона')
     expect(row.text()).not.toContain('ВЫ')
-    expect(wrapper.text()).toContain('Включить автоатаку')
+    expect(wrapper.get('[data-autoattack-toggle]').text()).toContain('Выключена')
+  })
+  it('renders authoritative player and enemy cast bars', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'MAGE', 'Mage', 100, 120, 80, 100, [
+      { id: 'FIREBALL', resourceCost: 20, cooldownSeconds: 3, displayName: 'Огненный шар' },
+    ])
+    const enemy = actor('Monster', 'WOLF', 'Волк', 150, 180, 0, 0, [
+      { id: 'BITE', resourceCost: 0, cooldownSeconds: 4, displayName: 'Укус' },
+    ], 3, 'wolf')
+    player.activeCast = {
+      abilityId: 'FIREBALL',
+      startedAtUtc: new Date(Date.now() - 500).toISOString(),
+      resolvesAtUtc: new Date(Date.now() + 1500).toISOString(),
+    }
+    enemy.activeCast = {
+      abilityId: 'BITE',
+      startedAtUtc: new Date(Date.now() - 250).toISOString(),
+      resolvesAtUtc: new Date(Date.now() + 750).toISOString(),
+    }
+    store.snapshot = {
+      sessionId: crypto.randomUUID(),
+      sequence: 7,
+      status: 'Active',
+      serverTimeUtc: new Date().toISOString(),
+      contentVersion: '0.10.0',
+      balanceVersion: '0.8.0',
+      player,
+      enemy,
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('[data-player-cast]').text()).toContain('Огненный шар')
+    expect(wrapper.get('[data-enemy-cast]').text()).toContain('Укус')
   })
 })
 
@@ -106,10 +150,14 @@ function actor(
   }[],
   level?: number,
   artId?: string | null,
-) {
+): CombatActorSnapshot {
   return {
     actorId: crypto.randomUUID(), kind, definitionId, name, hp, maxHp,
-    resourceType: kind === 'Player' ? 'RAGE' : 'NONE', resource, maxResource,
+    resourceType: kind === 'Player'
+      ? definitionId === 'MAGE' ? 'MANA' : definitionId === 'ARCHER' ? 'FOCUS' : 'RAGE'
+      : 'NONE',
+    resource,
+    maxResource,
     autoAttackEnabled: false, cooldowns: {},
     knownAbilityIds: abilities.map((ability) => ability.id),
     abilities: abilities.map((ability) => ({

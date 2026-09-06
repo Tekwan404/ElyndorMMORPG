@@ -226,6 +226,17 @@ AllowedArmorTag
 
 Personal Loot boss table может использовать class-aware weighted group, чтобы уменьшить бесполезные drops.
 
+Текущий prototype normal-combat Personal Loot дополнительно не выдаёт equipment, которое authoritative Equipment System заведомо запретит текущему классу по:
+
+- `AllowedClassIds`;
+- `WeaponCategory`;
+- `ArmorCategory`;
+- `OffHandCategory`.
+
+Материалы и class-neutral предметы этим фильтром не блокируются.
+
+Это eligibility-filter награды, а не ослабление Equipment validation: сервер всё равно повторно проверяет предмет при Equip.
+
 19. Quest Items
 
 Quest item может выпадать только если:

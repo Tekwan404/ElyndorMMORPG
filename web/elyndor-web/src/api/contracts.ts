@@ -334,6 +334,12 @@ export interface CombatAbility {
   cooldownSeconds: number
 }
 
+export interface CombatCastSnapshot {
+  abilityId: string
+  startedAtUtc: string
+  resolvesAtUtc: string
+}
+
 export interface CombatActorSnapshot {
   actorId: string
   kind: 'Player' | 'Monster'
@@ -349,6 +355,7 @@ export interface CombatActorSnapshot {
   knownAbilityIds: string[]
   abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]
+  activeCast?: CombatCastSnapshot | null
   level?: number
   artId?: string | null
 }

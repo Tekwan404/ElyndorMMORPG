@@ -767,7 +767,13 @@ public sealed partial class CombatSession
                 new CombatEffectSnapshot(
                     effect.Definition.Id,
                     effect.Stacks,
-                    effect.ExpiresAtUtc)).ToArray());
+                    effect.ExpiresAtUtc)).ToArray(),
+            runtime.ActiveCast is null
+                ? null
+                : new CombatCastSnapshot(
+                    runtime.ActiveCast.Ability.Id,
+                    runtime.ActiveCast.StartedAtUtc,
+                    runtime.ActiveCast.ResolvesAtUtc));
     }
 
     private static string MapAbilityError(AbilityErrorCode code) => code switch

@@ -1,13 +1,17 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 describe('CharacterOverviewView equipment paperdoll', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    document.body.innerHTML = ''
+    vi.restoreAllMocks()
+  })
 
   it('renders canonical MMORPG slots while preserving legacy equipment fallbacks', () => {
     const session = useGameSessionStore()
@@ -34,6 +38,23 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     expect(wrapper.text()).toContain('4 / 11 слотов')
     expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).not.toContain('Старый меч')
     expect(wrapper.find('.paperdoll__vitals').exists()).toBe(false)
+  })
+
+  it('unequips an equipped legacy accessory through its canonical amulet slot', async () => {
+    const session = useGameSessionStore()
+    const legacyAccessory = equipment('LEGACY_AMULET', 'Амулет Следопыта', 'Accessory')
+    session.snapshot = snapshot({ accessory: legacyAccessory })
+    const unequip = vi.spyOn(session, 'unequip').mockResolvedValue(undefined)
+
+    const wrapper = mount(CharacterOverviewView)
+    await wrapper.get('[data-equipment-slot="amulet"]').trigger('click')
+
+    const action = document.body.querySelector<HTMLButtonElement>('[data-unequip-selected]')
+    expect(action).not.toBeNull()
+    action?.click()
+    await Promise.resolve()
+
+    expect(unequip).toHaveBeenCalledWith('Amulet')
   })
 
   it('prefers canonical slots over legacy aliases when both are present', () => {

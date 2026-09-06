@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { WorldEncounter } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
-import { monsterArtUrl } from '@/assets/monsterArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -17,7 +15,6 @@ const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
-const selectedEncounter = ref<WorldEncounter | null>(null)
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
 const merchantOpen = ref(false)
@@ -30,13 +27,12 @@ const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
 const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
-const selectedEncounterArt = computed(() => monsterArtUrl(selectedEncounter.value?.artId))
 const locationName = computed(() => isStarterTown.value ? 'Стартовый город' : isWhisperingForest.value ? 'Шепчущий лес' : world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() => isStarterTown.value
   ? 'Безопасный город для отдыха, торговли, тренировки билдов и подготовки к следующему походу.'
   : isWhisperingForest.value
     ? 'Сумрачный лес старых дорог. Исследуйте область, чтобы встретить противника.'
-    : 'Исследуйте текущую область и её доступные пути.')
+    : 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.')
 const sceneBackground = computed(() => isStarterTown.value ? gameArt.world.capital : gameArt.world.forest)
 const dangerLabel = computed(() => {
   const danger = world.value?.currentLocation.dangerLevel
@@ -68,30 +64,14 @@ const needsOutOfCombatRefresh = computed(() => {
 })
 
 async function explore(): Promise<void> {
-  if (!canExplore.value || combat.isActive || session.mutationPending) return
+  if (!canExplore.value || combat.isActive || session.mutationPending || combat.pending) return
+
   lastCombatResult.value = null
-  selectedEncounter.value = await session.explore()
-}
+  const encounter = await session.explore()
+  if (!encounter) return
 
-function locationLabel(id: string, displayName: string): string {
-  if (id === STARTER_TOWN_ID) return 'Стартовый город'
-  if (id === WHISPERING_FOREST_ID) return 'Шепчущий лес'
-  return displayName
-}
-
-async function travelTo(locationId: string): Promise<void> {
-  await session.travel(locationId)
-  selectedEncounter.value = null
-  lastCombatResult.value = null
-  lastEnemyName.value = null
-}
-
-async function startEncounterCombat(): Promise<void> {
-  if (!selectedEncounter.value || combat.pending) return
-  const encounter = selectedEncounter.value
   if (await combat.startCombat(encounter)) {
     lastEnemyName.value = encounter.name
-    selectedEncounter.value = null
     lastCombatResult.value = null
   }
 }
@@ -100,7 +80,6 @@ async function startTraining(): Promise<void> {
   if (!isStarterTown.value || combat.pending) return
   if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
-    selectedEncounter.value = null
     lastCombatResult.value = null
   }
 }
@@ -132,7 +111,6 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
 
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
-    selectedEncounter.value = null
     merchantOpen.value = false
   }
   if (locationId) void restoreCombat()
@@ -140,7 +118,6 @@ watch(currentLocationId, (locationId, previousLocationId) => {
 
 watch(() => combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
-    selectedEncounter.value = null
     if (combat.snapshot) lastEnemyName.value = combat.snapshot.enemy.name
     lastCombatResult.value = status
     void session.refreshSnapshot()
@@ -158,29 +135,13 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     <section class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
       <div class="scene__shade" />
       <div class="scene__content">
-        <div v-if="selectedEncounter" class="scene-encounter" data-world-encounter>
-          <img v-if="selectedEncounterArt" :src="selectedEncounterArt" :alt="selectedEncounter.name" />
-          <div v-else class="scene-encounter__fallback" role="img" :aria-label="selectedEncounter.name">⚔</div>
-          <div class="scene-encounter__copy">
-            <small>ОБНАРУЖЕН ПРОТИВНИК</small>
-            <h2>{{ selectedEncounter.name }}</h2>
-            <p>Уровень {{ selectedEncounter.level }} · {{ selectedEncounter.description }}</p>
-          </div>
-          <div class="scene__actions">
-            <UIButton data-start-encounter :loading="combat.pending" @click="startEncounterCombat">Вступить в бой</UIButton>
-            <UIButton variant="ghost" @click="selectedEncounter = null">Уйти</UIButton>
-          </div>
-        </div>
-
-        <div v-else class="scene-location">
+        <div class="scene-location">
           <div class="scene__eyebrow">
             <span :data-danger="world.currentLocation.dangerLevel">{{ dangerLabel }}</span>
             <span>рек. уровень {{ world.currentLocation.recommendedLevel }}</span>
           </div>
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
-
-
         </div>
       </div>
     </section>
@@ -208,7 +169,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
     <section
-      v-if="canExplore && !selectedEncounter && lastCombatResult !== 'Victory'"
+      v-if="canExplore && lastCombatResult !== 'Victory'"
       class="location-activities"
       aria-labelledby="location-activities-title"
     >
@@ -272,30 +233,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
         </article>
       </div>
     </section>
-
-    <nav class="location-routes" aria-label="Переходы между локациями">
-      <header class="section-heading">
-        <div>
-          <small>ПУТИ</small>
-          <strong>Выходы из локации</strong>
-        </div>
-        <span>{{ world.outgoingTransitions.length }}</span>
-      </header>
-      <div v-if="world.outgoingTransitions.length" class="location-routes__actions">
-        <UIButton
-          v-for="location in world.outgoingTransitions"
-          :key="location.id"
-          :data-travel="location.id"
-          :aria-label="`Отправиться: ${locationLabel(location.id, location.displayName)}`"
-          variant="secondary"
-          :loading="session.mutationPending"
-          @click="travelTo(location.id)"
-        >
-          {{ locationLabel(location.id, location.displayName) }}
-        </UIButton>
-      </div>
-      <p v-else class="location-routes__empty" role="status">Пути не найдены. Исследуйте текущую область.</p>
-    </nav>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
   </section>
@@ -411,53 +348,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   color: #c4cad8;
   font-size: var(--ui-font-size-sm);
   line-height: 1.55;
-}
-
-.scene-encounter {
-  display: grid;
-  grid-template-columns: minmax(7rem, 10rem) 1fr;
-  gap: var(--ui-space-4);
-  align-items: center;
-  padding: var(--ui-space-4);
-  border: 1px solid rgb(216 95 114 / 24%);
-  border-radius: var(--ui-radius-lg);
-  background: linear-gradient(135deg, rgb(25 12 17 / 72%), rgb(7 10 17 / 78%));
-  box-shadow: 0 16px 32px rgb(0 0 0 / 24%);
-  backdrop-filter: blur(7px);
-}
-
-.scene-encounter img {
-  width: 100%;
-  max-height: 12rem;
-  object-fit: contain;
-  filter: drop-shadow(0 .75rem 1.25rem rgb(0 0 0 / 58%));
-}
-
-.scene-encounter__fallback {
-  display: grid;
-  min-height: 8rem;
-  place-items: center;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-lg);
-  background: rgb(5 8 14 / 66%);
-  color: var(--ui-color-text-muted);
-  font-size: 2rem;
-}
-
-.scene-encounter__copy {
-  display: grid;
-  gap: var(--ui-space-1);
-}
-
-.scene-encounter__copy h2 {
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-2xl);
-}
-
-.scene__actions {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: var(--ui-space-2);
 }
 
 .world-error {
@@ -697,20 +587,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   font-weight: 700;
 }
 
-.location-routes__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ui-space-2);
-  padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-4);
-}
-
-.location-routes__empty {
-  margin: 0;
-  padding: var(--ui-space-4);
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
-}
-
 @media (max-width: 520px) {
   .world {
     padding: var(--ui-space-3);
@@ -738,15 +614,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
   .scene-encounter img {
     max-height: 9rem;
-  }
-
-  .scene__actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .scene__actions :deep(.ui-button) {
-    width: 100%;
   }
 
   .activity-card {
@@ -790,13 +657,5 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     text-align: center;
   }
 
-  .location-routes__actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .location-routes__actions :deep(.ui-button) {
-    width: 100%;
-  }
 }
 </style>
