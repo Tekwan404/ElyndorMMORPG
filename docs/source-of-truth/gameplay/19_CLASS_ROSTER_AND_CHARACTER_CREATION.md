@@ -93,10 +93,10 @@ Rage:
 
 ## Экипировка
 
-Предварительно:
+Воин использует:
 
-- Medium Armor;
-- Heavy Armor.
+- Heavy Armor;
+- Shield в Off-Hand.
 
 Оружие:
 
@@ -174,16 +174,15 @@ Ability costs и talent modifiers определяются class content.
 
 ## Экипировка
 
-Предварительно:
+Лучник использует:
 
-- Light Armor;
-- Medium Armor.
+- Leather Armor.
 
 Оружие:
 
 - Bow.
 
-Дополнительные типы оружия могут быть добавлены позднее.
+Дополнительные типы оружия могут быть добавлены позднее отдельным утверждённым изменением.
 
 ## Будущие Talent Tree направления
 
@@ -227,9 +226,9 @@ Ability costs и talent modifiers определяются class content.
 
 ## Экипировка
 
-Предварительно:
+Маг использует:
 
-- Light Armor.
+- Cloth Armor.
 
 Оружие:
 
