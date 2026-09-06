@@ -2,6 +2,11 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
+import {
+  reconcilePendingGameMutation,
+  runReplaySafeGameMutation,
+  type ReplaySafeIdField,
+} from '@/api/replaySafeMutation'
 import type {
   AuthenticationResponse,
   BootstrapSnapshot,
@@ -75,6 +80,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
 
   async function bootstrap(): Promise<void> {
     state.value = 'loading'
+    await reconcilePendingGameMutation()
     await refreshSnapshot()
     state.value = snapshot.value?.character ? 'world' : 'needs-character'
   }
@@ -94,10 +100,12 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function travel(targetLocationId: string): Promise<void> {
-    await mutate('/api/v1/world/travel', {
-      requestId: crypto.randomUUID(),
-      targetLocationId,
-    })
+    await replaySafeMutate(
+      'world:travel',
+      '/api/v1/world/travel',
+      'requestId',
+      { targetLocationId },
+    )
   }
 
   async function explore(): Promise<WorldEncounter | null> {
@@ -115,15 +123,30 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function equip(characterItemId: string): Promise<void> {
-    await mutate('/api/v1/inventory/equip', { characterItemId, mutationId: crypto.randomUUID() })
+    await replaySafeMutate(
+      'inventory:equip',
+      '/api/v1/inventory/equip',
+      'mutationId',
+      { characterItemId },
+    )
   }
 
   async function unequip(slot: string): Promise<void> {
-    await mutate('/api/v1/inventory/unequip', { slot, mutationId: crypto.randomUUID() })
+    await replaySafeMutate(
+      'inventory:unequip',
+      '/api/v1/inventory/unequip',
+      'mutationId',
+      { slot },
+    )
   }
 
   async function useConsumable(characterItemId: string): Promise<void> {
-    await mutate('/api/v1/inventory/use-consumable', { characterItemId, mutationId: crypto.randomUUID() })
+    await replaySafeMutate(
+      'inventory:use-consumable',
+      '/api/v1/inventory/use-consumable',
+      'mutationId',
+      { characterItemId },
+    )
   }
 
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
@@ -135,12 +158,11 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     itemDefinitionId: string,
     quantity = 1,
   ): Promise<MerchantSnapshot | null> {
-    return await merchantMutation('/api/v1/inventory/merchant/buy', {
-      merchantId,
-      itemDefinitionId,
-      mutationId: crypto.randomUUID(),
-      quantity,
-    })
+    return await merchantMutation(
+      'merchant:buy',
+      '/api/v1/inventory/merchant/buy',
+      { merchantId, itemDefinitionId, quantity },
+    )
   }
 
   async function sellMerchantMaterial(
@@ -148,29 +170,57 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     characterItemId: string,
     quantity = 1,
   ): Promise<MerchantSnapshot | null> {
-    return await merchantMutation('/api/v1/inventory/merchant/sell-material', {
-      merchantId,
-      characterItemId,
-      mutationId: crypto.randomUUID(),
-      quantity,
-    })
+    return await merchantMutation(
+      'merchant:sell-material',
+      '/api/v1/inventory/merchant/sell-material',
+      { merchantId, characterItemId, quantity },
+    )
   }
 
-  async function merchantMutation(path: string, body: object): Promise<MerchantSnapshot | null> {
+  async function merchantMutation(
+    key: string,
+    path: string,
+    intent: Record<string, unknown>,
+  ): Promise<MerchantSnapshot | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
     try {
-      const merchant = await apiClient.request<MerchantSnapshot>(path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      const merchant = await runReplaySafeGameMutation<MerchantSnapshot>({
+        key,
+        path,
+        idField: 'mutationId',
+        intent,
       })
       await refreshSnapshot()
       return merchant
     } catch (error) {
       handleError(error)
       return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function replaySafeMutate(
+    key: string,
+    path: string,
+    idField: ReplaySafeIdField,
+    intent: Record<string, unknown>,
+  ): Promise<void> {
+    if (mutationPending.value) return
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      await runReplaySafeGameMutation<unknown>({ key, path, idField, intent })
+      await refreshSnapshot()
+      state.value = snapshot.value?.character ? 'world' : 'needs-character'
+    } catch (error) {
+      handleError(error)
+      if (error instanceof ApiRequestError && error.code === 'travel_conflict') {
+        await refreshSnapshot()
+        state.value = snapshot.value?.character ? 'world' : 'needs-character'
+      }
     } finally {
       mutationPending.value = false
     }
