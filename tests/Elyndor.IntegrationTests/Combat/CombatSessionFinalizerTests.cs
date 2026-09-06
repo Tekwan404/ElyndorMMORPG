@@ -1,4 +1,5 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
@@ -73,6 +74,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         services.AddSingleton<IGameRandomFactory>(new FixedRandomFactory());
         services.AddScoped<InventoryEquipmentService>();
         services.AddScoped<CharacterDerivedStateService>();
+        services.AddScoped<CharacterAbilityCooldownStore>();
         services.AddScoped<CombatRewardService>();
 
         await using ServiceProvider provider = services.BuildServiceProvider();
@@ -94,6 +96,11 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
             CharacterVitals firstVitals = await verifyFirst.CharacterVitals.AsNoTracking().SingleAsync();
             Assert.Equal(2, firstCharacter.Level);
             Assert.Equal(170, firstVitals.CurrentHp);
+            CharacterAbilityCooldown cooldown = await verifyFirst.CharacterAbilityCooldowns
+                .AsNoTracking()
+                .SingleAsync();
+            Assert.Equal("STRIKE", cooldown.AbilityId);
+            Assert.Equal(Now.AddSeconds(20), cooldown.ReadyAtUtc);
         }
 
         CombatRewardApplicationResult? replay = await finalizer.FinalizeAsync(
@@ -125,7 +132,11 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
             hp: 100,
             maxHp: 100,
             resource: 0,
-            maxResource: 100);
+            maxResource: 100,
+            cooldowns: new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
+            {
+                ["STRIKE"] = Now.AddSeconds(20)
+            });
         CombatActorSnapshot wolf = Actor(
             Guid.CreateVersion7(),
             CombatActorKind.Monster,
@@ -207,6 +218,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
         services.AddScoped<InventoryEquipmentService>();
         services.AddScoped<CharacterDerivedStateService>();
+        services.AddScoped<CharacterAbilityCooldownStore>();
 
         await using ServiceProvider provider = services.BuildServiceProvider();
         CombatSessionFinalizer finalizer = new(
@@ -291,7 +303,8 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         decimal hp,
         decimal maxHp,
         decimal resource,
-        decimal maxResource) =>
+        decimal maxResource,
+        IReadOnlyDictionary<string, DateTimeOffset>? cooldowns = null) =>
         new(
             id,
             kind,
@@ -304,7 +317,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
             maxResource,
             false,
             null,
-            new Dictionary<string, DateTimeOffset>(),
+            cooldowns ?? new Dictionary<string, DateTimeOffset>(),
             new HashSet<string>(),
             [],
             []);
