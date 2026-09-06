@@ -10,7 +10,7 @@ public sealed class GameContentPackageLoaderTests
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
-        ["WOLF", "FOREST_BOAR", "GIANT_SPIDER"];
+        ["FOREST_WOLF_L1", "FOREST_BOAR_L2", "GIANT_SPIDER_L3", "FOREST_WOLF_L4", "ALPHA_WOLF_L5"];
 
     [Fact]
     public async Task PhaseFiveMageAndLocationEncounterPackageLoadsAndValidates()
@@ -18,14 +18,14 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.10.2", package.ContentVersion);
+        Assert.Equal("0.11.0", package.ContentVersion);
         Assert.Equal("0.9.1", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
         Assert.Contains(package.Items!, item => item.Id == "HUNTER_SHORTBOW");
         Assert.Contains(package.Items!, item => item.Id == "APPRENTICE_STAFF");
-        Assert.Equal(3, package.LootTables!.Count);
+        Assert.Equal(6, package.LootTables!.Count);
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
 
@@ -69,7 +69,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.Same(indexes, GameContentIndexes.For(package));
         Assert.Equal("MAGE", indexes.ClassesById["MAGE"].Id);
         Assert.Equal("MAGE_FIREBALL", indexes.AbilitiesById["MAGE_FIREBALL"].Id);
-        Assert.Equal("WOLF", indexes.MonstersById["WOLF"].Id);
+        Assert.Equal("FOREST_WOLF_L1", indexes.MonstersById["FOREST_WOLF_L1"].Id);
         Assert.Equal("WHISPERING_FOREST", indexes.LocationsById["WHISPERING_FOREST"].Id);
     }
 

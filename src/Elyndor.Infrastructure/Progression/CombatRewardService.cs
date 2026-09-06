@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
@@ -161,6 +162,14 @@ public sealed class CombatRewardService(
         foreach (LootRoll roll in loot)
             await AddItemAsync(characterId, roll, now, indexes, cancellationToken);
 
+        await CompleteWorldContractsAsync(
+            character,
+            snapshot.SessionId,
+            rewardSources,
+            content.WorldContracts ?? [],
+            now,
+            cancellationToken);
+
         if (progressionResult.LeveledUp)
         {
             CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
@@ -196,6 +205,45 @@ public sealed class CombatRewardService(
             goldEarned,
             progressionResult,
             loot.Select(roll => ToRewardItem(roll, indexes)).ToArray());
+    }
+
+    private async Task CompleteWorldContractsAsync(
+        Character character,
+        Guid combatSessionId,
+        IReadOnlyList<ResolvedRewardSource> rewardSources,
+        IReadOnlyList<WorldContractDefinition> contracts,
+        DateTimeOffset completedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (contracts.Count == 0) return;
+
+        HashSet<string> defeatedMonsterIds = rewardSources
+            .Select(source => source.Monster.Id)
+            .ToHashSet(StringComparer.Ordinal);
+        string[] completedContractIds = await dbContext.CharacterContractCompletions
+            .Where(state => state.CharacterId == character.Id)
+            .Select(state => state.ContractId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<string> completed = completedContractIds.ToHashSet(StringComparer.Ordinal);
+
+        foreach (WorldContractDefinition contract in contracts)
+        {
+            if (character.Level < contract.RequiredLevel
+                || !defeatedMonsterIds.Contains(contract.TargetMonsterId)
+                || completed.Contains(contract.Id))
+            {
+                continue;
+            }
+
+            dbContext.CharacterContractCompletions.Add(
+                new CharacterContractCompletion(
+                    character.Id,
+                    contract.Id,
+                    contract.TargetMonsterId,
+                    combatSessionId,
+                    completedAtUtc));
+            completed.Add(contract.Id);
+        }
     }
 
     private static ResolvedRewardSource[] ResolveRewardSources(

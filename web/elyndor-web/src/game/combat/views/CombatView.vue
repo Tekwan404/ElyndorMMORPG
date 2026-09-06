@@ -5,6 +5,7 @@ import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapsh
 import { abilityArtUrl } from '@/assets/abilityArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIHealthBar } from '@/ui/components'
@@ -18,6 +19,12 @@ const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
 const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
+const battlefieldArt = computed(() => {
+  const locationId = session.snapshot?.world?.currentLocation.id
+  if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
+  if (locationId === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
+  return gameArt.world.combatWhispering
+})
 
 type LogSide = 'player' | 'enemy' | 'system'
 interface CombatLogEntry {
@@ -201,7 +208,7 @@ function abilityName(id: string | null | undefined): string {
 }
 
 function abilityIcon(ability: CombatAbility): string | undefined {
-  return abilityArtUrl(ability.iconId)
+  return resolveAbilityArt(ability.id) ?? abilityArtUrl(ability.iconId)
 }
 
 function effectLabel(effect: CombatEffectSnapshot): string {
@@ -346,7 +353,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ snapshot.player.name }}</strong>
           </div>
           <UIHealthBar
-            :label="`HP · ${Math.ceil(snapshot.player.hp)} / ${Math.ceil(snapshot.player.maxHp)}`"
+            label="Здоровье"
             :value="snapshot.player.hp"
             :max="snapshot.player.maxHp"
           />
@@ -364,7 +371,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ enemyPresentation.name }}</strong>
           </div>
           <UIHealthBar
-            :label="`HP · ${Math.ceil(snapshot.enemy.hp)} / ${Math.ceil(snapshot.enemy.maxHp)}`"
+            label="Здоровье"
             :value="snapshot.enemy.hp"
             :max="snapshot.enemy.maxHp"
           />
@@ -391,7 +398,11 @@ onUnmounted(() => window.clearInterval(timer))
         </button>
       </nav>
 
-      <section class="battlefield" data-combat-battlefield>
+      <section
+        class="battlefield"
+        data-combat-battlefield
+        :style="{ '--battlefield-art': `url(${battlefieldArt})` }"
+      >
         <div class="battlefield__vignette" />
 
         <div class="enemy-effects effect-strip effect-strip--enemy">
@@ -456,7 +467,7 @@ onUnmounted(() => window.clearInterval(timer))
 
       <section v-if="isTraining" class="training-stats" aria-label="Статистика тренировки">
         <div><small>ВРЕМЯ</small><strong>{{ trainingElapsedSeconds.toFixed(1) }}с</strong></div>
-        <div><small>DPS</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
+        <div><small>Урон/с</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
         <div><small>УРОН</small><strong>{{ Math.round(combat.trainingStats.totalDamage).toLocaleString('ru-RU') }}</strong></div>
         <div><small>КРИТЫ</small><strong>{{ combat.trainingStats.criticalHits }}</strong></div>
         <div><small>МАКС.</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
@@ -747,9 +758,8 @@ onUnmounted(() => window.clearInterval(timer))
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-lg);
   background:
-    radial-gradient(circle at 50% 38%, rgb(133 59 75 / 15%), transparent 32%),
-    radial-gradient(circle at 50% 100%, rgb(86 75 165 / 11%), transparent 35%),
-    linear-gradient(180deg, rgb(20 20 29), rgb(6 8 14) 82%);
+    linear-gradient(180deg, rgb(5 7 12 / 18%), rgb(5 7 12 / 72%) 76%, rgb(5 7 12 / 94%)),
+    var(--battlefield-art) center / cover;
   box-shadow:
     inset 0 0 35px rgb(0 0 0 / 42%),
     0 14px 30px rgb(0 0 0 / 28%);

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.2",
-  "balanceVersion": "0.8.1",
-  "publishedAtUtc": "2026-09-06T18:35:00+00:00",
+  "contentVersion": "0.11.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-06T19:46:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -421,7 +421,8 @@
       "weaponBaseAttackIntervalSeconds": 2.2,
       "description": "Простой надёжный меч для начинающего воина.",
       "version": 1,
-      "buyPriceGold": 35
+      "buyPriceGold": 35,
+      "iconId": "item-warrior-sword"
     },
     {
       "id": "RECRUIT_WOODEN_SHIELD",
@@ -455,7 +456,8 @@
       "blockValueMax": 6,
       "description": "Учебный щит воина. Даёт броню и шанс заблокировать часть физического урона.",
       "version": 1,
-      "buyPriceGold": 30
+      "buyPriceGold": 30,
+      "iconId": "item-warrior-shield"
     },
     {
       "id": "RECRUIT_HEAVY_CHEST",
@@ -486,7 +488,8 @@
       "armorFlat": 12,
       "description": "Простая тяжёлая кираса для начинающего воина.",
       "version": 1,
-      "buyPriceGold": 40
+      "buyPriceGold": 40,
+      "iconId": "item-warrior-chestplate"
     },
     {
       "id": "HUNTER_SHORTBOW",

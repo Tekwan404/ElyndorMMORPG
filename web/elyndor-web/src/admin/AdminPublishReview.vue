@@ -19,7 +19,7 @@ defineEmits<{
     <section class="review-card" role="dialog" aria-modal="true" aria-labelledby="publish-review-title">
       <header>
         <div>
-          <small>REVIEW BEFORE PUBLISH</small>
+          <small>ПРОВЕРКА ПЕРЕД ПУБЛИКАЦИЕЙ</small>
           <h2 id="publish-review-title">Revision {{ revision.id.slice(0, 8) }}</h2>
           <p>{{ revision.contentVersion }} / {{ revision.balanceVersion }}</p>
         </div>
@@ -28,7 +28,7 @@ defineEmits<{
 
       <div class="summary">
         <b>{{ entries.length }} change(s)</b>
-        <span>Сравнение этой revision с текущим LIVE.</span>
+        <span>Сравнение этой ревизии с текущей опубликованной версией.</span>
       </div>
 
       <div v-if="entries.length" class="diff-list">
@@ -44,7 +44,7 @@ defineEmits<{
           </div>
         </article>
       </div>
-      <p v-else class="empty">Revision совпадает с текущим LIVE. Публикация не требуется.</p>
+      <p v-else class="empty">Ревизия совпадает с текущей опубликованной версией. Публикация не требуется.</p>
 
       <footer>
         <button type="button" :disabled="busy" @click="$emit('cancel')">Отмена</button>

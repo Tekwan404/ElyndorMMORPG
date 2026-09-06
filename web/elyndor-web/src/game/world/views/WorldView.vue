@@ -11,7 +11,6 @@ import { UIButton, UICard, UIToast } from '@/ui/components'
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
 const STARTER_TOWN_ID = 'STARTER_TOWN'
-const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -25,15 +24,25 @@ const world = computed(() => session.snapshot?.world)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
-const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
 const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
-const locationName = computed(() => isStarterTown.value ? 'Стартовый город' : isWhisperingForest.value ? 'Шепчущий лес' : world.value?.currentLocation.displayName ?? 'Неизвестная область')
-const locationDescription = computed(() => isStarterTown.value
-  ? 'Безопасный город для отдыха, торговли, тренировки билдов и подготовки к следующему походу.'
-  : isWhisperingForest.value
-    ? 'Сумрачный лес старых дорог. Исследуйте область, чтобы встретить противника.'
-    : 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.')
-const sceneBackground = computed(() => isStarterTown.value ? gameArt.world.capital : gameArt.world.forest)
+const locationName = computed(() => world.value?.currentLocation.displayName ?? 'Неизвестная область')
+const locationDescription = computed(() =>
+  world.value?.currentLocation.description
+  || 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.',
+)
+const sceneBackground = computed(() => {
+  if (currentLocationId.value === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (currentLocationId.value === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
+  if (currentLocationId.value === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
+  return gameArt.world.whisperingForest
+})
+const levelRange = computed(() => {
+  const location = world.value?.currentLocation
+  if (!location) return ''
+  return location.minimumLevel === location.maximumLevel
+    ? `ур. ${location.minimumLevel}`
+    : `ур. ${location.minimumLevel}–${location.maximumLevel}`
+})
 const dangerLabel = computed(() => {
   const danger = world.value?.currentLocation.dangerLevel
   if (danger === 'SAFE') return 'БЕЗОПАСНАЯ ЗОНА'
@@ -138,7 +147,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
         <div class="scene-location">
           <div class="scene__eyebrow">
             <span :data-danger="world.currentLocation.dangerLevel">{{ dangerLabel }}</span>
-            <span>рек. уровень {{ world.currentLocation.recommendedLevel }}</span>
+            <span>{{ levelRange }}</span>
           </div>
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
@@ -198,12 +207,12 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <small>ГОРОДСКИЕ СЕРВИСЫ</small>
           <strong>Стартовый город</strong>
         </div>
-        <span data-safe>SAFE</span>
+        <span data-safe>БЕЗОПАСНО</span>
       </header>
 
       <div class="service-grid">
         <article class="service-card service-card--training" data-town-service="training">
-          <span class="service-card__icon" aria-hidden="true">⚔</span>
+          <img class="service-card__portrait" :src="gameArt.npc.combatTrainer" alt="Боевой наставник" />
           <div class="service-card__copy">
             <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
             <strong>Манекен</strong>
@@ -213,7 +222,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
         </article>
 
         <article class="service-card service-card--merchant" data-town-service="merchant">
-          <span class="service-card__icon" aria-hidden="true">◆</span>
+          <img class="service-card__portrait" :src="gameArt.npc.marcus" alt="Маркус" />
           <div class="service-card__copy">
             <small>ТОРГОВЕЦ</small>
             <strong>Маркус</strong>
@@ -470,6 +479,16 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   background:
     radial-gradient(circle at 8% 50%, rgb(208 164 88 / 9%), transparent 9rem),
     linear-gradient(90deg, rgb(208 164 88 / 4%), transparent 70%);
+}
+
+.service-card__portrait {
+  width: 3.1rem;
+  height: 3.1rem;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 .35rem .9rem rgb(0 0 0 / 32%);
 }
 
 .activity-card__icon,

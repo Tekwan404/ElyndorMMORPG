@@ -23,8 +23,8 @@ export default defineConfig({
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Real database E2E is stateful; retries would reuse the same account after partial success. */
+  retries: process.env.ELYNDOR_E2E_REAL === 'true' ? 0 : process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */

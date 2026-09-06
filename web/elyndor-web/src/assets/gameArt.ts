@@ -10,12 +10,44 @@ import locationNavigation from './navigation/location.png'
 import menuNavigation from './navigation/menu.png'
 import questsNavigation from './navigation/quests.png'
 import worldNavigation from './navigation/world.png'
-import starterTown from './world/starter-town.webp'
-import forest from './world/forest.jpg'
-import ruins from './world/ruins.jpg'
+import starterTown from './world/starter-town.png'
+import whisperingForest from './world/whispering-forest.png'
+import ancientRuins from './world/ancient-ruins.png'
+import caravanRoad from './world/caravan-road.png'
+import combatWhispering from './world/combat-whispering.png'
+import marcus from './npc/marcus.webp'
+import combatTrainer from './npc/combat-trainer.webp'
+import blacksmith from './npc/blacksmith.webp'
+import alchemist from './npc/alchemist.webp'
+import innkeeper from './npc/innkeeper.webp'
+import elder from './npc/starter-town-elder.webp'
 
 export const gameArt = {
-  world: { starterTown, capital: starterTown, forest, ruins },
+  world: {
+    starterTown,
+    capital: starterTown,
+    forest: whisperingForest,
+    ruins: ancientRuins,
+    whisperingForest,
+    ancientRuins,
+    caravanRoad,
+    combatWhispering,
+  },
+  locations: {
+    STARTER_TOWN: starterTown,
+    WHISPERING_FOREST: whisperingForest,
+    DEEP_FOREST: whisperingForest,
+    BROODMOTHER_LAIR: ancientRuins,
+    BLIGHTED_GROVE: caravanRoad,
+  },
+  npc: {
+    marcus,
+    combatTrainer,
+    blacksmith,
+    alchemist,
+    innkeeper,
+    elder,
+  },
   characters: { warrior },
   navigation: {
     world: worldNavigation,

@@ -268,7 +268,8 @@ public static class InventoryEndpoints
                 item.SellPriceGold,
                 ToConsumableActions(item.Definition),
                 item.Definition.ConsumableCooldownCategoryId,
-                item.Definition.ConsumableCooldownSeconds)).ToArray());
+                item.Definition.ConsumableCooldownSeconds,
+                item.Definition.IconId)).ToArray());
 
     private static IResult Problem(string errorCode, HttpContext context) =>
         Results.Problem(

@@ -120,6 +120,7 @@ public sealed class WorldValidator : IContentValidationStage
     public void Validate(ContentValidationContext context)
     {
         GameContentPackageValidator.ValidateLocations(context.Package.Locations, context.Errors);
+        GameContentPackageValidator.ValidateWorldContracts(context.Package, context.Errors);
         context.Errors.AddRange(WorldEncounterContentValidator.Validate(context.Package));
     }
 }

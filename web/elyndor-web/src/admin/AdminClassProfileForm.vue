@@ -82,44 +82,44 @@ function isRecord(value: unknown): value is JsonRecord {
   <div class="class-editor" data-testid="class-form">
     <fieldset>
       <legend>Идентичность</legend>
-      <label><span>Class ID</span><input :value="stringValue(entity.id)" disabled /></label>
+      <label><span>ID класса</span><input :value="stringValue(entity.id)" disabled /></label>
       <label>
-        <span>Primary Attribute</span>
+        <span>Основной атрибут</span>
         <select data-testid="class-primary-attribute" :value="stringValue(entity.primaryAttribute)" @change="setString('primaryAttribute', $event)">
-          <option value="STRENGTH">STRENGTH</option>
-          <option value="AGILITY">AGILITY</option>
-          <option value="INTELLECT">INTELLECT</option>
+          <option value="STRENGTH">Сила</option>
+          <option value="AGILITY">Ловкость</option>
+          <option value="INTELLECT">Интеллект</option>
         </select>
       </label>
       <label>
-        <span>Resource</span>
+        <span>Ресурс</span>
         <select data-testid="class-resource" :value="stringValue(entity.resourceProfileId)" @change="setString('resourceProfileId', $event)">
           <option v-for="id in resourceIds" :key="id" :value="id">{{ id }}</option>
         </select>
       </label>
-      <label class="wide"><span>Prototype identity</span><textarea :value="stringValue(entity.prototypeIdentity)" @input="setString('prototypeIdentity', $event)" /></label>
+      <label class="wide"><span>Описание роли</span><textarea :value="stringValue(entity.prototypeIdentity)" @input="setString('prototypeIdentity', $event)" /></label>
     </fieldset>
 
     <fieldset>
-      <legend>Base Stats · Level 1</legend>
-      <label><span>Strength</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'strength')" @input="setNestedNumber('baseStats', 'strength', $event)" /></label>
-      <label><span>Agility</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'agility')" @input="setNestedNumber('baseStats', 'agility', $event)" /></label>
-      <label><span>Intellect</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'intellect')" @input="setNestedNumber('baseStats', 'intellect', $event)" /></label>
-      <label><span>Stamina</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'stamina')" @input="setNestedNumber('baseStats', 'stamina', $event)" /></label>
+      <legend>Базовые характеристики · уровень 1</legend>
+      <label><span>Сила</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'strength')" @input="setNestedNumber('baseStats', 'strength', $event)" /></label>
+      <label><span>Ловкость</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'agility')" @input="setNestedNumber('baseStats', 'agility', $event)" /></label>
+      <label><span>Интеллект</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'intellect')" @input="setNestedNumber('baseStats', 'intellect', $event)" /></label>
+      <label><span>Выносливость</span><input type="number" min="0" step="0.1" :value="numberValue('baseStats', 'stamina')" @input="setNestedNumber('baseStats', 'stamina', $event)" /></label>
     </fieldset>
 
     <fieldset>
-      <legend>Growth / Level</legend>
-      <label><span>Strength / lvl</span><input data-testid="class-growth-strength" type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'strength')" @input="setNestedNumber('levelGrowth', 'strength', $event)" /></label>
-      <label><span>Agility / lvl</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'agility')" @input="setNestedNumber('levelGrowth', 'agility', $event)" /></label>
-      <label><span>Intellect / lvl</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'intellect')" @input="setNestedNumber('levelGrowth', 'intellect', $event)" /></label>
-      <label><span>Stamina / lvl</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'stamina')" @input="setNestedNumber('levelGrowth', 'stamina', $event)" /></label>
+      <legend>Прирост за уровень</legend>
+      <label><span>Сила / ур.</span><input data-testid="class-growth-strength" type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'strength')" @input="setNestedNumber('levelGrowth', 'strength', $event)" /></label>
+      <label><span>Ловкость / ур.</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'agility')" @input="setNestedNumber('levelGrowth', 'agility', $event)" /></label>
+      <label><span>Интеллект / ур.</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'intellect')" @input="setNestedNumber('levelGrowth', 'intellect', $event)" /></label>
+      <label><span>Выносливость / ур.</span><input type="number" min="0" step="0.1" :value="numberValue('levelGrowth', 'stamina')" @input="setNestedNumber('levelGrowth', 'stamina', $event)" /></label>
     </fieldset>
 
     <fieldset class="stack">
-      <legend>Equipment permissions</legend>
+      <legend>Разрешённое снаряжение</legend>
       <div>
-        <b>Weapons</b>
+        <b>Оружие</b>
         <div class="checks">
           <label v-for="category in weaponCategories" :key="category" class="check">
             <input type="checkbox" :checked="hasCategory('allowedWeaponCategories', category)" @change="toggleCategory('allowedWeaponCategories', category)" />
@@ -128,7 +128,7 @@ function isRecord(value: unknown): value is JsonRecord {
         </div>
       </div>
       <div>
-        <b>Armor</b>
+        <b>Броня</b>
         <div class="checks">
           <label v-for="category in armorCategories" :key="category" class="check">
             <input type="checkbox" :checked="hasCategory('allowedArmorCategories', category)" @change="toggleCategory('allowedArmorCategories', category)" />
@@ -139,20 +139,20 @@ function isRecord(value: unknown): value is JsonRecord {
     </fieldset>
 
     <fieldset class="stack ability-rule">
-      <legend>Active abilities</legend>
-      <strong>Только через Talents</strong>
-      <p>Class Profile не выдаёт стартовые скиллы и не открывает их по уровню. Новый активный skill появляется только через <code>UNLOCK_ABILITY</code> в дереве талантов.</p>
+      <legend>Активные способности</legend>
+      <strong>Только через таланты</strong>
+      <p>Профиль класса не выдаёт стартовые умения и не открывает их по уровню. Новая активная способность появляется только через <code>UNLOCK_ABILITY</code> в дереве талантов.</p>
     </fieldset>
 
     <fieldset v-if="entity.combatAutoAttack" class="auto-attack">
-      <legend>Combat Auto Attack</legend>
-      <label><span>Interval</span><input :value="stringValue(isRecord(entity.combatAutoAttack) ? entity.combatAutoAttack.interval : '')" @input="setNestedString('combatAutoAttack', 'interval', $event)" /></label>
-      <label><span>Base Damage</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'baseDamage')" @input="setNestedNumber('combatAutoAttack', 'baseDamage', $event)" /></label>
-      <label><span>AP coefficient</span><input type="number" min="0" step="0.05" :value="numberValue('combatAutoAttack', 'attackPowerCoefficient')" @input="setNestedNumber('combatAutoAttack', 'attackPowerCoefficient', $event)" /></label>
-      <label><span>Resource on hit</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'resourceOnHit')" @input="setNestedNumber('combatAutoAttack', 'resourceOnHit', $event)" /></label>
+      <legend>Боевая автоатака</legend>
+      <label><span>Интервал</span><input :value="stringValue(isRecord(entity.combatAutoAttack) ? entity.combatAutoAttack.interval : '')" @input="setNestedString('combatAutoAttack', 'interval', $event)" /></label>
+      <label><span>Базовый урон</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'baseDamage')" @input="setNestedNumber('combatAutoAttack', 'baseDamage', $event)" /></label>
+      <label><span>Коэффициент силы атаки</span><input type="number" min="0" step="0.05" :value="numberValue('combatAutoAttack', 'attackPowerCoefficient')" @input="setNestedNumber('combatAutoAttack', 'attackPowerCoefficient', $event)" /></label>
+      <label><span>Ресурс за попадание</span><input type="number" min="0" step="0.1" :value="numberValue('combatAutoAttack', 'resourceOnHit')" @input="setNestedNumber('combatAutoAttack', 'resourceOnHit', $event)" /></label>
     </fieldset>
 
-    <p class="hint">Новый Class ID здесь намеренно не создаётся: новый игровой класс требует согласованного resource/ability/talent/character-creation контента.</p>
+    <p class="hint">Новый ID класса здесь намеренно не создаётся: новый игровой класс требует согласованного resource/ability/talent/character-creation контента.</p>
   </div>
 </template>
 

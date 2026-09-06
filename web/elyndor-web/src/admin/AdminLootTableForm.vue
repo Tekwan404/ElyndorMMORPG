@@ -126,13 +126,13 @@ function isRecord(value: unknown): value is JsonRecord {
 <template>
   <div class="form-grid" data-testid="loot-form">
     <fieldset>
-      <legend>Loot Table</legend>
+      <legend>Таблица добычи</legend>
       <label>
         <span>ID</span>
         <input :value="stringValue(entity.id)" disabled />
       </label>
       <label>
-        <span>Version</span>
+        <span>Версия</span>
         <input type="number" min="1" :value="numberValue(entity.version, 1)" @input="setNumber('version', $event)" />
       </label>
     </fieldset>
@@ -159,11 +159,11 @@ function isRecord(value: unknown): value is JsonRecord {
           />
         </label>
         <label>
-          <span>Min qty</span>
+          <span>Мин. количество</span>
           <input type="number" min="1" :value="numberValue(entry.minQuantity, 1)" @input="setEntryNumber(index, 'minQuantity', $event)" />
         </label>
         <label>
-          <span>Max qty</span>
+          <span>Макс. количество</span>
           <input type="number" min="1" :value="numberValue(entry.maxQuantity, 1)" @input="setEntryNumber(index, 'maxQuantity', $event)" />
         </label>
         <button class="danger" type="button" @click="removeEntry(index)">Удалить</button>
@@ -176,7 +176,7 @@ function isRecord(value: unknown): value is JsonRecord {
         </select>
         <button type="button" :disabled="availableItems.length === 0" @click="addEntry">+ Добавить предмет</button>
       </div>
-      <p v-if="entries.length === 0" class="hint">Добавь хотя бы один предмет — пустую Loot Table сервер не опубликует.</p>
+      <p v-if="entries.length === 0" class="hint">Добавь хотя бы один предмет — пустую Таблица добычи сервер не опубликует.</p>
     </fieldset>
   </div>
 </template>

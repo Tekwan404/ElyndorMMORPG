@@ -5,6 +5,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Progression;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
@@ -40,7 +41,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         CharacterVitals vitals = await context.CharacterVitals.AsNoTracking().SingleAsync();
         Assert.True(result.Progression!.LeveledUp);
         Assert.Equal(2, character.Level);
-        Assert.Equal(25, character.Experience);
+        Assert.Equal(30, character.Experience);
         Assert.Equal(170, vitals.CurrentHp);
     }
 
@@ -60,14 +61,14 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Character character = await context.Characters.AsNoTracking().SingleAsync();
         Assert.True(first.Granted);
         Assert.False(replay.Granted);
-        Assert.Equal(35, character.Experience);
+        Assert.Equal(40, character.Experience);
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
     }
 
     [Fact]
     public async Task MultiEnemyVictoryAggregatesEveryDefeatedEnemyOnce()
     {
-        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 2);
         Guid sessionId = Guid.CreateVersion7();
         await using GameDbContext context = postgres.CreateDbContext();
         CombatRewardService service = await CreateServiceAsync(context);
@@ -87,26 +88,26 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             ?? [];
 
         Assert.True(result.Granted);
-        Assert.Equal(65, result.XpEarned);
+        Assert.Equal(100, result.XpEarned);
         Assert.Equal(9, result.GoldEarned);
-        Assert.Equal(65, character.Experience);
+        Assert.Equal(100, character.Experience);
         Assert.Equal(9, character.Gold);
         Assert.Contains(result.Items, item => item.ItemId == "WOLF_HIDE");
         Assert.Contains(result.Items, item => item.ItemId == "BOAR_HIDE");
         Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
         Assert.Contains(result.Items, item => item.ItemId == "BOAR_TUSK");
         Assert.Equal(2, sources.Length);
-        Assert.Equal(["WOLF", "FOREST_BOAR"], sources.Select(source => source.MonsterId));
+        Assert.Equal(["FOREST_WOLF_L1", "FOREST_BOAR_L2"], sources.Select(source => source.MonsterId));
         Assert.Equal([0, 1], sources.Select(source => source.EncounterOrder));
-        Assert.Equal([35, 30], sources.Select(source => source.XpEarned));
-        Assert.Equal([5, 4], sources.Select(source => source.GoldEarned));
+        Assert.Equal([40, 60], sources.Select(source => source.XpEarned));
+        Assert.Equal([4, 5], sources.Select(source => source.GoldEarned));
         Assert.All(sources, source => Assert.NotEmpty(source.Items));
     }
 
     [Fact]
     public async Task MultiEnemyVictoryReplayDoesNotDuplicateAnySourceReward()
     {
-        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 2);
         Guid sessionId = Guid.CreateVersion7();
         CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(sessionId);
         await using GameDbContext context = postgres.CreateDbContext();
@@ -126,7 +127,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.False(replay.Granted);
         Assert.Equal(first.XpEarned, replay.XpEarned);
         Assert.Equal(first.GoldEarned, replay.GoldEarned);
-        Assert.Equal(65, character.Experience);
+        Assert.Equal(100, character.Experience);
         Assert.Equal(9, character.Gold);
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
 
@@ -201,9 +202,40 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
+    public async Task BossVictoryCompletesUnlockContractExactlyOnce()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 14);
+        Guid sessionId = Guid.CreateVersion7();
+        CombatSessionSnapshot snapshot = VictorySnapshot(
+            sessionId,
+            "SPIDER_BROODMOTHER_L14");
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
+            characterId,
+            snapshot,
+            CancellationToken.None);
+        CombatRewardApplicationResult replay = await service.ApplyVictoryAsync(
+            characterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.True(first.Granted);
+        Assert.False(replay.Granted);
+
+        CharacterContractCompletion completion = await context.CharacterContractCompletions
+            .AsNoTracking()
+            .SingleAsync();
+        Assert.Equal("CONTRACT_BROODMOTHER_GATE", completion.ContractId);
+        Assert.Equal("SPIDER_BROODMOTHER_L14", completion.TargetMonsterId);
+        Assert.Equal(sessionId, completion.CombatSessionId);
+    }
+
+    [Fact]
     public async Task ConcurrentSameSessionGrantsXpGoldAndLootExactlyOnce()
     {
-        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 2);
         Guid sessionId = Guid.CreateVersion7();
         CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(sessionId);
 
@@ -247,7 +279,8 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
     private async Task<(Guid CharacterId, Guid AccountId)> CreateCharacterAsync(
         long experience,
-        decimal currentHp)
+        decimal currentHp,
+        int level = 1)
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -256,6 +289,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Character character = new(
             characterId, accountId, Guid.CreateVersion7(), "Arthas", $"ARTHAS{characterId:N}"[..16],
             "HUMAN", "MALE", "WARRIOR", Now);
+        character.SetLevel(level);
         character.SetExperience(experience);
         context.Characters.Add(character);
         context.CharacterVitals.Add(new CharacterVitals(
@@ -289,12 +323,12 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         CombatActorSnapshot wolf = Actor(
             Guid.Parse("71000000-0000-0000-0000-000000000001"),
             CombatActorKind.Monster,
-            "WOLF",
-            "Wolf");
+            "FOREST_WOLF_L1",
+            "Forest Wolf");
         CombatActorSnapshot boar = Actor(
             Guid.Parse("72000000-0000-0000-0000-000000000001"),
             CombatActorKind.Monster,
-            "FOREST_BOAR",
+            "FOREST_BOAR_L2",
             "Forest Boar");
         return new CombatSessionSnapshot(
             sessionId,
@@ -307,11 +341,27 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             SelectedTargetActorId: wolf.ActorId);
     }
 
-    private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)
+    private static CombatSessionSnapshot VictorySnapshot(
+        Guid sessionId,
+        string monsterId = "FOREST_WOLF_L1")
     {
-        CombatActorSnapshot player = Actor(Guid.CreateVersion7(), CombatActorKind.Player, "WARRIOR", "Arthas");
-        CombatActorSnapshot enemy = Actor(Guid.CreateVersion7(), CombatActorKind.Monster, "WOLF", "Wolf");
-        return new CombatSessionSnapshot(sessionId, 1, CombatSessionStatus.Victory, Now, player, enemy);
+        CombatActorSnapshot player = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Arthas");
+        CombatActorSnapshot enemy = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Monster,
+            monsterId,
+            monsterId);
+        return new CombatSessionSnapshot(
+            sessionId,
+            1,
+            CombatSessionStatus.Victory,
+            Now,
+            player,
+            enemy);
     }
 
     private static CombatActorSnapshot Actor(

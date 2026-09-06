@@ -43,7 +43,7 @@ describe('AdminClassProfileForm', () => {
       props: { entity: baseClass(), resourceIds: ['RAGE'] },
     })
 
-    expect(wrapper.text()).toContain('Только через Talents')
+    expect(wrapper.text()).toContain('Только через таланты')
     expect(wrapper.find('[data-testid="class-starting-ability"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="class-unlock-level"]').exists()).toBe(false)
   })

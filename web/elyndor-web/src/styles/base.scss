@@ -18,6 +18,13 @@ body,
 
 html {
   background: #03050a;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body,
+#app {
+  touch-action: manipulation;
 }
 
 body {

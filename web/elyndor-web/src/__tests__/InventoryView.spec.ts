@@ -144,7 +144,7 @@ describe('InventoryView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-item-id="FRESH_POTION"]').attributes('data-new')).toBe('true')
-    expect(wrapper.get('[data-item-id="FRESH_POTION"]').text()).toContain('NEW')
+    expect(wrapper.get('[data-item-id="FRESH_POTION"]').text()).toContain('НОВОЕ')
 
     await wrapper.get('[data-item-id="FRESH_POTION"]').trigger('click')
     await flushPromises()
@@ -360,9 +360,15 @@ function snapshot(items: InventoryItem[], weapon: InventoryItem): BootstrapSnaps
         displayName: 'Starter Town',
         dangerLevel: 'SAFE',
         recommendedLevel: 1,
+      minimumLevel: 1,
+      maximumLevel: 60,
+      requiredContractId: null,
+      artId: null,
+      description: 'Test location',
       },
       version: 1,
       outgoingTransitions: [],
+      contracts: [],
     },
     contentVersion: '0.9.4',
     balanceVersion: '0.9.1',

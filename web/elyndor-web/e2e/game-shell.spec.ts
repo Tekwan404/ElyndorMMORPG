@@ -46,9 +46,10 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 
   await page.getByRole('button', { name: 'Мир' }).click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()
-  await page.locator('[data-map-travel]').click()
+  await expect(page.getByText('Требуется 6 уровень.')).toBeVisible()
+  await expect(page.locator('[data-map-travel]')).toBeDisabled()
   await page.getByRole('button', { name: 'Локация' }).click()
-  await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
@@ -72,7 +73,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
   await page.getByRole('button', { name: 'Локация' }).click()
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
     false,
@@ -127,6 +128,7 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
             ],
             consumableCooldownCategoryId: 'HEALING_POTION',
             consumableCooldownSeconds: 30,
+            iconId: null,
           },
         ],
       },
@@ -147,6 +149,9 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
   })
   await page.route('**/api/v1/bootstrap', (route) =>
     route.fulfill({ json: snapshot(hasCharacter, locationId) }),
+  )
+  await page.route('**/api/v1/world/locations', (route) =>
+    route.fulfill({ json: Object.values(locations) }),
   )
   await page.route('**/api/v1/character', async (route) => {
     hasCharacter = true
@@ -204,21 +209,36 @@ function asLetters(value: number): string {
 const locations = {
   STARTER_TOWN: {
     id: 'STARTER_TOWN',
-    displayName: 'Starter Town',
+    displayName: 'Стартовый город',
     dangerLevel: 'SAFE',
     recommendedLevel: 1,
+    minimumLevel: 1,
+    maximumLevel: 60,
+    requiredContractId: null,
+    artId: null,
+    description: 'Безопасная стартовая локация.',
   },
   WHISPERING_FOREST: {
     id: 'WHISPERING_FOREST',
-    displayName: 'Whispering Forest',
+    displayName: 'Шепчущий лес',
     dangerLevel: 'ADVENTURE',
-    recommendedLevel: 1,
+    recommendedLevel: 3,
+    minimumLevel: 1,
+    maximumLevel: 5,
+    requiredContractId: null,
+    artId: null,
+    description: 'Лесная зона 1–5 уровня.',
   },
   DEEP_FOREST: {
     id: 'DEEP_FOREST',
-    displayName: 'Deep Forest',
+    displayName: 'Глубокий лес',
     dangerLevel: 'DANGEROUS',
-    recommendedLevel: 3,
+    recommendedLevel: 9,
+    minimumLevel: 6,
+    maximumLevel: 11,
+    requiredContractId: null,
+    artId: null,
+    description: 'Опасная лесная зона 6–11 уровня.',
   },
 } as const
 
@@ -227,7 +247,7 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
     locationId === 'STARTER_TOWN'
       ? [locations.WHISPERING_FOREST]
       : locationId === 'WHISPERING_FOREST'
-        ? [locations.STARTER_TOWN, locations.DEEP_FOREST]
+        ? [locations.STARTER_TOWN]
         : [locations.WHISPERING_FOREST]
   return {
     accountId: '00000000-0000-0000-0000-000000000002',
@@ -253,7 +273,12 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
         }
       : null,
     world: hasCharacter
-      ? { currentLocation: locations[locationId], version: 1, outgoingTransitions: transitions }
+      ? {
+          currentLocation: locations[locationId],
+          version: 1,
+          outgoingTransitions: transitions,
+          contracts: [],
+        }
       : null,
     contentVersion: '0.1.0',
     balanceVersion: '0.1.0',

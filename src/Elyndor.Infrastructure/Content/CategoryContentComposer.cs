@@ -16,6 +16,7 @@ internal static class CategoryContentComposer
     [
         "abilities",
         "bosses",
+        "contracts",
         "classes",
         "effects",
         "items",
@@ -213,7 +214,11 @@ internal static class CategoryContentComposer
                 package.Merchants,
                 fragment.Merchants,
                 item => item.Id),
-            ResourceScaling = fragment.ResourceScaling ?? package.ResourceScaling
+            ResourceScaling = fragment.ResourceScaling ?? package.ResourceScaling,
+            WorldContracts = ContentCompositionRules.MergeOptionalByKey(
+                package.WorldContracts,
+                fragment.WorldContracts,
+                item => item.Id)
         };
     }
 
@@ -236,7 +241,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<LootTableDefinition>? LootTables = null,
         IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
         IReadOnlyList<MerchantDefinition>? Merchants = null,
-        ResourceScalingProfile? ResourceScaling = null);
+        ResourceScalingProfile? ResourceScaling = null,
+        IReadOnlyList<WorldContractDefinition>? WorldContracts = null);
 
     private sealed record LocationEncounterFragment(
         string ContentVersion,

@@ -105,14 +105,14 @@ function isRecord(value: unknown): value is JsonRecord {
       <legend>Локация</legend>
       <label><span>Название</span><input :value="stringValue(entity.displayName)" @input="setString('displayName', $event)" /></label>
       <label>
-        <span>Danger</span>
+        <span>Опасность</span>
         <select :value="stringValue(entity.dangerLevel)" @change="setString('dangerLevel', $event)">
-          <option value="SAFE">SAFE</option>
-          <option value="ADVENTURE">ADVENTURE</option>
-          <option value="DANGEROUS">DANGEROUS</option>
+          <option value="SAFE">Безопасно</option>
+          <option value="ADVENTURE">Приключение</option>
+          <option value="DANGEROUS">Опасно</option>
         </select>
       </label>
-      <label><span>Recommended level</span><input type="number" min="1" :value="numberValue(entity.recommendedLevel, 1)" @input="setNumber('recommendedLevel', $event)" /></label>
+      <label><span>Рекомендуемый уровень</span><input type="number" min="1" :value="numberValue(entity.recommendedLevel, 1)" @input="setNumber('recommendedLevel', $event)" /></label>
     </fieldset>
 
     <fieldset class="encounters">
@@ -125,20 +125,20 @@ function isRecord(value: unknown): value is JsonRecord {
           </select>
         </label>
         <label>
-          <span>Weight</span>
+          <span>Вес</span>
           <input data-testid="encounter-weight" type="number" min="0.01" step="0.01" :value="numberValue(encounter.weight, 1)" @input="setEncounterNumber(index, 'weight', $event)" />
         </label>
         <button class="danger" type="button" @click="removeEncounter(index)">Убрать</button>
       </article>
       <div class="add-row">
         <select v-model="newMonsterId" data-testid="location-new-monster">
-          <option value="">Выбери Normal-моба…</option>
+          <option value="">Выберите обычного монстра…</option>
           <option v-for="monster in availableMonsters" :key="monster.id" :value="monster.id">{{ monster.id }} · {{ monster.name }}</option>
         </select>
         <button type="button" :disabled="availableMonsters.length === 0 || entity.dangerLevel === 'SAFE'" @click="addEncounter">+ Добавить встречу</button>
       </div>
-      <p v-if="entity.dangerLevel === 'SAFE'" class="hint">SAFE-локации не могут содержать hostile encounters.</p>
-      <p class="hint">Для моба в encounter обязательны displayName, description и artId — это проверяет сервер.</p>
+      <p v-if="entity.dangerLevel === 'SAFE'" class="hint">Безопасные локации не могут содержать враждебные встречи.</p>
+      <p class="hint">Для монстра во встрече обязательны отображаемое имя, описание и ID арта — это проверяет сервер.</p>
     </fieldset>
   </div>
 </template>

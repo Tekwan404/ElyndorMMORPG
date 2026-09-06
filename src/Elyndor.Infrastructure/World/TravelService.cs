@@ -27,6 +27,8 @@ public static class TravelErrorCodes
     public const string InvalidRequest = "travel_request_invalid";
     public const string UnknownLocation = "travel_location_unknown";
     public const string InvalidTransition = "travel_transition_invalid";
+    public const string LevelRequired = "travel_level_required";
+    public const string ContractRequired = "travel_contract_required";
     public const string IdempotencyConflict = "idempotency_conflict";
     public const string Conflict = "travel_conflict";
 }
@@ -138,6 +140,28 @@ public sealed class TravelService
         {
             await transaction.CommitAsync(cancellationToken);
             return TravelResult.Failure(TravelErrorCodes.InvalidTransition);
+        }
+
+        LocationDefinition target = worldMap.GetRequired(targetLocationId);
+        if (character.Level < target.MinimumLevel)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return TravelResult.Failure(TravelErrorCodes.LevelRequired);
+        }
+
+        if (target.RequiredContractId is { Length: > 0 } requiredContractId)
+        {
+            bool completed = await dbContext.CharacterContractCompletions
+                .AsNoTracking()
+                .AnyAsync(
+                    state => state.CharacterId == character.Id
+                        && state.ContractId == requiredContractId,
+                    cancellationToken);
+            if (!completed)
+            {
+                await transaction.CommitAsync(cancellationToken);
+                return TravelResult.Failure(TravelErrorCodes.ContractRequired);
+            }
         }
 
         long resultVersion = checked(location.Version + 1);

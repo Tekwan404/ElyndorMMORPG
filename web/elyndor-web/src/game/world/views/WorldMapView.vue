@@ -19,6 +19,8 @@ const catalogError = ref(false)
 
 const world = computed(() => session.snapshot?.world)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
+const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
+const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
 )
@@ -47,18 +49,18 @@ const selectedIsReachable = computed(
     ? reachableLocationIds.value.has(selectedLocation.value.id)
     : false,
 )
-const mapArt = computed(() => {
-  const danger = world.value?.currentLocation.dangerLevel
-  if (danger === 'SAFE') return gameArt.world.capital
-  if (danger === 'DANGEROUS') return gameArt.world.ruins
-  return gameArt.world.forest
-})
-const selectedArt = computed(() => {
-  const danger = selectedLocation.value?.dangerLevel
-  if (danger === 'SAFE') return gameArt.world.capital
-  if (danger === 'DANGEROUS') return gameArt.world.ruins
-  return gameArt.world.forest
-})
+function locationArt(locationId: string | null | undefined): string {
+  if (locationId === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
+  if (locationId === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
+  return gameArt.world.whisperingForest
+}
+
+const mapArt = computed(() => locationArt(currentLocationId.value))
+const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
+const activeContract = computed(() =>
+  contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
+)
 const selectedDangerLabel = computed(() => {
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return 'Безопасная зона'
@@ -115,7 +117,34 @@ async function travel(): Promise<void> {
 function locationName(location: WorldLocation): string {
   if (location.id === 'STARTER_TOWN') return 'Стартовый город'
   if (location.id === 'WHISPERING_FOREST') return 'Шепчущий лес'
+  if (location.id === 'DEEP_FOREST') return 'Глубокий лес'
+  if (location.id === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
+  if (location.id === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
   return location.displayName
+}
+
+function levelRangeLabel(location: WorldLocation): string {
+  return location.minimumLevel === location.maximumLevel
+    ? `ур. ${location.minimumLevel}`
+    : `ур. ${location.minimumLevel}–${location.maximumLevel}`
+}
+
+function lockReason(location: WorldLocation): string | null {
+  if (characterLevel.value < location.minimumLevel) {
+    return `Требуется ${location.minimumLevel} уровень.`
+  }
+  if (location.requiredContractId) {
+    const contract = contracts.value.find(item => item.id === location.requiredContractId)
+    if (contract?.status !== 'COMPLETED') {
+      return contract
+        ? `Сначала выполните «${contract.displayName}».`
+        : 'Сначала выполните требуемый контракт.'
+    }
+  }
+  if (location.id !== currentLocationId.value && !reachableLocationIds.value.has(location.id)) {
+    return 'Из текущей локации нет открытого прямого маршрута.'
+  }
+  return null
 }
 
 function locationState(location: WorldLocation): 'current' | 'reachable' | 'locked' {
@@ -220,7 +249,7 @@ onMounted(() => void loadLocations())
           :style="nodeStyle(index)"
           type="button"
           :aria-pressed="selectedLocation?.id === location.id"
-          :aria-label="`${locationName(location)}, уровень ${location.recommendedLevel}`"
+          :aria-label="`${locationName(location)}, ${levelRangeLabel(location)}`"
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
@@ -229,9 +258,33 @@ onMounted(() => void loadLocations())
           </span>
           <span class="map-node__label">
             <strong>{{ locationName(location) }}</strong>
-            <small>ур. {{ location.recommendedLevel }}</small>
+            <small>{{ levelRangeLabel(location) }}</small>
           </span>
         </button>
+
+        <div v-if="selectedLocation" class="map-selection" data-map-selection>
+          <div>
+            <small>ВЫБРАНО</small>
+            <strong>{{ locationName(selectedLocation) }}</strong>
+            <span>{{ levelRangeLabel(selectedLocation) }}</span>
+          </div>
+          <UIButton
+            v-if="selectedIsCurrent"
+            data-map-open-location
+            @click="emit('open-location')"
+          >
+            Открыть
+          </UIButton>
+          <UIButton
+            v-else
+            data-map-travel-inline
+            :disabled="!selectedIsReachable"
+            :loading="session.mutationPending"
+            @click="travel"
+          >
+            {{ selectedIsReachable ? 'Отправиться' : 'Закрыто' }}
+          </UIButton>
+        </div>
 
         <div class="map-legend" aria-label="Легенда карты">
           <span><i data-state="current" /> Вы здесь</span>
@@ -239,6 +292,15 @@ onMounted(() => void loadLocations())
           <span><i data-state="locked" /> Нет прямого пути</span>
         </div>
       </section>
+
+      <UICard v-if="activeContract" class="contract-card" data-world-contract>
+        <div>
+          <small>АКТИВНЫЙ КОНТРАКТ</small>
+          <strong>{{ activeContract.displayName }}</strong>
+          <p>{{ activeContract.description }}</p>
+        </div>
+        <span>Открывает: {{ locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName ?? activeContract?.unlockLocationId }}</span>
+      </UICard>
 
       <UICard v-if="selectedLocation" class="location-preview" data-map-preview>
         <div
@@ -252,7 +314,7 @@ onMounted(() => void loadLocations())
         <div class="location-preview__body">
           <div class="location-preview__eyebrow">
             <span :data-danger="selectedLocation.dangerLevel">{{ selectedDangerLabel }}</span>
-            <span>рек. ур. {{ selectedLocation.recommendedLevel }}</span>
+            <span>{{ levelRangeLabel(selectedLocation) }}</span>
           </div>
 
           <div>
@@ -260,14 +322,15 @@ onMounted(() => void loadLocations())
             <h2>{{ locationName(selectedLocation) }}</h2>
           </div>
 
-          <p v-if="selectedIsCurrent">
-            Герой находится здесь. Откройте экран локации, чтобы увидеть активности, NPC и противников.
+          <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
+          <p v-if="lockReason(selectedLocation)" class="location-preview__lock">
+            {{ lockReason(selectedLocation) }}
+          </p>
+          <p v-else-if="selectedIsCurrent">
+            Герой находится здесь. Откройте экран локации, чтобы увидеть активности и противников.
           </p>
           <p v-else-if="selectedIsReachable">
-            До этой точки ведёт прямой путь из текущей локации. Переход будет подтверждён сервером.
-          </p>
-          <p v-else>
-            Из текущей точки прямого перехода нет. Сначала доберитесь до соседней открытой области.
+            Маршрут открыт. Переход будет подтверждён сервером.
           </p>
 
           <div class="location-preview__actions">
@@ -560,6 +623,94 @@ onMounted(() => void loadLocations())
   outline: 1px solid rgb(184 177 255 / 48%);
   background: rgb(18 20 37 / 88%);
   color: #ebe9ff;
+}
+
+.map-selection {
+  position: absolute;
+  right: var(--ui-space-3);
+  bottom: 4.6rem;
+  left: var(--ui-space-3);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+  padding: 8px 9px;
+  border: 1px solid rgb(184 177 255 / 30%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 14 / 86%);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.map-selection button {
+  pointer-events: auto;
+}
+
+.map-selection > div {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.map-selection small {
+  color: #aaa3ff;
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.map-selection strong {
+  overflow: hidden;
+  font-size: .65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-selection span {
+  color: var(--ui-color-text-muted);
+  font-size: .52rem;
+}
+
+.contract-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  border-color: color-mix(in srgb, var(--ui-color-gold) 36%, var(--ui-color-border));
+}
+
+.contract-card > div {
+  display: grid;
+  gap: 3px;
+}
+
+.contract-card small {
+  color: var(--ui-color-gold);
+  font-size: .56rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.contract-card strong {
+  font-family: var(--ui-font-display);
+}
+
+.contract-card p {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: .68rem;
+  line-height: 1.4;
+}
+
+.contract-card > span {
+  flex: 0 0 auto;
+  color: var(--ui-color-text-secondary);
+  font-size: .58rem;
+}
+
+.location-preview__lock {
+  color: #e1bd78 !important;
 }
 
 .map-legend {
