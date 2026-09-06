@@ -258,9 +258,9 @@ public sealed class CombatSessionTests
             && item.TargetActorId == EnemyTwoId);
 
         CombatEvent secondSwing = Assert.Single(
-            session.GetEventsAfter(selected.Snapshot.Sequence)
-                .Where(item => item.Type == CombatEventType.DamageDealt
-                    && item.DefinitionId == "AUTO_ATTACK"));
+            session.GetEventsAfter(selected.Snapshot.Sequence),
+            item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK");
         Assert.Equal(EnemyTwoId, secondSwing.TargetActorId);
     }
 
@@ -281,7 +281,7 @@ public sealed class CombatSessionTests
         Assert.Equal(EnemyTwoId, result.Snapshot.SelectedTargetActorId);
         Assert.Equal(EnemyTwoId, result.Snapshot.Enemy.ActorId);
         Assert.Equal(0, result.Snapshot.Enemies!.Single(enemy => enemy.ActorId == EnemyId).Hp);
-        Assert.Equal(100, result.Snapshot.Enemies.Single(enemy => enemy.ActorId == EnemyTwoId).Hp);
+        Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy => enemy.ActorId == EnemyTwoId).Hp);
         Assert.Single(session.GetEventsAfter(0), item =>
             item.Type == CombatEventType.EnemyKilled
             && item.TargetActorId == EnemyId);
