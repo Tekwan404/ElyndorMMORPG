@@ -11,7 +11,6 @@ import { UIButton, UICard, UIToast } from '@/ui/components'
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
 const STARTER_TOWN_ID = 'STARTER_TOWN'
-const WHISPERING_FOREST_ID = 'WHISPERING_FOREST'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -25,7 +24,6 @@ const world = computed(() => session.snapshot?.world)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
-const isWhisperingForest = computed(() => currentLocationId.value === WHISPERING_FOREST_ID)
 const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
 const locationName = computed(() => world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() =>
