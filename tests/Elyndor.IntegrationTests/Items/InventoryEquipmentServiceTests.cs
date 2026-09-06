@@ -19,6 +19,73 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task ItemLockMutationIsDurableReplaySafeAndPayloadBound()
+    {
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(currentHp: 100);
+        Guid itemId = await AddItemAsync(characterId, "WOLF_HIDE", 1);
+        Guid lockMutationId = Guid.CreateVersion7();
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult locked = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            true,
+            lockMutationId,
+            CancellationToken.None);
+        InventoryOperationResult exactReplay = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            true,
+            lockMutationId,
+            CancellationToken.None);
+        InventoryOperationResult mismatchedReplay = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            false,
+            lockMutationId,
+            CancellationToken.None);
+
+        Assert.True(locked.IsSuccess);
+        Assert.True(exactReplay.IsSuccess);
+        Assert.True(exactReplay.Snapshot!.Items.Single(item => item.Id == itemId).IsLocked);
+        Assert.False(mismatchedReplay.IsSuccess);
+        Assert.Equal(
+            InventoryErrorCodes.MutationConflict,
+            mismatchedReplay.ErrorCode);
+
+        InventoryOperationResult unlocked = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            false,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        Assert.True(unlocked.IsSuccess);
+        Assert.False(unlocked.Snapshot!.Items.Single(item => item.Id == itemId).IsLocked);
+
+        InventoryOperationResult oldReplay = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            true,
+            lockMutationId,
+            CancellationToken.None);
+        Assert.True(oldReplay.IsSuccess);
+        Assert.False(oldReplay.Snapshot!.Items.Single(item => item.Id == itemId).IsLocked);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem persisted = await verify.CharacterItems
+            .AsNoTracking()
+            .SingleAsync(item => item.Id == itemId);
+        Assert.False(persisted.IsLocked);
+        Assert.Equal(
+            2,
+            await verify.CharacterMutations.CountAsync(
+                mutation => mutation.CharacterId == characterId));
+    }
+
+    [Fact]
     public async Task SameConsumableMutationIsAppliedOnlyOnce()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(currentHp: 25);
