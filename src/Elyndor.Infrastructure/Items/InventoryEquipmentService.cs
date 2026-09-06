@@ -4,6 +4,7 @@ using System.Text;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
+using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
@@ -27,6 +28,7 @@ public static class InventoryErrorCodes
     public const string ArmorCategoryRestricted = "inventory_armor_category_restricted";
     public const string OffHandCategoryRestricted = "inventory_off_hand_category_restricted";
     public const string TwoHandedConflict = "inventory_two_handed_conflict";
+    public const string DualWieldPermissionRequired = "inventory_dual_wield_permission_required";
     public const string InvalidMutationId = "inventory_mutation_id_invalid";
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
@@ -122,11 +124,19 @@ public sealed class InventoryEquipmentService(
         Guid characterItemId,
         Guid mutationId,
         CancellationToken cancellationToken) =>
+        EquipAsync(accountId, characterItemId, null, mutationId, cancellationToken);
+
+    public Task<InventoryOperationResult> EquipAsync(
+        Guid accountId,
+        Guid characterItemId,
+        EquipmentSlot? targetSlot,
+        Guid mutationId,
+        CancellationToken cancellationToken) =>
         ExecuteMutationAsync(
             accountId,
             mutationId,
             EquipOperation,
-            Fingerprint(EquipOperation, characterItemId.ToString("N")),
+            EquipFingerprint(characterItemId, targetSlot),
             async character =>
             {
                 CharacterItem? item = await dbContext.CharacterItems
@@ -185,13 +195,63 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.OffHandCategoryRestricted);
                 }
 
-                EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
+                EquipmentSlot definitionSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
+                EquipmentSlot canonicalSlot = targetSlot.HasValue
+                    ? CanonicalizeEquipmentSlot(targetSlot.Value)
+                    : definitionSlot;
+
+                bool isOffHandOneHandWeapon = canonicalSlot == EquipmentSlot.OffHand
+                    && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory);
+                if (canonicalSlot != definitionSlot
+                    && !(definitionSlot == EquipmentSlot.MainHand && isOffHandOneHandWeapon))
+                {
+                    return InventoryOperationResult.Failure(
+                        canonicalSlot == EquipmentSlot.OffHand
+                            && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory)
+                            ? InventoryErrorCodes.TwoHandedConflict
+                            : InventoryErrorCodes.InvalidSlot);
+                }
+
+                if (canonicalSlot == EquipmentSlot.OffHand && definition.WeaponCategory is not null)
+                {
+                    if (EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory))
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.TwoHandedConflict);
+                    }
+
+                    if (!EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory))
+                    {
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSlot);
+                    }
+
+                    if (!await HasEquipmentPermissionAsync(
+                            character.Id,
+                            character.ClassId,
+                            EquipmentPermissionIds.DualWieldOneHandWeapon,
+                            cancellationToken))
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.DualWieldPermissionRequired);
+                    }
+                }
+
                 if (canonicalSlot == EquipmentSlot.OffHand
                     && await HasTwoHandedMainHandAsync(character.Id, cancellationToken))
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.TwoHandedConflict);
                 }
+
+                CharacterEquipment? currentItemEquipment = await dbContext.CharacterEquipment
+                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
+                        && candidate.CharacterItemId == item.Id, cancellationToken);
+                if (currentItemEquipment is not null
+                    && CanonicalizeEquipmentSlot(currentItemEquipment.Slot) != canonicalSlot)
+                {
+                    dbContext.CharacterEquipment.Remove(currentItemEquipment);
+                }
+
                 EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
 
                 CharacterEquipment[] equippedAliases = await dbContext.CharacterEquipment
@@ -406,6 +466,27 @@ public sealed class InventoryEquipmentService(
         });
     }
 
+    private async Task<bool> HasEquipmentPermissionAsync(
+        Guid characterId,
+        string classId,
+        string permissionId,
+        CancellationToken cancellationToken)
+    {
+        CharacterTalentState? state = await dbContext.CharacterTalentStates
+            .AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.CharacterId == characterId, cancellationToken);
+        if (state is null) return false;
+
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        if (!content.Indexes.TalentTreesById.TryGetValue(state.TalentTreeId, out TalentTreeDefinition? tree)
+            || !string.Equals(tree.ClassId, classId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return TalentEquipmentPermissionResolver.HasPermission(tree, state, permissionId);
+    }
+
     private async Task<bool> HasTwoHandedMainHandAsync(
         Guid characterId,
         CancellationToken cancellationToken)
@@ -565,6 +646,14 @@ public sealed class InventoryEquipmentService(
 
     private ItemDefinition? FindItem(string definitionId) =>
         contentProvider.GetCurrent().Indexes.ItemsById.GetValueOrDefault(definitionId);
+
+    private static string EquipFingerprint(Guid characterItemId, EquipmentSlot? targetSlot) =>
+        targetSlot.HasValue
+            ? Fingerprint(
+                EquipOperation,
+                characterItemId.ToString("N"),
+                CanonicalizeEquipmentSlot(targetSlot.Value).ToString())
+            : Fingerprint(EquipOperation, characterItemId.ToString("N"));
 
     private static string Fingerprint(params string[] parts)
     {
