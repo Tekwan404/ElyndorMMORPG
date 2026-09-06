@@ -316,7 +316,6 @@ public sealed partial class CombatSession
             OnPlayerAbilitySucceeded(
                 ability,
                 execution,
-                primaryTargetActorId,
                 now);
             OnPyromancerAbilityResolved(
                 ability,
@@ -710,7 +709,6 @@ public sealed partial class CombatSession
             OnPlayerAbilitySucceeded(
                 cast.Ability,
                 completion,
-                primaryTargetActorId,
                 now);
             OnPyromancerAbilityResolved(
                 cast.Ability,
