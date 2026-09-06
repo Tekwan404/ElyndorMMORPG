@@ -5,6 +5,7 @@ using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Items;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Combat;
@@ -20,6 +21,200 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyId = Guid.Parse("30000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyTwoId = Guid.Parse("40000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
+
+    [Fact]
+    public void HealingConsumableRestoresHpAndStartsCategoryCooldown()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerHp: 100,
+            playerResource: 0);
+
+        CombatCommandResult result = session.Handle(
+            new UseConsumableCommand(
+                "heal-v2",
+                "SMALL_HEALING_POTION",
+                [new ResolvedConsumableAction(ConsumableActionType.RestoreHp, 50)],
+                "HEALING_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(150, result.Snapshot.Player.Hp);
+        Assert.Equal(
+            Now.AddSeconds(30),
+            result.Snapshot.Player.ConsumableCooldowns!["HEALING_POTION"]);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied
+            && item.DefinitionId == "SMALL_HEALING_POTION"
+            && item.Amount == 50);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.ConsumableUsed
+            && item.DefinitionId == "SMALL_HEALING_POTION");
+    }
+
+    [Fact]
+    public void ConsumableCooldownsAreSharedByCategoryButIndependentAcrossCategories()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerHp: 100,
+            playerResource: 0);
+
+        CombatCommandResult heal = session.Handle(
+            new UseConsumableCommand(
+                "heal-category",
+                "SMALL_HEALING_POTION",
+                [new ResolvedConsumableAction(ConsumableActionType.RestoreHp, 10)],
+                "HEALING_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now);
+        CombatCommandResult sameCategory = session.Handle(
+            new UseConsumableCommand(
+                "heal-category-two",
+                "LARGE_HEALING_POTION",
+                [new ResolvedConsumableAction(ConsumableActionType.RestoreHp, 10)],
+                "HEALING_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now.AddSeconds(1));
+        CombatCommandResult resource = session.Handle(
+            new UseConsumableCommand(
+                "rage-category",
+                "SMALL_RAGE_POTION",
+                [new ResolvedConsumableAction(
+                    ConsumableActionType.RestoreResource,
+                    30,
+                    ResourceType: "RAGE")],
+                "RESOURCE_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now.AddSeconds(1));
+
+        Assert.True(heal.Succeeded);
+        Assert.False(sameCategory.Succeeded);
+        Assert.Equal(CombatErrorCodes.ConsumableOnCooldown, sameCategory.ErrorCode);
+        Assert.True(resource.Succeeded);
+        Assert.Equal(30, resource.Snapshot.Player.Resource);
+        Assert.Equal(2, resource.Snapshot.Player.ConsumableCooldowns!.Count);
+    }
+
+    [Fact]
+    public void ResourceConsumableRejectsWrongCharacterResourceWithoutCooldown()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 0);
+
+        CombatCommandResult result = session.Handle(
+            new UseConsumableCommand(
+                "wrong-resource",
+                "SMALL_MANA_POTION",
+                [new ResolvedConsumableAction(
+                    ConsumableActionType.RestoreResource,
+                    80,
+                    ResourceType: "MANA")],
+                "RESOURCE_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(CombatErrorCodes.CommandRejected, result.ErrorCode);
+        Assert.Equal(0, result.Snapshot.Player.Resource);
+        Assert.Empty(result.Snapshot.Player.ConsumableCooldowns!);
+    }
+
+    [Fact]
+    public void ConsumableCanApplyAndCleanseEffectThroughSharedEffectPipeline()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000);
+        EffectDefinition poison = new(
+            "TEST_POISON",
+            EffectKind.Debuff,
+            TimeSpan.FromSeconds(20),
+            1,
+            EffectStackPolicy.Refresh,
+            1,
+            DispelCategory: "POISON");
+
+        CombatCommandResult applied = session.Handle(
+            new UseConsumableCommand(
+                "apply-poison-fixture",
+                "TEST_POISON_ITEM",
+                [new ResolvedConsumableAction(
+                    ConsumableActionType.ApplyEffect,
+                    Effect: poison)],
+                "TEST_APPLY",
+                TimeSpan.FromSeconds(1)),
+            Now);
+        CombatCommandResult cleansed = session.Handle(
+            new UseConsumableCommand(
+                "cleanse-poison",
+                "MINOR_ANTIDOTE",
+                [new ResolvedConsumableAction(
+                    ConsumableActionType.RemoveEffect,
+                    DispelCategory: "POISON")],
+                "UTILITY_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now);
+
+        Assert.True(applied.Succeeded);
+        Assert.Contains(applied.Snapshot.Player.Effects, effect =>
+            effect.Id == "TEST_POISON");
+        Assert.True(cleansed.Succeeded);
+        Assert.DoesNotContain(cleansed.Snapshot.Player.Effects, effect =>
+            effect.Id == "TEST_POISON");
+        Assert.Contains(cleansed.Events, item =>
+            item.Type == CombatEventType.EffectRemoved
+            && item.DefinitionId == "TEST_POISON");
+    }
+
+    [Fact]
+    public void CleanseWithNoMatchingEffectIsNotNeededAndDoesNotStartCooldown()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000);
+
+        CombatCommandResult result = session.Handle(
+            new UseConsumableCommand(
+                "empty-cleanse",
+                "MINOR_ANTIDOTE",
+                [new ResolvedConsumableAction(
+                    ConsumableActionType.RemoveEffect,
+                    DispelCategory: "POISON")],
+                "UTILITY_POTION",
+                TimeSpan.FromSeconds(30)),
+            Now);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(CombatErrorCodes.ConsumableNotNeeded, result.ErrorCode);
+        Assert.Empty(result.Snapshot.Player.ConsumableCooldowns!);
+    }
+
+    [Fact]
+    public void MixedConsumableSucceedsWhenAnyActionChangesState()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerHp: 200,
+            playerResource: 0);
+
+        CombatCommandResult result = session.Handle(
+            new UseConsumableCommand(
+                "mixed-consumable",
+                "MIXED_POTION",
+                [
+                    new ResolvedConsumableAction(ConsumableActionType.RestoreHp, 25),
+                    new ResolvedConsumableAction(
+                        ConsumableActionType.RestoreResource,
+                        20,
+                        ResourceType: "RAGE")
+                ],
+                "MIXED_POTION",
+                TimeSpan.FromSeconds(20)),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(200, result.Snapshot.Player.Hp);
+        Assert.Equal(20, result.Snapshot.Player.Resource);
+    }
 
     [Fact]
     public void SnapshotKeepsPinnedContentIdentity()
@@ -997,7 +1192,13 @@ public sealed class CombatSessionTests
             CriticalDamage: 1, Armor: 5, MagicResistance: 5,
             ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 8, SpellPower: 0);
         CombatParticipantDefinition player = new(
-            new CombatActorState(PlayerId, 200, 200, 100, 0, playerStats),
+            new CombatActorState(
+                PlayerId,
+                200,
+                playerHp,
+                100,
+                playerResource,
+                playerStats),
             CombatActorKind.Player,
             "WARRIOR",
             "Warrior",
@@ -1065,7 +1266,9 @@ public sealed class CombatSessionTests
         string contentVersion = "UNVERSIONED",
         string balanceVersion = "UNVERSIONED",
         AutoAttackProfile? mainHandAutoAttack = null,
-        AutoAttackProfile? offHandAutoAttack = null)
+        AutoAttackProfile? offHandAutoAttack = null,
+        decimal playerHp = 200,
+        decimal playerResource = 0)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
