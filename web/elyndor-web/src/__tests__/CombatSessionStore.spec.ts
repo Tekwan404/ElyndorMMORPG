@@ -122,6 +122,61 @@ describe('combatSession realtime authentication', () => {
     expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
   })
 
+  it('sends target selection with a replay-safe command id', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const sessionId = '00000000-0000-0000-0000-000000000111'
+    const playerId = '00000000-0000-0000-0000-000000000211'
+    const firstEnemyId = '00000000-0000-0000-0000-000000000311'
+    const secondEnemyId = '00000000-0000-0000-0000-000000000312'
+    signalRMock.invoke.mockResolvedValue({
+      succeeded: true,
+      errorCode: null,
+      snapshot: {
+        sessionId,
+        status: 'Active',
+        sequence: 2,
+        serverTimeUtc: '2026-09-06T16:00:00Z',
+        contentVersion: '0.10.1',
+        balanceVersion: '0.8.0',
+        player: { actorId: playerId, autoAttackEnabled: true },
+        enemy: { actorId: secondEnemyId, definitionId: 'WOLF_ALPHA' },
+        enemies: [
+          { actorId: firstEnemyId, definitionId: 'WOLF' },
+          { actorId: secondEnemyId, definitionId: 'WOLF_ALPHA' },
+        ],
+        selectedTargetActorId: secondEnemyId,
+      },
+      events: [],
+      reward: null,
+    })
+
+    const store = useCombatSessionStore()
+    await store.connect()
+    store.snapshot = {
+      sessionId,
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-06T15:59:59Z',
+      contentVersion: '0.10.1',
+      balanceVersion: '0.8.0',
+      player: { actorId: playerId, autoAttackEnabled: true },
+      enemy: { actorId: firstEnemyId, definitionId: 'WOLF' },
+      enemies: [
+        { actorId: firstEnemyId, definitionId: 'WOLF' },
+        { actorId: secondEnemyId, definitionId: 'WOLF_ALPHA' },
+      ],
+      selectedTargetActorId: firstEnemyId,
+    } as never
+
+    await store.selectTarget(secondEnemyId)
+
+    const call = signalRMock.invoke.mock.calls.find(([method]) => method === 'SelectTarget')
+    expect(call?.[1]).toBe(sessionId)
+    expect(call?.[2]).toBe(secondEnemyId)
+    expect(typeof call?.[3]).toBe('string')
+    expect(call?.[3]).toHaveLength(36)
+  })
+
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     signalRMock.startError = new Error('Failed to complete negotiation with the server')
