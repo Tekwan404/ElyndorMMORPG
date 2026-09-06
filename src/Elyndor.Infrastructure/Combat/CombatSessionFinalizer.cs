@@ -49,12 +49,17 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             return null;
 
         // Training is a sandbox over the real combat runtime. It must never mutate durable
-        // vitals, location, progression, currency or loot state.
-        if (string.Equals(
-                snapshot.Enemy.DefinitionId,
+        // vitals, location, progression, currency or loot state. Check the authoritative enemy
+        // collection instead of the compatibility-selected Enemy projection.
+        IEnumerable<CombatActorSnapshot> enemies =
+            snapshot.Enemies ?? [snapshot.Enemy];
+        if (enemies.Any(enemy => string.Equals(
+                enemy.DefinitionId,
                 CombatSessionFactory.TrainingDummyId,
-                StringComparison.Ordinal))
+                StringComparison.Ordinal)))
+        {
             return null;
+        }
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
