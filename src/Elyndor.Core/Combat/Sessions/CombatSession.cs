@@ -71,8 +71,8 @@ public sealed partial class CombatSession
         CurrentTimeUtc = startedAtUtc;
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
         Status = CombatSessionStatus.Active;
-        _playerAutoAttackEnabled = true;
-        _nextPlayerAutoAttackAtUtc = startedAtUtc;
+        _playerAutoAttackEnabled = player.CanAutoAttack;
+        _nextPlayerAutoAttackAtUtc = player.CanAutoAttack ? startedAtUtc : null;
         _nextEnemyActionAtUtc = startedAtUtc + enemy.AutoAttack.Interval;
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
@@ -262,6 +262,11 @@ public sealed partial class CombatSession
 
     private CombatCommandResult StartAutoAttack(DateTimeOffset now, long before)
     {
+        if (!_player.CanAutoAttack)
+        {
+            return Result(false, CombatErrorCodes.AutoAttackUnavailable, before);
+        }
+
         if (!_playerAutoAttackEnabled)
         {
             _playerAutoAttackEnabled = true;
