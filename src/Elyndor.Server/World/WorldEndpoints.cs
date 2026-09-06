@@ -256,7 +256,12 @@ public static class WorldEndpoints
             location.Id,
             location.DisplayName,
             location.DangerLevel,
-            location.RecommendedLevel);
+            location.RecommendedLevel,
+            location.MinimumLevel,
+            location.MaximumLevel,
+            location.RequiredContractId,
+            location.ArtId,
+            location.Description);
 
     private static bool TryGetAccountId(
         ClaimsPrincipal user,
