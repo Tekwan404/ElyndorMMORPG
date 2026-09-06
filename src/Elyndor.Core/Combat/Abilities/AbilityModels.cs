@@ -78,11 +78,20 @@ public sealed record AbilityActionDefinition(
     decimal ArmorPenetrationBonus = 0,
     decimal SpellPowerCoefficient = 0);
 
+public sealed record AbilityTargetModifier(
+    decimal DamageMultiplier = 1,
+    decimal AccuracyBonus = 0,
+    decimal CriticalChanceBonus = 0,
+    decimal CriticalDamageBonus = 0,
+    decimal ArmorPenetrationBonus = 0,
+    decimal MagicPenetrationBonus = 0);
+
 public sealed record AbilityIntent(
     string CommandId,
     string AbilityId,
     Guid TargetId,
-    IReadOnlyList<Guid>? TargetIds = null);
+    IReadOnlyList<Guid>? TargetIds = null,
+    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
 
 public sealed record ActiveCast(
     Guid CastId,
@@ -90,7 +99,8 @@ public sealed record ActiveCast(
     Guid TargetId,
     DateTimeOffset StartedAtUtc,
     DateTimeOffset ResolvesAtUtc,
-    IReadOnlyList<Guid>? TargetIds = null);
+    IReadOnlyList<Guid>? TargetIds = null,
+    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
 
 public sealed record AbilityExecutionResult(
     bool Succeeded,
