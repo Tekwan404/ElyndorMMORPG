@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.0",
-  "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-06T08:50:00+00:00",
+  "contentVersion": "0.10.2",
+  "balanceVersion": "0.8.1",
+  "publishedAtUtc": "2026-09-06T18:35:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -292,10 +292,16 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Мгновенно восстанавливает 50 здоровья. В бою все лечебные зелья имеют общий кулдаун 30 секунд.",
-      "version": 1,
-      "healAmount": 50,
+      "description": "Мгновенно восстанавливает 50 здоровья. Все лечебные зелья этого ранга делят общий кулдаун.",
+      "version": 2,
       "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 50
+        }
+      ],
       "buyPriceGold": 20
     },
     {
@@ -651,6 +657,144 @@
       "armorFlat": 4,
       "description": "Простая тканевая мантия ученика мага.",
       "version": 1,
+      "buyPriceGold": 30
+    },
+    {
+      "id": "SMALL_MANA_POTION",
+      "name": "Малое зелье маны",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 80 маны. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 80,
+          "resourceType": "MANA"
+        }
+      ],
+      "buyPriceGold": 24
+    },
+    {
+      "id": "SMALL_FOCUS_POTION",
+      "name": "Малое зелье концентрации",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 35 Focus. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 35,
+          "resourceType": "FOCUS"
+        }
+      ],
+      "buyPriceGold": 24
+    },
+    {
+      "id": "SMALL_RAGE_POTION",
+      "name": "Малое зелье ярости",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 30 Rage. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 30,
+          "resourceType": "RAGE"
+        }
+      ],
+      "buyPriceGold": 24
+    },
+    {
+      "id": "MINOR_BATTLE_TONIC",
+      "name": "Малый боевой тоник",
+      "type": "Consumable",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 10,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Накладывает боевой тоник на 15 секунд, повышая Attack Power на 10%.",
+      "version": 1,
+      "consumableCooldownSeconds": 60,
+      "consumableCooldownCategoryId": "UTILITY_POTION",
+      "consumableActions": [
+        {
+          "type": "ApplyEffect",
+          "effectId": "MINOR_BATTLE_TONIC_BUFF"
+        }
+      ],
+      "buyPriceGold": 45
+    },
+    {
+      "id": "MINOR_ANTIDOTE",
+      "name": "Малое противоядие",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 10,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Снимает все активные эффекты категории POISON.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "UTILITY_POTION",
+      "consumableActions": [
+        {
+          "type": "RemoveEffect",
+          "dispelCategory": "POISON"
+        }
+      ],
       "buyPriceGold": 30
     }
   ]
