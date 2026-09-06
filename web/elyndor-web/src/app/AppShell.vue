@@ -6,13 +6,14 @@ import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'location' | 'hero'
+type ShellView = 'world' | 'location' | 'hero'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -38,13 +39,13 @@ const sessionErrorMessage = computed(() => {
 })
 
 const navigation: readonly {
-  id: ShellView | 'world' | 'quests' | 'menu'
+  id: ShellView | 'quests' | 'menu'
   label: string
   icon: string
   enabled: boolean
   primary?: boolean
 }[] = [
-  { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: false },
+  { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
   { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
   { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
@@ -52,7 +53,7 @@ const navigation: readonly {
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'location' || item.id === 'hero')) {
+  if (item.enabled && (item.id === 'world' || item.id === 'location' || item.id === 'hero')) {
     activeView.value = item.id
   }
 }
@@ -119,6 +120,10 @@ onMounted(() => {
         <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
+      <WorldMapView
+        v-else-if="session.state === 'world' && activeView === 'world'"
+        @open-location="activeView = 'location'"
+      />
       <WorldView v-else-if="session.state === 'world' && activeView === 'location'" />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
     </main>
