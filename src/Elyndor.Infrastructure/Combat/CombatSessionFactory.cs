@@ -116,7 +116,6 @@ public sealed class CombatSessionFactory(
                 $"Class {classProfile.Id} has no combat auto attack profile.");
         ResourceProfile resourceProfile = derived.EffectiveResourceProfile;
 
-        EquipmentModifierSummary equipment = derived.Equipment;
         decimal attackSpeedMultiplier = Math.Max(0.1m, derived.Stats.AttackSpeed);
         InventoryItemSnapshot? mainHandItem = GetEquippedItem(
             derived.Inventory,
