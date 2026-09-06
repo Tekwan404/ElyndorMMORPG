@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import type { EquipmentSlot } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
@@ -11,16 +12,28 @@ type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
+const requestedSlot = ref<EquipmentSlot | null>(null)
 const hasTalentTree = computed(() => ['WARRIOR', 'MAGE'].includes(session.snapshot?.character?.classId ?? ''))
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
-  { id: 'stats', label: 'Статы', available: true },
+  { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
 
 function isAvailable(tab: (typeof tabs)[number]): boolean {
   return tab.available === true || (tab.available === 'talents' && hasTalentTree.value)
+}
+
+function selectTab(tab: (typeof tabs)[number]): void {
+  if (!isAvailable(tab)) return
+  activeTab.value = tab.id
+  if (tab.id === 'inventory') requestedSlot.value = null
+}
+
+function openSlotInventory(slot: EquipmentSlot): void {
+  requestedSlot.value = slot
+  activeTab.value = 'inventory'
 }
 </script>
 
@@ -35,14 +48,14 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
         :disabled="!isAvailable(tab)"
         :class="{ active: activeTab === tab.id }"
         :aria-current="activeTab === tab.id ? 'page' : undefined"
-        @click="activeTab = tab.id"
+        @click="selectTab(tab)"
       >
         {{ tab.label }}
       </button>
     </nav>
-    <CharacterOverviewView v-if="activeTab === 'character'" />
+    <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
-    <InventoryView v-else-if="activeTab === 'inventory'" />
+    <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
     <CharacterStatsView v-else />
   </section>
 </template>
