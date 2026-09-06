@@ -47,18 +47,16 @@ const selectedIsReachable = computed(
     ? reachableLocationIds.value.has(selectedLocation.value.id)
     : false,
 )
-const mapArt = computed(() => {
-  const danger = world.value?.currentLocation.dangerLevel
-  if (danger === 'SAFE') return gameArt.world.capital
-  if (danger === 'DANGEROUS') return gameArt.world.ruins
+function locationArt(location: WorldLocation | null | undefined): string {
+  if (!location) return gameArt.world.forest
+  if (location.id === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (location.id === 'DEEP_FOREST') return gameArt.world.deepForest
+  if (location.dangerLevel === 'DANGEROUS') return gameArt.world.ancientRuins
   return gameArt.world.forest
-})
-const selectedArt = computed(() => {
-  const danger = selectedLocation.value?.dangerLevel
-  if (danger === 'SAFE') return gameArt.world.capital
-  if (danger === 'DANGEROUS') return gameArt.world.ruins
-  return gameArt.world.forest
-})
+}
+
+const mapArt = computed(() => locationArt(world.value?.currentLocation))
+const selectedArt = computed(() => locationArt(selectedLocation.value))
 const selectedDangerLabel = computed(() => {
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return 'Безопасная зона'
@@ -115,6 +113,7 @@ async function travel(): Promise<void> {
 function locationName(location: WorldLocation): string {
   if (location.id === 'STARTER_TOWN') return 'Стартовый город'
   if (location.id === 'WHISPERING_FOREST') return 'Шепчущий лес'
+  if (location.id === 'DEEP_FOREST') return 'Глубокий лес'
   return location.displayName
 }
 
