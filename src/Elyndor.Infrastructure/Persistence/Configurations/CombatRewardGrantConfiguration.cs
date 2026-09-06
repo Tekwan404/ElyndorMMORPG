@@ -19,12 +19,22 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
                 table.HasCheckConstraint(
                     "ck_combat_reward_grants_gold_non_negative",
                     "\"GoldEarned\" >= 0");
+                table.HasCheckConstraint(
+                    "ck_combat_reward_grants_sources_json",
+                    "jsonb_typeof(\"RewardSourcesJson\") = 'array'");
             });
         builder.HasKey(grant => grant.CombatSessionId).HasName("pk_combat_reward_grants");
-        builder.Property(grant => grant.MonsterId).HasMaxLength(64).IsRequired();
+        builder.Property(grant => grant.PrimaryMonsterId)
+            .HasColumnName("MonsterId")
+            .HasMaxLength(64)
+            .IsRequired();
         builder.Property(grant => grant.XpEarned).IsRequired();
         builder.Property(grant => grant.GoldEarned).HasDefaultValue(0).IsRequired();
         builder.Property(grant => grant.GrantedAtUtc).IsRequired();
+        builder.Property(grant => grant.RewardSourcesJson)
+            .HasColumnType("jsonb")
+            .HasDefaultValueSql("'[]'::jsonb")
+            .IsRequired();
 
         builder.HasOne<Character>()
             .WithMany()

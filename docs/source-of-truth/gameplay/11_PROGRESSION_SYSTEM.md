@@ -115,6 +115,20 @@ GrantId должен быть уникальным.
 
 Повторная обработка одного GrantId не должна повторно начислять Experience.
 
+### 6.1 Multi-enemy Combat XP
+
+Для обычного CombatSession с несколькими defeated enemies reward orchestration сначала валидирует полный authoritative enemy source set, затем вычисляет:
+
+```text
+CombatXp = Sum(DefeatedEnemy.XpReward)
+```
+
+После этого Progression System получает один idempotent ExperienceGrant для CombatSession completion.
+
+Нельзя выполнять независимый permanent XP commit после смерти каждого отдельного enemy, потому что частично завершённый encounter не является Victory и retry не должен создавать частично продублированную progression state.
+
+Один aggregate ExperienceGrant может вызвать несколько Level Up по обычным правилам Progression.
+
 7. Idempotency
 
 Experience Grant является idempotent operation.

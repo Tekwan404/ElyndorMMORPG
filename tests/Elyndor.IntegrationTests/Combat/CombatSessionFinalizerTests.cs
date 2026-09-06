@@ -110,6 +110,59 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
     }
 
     [Fact]
+    public async Task TrainingEnemyAnywhereInCollectionSkipsDurableFinalization()
+    {
+        ServiceCollection services = new();
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        CombatSessionFinalizer finalizer = new(
+            provider.GetRequiredService<IServiceScopeFactory>());
+
+        CombatActorSnapshot player = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Arthas",
+            hp: 100,
+            maxHp: 100,
+            resource: 0,
+            maxResource: 100);
+        CombatActorSnapshot wolf = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Monster,
+            "WOLF",
+            "Wolf",
+            hp: 100,
+            maxHp: 100,
+            resource: 0,
+            maxResource: 0);
+        CombatActorSnapshot training = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Monster,
+            CombatSessionFactory.TrainingDummyId,
+            "Training Dummy",
+            hp: 10_000,
+            maxHp: 10_000,
+            resource: 0,
+            maxResource: 0);
+        CombatSessionSnapshot snapshot = new(
+            Guid.CreateVersion7(),
+            1,
+            CombatSessionStatus.Cancelled,
+            Now,
+            player,
+            wolf,
+            Enemies: [wolf, training],
+            SelectedTargetActorId: wolf.ActorId);
+
+        CombatRewardApplicationResult? result = await finalizer.FinalizeAsync(
+            Guid.CreateVersion7(),
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
     public async Task DefeatedLevel60MageRespawnsWithScaledMana()
     {
         Guid accountId = Guid.CreateVersion7();

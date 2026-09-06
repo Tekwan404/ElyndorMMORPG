@@ -1,8 +1,10 @@
+using System.Text.Json;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
@@ -63,6 +65,124 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
+    public async Task MultiEnemyVictoryAggregatesEveryDefeatedEnemyOnce()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        Guid sessionId = Guid.CreateVersion7();
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            MultiEnemyVictorySnapshot(sessionId),
+            CancellationToken.None);
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        CombatRewardGrant grant = await context.CombatRewardGrants
+            .AsNoTracking()
+            .SingleAsync();
+        CombatRewardSourceAudit[] sources =
+            JsonSerializer.Deserialize<CombatRewardSourceAudit[]>(
+                grant.RewardSourcesJson)
+            ?? [];
+
+        Assert.True(result.Granted);
+        Assert.Equal(65, result.XpEarned);
+        Assert.Equal(9, result.GoldEarned);
+        Assert.Equal(65, character.Experience);
+        Assert.Equal(9, character.Gold);
+        Assert.Contains(result.Items, item => item.ItemId == "WOLF_HIDE");
+        Assert.Contains(result.Items, item => item.ItemId == "BOAR_HIDE");
+        Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
+        Assert.Contains(result.Items, item => item.ItemId == "BOAR_TUSK");
+        Assert.Equal(2, sources.Length);
+        Assert.Equal(["WOLF", "FOREST_BOAR"], sources.Select(source => source.MonsterId));
+        Assert.Equal([0, 1], sources.Select(source => source.EncounterOrder));
+        Assert.Equal([35, 30], sources.Select(source => source.XpEarned));
+        Assert.Equal([5, 4], sources.Select(source => source.GoldEarned));
+        Assert.All(sources, source => Assert.NotEmpty(source.Items));
+    }
+
+    [Fact]
+    public async Task MultiEnemyVictoryReplayDoesNotDuplicateAnySourceReward()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        Guid sessionId = Guid.CreateVersion7();
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(sessionId);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
+            characterId,
+            snapshot,
+            CancellationToken.None);
+        CombatRewardApplicationResult replay = await service.ApplyVictoryAsync(
+            characterId,
+            snapshot,
+            CancellationToken.None);
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.True(first.Granted);
+        Assert.False(replay.Granted);
+        Assert.Equal(first.XpEarned, replay.XpEarned);
+        Assert.Equal(first.GoldEarned, replay.GoldEarned);
+        Assert.Equal(65, character.Experience);
+        Assert.Equal(9, character.Gold);
+        Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
+
+        int persistedLootQuantity = await context.CharacterItems
+            .AsNoTracking()
+            .SumAsync(item => item.Quantity);
+        Assert.Equal(first.Items.Sum(item => item.Quantity), persistedLootQuantity);
+    }
+
+    [Fact]
+    public async Task VictoryRewardRejectsDuplicateEnemyActorIdsBeforeMutation()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(Guid.CreateVersion7());
+        CombatActorSnapshot duplicate = snapshot.Enemies![0];
+        snapshot = snapshot with { Enemies = [duplicate, duplicate] };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None));
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.Equal(0, character.Experience);
+        Assert.Equal(0, character.Gold);
+        Assert.Equal(0, await context.CombatRewardGrants.CountAsync());
+        Assert.Equal(0, await context.CharacterItems.CountAsync());
+    }
+
+    [Fact]
+    public async Task VictoryRewardRejectsLivingEnemyBeforeMutation()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(Guid.CreateVersion7());
+        CombatActorSnapshot living = snapshot.Enemies![1] with { Hp = 1 };
+        snapshot = snapshot with { Enemies = [snapshot.Enemies[0], living] };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None));
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.Equal(0, character.Experience);
+        Assert.Equal(0, character.Gold);
+        Assert.Equal(0, await context.CombatRewardGrants.CountAsync());
+        Assert.Equal(0, await context.CharacterItems.CountAsync());
+    }
+
+    [Fact]
     public async Task WarriorPersonalLootCanContainOffClassEquipment()
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100);
@@ -85,7 +205,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100);
         Guid sessionId = Guid.CreateVersion7();
-        CombatSessionSnapshot snapshot = VictorySnapshot(sessionId);
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(sessionId);
 
         await using GameDbContext firstContext = postgres.CreateDbContext();
         await using GameDbContext secondContext = postgres.CreateDbContext();
@@ -159,6 +279,34 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             timeProvider);
     }
 
+    private static CombatSessionSnapshot MultiEnemyVictorySnapshot(Guid sessionId)
+    {
+        CombatActorSnapshot player = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Arthas");
+        CombatActorSnapshot wolf = Actor(
+            Guid.Parse("71000000-0000-0000-0000-000000000001"),
+            CombatActorKind.Monster,
+            "WOLF",
+            "Wolf");
+        CombatActorSnapshot boar = Actor(
+            Guid.Parse("72000000-0000-0000-0000-000000000001"),
+            CombatActorKind.Monster,
+            "FOREST_BOAR",
+            "Forest Boar");
+        return new CombatSessionSnapshot(
+            sessionId,
+            10,
+            CombatSessionStatus.Victory,
+            Now,
+            player,
+            wolf,
+            Enemies: [wolf, boar],
+            SelectedTargetActorId: wolf.ActorId);
+    }
+
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)
     {
         CombatActorSnapshot player = Actor(Guid.CreateVersion7(), CombatActorKind.Player, "WARRIOR", "Arthas");
@@ -176,7 +324,8 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
     private sealed class FixedRandomFactory : IGameRandomFactory
     {
-        public IGameRandom Create() => new SequenceGameRandom(0, 0, 0, 0, 0, 0);
+        public IGameRandom Create() =>
+            new SequenceGameRandom(Enumerable.Repeat(0m, 64).ToArray());
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

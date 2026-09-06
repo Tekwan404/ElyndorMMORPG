@@ -461,6 +461,27 @@ Stun блокирует и abilities, и fallback Auto Attack конкретно
 
 Для текущего one-player PvE runtime monster offensive target set сервером разрешается к player ActorId; SELF abilities разрешаются к самому monster. Threat-based multi-player target selection остаётся владельцем будущего Threat/Party slice.
 
+### Multi-enemy Rewards
+
+Terminal `Victory` является единственной completion boundary для permanent normal-combat rewards.
+
+Authoritative reward source set берётся из `CombatSessionSnapshot.Enemies` в стабильном encounter order. Compatibility projection `Snapshot.Enemy` используется только как fallback для legacy single-enemy snapshots.
+
+Для Victory:
+
+- каждый reward enemy обязан быть Monster и иметь `HP = 0`;
+- duplicate enemy ActorId запрещён;
+- каждый enemy DefinitionId обязан существовать в pinned content snapshot;
+- XP каждого enemy суммируется и передаётся в один progression grant/level-up resolution;
+- gold и loot рассчитываются для каждого defeated enemy отдельно;
+- одинаковые item rewards агрегируются перед permanent item grant;
+- весь XP + gold + loot + reward-source audit сохраняется в одной transaction boundary;
+- `CombatSessionId` является session-level idempotency key: повторный/concurrent finalize не выполняет повторные rolls и не выдаёт награду второй раз.
+
+Persisted `CombatRewardGrant.RewardSourcesJson` хранит audit каждого defeated enemy: ActorId, MonsterId, XP, gold, encounter order и rolled loot.
+
+Training sandbox не создаёт permanent rewards и проверяется по всей enemy collection.
+
 
 Новый противник может присоединиться к уже происходящему бою.
 
