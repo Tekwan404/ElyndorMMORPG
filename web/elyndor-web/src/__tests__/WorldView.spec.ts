@@ -46,7 +46,7 @@ describe('WorldView', () => {
     expect(wrapper.findAll('[data-town-service]')).toHaveLength(3)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
-    expect(wrapper.get('.location-routes [data-travel="WHISPERING_FOREST"]').exists()).toBe(true)
+    expect(wrapper.find('.location-routes [data-travel="WHISPERING_FOREST"]').exists()).toBe(true)
   })
 
   it('renders explore as a dedicated location activity outside the artwork', async () => {
@@ -60,7 +60,7 @@ describe('WorldView', () => {
     await flushPromises()
 
     expect(wrapper.find('.scene [data-explore]').exists()).toBe(false)
-    expect(wrapper.get('.location-activities [data-explore]').exists()).toBe(true)
+    expect(wrapper.find('.location-activities [data-explore]').exists()).toBe(true)
   })
 
   it('disables travel while a mutation is pending and shows server errors', async () => {
