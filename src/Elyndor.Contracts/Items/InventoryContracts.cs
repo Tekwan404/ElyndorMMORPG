@@ -19,6 +19,13 @@ public sealed record ItemStatsResponse(
     decimal AttackSpeed,
     decimal MaxResource);
 
+public sealed record ConsumableActionResponse(
+    string Type,
+    decimal Amount,
+    string? ResourceType,
+    string? EffectId,
+    string? DispelCategory);
+
 public sealed record InventoryItemResponse(
     Guid Id,
     string DefinitionId,
@@ -38,7 +45,8 @@ public sealed record InventoryItemResponse(
     decimal? WeaponBaseAttackIntervalSeconds,
     decimal AttackSpeedPercent,
     decimal DodgePercent,
-    decimal HealAmount,
+    IReadOnlyList<ConsumableActionResponse> ConsumableActions,
+    string? ConsumableCooldownCategoryId,
     decimal ConsumableCooldownSeconds,
     int BuyPriceGold,
     int SellPriceGold,
@@ -89,7 +97,9 @@ public sealed record MerchantItemResponse(
     string Description,
     int BuyPriceGold,
     int SellPriceGold,
-    decimal HealAmount);
+    IReadOnlyList<ConsumableActionResponse> ConsumableActions,
+    string? ConsumableCooldownCategoryId,
+    decimal ConsumableCooldownSeconds);
 
 public sealed record MerchantResponse(
     string Id,

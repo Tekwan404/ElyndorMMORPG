@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 
@@ -176,9 +177,10 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             </div>
 
             <p>{{ selectedOffer.description }}</p>
-            <div v-if="selectedOffer.healAmount" class="merchant-detail__effect">
+            <div v-if="selectedOffer.type === 'Consumable' && selectedOffer.consumableActions.length" class="merchant-detail__effect">
               <span>Эффект</span>
-              <strong>+{{ selectedOffer.healAmount }} здоровья</strong>
+              <strong>{{ selectedOffer.consumableActions.map(consumableActionLabel).join(' · ') }}</strong>
+              <small v-if="selectedOffer.consumableCooldownSeconds">Кулдаун категории: {{ selectedOffer.consumableCooldownSeconds }} сек.</small>
             </div>
 
             <footer class="merchant-detail__purchase">

@@ -105,8 +105,9 @@ describe('AdminEntityForm', () => {
           maxStack: 99,
           slot: null,
           stats: { strength: 0, agility: 0, intellect: 0, stamina: 0 },
-          healAmount: 0,
           consumableCooldownSeconds: 0,
+          consumableCooldownCategoryId: null,
+          consumableActions: [],
         },
       },
     })
@@ -119,6 +120,50 @@ describe('AdminEntityForm', () => {
     expect(next.stackable).toBe(false)
     expect(next.maxStack).toBe(1)
     expect(next.slot).toBe('Amulet')
+  })
+
+  it('edits consumables with typed actions and relations', async () => {
+    const wrapper = mount(AdminEntityForm, {
+      props: {
+        sectionKey: 'items',
+        entity: {
+          id: 'TEST_POTION',
+          type: 'Consumable',
+          stackable: true,
+          maxStack: 20,
+          slot: null,
+          stats: { strength: 0, agility: 0, intellect: 0, stamina: 0 },
+          consumableCooldownSeconds: 30,
+          consumableCooldownCategoryId: 'HEALING_POTION',
+          consumableActions: [{ type: 'RestoreHp', amount: 50 }],
+        },
+        resourceIds: ['RAGE', 'FOCUS', 'MANA'],
+        effectIds: ['MINOR_BATTLE_TONIC_BUFF'],
+      },
+    })
+
+    expect(wrapper.find('[data-testid="consumable-editor"]').exists()).toBe(true)
+    expect(wrapper.findAll('[data-testid="consumable-action"]')).toHaveLength(1)
+
+    await wrapper.get('[data-testid="consumable-action-type-0"]').setValue('RestoreResource')
+    let emitted = wrapper.emitted('update:entity') ?? []
+    let next = emitted[emitted.length - 1]?.[0] as {
+      consumableActions: Array<Record<string, unknown>>
+    }
+    expect(next.consumableActions[0]).toEqual({
+      type: 'RestoreResource',
+      amount: 50,
+      resourceType: 'RAGE',
+    })
+
+    await wrapper.setProps({ entity: next as Record<string, unknown> })
+    await wrapper.get('[data-testid="add-consumable-action"]').trigger('click')
+    emitted = wrapper.emitted('update:entity') ?? []
+    next = emitted[emitted.length - 1]?.[0] as {
+      consumableActions: Array<Record<string, unknown>>
+    }
+    expect(next.consumableActions).toHaveLength(2)
+    expect(next.consumableActions[1]).toEqual({ type: 'RestoreHp', amount: 50 })
   })
 
   it('normalizes equipment category shape when slot changes', async () => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 
-import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapshot } from '@/api/contracts'
+import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapshot, InventoryItem } from '@/api/contracts'
 import { abilityArtUrl } from '@/assets/abilityArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
@@ -57,10 +57,13 @@ const abilityById = computed(() => new Map<string, CombatAbility>(
     ...(snapshot.value?.enemy.abilities ?? []),
   ].map((ability) => [ability.id, ability]),
 ))
-const healingPotion = computed(() =>
-  session.snapshot?.character?.inventory.items.find(
-    (item) => item.definitionId === 'SMALL_HEALING_POTION',
-  ) ?? null,
+const combatConsumables = computed(() =>
+  (session.snapshot?.character?.inventory.items ?? [])
+    .filter((item) => item.type === 'Consumable' && item.quantity > 0)
+    .filter((item) => item.consumableActions.every((action) =>
+      action.type !== 'RestoreResource'
+      || action.resourceType === snapshot.value?.player.resourceType,
+    )),
 )
 const resourceName = computed(() =>
   snapshot.value?.player.resourceType === 'MANA'
@@ -188,7 +191,10 @@ function abilityName(id: string | null | undefined): string {
   if (id === 'AUTO_ATTACK') return 'Автоатака'
   if (id === 'DIRECT_DAMAGE_TAKEN') return 'Получение урона'
   if (id === 'COMBAT_REGEN') return 'Регенерация'
-  if (id === 'SMALL_HEALING_POTION') return 'Малое зелье лечения'
+  const inventoryItem = session.snapshot?.character?.inventory.items.find(
+    (item) => item.definitionId === id,
+  )
+  if (inventoryItem) return inventoryItem.name
   if (id === 'PYRO_BURN') return 'Горение'
   if (id === 'PYRO_COMET_AFTERSHOCK') return 'Кометный удар'
   return id.split('_').join(' ')
@@ -250,7 +256,7 @@ function eventText(event: CombatEvent, critical = false): string {
     case 'HealingApplied':
       return `Восстановлено ${Math.round(event.amount)} здоровья`
     case 'ConsumableUsed':
-      return `${definition} · +${Math.round(event.amount)} здоровья`
+      return `${definition} · расходник использован`
     case 'TauntApplied':
       return `Провокация · ${definition}`
     case 'ActorDied': {
@@ -285,9 +291,35 @@ async function selectCombatTarget(targetActorId: string): Promise<void> {
   await combat.selectTarget(targetActorId)
 }
 
-async function usePotion(): Promise<void> {
-  if (!healingPotion.value || !snapshot.value || isTraining.value) return
-  await combat.useConsumable(healingPotion.value.definitionId)
+function consumableCooldownRemaining(item: InventoryItem): number {
+  const category = item.consumableCooldownCategoryId
+  if (!category) return 0
+  const readyAt = snapshot.value?.player.consumableCooldowns?.[category]
+  return readyAt ? Math.max(0, Date.parse(readyAt) - now.value) : 0
+}
+
+function consumableCanAffect(item: InventoryItem): boolean {
+  const player = snapshot.value?.player
+  if (!player) return false
+  return item.consumableActions.some((action) => {
+    if (action.type === 'RestoreHp') return player.hp < player.maxHp
+    if (action.type === 'RestoreResource') {
+      return action.resourceType === player.resourceType && player.resource < player.maxResource
+    }
+    return true
+  })
+}
+
+function consumableGlyph(item: InventoryItem): string {
+  if (item.consumableActions.some((action) => action.type === 'RestoreHp')) return '✚'
+  if (item.consumableActions.some((action) => action.type === 'RestoreResource')) return '◈'
+  if (item.consumableActions.some((action) => action.type === 'RemoveEffect')) return '⊘'
+  return '✦'
+}
+
+async function useConsumable(item: InventoryItem): Promise<void> {
+  if (!snapshot.value || isTraining.value || combat.pending) return
+  await combat.useConsumable(item.definitionId)
   await session.refreshSnapshot()
 }
 
@@ -501,23 +533,32 @@ onUnmounted(() => window.clearInterval(timer))
           </button>
         </div>
 
-        <div class="utility-row" aria-label="Дополнительные боевые действия">
+        <div
+          v-if="!isTraining && combatConsumables.length"
+          class="consumable-row"
+          aria-label="Боевые расходники"
+        >
           <button
-            v-if="!isTraining"
+            v-for="item in combatConsumables"
+            :key="item.id"
             type="button"
             class="utility-action"
-            data-combat-potion
-            :disabled="combat.pending || !healingPotion || snapshot.player.hp >= snapshot.player.maxHp"
-            @click="usePotion"
+            :data-combat-consumable="item.definitionId"
+            :disabled="combat.pending || consumableCooldownRemaining(item) > 0 || !consumableCanAffect(item)"
+            @click="useConsumable(item)"
           >
-            <span>✚</span>
+            <span>{{ consumableGlyph(item) }}</span>
             <div>
-              <strong>Зелье</strong>
-              <small v-if="healingPotion">×{{ healingPotion.quantity }}</small>
-              <small v-else>Нет</small>
+              <strong>{{ item.name }}</strong>
+              <small v-if="consumableCooldownRemaining(item) > 0">
+                {{ (consumableCooldownRemaining(item) / 1000).toFixed(1) }}с
+              </small>
+              <small v-else>×{{ item.quantity }}</small>
             </div>
           </button>
+        </div>
 
+        <div class="utility-row" aria-label="Дополнительные боевые действия">
           <button
             type="button"
             class="utility-action"
@@ -1159,10 +1200,15 @@ onUnmounted(() => window.clearInterval(timer))
   font-weight: 800;
 }
 
+.consumable-row,
 .utility-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
+}
+
+.consumable-row {
+  margin-bottom: 5px;
 }
 
 .utility-action {

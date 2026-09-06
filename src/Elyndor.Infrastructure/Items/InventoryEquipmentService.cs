@@ -21,6 +21,7 @@ public static class InventoryErrorCodes
     public const string NotEquipment = "inventory_item_not_equipment";
     public const string NotConsumable = "inventory_item_not_consumable";
     public const string ConsumableNotNeeded = "inventory_consumable_not_needed";
+    public const string ConsumableUnavailable = "inventory_consumable_unavailable";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
     public const string ClassRestricted = "inventory_class_restricted";
@@ -332,6 +333,8 @@ public sealed class InventoryEquipmentService(
         Guid characterItemId,
         Guid mutationId,
         decimal maxHp,
+        string resourceType,
+        decimal maxResource,
         DateTimeOffset now,
         CancellationToken cancellationToken) =>
         ExecuteMutationAsync(
@@ -349,20 +352,77 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
 
                 ItemDefinition? definition = FindItem(item.ItemDefinitionId);
-                if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
-                    return InventoryOperationResult.Failure(InventoryErrorCodes.NotConsumable);
+                if (definition is null
+                    || definition.Type != ItemType.Consumable
+                    || definition.ConsumableActions is not { Count: > 0 })
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.NotConsumable);
+                }
+
+                if (definition.ConsumableActions.Any(action =>
+                        action.Type is ConsumableActionType.ApplyEffect
+                            or ConsumableActionType.RemoveEffect))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ConsumableUnavailable);
+                }
 
                 CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
                     candidate => candidate.CharacterId == character.Id,
                     cancellationToken);
                 decimal currentHp = Math.Min(maxHp, vitals.CurrentHp);
-                if (currentHp >= maxHp)
-                    return InventoryOperationResult.Failure(InventoryErrorCodes.ConsumableNotNeeded);
-
-                vitals.Checkpoint(
-                    Math.Min(maxHp, currentHp + definition.HealAmount),
+                decimal currentResource = Math.Clamp(
                     vitals.CurrentResource,
-                    now);
+                    0,
+                    maxResource);
+                decimal nextHp = currentHp;
+                decimal nextResource = currentResource;
+                bool changesState = false;
+
+                foreach (ConsumableActionDefinition action in definition.ConsumableActions)
+                {
+                    switch (action.Type)
+                    {
+                        case ConsumableActionType.RestoreHp:
+                            if (action.Amount <= 0)
+                            {
+                                return InventoryOperationResult.Failure(
+                                    InventoryErrorCodes.NotConsumable);
+                            }
+                            decimal healedHp = Math.Min(maxHp, nextHp + action.Amount);
+                            changesState |= healedHp > nextHp;
+                            nextHp = healedHp;
+                            break;
+                        case ConsumableActionType.RestoreResource:
+                            if (action.Amount <= 0
+                                || !string.Equals(
+                                    action.ResourceType,
+                                    resourceType,
+                                    StringComparison.Ordinal))
+                            {
+                                return InventoryOperationResult.Failure(
+                                    InventoryErrorCodes.ConsumableUnavailable);
+                            }
+                            decimal restoredResource = Math.Min(
+                                maxResource,
+                                nextResource + action.Amount);
+                            changesState |= restoredResource > nextResource;
+                            nextResource = restoredResource;
+                            break;
+                        default:
+                            return InventoryOperationResult.Failure(
+                                InventoryErrorCodes.ConsumableUnavailable);
+                    }
+                }
+
+                if (!changesState)
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ConsumableNotNeeded);
+                }
+
+                vitals.Checkpoint(nextHp, nextResource, now);
                 ConsumeOne(item);
                 return null;
             },

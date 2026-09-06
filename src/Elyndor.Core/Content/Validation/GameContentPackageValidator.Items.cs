@@ -40,6 +40,12 @@ public static partial class GameContentPackageValidator
             HashSet<string> itemClassIds = (package.ClassProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
+                .Select(profile => profile.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> effectIds = (package.Effects ?? [])
+                .Select(effect => effect.Id)
+                .ToHashSet(StringComparer.Ordinal);
             for (var index = 0; index < items.Count; index++)
             {
                 ItemDefinition item = items[index];
@@ -85,16 +91,27 @@ public static partial class GameContentPackageValidator
                 bool invalidPrimaryStatRanges = HasInvalidPrimaryStatRanges(item.PrimaryStatRanges);
                 bool invalidWeaponDamageRange = HasInvalidWeaponDamageRange(item);
                 bool invalidBlockProfile = HasInvalidBlockProfile(item);
+                bool hasConsumableData =
+                    item.ConsumableCooldownSeconds != 0
+                    || item.ConsumableActions is { Count: > 0 }
+                    || !string.IsNullOrWhiteSpace(item.ConsumableCooldownCategoryId);
+                bool invalidConsumableShape =
+                    item.Type == ItemType.Consumable
+                    && HasInvalidConsumableShape(
+                        item,
+                        resourceProfileIds,
+                        effectIds);
                 bool invalidTypeShape = item.Type switch
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
-                        || HasEquipmentModifiers(item),
+                        || HasEquipmentModifiers(item)
+                        || hasConsumableData,
                     ItemType.Equipment => item.Stackable || item.MaxStack != 1 || item.Slot is null
-                        || item.HealAmount != 0 || item.ConsumableCooldownSeconds != 0
+                        || hasConsumableData
                         || item.WeaponBaseAttackIntervalSeconds is <= 0,
                     ItemType.Consumable => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
                         || HasEquipmentModifiers(item)
-                        || item.HealAmount <= 0 || item.ConsumableCooldownSeconds <= 0,
+                        || invalidConsumableShape,
                     _ => true
                 };
                 if (string.IsNullOrWhiteSpace(item.Name)
@@ -164,6 +181,67 @@ public static partial class GameContentPackageValidator
                         $"Monster '{monster.Id}' references missing loot table '{monster.LootTableId}'."));
                 }
             }
+        }
+
+        private static bool HasInvalidConsumableShape(
+            ItemDefinition item,
+            HashSet<string> resourceProfileIds,
+            HashSet<string> effectIds)
+        {
+            if (item.ConsumableCooldownSeconds <= 0
+                || string.IsNullOrWhiteSpace(item.ConsumableCooldownCategoryId)
+                || !IsCanonicalIdentifier(item.ConsumableCooldownCategoryId)
+                || item.ConsumableActions is not { Count: > 0 })
+            {
+                return true;
+            }
+
+            foreach (ConsumableActionDefinition action in item.ConsumableActions)
+            {
+                bool hasResource = !string.IsNullOrWhiteSpace(action.ResourceType);
+                bool hasEffect = !string.IsNullOrWhiteSpace(action.EffectId);
+                bool hasDispel = !string.IsNullOrWhiteSpace(action.DispelCategory);
+                switch (action.Type)
+                {
+                    case ConsumableActionType.RestoreHp:
+                        if (action.Amount <= 0 || hasResource || hasEffect || hasDispel)
+                            return true;
+                        break;
+                    case ConsumableActionType.RestoreResource:
+                        if (action.Amount <= 0
+                            || !hasResource
+                            || !resourceProfileIds.Contains(action.ResourceType!)
+                            || hasEffect
+                            || hasDispel)
+                        {
+                            return true;
+                        }
+                        break;
+                    case ConsumableActionType.ApplyEffect:
+                        if (action.Amount != 0
+                            || hasResource
+                            || !hasEffect
+                            || !effectIds.Contains(action.EffectId!)
+                            || hasDispel)
+                        {
+                            return true;
+                        }
+                        break;
+                    case ConsumableActionType.RemoveEffect:
+                        if (action.Amount != 0
+                            || hasResource
+                            || hasEffect == hasDispel
+                            || hasEffect && !effectIds.Contains(action.EffectId!))
+                        {
+                            return true;
+                        }
+                        break;
+                    default:
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>

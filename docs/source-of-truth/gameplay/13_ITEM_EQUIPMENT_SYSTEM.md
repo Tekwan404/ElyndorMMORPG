@@ -101,7 +101,69 @@ CONSUMABLE
 QUEST
 MATERIAL
 
-Consumable/Material могут существовать как предметы, даже если их полноценные gameplay-системы ещё не реализованы.
+Consumable/Material могут существовать как предметы.
+
+### 5.1 Consumables V2
+
+Consumable является data-driven набором server-authoritative actions:
+
+```text
+RESTORE_HP
+RESTORE_RESOURCE
+APPLY_EFFECT
+REMOVE_EFFECT
+```
+
+`ItemDefinition.ConsumableActions` содержит минимум одно действие.
+
+Правила action shape:
+
+- `RESTORE_HP` требует `Amount > 0`;
+- `RESTORE_RESOURCE` требует `Amount > 0` и существующий `ResourceType`;
+- `APPLY_EFFECT` требует существующий `EffectId`;
+- `REMOVE_EFFECT` задаёт ровно один selector: `EffectId` или `DispelCategory`.
+
+Consumable не хранит отдельный gameplay special-case `HealAmount`.
+
+Каждый consumable имеет:
+
+```text
+ConsumableCooldownCategoryId
+ConsumableCooldownSeconds
+```
+
+Cooldown является server-authoritative и хранится отдельно по category. Два предмета одной категории делят cooldown; разные категории не блокируют друг друга.
+
+Обычные prototype categories:
+
+```text
+HEALING_POTION
+RESOURCE_POTION
+UTILITY_POTION
+```
+
+Боевой порядок использования:
+
+```text
+resolve item from pinned content
+→ resolve referenced effects/resources
+→ validate full action set
+→ validate category cooldown
+→ verify at least one action changes state
+→ consume one inventory item
+→ execute the already validated CombatSession command
+→ start category cooldown
+```
+
+Если validation не прошла или item не нужен, inventory mutation не выполняется.
+
+`RESTORE_RESOURCE` может использоваться только когда action ResourceType совпадает с authoritative resource type персонажа.
+
+`APPLY_EFFECT` и `REMOVE_EFFECT` в prototype являются combat-runtime actions и не исполняются через out-of-combat durable inventory endpoint.
+
+Вне боя разрешены только durable `RESTORE_HP` и подходящий `RESTORE_RESOURCE`; если item содержит combat-only action, item не списывается.
+
+Training sandbox не разрешает permanent consumable use.
 
 6. Rarity
 

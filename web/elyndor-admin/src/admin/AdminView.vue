@@ -158,6 +158,9 @@ const abilityIds = computed(() => recordArray(draftPackage.value?.abilities)
 const resourceIds = computed(() => recordArray(draftPackage.value?.resourceProfiles)
   .map(resource => stringProperty(resource, 'id'))
   .filter(Boolean))
+const effectIds = computed(() => recordArray(draftPackage.value?.effects)
+  .map(effect => stringProperty(effect, 'id'))
+  .filter(Boolean))
 const lootTableIds = computed(() => recordArray(draftPackage.value?.lootTables)
   .map(table => stringProperty(table, 'id'))
   .filter(Boolean))
@@ -1314,6 +1317,8 @@ onBeforeUnmount(() => {
             :ability-ids="abilityIds"
             :class-ids="classIds"
             :set-ids="equipmentSetIds"
+            :resource-ids="resourceIds"
+            :effect-ids="effectIds"
             @update:entity="updateEntityFromForm"
           />
           <AdminClassProfileForm

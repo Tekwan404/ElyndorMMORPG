@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
+import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
 
@@ -331,9 +332,36 @@ async function equipSelected(targetSlot?: EquipmentSlot): Promise<void> {
   if (!equipmentActionError.value) selectedItem.value = null
 }
 
+function canUseConsumableOutOfCombat(item: InventoryItem): boolean {
+  if (item.type !== 'Consumable' || !character.value) return false
+  if (item.consumableActions.some((action) =>
+    action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
+  )) {
+    return false
+  }
+
+  return item.consumableActions.some((action) => {
+    if (action.type === 'RestoreHp') {
+      return character.value!.vitals.currentHp < character.value!.vitals.maxHp
+    }
+    if (action.type === 'RestoreResource') {
+      return action.resourceType === character.value!.vitals.resourceType
+        && character.value!.vitals.currentResource < character.value!.vitals.maxResource
+    }
+    return false
+  })
+}
+
+function isCombatOnlyConsumable(item: InventoryItem): boolean {
+  return item.type === 'Consumable'
+    && item.consumableActions.some((action) =>
+      action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
+    )
+}
+
 async function useSelected(): Promise<void> {
   const item = selectedItem.value
-  if (!item || item.type !== 'Consumable') return
+  if (!item || item.type !== 'Consumable' || !canUseConsumableOutOfCombat(item)) return
   await session.useConsumable(item.id)
   selectedItem.value = null
 }
@@ -488,7 +516,8 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
         <p v-if="selectedItem.type === 'Material' && !selectedItem.isLocked" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
         <p v-if="selectedItem.type === 'Material' && selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
-        <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">Восстанавливает {{ selectedItem.healAmount }} здоровья. В бою общий кулдаун зелий — {{ selectedItem.consumableCooldownSeconds }} сек.</p>
+        <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
+        <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
         <p
           v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
           class="item-detail__error"
@@ -529,7 +558,7 @@ async function toggleSelectedLock(): Promise<void> {
         <UIButton
           v-if="selectedItem?.type === 'Consumable'"
           :loading="session.mutationPending"
-          :disabled="session.mutationPending || (character?.vitals.currentHp ?? 0) >= (character?.vitals.maxHp ?? 0)"
+          :disabled="session.mutationPending || !canUseConsumableOutOfCombat(selectedItem)"
           @click="useSelected"
         >
           Использовать

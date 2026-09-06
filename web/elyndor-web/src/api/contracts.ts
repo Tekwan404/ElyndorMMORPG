@@ -165,6 +165,14 @@ export type EquipmentSlot =
 export type ItemType = 'Equipment' | 'Material' | 'Consumable'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
+export interface ConsumableAction {
+  type: 'RestoreHp' | 'RestoreResource' | 'ApplyEffect' | 'RemoveEffect'
+  amount: number
+  resourceType: string | null
+  effectId: string | null
+  dispelCategory: string | null
+}
+
 export interface InventoryItem {
   id: string
   definitionId: string
@@ -184,7 +192,8 @@ export interface InventoryItem {
   weaponBaseAttackIntervalSeconds: number | null
   attackSpeedPercent: number
   dodgePercent: number
-  healAmount: number
+  consumableActions: ConsumableAction[]
+  consumableCooldownCategoryId: string | null
   consumableCooldownSeconds: number
   buyPriceGold: number
   sellPriceGold: number
@@ -222,7 +231,9 @@ export interface MerchantItem {
   description: string
   buyPriceGold: number
   sellPriceGold: number
-  healAmount: number
+  consumableActions: ConsumableAction[]
+  consumableCooldownCategoryId: string | null
+  consumableCooldownSeconds: number
 }
 
 export interface MerchantSnapshot {
@@ -357,6 +368,7 @@ export interface CombatActorSnapshot {
   abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]
   activeCast?: CombatCastSnapshot | null
+  consumableCooldowns?: Record<string, string> | null
   level?: number
   artId?: string | null
 }
