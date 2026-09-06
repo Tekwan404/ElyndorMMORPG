@@ -99,7 +99,8 @@ public sealed record MerchantItemResponse(
     int SellPriceGold,
     IReadOnlyList<ConsumableActionResponse> ConsumableActions,
     string? ConsumableCooldownCategoryId,
-    decimal ConsumableCooldownSeconds);
+    decimal ConsumableCooldownSeconds,
+    string? IconId);
 
 public sealed record MerchantResponse(
     string Id,
