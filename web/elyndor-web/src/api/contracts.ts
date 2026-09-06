@@ -188,6 +188,7 @@ export interface InventoryItem {
   consumableCooldownSeconds: number
   buyPriceGold: number
   sellPriceGold: number
+  isLocked: boolean
   iconId: string | null
   appearanceProfileId: string | null
 }

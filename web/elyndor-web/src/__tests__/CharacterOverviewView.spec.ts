@@ -103,6 +103,7 @@ function equipment(
     consumableCooldownSeconds: 0,
     buyPriceGold: 0,
     sellPriceGold: 0,
+    isLocked: false,
     iconId: null,
     appearanceProfileId: null,
   }
