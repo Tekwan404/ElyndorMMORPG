@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
@@ -138,12 +139,45 @@ public sealed class CombatApplicationService(
                     pinnedContent ?? contentProvider.GetCurrent();
                 ItemDefinition? definition = contentSnapshot.Indexes.ItemsById
                     .GetValueOrDefault(itemDefinitionId);
-                if (definition is null || definition.Type != ItemType.Consumable || definition.HealAmount <= 0)
-                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
+                if (definition is null
+                    || definition.Type != ItemType.Consumable
+                    || definition.ConsumableActions is not { Count: > 0 }
+                    || string.IsNullOrWhiteSpace(definition.ConsumableCooldownCategoryId))
+                {
+                    return new CombatCommandResult(
+                        false,
+                        CombatErrorCodes.CommandRejected,
+                        session.Snapshot(),
+                        []);
+                }
 
-                string? validationError = session.ValidateConsumableUse(now, definition.HealAmount);
+                ResolvedConsumableAction[]? actions = ResolveConsumableActions(
+                    definition,
+                    contentSnapshot.Indexes);
+                if (actions is null)
+                {
+                    return new CombatCommandResult(
+                        false,
+                        CombatErrorCodes.CommandRejected,
+                        session.Snapshot(),
+                        []);
+                }
+
+                TimeSpan cooldown = TimeSpan.FromSeconds(
+                    (double)definition.ConsumableCooldownSeconds);
+                string? validationError = session.ValidateConsumableUse(
+                    now,
+                    actions,
+                    definition.ConsumableCooldownCategoryId,
+                    cooldown);
                 if (validationError is not null)
-                    return new CombatCommandResult(false, validationError, session.Snapshot(), []);
+                {
+                    return new CombatCommandResult(
+                        false,
+                        validationError,
+                        session.Snapshot(),
+                        []);
+                }
 
                 string? inventoryError = await inventoryService.ConsumeOneForCombatAsync(
                     accountId,
@@ -151,14 +185,21 @@ public sealed class CombatApplicationService(
                     contentSnapshot,
                     cancellationToken);
                 if (inventoryError is not null)
-                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
+                {
+                    return new CombatCommandResult(
+                        false,
+                        CombatErrorCodes.CommandRejected,
+                        session.Snapshot(),
+                        []);
+                }
 
                 return session.Handle(
                     new UseConsumableCommand(
                         commandId,
                         definition.Id,
-                        definition.HealAmount,
-                        TimeSpan.FromSeconds((double)definition.ConsumableCooldownSeconds)),
+                        actions,
+                        definition.ConsumableCooldownCategoryId,
+                        cooldown),
                     now);
             }, cancellationToken);
 
@@ -188,6 +229,40 @@ public sealed class CombatApplicationService(
 
     public Task<CombatOperationResult> LeaveAsync(Guid accountId, CancellationToken cancellationToken) =>
         registry.LeaveAsync(accountId, cancellationToken);
+
+    private static ResolvedConsumableAction[]? ResolveConsumableActions(
+        ItemDefinition definition,
+        GameContentIndexes indexes)
+    {
+        if (definition.ConsumableActions is not { Count: > 0 })
+            return null;
+
+        List<ResolvedConsumableAction> actions = [];
+        foreach (ConsumableActionDefinition action in definition.ConsumableActions)
+        {
+            EffectDefinition? effect = null;
+            if (action.Type == ConsumableActionType.ApplyEffect)
+            {
+                if (string.IsNullOrWhiteSpace(action.EffectId)
+                    || !indexes.EffectsById.TryGetValue(action.EffectId, out effect))
+                {
+                    return null;
+                }
+            }
+
+            actions.Add(new ResolvedConsumableAction(
+                action.Type,
+                action.Amount,
+                action.ResourceType,
+                effect,
+                action.Type == ConsumableActionType.RemoveEffect
+                    ? action.EffectId
+                    : null,
+                action.DispelCategory));
+        }
+
+        return actions.ToArray();
+    }
 
     private CombatOperationResult? PrepareStart(Guid accountId)
     {
