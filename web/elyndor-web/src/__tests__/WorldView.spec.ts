@@ -33,6 +33,20 @@ describe('WorldView', () => {
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
   })
 
+  it('uses the dedicated Deep Forest environment art for the real location', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot('DEEP_FOREST')
+    const combat = useCombatSessionStore()
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+
+    const wrapper = mount(WorldView)
+    await flushPromises()
+
+    expect(wrapper.get('.scene').attributes('style')).toContain('deep-forest')
+    expect(wrapper.text()).toContain('Глубокий лес')
+  })
+
   it('renders explore as a dedicated current-location activity outside the artwork', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot('WHISPERING_FOREST')
@@ -91,9 +105,9 @@ describe('WorldView', () => {
 })
 
 function snapshot(
-  locationId: 'STARTER_TOWN' | 'WHISPERING_FOREST' = 'STARTER_TOWN',
+  locationId: 'STARTER_TOWN' | 'WHISPERING_FOREST' | 'DEEP_FOREST' = 'STARTER_TOWN',
 ): BootstrapSnapshot {
-  const inForest = locationId === 'WHISPERING_FOREST'
+  const inForest = locationId !== 'STARTER_TOWN'
   return {
     accountId: crypto.randomUUID(),
     character: {
@@ -163,19 +177,26 @@ function snapshot(
       },
     },
     world: {
-      currentLocation: inForest
+      currentLocation: locationId === 'DEEP_FOREST'
         ? {
-            id: 'WHISPERING_FOREST',
-            displayName: 'Whispering Forest',
-            dangerLevel: 'ADVENTURE',
-            recommendedLevel: 1,
+            id: 'DEEP_FOREST',
+            displayName: 'Deep Forest',
+            dangerLevel: 'DANGEROUS',
+            recommendedLevel: 3,
           }
-        : {
-            id: 'STARTER_TOWN',
-            displayName: 'Starter Town',
-            dangerLevel: 'SAFE',
-            recommendedLevel: 1,
-          },
+        : inForest
+          ? {
+              id: 'WHISPERING_FOREST',
+              displayName: 'Whispering Forest',
+              dangerLevel: 'ADVENTURE',
+              recommendedLevel: 1,
+            }
+          : {
+              id: 'STARTER_TOWN',
+              displayName: 'Starter Town',
+              dangerLevel: 'SAFE',
+              recommendedLevel: 1,
+            },
       version: 1,
       outgoingTransitions: inForest
         ? [
