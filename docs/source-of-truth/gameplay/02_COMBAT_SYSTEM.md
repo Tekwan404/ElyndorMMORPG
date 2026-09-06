@@ -401,6 +401,30 @@ Snapshot/dynamic rules для DoT/HoT определяются Effects System.
 
 В одном бою могут участвовать несколько сущностей.
 
+### CombatSession V2 enemy collection
+
+Authoritative runtime CombatSession хранит упорядоченную коллекцию enemies, а не единственный объект Enemy.
+
+Каждый enemy имеет собственный ActorId и отдельное боевое состояние: HP, effects, death state и runtime actor registration.
+
+Игрок хранит отдельный SelectedTargetActorId. Смена выбранной цели является server-authoritative командой и эмитит TargetChanged event.
+
+Пока клиент мигрирует на multi-enemy UI, поле Enemy в snapshot остаётся compatibility projection текущей выбранной цели. Authoritative список передаётся как Enemies.
+
+Смерть одного enemy:
+
+- эмитит ActorDied только для этого actor;
+- эмитит EnemyKilled только для этого actor;
+- не завершает CombatSession, если жив хотя бы один необходимый enemy;
+- если погиб selected target, сервер deterministic выбирает следующего живого enemy в encounter order и эмитит TargetChanged.
+
+Victory наступает только после смерти всех enemies текущего CombatSession.
+
+Target selection не удаляет остальных enemies из runtime: эффекты и индивидуальный death state продолжают существовать независимо.
+
+На текущем переходном этапе primary/first enemy сохраняет legacy AI loop. Независимые timers/cooldowns/casts/AI state каждого enemy реализуются отдельным этапом Multi-enemy AI и не должны смешиваться с этим structural refactor.
+
+
 Новый противник может присоединиться к уже происходящему бою.
 
 Игрок может менять выбранную цель, при этом остальные участники продолжают существовать в Combat State.
