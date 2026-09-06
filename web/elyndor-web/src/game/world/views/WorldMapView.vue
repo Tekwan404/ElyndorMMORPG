@@ -299,7 +299,7 @@ onMounted(() => void loadLocations())
           <strong>{{ activeContract.displayName }}</strong>
           <p>{{ activeContract.description }}</p>
         </div>
-        <span>Открывает: {{ locations.find(item => item.id === activeContract.unlockLocationId)?.displayName ?? activeContract.unlockLocationId }}</span>
+        <span>Открывает: {{ locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName ?? activeContract?.unlockLocationId }}</span>
       </UICard>
 
       <UICard v-if="selectedLocation" class="location-preview" data-map-preview>
