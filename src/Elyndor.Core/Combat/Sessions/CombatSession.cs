@@ -1318,10 +1318,7 @@ public sealed partial class CombatSession
             definition.Actor.MaxResource,
             autoAttackEnabled,
             definition.Kind == CombatActorKind.Player
-                ? _consumableCooldowns.Values
-                    .Where(readyAt => readyAt > CurrentTimeUtc)
-                    .DefaultIfEmpty()
-                    .Max()
+                ? NextConsumableCooldownReadyAtUtc()
                 : null,
             new Dictionary<string, DateTimeOffset>(
                 runtime.Cooldowns,
@@ -1344,6 +1341,14 @@ public sealed partial class CombatSession
                     _consumableCooldowns,
                     StringComparer.Ordinal)
                 : null);
+    }
+
+    private DateTimeOffset? NextConsumableCooldownReadyAtUtc()
+    {
+        DateTimeOffset[] active = _consumableCooldowns.Values
+            .Where(readyAt => readyAt > CurrentTimeUtc)
+            .ToArray();
+        return active.Length == 0 ? null : active.Min();
     }
 
     private static string MapAbilityError(AbilityErrorCode code) => code switch
