@@ -58,10 +58,6 @@ function locationArt(locationId: string | null | undefined): string {
 
 const mapArt = computed(() => locationArt(currentLocationId.value))
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
-const selectedContract = computed(() => {
-  const requiredId = selectedLocation.value?.requiredContractId
-  return requiredId ? contracts.value.find(contract => contract.id === requiredId) ?? null : null
-})
 const activeContract = computed(() =>
   contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
 )
