@@ -345,7 +345,10 @@ public static class InventoryEndpoints
             MerchantService.ResolveSellPrice(item.Definition),
             item.IsLocked,
             item.Definition.IconId,
-            item.Definition.AppearanceProfileId);
+            item.Definition.AppearanceProfileId,
+            item.Definition.WeaponCategory is null
+                ? null
+                : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1);
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
