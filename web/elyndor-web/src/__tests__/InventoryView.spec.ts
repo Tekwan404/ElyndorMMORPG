@@ -118,7 +118,12 @@ function consumable(id: string, name: string): InventoryItem {
   })
 }
 
-function item(overrides: Partial<InventoryItem> & Pick<InventoryItem, 'id' | 'name' | 'type' | 'rarity'>): InventoryItem {
+type InventoryItemOverrides =
+  Omit<Partial<InventoryItem>, 'stats'>
+  & Pick<InventoryItem, 'id' | 'name' | 'type' | 'rarity'>
+  & { stats?: Partial<InventoryItem['stats']> }
+
+function item(overrides: InventoryItemOverrides): InventoryItem {
   const zeroStats: InventoryItem['stats'] = {
     strength: 0,
     agility: 0,
