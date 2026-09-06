@@ -460,7 +460,7 @@ async function toggleSelectedLock(): Promise<void> {
           @click="openItem(item)"
         >
           <template v-if="item">
-            <span v-if="newItemIds.has(item.id)" class="bag-cell__new">NEW</span>
+            <span v-if="newItemIds.has(item.id)" class="bag-cell__new">НОВОЕ</span>
             <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">◆</span>
             <span class="bag-cell__icon">
               <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
