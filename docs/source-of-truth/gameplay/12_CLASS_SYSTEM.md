@@ -178,13 +178,19 @@ Class System определяет только разрешение катего
 
 ClassDefinition содержит AllowedArmorTags.
 
-Базовое правило:
+Authoritative armor categories:
 
-LIGHT
-MEDIUM
+CLOTH
+LEATHER
 HEAVY
 
-Это проще, чем вводить много исторических типов брони до появления достаточного количества контента.
+Prototype class identity is strict:
+
+Mage → CLOTH
+Archer → LEATHER
+Warrior → HEAVY
+
+Class System определяет разрешённые категории; Item System хранит ArmorTag конкретного предмета.
 
 Конкретный предмет содержит ArmorTag.
 
@@ -290,8 +296,10 @@ Companion: none
 ```
 
 Armor:
-- MEDIUM
 - HEAVY
+
+Off-hand:
+- SHIELD
 
 Weapon profiles:
 - ONE_HAND_SWORD
@@ -315,8 +323,7 @@ Companion: required
 ```
 
 Armor:
-- LIGHT
-- MEDIUM
+- LEATHER
 
 Weapon:
 - BOW
@@ -344,7 +351,7 @@ Companion: none
 ```
 
 Armor:
-- LIGHT
+- CLOTH
 
 Weapons:
 - STAFF
