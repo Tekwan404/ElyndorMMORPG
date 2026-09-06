@@ -72,6 +72,41 @@ describe('InventoryView', () => {
 
     expect(wrapper.get('[data-item-id="FRESH_POTION"]').attributes('data-new')).toBe('false')
   })
+
+  it('renders server lock state and toggles protection through the game store', async () => {
+    const store = useGameSessionStore()
+    const protectedItem = item({
+      id: 'WOLF_FANG',
+      name: 'Волчий клык',
+      type: 'Material',
+      rarity: 'Uncommon',
+      isLocked: true,
+      sellPriceGold: 4,
+    })
+    store.snapshot = snapshot([protectedItem], currentWeapon())
+    const setItemLock = vi.spyOn(store, 'setItemLock').mockImplementation(async (itemId, isLocked) => {
+      const stored = store.snapshot?.character?.inventory.items.find(candidate => candidate.id === itemId)
+      if (stored) stored.isLocked = isLocked
+    })
+
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-item-id="WOLF_FANG"]').attributes('data-locked')).toBe('true')
+    await wrapper.get('[data-item-id="WOLF_FANG"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('ЗАЩИЩЕНО')
+    expect(document.body.textContent).toContain('защищён от продажи')
+
+    const action = document.body.querySelector<HTMLButtonElement>('[data-item-lock-action]')
+    expect(action?.textContent).toContain('Снять защиту')
+    action?.click()
+    await flushPromises()
+
+    expect(setItemLock).toHaveBeenCalledWith('WOLF_FANG', false)
+    expect(document.body.textContent).toContain('Защитить')
+  })
 })
 
 function itemIds(wrapper: ReturnType<typeof mount>): string[] {
@@ -167,6 +202,7 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     consumableCooldownSeconds: overrides.consumableCooldownSeconds ?? 0,
     buyPriceGold: overrides.buyPriceGold ?? 0,
     sellPriceGold: overrides.sellPriceGold ?? 0,
+    isLocked: overrides.isLocked ?? false,
     iconId: overrides.iconId ?? null,
     appearanceProfileId: overrides.appearanceProfileId ?? null,
   }
