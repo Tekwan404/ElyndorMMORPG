@@ -18,6 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_DB: elyndor_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elyndor_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -109,6 +124,38 @@ jobs:
         working-directory: web/elyndor-web
         run: npx playwright install --with-deps chromium
 
-      - name: Test frontend shell
+      - name: Start real E2E server
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://127.0.0.1:5080
+          ConnectionStrings__game: Host=127.0.0.1;Port=5432;Database=elyndor_e2e;Username=postgres;Password=postgres
+          Database__MigrateOnStartup: "true"
+          Content__RestorePublishedOnStartup: "false"
+          Authentication__Issuer: Elyndor.CI
+          Authentication__Audience: Elyndor.CI.Client
+          Authentication__SigningKey: ci-e2e-signing-key-with-more-than-thirty-two-bytes
+          Authentication__Telegram__BotToken: 123456:CI_TEST_TOKEN
+          Authentication__Development__Enabled: "true"
+          Authentication__Development__TelegramUserId: "9000001"
+        run: |
+          dotnet .artifacts/production/Elyndor.Server.dll > .artifacts/e2e-server.log 2>&1 &
+          echo $! > .artifacts/e2e-server.pid
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5080/api/v1/status > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat .artifacts/e2e-server.log
+          exit 1
+
+      - name: Test real Browser to Server to PostgreSQL flow
         working-directory: web/elyndor-web
+        env:
+          ELYNDOR_E2E_REAL: "true"
+          ELYNDOR_E2E_BASE_URL: http://127.0.0.1:5080
         run: npm run test:e2e
+
+      - name: Print E2E server log on failure
+        if: failure()
+        run: cat .artifacts/e2e-server.log || true
