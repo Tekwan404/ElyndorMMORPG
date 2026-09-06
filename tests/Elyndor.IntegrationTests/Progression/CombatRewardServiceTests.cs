@@ -63,6 +63,24 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
+    public async Task WarriorPersonalLootExcludesIncompatibleLeatherAndBowDrops()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            VictorySnapshot(Guid.CreateVersion7()),
+            CancellationToken.None);
+
+        Assert.DoesNotContain(result.Items, item => item.ItemId == "HUNTER_SHORTBOW");
+        Assert.DoesNotContain(result.Items, item => item.ItemId == "RANGER_TRAIL_LEGGINGS");
+        Assert.Contains(result.Items, item => item.ItemId == "WOLF_HIDE");
+        Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
+    }
+
+    [Fact]
     public async Task ConcurrentSameSessionGrantsXpGoldAndLootExactlyOnce()
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100);
