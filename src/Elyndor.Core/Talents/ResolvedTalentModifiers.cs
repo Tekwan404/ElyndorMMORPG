@@ -31,6 +31,13 @@ public sealed record TalentCombatModifiers(
     decimal HealingReceivedPercent = 0,
     decimal VampirismPercent = 0);
 
+public sealed record TalentEquipmentPermissions(
+    IReadOnlySet<string> OffHandWeaponCategories)
+{
+    public static TalentEquipmentPermissions Empty { get; } =
+        new(new HashSet<string>(StringComparer.Ordinal));
+}
+
 public sealed record ResolvedTalentEventHook(
     string TalentId,
     string Key,
@@ -54,13 +61,17 @@ public sealed record ResolvedTalentModifiers(
     IReadOnlySet<string> UnlockedAbilityIds,
     IReadOnlyDictionary<string, TalentAbilityModifiers> Abilities,
     IReadOnlyList<ResolvedTalentEventHook> EventHooks,
-    IReadOnlyList<TalentModifierDefinition> DeferredHooks)
+    IReadOnlyList<TalentModifierDefinition> DeferredHooks,
+    TalentEquipmentPermissions? EquipmentPermissions = null)
 {
+    public TalentEquipmentPermissions Equipment =>
+        EquipmentPermissions ?? TalentEquipmentPermissions.Empty;
     public static ResolvedTalentModifiers Empty { get; } = new(
         new TalentStatModifiers(),
         new TalentCombatModifiers(),
         new HashSet<string>(StringComparer.Ordinal),
         new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
         [],
-        []);
+        [],
+        TalentEquipmentPermissions.Empty);
 }
