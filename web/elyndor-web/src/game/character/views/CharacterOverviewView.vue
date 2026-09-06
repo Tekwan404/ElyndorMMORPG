@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { InventoryItem, KnownAbility } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem, KnownAbility } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import {
   abilityDescription,
@@ -15,6 +15,10 @@ import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIModal, UIPanel } from '@/ui/components'
 
+const emit = defineEmits<{
+  'select-empty-slot': [slot: EquipmentSlot]
+}>()
+
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const selectedItem = ref<InventoryItem | null>(null)
@@ -24,6 +28,7 @@ type PaperdollSide = 'left' | 'right'
 
 interface PaperdollSlot {
   id: string
+  inventorySlot: EquipmentSlot
   label: string
   item: InventoryItem | null
   glyph: string
@@ -33,35 +38,38 @@ interface PaperdollSlot {
 const equipment = computed<PaperdollSlot[]>(() => {
   const equipped = character.value?.inventory.equipped
   return [
-    { id: 'head', label: 'Шлем', item: equipped?.head ?? null, glyph: '◈', side: 'left' },
-    { id: 'cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: '◒', side: 'left' },
+    { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: '◈', side: 'left' },
+    { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: '◒', side: 'left' },
     {
       id: 'mainHand',
+      inventorySlot: 'MainHand',
       label: 'Основная рука',
       item: equipped?.mainHand ?? equipped?.weapon ?? null,
       glyph: '⚔',
       side: 'left',
     },
-    { id: 'hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: '◫', side: 'left' },
-    { id: 'ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: '✧', side: 'left' },
-    { id: 'chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: '⬟', side: 'right' },
+    { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: '◫', side: 'left' },
+    { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: '✧', side: 'left' },
+    { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: '⬟', side: 'right' },
     {
       id: 'amulet',
+      inventorySlot: 'Amulet',
       label: 'Амулет',
       item: equipped?.amulet ?? equipped?.accessory ?? null,
       glyph: '✦',
       side: 'right',
     },
-    { id: 'offHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: '🛡', side: 'right' },
-    { id: 'legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: '▥', side: 'right' },
+    { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: '🛡', side: 'right' },
+    { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: '▥', side: 'right' },
     {
       id: 'feet',
+      inventorySlot: 'Feet',
       label: 'Обувь',
       item: equipped?.feet ?? equipped?.boots ?? null,
       glyph: '⌁',
       side: 'right',
     },
-    { id: 'ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: '✧', side: 'right' },
+    { id: 'ring2', inventorySlot: 'Ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: '✧', side: 'right' },
   ]
 })
 const leftEquipment = computed(() => equipment.value.filter(slot => slot.side === 'left'))
@@ -71,6 +79,15 @@ const talentAbilities = computed(() => character.value?.knownAbilities.filter((a
 const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
 const xpTarget = computed(() => character.value?.xpToNextLevel ?? 0)
 const xpRemaining = computed(() => Math.max(0, xpTarget.value - (character.value?.experience ?? 0)))
+
+function openEquipmentSlot(slot: PaperdollSlot): void {
+  if (slot.item) {
+    selectedItem.value = slot.item
+    return
+  }
+
+  emit('select-empty-slot', slot.inventorySlot)
+}
 
 function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (!item) return fallback
@@ -136,10 +153,9 @@ function abilityInitials(ability: KnownAbility): string {
             :data-equipment-slot="slot.id"
             :data-filled="Boolean(slot.item)"
             :data-rarity="slot.item?.rarity"
-            :disabled="!slot.item"
             :aria-label="`${slot.label}: ${slot.item?.name ?? 'пусто'}`"
             :title="slot.item?.name ?? slot.label"
-            @click="selectedItem = slot.item"
+            @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
@@ -171,10 +187,9 @@ function abilityInitials(ability: KnownAbility): string {
             :data-equipment-slot="slot.id"
             :data-filled="Boolean(slot.item)"
             :data-rarity="slot.item?.rarity"
-            :disabled="!slot.item"
             :aria-label="`${slot.label}: ${slot.item?.name ?? 'пусто'}`"
             :title="slot.item?.name ?? slot.label"
-            @click="selectedItem = slot.item"
+            @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
