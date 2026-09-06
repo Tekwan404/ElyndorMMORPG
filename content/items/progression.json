@@ -131,9 +131,6 @@
       "version": 1,
       "setId": "RANGER_SET",
       "weaponBaseAttackIntervalSeconds": 2.4,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
       "primaryStatRanges": {
@@ -163,9 +160,6 @@
       "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
@@ -194,9 +188,6 @@
       "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 8,
       "primaryStatRanges": {
         "stamina": {
@@ -225,9 +216,6 @@
       "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 6,
       "primaryStatRanges": {
         "agility": {
@@ -261,9 +249,6 @@
       "description": "Тихие кожаные ботинки, удобные для преследования добычи.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
@@ -333,9 +318,6 @@
       "version": 1,
       "setId": "RANGER_SET",
       "weaponBaseAttackIntervalSeconds": 2.4,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
       "primaryStatRanges": {
@@ -365,9 +347,6 @@
       "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 8,
       "primaryStatRanges": {
         "stamina": {
@@ -396,9 +375,6 @@
       "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами.",
       "version": 1,
       "setId": "RANGER_SET",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
