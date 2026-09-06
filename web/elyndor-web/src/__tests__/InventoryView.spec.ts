@@ -50,6 +50,35 @@ describe('InventoryView', () => {
     expect(modalText).toContain('+7')
   })
 
+  it('keeps an equipment modal open and explains server equip restrictions', async () => {
+    const store = useGameSessionStore()
+    const hood = item({
+      id: 'RANGER_HOOD',
+      name: 'Капюшон Следопыта',
+      type: 'Equipment',
+      rarity: 'Uncommon',
+      slot: 'Head',
+      armorCategory: 'LEATHER',
+    })
+    store.snapshot = snapshot([hood], currentWeapon())
+    vi.spyOn(store, 'equip').mockImplementation(async () => {
+      store.errorCode = 'inventory_armor_category_restricted'
+    })
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="RANGER_HOOD"]').trigger('click')
+    await flushPromises()
+
+    const equipAction = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button'))
+      .find(button => button.textContent?.trim() === 'Надеть')
+    expect(equipAction).toBeDefined()
+    equipAction?.click()
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('Этот тип брони недоступен вашему классу.')
+    expect(document.body.textContent).toContain('Капюшон Следопыта')
+  })
+
   it('marks only newly appeared server items as NEW and clears the mark after inspection', async () => {
     const store = useGameSessionStore()
     const existing = equipment('COMMON_BLADE', 'Старый клинок', 'Common', 1, 3)
