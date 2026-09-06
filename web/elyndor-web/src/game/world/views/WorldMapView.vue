@@ -29,12 +29,10 @@ const visibleLocations = computed(() => {
     byId.set(world.value.currentLocation.id, world.value.currentLocation)
     for (const location of world.value.outgoingTransitions) byId.set(location.id, location)
   }
-  return [...byId.values()].sort((left, right) => {
-    if (left.id === currentLocationId.value) return -1
-    if (right.id === currentLocationId.value) return 1
-    return left.recommendedLevel - right.recommendedLevel
-      || left.displayName.localeCompare(right.displayName)
-  })
+  return [...byId.values()].sort((left, right) =>
+    left.recommendedLevel - right.recommendedLevel
+      || left.displayName.localeCompare(right.displayName),
+  )
 })
 const selectedLocation = computed(() =>
   visibleLocations.value.find(location => location.id === selectedLocationId.value)
@@ -49,6 +47,12 @@ const selectedIsReachable = computed(
     ? reachableLocationIds.value.has(selectedLocation.value.id)
     : false,
 )
+const mapArt = computed(() => {
+  const danger = world.value?.currentLocation.dangerLevel
+  if (danger === 'SAFE') return gameArt.world.capital
+  if (danger === 'DANGEROUS') return gameArt.world.ruins
+  return gameArt.world.forest
+})
 const selectedArt = computed(() => {
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return gameArt.world.capital
@@ -150,11 +154,14 @@ onMounted(() => void loadLocations())
   <section v-if="world" class="world-map">
     <header class="world-map__header">
       <div>
-        <small>ELYNDOR · WORLD MAP</small>
+        <small>МИР · ПОГРАНИЧНЫЕ ЗЕМЛИ</small>
         <h1>Карта мира</h1>
-        <p>Выбирайте открытые точки и прокладывайте путь от текущей локации.</p>
+        <p>Выберите известную точку. Сервер разрешит переход только по открытому маршруту.</p>
       </div>
-      <span class="world-map__region">Регион · Пограничные земли</span>
+      <div class="world-map__meta">
+        <span>Сейчас</span>
+        <strong>{{ world.currentLocation ? locationName(world.currentLocation) : '—' }}</strong>
+      </div>
     </header>
 
     <UIToast
@@ -175,11 +182,15 @@ onMounted(() => void loadLocations())
     <template v-else>
       <section
         class="map-canvas"
-        :style="{ '--map-art': `url(${selectedArt})` }"
+        :style="{ '--map-art': `url(${mapArt})` }"
         aria-label="Карта доступных локаций"
       >
         <div class="map-canvas__fog" />
         <div class="map-canvas__grid" />
+        <div class="map-canvas__caption" aria-hidden="true">
+          <small>РЕГИОН</small>
+          <strong>Пограничные земли</strong>
+        </div>
 
         <svg
           class="map-routes"
@@ -229,7 +240,7 @@ onMounted(() => void loadLocations())
         </div>
       </section>
 
-      <UICard v-if="selectedLocation" class="location-preview">
+      <UICard v-if="selectedLocation" class="location-preview" data-map-preview>
         <div
           class="location-preview__art"
           :style="{ backgroundImage: `url(${selectedArt})` }"
@@ -332,13 +343,31 @@ onMounted(() => void loadLocations())
   line-height: 1.5;
 }
 
-.world-map__region {
-  padding: 5px 8px;
+.world-map__meta {
+  display: grid;
+  min-width: 7rem;
+  justify-items: end;
+  gap: 1px;
+  padding: 6px 9px;
   border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  background: var(--ui-color-surface-1);
+  border-radius: var(--ui-radius-md);
+  background: rgb(10 14 24 / 72%);
+}
+
+.world-map__meta span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.world-map__meta strong {
+  max-width: 9rem;
+  overflow: hidden;
+  color: #d6d2ff;
+  font-size: .63rem;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -386,6 +415,31 @@ onMounted(() => void loadLocations())
   background-size: 2.5rem 2.5rem;
   mask-image: linear-gradient(180deg, rgb(0 0 0 / 55%), transparent 88%);
   pointer-events: none;
+}
+
+.map-canvas__caption {
+  position: absolute;
+  top: var(--ui-space-3);
+  left: var(--ui-space-3);
+  z-index: 1;
+  display: grid;
+  gap: 1px;
+  padding: 6px 8px;
+  border-left: 2px solid rgb(170 163 255 / 55%);
+  background: linear-gradient(90deg, rgb(5 8 14 / 70%), transparent);
+  text-shadow: 0 2px 7px rgb(0 0 0 / 65%);
+}
+
+.map-canvas__caption small {
+  color: #aaa3ff;
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+.map-canvas__caption strong {
+  font-family: var(--ui-font-display);
+  font-size: .72rem;
 }
 
 .map-routes {
@@ -642,8 +696,10 @@ onMounted(() => void loadLocations())
     flex-direction: column;
   }
 
-  .world-map__region {
-    white-space: normal;
+  .world-map__meta {
+    width: 100%;
+    box-sizing: border-box;
+    justify-items: start;
   }
 
   .map-canvas {
