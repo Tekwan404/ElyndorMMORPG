@@ -36,9 +36,18 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
 
-  await page.getByRole('button', { name: /Шепчущий лес/ }).click()
+  await page.getByRole('button', { name: 'Мир' }).click()
+  await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
+  await page.locator('[data-map-travel]').click()
+  await page.getByRole('button', { name: 'Локация' }).click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
-  await page.getByRole('button', { name: /Deep Forest/ }).click()
+  await expect(page.locator('[data-travel]')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Мир' }).click()
+  await page.locator('[data-location-id="DEEP_FOREST"]').click()
+  await page.locator('[data-map-travel]').click()
+  await page.getByRole('button', { name: 'Локация' }).click()
   await expect(page.getByRole('heading', { name: 'Deep Forest' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
