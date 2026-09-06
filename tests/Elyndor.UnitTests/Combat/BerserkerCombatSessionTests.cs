@@ -181,6 +181,40 @@ public sealed class BerserkerCombatSessionTests
     }
 
     [Fact]
+    public void OffHandAutoAttackProcKeepsTriggeringWeaponSource()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(
+                "B-4-1",
+                TalentModifierKeys.OnAutoAttack,
+                1,
+                45,
+                internalCooldown: TimeSpan.FromSeconds(2),
+                chancePercent: 15));
+        AutoAttackProfile offHand = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 0,
+            AttackPowerCoefficient: 0.65m,
+            ResourceOnHit: 10,
+            WeaponDefinitionId: "OFFHAND_TEST_SWORD",
+            WeaponHand: CombatWeaponHand.OffHand);
+        TestFight fight = CreateFight(
+            talents,
+            enemyHp: 10_000,
+            playerResource: 0,
+            randomValues: [0.99m, 0.99m, 0.99m, 0.99m, 0.99m, 0m],
+            offHandAutoAttack: offHand);
+
+        fight.Session.AdvanceTo(Now.AddSeconds(1));
+
+        CombatEvent proc = Assert.Single(fight.Session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.DefinitionId == "B-4-1");
+        Assert.Equal(CombatWeaponHand.OffHand, proc.WeaponHand);
+        Assert.Equal("OFFHAND_TEST_SWORD", proc.WeaponDefinitionId);
+    }
+
+    [Fact]
     public void WhirlwindAddsRendingBleedAndDeathWhirlwindTrueComponent()
     {
         ResolvedTalentModifiers talents = Talents(
@@ -470,7 +504,8 @@ public sealed class BerserkerCombatSessionTests
         decimal playerCriticalChance = 0,
         decimal enemyAutoDamage = 0,
         TimeSpan? enemyAutoAttackInterval = null,
-        decimal[]? randomValues = null)
+        decimal[]? randomValues = null,
+        AutoAttackProfile? offHandAutoAttack = null)
     {
         CombatStats playerStats = new(
             Level: 20,
@@ -519,7 +554,8 @@ public sealed class BerserkerCombatSessionTests
             new AutoAttackProfile(TimeSpan.FromSeconds(2), 0, 0.65m, 10),
             new HashSet<string>(
                 ["STRIKE", "WILD_STRIKE", "WHIRLWIND", "BERSERK"],
-                StringComparer.Ordinal));
+                StringComparer.Ordinal),
+            OffHandAutoAttack: offHandAutoAttack);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,
