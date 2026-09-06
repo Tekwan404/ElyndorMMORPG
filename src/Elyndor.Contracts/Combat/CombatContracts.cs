@@ -30,7 +30,8 @@ public sealed record CombatActorResponse(
     IReadOnlyList<CombatEffectResponse> Effects,
     int Level = 1,
     string? ArtId = null,
-    CombatCastResponse? ActiveCast = null);
+    CombatCastResponse? ActiveCast = null,
+    IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null);
 
 public sealed record CombatSnapshotResponse(
     Guid SessionId,
