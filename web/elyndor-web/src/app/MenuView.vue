@@ -442,6 +442,10 @@ async function syncWorld(): Promise<void> {
   padding: var(--ui-space-4);
 }
 
+:global(html[data-elyndor-motion='reduced']) .setting-switch > span::after {
+  transition: none;
+}
+
 @media (max-width: 480px) {
   .menu-view {
     padding-inline: var(--ui-space-3);
