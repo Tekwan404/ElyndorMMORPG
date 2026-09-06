@@ -70,6 +70,17 @@ public sealed class CombatHub(
             combat.StopAutoAttackAsync(
                 GetAccountId(), sessionId, commandId, Context.ConnectionAborted));
 
+    public Task<CombatUpdateResponse> SelectTarget(
+        Guid sessionId,
+        Guid targetActorId,
+        string commandId) => ToResponseAsync(
+            combat.SelectTargetAsync(
+                GetAccountId(),
+                sessionId,
+                commandId,
+                targetActorId,
+                Context.ConnectionAborted));
+
     public async Task<CombatUpdateResponse> ResumeCombat()
     {
         Guid accountId = GetAccountId();
