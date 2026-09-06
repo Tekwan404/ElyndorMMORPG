@@ -6,17 +6,20 @@ import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import MenuView from '@/app/MenuView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useUiPreferencesStore } from '@/stores/uiPreferences'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'location' | 'hero'
+type ShellView = 'world' | 'location' | 'hero' | 'menu'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
+useUiPreferencesStore()
 const activeView = ref<ShellView>('location')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
@@ -50,7 +53,7 @@ const sessionErrorMessage = computed(() => {
 })
 
 const navigation: readonly {
-  id: ShellView | 'quests' | 'menu'
+  id: ShellView | 'quests'
   label: string
   icon: string
   enabled: boolean
@@ -60,11 +63,11 @@ const navigation: readonly {
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
   { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
   { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
-  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
+  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: true },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'world' || item.id === 'location' || item.id === 'hero')) {
+  if (item.enabled && item.id !== 'quests') {
     activeView.value = item.id
   }
 }
@@ -147,6 +150,7 @@ onMounted(() => {
       />
       <WorldView v-else-if="session.state === 'world' && activeView === 'location'" />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
+      <MenuView v-else-if="session.state === 'world' && activeView === 'menu'" />
     </main>
 
     <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">
@@ -553,6 +557,16 @@ onMounted(() => {
   .hud__context > button {
     max-width: 7.5rem;
   }
+}
+
+:global(html[data-elyndor-atmosphere='off']) .game-shell {
+  background: rgb(5 7 13 / 98%);
+}
+
+:global(html[data-elyndor-motion='reduced']) .navigation__item,
+:global(html[data-elyndor-motion='reduced']) .navigation__icon,
+:global(html[data-elyndor-motion='reduced']) .setting-switch > span::after {
+  transition: none;
 }
 
 @media (min-width: 582px) {
