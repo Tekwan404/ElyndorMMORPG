@@ -180,27 +180,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
 
-          <div v-if="canExplore && lastCombatResult !== 'Victory'" class="scene__primary-action">
-            <UIButton data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
-          </div>
 
-          <nav class="scene__travel" aria-label="Переходы между локациями">
-            <small>ПУТЕШЕСТВИЕ</small>
-            <div v-if="world.outgoingTransitions.length" class="scene__travel-actions">
-              <UIButton
-                v-for="location in world.outgoingTransitions"
-                :key="location.id"
-                :data-travel="location.id"
-                :aria-label="`Отправиться: ${locationLabel(location.id, location.displayName)}`"
-                variant="secondary"
-                :loading="session.mutationPending"
-                @click="travelTo(location.id)"
-              >
-                {{ locationLabel(location.id, location.displayName) }}
-              </UIButton>
-            </div>
-            <p v-else class="scene__no-paths" role="status">Пути не найдены. Исследуйте текущую область.</p>
-          </nav>
         </div>
       </div>
     </section>
@@ -227,45 +207,95 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
-    <section v-if="isStarterTown" class="town-services">
-      <header class="town-services__header">
+    <section
+      v-if="canExplore && !selectedEncounter && lastCombatResult !== 'Victory'"
+      class="location-activities"
+      aria-labelledby="location-activities-title"
+    >
+      <header class="section-heading">
         <div>
-          <small>ЛОКАЦИЯ · СЕРВИСЫ</small>
-          <strong>Стартовый город</strong>
+          <small>АКТИВНОСТИ</small>
+          <strong id="location-activities-title">Что делать здесь</strong>
         </div>
-        <span>SAFE</span>
+        <span>ОБЛАСТЬ</span>
       </header>
 
-      <article class="service-row service-row--training">
-        <span class="service-row__icon" aria-hidden="true">⚔</span>
-        <div class="service-row__copy">
-          <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
-          <strong>Тренировочный манекен</strong>
-          <p>Проверьте билд и ротацию без риска, зелий и наград.</p>
+      <article class="activity-card activity-card--explore">
+        <div class="activity-card__icon" aria-hidden="true">⌁</div>
+        <div class="activity-card__copy">
+          <small>ИССЛЕДОВАНИЕ</small>
+          <strong>Осмотреть {{ locationName }}</strong>
+          <p>Найдите противника или событие. Результат выбирает сервер из контента текущей локации.</p>
         </div>
-        <UIButton data-start-training :loading="combat.pending" @click="startTraining">Тренироваться</UIButton>
-      </article>
-
-      <article class="service-row">
-        <span class="service-row__icon" aria-hidden="true">◆</span>
-        <div class="service-row__copy">
-          <small>ТОРГОВЕЦ</small>
-          <strong>Маркус</strong>
-          <p>Припасы, лечебные зелья и продажа добытых материалов.</p>
-        </div>
-        <UIButton @click="merchantOpen = true">Открыть</UIButton>
-      </article>
-
-      <article class="service-row service-row--passive">
-        <span class="service-row__icon" aria-hidden="true">✦</span>
-        <div class="service-row__copy">
-          <small>ОТДЫХ</small>
-          <strong>Городская площадь</strong>
-          <p>В безопасной зоне здоровье постепенно восстанавливается.</p>
-        </div>
-        <span class="service-row__status">Активно</span>
+        <UIButton data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
       </article>
     </section>
+
+    <section v-if="isStarterTown" class="town-services">
+      <header class="section-heading">
+        <div>
+          <small>ГОРОДСКИЕ СЕРВИСЫ</small>
+          <strong>Стартовый город</strong>
+        </div>
+        <span data-safe>SAFE</span>
+      </header>
+
+      <div class="service-grid">
+        <article class="service-card service-card--training" data-town-service="training">
+          <span class="service-card__icon" aria-hidden="true">⚔</span>
+          <div class="service-card__copy">
+            <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
+            <strong>Манекен</strong>
+            <p>Проверьте билд и ротацию без риска, зелий и наград.</p>
+          </div>
+          <UIButton data-start-training :loading="combat.pending" @click="startTraining">Тренироваться</UIButton>
+        </article>
+
+        <article class="service-card service-card--merchant" data-town-service="merchant">
+          <span class="service-card__icon" aria-hidden="true">◆</span>
+          <div class="service-card__copy">
+            <small>ТОРГОВЕЦ</small>
+            <strong>Маркус</strong>
+            <p>Припасы, лечебные зелья и продажа добытых материалов.</p>
+          </div>
+          <UIButton data-open-merchant @click="merchantOpen = true">Торговать</UIButton>
+        </article>
+
+        <article class="service-card service-card--rest" data-town-service="rest">
+          <span class="service-card__icon" aria-hidden="true">✦</span>
+          <div class="service-card__copy">
+            <small>ОТДЫХ</small>
+            <strong>Городская площадь</strong>
+            <p>Безопасная зона постепенно восстанавливает здоровье героя.</p>
+          </div>
+          <span class="service-card__status">Активно</span>
+        </article>
+      </div>
+    </section>
+
+    <nav class="location-routes" aria-label="Переходы между локациями">
+      <header class="section-heading">
+        <div>
+          <small>ПУТИ</small>
+          <strong>Выходы из локации</strong>
+        </div>
+        <span>{{ world.outgoingTransitions.length }}</span>
+      </header>
+      <div v-if="world.outgoingTransitions.length" class="location-routes__actions">
+        <UIButton
+          v-for="location in world.outgoingTransitions"
+          :key="location.id"
+          :data-travel="location.id"
+          :aria-label="`Отправиться: ${locationLabel(location.id, location.displayName)}`"
+          variant="secondary"
+          :loading="session.mutationPending"
+          @click="travelTo(location.id)"
+        >
+          {{ locationLabel(location.id, location.displayName) }}
+        </UIButton>
+      </div>
+      <p v-else class="location-routes__empty" role="status">Пути не найдены. Исследуйте текущую область.</p>
+    </nav>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
   </section>
@@ -383,43 +413,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   line-height: 1.55;
 }
 
-.scene__primary-action {
-  display: flex;
-  margin-top: var(--ui-space-2);
-}
-
-.scene__primary-action :deep(.ui-button) {
-  min-width: 10rem;
-}
-
-.scene__travel {
-  display: grid;
-  gap: var(--ui-space-2);
-  margin-top: var(--ui-space-4);
-  padding-top: var(--ui-space-3);
-  border-top: 1px solid rgb(255 255 255 / 10%);
-}
-
-.scene__travel > small,
-.scene-encounter small {
-  color: #bcb6ff;
-  font-size: .63rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-}
-
-.scene__travel-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ui-space-2);
-}
-
-.scene__no-paths {
-  margin: 0;
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
-}
-
 .scene-encounter {
   display: grid;
   grid-template-columns: minmax(7rem, 10rem) 1fr;
@@ -519,178 +512,203 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   padding-left: 1.2rem;
 }
 
-.town-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ui-space-3);
-}
-
-.town-services {
-  display: grid;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-lg);
-  background: linear-gradient(180deg, rgb(13 18 30 / 78%), rgb(7 10 17 / 82%));
-  box-shadow: var(--ui-shadow-inset);
-}
-
-.town-services__header {
+.section-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-3);
   padding: var(--ui-space-3) var(--ui-space-4);
-  border-bottom: 1px solid var(--ui-color-border);
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
   background: rgb(255 255 255 / 1.5%);
 }
 
-.town-services__header > div {
+.section-heading > div {
   display: grid;
   gap: 2px;
 }
 
-.town-services__header small {
-  color: var(--ui-color-primary);
-  font-size: .58rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-}
-
-.town-services__header strong {
-  margin: 0;
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-lg);
-}
-
-.town-services__header > span {
-  padding: 4px 7px;
-  border: 1px solid rgb(79 185 150 / 28%);
-  border-radius: var(--ui-radius-round);
-  color: #84d5bb;
+.section-heading small {
+  color: #aaa3ff;
   font-size: .56rem;
-  font-weight: 700;
-  letter-spacing: .06em;
+  font-weight: 800;
+  letter-spacing: .09em;
 }
 
-.service-row {
+.section-heading strong {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-md);
+}
+
+.section-heading > span {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  min-width: 1.6rem;
+  min-height: 1.6rem;
+  place-items: center;
+  padding-inline: 5px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-text-muted);
+  font-size: .54rem;
+  font-weight: 700;
+}
+
+.section-heading > span[data-safe] {
+  border-color: rgb(79 185 150 / 28%);
+  color: #84d5bb;
+}
+
+.location-activities,
+.town-services,
+.location-routes {
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-lg);
+  background:
+    linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
+  box-shadow: var(--ui-shadow-inset);
+}
+
+.activity-card {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--ui-space-3);
-  padding: var(--ui-space-3) var(--ui-space-4);
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  padding: var(--ui-space-4);
 }
 
-.service-row:last-child {
-  border-bottom: 0;
+.activity-card--explore {
+  background:
+    radial-gradient(circle at 8% 50%, rgb(208 164 88 / 9%), transparent 9rem),
+    linear-gradient(90deg, rgb(208 164 88 / 4%), transparent 70%);
 }
 
-.service-row--training {
-  background: linear-gradient(90deg, rgb(146 136 255 / 7%), transparent 62%);
-}
-
-.service-row__icon {
+.activity-card__icon,
+.service-card__icon {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 3.1rem;
+  height: 3.1rem;
   place-items: center;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-primary);
+  background:
+    radial-gradient(circle at 50% 25%, rgb(146 136 255 / 10%), transparent 62%),
+    rgb(5 8 14 / 82%);
+  color: #aaa3ff;
   font-size: 1.25rem;
 }
 
-.service-row__copy {
+.activity-card__copy,
+.service-card__copy {
   display: grid;
   min-width: 0;
   gap: 2px;
 }
 
-.service-row__copy small {
-  color: var(--ui-color-primary);
-  font-size: .55rem;
-  font-weight: 700;
-  letter-spacing: .06em;
-}
-
-.service-row__copy strong {
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-sm);
-}
-
-.service-row__copy p {
-  margin: 0;
-  color: var(--ui-color-text-muted);
-  font-size: .68rem;
-  line-height: 1.35;
-}
-
-.service-row__status {
-  padding: 4px 7px;
-  border: 1px solid rgb(79 185 150 / 22%);
-  border-radius: var(--ui-radius-round);
-  color: #84d5bb;
-  font-size: .58rem;
-}
-
-.town-service {
-  position: relative;
-  display: grid;
-  gap: var(--ui-space-2);
-  overflow: hidden;
-}
-
-.town-service::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 7rem;
-  height: 7rem;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(146 136 255 / 9%), transparent 68%);
-  content: '';
-  pointer-events: none;
-  transform: translate(30%, -35%);
-}
-
-.town-service small {
-  position: relative;
-  color: var(--ui-color-primary);
-  font-size: .63rem;
-  font-weight: 700;
+.activity-card__copy small,
+.service-card__copy small {
+  color: #aaa3ff;
+  font-size: .53rem;
+  font-weight: 800;
   letter-spacing: .07em;
 }
 
-.town-service h2,
-.town-service p {
-  position: relative;
-  margin: 0;
-}
-
-.town-service h2 {
+.activity-card__copy strong,
+.service-card__copy strong {
   font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-lg);
-}
-
-.town-service p {
-  color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-sm);
-  line-height: 1.5;
 }
 
-.town-service :deep(.ui-button) {
+.activity-card__copy p,
+.service-card__copy p {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: .66rem;
+  line-height: 1.4;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: rgb(255 255 255 / 6%);
+}
+
+.service-card {
   position: relative;
-  justify-self: start;
+  display: grid;
+  min-height: 12rem;
+  align-content: start;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  overflow: hidden;
+  background: linear-gradient(160deg, rgb(13 19 31 / 100%), rgb(5 8 14 / 100%));
+}
+
+.service-card::after {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -3rem;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(146 136 255 / 8%), transparent 68%);
+  content: '';
+  pointer-events: none;
+}
+
+.service-card--training {
+  background:
+    linear-gradient(150deg, rgb(86 76 168 / 12%), transparent 58%),
+    linear-gradient(160deg, rgb(13 19 31 / 100%), rgb(5 8 14 / 100%));
+}
+
+.service-card--merchant {
+  background:
+    linear-gradient(150deg, rgb(208 164 88 / 9%), transparent 58%),
+    linear-gradient(160deg, rgb(13 19 31 / 100%), rgb(5 8 14 / 100%));
+}
+
+.service-card--rest {
+  grid-column: 1 / -1;
+  grid-template-columns: 3.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: auto;
+  background:
+    linear-gradient(90deg, rgb(79 185 150 / 7%), transparent 64%),
+    rgb(7 11 18);
+}
+
+.service-card :deep(.ui-button) {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  align-self: end;
   margin-top: auto;
 }
 
-.town-service--training {
-  grid-column: 1 / -1;
-  border-color: color-mix(in srgb, var(--ui-color-primary) 34%, var(--ui-color-border));
-  background:
-    linear-gradient(135deg, rgb(146 136 255 / 10%), transparent 58%),
-    var(--ui-gradient-panel);
+.service-card__status {
+  position: relative;
+  z-index: 1;
+  padding: 5px 9px;
+  border: 1px solid rgb(79 185 150 / 25%);
+  border-radius: var(--ui-radius-round);
+  color: #84d5bb;
+  font-size: .57rem;
+  font-weight: 700;
+}
+
+.location-routes__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-4);
+}
+
+.location-routes__empty {
+  margin: 0;
+  padding: var(--ui-space-4);
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-sm);
 }
 
 @media (max-width: 520px) {
@@ -712,11 +730,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     max-width: 100%;
   }
 
-  .scene__primary-action,
-  .scene__primary-action :deep(.ui-button) {
-    width: 100%;
-  }
-
   .scene-encounter {
     grid-template-columns: 6.5rem 1fr;
     gap: var(--ui-space-3);
@@ -727,49 +740,63 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     max-height: 9rem;
   }
 
-  .scene__actions,
-  .scene__travel-actions {
+  .scene__actions {
     display: grid;
     grid-template-columns: 1fr;
   }
 
-  .scene__actions :deep(.ui-button),
-  .scene__travel-actions :deep(.ui-button) {
+  .scene__actions :deep(.ui-button) {
     width: 100%;
   }
 
-  .town-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .town-service--training {
-    grid-column: auto;
-  }
-
-  .town-service :deep(.ui-button) {
-    width: 100%;
-  }
-
-  .service-row {
-    grid-template-columns: 2.7rem minmax(0, 1fr);
+  .activity-card {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
     gap: var(--ui-space-2);
-    padding-inline: var(--ui-space-3);
+    padding: var(--ui-space-3);
   }
 
-  .service-row__icon {
-    width: 2.7rem;
-    height: 2.7rem;
+  .activity-card__icon {
+    width: 2.8rem;
+    height: 2.8rem;
   }
 
-  .service-row :deep(.ui-button),
-  .service-row__status {
+  .activity-card :deep(.ui-button) {
     grid-column: 1 / -1;
     width: 100%;
   }
 
-  .service-row__status {
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-card,
+  .service-card--rest {
+    grid-column: auto;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    min-height: auto;
+    align-items: center;
+    gap: var(--ui-space-3);
+    padding: var(--ui-space-3);
+  }
+
+  .service-card :deep(.ui-button),
+  .service-card__status {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .service-card__status {
     box-sizing: border-box;
     text-align: center;
+  }
+
+  .location-routes__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .location-routes__actions :deep(.ui-button) {
+    width: 100%;
   }
 }
 </style>
