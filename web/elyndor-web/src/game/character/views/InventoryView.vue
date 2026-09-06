@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -12,6 +12,8 @@ const inventory = computed(() => character.value?.inventory)
 const selectedItem = ref<InventoryItem | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
+const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
+const newItemIds = ref<Set<string>>(new Set())
 
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
@@ -22,11 +24,171 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
   return typeMatches && rarityMatches
 }))
+const sortedItems = computed(() => {
+  const items = [...filteredItems.value]
+  if (sortMode.value === 'rarity') {
+    items.sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity)
+      || left.name.localeCompare(right.name))
+  } else if (sortMode.value === 'level') {
+    items.sort((left, right) => right.requiredLevel - left.requiredLevel
+      || rarityRank(right.rarity) - rarityRank(left.rarity))
+  } else if (sortMode.value === 'name') {
+    items.sort((left, right) => left.name.localeCompare(right.name))
+  }
+  return items
+})
 const visibleCells = computed(() => {
-  if (typeFilter.value !== 'all' || rarityFilter.value !== 'all') return filteredItems.value
-  return Array.from({ length: BAG_CAPACITY }, (_, index) => bagItems.value[index] ?? null)
+  if (typeFilter.value !== 'all' || rarityFilter.value !== 'all') return sortedItems.value
+  return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
 })
 const usedSlots = computed(() => bagItems.value.length)
+const comparisonItem = computed(() =>
+  selectedItem.value?.type === 'Equipment'
+    ? equippedItemForSlot(selectedItem.value)
+    : null,
+)
+const comparisonRows = computed(() => {
+  const candidate = selectedItem.value
+  const equipped = comparisonItem.value
+  if (!candidate || !equipped) return []
+
+  return comparisonStats
+    .map(stat => {
+      const candidateValue = stat.value(candidate)
+      const equippedValue = stat.value(equipped)
+      const delta = candidateValue - equippedValue
+      return {
+        label: stat.label,
+        candidateValue,
+        equippedValue,
+        delta,
+      }
+    })
+    .filter(row => row.candidateValue !== 0 || row.equippedValue !== 0)
+})
+
+
+const comparisonStats: readonly {
+  label: string
+  value: (item: InventoryItem) => number
+}[] = [
+  { label: 'Сила', value: item => item.stats.strength },
+  { label: 'Ловкость', value: item => item.stats.agility },
+  { label: 'Интеллект', value: item => item.stats.intellect },
+  { label: 'Выносливость', value: item => item.stats.stamina },
+  { label: 'Макс. здоровье', value: item => item.stats.maxHp },
+  { label: 'Сила атаки', value: item => item.stats.attackPower },
+  { label: 'Сила заклинаний', value: item => item.stats.spellPower },
+  { label: 'Крит. шанс', value: item => item.stats.criticalChance },
+  { label: 'Броня', value: item => item.stats.armor },
+  { label: 'Сопротивление магии', value: item => item.stats.magicResistance },
+  { label: 'Уклонение', value: item => item.stats.dodge + item.dodgePercent },
+  { label: 'Скорость атаки', value: item => item.stats.attackSpeed + item.attackSpeedPercent },
+  { label: 'Макс. ресурс', value: item => item.stats.maxResource },
+]
+
+function rarityRank(rarity: InventoryItem['rarity']): number {
+  if (rarity === 'Unique') return 6
+  if (rarity === 'Legendary') return 5
+  if (rarity === 'Epic') return 4
+  if (rarity === 'Rare') return 3
+  if (rarity === 'Uncommon') return 2
+  return 1
+}
+
+function equippedItemForSlot(item: InventoryItem): InventoryItem | null {
+  const equipped = inventory.value?.equipped
+  if (!equipped || !item.slot) return null
+
+  if (item.slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
+  if (item.slot === 'OffHand') return equipped.offHand ?? null
+  if (item.slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
+  if (item.slot === 'Head') return equipped.head
+  if (item.slot === 'Chest') return equipped.chest
+  if (item.slot === 'Hands') return equipped.hands ?? null
+  if (item.slot === 'Legs') return equipped.legs
+  if (item.slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
+  if (item.slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
+  if (item.slot === 'Cloak') return equipped.cloak ?? null
+  if (item.slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
+  if (item.slot === 'Ring1') return equipped.ring1 ?? null
+  if (item.slot === 'Ring2') return equipped.ring2 ?? null
+  if (item.slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
+  return null
+}
+
+function comparisonDeltaLabel(delta: number): string {
+  if (delta > 0) return `+${formatNumber(delta)}`
+  if (delta < 0) return formatNumber(delta)
+  return '0'
+}
+
+function formatNumber(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
+}
+
+function openItem(item: InventoryItem | null): void {
+  selectedItem.value = item
+  if (item) markItemSeen(item.id)
+}
+
+function seenStorageKey(): string | null {
+  const characterId = character.value?.id
+  return characterId ? `elyndor.inventory.seen.${characterId}` : null
+}
+
+function syncNewItems(): void {
+  const key = seenStorageKey()
+  if (!key) {
+    newItemIds.value = new Set()
+    return
+  }
+
+  const currentIds = bagItems.value.map(item => item.id)
+  try {
+    const raw = globalThis.localStorage?.getItem(key)
+    if (raw === null) {
+      globalThis.localStorage?.setItem(key, JSON.stringify(currentIds))
+      newItemIds.value = new Set()
+      return
+    }
+
+    const parsed = JSON.parse(raw) as unknown
+    const seen = new Set(Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string')
+      : [])
+    newItemIds.value = new Set(currentIds.filter(id => !seen.has(id)))
+  } catch {
+    newItemIds.value = new Set()
+  }
+}
+
+function markItemSeen(itemId: string): void {
+  const key = seenStorageKey()
+  if (!key || !newItemIds.value.has(itemId)) return
+
+  try {
+    const raw = globalThis.localStorage?.getItem(key)
+    const parsed = raw ? JSON.parse(raw) as unknown : []
+    const seen = new Set(Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string')
+      : [])
+    seen.add(itemId)
+    globalThis.localStorage?.setItem(key, JSON.stringify([...seen]))
+  } catch {
+    // NEW is a presentation hint only; storage failure must not block inventory actions.
+  }
+
+  const next = new Set(newItemIds.value)
+  next.delete(itemId)
+  newItemIds.value = next
+}
+
+watch(
+  () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
+  syncNewItems,
+  { immediate: true },
+)
 
 function statRows(item: InventoryItem): string[] {
   return [
@@ -134,6 +296,18 @@ async function useSelected(): Promise<void> {
           <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
         </div>
       </div>
+      <div class="filter-row filter-row--sort">
+        <small>Порядок</small>
+        <label class="sort-select">
+          <span class="sr-only">Сортировка предметов</span>
+          <select v-model="sortMode" data-inventory-sort>
+            <option value="default">Как получено</option>
+            <option value="rarity">По редкости</option>
+            <option value="level">По уровню</option>
+            <option value="name">По названию</option>
+          </select>
+        </label>
+      </div>
     </section>
 
     <section v-if="inventory" class="bag-surface">
@@ -155,12 +329,15 @@ async function useSelected(): Promise<void> {
           class="bag-cell"
           :class="{ 'bag-cell--empty': !item }"
           :data-rarity="item?.rarity"
+          :data-item-id="item?.id"
+          :data-new="item ? newItemIds.has(item.id) : undefined"
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
-          @click="selectedItem = item"
+          @click="openItem(item)"
         >
           <template v-if="item">
+            <span v-if="newItemIds.has(item.id)" class="bag-cell__new">NEW</span>
             <span class="bag-cell__icon">{{ itemGlyph(item) }}</span>
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
@@ -190,6 +367,26 @@ async function useSelected(): Promise<void> {
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
         </dl>
+
+        <section v-if="comparisonItem" class="item-comparison" aria-label="Сравнение с надетым предметом">
+          <header>
+            <div>
+              <small>СРАВНЕНИЕ</small>
+              <strong>Сейчас: {{ comparisonItem.name }}</strong>
+            </div>
+            <span>{{ typeLabel(comparisonItem) }}</span>
+          </header>
+          <div v-if="comparisonRows.length" class="comparison-grid">
+            <div v-for="row in comparisonRows" :key="row.label">
+              <span>{{ row.label }}</span>
+              <small>{{ formatNumber(row.equippedValue) }} → {{ formatNumber(row.candidateValue) }}</small>
+              <b :data-delta="row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same'">
+                {{ comparisonDeltaLabel(row.delta) }}
+              </b>
+            </div>
+          </div>
+          <p v-else class="item-detail__hint">Характеристики предметов совпадают.</p>
+        </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
         <p v-if="selectedItem.type === 'Material'" class="item-detail__hint">Можно сохранить для ремесла или продать Маркусу за {{ selectedItem.sellPriceGold }} золота за штуку.</p>
@@ -338,6 +535,32 @@ async function useSelected(): Promise<void> {
   color: #d5d2ff;
 }
 
+.sort-select {
+  display: block;
+  min-width: 0;
+}
+
+.sort-select select {
+  width: min(100%, 15rem);
+  min-height: 2rem;
+  padding: 0 var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: var(--ui-color-surface-2);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  font-size: .62rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .bag-surface {
   display: grid;
   gap: var(--ui-space-3);
@@ -417,6 +640,21 @@ async function useSelected(): Promise<void> {
   font-size: clamp(1.35rem, 7vw, 1.85rem);
 }
 
+.bag-cell__new {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 4px;
+  padding: 2px 4px;
+  border: 1px solid rgb(184 177 255 / 48%);
+  border-radius: 4px;
+  background: rgb(20 17 44 / 92%);
+  color: #c8c3ff;
+  font-size: .47rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
 .bag-cell__quantity {
   position: absolute;
   right: 4px;
@@ -494,6 +732,73 @@ async function useSelected(): Promise<void> {
 
 .item-detail dl div {
   color: var(--ui-color-success);
+}
+
+.item-comparison {
+  display: grid;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-3);
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 34%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(180deg, rgb(146 136 255 / 6%), rgb(255 255 255 / 1%));
+}
+
+.item-comparison > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.item-comparison > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.item-comparison > header small,
+.item-comparison > header > span {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.item-comparison > header small {
+  color: #b8b1ff;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.comparison-grid {
+  display: grid;
+  gap: 5px;
+}
+
+.comparison-grid > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 3.6rem;
+  align-items: center;
+  gap: var(--ui-space-2);
+  padding-top: 5px;
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  font-size: .67rem;
+}
+
+.comparison-grid small {
+  color: var(--ui-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-grid b {
+  justify-self: end;
+  color: var(--ui-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-grid b[data-delta='up'] {
+  color: var(--ui-color-success);
+}
+
+.comparison-grid b[data-delta='down'] {
+  color: var(--ui-color-danger);
 }
 
 .item-detail__hint {
