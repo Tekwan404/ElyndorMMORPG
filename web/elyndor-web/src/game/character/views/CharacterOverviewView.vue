@@ -133,7 +133,7 @@ function abilityInitials(ability: KnownAbility): string {
       <header class="paperdoll__identity">
         <div>
           <p class="eyebrow">Герой</p>
-          <h1>{{ character.name }}</h1>
+          <h1>Снаряжение</h1>
           <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }}</p>
         </div>
         <div class="paperdoll__meta">
