@@ -76,7 +76,8 @@ public sealed class CombatSessionFactory(
         MonsterDefinition? monster = isTraining
             ? CreateTrainingDummy(character.Level)
             : indexes.MonstersById.GetValueOrDefault(monsterId);
-        if (monster is null || !isTraining && monster.Rank != MonsterRank.Normal)
+        if (monster is null
+            || !isTraining && monster.Rank is not (MonsterRank.Normal or MonsterRank.Boss))
             return Failure(CombatErrorCodes.UnsupportedMonster, character.Id);
 
         if (bootstrap.World is null
