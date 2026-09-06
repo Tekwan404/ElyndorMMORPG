@@ -128,6 +128,23 @@ public sealed class ContentPublicationService(
             if (release is null)
                 return null;
 
+            ContentRevision? revision =
+                await revisionStore.GetRevisionAsync(
+                    release.RevisionId,
+                    cancellationToken);
+            if (revision is null)
+            {
+                throw new InvalidDataException(
+                    $"Published content revision '{release.RevisionId}' is missing.");
+            }
+
+            if (IsNewerContentVersion(
+                    snapshotProvider.GetCurrent().ContentVersion,
+                    revision.ContentVersion))
+            {
+                return null;
+            }
+
             GameContentPackage? package =
                 await revisionImporter.LoadRevisionPackageAsync(
                     release.RevisionId,
@@ -155,4 +172,11 @@ public sealed class ContentPublicationService(
             coordinator.Gate.Release();
         }
     }
+
+    private static bool IsNewerContentVersion(
+        string bundledContentVersion,
+        string publishedContentVersion) =>
+        Version.TryParse(bundledContentVersion, out Version? bundled)
+        && Version.TryParse(publishedContentVersion, out Version? published)
+        && bundled > published;
 }

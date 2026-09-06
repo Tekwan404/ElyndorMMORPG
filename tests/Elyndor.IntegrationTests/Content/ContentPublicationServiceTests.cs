@@ -159,6 +159,46 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task RestoreLatestReleaseKeepsNewerBundledContentInsteadOfOlderPublishedRevision()
+    {
+        MutableTimeProvider timeProvider = new(Start);
+
+        await using (GameDbContext seedContext = postgres.CreateDbContext())
+        {
+            ContentRevisionStore seedStore = new(seedContext, timeProvider);
+            ContentRevision olderRevision = await CreateRevisionAsync(
+                seedStore,
+                CreatePackage("0.10.2", "0.8.0", Start.AddMinutes(1)),
+                "older published content");
+            _ = await seedStore.PublishAsync(
+                olderRevision.Id,
+                "integration-test",
+                "published before newer application release",
+                CancellationToken.None);
+        }
+
+        await using GameDbContext runtimeContext = postgres.CreateDbContext();
+        ContentRevisionStore runtimeStore = new(runtimeContext, timeProvider);
+        MutableContentSnapshotProvider provider =
+            new(CreatePackage("0.11.0", "0.9.1", Start.AddMinutes(2)));
+        ContentPublicationService service = new(
+            runtimeStore,
+            new ContentRevisionImporter(runtimeStore),
+            provider,
+            new ContentPublicationCoordinator());
+
+        ContentPublicationResult? restored =
+            await service.RestoreLatestReleaseAsync(CancellationToken.None);
+
+        Assert.Null(restored);
+        Assert.Equal("0.11.0", provider.GetCurrent().ContentVersion);
+        Assert.Equal("0.9.1", provider.GetCurrent().BalanceVersion);
+        Assert.Null(provider.GetRuntimeState().RevisionId);
+        Assert.Null(provider.GetRuntimeState().ReleaseId);
+        Assert.Equal(0, provider.CachedRevisionCount);
+    }
+
+    [Fact]
     public async Task StartupRestoreFallsBackToFileContentForIncompatiblePublishedRevision()
     {
         MutableTimeProvider timeProvider = new(Start);
