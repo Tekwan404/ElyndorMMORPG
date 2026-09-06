@@ -120,13 +120,15 @@ public sealed class AbilityEngineTests
     }
 
     [Fact]
-    public void AllEnemiesAbilityResolvesAgainstEveryOtherRuntimeActor()
+    public void AllEnemiesAbilityUsesOnlyExplicitServerResolvedTargets()
     {
         CombatRuntimeState runtime = CreateRuntime(resource: 50);
         CombatActorState first = CombatActorState.CreateDummy(100);
         CombatActorState second = CombatActorState.CreateDummy(100);
+        CombatActorState unrelated = CombatActorState.CreateDummy(100);
         runtime.AddActor(first);
         runtime.AddActor(second);
+        runtime.AddActor(unrelated);
         AbilityDefinition ability = Instant("WHIRLWIND", 35, 10) with
         {
             TargetType = AbilityTargetType.AllEnemiesInCombat,
@@ -139,13 +141,68 @@ public sealed class AbilityEngineTests
         };
 
         AbilityExecutionResult result = AbilityEngine.Execute(
-            runtime, ability, new AbilityIntent("whirlwind", ability.Id, first.ActorId),
-            Now, new SequenceGameRandom(0.9m, 0.9m));
+            runtime,
+            ability,
+            new AbilityIntent(
+                "whirlwind",
+                ability.Id,
+                first.ActorId,
+                [first.ActorId, second.ActorId]),
+            Now,
+            new SequenceGameRandom(0.9m, 0.9m));
 
         Assert.True(result.Succeeded);
+        Assert.Equal(15, runtime.Actor.CurrentResource);
+        Assert.Equal(Now.AddSeconds(10), runtime.Cooldowns[ability.Id]);
         Assert.Equal(80, first.CurrentHp);
         Assert.Equal(80, second.CurrentHp);
-        Assert.Equal(2, result.Events.Count(item => item.Type == CombatEventType.DamageDealt));
+        Assert.Equal(100, unrelated.CurrentHp);
+        Assert.Equal(
+            [first.ActorId, second.ActorId],
+            result.Events
+                .Where(item => item.Type == CombatEventType.DamageDealt)
+                .Select(item => item.TargetActorId));
+    }
+
+    [Fact]
+    public void NEnemiesAbilityRejectsMoreTargetsThanConfiguredCap()
+    {
+        CombatRuntimeState runtime = CreateRuntime(resource: 50);
+        CombatActorState first = CombatActorState.CreateDummy(100);
+        CombatActorState second = CombatActorState.CreateDummy(100);
+        CombatActorState third = CombatActorState.CreateDummy(100);
+        runtime.AddActor(first);
+        runtime.AddActor(second);
+        runtime.AddActor(third);
+        AbilityDefinition ability = Instant("CLEAVE_TWO", 5, 0) with
+        {
+            TargetType = AbilityTargetType.NEnemiesInCombat,
+            TargetCount = 2,
+            Actions =
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage, 10, DamageType.True,
+                    CanMiss: false, CanCrit: false, CanDodge: false)
+            ]
+        };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent(
+                "cleave-too-many",
+                ability.Id,
+                first.ActorId,
+                [first.ActorId, second.ActorId, third.ActorId]),
+            Now,
+            new SequenceGameRandom(0.9m, 0.9m, 0.9m));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AbilityErrorCode.InvalidTarget, result.ErrorCode);
+        Assert.Equal(50, runtime.Actor.CurrentResource);
+        Assert.Equal(100, first.CurrentHp);
+        Assert.Equal(100, second.CurrentHp);
+        Assert.Equal(100, third.CurrentHp);
     }
 
     private static CombatRuntimeState CreateRuntime(decimal resource) =>
