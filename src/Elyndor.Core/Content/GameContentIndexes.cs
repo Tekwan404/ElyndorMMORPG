@@ -30,6 +30,7 @@ public sealed class GameContentIndexes
         MonstersById = ToDictionary(package.Monsters, item => item.Id);
         MonsterAiProfilesById = ToDictionary(package.MonsterAiProfiles, item => item.Id);
         LocationsById = package.Locations.ToDictionary(item => item.Id, StringComparer.Ordinal);
+        WorldContractsById = ToDictionary(package.WorldContracts, item => item.Id);
     }
 
     public IReadOnlyDictionary<GameContentDefinitionKey, GameContentDefinition> DefinitionsByKey { get; }
@@ -46,6 +47,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, MonsterDefinition> MonstersById { get; }
     public IReadOnlyDictionary<string, MonsterAiProfile> MonsterAiProfilesById { get; }
     public IReadOnlyDictionary<string, LocationDefinition> LocationsById { get; }
+    public IReadOnlyDictionary<string, WorldContractDefinition> WorldContractsById { get; }
 
     public static GameContentIndexes For(GameContentPackage package)
     {
