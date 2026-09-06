@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
@@ -47,8 +48,21 @@ public sealed record MerchantOperationResult(
 public sealed class MerchantService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
+    IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    public MerchantService(
+        GameDbContext dbContext,
+        IContentSnapshotProvider contentProvider,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            contentProvider,
+            new SystemGameRandomFactory(),
+            timeProvider)
+    {
+    }
+
     public MerchantService(
         GameDbContext dbContext,
         GameContentPackage content,
@@ -56,6 +70,20 @@ public sealed class MerchantService(
         : this(
             dbContext,
             new StaticContentSnapshotProvider(content),
+            new SystemGameRandomFactory(),
+            timeProvider)
+    {
+    }
+
+    public MerchantService(
+        GameDbContext dbContext,
+        GameContentPackage content,
+        IGameRandomFactory randomFactory,
+        TimeProvider timeProvider)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            randomFactory,
             timeProvider)
     {
     }
@@ -333,7 +361,15 @@ public sealed class MerchantService(
         {
             for (var index = 0; index < quantity; index++)
                 dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(), characterId, definition.Id, 1, timeProvider.GetUtcNow()));
+                    Guid.NewGuid(),
+                    characterId,
+                    definition.Id,
+                    1,
+                    timeProvider.GetUtcNow(),
+                    definition.Version,
+                    definition.Type == ItemType.Equipment
+                        ? ItemInstanceStatRoller.Resolve(definition, randomFactory.Create())
+                        : null));
             return;
         }
 
@@ -341,6 +377,7 @@ public sealed class MerchantService(
         CharacterItem[] stacks = await dbContext.CharacterItems
             .Where(item => item.CharacterId == characterId
                 && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
                 && item.Quantity < definition.MaxStack)
             .OrderBy(item => item.AcquiredAtUtc)
             .ToArrayAsync(cancellationToken);
@@ -358,7 +395,12 @@ public sealed class MerchantService(
         {
             int stackSize = Math.Min(definition.MaxStack, remaining);
             dbContext.CharacterItems.Add(new CharacterItem(
-                Guid.NewGuid(), characterId, definition.Id, stackSize, timeProvider.GetUtcNow()));
+                Guid.NewGuid(),
+                characterId,
+                definition.Id,
+                stackSize,
+                timeProvider.GetUtcNow(),
+                definition.Version));
             remaining -= stackSize;
         }
     }
