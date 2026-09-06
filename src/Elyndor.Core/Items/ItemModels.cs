@@ -19,6 +19,21 @@ public enum ItemRarity
     Unique
 }
 
+public enum ConsumableActionType
+{
+    RestoreHp,
+    RestoreResource,
+    ApplyEffect,
+    RemoveEffect
+}
+
+public sealed record ConsumableActionDefinition(
+    ConsumableActionType Type,
+    decimal Amount = 0,
+    string? ResourceType = null,
+    string? EffectId = null,
+    string? DispelCategory = null);
+
 public enum EquipmentSlot
 {
     // Modern canonical slots.
@@ -129,8 +144,9 @@ public sealed record ItemDefinition(
     decimal? WeaponBaseAttackIntervalSeconds = null,
     decimal AttackSpeedPercent = 0,
     decimal DodgePercent = 0,
-    decimal HealAmount = 0,
     decimal ConsumableCooldownSeconds = 0,
+    IReadOnlyList<ConsumableActionDefinition>? ConsumableActions = null,
+    string? ConsumableCooldownCategoryId = null,
     int BuyPriceGold = 0,
     int SellPriceGold = 0,
     string? WeaponCategory = null,
