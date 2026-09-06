@@ -23,6 +23,31 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void SeededAbilityCooldownBlocksSkillUntilItsOriginalReadyTime()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false,
+            initialPlayerCooldowns: new Dictionary<string, DateTimeOffset>(
+                StringComparer.Ordinal)
+            {
+                ["STRIKE"] = Now.AddSeconds(30)
+            });
+
+        CombatCommandResult blocked = session.Handle(
+            new UseAbilityCommand("seeded-cooldown-block", "STRIKE", Guid.Empty),
+            Now.AddSeconds(5));
+        CombatCommandResult ready = session.Handle(
+            new UseAbilityCommand("seeded-cooldown-ready", "STRIKE", Guid.Empty),
+            Now.AddSeconds(31));
+
+        Assert.False(blocked.Succeeded);
+        Assert.Equal(CombatErrorCodes.AbilityOnCooldown, blocked.ErrorCode);
+        Assert.True(ready.Succeeded);
+    }
+
+    [Fact]
     public void HealingConsumableRestoresHpAndStartsCategoryCooldown()
     {
         CombatSession session = CreateSession(
@@ -1271,7 +1296,8 @@ public sealed class CombatSessionTests
         AutoAttackProfile? offHandAutoAttack = null,
         decimal playerHp = 200,
         decimal playerResource = 0,
-        bool canAutoAttack = true)
+        bool canAutoAttack = true,
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -1332,7 +1358,7 @@ public sealed class CombatSessionTests
         return new CombatSession(
             SessionId, player, enemy, abilities, ai,
             talents ?? ResolvedTalentModifiers.Empty, random, Now,
-            contentVersion, balanceVersion);
+            contentVersion, balanceVersion, initialPlayerCooldowns);
     }
 
     private static object EventSignature(CombatEvent item) => new
