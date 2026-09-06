@@ -53,6 +53,31 @@ public sealed class EquipmentStatModifierResolverTests
         Assert.Single(result.ActiveSetBonuses);
     }
 
+    [Fact]
+    public void ResolvesMainHandWeaponDamageRange()
+    {
+        ItemDefinition weapon = new(
+            "TEST_SWORD",
+            "Test Sword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(1, 0, 0, 0),
+            "Test",
+            WeaponCategory: EquipmentCategoryIds.OneHandSword,
+            WeaponDamageMin: 8,
+            WeaponDamageMax: 12);
+
+        EquipmentModifierSummary result =
+            EquipmentStatModifierResolver.ResolveDetailed([weapon], []);
+
+        Assert.Equal(8m, result.WeaponDamageMin);
+        Assert.Equal(12m, result.WeaponDamageMax);
+    }
+
     private static ItemDefinition Item(
         string id,
         EquipmentSlot slot,
