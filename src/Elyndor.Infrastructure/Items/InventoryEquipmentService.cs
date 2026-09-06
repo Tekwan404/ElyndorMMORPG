@@ -21,6 +21,7 @@ public static class InventoryErrorCodes
     public const string NotEquipment = "inventory_item_not_equipment";
     public const string NotConsumable = "inventory_item_not_consumable";
     public const string ConsumableNotNeeded = "inventory_consumable_not_needed";
+    public const string ConsumableUnavailable = "inventory_consumable_unavailable";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
     public const string ClassRestricted = "inventory_class_restricted";
