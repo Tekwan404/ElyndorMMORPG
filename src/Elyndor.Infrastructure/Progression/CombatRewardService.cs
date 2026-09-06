@@ -137,9 +137,7 @@ public sealed class CombatRewardService(
                     candidate => candidate.Gold + goldEarned),
                 cancellationToken);
 
-        IReadOnlyList<LootRoll> loot = RollLoot(monster, indexes)
-            .Where(roll => IsLootEligibleForClass(roll.ItemId, character.ClassId, indexes))
-            .ToArray();
+        IReadOnlyList<LootRoll> loot = RollLoot(monster, indexes);
         DateTimeOffset now = timeProvider.GetUtcNow();
         foreach (LootRoll roll in loot)
             await AddItemAsync(characterId, roll, now, indexes, cancellationToken);
@@ -204,52 +202,6 @@ public sealed class CombatRewardService(
                 $"Loot table '{monster.LootTableId}' is missing from game content.");
         }
         return LootRoller.Roll(table, randomFactory.Create());
-    }
-
-    private static bool IsLootEligibleForClass(
-        string itemId,
-        string classId,
-        GameContentIndexes indexes)
-    {
-        if (!indexes.ItemsById.TryGetValue(itemId, out ItemDefinition? definition))
-            throw new InvalidOperationException($"Item '{itemId}' is missing from game content.");
-        if (definition.Type != ItemType.Equipment)
-            return true;
-
-        if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile))
-            throw new InvalidOperationException($"Class '{classId}' is missing from game content.");
-
-        if (definition.AllowedClassIds is { Count: > 0 }
-            && !definition.AllowedClassIds.Contains(classId, StringComparer.Ordinal))
-        {
-            return false;
-        }
-
-        if (definition.WeaponCategory is not null
-            && !classProfile.AllowedWeaponCategories.Contains(
-                definition.WeaponCategory,
-                StringComparer.Ordinal))
-        {
-            return false;
-        }
-
-        if (definition.ArmorCategory is not null
-            && !classProfile.AllowedArmorCategories.Contains(
-                definition.ArmorCategory,
-                StringComparer.Ordinal))
-        {
-            return false;
-        }
-
-        if (definition.OffHandCategory is not null
-            && !(classProfile.AllowedOffHandCategories ?? []).Contains(
-                definition.OffHandCategory,
-                StringComparer.Ordinal))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     private async Task AddItemAsync(
