@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Elyndor.Core.Content;
 
 namespace Elyndor.Infrastructure.Content;
@@ -20,8 +21,9 @@ public static class GameContentPackageCodec
         GameContentPackage package;
         try
         {
+            string compatiblePayloadJson = UpgradeLegacyPayload(payloadJson);
             package = JsonSerializer.Deserialize<GameContentPackage>(
-                payloadJson,
+                compatiblePayloadJson,
                 GameContentJson.SerializerOptions)
                 ?? throw new InvalidDataException("Content revision payload is empty.");
         }
@@ -46,6 +48,57 @@ public static class GameContentPackageCodec
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadJson);
         return Convert.ToHexString(
             SHA256.HashData(Encoding.UTF8.GetBytes(payloadJson)));
+    }
+
+    private static string UpgradeLegacyPayload(string payloadJson)
+    {
+        JsonNode? root = JsonNode.Parse(payloadJson);
+        if (root is not JsonObject package
+            || package["items"] is not JsonArray items)
+        {
+            return payloadJson;
+        }
+
+        bool changed = false;
+        foreach (JsonNode? itemNode in items)
+        {
+            if (itemNode is not JsonObject item
+                || item["healAmount"] is not JsonValue healAmountValue
+                || !healAmountValue.TryGetValue<decimal>(out decimal healAmount))
+            {
+                continue;
+            }
+
+            item.Remove("healAmount");
+            changed = true;
+
+            if (healAmount <= 0)
+                continue;
+
+            if (item["consumableActions"] is null)
+            {
+                item["consumableActions"] = new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["type"] = "RestoreHp",
+                        ["amount"] = healAmount,
+                        ["resourceType"] = null,
+                        ["effectId"] = null,
+                        ["dispelCategory"] = null
+                    }
+                };
+            }
+
+            if (item["consumableCooldownCategoryId"] is null)
+            {
+                item["consumableCooldownCategoryId"] = "HEALING_POTION";
+            }
+        }
+
+        return changed
+            ? package.ToJsonString(GameContentJson.SerializerOptions)
+            : payloadJson;
     }
 }
 

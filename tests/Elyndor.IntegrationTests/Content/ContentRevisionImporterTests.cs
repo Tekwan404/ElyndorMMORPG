@@ -1,4 +1,6 @@
+using System.Text.Json.Nodes;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
@@ -71,6 +73,35 @@ public sealed class ContentRevisionImporterTests(PostgresFixture postgres) : IAs
         Assert.Single(await verify.ContentRevisions.AsNoTracking().ToArrayAsync());
         Assert.Single(await verify.ContentAuditEntries.AsNoTracking().ToArrayAsync());
         Assert.Empty(await verify.ContentReleases.AsNoTracking().ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task LegacyHealAmountPayloadIsUpgradedToConsumableAction()
+    {
+        string packagePath = Path.GetFullPath("content/package.json");
+        GameContentPackage source =
+            await GameContentPackageLoader.LoadAsync(packagePath);
+        JsonObject payload = JsonNode.Parse(
+            GameContentPackageCodec.SerializeCanonical(source))!.AsObject();
+        JsonArray items = payload["items"]!.AsArray();
+        JsonObject potion = items
+            .Select(node => node!.AsObject())
+            .Single(item => item["id"]!.GetValue<string>() == "SMALL_HEALING_POTION");
+
+        decimal expectedHeal = potion["consumableActions"]!.AsArray()[0]!["amount"]!.GetValue<decimal>();
+        potion.Remove("consumableActions");
+        potion.Remove("consumableCooldownCategoryId");
+        potion["healAmount"] = expectedHeal;
+
+        GameContentPackage restored =
+            GameContentPackageCodec.DeserializeValidated(payload.ToJsonString());
+        ItemDefinition restoredPotion = restored.Items!
+            .Single(item => item.Id == "SMALL_HEALING_POTION");
+
+        ConsumableActionDefinition action = Assert.Single(restoredPotion.ConsumableActions!);
+        Assert.Equal(ConsumableActionType.RestoreHp, action.Type);
+        Assert.Equal(expectedHeal, action.Amount);
+        Assert.Equal("HEALING_POTION", restoredPotion.ConsumableCooldownCategoryId);
     }
 
     [Fact]
