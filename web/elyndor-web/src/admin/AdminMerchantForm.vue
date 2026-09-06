@@ -101,7 +101,7 @@ function cloneRecord(value: JsonRecord): JsonRecord {
         </select>
         <button type="button" :disabled="availableItems.length === 0" @click="addItem">+ В ассортимент</button>
       </div>
-      <p class="hint">Сервер не даст опубликовать отсутствующий предмет, неизвестную локацию или предмет с Buy Price = 0.</p>
+      <p class="hint">Сервер не даст опубликовать отсутствующий предмет, неизвестную локацию или предмет с ценой покупки 0.</p>
     </fieldset>
   </div>
 </template>
