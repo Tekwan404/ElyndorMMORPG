@@ -331,6 +331,12 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("RewardSourcesJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
                     b.Property<int>("XpEarned")
                         .HasColumnType("integer");
 
@@ -343,6 +349,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("combat_reward_grants", "game", t =>
                         {
                             t.HasCheckConstraint("ck_combat_reward_grants_gold_non_negative", "\"GoldEarned\" >= 0");
+
+                            t.HasCheckConstraint("ck_combat_reward_grants_sources_json", "jsonb_typeof(\"RewardSourcesJson\") = 'array'");
 
                             t.HasCheckConstraint("ck_combat_reward_grants_xp_non_negative", "\"XpEarned\" >= 0");
                         });
