@@ -136,7 +136,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         >
           Продать
         </button>
-        <button type="button" disabled title="Будет добавлено вместе с buyback-системой">Выкуп</button>
+        <button type="button" disabled title="Будет добавлено вместе с системой обратного выкупа">Выкуп</button>
       </nav>
 
       <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
