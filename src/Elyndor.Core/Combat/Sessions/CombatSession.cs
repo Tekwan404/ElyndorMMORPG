@@ -285,7 +285,7 @@ public sealed partial class CombatSession
             ResolvePlayerAbility(baseAbility, now),
             now);
         Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability);
-        if (targetActorIds.Count == 0)
+        if (targetActorIds.Length == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         Guid primaryTargetActorId = targetActorIds[0];
         IReadOnlyDictionary<Guid, AbilityTargetModifier> targetModifiers =
