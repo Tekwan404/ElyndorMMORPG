@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
