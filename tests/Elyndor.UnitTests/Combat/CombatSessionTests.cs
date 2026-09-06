@@ -18,6 +18,7 @@ public sealed class CombatSessionTests
     private static readonly Guid PlayerId = Guid.Parse("20000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyId = Guid.Parse("30000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyTwoId = Guid.Parse("40000000-0000-0000-0000-000000000001");
+    private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
     public void SnapshotKeepsPinnedContentIdentity()
@@ -342,6 +343,92 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void SingleEnemyAbilityUsesSelectedTargetInsteadOfCallerTarget()
+    {
+        CombatSession session = CreateTargetingSession(100, 100, 100);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("single-authoritative", "STRIKE", EnemyTwoId),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(0, result.Snapshot.Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyId).Hp);
+        Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyTwoId).Hp);
+    }
+
+    [Fact]
+    public void AllEnemiesAbilityHitsEveryAliveEnemyInEncounterOrderOnce()
+    {
+        CombatSession session = CreateTargetingSession(100, 100, 100);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("all-targets", "WHIRLWIND", Guid.Empty),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(65, result.Snapshot.Player.Resource);
+        Assert.Equal(
+            Now.AddSeconds(10),
+            result.Snapshot.Player.Cooldowns["WHIRLWIND"]);
+        Assert.All(result.Snapshot.Enemies!, enemy => Assert.Equal(80, enemy.Hp));
+        Assert.Equal(
+            [EnemyId, EnemyTwoId, EnemyThreeId],
+            result.Events
+                .Where(item => item.Type == CombatEventType.DamageDealt
+                    && item.DefinitionId == "WHIRLWIND")
+                .Select(item => item.TargetActorId));
+    }
+
+    [Fact]
+    public void NEnemiesAbilitySelectsNextAliveEnemiesInEncounterOrder()
+    {
+        CombatSession session = CreateTargetingSession(1, 100, 100);
+        CombatCommandResult killed = session.Handle(
+            new UseAbilityCommand("kill-first-for-n", "STRIKE", EnemyThreeId),
+            Now);
+        Assert.True(killed.Succeeded);
+        Assert.Equal(EnemyTwoId, killed.Snapshot.SelectedTargetActorId);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("cleave-two", "CLEAVE_TWO", EnemyId),
+            Now.AddMilliseconds(1));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(
+            [EnemyTwoId, EnemyThreeId],
+            result.Events
+                .Where(item => item.Type == CombatEventType.DamageDealt
+                    && item.DefinitionId == "CLEAVE_TWO")
+                .Select(item => item.TargetActorId));
+        Assert.Equal(90, result.Snapshot.Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyTwoId).Hp);
+        Assert.Equal(90, result.Snapshot.Enemies!.Single(enemy =>
+            enemy.ActorId == EnemyThreeId).Hp);
+    }
+
+    [Fact]
+    public void LethalAoeFinalizesEveryEnemyDeathBeforeSingleCombatEnd()
+    {
+        CombatSession session = CreateTargetingSession(10, 10, 10);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("lethal-aoe", "WHIRLWIND", Guid.Empty),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CombatSessionStatus.Victory, result.Snapshot.Status);
+        Assert.Equal(3, result.Events.Count(item =>
+            item.Type == CombatEventType.ActorDied));
+        Assert.Equal(3, result.Events.Count(item =>
+            item.Type == CombatEventType.EnemyKilled));
+        Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.CombatEnded);
+        Assert.All(result.Snapshot.Enemies!, enemy => Assert.Equal(0, enemy.Hp));
+    }
+
+    [Fact]
     public void EnemyDeathAndCombatEndAreEmittedOnlyOnce()
     {
         // The session starts with auto attack enabled and resolves its first swing at Now.
@@ -424,6 +511,128 @@ public sealed class CombatSessionTests
         Assert.Single(results, result => result.Succeeded);
         Assert.Single(results, result => result.ErrorCode == CombatErrorCodes.DuplicateCommand);
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
+    }
+
+    private static CombatSession CreateTargetingSession(
+        decimal firstEnemyHp,
+        decimal secondEnemyHp,
+        decimal thirdEnemyHp)
+    {
+        CombatStats playerStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 10, MagicResistance: 5,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 30, SpellPower: 0);
+        CombatStats enemyStats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 0, MagicResistance: 0,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 0, SpellPower: 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(PlayerId, 200, 200, 100, 100, playerStats),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(
+                ["STRIKE", "WHIRLWIND", "CLEAVE_TWO"],
+                StringComparer.Ordinal),
+            CanAutoAttack: false);
+
+        CombatParticipantDefinition Enemy(
+            Guid id,
+            decimal hp,
+            string definitionId,
+            string name) =>
+            new(
+                new CombatActorState(id, hp, hp, 0, 0, enemyStats),
+                CombatActorKind.Monster,
+                definitionId,
+                name,
+                "NONE",
+                new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+                new HashSet<string>(StringComparer.Ordinal));
+
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["STRIKE"] = new(
+                "STRIKE",
+                AbilityType.Instant,
+                AbilityTargetType.SingleEnemy,
+                0,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                false,
+                GlobalCooldownCategory.None,
+                false,
+                "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 100,
+                        DamageType: DamageType.True,
+                        CanMiss: false,
+                        CanCrit: false,
+                        CanDodge: false)
+                ]),
+            ["WHIRLWIND"] = new(
+                "WHIRLWIND",
+                AbilityType.Instant,
+                AbilityTargetType.AllEnemiesInCombat,
+                35,
+                TimeSpan.FromSeconds(10),
+                TimeSpan.Zero,
+                false,
+                GlobalCooldownCategory.None,
+                false,
+                "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 20,
+                        DamageType: DamageType.True,
+                        CanMiss: false,
+                        CanCrit: false,
+                        CanDodge: false)
+                ]),
+            ["CLEAVE_TWO"] = new(
+                "CLEAVE_TWO",
+                AbilityType.Instant,
+                AbilityTargetType.NEnemiesInCombat,
+                0,
+                TimeSpan.Zero,
+                TimeSpan.Zero,
+                false,
+                GlobalCooldownCategory.None,
+                false,
+                "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 10,
+                        DamageType: DamageType.True,
+                        CanMiss: false,
+                        CanCrit: false,
+                        CanDodge: false)
+                ],
+                TargetCount: 2)
+        };
+
+        return new CombatSession(
+            SessionId,
+            player,
+            [
+                Enemy(EnemyId, firstEnemyHp, "WOLF", "Forest Wolf"),
+                Enemy(EnemyTwoId, secondEnemyHp, "WOLF_ALPHA", "Alpha Wolf"),
+                Enemy(EnemyThreeId, thirdEnemyHp, "BOAR", "Forest Boar")
+            ],
+            abilities,
+            new MonsterAiProfile("PASSIVE_TARGETING_TEST_AI", []),
+            ResolvedTalentModifiers.Empty,
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 200).ToArray()),
+            Now);
     }
 
     private static CombatSession CreateMultiEnemySession(
