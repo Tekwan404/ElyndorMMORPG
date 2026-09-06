@@ -239,7 +239,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
             provider.GetCurrent().Package.Items!,
             item => item.Id == customSword.Id && item.Name == customSword.Name);
         Assert.Equal(
-            bundled.Items.Single(item => item.Id == stalePotion.Id).Name,
+            bundled.Items!.Single(item => item.Id == stalePotion.Id).Name,
             provider.GetCurrent().Package.Items!
                 .Single(item => item.Id == stalePotion.Id)
                 .Name);
