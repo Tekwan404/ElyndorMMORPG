@@ -132,7 +132,10 @@ public sealed record ItemDefinition(
     string? AppearanceProfileId = null,
     PrimaryStatRanges? PrimaryStatRanges = null,
     decimal? WeaponDamageMin = null,
-    decimal? WeaponDamageMax = null);
+    decimal? WeaponDamageMax = null,
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
