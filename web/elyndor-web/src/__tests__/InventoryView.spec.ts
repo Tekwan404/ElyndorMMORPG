@@ -146,7 +146,7 @@ function item(overrides: Partial<InventoryItem> & Pick<InventoryItem, 'id' | 'na
     quantity: overrides.quantity ?? 1,
     slot: overrides.slot ?? null,
     equippedSlot: overrides.equippedSlot ?? null,
-    stats: { ...zeroStats, ...(overrides.stats ?? {}) },
+    stats: { ...zeroStats, ...overrides.stats },
     description: overrides.description ?? 'Test item',
     setId: overrides.setId ?? null,
     weaponCategory: overrides.weaponCategory ?? null,
