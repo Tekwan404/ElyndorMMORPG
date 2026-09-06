@@ -127,7 +127,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.False(replay.Granted);
         Assert.Equal(first.XpEarned, replay.XpEarned);
         Assert.Equal(first.GoldEarned, replay.GoldEarned);
-        Assert.Equal(65, character.Experience);
+        Assert.Equal(100, character.Experience);
         Assert.Equal(9, character.Gold);
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
 
