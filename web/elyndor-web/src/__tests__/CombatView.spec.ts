@@ -63,6 +63,22 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
+  it('uses the dedicated forest combat backdrop outside training', () => {
+    const store = useCombatSessionStore()
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
+      serverTimeUtc: '2026-09-01T12:00:00Z',
+      contentVersion: '0.9.3',
+      balanceVersion: '0.9.1',
+      player: actor('Player', 'WARRIOR', 'Warrior', 140, 180, 35, 100, []),
+      enemy: actor('Monster', 'WOLF', 'Волк', 120, 180, 0, 0, [], 3, 'wolf'),
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('[data-combat-battlefield]').attributes('style')).toContain('forest-combat')
+  })
+
   it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
