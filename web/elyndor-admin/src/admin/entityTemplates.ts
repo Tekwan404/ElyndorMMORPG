@@ -449,8 +449,9 @@ function createItem(id: string, name: string, type: NewItemType): JsonRecord {
     maxResourceFlat: 0,
     iconId: null,
     appearanceProfileId: null,
-    healAmount: 0,
     consumableCooldownSeconds: 0,
+    consumableCooldownCategoryId: null,
+    consumableActions: [],
     buyPriceGold: 0,
     sellPriceGold: 0,
     weaponCategory: null,
@@ -464,8 +465,9 @@ function createItem(id: string, name: string, type: NewItemType): JsonRecord {
     base.slot = 'Amulet'
   } else if (type === 'Consumable') {
     base.maxStack = 20
-    base.healAmount = 50
     base.consumableCooldownSeconds = 30
+    base.consumableCooldownCategoryId = 'HEALING_POTION'
+    base.consumableActions = [{ type: 'RestoreHp', amount: 50 }]
   }
 
   return base
