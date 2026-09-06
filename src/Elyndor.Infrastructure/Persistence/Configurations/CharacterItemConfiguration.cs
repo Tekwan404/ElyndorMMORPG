@@ -16,6 +16,12 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
                 "\"Quantity\" > 0"));
         builder.HasKey(item => item.Id).HasName("pk_character_items");
         builder.Property(item => item.ItemDefinitionId).HasMaxLength(64).IsRequired();
+        builder.Property(item => item.DefinitionVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(item => item.RolledStrength).HasPrecision(18, 4);
+        builder.Property(item => item.RolledAgility).HasPrecision(18, 4);
+        builder.Property(item => item.RolledIntellect).HasPrecision(18, 4);
+        builder.Property(item => item.RolledStamina).HasPrecision(18, 4);
+        builder.Ignore(item => item.RolledPrimaryStats);
         builder.Property(item => item.Quantity).IsRequired();
         builder.Property(item => item.AcquiredAtUtc).IsRequired();
         builder.Property(item => item.IsLocked).HasDefaultValue(false).IsRequired();
