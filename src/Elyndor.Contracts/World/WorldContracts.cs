@@ -6,7 +6,21 @@ public sealed record WorldLocationResponse(
     string Id,
     string DisplayName,
     string DangerLevel,
-    int RecommendedLevel);
+    int RecommendedLevel,
+    int MinimumLevel,
+    int MaximumLevel,
+    string? RequiredContractId,
+    string? ArtId,
+    string Description);
+
+public sealed record WorldContractResponse(
+    string Id,
+    string DisplayName,
+    string Description,
+    int RequiredLevel,
+    string TargetMonsterId,
+    string UnlockLocationId,
+    string Status);
 
 public sealed record WorldEncounterResponse(
     Guid EncounterId,
@@ -85,7 +99,8 @@ public sealed record CharacterVitalsResponse(
 public sealed record BootstrapWorldResponse(
     WorldLocationResponse CurrentLocation,
     long Version,
-    IReadOnlyList<WorldLocationResponse> OutgoingTransitions);
+    IReadOnlyList<WorldLocationResponse> OutgoingTransitions,
+    IReadOnlyList<WorldContractResponse> Contracts);
 
 public sealed record BootstrapResponse(
     Guid AccountId,
