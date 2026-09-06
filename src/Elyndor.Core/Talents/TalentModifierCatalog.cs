@@ -37,6 +37,7 @@ public static class TalentModifierKeys
     public const string OnAbilityUsed = "ON_ABILITY_USED";
     public const string OnPartyEvent = "ON_PARTY_EVENT";
     public const string EquipmentConditional = "EQUIPMENT_CONDITIONAL";
+    public const string AllowOffHandWeapon = "ALLOW_OFFHAND_WEAPON";
 
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -48,7 +49,8 @@ public static class TalentModifierKeys
         EffectDurationSeconds, EffectMagnitudePercent, IncomingPhysicalDamageReductionPercent,
         IncomingMagicalDamageReductionPercent, DamageDealtPercent, HealingReceivedPercent,
         VampirismPercent, OnDamageTaken, OnDodge, OnCriticalHit, OnEnemyKilled,
-        OnAutoAttack, OnHpThreshold, OnAbilityUsed, OnPartyEvent, EquipmentConditional
+        OnAutoAttack, OnHpThreshold, OnAbilityUsed, OnPartyEvent, EquipmentConditional,
+        AllowOffHandWeapon
     };
 }
 
