@@ -245,7 +245,10 @@ public sealed class CombatSessionFactory(
         stats.ArmorPenetration / 100m,
         stats.MagicPenetration / 100m,
         stats.AttackPower,
-        stats.SpellPower);
+        stats.SpellPower,
+        stats.BlockChance,
+        stats.BlockValueMin,
+        stats.BlockValueMax);
 
     private static CombatSessionCreationResult Failure(
         string code,
