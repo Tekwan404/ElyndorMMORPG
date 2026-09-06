@@ -20,36 +20,20 @@ const WOLF_ENCOUNTER: WorldEncounter = {
 describe('WorldView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('renders only server-provided transitions and sends their target id', async () => {
+  it('renders only the current location and leaves travel to the World map', () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
-    const travel = vi.spyOn(store, 'travel').mockResolvedValue(undefined)
     const wrapper = mount(WorldView)
+
     expect(wrapper.text()).toContain('Стартовый город')
-    expect(wrapper.text()).toContain('Шепчущий лес')
-    expect(wrapper.findAll('[data-travel]')).toHaveLength(1)
-    expect(wrapper.find('input').exists()).toBe(false)
-    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-label')).toContain(
-      'Шепчущий лес',
-    )
-    await wrapper.get('[data-travel="WHISPERING_FOREST"]').trigger('click')
-    expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
-  })
-
-  it('keeps actions and exits outside the location artwork and renders city services as cards', () => {
-    const store = useGameSessionStore()
-    store.snapshot = snapshot()
-    const wrapper = mount(WorldView)
-
-    expect(wrapper.find('.scene [data-travel]').exists()).toBe(false)
-    expect(wrapper.find('.scene [data-start-training]').exists()).toBe(false)
+    expect(wrapper.find('[data-travel]').exists()).toBe(false)
+    expect(wrapper.find('.location-routes').exists()).toBe(false)
     expect(wrapper.findAll('[data-town-service]')).toHaveLength(3)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
-    expect(wrapper.find('.location-routes [data-travel="WHISPERING_FOREST"]').exists()).toBe(true)
   })
 
-  it('renders explore as a dedicated location activity outside the artwork', async () => {
+  it('renders explore as a dedicated current-location activity outside the artwork', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot('WHISPERING_FOREST')
     const combat = useCombatSessionStore()
@@ -61,29 +45,26 @@ describe('WorldView', () => {
 
     expect(wrapper.find('.scene [data-explore]').exists()).toBe(false)
     expect(wrapper.find('.location-activities [data-explore]').exists()).toBe(true)
+    expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
   })
 
-  it('disables travel while a mutation is pending and shows server errors', async () => {
+  it('disables exploration while a world mutation is pending and shows the server error', async () => {
     const store = useGameSessionStore()
-    store.snapshot = snapshot()
+    store.snapshot = snapshot('WHISPERING_FOREST')
     store.mutationPending = true
-    store.errorCode = 'travel_conflict'
+    store.errorCode = 'world_encounter_unavailable'
+    const combat = useCombatSessionStore()
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+
     const wrapper = mount(WorldView)
-    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[data-travel="WHISPERING_FOREST"]').attributes('aria-busy')).toBe('true')
-    expect(wrapper.get('[role="alert"]').text()).toContain('travel_conflict')
+    await flushPromises()
+
+    expect(wrapper.get('[data-explore]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[role="alert"]').text()).toContain('world_encounter_unavailable')
   })
 
-  it('explains when the current location has no outgoing path', () => {
-    const store = useGameSessionStore()
-    store.snapshot = snapshot()
-    store.snapshot.world!.outgoingTransitions = []
-    const wrapper = mount(WorldView)
-    expect(wrapper.get('[role="status"]').text()).toContain('Пути не найдены')
-    expect(wrapper.find('[data-travel]').exists()).toBe(false)
-  })
-
-  it('renders the server-selected encounter and starts combat with its opaque encounter id', async () => {
+  it('starts the server-selected encounter immediately after Explore with no confirmation step', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot('WHISPERING_FOREST')
     const explore = vi.spyOn(session, 'explore').mockResolvedValue(WOLF_ENCOUNTER)
@@ -94,25 +75,18 @@ describe('WorldView', () => {
       combat.snapshot = combatSnapshot()
       return true
     })
+
     const wrapper = mount(WorldView)
     await flushPromises()
 
-    expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
-    expect(startCombat).not.toHaveBeenCalled()
     await wrapper.get('[data-explore]').trigger('click')
     await flushPromises()
 
     expect(explore).toHaveBeenCalledTimes(1)
-    expect(wrapper.get('[data-world-encounter]').text()).toContain('Волк')
-    expect(wrapper.get('[data-world-encounter]').text()).toContain('Уровень 3')
-    expect(wrapper.find('[data-world-encounter] img[alt="Волк"]').exists()).toBe(true)
-    expect(startCombat).not.toHaveBeenCalled()
-
-    await wrapper.get('[data-start-encounter]').trigger('click')
-    await flushPromises()
     expect(startCombat).toHaveBeenCalledWith(WOLF_ENCOUNTER)
-    expect(wrapper.text()).toContain('Волк')
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
+    expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Волк')
   })
 })
 
