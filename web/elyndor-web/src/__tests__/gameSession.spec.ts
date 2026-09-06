@@ -101,6 +101,34 @@ describe('gameSession', () => {
     expect(firstBody.requestId).toBe(retryBody.requestId)
   })
 
+  it('uses a replay-safe durable mutation when changing an item lock', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({
+        accountId: crypto.randomUUID(),
+        character: null,
+        world: null,
+        contentVersion: '0.1.0',
+        balanceVersion: '0.1.0',
+        serverTimeUtc: '2026-09-06T00:00:00Z',
+      })
+
+    const store = useGameSessionStore()
+    store.state = 'world'
+    await store.setItemLock('00000000-0000-0000-0000-000000000123', true)
+
+    expect(request.mock.calls[0]?.[0]).toBe('/api/v1/inventory/set-lock')
+    const body = JSON.parse(request.mock.calls[0]?.[1]?.body as string) as {
+      characterItemId: string
+      isLocked: boolean
+      mutationId: string
+    }
+    expect(body.characterItemId).toBe('00000000-0000-0000-0000-000000000123')
+    expect(body.isLocked).toBe(true)
+    expect(body.mutationId).toMatch(/^[0-9a-f-]{36}$/i)
+    expect(request.mock.calls[1]?.[0]).toBe('/api/v1/bootstrap')
+  })
+
   it('restores the stable world state after a transparent token refresh', async () => {
     const request = vi.spyOn(apiClient, 'request').mockResolvedValue({ accessToken: 'renewed-token', expiresAtUtc: '2026-09-01T19:15:00Z', roles: [] })
     const store = useGameSessionStore()
