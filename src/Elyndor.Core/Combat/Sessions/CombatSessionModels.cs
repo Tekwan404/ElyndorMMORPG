@@ -62,7 +62,8 @@ public sealed record CombatActorSnapshot(
     IReadOnlySet<string> KnownAbilityIds,
     IReadOnlyList<CombatAbilitySnapshot> Abilities,
     IReadOnlyList<CombatEffectSnapshot> Effects,
-    CombatCastSnapshot? ActiveCast = null);
+    CombatCastSnapshot? ActiveCast = null,
+    IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
