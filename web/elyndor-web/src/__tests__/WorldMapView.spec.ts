@@ -13,18 +13,33 @@ const LOCATIONS: WorldLocation[] = [
     displayName: 'Starter Town',
     dangerLevel: 'SAFE',
     recommendedLevel: 1,
+    minimumLevel: 1,
+    maximumLevel: 60,
+    requiredContractId: null,
+    artId: null,
+    description: 'Safe settlement',
   },
   {
     id: 'WHISPERING_FOREST',
     displayName: 'Whispering Forest',
     dangerLevel: 'ADVENTURE',
-    recommendedLevel: 1,
+    recommendedLevel: 3,
+    minimumLevel: 1,
+    maximumLevel: 5,
+    requiredContractId: null,
+    artId: null,
+    description: 'Early forest zone',
   },
   {
     id: 'DEEP_FOREST',
     displayName: 'Deep Forest',
     dangerLevel: 'DANGEROUS',
-    recommendedLevel: 3,
+    recommendedLevel: 9,
+    minimumLevel: 6,
+    maximumLevel: 11,
+    requiredContractId: null,
+    artId: null,
+    description: 'Dangerous forest zone',
   },
 ]
 
@@ -66,6 +81,7 @@ describe('WorldMapView', () => {
       currentLocation: LOCATIONS[1]!,
       version: 2,
       outgoingTransitions: [LOCATIONS[0]!, LOCATIONS[2]!],
+      contracts: [],
     }
     await flushPromises()
 
@@ -169,6 +185,7 @@ function snapshot(): BootstrapSnapshot {
       currentLocation: LOCATIONS[0]!,
       version: 1,
       outgoingTransitions: [LOCATIONS[1]!],
+      contracts: [],
     },
     contentVersion: '0.9.4',
     balanceVersion: '0.9.1',
