@@ -66,6 +66,74 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
     }
 
     [Fact]
+    public async Task DualWieldKeepsBothWeaponStatsInDerivedState()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        ItemDefinition mainSword = new(
+            "TEST_MAIN_SWORD",
+            "Main Sword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(2, 0, 0, 0),
+            "Main hand derived-state test weapon.",
+            WeaponCategory: EquipmentCategoryIds.OneHandSword,
+            AllowedClassIds: ["WARRIOR"],
+            WeaponDamageMin: 8,
+            WeaponDamageMax: 12,
+            WeaponBaseAttackIntervalSeconds: 2.2m);
+        ItemDefinition offSword = new(
+            "TEST_OFF_SWORD",
+            "Off Sword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(3, 0, 0, 0),
+            "Off hand derived-state test weapon.",
+            WeaponCategory: EquipmentCategoryIds.OneHandSword,
+            AllowedClassIds: ["WARRIOR"],
+            WeaponDamageMin: 5,
+            WeaponDamageMax: 7,
+            WeaponBaseAttackIntervalSeconds: 1.8m);
+        content = content with
+        {
+            Items = (content.Items ?? []).Concat([mainSword, offSword]).ToArray()
+        };
+
+        (Guid characterId, _) = await CreateCharacterAsync("WARRIOR", 1);
+        Guid mainId = Guid.CreateVersion7();
+        Guid offId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CharacterItems.AddRange(
+                new CharacterItem(mainId, characterId, mainSword.Id, 1, Now),
+                new CharacterItem(offId, characterId, offSword.Id, 1, Now));
+            setup.CharacterEquipment.AddRange(
+                new CharacterEquipment(characterId, EquipmentSlot.MainHand, mainId),
+                new CharacterEquipment(characterId, EquipmentSlot.OffHand, offId));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterDerivedStateService service = CreateService(context, content);
+        CharacterDerivedState state = await service.ResolveAsync(
+            characterId, "WARRIOR", 1, CancellationToken.None);
+
+        Assert.Equal(5, state.Equipment.PrimaryStats.Strength);
+        Assert.Equal(17, state.Stats.Strength);
+        Assert.Equal(8, state.Equipment.WeaponDamageMin);
+        Assert.Equal(12, state.Equipment.WeaponDamageMax);
+        Assert.Equal(2, state.Inventory.Equipped.Count);
+        Assert.Equal(offId, state.Inventory.Equipped[EquipmentSlot.OffHand].Id);
+    }
+
+    [Fact]
     public async Task ActiveAbilitiesComeOnlyFromSelectedTalents()
     {
         GameContentPackage content = await LoadContentAsync();
