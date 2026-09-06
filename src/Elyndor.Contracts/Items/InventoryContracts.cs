@@ -44,7 +44,8 @@ public sealed record InventoryItemResponse(
     int SellPriceGold,
     bool IsLocked,
     string? IconId = null,
-    string? AppearanceProfileId = null);
+    string? AppearanceProfileId = null,
+    int? WeaponHandsRequired = null);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
