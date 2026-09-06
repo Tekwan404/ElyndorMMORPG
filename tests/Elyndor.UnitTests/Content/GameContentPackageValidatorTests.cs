@@ -260,6 +260,39 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateRejectsInvertedMonsterAutoAttackDamageRange()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            Monsters =
+            [
+                new MonsterDefinition(
+                    "TEST_WOLF",
+                    "Test Wolf",
+                    MonsterRank.Normal,
+                    3,
+                    180,
+                    CombatStats.Default,
+                    TimeSpan.FromSeconds(2.5),
+                    6,
+                    [],
+                    "TEST_AI",
+                    AutoAttackBaseDamageMin: 10,
+                    AutoAttackBaseDamageMax: 5)
+            ],
+            MonsterAiProfiles =
+            [
+                new MonsterAiProfile("TEST_AI", [])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_MONSTER_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateRejectsMonsterWithMissingAbilityAndAiProfile()
     {
         GameContentPackage package = CreatePackage() with
