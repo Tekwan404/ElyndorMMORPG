@@ -15,6 +15,7 @@ public static class TalentModifierResolver
         Dictionary<string, TalentAbilityModifiers> abilityModifiers = new(StringComparer.Ordinal);
         List<ResolvedTalentEventHook> eventHooks = [];
         List<TalentModifierDefinition> deferredHooks = [];
+        HashSet<string> offHandWeaponCategories = new(StringComparer.Ordinal);
 
         foreach (TalentDefinition node in tree.Nodes)
         {
@@ -45,6 +46,17 @@ public static class TalentModifierResolver
                 if (modifier.Type == TalentModifierType.EventTriggered)
                 {
                     eventHooks.Add(CreateEventHook(node, modifier, rank));
+                    continue;
+                }
+
+                if (modifier.Type == TalentModifierType.EquipmentPermission)
+                {
+                    if (modifier.Key == TalentModifierKeys.AllowOffHandWeapon
+                        && !string.IsNullOrWhiteSpace(modifier.TargetId))
+                    {
+                        offHandWeaponCategories.Add(modifier.TargetId);
+                    }
+
                     continue;
                 }
 
@@ -82,7 +94,8 @@ public static class TalentModifierResolver
             abilities,
             abilityModifiers,
             eventHooks,
-            deferredHooks);
+            deferredHooks,
+            new TalentEquipmentPermissions(offHandWeaponCategories));
     }
 
     private static ResolvedTalentEventHook CreateEventHook(
