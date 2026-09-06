@@ -304,7 +304,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
-    public async Task MageCannotEquipMediumArmor()
+    public async Task MageCannotEquipLeatherArmor()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "MAGE");
         Guid itemId = await AddItemAsync(characterId, "RANGER_HIDE_VEST", 1);
@@ -351,8 +351,8 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     public async Task ArcherCanEquipAllowedWeaponAndArmorCategories()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "ARCHER");
-        Guid weaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
-        Guid chestId = await AddItemAsync(characterId, "RANGER_HIDE_VEST", 1);
+        Guid weaponId = await AddItemAsync(characterId, "HUNTER_SHORTBOW", 1);
+        Guid chestId = await AddItemAsync(characterId, "HUNTER_LEATHER_VEST", 1);
         await using GameDbContext context = postgres.CreateDbContext();
         InventoryEquipmentService service = await CreateServiceAsync(context);
 
@@ -365,6 +365,155 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.Equal(2, await verify.CharacterEquipment.CountAsync(e => e.CharacterId == characterId));
     }
 
+
+    [Fact]
+    public async Task ArcherCannotEquipOneHandSword()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "ARCHER");
+        Guid itemId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.WeaponCategoryRestricted, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task WarriorCanEquipShieldButMageCannot()
+    {
+        (Guid warriorAccountId, Guid warriorCharacterId) =
+            await CreateCharacterAsync(100, "WARRIOR");
+        (Guid mageAccountId, Guid mageCharacterId) =
+            await CreateCharacterAsync(100, "MAGE");
+        Guid warriorShieldId =
+            await AddItemAsync(warriorCharacterId, "RECRUIT_WOODEN_SHIELD", 1);
+        Guid mageShieldId =
+            await AddItemAsync(mageCharacterId, "RECRUIT_WOODEN_SHIELD", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult warriorResult = await service.EquipAsync(
+            warriorAccountId,
+            warriorShieldId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        InventoryOperationResult mageResult = await service.EquipAsync(
+            mageAccountId,
+            mageShieldId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(warriorResult.IsSuccess);
+        Assert.False(mageResult.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ClassRestricted, mageResult.ErrorCode);
+        Assert.Contains(
+            EquipmentSlot.OffHand,
+            warriorResult.Snapshot!.Equipped.Keys);
+    }
+
+    [Fact]
+    public async Task EquippingTwoHandedWeaponUnequipsExistingShield()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition greatsword = new(
+            "TEST_GREATSWORD",
+            "Test Greatsword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(1, 0, 0, 0),
+            "Test",
+            WeaponCategory: EquipmentCategoryIds.TwoHandSword,
+            WeaponDamageMin: 8,
+            WeaponDamageMax: 12);
+        content = content with
+        {
+            Items = content.Items!.Concat([greatsword]).ToArray()
+        };
+
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(100, "WARRIOR");
+        Guid shieldId = await AddItemAsync(
+            characterId, "RECRUIT_WOODEN_SHIELD", 1);
+        Guid greatswordId = await AddItemAsync(
+            characterId, greatsword.Id, 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service =
+            new(context, content, new FixedTimeProvider(Now));
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            shieldId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            greatswordId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(EquipmentSlot.MainHand, result.Snapshot!.Equipped.Keys);
+        Assert.DoesNotContain(EquipmentSlot.OffHand, result.Snapshot.Equipped.Keys);
+    }
+
+    [Fact]
+    public async Task CannotEquipShieldWhileTwoHandedWeaponIsEquipped()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition greatsword = new(
+            "TEST_GREATSWORD_BLOCK",
+            "Test Greatsword",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(1, 0, 0, 0),
+            "Test",
+            WeaponCategory: EquipmentCategoryIds.TwoHandSword,
+            WeaponDamageMin: 8,
+            WeaponDamageMax: 12);
+        content = content with
+        {
+            Items = content.Items!.Concat([greatsword]).ToArray()
+        };
+
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(100, "WARRIOR");
+        Guid greatswordId = await AddItemAsync(characterId, greatsword.Id, 1);
+        Guid shieldId = await AddItemAsync(
+            characterId, "RECRUIT_WOODEN_SHIELD", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service =
+            new(context, content, new FixedTimeProvider(Now));
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            greatswordId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            shieldId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.TwoHandedConflict, result.ErrorCode);
+    }
 
     [Fact]
     public async Task EquippingCanonicalMainHandReplacesLegacyWeaponAlias()
