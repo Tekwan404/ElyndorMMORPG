@@ -114,15 +114,8 @@ public sealed class CombatApplicationService(
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound,
                         session.Snapshot(), []);
-                GameContentSnapshot contentSnapshot =
-                    pinnedContent ?? contentProvider.GetCurrent();
-                AbilityDefinition? ability = contentSnapshot.Indexes.AbilitiesById
-                    .GetValueOrDefault(abilityId);
-                Guid targetId = ability?.TargetType is AbilityTargetType.Self or AbilityTargetType.Owner
-                    ? session.PlayerActorId
-                    : session.EnemyActorId;
                 return session.Handle(
-                    new UseAbilityCommand(commandId, abilityId, targetId), now);
+                    new UseAbilityCommand(commandId, abilityId, Guid.Empty), now);
             }, cancellationToken);
 
     public Task<CombatOperationResult> UseConsumableAsync(
