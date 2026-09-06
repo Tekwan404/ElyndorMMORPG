@@ -117,6 +117,10 @@ function slotsMatch(item: InventoryItem, requestedSlot: EquipmentSlot): boolean 
   return itemSlot === target
 }
 
+function isContextualTarget(slot: EquipmentSlot): boolean {
+  return contextualSlot.value !== null && canonicalSlot(contextualSlot.value) === slot
+}
+
 function slotLabel(slot: EquipmentSlot | null): string {
   if (!slot) return ''
   const labels: Partial<Record<EquipmentSlot, string>> = {
@@ -489,7 +493,7 @@ async function toggleSelectedLock(): Promise<void> {
       <template #actions>
         <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)">
           <UIButton
-            v-if="!isContextualSlotMode || canonicalSlot(contextualSlot!) === 'MainHand'"
+            v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
             data-equip-target="MainHand"
             :loading="session.mutationPending"
             :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
@@ -498,7 +502,7 @@ async function toggleSelectedLock(): Promise<void> {
             В основную руку
           </UIButton>
           <UIButton
-            v-if="!isContextualSlotMode || canonicalSlot(contextualSlot!) === 'OffHand'"
+            v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
             data-equip-target="OffHand"
             :loading="session.mutationPending"
             :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
