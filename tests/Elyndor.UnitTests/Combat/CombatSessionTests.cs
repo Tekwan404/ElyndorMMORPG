@@ -116,6 +116,99 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void DualWieldEqualSpeedAlternatesHandsAndPreservesWeaponSource()
+    {
+        AutoAttackProfile mainHand = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 20,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 10,
+            WeaponDefinitionId: "MAIN_TEST_SWORD",
+            WeaponHand: CombatWeaponHand.MainHand);
+        AutoAttackProfile offHand = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 8,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 10,
+            WeaponDefinitionId: "OFF_TEST_SWORD",
+            WeaponHand: CombatWeaponHand.OffHand);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerCriticalChance: 0,
+            mainHandAutoAttack: mainHand,
+            offHandAutoAttack: offHand);
+
+        CombatCommandResult result = session.AdvanceTo(Now.AddSeconds(3));
+
+        CombatEvent[] swings = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+        Assert.Equal(4, swings.Length);
+        Assert.Equal(
+            [
+                CombatWeaponHand.MainHand,
+                CombatWeaponHand.OffHand,
+                CombatWeaponHand.MainHand,
+                CombatWeaponHand.OffHand
+            ],
+            swings.Select(item => item.WeaponHand));
+        Assert.Equal(
+            ["MAIN_TEST_SWORD", "OFF_TEST_SWORD", "MAIN_TEST_SWORD", "OFF_TEST_SWORD"],
+            swings.Select(item => item.WeaponDefinitionId));
+        Assert.Equal(
+            [Now, Now.AddSeconds(1), Now.AddSeconds(2), Now.AddSeconds(3)],
+            swings.Select(item => item.OccurredAtUtc));
+        Assert.True(swings[0].Amount > swings[1].Amount);
+        Assert.Equal(40, result.Snapshot.Player.Resource);
+        Assert.Equal(4, session.GetEventsAfter(0).Count(item =>
+            item.Type == CombatEventType.ResourceChanged
+            && item.DefinitionId == "AUTO_ATTACK"));
+    }
+
+    [Fact]
+    public void DualWieldUsesIndependentWeaponIntervals()
+    {
+        AutoAttackProfile mainHand = new(
+            TimeSpan.FromSeconds(2.4),
+            BaseDamage: 10,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 0,
+            WeaponDefinitionId: "SLOW_MAIN",
+            WeaponHand: CombatWeaponHand.MainHand);
+        AutoAttackProfile offHand = new(
+            TimeSpan.FromSeconds(1.6),
+            BaseDamage: 6,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 0,
+            WeaponDefinitionId: "FAST_OFF",
+            WeaponHand: CombatWeaponHand.OffHand);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerCriticalChance: 0,
+            mainHandAutoAttack: mainHand,
+            offHandAutoAttack: offHand);
+
+        session.AdvanceTo(Now.AddSeconds(4));
+
+        CombatEvent[] mainSwings = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.WeaponHand == CombatWeaponHand.MainHand)
+            .ToArray();
+        CombatEvent[] offSwings = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.WeaponHand == CombatWeaponHand.OffHand)
+            .ToArray();
+
+        Assert.Equal([Now, Now.AddSeconds(2.4)], mainSwings.Select(item => item.OccurredAtUtc));
+        Assert.Equal(
+            [Now.AddSeconds(0.8), Now.AddSeconds(2.4), Now.AddSeconds(4)],
+            offSwings.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
     public void EnemyDeathAndCombatEndAreEmittedOnlyOnce()
     {
         // The session starts with auto attack enabled and resolves its first swing at Now.
@@ -206,7 +299,9 @@ public sealed class CombatSessionTests
         decimal playerCriticalChance = 5,
         TimeSpan? playerAutoAttackInterval = null,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        AutoAttackProfile? mainHandAutoAttack = null,
+        AutoAttackProfile? offHandAutoAttack = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -222,8 +317,14 @@ public sealed class CombatSessionTests
             "WARRIOR",
             "Warrior",
             "RAGE",
-            new AutoAttackProfile(playerAutoAttackInterval ?? TimeSpan.FromSeconds(2), 0, 0.65m, 10),
-            new HashSet<string>(["STRIKE"], StringComparer.Ordinal));
+            mainHandAutoAttack
+                ?? new AutoAttackProfile(
+                    playerAutoAttackInterval ?? TimeSpan.FromSeconds(2),
+                    0,
+                    0.65m,
+                    10),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            OffHandAutoAttack: offHandAutoAttack);
         CombatParticipantDefinition enemy = new(
             new CombatActorState(EnemyId, enemyHp, enemyHp, 0, 0, enemyStats),
             CombatActorKind.Monster,
