@@ -284,10 +284,19 @@ public sealed partial class CombatSession
         AbilityDefinition ability = ResolvePyromancerAbility(
             ResolvePlayerAbility(baseAbility, now),
             now);
+        IReadOnlyList<Guid> targetActorIds = ResolvePlayerAbilityTargetIds(ability);
+        if (targetActorIds.Count == 0)
+            return Result(false, CombatErrorCodes.InvalidTarget, before);
+        Guid primaryTargetActorId = targetActorIds[0];
+
         AbilityExecutionResult execution = AbilityEngine.Execute(
             _playerRuntime,
             ability,
-            new AbilityIntent(command.CommandId, command.AbilityId, command.TargetActorId),
+            new AbilityIntent(
+                command.CommandId,
+                command.AbilityId,
+                primaryTargetActorId,
+                targetActorIds),
             now,
             _random);
         if (!execution.Succeeded)
@@ -296,7 +305,7 @@ public sealed partial class CombatSession
         ApplyKernelEvents(
             execution.Events,
             _player.Actor.ActorId,
-            command.TargetActorId,
+            primaryTargetActorId,
             command.AbilityId);
         OnPyromancerAbilityStarted(ability, now);
         if (ability.Type != AbilityType.Casted)
@@ -304,7 +313,7 @@ public sealed partial class CombatSession
             OnPlayerAbilitySucceeded(
                 ability,
                 execution,
-                command.TargetActorId,
+                primaryTargetActorId,
                 now);
             OnPyromancerAbilityResolved(
                 ability,
@@ -317,7 +326,7 @@ public sealed partial class CombatSession
             _player.Actor.ActorId,
             command.AbilityId,
             SourceActorId: _player.Actor.ActorId,
-            TargetActorId: command.TargetActorId));
+            TargetActorId: primaryTargetActorId));
         return Result(true, null, before);
     }
 
@@ -346,6 +355,46 @@ public sealed partial class CombatSession
             TargetActorId: _player.Actor.ActorId));
         SyncBerserkerConditionalEffects(now);
         return Result(true, null, before);
+    }
+
+    private IReadOnlyList<Guid> ResolvePlayerAbilityTargetIds(
+        AbilityDefinition ability)
+    {
+        if (ability.TargetType == AbilityTargetType.Self)
+            return [_player.Actor.ActorId];
+
+        if (ability.TargetType == AbilityTargetType.SingleEnemy)
+        {
+            return _enemiesById.TryGetValue(
+                    _selectedTargetActorId,
+                    out CombatParticipantDefinition? selected)
+                && !selected.Actor.IsDead
+                    ? [_selectedTargetActorId]
+                    : [];
+        }
+
+        if (ability.TargetType is not (AbilityTargetType.AllEnemiesInCombat
+            or AbilityTargetType.NEnemiesInCombat))
+        {
+            return [];
+        }
+
+        if (ability.TargetSelectorProfile != AbilityTargetSelectorProfile.EncounterOrder)
+            return [];
+
+        int targetLimit = ability.TargetType == AbilityTargetType.NEnemiesInCombat
+            ? ability.TargetCount
+            : ability.TargetCount > 0
+                ? ability.TargetCount
+                : int.MaxValue;
+        if (targetLimit <= 0)
+            return [];
+
+        return _enemies
+            .Where(enemy => !enemy.Actor.IsDead)
+            .Take(targetLimit)
+            .Select(enemy => enemy.Actor.ActorId)
+            .ToArray();
     }
 
     private CombatCommandResult SelectTarget(
@@ -612,17 +661,20 @@ public sealed partial class CombatSession
             AbilityEngine.CompleteCast(runtime, now, _random);
         if (!completion.Succeeded) return;
 
+        Guid primaryTargetActorId = cast.TargetIds is { Count: > 0 }
+            ? cast.TargetIds[0]
+            : cast.TargetId;
         ApplyKernelEvents(
             completion.Events,
             sourceActorId,
-            cast.TargetId,
+            primaryTargetActorId,
             cast.Ability.Id);
         if (runtime == _playerRuntime)
         {
             OnPlayerAbilitySucceeded(
                 cast.Ability,
                 completion,
-                cast.TargetId,
+                primaryTargetActorId,
                 now);
             OnPyromancerAbilityResolved(
                 cast.Ability,
@@ -697,29 +749,45 @@ public sealed partial class CombatSession
         CombatWeaponHand? weaponHand = null,
         string? weaponDefinitionId = null)
     {
-        foreach (CombatEvent item in events)
-        {
-            CombatEvent normalized = item with
+        CombatEvent[] normalizedEvents = events
+            .Select(item => item with
             {
                 DefinitionId = item.DefinitionId ?? definitionId,
                 SourceActorId = item.SourceActorId ?? sourceActorId,
                 TargetActorId = item.TargetActorId ?? targetActorId,
                 WeaponHand = item.WeaponHand ?? weaponHand,
                 WeaponDefinitionId = item.WeaponDefinitionId ?? weaponDefinitionId
-            };
+            })
+            .ToArray();
+        HashSet<Guid> pendingEnemyDeaths = normalizedEvents
+            .Where(item => item.Type == CombatEventType.ActorDied
+                && item.ActorId != _player.Actor.ActorId
+                && _enemiesById.ContainsKey(item.ActorId)
+                && !_deadActors.Contains(item.ActorId))
+            .Select(item => item.ActorId)
+            .ToHashSet();
+
+        foreach (CombatEvent normalized in normalizedEvents)
+        {
             if (normalized.Type == CombatEventType.ActorDied
                 && !_deadActors.Add(normalized.ActorId))
                 continue;
+
+            bool enemyDeath = normalized.Type == CombatEventType.ActorDied
+                && normalized.ActorId != _player.Actor.ActorId
+                && _enemiesById.ContainsKey(normalized.ActorId);
+            if (enemyDeath)
+                pendingEnemyDeaths.Remove(normalized.ActorId);
 
             Append(normalized);
             ApplyTalentHooks(normalized);
             if (normalized.Type == CombatEventType.ActorDied)
             {
-                FinishForDeath(normalized);
+                FinishForDeath(
+                    normalized,
+                    deferVictory: enemyDeath && pendingEnemyDeaths.Count > 0);
                 if (Status != CombatSessionStatus.Active)
-                {
                     break;
-                }
             }
         }
     }
@@ -797,7 +865,9 @@ public sealed partial class CombatSession
         }
     }
 
-    private void FinishForDeath(CombatEvent death)
+    private void FinishForDeath(
+        CombatEvent death,
+        bool deferVictory = false)
     {
         if (Status != CombatSessionStatus.Active) return;
 
@@ -839,6 +909,9 @@ public sealed partial class CombatSession
             .FirstOrDefault(enemy => !enemy.Actor.IsDead);
         if (nextAlive is null)
         {
+            if (deferVictory)
+                return;
+
             Status = CombatSessionStatus.Victory;
             EndCombat(death);
             return;
