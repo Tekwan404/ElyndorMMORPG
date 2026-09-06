@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
