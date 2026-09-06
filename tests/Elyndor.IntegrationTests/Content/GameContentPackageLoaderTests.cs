@@ -18,7 +18,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.9.4", package.ContentVersion);
+        Assert.Equal("0.10.0", package.ContentVersion);
         Assert.Equal("0.9.1", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Equal(16, package.Items!.Count);
