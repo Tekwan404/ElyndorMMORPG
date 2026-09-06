@@ -48,7 +48,8 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null)
         : this(
             sessionId,
             player,
@@ -59,7 +60,8 @@ public sealed partial class CombatSession
             random,
             startedAtUtc,
             contentVersion,
-            balanceVersion)
+            balanceVersion,
+            initialPlayerCooldowns)
     {
     }
 
@@ -73,7 +75,8 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null)
         : this(
             sessionId,
             player,
@@ -84,7 +87,8 @@ public sealed partial class CombatSession
             random,
             startedAtUtc,
             contentVersion,
-            balanceVersion)
+            balanceVersion,
+            initialPlayerCooldowns)
     {
     }
 
@@ -98,7 +102,8 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null)
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -155,6 +160,14 @@ public sealed partial class CombatSession
 
         CombatActorState[] enemyActors = _enemies.Select(enemy => enemy.Actor).ToArray();
         _playerRuntime = CreateRuntime(player.Actor, enemyActors);
+        if (initialPlayerCooldowns is not null)
+        {
+            foreach ((string abilityId, DateTimeOffset readyAtUtc) in initialPlayerCooldowns)
+            {
+                if (readyAtUtc > startedAtUtc)
+                    _playerRuntime.Cooldowns[abilityId] = readyAtUtc;
+            }
+        }
         _enemyRuntimes = _enemies.ToDictionary(
             enemy => enemy.Actor.ActorId,
             enemy => CreateRuntime(
