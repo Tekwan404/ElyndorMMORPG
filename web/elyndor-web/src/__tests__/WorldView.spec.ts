@@ -36,6 +36,33 @@ describe('WorldView', () => {
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
   })
 
+  it('keeps actions and exits outside the location artwork and renders city services as cards', () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot()
+    const wrapper = mount(WorldView)
+
+    expect(wrapper.find('.scene [data-travel]').exists()).toBe(false)
+    expect(wrapper.find('.scene [data-start-training]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-town-service]')).toHaveLength(3)
+    expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
+    expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
+    expect(wrapper.get('.location-routes [data-travel="WHISPERING_FOREST"]').exists()).toBe(true)
+  })
+
+  it('renders explore as a dedicated location activity outside the artwork', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot('WHISPERING_FOREST')
+    const combat = useCombatSessionStore()
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+
+    const wrapper = mount(WorldView)
+    await flushPromises()
+
+    expect(wrapper.find('.scene [data-explore]').exists()).toBe(false)
+    expect(wrapper.get('.location-activities [data-explore]').exists()).toBe(true)
+  })
+
   it('disables travel while a mutation is pending and shows server errors', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
