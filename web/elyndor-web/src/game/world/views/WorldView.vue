@@ -184,6 +184,9 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       </div>
       <div v-if="combat.reward" class="reward-card__summary">
         <strong>+{{ combat.reward.xpEarned }} опыта · +{{ combat.reward.goldEarned }} золота</strong>
+        <p v-if="combat.reward.completedContractIds?.includes('CONTRACT_BROODMOTHER_GATE')" class="contract-completed">
+          ✦ Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
+        </p>
         <ul v-if="combat.reward.items.length">
           <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
         </ul>
@@ -469,6 +472,16 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
 .reward-card__summary > strong {
   color: #83d2b8;
+}
+
+.contract-completed {
+  margin: var(--ui-space-2) 0 0;
+  padding: 7px 9px;
+  border: 1px solid rgb(146 136 255 / 24%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(146 136 255 / 6%);
+  color: #cbc7ff;
+  font-size: .64rem;
 }
 
 .reward-card ul {
