@@ -123,7 +123,11 @@ public sealed class CombatSessionFactory(
         AutoAttackProfile playerAutoAttack = classProfile.CombatAutoAttack with
         {
             Interval = TimeSpan.FromSeconds(
-                (double)(weaponBaseIntervalSeconds / attackSpeedMultiplier))
+                (double)(weaponBaseIntervalSeconds / attackSpeedMultiplier)),
+            BaseDamageMin = equipment.WeaponDamageMin
+                ?? classProfile.CombatAutoAttack.BaseDamageMin,
+            BaseDamageMax = equipment.WeaponDamageMax
+                ?? classProfile.CombatAutoAttack.BaseDamageMax
         };
 
         MonsterAiProfile ai = isTraining
@@ -178,7 +182,9 @@ public sealed class CombatSessionFactory(
                 monster.AutoAttackInterval,
                 monster.AutoAttackBaseDamage,
                 monster.AutoAttackAttackPowerCoefficient,
-                0),
+                0,
+                monster.AutoAttackBaseDamageMin,
+                monster.AutoAttackBaseDamageMax),
             new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal));
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
