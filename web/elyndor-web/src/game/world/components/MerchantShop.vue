@@ -67,6 +67,12 @@ function itemGlyph(item: MerchantItem): string {
   return '◆'
 }
 
+function itemTypeLabel(item: MerchantItem): string {
+  if (item.type === 'Consumable') return 'Расходник'
+  if (item.type === 'Equipment') return 'Экипировка'
+  return 'Материал'
+}
+
 function rarityLabel(item: MerchantItem): string {
   if (item.rarity === 'Uncommon') return 'Необычный'
   if (item.rarity === 'Rare') return 'Редкий'
@@ -164,7 +170,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 {{ itemGlyph(selectedOffer) }}
               </span>
               <div>
-                <small>{{ rarityLabel(selectedOffer) }} · {{ selectedOffer.type }}</small>
+                <small>{{ rarityLabel(selectedOffer) }} · {{ itemTypeLabel(selectedOffer) }}</small>
                 <h3>{{ selectedOffer.name }}</h3>
               </div>
             </div>
@@ -186,7 +192,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 :disabled="session.mutationPending || (merchant?.gold ?? 0) < selectedOffer.buyPriceGold"
                 @click="buy(selectedOffer.definitionId)"
               >
-                Купить
+                Купить · ● {{ selectedOffer.buyPriceGold }}
               </UIButton>
             </footer>
           </article>
