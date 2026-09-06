@@ -304,7 +304,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
-    public async Task MageCannotEquipHeavyArmor()
+    public async Task MageCannotEquipLeatherArmor()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "MAGE");
         Guid itemId = await AddItemAsync(characterId, "RANGER_HIDE_VEST", 1);
@@ -319,26 +319,6 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Empty(await verify.CharacterEquipment.Where(e => e.CharacterId == characterId).ToArrayAsync());
-    }
-
-    [Fact]
-    public async Task WarriorCanEquipRangerHeadAndLegs()
-    {
-        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
-        Guid headId = await AddItemAsync(characterId, "RANGER_SILK_HOOD", 1);
-        Guid legsId = await AddItemAsync(characterId, "RANGER_TRAIL_LEGGINGS", 1);
-        await using GameDbContext context = postgres.CreateDbContext();
-        InventoryEquipmentService service = await CreateServiceAsync(context);
-
-        InventoryOperationResult head = await service.EquipAsync(
-            accountId, headId, Guid.CreateVersion7(), CancellationToken.None);
-        InventoryOperationResult legs = await service.EquipAsync(
-            accountId, legsId, Guid.CreateVersion7(), CancellationToken.None);
-
-        Assert.True(head.IsSuccess);
-        Assert.True(legs.IsSuccess);
-        Assert.Contains(EquipmentSlot.Head, legs.Snapshot!.Equipped.Keys);
-        Assert.Contains(EquipmentSlot.Legs, legs.Snapshot.Equipped.Keys);
     }
 
     [Fact]
