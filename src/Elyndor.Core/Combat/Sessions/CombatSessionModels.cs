@@ -23,7 +23,9 @@ public sealed record AutoAttackProfile(
     decimal AttackPowerCoefficient,
     decimal ResourceOnHit,
     decimal? BaseDamageMin = null,
-    decimal? BaseDamageMax = null);
+    decimal? BaseDamageMax = null,
+    string? WeaponDefinitionId = null,
+    CombatWeaponHand? WeaponHand = null);
 
 public sealed record CombatParticipantDefinition(
     CombatActorState Actor,
@@ -34,7 +36,8 @@ public sealed record CombatParticipantDefinition(
     AutoAttackProfile AutoAttack,
     IReadOnlySet<string> KnownAbilityIds,
     decimal ResourceRegenPerSecond = 0,
-    bool CanAutoAttack = true);
+    bool CanAutoAttack = true,
+    AutoAttackProfile? OffHandAutoAttack = null);
 
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
 public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
