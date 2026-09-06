@@ -20,7 +20,10 @@ public sealed record EquipmentModifierSummary(
     decimal? WeaponBaseAttackIntervalSeconds,
     IReadOnlyList<EquipmentSetBonusDefinition> ActiveSetBonuses,
     decimal? WeaponDamageMin = null,
-    decimal? WeaponDamageMax = null);
+    decimal? WeaponDamageMax = null,
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public static class EquipmentStatModifierResolver
 {
@@ -59,6 +62,9 @@ public static class EquipmentStatModifierResolver
         decimal armorPenetrationPercent = items.Sum(item => item.ArmorPenetrationPercent);
         decimal magicPenetrationPercent = items.Sum(item => item.MagicPenetrationPercent);
         decimal maxResourceFlat = items.Sum(item => item.MaxResourceFlat);
+        decimal blockChancePercent = items.Sum(item => item.BlockChancePercent);
+        decimal blockValueMin = items.Sum(item => item.BlockValueMin);
+        decimal blockValueMax = items.Sum(item => item.BlockValueMax);
 
         ItemDefinition? mainHand = items
             .SingleOrDefault(item => CanonicalSlot(item.Slot) == EquipmentSlot.MainHand);
@@ -109,7 +115,10 @@ public static class EquipmentStatModifierResolver
             weaponBaseAttackIntervalSeconds,
             activeBonuses,
             weaponDamageMin,
-            weaponDamageMax);
+            weaponDamageMax,
+            blockChancePercent,
+            blockValueMin,
+            blockValueMax);
     }
 
     private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) =>
