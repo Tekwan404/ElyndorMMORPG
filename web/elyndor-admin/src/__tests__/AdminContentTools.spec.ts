@@ -90,8 +90,9 @@ describe('admin content tools', () => {
       type: 'Consumable',
       stackable: true,
       maxStack: 20,
-      healAmount: 50,
       consumableCooldownSeconds: 30,
+      consumableCooldownCategoryId: 'HEALING_POTION',
+      consumableActions: [{ type: 'RestoreHp', amount: 50 }],
     })
 
     const equipment = createDraftEntity(
