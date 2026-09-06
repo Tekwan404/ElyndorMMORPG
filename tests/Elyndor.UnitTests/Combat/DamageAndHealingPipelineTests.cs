@@ -48,6 +48,86 @@ public sealed class DamageAndHealingPipelineTests
     }
 
     [Fact]
+    public void PhysicalDamageCanBeBlockedBeforeAbsorbShields()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Accuracy = 100 });
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 100,
+                BlockValueMin = 20,
+                BlockValueMax = 20
+            });
+        EffectDefinition shield = new(
+            "TEST_ABSORB",
+            EffectKind.Shield,
+            TimeSpan.FromSeconds(10),
+            1,
+            EffectStackPolicy.Independent,
+            15);
+        EffectEngine.Apply(
+            target,
+            source.ActorId,
+            shield,
+            DateTimeOffset.UnixEpoch);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                100,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom(0m),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.True(result.WasBlocked);
+        Assert.Equal(20, result.BlockedAmount);
+        Assert.Equal(15, result.AbsorbedByShields);
+        Assert.Equal(65, result.HpDamage);
+        Assert.Equal(135, target.CurrentHp);
+        Assert.Contains(
+            result.Events,
+            combatEvent =>
+                combatEvent.Type == CombatEventType.DamageBlocked
+                && combatEvent.Amount == 20);
+    }
+
+    [Fact]
+    public void MagicalDamageCannotBeBlocked()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 100,
+                BlockValueMin = 20,
+                BlockValueMax = 20
+            });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                100,
+                DamageType.Magical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.False(result.WasBlocked);
+        Assert.Equal(0, result.BlockedAmount);
+        Assert.Equal(100, result.HpDamage);
+    }
+
+    [Fact]
     public void HealingReportsOverhealAndCapsAtMaximumHp()
     {
         CombatActorState target = CombatActorState.CreateDummy(100);

@@ -123,7 +123,14 @@ public static partial class GameContentPackageValidator
                         != profile.AllowedArmorCategories.Count
                     || profile.AllowedArmorCategories.Any(category =>
                         !EquipmentCategoryIds.IsArmor(category));
-                if (invalidWeaponCategories || invalidArmorCategories)
+                IReadOnlyList<string> allowedOffHandCategories =
+                    profile.AllowedOffHandCategories ?? [];
+                bool invalidOffHandCategories =
+                    allowedOffHandCategories.Distinct(StringComparer.Ordinal).Count()
+                        != allowedOffHandCategories.Count
+                    || allowedOffHandCategories.Any(category =>
+                        !EquipmentCategoryIds.IsOffHand(category));
+                if (invalidWeaponCategories || invalidArmorCategories || invalidOffHandCategories)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_CLASS_EQUIPMENT_CATEGORIES",

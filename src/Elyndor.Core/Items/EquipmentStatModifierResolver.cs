@@ -20,7 +20,11 @@ public sealed record EquipmentModifierSummary(
     decimal? WeaponBaseAttackIntervalSeconds,
     IReadOnlyList<EquipmentSetBonusDefinition> ActiveSetBonuses,
     decimal? WeaponDamageMin = null,
-    decimal? WeaponDamageMax = null);
+    decimal? WeaponDamageMax = null,
+    string? MainHandWeaponCategory = null,
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public static class EquipmentStatModifierResolver
 {
@@ -65,6 +69,17 @@ public static class EquipmentStatModifierResolver
         decimal? weaponBaseAttackIntervalSeconds = mainHand?.WeaponBaseAttackIntervalSeconds;
         decimal? weaponDamageMin = mainHand?.WeaponDamageMin;
         decimal? weaponDamageMax = mainHand?.WeaponDamageMax;
+        string? mainHandWeaponCategory = mainHand?.WeaponCategory;
+
+        ItemDefinition? shield = items.SingleOrDefault(item =>
+            CanonicalSlot(item.Slot) == EquipmentSlot.OffHand
+            && string.Equals(
+                item.OffHandCategory,
+                EquipmentCategoryIds.Shield,
+                StringComparison.Ordinal));
+        decimal blockChancePercent = shield?.BlockChancePercent ?? 0;
+        decimal blockValueMin = shield?.BlockValueMin ?? 0;
+        decimal blockValueMax = shield?.BlockValueMax ?? 0;
 
         List<EquipmentSetBonusDefinition> activeBonuses = [];
         foreach (EquipmentSetDefinition set in equipmentSets)
@@ -109,7 +124,11 @@ public static class EquipmentStatModifierResolver
             weaponBaseAttackIntervalSeconds,
             activeBonuses,
             weaponDamageMin,
-            weaponDamageMax);
+            weaponDamageMax,
+            mainHandWeaponCategory,
+            blockChancePercent,
+            blockValueMin,
+            blockValueMax);
     }
 
     private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) =>

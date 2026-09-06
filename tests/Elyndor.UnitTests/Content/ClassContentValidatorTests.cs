@@ -61,8 +61,8 @@ public sealed class ClassContentValidatorTests
             ClassProfiles:
             [
                 warrior,
-                CreateProfile("ARCHER", "AGILITY", "FOCUS", "BOW", "LIGHT"),
-                CreateProfile("MAGE", "INTELLECT", "MANA", "STAFF", "LIGHT")
+                CreateProfile("ARCHER", "AGILITY", "FOCUS", "BOW", "LEATHER"),
+                CreateProfile("MAGE", "INTELLECT", "MANA", "STAFF", "CLOTH")
             ],
             StatFormula: new StatFormulaProfile(
                 "DEFAULT",

@@ -420,9 +420,76 @@ public sealed class GameContentPackageValidatorTests
                     EquipmentSlot.OffHand,
                     new PrimaryStats(1, 0, 0, 0),
                     "Test",
-                    WeaponCategory: EquipmentCategoryIds.Shield,
+                    OffHandCategory: EquipmentCategoryIds.Shield,
                     WeaponDamageMin: 8,
-                    WeaponDamageMax: 12)
+                    WeaponDamageMax: 12,
+                    BlockChancePercent: 15,
+                    BlockValueMin: 3,
+                    BlockValueMax: 6)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_DEFINITION");
+    }
+
+    [Fact]
+    public void ValidateAcceptsShieldBlockProfile()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_SHIELD",
+                    "Test Shield",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.OffHand,
+                    new PrimaryStats(0, 0, 0, 1),
+                    "Test",
+                    ArmorFlat: 6,
+                    OffHandCategory: EquipmentCategoryIds.Shield,
+                    BlockChancePercent: 15,
+                    BlockValueMin: 3,
+                    BlockValueMax: 6)
+            ],
+            LootTables = []
+        };
+
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
+    public void ValidateRejectsBlockProfileOnNonShield()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_SWORD_WITH_BLOCK",
+                    "Test Sword",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.MainHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    BlockChancePercent: 15,
+                    BlockValueMin: 3,
+                    BlockValueMax: 6)
             ],
             LootTables = []
         };

@@ -1,0 +1,35 @@
+{
+  "contentVersion": "0.10.0",
+  "balanceVersion": "0.8.0",
+  "publishedAtUtc": "2026-09-06T08:45:00+00:00",
+  "classProfiles": [
+    {
+      "id": "ARCHER",
+      "primaryAttribute": "AGILITY",
+      "resourceProfileId": "FOCUS",
+      "baseStats": {
+        "strength": 5,
+        "agility": 9,
+        "intellect": 5,
+        "stamina": 7
+      },
+      "levelGrowth": {
+        "strength": 1,
+        "agility": 3,
+        "intellect": 1,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "BOW"
+      ],
+      "allowedArmorCategories": [
+        "LEATHER"
+      ],
+      "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs.",
+      "startingAbilityIds": [],
+      "abilityUnlocks": [],
+      "allowedOffHandCategories": [],
+      "allowUnarmed": false
+    }
+  ]
+}

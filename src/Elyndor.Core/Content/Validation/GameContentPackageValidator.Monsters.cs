@@ -62,6 +62,12 @@ public static partial class GameContentPackageValidator
                     || monster.AutoAttackBaseDamageMax.HasValue
                         && !monster.AutoAttackBaseDamageMin.HasValue
                         && monster.AutoAttackBaseDamageMax < monster.AutoAttackBaseDamage
+                    || monster.Stats.Armor < 0
+                    || monster.Stats.MagicResistance < 0
+                    || monster.Stats.BlockChance is < 0 or > 100
+                    || monster.Stats.BlockValueMin < 0
+                    || monster.Stats.BlockValueMax < monster.Stats.BlockValueMin
+                    || monster.Stats.BlockChance > 0 && monster.Stats.BlockValueMax <= 0
                     || monster.AutoAttackAttackPowerCoefficient < 0
                     || monster.Version <= 0)
                 {

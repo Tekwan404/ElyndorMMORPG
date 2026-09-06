@@ -25,6 +25,8 @@ public static class InventoryErrorCodes
     public const string ClassRestricted = "inventory_class_restricted";
     public const string WeaponCategoryRestricted = "inventory_weapon_category_restricted";
     public const string ArmorCategoryRestricted = "inventory_armor_category_restricted";
+    public const string OffHandCategoryRestricted = "inventory_off_hand_category_restricted";
+    public const string TwoHandedConflict = "inventory_two_handed_conflict";
     public const string InvalidMutationId = "inventory_mutation_id_invalid";
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
@@ -174,7 +176,22 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.ArmorCategoryRestricted);
                 }
 
+                if (definition.OffHandCategory is not null
+                    && !(classProfile.AllowedOffHandCategories ?? []).Contains(
+                        definition.OffHandCategory,
+                        StringComparer.Ordinal))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.OffHandCategoryRestricted);
+                }
+
                 EquipmentSlot canonicalSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
+                if (canonicalSlot == EquipmentSlot.OffHand
+                    && await HasTwoHandedMainHandAsync(character.Id, cancellationToken))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.TwoHandedConflict);
+                }
                 EquipmentSlot[] aliases = EquivalentEquipmentSlots(canonicalSlot);
 
                 CharacterEquipment[] equippedAliases = await dbContext.CharacterEquipment
@@ -206,6 +223,19 @@ public sealed class InventoryEquipmentService(
                     if (legacyAliases.Length > 0)
                     {
                         dbContext.CharacterEquipment.RemoveRange(legacyAliases);
+                    }
+                }
+
+                if (canonicalSlot == EquipmentSlot.MainHand
+                    && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory))
+                {
+                    CharacterEquipment[] offHand = await dbContext.CharacterEquipment
+                        .Where(candidate => candidate.CharacterId == character.Id
+                            && candidate.Slot == EquipmentSlot.OffHand)
+                        .ToArrayAsync(cancellationToken);
+                    if (offHand.Length > 0)
+                    {
+                        dbContext.CharacterEquipment.RemoveRange(offHand);
                     }
                 }
 
@@ -374,6 +404,25 @@ public sealed class InventoryEquipmentService(
                 return InventoryErrorCodes.Conflict;
             }
         });
+    }
+
+    private async Task<bool> HasTwoHandedMainHandAsync(
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
+        EquipmentSlot[] mainHandSlots = EquivalentEquipmentSlots(EquipmentSlot.MainHand);
+        string? definitionId = await (
+                from equipment in dbContext.CharacterEquipment.AsNoTracking()
+                join item in dbContext.CharacterItems.AsNoTracking()
+                    on equipment.CharacterItemId equals item.Id
+                where equipment.CharacterId == characterId
+                    && mainHandSlots.Contains(equipment.Slot)
+                select item.ItemDefinitionId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return definitionId is not null
+            && FindItem(definitionId) is { } definition
+            && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory);
     }
 
     private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>

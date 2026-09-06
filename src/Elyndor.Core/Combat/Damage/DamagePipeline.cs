@@ -23,7 +23,8 @@ public sealed record DamageRequest(
     decimal AccuracyBonus = 0,
     decimal CriticalChanceBonus = 0,
     decimal CriticalDamageBonus = 0,
-    decimal MagicPenetrationBonus = 0);
+    decimal MagicPenetrationBonus = 0,
+    bool CanBlock = true);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -33,6 +34,8 @@ public sealed record DamageResult(
     decimal MitigatedAmount,
     decimal AfterMitigation,
     decimal ModifiedAmount,
+    bool WasBlocked,
+    decimal BlockedAmount,
     decimal AbsorbedByShields,
     decimal HpDamage,
     bool IsLethal,
@@ -144,10 +147,12 @@ public static class DamagePipeline
             ? Math.Max(modified, Math.Max(0, request.MinimumDamage))
             : 0;
         decimal rounded = decimal.Round(minimumApplied, 0, MidpointRounding.AwayFromZero);
-        decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, rounded);
+        decimal blocked = ResolveBlock(request, rounded, random);
+        decimal afterBlock = Math.Max(0, rounded - blocked);
+        decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, afterBlock);
         decimal hpDamage = Math.Min(
             request.Target.CurrentHp,
-            Math.Max(0, rounded - absorbed));
+            Math.Max(0, afterBlock - absorbed));
         bool lethal = request.Target.CanDie
                       && hpDamage >= request.Target.CurrentHp
                       && hpDamage > 0;
@@ -181,6 +186,19 @@ public static class DamagePipeline
         }
 
         List<CombatEvent> events = [];
+        if (blocked > 0)
+        {
+            events.Add(new CombatEvent(
+                CombatEventType.DamageBlocked,
+                occurredAtUtc,
+                request.Target.ActorId,
+                Amount: blocked,
+                SourceActorId: request.Source.ActorId,
+                TargetActorId: request.Target.ActorId,
+                AmountBeforeShields: afterBlock,
+                DamageType: request.Type));
+        }
+
         if (absorbed > 0)
         {
             events.Add(new CombatEvent(
@@ -202,7 +220,7 @@ public static class DamagePipeline
                 Amount: hpDamage,
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
-                AmountBeforeShields: rounded,
+                AmountBeforeShields: afterBlock,
                 DamageType: request.Type));
         }
 
@@ -213,7 +231,7 @@ public static class DamagePipeline
             Amount: hpDamage,
             SourceActorId: request.Source.ActorId,
             TargetActorId: request.Target.ActorId,
-            AmountBeforeShields: rounded,
+            AmountBeforeShields: afterBlock,
             DamageType: request.Type));
         if (vampirismHealing > 0)
         {
@@ -245,12 +263,52 @@ public static class DamagePipeline
             raw - afterMitigation,
             decimal.Round(afterMitigation, 0, MidpointRounding.AwayFromZero),
             rounded,
+            blocked > 0,
+            blocked,
             absorbed,
             hpDamage,
             lethal,
             preventionTriggered,
             request.Target.CurrentHp,
             events);
+    }
+
+    private static decimal ResolveBlock(
+        DamageRequest request,
+        decimal incoming,
+        IGameRandom random)
+    {
+        if (!request.CanBlock
+            || request.Type != DamageType.Physical
+            || incoming <= 0
+            || request.Target.Stats.BlockChance <= 0)
+        {
+            return 0;
+        }
+
+        decimal blockChance = request.Target.Stats.BlockChance;
+        decimal blockValueMin = request.Target.Stats.BlockValueMin;
+        decimal blockValueMax = request.Target.Stats.BlockValueMax;
+        if (blockChance is < 0 or > 100
+            || blockValueMin < 0
+            || blockValueMax < blockValueMin
+            || blockChance > 0 && blockValueMax <= 0)
+        {
+            throw new InvalidOperationException("Target block profile is invalid.");
+        }
+
+        if (random.NextUnit() >= blockChance / 100m)
+            return 0;
+
+        decimal blockValue = blockValueMin;
+        if (blockValueMax > blockValueMin)
+        {
+            blockValue += (blockValueMax - blockValueMin) * random.NextUnit();
+        }
+
+        return Math.Min(
+            incoming,
+            decimal.Round(blockValue, 0, MidpointRounding.AwayFromZero));
     }
 
     private static decimal Mitigate(DamageRequest request, decimal damage)
@@ -307,6 +365,8 @@ public static class DamagePipeline
             0,
             0,
             0,
+            0,
+            false,
             0,
             0,
             0,

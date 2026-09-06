@@ -8,7 +8,7 @@ namespace Elyndor.IntegrationTests.Content;
 public sealed class GameContentPackageLoaderTests
 {
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
-    private static readonly string[] MageArmorCategories = ["LIGHT"];
+    private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
         ["WOLF", "FOREST_BOAR", "GIANT_SPIDER"];
 
@@ -18,10 +18,13 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.9.4", package.ContentVersion);
+        Assert.Equal("0.10.0", package.ContentVersion);
         Assert.Equal("0.9.1", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
-        Assert.Equal(16, package.Items!.Count);
+        Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
+        Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
+        Assert.Contains(package.Items!, item => item.Id == "HUNTER_SHORTBOW");
+        Assert.Contains(package.Items!, item => item.Id == "APPRENTICE_STAFF");
         Assert.Equal(3, package.LootTables!.Count);
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);

@@ -150,7 +150,10 @@ public sealed class CharacterDerivedStateService(
                         MagicResistanceFlat: equipment.MagicResistanceFlat,
                         DodgePercent: equipment.DodgePercent,
                         ArmorPenetrationPercent: equipment.ArmorPenetrationPercent,
-                        MagicPenetrationPercent: equipment.MagicPenetrationPercent),
+                        MagicPenetrationPercent: equipment.MagicPenetrationPercent,
+                        BlockChancePercent: equipment.BlockChancePercent,
+                        BlockValueMin: equipment.BlockValueMin,
+                        BlockValueMax: equipment.BlockValueMax),
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });

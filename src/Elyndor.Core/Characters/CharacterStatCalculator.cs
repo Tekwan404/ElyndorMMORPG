@@ -25,7 +25,10 @@ public sealed record CharacterEquipmentDerivedModifiers(
     decimal MagicResistanceFlat = 0,
     decimal DodgePercent = 0,
     decimal ArmorPenetrationPercent = 0,
-    decimal MagicPenetrationPercent = 0);
+    decimal MagicPenetrationPercent = 0,
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public sealed class CharacterStatCalculator(
     StatFormulaProfile formula,
@@ -110,6 +113,9 @@ public sealed class CharacterStatCalculator(
                 + equipmentDerived.DodgePercent,
             0,
             100);
+        decimal blockChance = decimal.Clamp(equipmentDerived.BlockChancePercent, 0, 100);
+        decimal blockValueMin = Math.Max(0, equipmentDerived.BlockValueMin);
+        decimal blockValueMax = Math.Max(blockValueMin, equipmentDerived.BlockValueMax);
 
         CharacterStats stats = new(
             primary.Strength,
@@ -127,7 +133,10 @@ public sealed class CharacterStatCalculator(
             attackSpeed,
             armor,
             magicResistance,
-            dodge);
+            dodge,
+            blockChance,
+            blockValueMin,
+            blockValueMax);
 
         Dictionary<string, CharacterStatBreakdown> breakdown = new(StringComparer.Ordinal)
         {
@@ -195,7 +204,13 @@ public sealed class CharacterStatCalculator(
             ["dodge"] = Breakdown(stats.Dodge,
                 ("AGILITY", primary.Agility * formula.DodgePerAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
-                ("TALENT_BONUS", talent.DodgePercent))
+                ("TALENT_BONUS", talent.DodgePercent)),
+            ["blockChance"] = Breakdown(stats.BlockChance,
+                ("EQUIPMENT_BONUS", equipmentDerived.BlockChancePercent)),
+            ["blockValueMin"] = Breakdown(stats.BlockValueMin,
+                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMin)),
+            ["blockValueMax"] = Breakdown(stats.BlockValueMax,
+                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMax))
         };
 
         return new CharacterStatCalculation(stats, breakdown);

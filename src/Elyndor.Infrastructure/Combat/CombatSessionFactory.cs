@@ -171,7 +171,9 @@ public sealed class CombatSessionFactory(
             character.Vitals.ResourceType,
             playerAutoAttack,
             new HashSet<string>(derived.KnownAbilityIds, StringComparer.Ordinal),
-            resourceProfile.CombatRegenPerSecond);
+            resourceProfile.CombatRegenPerSecond,
+            CanAutoAttack: classProfile.AllowUnarmed
+                || equipment.MainHandWeaponCategory is not null);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,
@@ -245,7 +247,10 @@ public sealed class CombatSessionFactory(
         stats.ArmorPenetration / 100m,
         stats.MagicPenetration / 100m,
         stats.AttackPower,
-        stats.SpellPower);
+        stats.SpellPower,
+        stats.BlockChance,
+        stats.BlockValueMin,
+        stats.BlockValueMax);
 
     private static CombatSessionCreationResult Failure(
         string code,

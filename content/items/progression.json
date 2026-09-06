@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.8.0",
-  "balanceVersion": "0.7.0",
-  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "contentVersion": "0.10.0",
+  "balanceVersion": "0.8.0",
+  "publishedAtUtc": "2026-09-06T08:50:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -119,7 +119,7 @@
       "requiredLevel": 1,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Weapon",
+      "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
       "stats": {
         "strength": 2,
@@ -130,7 +130,16 @@
       "description": "Лёгкий клинок лесного следопыта. Базовый интервал автоатаки — 2,4 сек.",
       "version": 1,
       "setId": "RANGER_SET",
-      "weaponBaseAttackIntervalSeconds": 2.4
+      "weaponBaseAttackIntervalSeconds": 2.4,
+      "weaponDamageMin": 7,
+      "weaponDamageMax": 11,
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "RANGER_SILK_HOOD",
@@ -141,7 +150,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Head",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
@@ -150,7 +159,15 @@
       },
       "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 4,
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "RANGER_HIDE_VEST",
@@ -161,7 +178,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Chest",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -170,7 +187,15 @@
       },
       "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 8,
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "RANGER_TRAIL_LEGGINGS",
@@ -181,7 +206,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Legs",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 1,
@@ -190,7 +215,20 @@
       },
       "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 6,
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      }
     },
     {
       "id": "RANGER_TRAIL_BOOTS",
@@ -201,7 +239,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Boots",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
@@ -210,7 +248,15 @@
       },
       "description": "Тихие кожаные ботинки, удобные для преследования добычи.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 4,
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "RANGER_FANG_CHARM",
@@ -260,7 +306,7 @@
       "requiredLevel": 1,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Weapon",
+      "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
       "stats": {
         "strength": 2,
@@ -271,7 +317,16 @@
       "description": "Ранняя версия клинка Следопыта. Сохранена для совместимости с уже полученными предметами. Базовый интервал автоатаки — 2,4 сек.",
       "version": 1,
       "setId": "RANGER_SET",
-      "weaponBaseAttackIntervalSeconds": 2.4
+      "weaponBaseAttackIntervalSeconds": 2.4,
+      "weaponDamageMin": 7,
+      "weaponDamageMax": 11,
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "BOAR_HIDE_VEST",
@@ -282,7 +337,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Chest",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -291,7 +346,15 @@
       },
       "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 8,
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
     },
     {
       "id": "SPIDER_SILK_HOOD",
@@ -302,7 +365,7 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "Head",
-      "armorCategory": "MEDIUM",
+      "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
         "agility": 2,
@@ -311,7 +374,284 @@
       },
       "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "armorFlat": 4,
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "RECRUIT_IRON_SWORD",
+      "name": "Железный меч рекрута",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "weaponCategory": "ONE_HAND_SWORD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "stats": {
+        "strength": 1,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "weaponDamageMin": 5,
+      "weaponDamageMax": 8,
+      "weaponBaseAttackIntervalSeconds": 2.2,
+      "description": "Простой надёжный меч для начинающего воина.",
+      "version": 1,
+      "buyPriceGold": 35
+    },
+    {
+      "id": "RECRUIT_WOODEN_SHIELD",
+      "name": "Усиленный деревянный щит",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "offHandCategory": "SHIELD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorFlat": 6,
+      "blockChancePercent": 15,
+      "blockValueMin": 3,
+      "blockValueMax": 6,
+      "description": "Учебный щит воина. Даёт броню и шанс заблокировать часть физического урона.",
+      "version": 1,
+      "buyPriceGold": 30
+    },
+    {
+      "id": "RECRUIT_HEAVY_CHEST",
+      "name": "Кираса рекрута",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "armorCategory": "HEAVY",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorFlat": 12,
+      "description": "Простая тяжёлая кираса для начинающего воина.",
+      "version": 1,
+      "buyPriceGold": 40
+    },
+    {
+      "id": "HUNTER_SHORTBOW",
+      "name": "Короткий лук охотника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "weaponCategory": "BOW",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "weaponDamageMin": 6,
+      "weaponDamageMax": 9,
+      "weaponBaseAttackIntervalSeconds": 2.2,
+      "description": "Лёгкий стартовый лук охотника.",
+      "version": 1,
+      "buyPriceGold": 35
+    },
+    {
+      "id": "HUNTER_LEATHER_VEST",
+      "name": "Кожаная куртка охотника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "armorCategory": "LEATHER",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorFlat": 7,
+      "description": "Лёгкая кожаная защита, не мешающая стрельбе.",
+      "version": 1,
+      "buyPriceGold": 35
+    },
+    {
+      "id": "APPRENTICE_STAFF",
+      "name": "Посох ученика",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "weaponCategory": "STAFF",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 1,
+        "stamina": 0
+      },
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "weaponDamageMin": 5,
+      "weaponDamageMax": 8,
+      "weaponBaseAttackIntervalSeconds": 2.6,
+      "description": "Простой двуручный посох начинающего мага.",
+      "version": 1,
+      "buyPriceGold": 35
+    },
+    {
+      "id": "APPRENTICE_WAND",
+      "name": "Жезл ученика",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "weaponCategory": "WAND",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 1,
+        "stamina": 0
+      },
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "weaponDamageMin": 3,
+      "weaponDamageMax": 5,
+      "weaponBaseAttackIntervalSeconds": 1.9,
+      "description": "Быстрый одноручный жезл для ученика магии.",
+      "version": 1,
+      "buyPriceGold": 30
+    },
+    {
+      "id": "APPRENTICE_CLOTH_ROBE",
+      "name": "Мантия ученика",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "armorCategory": "CLOTH",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 1,
+        "stamina": 1
+      },
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorFlat": 4,
+      "description": "Простая тканевая мантия ученика мага.",
+      "version": 1,
+      "buyPriceGold": 30
     }
   ]
 }

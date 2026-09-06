@@ -152,6 +152,8 @@ Apply damage modifiers
   ↓
 Apply Minimum Damage
   ↓
+Resolve equipment Block for Physical Damage
+  ↓
 Apply shield absorption
   ↓
 Apply remaining damage to HP
@@ -563,6 +565,8 @@ Damage Modifiers, including damage dealt and damage taken
   ↓
 Minimum Damage
   ↓
+Equipment Block for Physical Damage
+  ↓
 Shield absorption
   ↓
 Apply to HP
@@ -591,7 +595,45 @@ Magical Damage modifiers применяются к Magical Damage.
 True Damage modifiers применяются к True Damage только если явно указано.
 Generic damage modifiers применяются ко всем типам, если явно указано.
 
-23. Shield Absorption
+23. Equipment Block
+
+Equipment Block — отдельная defensive mechanic от absorb shields.
+
+Block доступен только если authoritative combat snapshot цели содержит валидный shield block profile:
+
+```text
+BlockChance
+BlockValueMin
+BlockValueMax
+```
+
+Core rules:
+
+- Block применяется только к Physical Damage.
+- Magical Damage и True Damage не блокируются обычным щитом.
+- Block roll выполняется сервером через injectable game RNG.
+- Block выполняется после mitigation, damage modifiers и Minimum Damage.
+- При успехе BlockValue роллится в диапазоне BlockValueMin–BlockValueMax.
+- BlockedAmount не может превышать входящий урон.
+- После блока оставшийся урон передаётся в Effect Shield absorption.
+- Успешный блок эмитит DamageBlocked event.
+- Block не является Dodge: атака считается попавшей и может запускать hit-based mechanics согласно их собственным правилам.
+
+Порядок:
+
+```text
+MinimumDamageAmount
+  ↓
+Physical Block roll
+  ↓
+Subtract BlockedAmount
+  ↓
+Active effect Shield absorption
+  ↓
+HP
+```
+
+24. Shield Absorption
 
 Если цель имеет активный shield, урон может быть поглощён.
 
@@ -1450,45 +1492,48 @@ INVARIANT-17
 Damage Modifiers применяются после mitigation и до shield absorption.
 
 INVARIANT-18
-Shield absorption происходит после damage modifiers и Minimum Damage.
+Equipment Block применяется только к Physical Damage после Minimum Damage и до Shield absorption.
 
 INVARIANT-19
-Overhealing не применяется к HP.
+Shield absorption происходит после Equipment Block.
 
 INVARIANT-20
-Overhealing не генерирует Threat.
+Overhealing не применяется к HP.
 
 INVARIANT-21
-Лечение не может воскресить мёртвую цель по умолчанию.
+Overhealing не генерирует Threat.
 
 INVARIANT-22
-Critical Healing multiplier применяется до healing modifiers.
+Лечение не может воскресить мёртвую цель по умолчанию.
 
 INVARIANT-23
-HealingType не уменьшает лечение через Armor или MagicResistance.
+Critical Healing multiplier применяется до healing modifiers.
 
 INVARIANT-24
-Vampiric Healing рассчитывается из EffectiveDamageToHP по умолчанию.
+HealingType не уменьшает лечение через Armor или MagicResistance.
 
 INVARIANT-25
-Vampiric Healing не генерирует дополнительный Threat по умолчанию.
+Vampiric Healing рассчитывается из EffectiveDamageToHP по умолчанию.
 
 INVARIANT-26
-ThreatRelevantDamage включает урон, применённый к HP, и урон, поглощённый щитом.
+Vampiric Healing не генерирует дополнительный Threat по умолчанию.
 
 INVARIANT-27
-ThreatRelevantHealing равен EffectiveHealing, если источник явно не определяет другое.
+ThreatRelevantDamage включает урон, применённый к HP, урон, заблокированный equipment Block, и урон, поглощённый щитом.
 
 INVARIANT-28
-DoT/HoT используют правила snapshot из Effects System.
+ThreatRelevantHealing равен EffectiveHealing, если источник явно не определяет другое.
 
 INVARIANT-29
-AFK Farming по умолчанию не использует полный Damage and Healing pipeline.
+DoT/HoT используют правила snapshot из Effects System.
 
 INVARIANT-30
-Offline combat использует Damage and Healing System серверно.
+AFK Farming по умолчанию не использует полный Damage and Healing pipeline.
 
 INVARIANT-31
+Offline combat использует Damage and Healing System серверно.
+
+INVARIANT-32
 DoT tick применяет Target Armor и MagicResistance по текущим значениям цели в момент tick, если эффект явно не определяет snapshot target mitigation.
 
 58. Default Balance Values

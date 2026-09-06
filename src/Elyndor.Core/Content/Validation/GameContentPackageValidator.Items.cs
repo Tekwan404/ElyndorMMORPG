@@ -63,6 +63,7 @@ public static partial class GameContentPackageValidator
                     ? !HasValidEquipmentCategoryShape(item)
                     : item.WeaponCategory is not null
                         || item.ArmorCategory is not null
+                        || item.OffHandCategory is not null
                         || allowedClassIds.Count > 0;
                 if (invalidEquipmentCategory)
                 {
@@ -83,6 +84,7 @@ public static partial class GameContentPackageValidator
                     || item.Stats.Stamina < 0;
                 bool invalidPrimaryStatRanges = HasInvalidPrimaryStatRanges(item.PrimaryStatRanges);
                 bool invalidWeaponDamageRange = HasInvalidWeaponDamageRange(item);
+                bool invalidBlockProfile = HasInvalidBlockProfile(item);
                 bool invalidTypeShape = item.Type switch
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
@@ -103,6 +105,7 @@ public static partial class GameContentPackageValidator
                     || negativeStats
                     || invalidPrimaryStatRanges
                     || invalidWeaponDamageRange
+                    || invalidBlockProfile
                     || invalidTypeShape)
                 {
                     errors.Add(new("INVALID_ITEM_DEFINITION", path,
@@ -166,16 +169,24 @@ public static partial class GameContentPackageValidator
         private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>
             item.Slot switch
             {
-                EquipmentSlot.Weapon or EquipmentSlot.MainHand or EquipmentSlot.OffHand =>
+                EquipmentSlot.Weapon or EquipmentSlot.MainHand =>
                     EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
-                    && item.ArmorCategory is null,
+                    && item.ArmorCategory is null
+                    && item.OffHandCategory is null,
+                EquipmentSlot.OffHand =>
+                    item.ArmorCategory is null
+                    && (EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
+                        ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
                 EquipmentSlot.Head or EquipmentSlot.Chest or EquipmentSlot.Hands
                     or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
-                    && item.WeaponCategory is null,
+                    && item.WeaponCategory is null
+                    && item.OffHandCategory is null,
                 EquipmentSlot.Accessory or EquipmentSlot.Cloak or EquipmentSlot.Amulet
                     or EquipmentSlot.Ring1 or EquipmentSlot.Ring2 =>
-                    item.WeaponCategory is null && item.ArmorCategory is null,
+                    item.WeaponCategory is null
+                    && item.ArmorCategory is null
+                    && item.OffHandCategory is null,
                 _ => false
             };
 
@@ -197,6 +208,9 @@ public static partial class GameContentPackageValidator
             || item.ArmorPenetrationPercent != 0
             || item.MagicPenetrationPercent != 0
             || item.MaxResourceFlat != 0
+            || item.BlockChancePercent != 0
+            || item.BlockValueMin != 0
+            || item.BlockValueMax != 0
             || item.PrimaryStatRanges is not null
             || item.WeaponDamageMin is not null
             || item.WeaponDamageMax is not null;
@@ -215,9 +229,30 @@ public static partial class GameContentPackageValidator
             };
             return item.Type != ItemType.Equipment
                 || canonicalSlot != EquipmentSlot.MainHand
-                || string.Equals(item.WeaponCategory, EquipmentCategoryIds.Shield, StringComparison.Ordinal)
+                || !EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                 || item.WeaponDamageMin < 0
                 || item.WeaponDamageMax < item.WeaponDamageMin;
+        }
+
+        private static bool HasInvalidBlockProfile(ItemDefinition item)
+        {
+            bool isShield = item.Type == ItemType.Equipment
+                && item.Slot == EquipmentSlot.OffHand
+                && string.Equals(
+                    item.OffHandCategory,
+                    EquipmentCategoryIds.Shield,
+                    StringComparison.Ordinal);
+            bool hasBlockData = item.BlockChancePercent != 0
+                || item.BlockValueMin != 0
+                || item.BlockValueMax != 0;
+
+            if (!isShield)
+                return hasBlockData;
+
+            return item.BlockChancePercent is <= 0 or > 100
+                || item.BlockValueMin < 0
+                || item.BlockValueMax <= 0
+                || item.BlockValueMax < item.BlockValueMin;
         }
 
         private static bool HasInvalidPrimaryStatRanges(PrimaryStatRanges? ranges)
