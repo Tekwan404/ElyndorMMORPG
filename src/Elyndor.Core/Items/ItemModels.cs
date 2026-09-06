@@ -57,15 +57,21 @@ public static class EquipmentCategoryIds
     public const string TwoHandSword = "TWO_HAND_SWORD";
     public const string Axe = "AXE";
     public const string Mace = "MACE";
-    public const string Shield = "SHIELD";
     public const string Bow = "BOW";
     public const string Dagger = "DAGGER";
     public const string Staff = "STAFF";
     public const string Wand = "WAND";
 
+    public const string Cloth = "CLOTH";
+    public const string Leather = "LEATHER";
+    public const string Heavy = "HEAVY";
+
+    public const string Shield = "SHIELD";
+
+    // Legacy identifiers remain as constants only so old tooling can produce a clear
+    // validation error instead of failing to compile. They are not valid categories.
     public const string Light = "LIGHT";
     public const string Medium = "MEDIUM";
-    public const string Heavy = "HEAVY";
 
     private static readonly HashSet<string> WeaponCategories = new(StringComparer.Ordinal)
     {
@@ -73,7 +79,6 @@ public static class EquipmentCategoryIds
         TwoHandSword,
         Axe,
         Mace,
-        Shield,
         Bow,
         Dagger,
         Staff,
@@ -82,9 +87,14 @@ public static class EquipmentCategoryIds
 
     private static readonly HashSet<string> ArmorCategories = new(StringComparer.Ordinal)
     {
-        Light,
-        Medium,
+        Cloth,
+        Leather,
         Heavy
+    };
+
+    private static readonly HashSet<string> OffHandCategories = new(StringComparer.Ordinal)
+    {
+        Shield
     };
 
     public static bool IsWeapon(string? category) =>
@@ -92,6 +102,12 @@ public static class EquipmentCategoryIds
 
     public static bool IsArmor(string? category) =>
         category is not null && ArmorCategories.Contains(category);
+
+    public static bool IsOffHand(string? category) =>
+        category is not null && OffHandCategories.Contains(category);
+
+    public static bool UsesBothHands(string? weaponCategory) =>
+        weaponCategory is TwoHandSword or Bow or Staff;
 }
 
 public sealed record ItemDefinition(
@@ -132,7 +148,11 @@ public sealed record ItemDefinition(
     string? AppearanceProfileId = null,
     PrimaryStatRanges? PrimaryStatRanges = null,
     decimal? WeaponDamageMin = null,
-    decimal? WeaponDamageMax = null);
+    decimal? WeaponDamageMax = null,
+    string? OffHandCategory = null,
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
