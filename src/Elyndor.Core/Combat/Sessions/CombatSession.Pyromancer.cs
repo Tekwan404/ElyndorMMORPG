@@ -93,22 +93,6 @@ public sealed partial class CombatSession
         if (TryGetPyromancerHook("F-9-1", out ResolvedTalentEventHook avatar))
             damageMultiplier *= 1 + avatar.Value / 100m;
 
-        if (TryGetPyromancerHook("F-2-3", out ResolvedTalentEventHook firstBurn)
-            && HpPercent(_enemy.Actor) > firstBurn.Threshold)
-            damageMultiplier *= 1 + firstBurn.Value / 100m;
-        if (TryGetPyromancerHook("F-4-4", out ResolvedTalentEventHook searingFinale)
-            && HpPercent(_enemy.Actor) < searingFinale.Threshold)
-            damageMultiplier *= 1 + searingFinale.Value / 100m;
-        if (TryGetPyromancerHook("F-3-2", out ResolvedTalentEventHook devouringFlame)
-            && HasOwnBurn(now))
-            damageMultiplier *= 1 + devouringFlame.Value / 100m;
-        if (TryGetPyromancerHook("F-8-2", out ResolvedTalentEventHook heartOfFire)
-            && HasOwnBurn(now))
-            criticalDamageBonus += heartOfFire.Value;
-        if (HasOwnEffect(_enemy.Actor, AshenMarkEffectId, now)
-            && TryGetPyromancerHook("F-7-2", out ResolvedTalentEventHook ashenMark))
-            magicPenetrationBonus += ashenMark.Value / 100m;
-
         ActiveEffect? inferno = FindOwnEffect(_player.Actor, InfernoEffectId, now);
         if (inferno is not null
             && TryGetPyromancerHook("F-7-3", out ResolvedTalentEventHook infernoHook))
@@ -162,9 +146,6 @@ public sealed partial class CombatSession
         {
             if (TryGetPyromancerHook("F-6-2", out ResolvedTalentEventHook overheat))
                 criticalChanceBonus += overheat.Value;
-            if (TryGetPyromancerHook("F-8-3", out ResolvedTalentEventHook ashStar)
-                && HpPercent(_enemy.Actor) < ashStar.Threshold)
-                damageMultiplier *= 1 + ashStar.Value / 100m;
         }
 
         if (IsCombustionActive(now)
@@ -182,6 +163,61 @@ public sealed partial class CombatSession
             DamageMultiplier = damageMultiplier,
             AccuracyBonus = accuracyBonus,
             CriticalChanceBonus = criticalChanceBonus,
+            CriticalDamageBonus = criticalDamageBonus,
+            MagicPenetrationBonus = magicPenetrationBonus
+        };
+    }
+
+    private AbilityTargetModifier ResolvePyromancerTargetAbilityModifier(
+        AbilityDefinition ability,
+        CombatActorState target,
+        AbilityTargetModifier modifier,
+        DateTimeOffset now)
+    {
+        if (!IsMage || !IsOffensiveFireAbility(ability) || target.IsDead)
+            return modifier;
+
+        decimal damageMultiplier = modifier.DamageMultiplier;
+        decimal criticalDamageBonus = modifier.CriticalDamageBonus;
+        decimal magicPenetrationBonus = modifier.MagicPenetrationBonus;
+
+        if (TryGetPyromancerHook("F-2-3", out ResolvedTalentEventHook firstBurn)
+            && HpPercent(target) > firstBurn.Threshold)
+        {
+            damageMultiplier *= 1 + firstBurn.Value / 100m;
+        }
+
+        bool hasOwnBurn = HasOwnBurn(target, now);
+        if (TryGetPyromancerHook("F-4-4", out ResolvedTalentEventHook searingFinale)
+            && HpPercent(target) < searingFinale.Threshold)
+        {
+            damageMultiplier *= 1 + searingFinale.Value / 100m;
+        }
+        if (hasOwnBurn
+            && TryGetPyromancerHook("F-3-2", out ResolvedTalentEventHook devouringFlame))
+        {
+            damageMultiplier *= 1 + devouringFlame.Value / 100m;
+        }
+        if (hasOwnBurn
+            && TryGetPyromancerHook("F-8-2", out ResolvedTalentEventHook heartOfFire))
+        {
+            criticalDamageBonus += heartOfFire.Value;
+        }
+        if (HasOwnEffect(target, AshenMarkEffectId, now)
+            && TryGetPyromancerHook("F-7-2", out ResolvedTalentEventHook ashenMark))
+        {
+            magicPenetrationBonus += ashenMark.Value / 100m;
+        }
+        if (string.Equals(ability.Id, FireCometId, StringComparison.Ordinal)
+            && TryGetPyromancerHook("F-8-3", out ResolvedTalentEventHook ashStar)
+            && HpPercent(target) < ashStar.Threshold)
+        {
+            damageMultiplier *= 1 + ashStar.Value / 100m;
+        }
+
+        return modifier with
+        {
+            DamageMultiplier = damageMultiplier,
             CriticalDamageBonus = criticalDamageBonus,
             MagicPenetrationBonus = magicPenetrationBonus
         };
@@ -260,11 +296,13 @@ public sealed partial class CombatSession
 
         bool hit = DidHit(execution);
         bool critical = DidCrit(execution);
+        CombatActorState? hitTarget = ResolveExecutionEnemyTarget(execution);
 
         if (string.Equals(ability.Id, FireballId, StringComparison.Ordinal))
         {
             UpdateHeatLimitStreak(hit, critical, now);
-            if (hit) RefreshBurnFromFireball(now);
+            if (hit && hitTarget is not null)
+                RefreshBurnFromFireball(hitTarget, now);
         }
 
         if (string.Equals(ability.Id, FlameFlashId, StringComparison.Ordinal)
@@ -287,11 +325,15 @@ public sealed partial class CombatSession
             && hit
             && TryGetPyromancerHook("F-6-2", out ResolvedTalentEventHook overheat))
         {
-            ApplyBurn(
-                overheat.SecondaryValue,
-                overheat.Duration,
-                overheat.TickInterval,
-                now);
+            if (hitTarget is not null)
+            {
+                ApplyBurn(
+                    hitTarget,
+                    overheat.SecondaryValue,
+                    overheat.Duration,
+                    overheat.TickInterval,
+                    now);
+            }
         }
 
         if (TryGetPyromancerHook("F-4-3", out ResolvedTalentEventHook rhythmHook))
@@ -352,6 +394,11 @@ public sealed partial class CombatSession
             return;
 
         DateTimeOffset now = combatEvent.OccurredAtUtc;
+        CombatActorState? eventTarget =
+            combatEvent.TargetActorId is { } targetActorId
+            && _enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+                ? target.Actor
+                : null;
 
         if (TryGetPyromancerHook("F-1-4", out ResolvedTalentEventHook economicalBurn)
             && TalentCooldownReady(economicalBurn.TalentId, now))
@@ -362,12 +409,16 @@ public sealed partial class CombatSession
 
         if (string.Equals(combatEvent.DefinitionId, FireballId, StringComparison.Ordinal))
         {
-            if (TryGetPyromancerHook("F-2-2", out ResolvedTalentEventHook ignitionSpark))
+            if (eventTarget is not null
+                && TryGetPyromancerHook("F-2-2", out ResolvedTalentEventHook ignitionSpark))
+            {
                 ApplyBurn(
+                    eventTarget,
                     ignitionSpark.Value,
                     ignitionSpark.Duration,
                     ignitionSpark.TickInterval,
                     now);
+            }
 
             if (TryGetPyromancerHook("F-3-3", out ResolvedTalentEventHook hotBlood))
             {
@@ -383,10 +434,11 @@ public sealed partial class CombatSession
                     now);
             }
 
-            if (TryGetPyromancerHook("F-7-2", out ResolvedTalentEventHook ashenMark))
+            if (eventTarget is not null
+                && TryGetPyromancerHook("F-7-2", out ResolvedTalentEventHook ashenMark))
             {
                 ApplyPyroEffect(
-                    _enemy.Actor,
+                    eventTarget,
                     new EffectDefinition(
                         AshenMarkEffectId,
                         EffectKind.Debuff,
@@ -412,14 +464,15 @@ public sealed partial class CombatSession
 
         if (string.Equals(combatEvent.DefinitionId, FireCometId, StringComparison.Ordinal))
         {
-            if (TryGetPyromancerHook("F-7-1", out ResolvedTalentEventHook cometStrike))
+            if (eventTarget is not null
+                && TryGetPyromancerHook("F-7-1", out ResolvedTalentEventHook cometStrike))
             {
                 decimal avatarMultiplier = HasPyromancerTalent("F-9-1") ? 1.08m : 1m;
                 decimal magnitude = EffectiveFireSpellPower(now)
                     * cometStrike.Value / 100m
                     * avatarMultiplier;
                 ApplyPyroEffect(
-                    _enemy.Actor,
+                    eventTarget,
                     new EffectDefinition(
                         CometAftershockEffectId,
                         EffectKind.DamageOverTime,
@@ -583,12 +636,13 @@ public sealed partial class CombatSession
         RemovePyroEffect(_player.Actor, FireballStreakEffectId, now);
 
     private void ApplyBurn(
+        CombatActorState target,
         decimal spellPowerPercentPerSecond,
         TimeSpan duration,
         TimeSpan tickInterval,
         DateTimeOffset now)
     {
-        if (_enemy.Actor.IsDead || Status != CombatSessionStatus.Active) return;
+        if (target.IsDead || Status != CombatSessionStatus.Active) return;
 
         decimal burnMultiplier = 1;
         if (TryGetPyromancerHook("F-4-2", out ResolvedTalentEventHook fanning))
@@ -600,7 +654,7 @@ public sealed partial class CombatSession
             * spellPowerPercentPerSecond / 100m
             * burnMultiplier;
         ApplyPyroEffect(
-            _enemy.Actor,
+            target,
             new EffectDefinition(
                 BurnEffectId,
                 EffectKind.DamageOverTime,
@@ -614,15 +668,17 @@ public sealed partial class CombatSession
             now);
     }
 
-    private void RefreshBurnFromFireball(DateTimeOffset now)
+    private void RefreshBurnFromFireball(
+        CombatActorState target,
+        DateTimeOffset now)
     {
         if (!HasPyromancerTalent("F-8-2")) return;
-        ActiveEffect? burn = FindOwnEffect(_enemy.Actor, BurnEffectId, now);
+        ActiveEffect? burn = FindOwnEffect(target, BurnEffectId, now);
         if (burn is null) return;
         ApplyKernelEvents(
-            EffectEngine.Apply(_enemy.Actor, _player.Actor.ActorId, burn.Definition, now),
+            EffectEngine.Apply(target, _player.Actor.ActorId, burn.Definition, now),
             _player.Actor.ActorId,
-            _enemy.Actor.ActorId,
+            target.ActorId,
             BurnEffectId);
     }
 
@@ -645,8 +701,8 @@ public sealed partial class CombatSession
     private bool IsHeatLimitActive(DateTimeOffset now) =>
         HasOwnEffect(_player.Actor, HeatLimitEffectId, now);
 
-    private bool HasOwnBurn(DateTimeOffset now) =>
-        HasOwnEffect(_enemy.Actor, BurnEffectId, now);
+    private bool HasOwnBurn(CombatActorState target, DateTimeOffset now) =>
+        HasOwnEffect(target, BurnEffectId, now);
 
     private bool HasPyromancerTalent(string talentId) =>
         _playerTalents.EventHooks.Any(hook =>
@@ -698,6 +754,18 @@ public sealed partial class CombatSession
             _player.Actor.ActorId,
             target.ActorId,
             effectId);
+    }
+
+    private CombatActorState? ResolveExecutionEnemyTarget(
+        AbilityExecutionResult execution)
+    {
+        Guid? targetActorId = execution.Events
+            .FirstOrDefault(item => item.Type == CombatEventType.DamageDealt)
+            ?.TargetActorId;
+        return targetActorId is { } id
+            && _enemiesById.TryGetValue(id, out CombatParticipantDefinition? target)
+                ? target.Actor
+                : null;
     }
 
     private static AbilityActionDefinition[]? ScaleSpellPower(
