@@ -152,6 +152,8 @@ Apply damage modifiers
   ↓
 Apply Minimum Damage
   ↓
+Resolve equipment Block for Physical Damage
+  ↓
 Apply shield absorption
   ↓
 Apply remaining damage to HP
@@ -563,6 +565,8 @@ Damage Modifiers, including damage dealt and damage taken
   ↓
 Minimum Damage
   ↓
+Equipment Block for Physical Damage
+  ↓
 Shield absorption
   ↓
 Apply to HP
@@ -591,7 +595,45 @@ Magical Damage modifiers применяются к Magical Damage.
 True Damage modifiers применяются к True Damage только если явно указано.
 Generic damage modifiers применяются ко всем типам, если явно указано.
 
-23. Shield Absorption
+23. Equipment Block
+
+Equipment Block — отдельная defensive mechanic от absorb shields.
+
+Block доступен только если authoritative combat snapshot цели содержит валидный shield block profile:
+
+```text
+BlockChance
+BlockValueMin
+BlockValueMax
+```
+
+Core rules:
+
+- Block применяется только к Physical Damage.
+- Magical Damage и True Damage не блокируются обычным щитом.
+- Block roll выполняется сервером через injectable game RNG.
+- Block выполняется после mitigation, damage modifiers и Minimum Damage.
+- При успехе BlockValue роллится в диапазоне BlockValueMin–BlockValueMax.
+- BlockedAmount не может превышать входящий урон.
+- После блока оставшийся урон передаётся в Effect Shield absorption.
+- Успешный блок эмитит DamageBlocked event.
+- Block не является Dodge: атака считается попавшей и может запускать hit-based mechanics согласно их собственным правилам.
+
+Порядок:
+
+```text
+MinimumDamageAmount
+  ↓
+Physical Block roll
+  ↓
+Subtract BlockedAmount
+  ↓
+Active effect Shield absorption
+  ↓
+HP
+```
+
+24. Shield Absorption
 
 Если цель имеет активный shield, урон может быть поглощён.
 
@@ -1450,12 +1492,15 @@ INVARIANT-17
 Damage Modifiers применяются после mitigation и до shield absorption.
 
 INVARIANT-18
-Shield absorption происходит после damage modifiers и Minimum Damage.
+Equipment Block применяется только к Physical Damage после Minimum Damage и до Shield absorption.
 
 INVARIANT-19
-Overhealing не применяется к HP.
+Shield absorption происходит после Equipment Block.
 
 INVARIANT-20
+Overhealing не применяется к HP.
+
+INVARIANT-21
 Overhealing не генерирует Threat.
 
 INVARIANT-21
