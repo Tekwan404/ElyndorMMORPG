@@ -93,6 +93,21 @@ export interface WorldLocation {
   displayName: string
   dangerLevel: 'SAFE' | 'ADVENTURE' | 'DANGEROUS'
   recommendedLevel: number
+  minimumLevel: number
+  maximumLevel: number
+  requiredContractId: string | null
+  artId: string | null
+  description: string
+}
+
+export interface WorldContract {
+  id: string
+  displayName: string
+  description: string
+  requiredLevel: number
+  targetMonsterId: string
+  unlockLocationId: string
+  status: 'LOCKED' | 'ACTIVE' | 'COMPLETED'
 }
 
 export interface WorldEncounter {
@@ -290,6 +305,7 @@ export interface BootstrapSnapshot {
     currentLocation: WorldLocation
     version: number
     outgoingTransitions: WorldLocation[]
+    contracts: WorldContract[]
   } | null
   contentVersion: string
   balanceVersion: string
