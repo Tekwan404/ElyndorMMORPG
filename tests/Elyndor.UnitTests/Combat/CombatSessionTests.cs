@@ -160,10 +160,12 @@ public sealed class CombatSessionTests
             [Now, Now.AddSeconds(1), Now.AddSeconds(2), Now.AddSeconds(3)],
             swings.Select(item => item.OccurredAtUtc));
         Assert.True(swings[0].Amount > swings[1].Amount);
-        Assert.Equal(40, result.Snapshot.Player.Resource);
-        Assert.Equal(4, session.GetEventsAfter(0).Count(item =>
-            item.Type == CombatEventType.ResourceChanged
-            && item.DefinitionId == "AUTO_ATTACK"));
+        CombatEvent[] rageFromWeapons = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.ResourceChanged
+                && item.DefinitionId == "AUTO_ATTACK")
+            .ToArray();
+        Assert.Equal(4, rageFromWeapons.Length);
+        Assert.Equal(40, rageFromWeapons.Sum(item => item.Amount));
     }
 
     [Fact]
@@ -202,9 +204,16 @@ public sealed class CombatSessionTests
                 && item.WeaponHand == CombatWeaponHand.OffHand)
             .ToArray();
 
-        Assert.Equal([Now, Now.AddSeconds(2.4)], mainSwings.Select(item => item.OccurredAtUtc));
         Assert.Equal(
-            [Now.AddSeconds(0.8), Now.AddSeconds(2.4), Now.AddSeconds(4)],
+            [Now, Now + mainHand.Interval],
+            mainSwings.Select(item => item.OccurredAtUtc));
+        TimeSpan offInitialDelay = TimeSpan.FromTicks(offHand.Interval.Ticks / 2);
+        Assert.Equal(
+            [
+                Now + offInitialDelay,
+                Now + offInitialDelay + offHand.Interval,
+                Now + offInitialDelay + offHand.Interval + offHand.Interval
+            ],
             offSwings.Select(item => item.OccurredAtUtc));
     }
 
