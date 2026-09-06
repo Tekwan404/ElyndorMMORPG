@@ -370,6 +370,8 @@ export interface CombatSnapshot {
   balanceVersion: string
   player: CombatActorSnapshot
   enemy: CombatActorSnapshot
+  enemies?: CombatActorSnapshot[]
+  selectedTargetActorId?: string | null
 }
 
 export interface CombatEvent {
