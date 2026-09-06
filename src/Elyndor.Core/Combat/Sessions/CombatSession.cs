@@ -789,8 +789,12 @@ public sealed partial class CombatSession
 
     private static void ValidateAutoAttack(AutoAttackProfile profile)
     {
+        decimal minimum = profile.BaseDamageMin ?? profile.BaseDamage;
+        decimal maximum = profile.BaseDamageMax ?? minimum;
         if (profile.Interval <= TimeSpan.Zero
             || profile.BaseDamage < 0
+            || minimum < 0
+            || maximum < minimum
             || profile.AttackPowerCoefficient < 0
             || profile.ResourceOnHit < 0)
             throw new ArgumentException(
