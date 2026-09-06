@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { itemArtUrl } from '@/assets/itemArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
@@ -60,6 +61,10 @@ async function loadMerchant(): Promise<void> {
 
 function selectOffer(item: MerchantItem): void {
   selectedOfferId.value = item.definitionId
+}
+
+function itemArt(item: MerchantItem): string | undefined {
+  return itemArtUrl(item.iconId)
 }
 
 function itemGlyph(item: MerchantItem): string {
@@ -156,7 +161,10 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               :aria-pressed="selectedOffer?.definitionId === item.definitionId"
               @click="selectOffer(item)"
             >
-              <span class="offer-card__icon">{{ itemGlyph(item) }}</span>
+              <span class="offer-card__icon">
+                <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
+                <template v-else>{{ itemGlyph(item) }}</template>
+              </span>
               <span class="offer-card__copy">
                 <small>{{ rarityLabel(item) }}</small>
                 <strong>{{ item.name }}</strong>
@@ -168,7 +176,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail>
             <div class="merchant-detail__identity">
               <span class="merchant-detail__icon" :data-rarity="selectedOffer.rarity">
-                {{ itemGlyph(selectedOffer) }}
+                <img v-if="itemArt(selectedOffer)" :src="itemArt(selectedOffer)" :alt="selectedOffer.name" decoding="async" />
+                <template v-else>{{ itemGlyph(selectedOffer) }}</template>
               </span>
               <div>
                 <small>{{ rarityLabel(selectedOffer) }} · {{ itemTypeLabel(selectedOffer) }}</small>
@@ -558,6 +567,13 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   color: var(--ui-color-text-muted);
   font-size: .7rem;
   line-height: 1.5;
+}
+
+.offer-card__icon img,
+.merchant-detail__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .merchant-detail__effect {
