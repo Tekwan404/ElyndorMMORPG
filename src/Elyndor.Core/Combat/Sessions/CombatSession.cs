@@ -571,7 +571,9 @@ public sealed partial class CombatSession
         IEnumerable<CombatEvent> events,
         Guid sourceActorId,
         Guid targetActorId,
-        string? definitionId)
+        string? definitionId,
+        CombatWeaponHand? weaponHand = null,
+        string? weaponDefinitionId = null)
     {
         foreach (CombatEvent item in events)
         {
@@ -579,7 +581,9 @@ public sealed partial class CombatSession
             {
                 DefinitionId = item.DefinitionId ?? definitionId,
                 SourceActorId = item.SourceActorId ?? sourceActorId,
-                TargetActorId = item.TargetActorId ?? targetActorId
+                TargetActorId = item.TargetActorId ?? targetActorId,
+                WeaponHand = item.WeaponHand ?? weaponHand,
+                WeaponDefinitionId = item.WeaponDefinitionId ?? weaponDefinitionId
             };
             if (normalized.Type == CombatEventType.ActorDied
                 && !_deadActors.Add(normalized.ActorId))
@@ -684,7 +688,9 @@ public sealed partial class CombatSession
                 SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
                 TargetActorId: _enemy.Actor.ActorId,
                 IsPeriodic: death.IsPeriodic,
-                DamageType: death.DamageType));
+                DamageType: death.DamageType,
+                WeaponHand: death.WeaponHand,
+                WeaponDefinitionId: death.WeaponDefinitionId));
             TriggerTalent(
                 TalentModifierKeys.OnEnemyKilled,
                 death.OccurredAtUtc);
@@ -707,7 +713,9 @@ public sealed partial class CombatSession
             death.ActorId,
             Status.ToString(),
             SourceActorId: death.SourceActorId,
-            TargetActorId: death.ActorId));
+            TargetActorId: death.ActorId,
+            WeaponHand: death.WeaponHand,
+            WeaponDefinitionId: death.WeaponDefinitionId));
     }
 
     private void ApplyPlayerResourceRegen(DateTimeOffset now)
