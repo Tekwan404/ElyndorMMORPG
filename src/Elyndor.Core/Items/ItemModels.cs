@@ -40,6 +40,17 @@ public enum EquipmentSlot
     Accessory
 }
 
+public sealed record ItemStatRange(
+    decimal Min,
+    decimal Max,
+    decimal Step = 1);
+
+public sealed record PrimaryStatRanges(
+    ItemStatRange? Strength = null,
+    ItemStatRange? Agility = null,
+    ItemStatRange? Intellect = null,
+    ItemStatRange? Stamina = null);
+
 public static class EquipmentCategoryIds
 {
     public const string OneHandSword = "ONE_HAND_SWORD";
@@ -118,7 +129,8 @@ public sealed record ItemDefinition(
     decimal MagicPenetrationPercent = 0,
     decimal MaxResourceFlat = 0,
     string? IconId = null,
-    string? AppearanceProfileId = null);
+    string? AppearanceProfileId = null,
+    PrimaryStatRanges? PrimaryStatRanges = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

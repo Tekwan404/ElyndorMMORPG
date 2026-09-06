@@ -81,6 +81,7 @@ public static partial class GameContentPackageValidator
                     || item.Stats.Agility < 0
                     || item.Stats.Intellect < 0
                     || item.Stats.Stamina < 0;
+                bool invalidPrimaryStatRanges = HasInvalidPrimaryStatRanges(item.PrimaryStatRanges);
                 bool invalidTypeShape = item.Type switch
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
@@ -99,6 +100,7 @@ public static partial class GameContentPackageValidator
                     || item.Version < 1
                     || item.MaxStack < 1
                     || negativeStats
+                    || invalidPrimaryStatRanges
                     || invalidTypeShape)
                 {
                     errors.Add(new("INVALID_ITEM_DEFINITION", path,
@@ -192,6 +194,22 @@ public static partial class GameContentPackageValidator
             || item.MagicResistanceFlat != 0
             || item.ArmorPenetrationPercent != 0
             || item.MagicPenetrationPercent != 0
-            || item.MaxResourceFlat != 0;
+            || item.MaxResourceFlat != 0
+            || item.PrimaryStatRanges is not null;
+
+        private static bool HasInvalidPrimaryStatRanges(PrimaryStatRanges? ranges)
+        {
+            if (ranges is null) return false;
+            ItemStatRange?[] values =
+            [
+                ranges.Strength,
+                ranges.Agility,
+                ranges.Intellect,
+                ranges.Stamina
+            ];
+            return values
+                .Where(range => range is not null)
+                .Any(range => range!.Min < 0 || range.Max < range.Min || range.Step <= 0);
+        }
 
 }

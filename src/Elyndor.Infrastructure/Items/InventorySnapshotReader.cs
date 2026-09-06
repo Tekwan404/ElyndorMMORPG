@@ -46,7 +46,8 @@ internal static class InventorySnapshotReader
                 item.Quantity,
                 item.AcquiredAtUtc,
                 equippedSlot,
-                item.IsLocked);
+                item.IsLocked,
+                item.RolledPrimaryStats);
         }).ToArray();
 
         Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots

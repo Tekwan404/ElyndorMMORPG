@@ -263,6 +263,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CharacterId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("DefinitionVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("ItemDefinitionId")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -275,6 +280,22 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("RolledAgility")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledIntellect")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledStamina")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledStrength")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.HasKey("Id")
                         .HasName("pk_character_items");

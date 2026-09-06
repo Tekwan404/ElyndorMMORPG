@@ -36,7 +36,11 @@ public sealed record InventoryItemSnapshot(
     int Quantity,
     DateTimeOffset AcquiredAtUtc,
     EquipmentSlot? EquippedSlot,
-    bool IsLocked);
+    bool IsLocked,
+    PrimaryStats? RolledPrimaryStats = null)
+{
+    public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
+}
 
 public sealed record InventorySnapshot(
     IReadOnlyList<InventoryItemSnapshot> Items,

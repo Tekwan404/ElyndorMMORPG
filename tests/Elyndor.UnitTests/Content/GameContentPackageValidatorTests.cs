@@ -340,6 +340,70 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateAcceptsEquipmentPrimaryStatRanges()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_ROLLING_SWORD",
+                    "Test Rolling Sword",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.MainHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    PrimaryStatRanges: new PrimaryStatRanges(
+                        Strength: new ItemStatRange(1, 4)))
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void ValidateRejectsInvalidEquipmentPrimaryStatRange()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_BROKEN_ROLL_SWORD",
+                    "Broken Roll Sword",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.MainHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    PrimaryStatRanges: new PrimaryStatRanges(
+                        Strength: new ItemStatRange(4, 1)))
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateRejectsUnknownEquipmentCategory()
     {
         GameContentPackage package = CreatePackage() with
