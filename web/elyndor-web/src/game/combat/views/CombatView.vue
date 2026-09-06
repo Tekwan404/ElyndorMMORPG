@@ -16,6 +16,8 @@ const now = ref(Date.now())
 const logOpen = ref(false)
 const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
+const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
+const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
 
 type LogSide = 'player' | 'enemy' | 'system'
 interface CombatLogEntry {
@@ -266,6 +268,11 @@ function abilityState(ability: CombatAbility): 'cooldown' | 'resource' | 'ready'
   return 'ready'
 }
 
+async function selectCombatTarget(targetActorId: string): Promise<void> {
+  if (combat.pending) return
+  await combat.selectTarget(targetActorId)
+}
+
 async function usePotion(): Promise<void> {
   if (!healingPotion.value || !snapshot.value || isTraining.value) return
   await combat.useConsumable(healingPotion.value.definitionId)
@@ -319,6 +326,26 @@ onUnmounted(() => window.clearInterval(timer))
           />
         </section>
       </header>
+
+      <nav
+        v-if="aliveEnemies.length > 1"
+        class="combat-targets"
+        aria-label="Выбор цели"
+        data-combat-targets
+      >
+        <button
+          v-for="enemy in aliveEnemies"
+          :key="enemy.actorId"
+          type="button"
+          :class="{ active: enemy.actorId === (snapshot.selectedTargetActorId ?? snapshot.enemy.actorId) }"
+          :disabled="combat.pending"
+          :data-target-actor-id="enemy.actorId"
+          @click="selectCombatTarget(enemy.actorId)"
+        >
+          <span>{{ enemy.name }}</span>
+          <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }}</small>
+        </button>
+      </nav>
 
       <section class="battlefield" data-combat-battlefield>
         <div class="battlefield__vignette" />
@@ -616,6 +643,48 @@ onUnmounted(() => window.clearInterval(timer))
   font-size: .72rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.combat-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.combat-targets button {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(7 10 17 / 92%);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  text-align: left;
+}
+
+.combat-targets button.active {
+  border-color: rgb(216 95 114 / 48%);
+  background: rgb(216 95 114 / 8%);
+  color: var(--ui-color-text-primary);
+}
+
+.combat-targets button span,
+.combat-targets button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-targets button span {
+  font-size: .52rem;
+  font-weight: 800;
+}
+
+.combat-targets button small {
+  color: var(--ui-color-text-muted);
+  font-size: .43rem;
 }
 
 .battlefield {
