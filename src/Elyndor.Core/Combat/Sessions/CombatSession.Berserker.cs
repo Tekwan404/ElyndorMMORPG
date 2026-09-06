@@ -15,7 +15,6 @@ public sealed partial class CombatSession
     private const string RecklessnessIncomingEffectId = "BERSERKER_RECKLESSNESS_INCOMING";
     private const string DevastatingVulnerabilityEffectId = "BERSERKER_DEVASTATING_VULNERABILITY";
     private const string DeathStrengthCriticalEffectId = "BERSERKER_DEATH_STRENGTH_CRITICAL";
-    private const string ExecutionerEffectId = "BERSERKER_EXECUTIONER";
     private const string DeathsEmbraceReadyEffectId = "BERSERKER_DEATHS_EMBRACE_READY";
     private const string BloodTrailEffectId = "BERSERKER_BLOOD_TRAIL";
     private const string RendingRampageEffectId = "BERSERKER_RENDING_RAMPAGE";
@@ -59,10 +58,32 @@ public sealed partial class CombatSession
         DateTimeOffset now) =>
         ResolvePlayerAbility(baseAbility, now);
 
+    private AbilityTargetModifier ResolveBerserkerTargetAbilityModifier(
+        AbilityDefinition ability,
+        CombatActorState target,
+        AbilityTargetModifier modifier)
+    {
+        bool dealsPhysicalDamage = ability.Actions?.Any(action =>
+            action.Type == AbilityActionType.Damage
+            && action.DamageType == DamageType.Physical) == true;
+        if (dealsPhysicalDamage
+            && !target.IsDead
+            && TryGetBerserkerHook("B-7-4", out ResolvedTalentEventHook executioner)
+            && HpPercent(target) < executioner.Threshold)
+        {
+            modifier = modifier with
+            {
+                DamageMultiplier = modifier.DamageMultiplier
+                    * (1 + executioner.Value / 100m)
+            };
+        }
+
+        return modifier;
+    }
+
     private void OnPlayerAbilitySucceeded(
         AbilityDefinition ability,
         AbilityExecutionResult execution,
-        Guid targetActorId,
         DateTimeOffset now)
     {
         if (Status != CombatSessionStatus.Active) return;
@@ -94,8 +115,8 @@ public sealed partial class CombatSession
 
         if (string.Equals(ability.Id, "WHIRLWIND", StringComparison.Ordinal))
         {
-            ApplyDeathWhirlwind(execution, targetActorId, now);
-            ApplyRendingRampage(targetActorId, now);
+            ApplyDeathWhirlwind(execution, now);
+            ApplyRendingRampage(execution, now);
         }
 
         SyncBerserkerConditionalEffects(now);
@@ -106,8 +127,15 @@ public sealed partial class CombatSession
         if (combatEvent.SourceActorId != _player.Actor.ActorId) return;
         DateTimeOffset now = combatEvent.OccurredAtUtc;
 
+        CombatParticipantDefinition? eventTarget =
+            combatEvent.TargetActorId is { } targetActorId
+            && _enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? resolvedTarget)
+                ? resolvedTarget
+                : null;
+
         if (string.Equals(combatEvent.DefinitionId, "WILD_STRIKE", StringComparison.Ordinal)
-            && !_enemy.Actor.IsDead
+            && eventTarget is not null
+            && !eventTarget.Actor.IsDead
             && TryGetBerserkerHook("B-3-4", out ResolvedTalentEventHook bloodTrail))
         {
             decimal attackPower = EffectEngine.CalculateStat(
@@ -118,7 +146,7 @@ public sealed partial class CombatSession
             decimal tickDamage =
                 attackPower * bloodTrail.Value / 100m;
             ApplyTalentEffect(
-                _enemy.Actor,
+                eventTarget.Actor,
                 _player.Actor.ActorId,
                 new EffectDefinition(
                     BloodTrailEffectId,
@@ -132,11 +160,12 @@ public sealed partial class CombatSession
         }
 
         if (string.Equals(combatEvent.DefinitionId, "AUTO_ATTACK", StringComparison.Ordinal)
-            && !_enemy.Actor.IsDead
+            && eventTarget is not null
+            && !eventTarget.Actor.IsDead
             && TryGetBerserkerHook("B-6-2", out ResolvedTalentEventHook devastating))
         {
             ApplyTalentEffect(
-                _enemy.Actor,
+                eventTarget.Actor,
                 _player.Actor.ActorId,
                 new EffectDefinition(
                     DevastatingVulnerabilityEffectId,
@@ -244,7 +273,8 @@ public sealed partial class CombatSession
                 target.Actor,
                 baseDamage,
                 DamageType.Physical,
-                DamageMultiplier: deathsEmbraceMultiplier,
+                DamageMultiplier: deathsEmbraceMultiplier
+                    * BerserkerTargetPhysicalDamageMultiplier(target.Actor),
                 ForceCritical: consumeDeathsEmbrace),
             _random,
             now);
@@ -321,7 +351,8 @@ public sealed partial class CombatSession
                 DamageType.Physical,
                 CanMiss: false,
                 CanDodge: false,
-                CanCrit: false),
+                CanCrit: false,
+                DamageMultiplier: BerserkerTargetPhysicalDamageMultiplier(target.Actor)),
             _random,
             now);
         ApplyKernelEvents(
@@ -335,47 +366,56 @@ public sealed partial class CombatSession
 
     private void ApplyDeathWhirlwind(
         AbilityExecutionResult execution,
-        Guid targetActorId,
         DateTimeOffset now)
     {
         if (Status != CombatSessionStatus.Active
-            || _enemy.Actor.IsDead
             || !TryGetBerserkerHook("B-8-1", out ResolvedTalentEventHook deathWhirlwind))
         {
             return;
         }
 
-        CombatEvent? physical = execution.Events.FirstOrDefault(item =>
-            item.Type == CombatEventType.DamageDealt
-            && item.TargetActorId == targetActorId);
-        if (physical is null || physical.AmountBeforeShields <= 0) return;
+        foreach (CombatEvent physical in execution.Events.Where(item =>
+                     item.Type == CombatEventType.DamageDealt
+                     && item.AmountBeforeShields > 0
+                     && item.TargetActorId.HasValue))
+        {
+            if (!_enemiesById.TryGetValue(
+                    physical.TargetActorId!.Value,
+                    out CombatParticipantDefinition? target)
+                || target.Actor.IsDead)
+            {
+                continue;
+            }
 
-        DamageResult extra = DamagePipeline.Resolve(
-            new DamageRequest(
-                _player.Actor,
-                _enemy.Actor,
-                physical.AmountBeforeShields
-                    * deathWhirlwind.Value
-                    / 100m,
-                DamageType.True,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false,
-                MinimumDamage: 0),
-            _random,
-            now);
-        ApplyKernelEvents(
-            extra.Events,
-            _player.Actor.ActorId,
-            _enemy.Actor.ActorId,
-            "B-8-1");
+            DamageResult extra = DamagePipeline.Resolve(
+                new DamageRequest(
+                    _player.Actor,
+                    target.Actor,
+                    physical.AmountBeforeShields
+                        * deathWhirlwind.Value
+                        / 100m,
+                    DamageType.True,
+                    CanMiss: false,
+                    CanDodge: false,
+                    CanCrit: false,
+                    MinimumDamage: 0),
+                _random,
+                now);
+            ApplyKernelEvents(
+                extra.Events,
+                _player.Actor.ActorId,
+                target.Actor.ActorId,
+                "B-8-1");
+            if (Status != CombatSessionStatus.Active)
+                return;
+        }
     }
 
-    private void ApplyRendingRampage(Guid targetActorId, DateTimeOffset now)
+    private void ApplyRendingRampage(
+        AbilityExecutionResult execution,
+        DateTimeOffset now)
     {
-        if (targetActorId != _enemy.Actor.ActorId
-            || _enemy.Actor.IsDead
-            || Status != CombatSessionStatus.Active
+        if (Status != CombatSessionStatus.Active
             || !TryGetBerserkerHook("B-7-3", out ResolvedTalentEventHook rending))
         {
             return;
@@ -386,20 +426,52 @@ public sealed partial class CombatSession
             EffectStat.AttackPower,
             _player.Actor.Stats.AttackPower,
             now);
-        decimal tickDamage =
-            attackPower * rending.Value / 100m;
-        ApplyTalentEffect(
-            _enemy.Actor,
-            _player.Actor.ActorId,
-            new EffectDefinition(
-                RendingRampageEffectId,
-                EffectKind.DamageOverTime,
-                rending.Duration,
-                1,
-                EffectStackPolicy.Refresh,
-                tickDamage,
-                rending.TickInterval),
-            now);
+        decimal tickDamage = attackPower * rending.Value / 100m;
+        Guid[] hitTargetIds = execution.Events
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.Amount > 0
+                && item.TargetActorId.HasValue)
+            .Select(item => item.TargetActorId!.Value)
+            .Distinct()
+            .ToArray();
+        foreach (Guid targetActorId in hitTargetIds)
+        {
+            if (!_enemiesById.TryGetValue(
+                    targetActorId,
+                    out CombatParticipantDefinition? target)
+                || target.Actor.IsDead)
+            {
+                continue;
+            }
+
+            ApplyTalentEffect(
+                target.Actor,
+                _player.Actor.ActorId,
+                new EffectDefinition(
+                    RendingRampageEffectId,
+                    EffectKind.DamageOverTime,
+                    rending.Duration,
+                    1,
+                    EffectStackPolicy.Refresh,
+                    tickDamage,
+                    rending.TickInterval),
+                now);
+            if (Status != CombatSessionStatus.Active)
+                return;
+        }
+    }
+
+    private decimal BerserkerTargetPhysicalDamageMultiplier(
+        CombatActorState target)
+    {
+        if (target.IsDead
+            || !TryGetBerserkerHook("B-7-4", out ResolvedTalentEventHook executioner)
+            || HpPercent(target) >= executioner.Threshold)
+        {
+            return 1;
+        }
+
+        return 1 + executioner.Value / 100m;
     }
 
     private void SyncBerserkerConditionalEffects(DateTimeOffset now)
@@ -407,7 +479,6 @@ public sealed partial class CombatSession
         if (Status != CombatSessionStatus.Active || _player.Actor.IsDead) return;
 
         decimal playerHpPercent = HpPercent(_player.Actor);
-        decimal enemyHpPercent = HpPercent(_enemy.Actor);
 
         if (TryGetBerserkerHook("B-2-1", out ResolvedTalentEventHook bloodRage))
         {
@@ -460,18 +531,6 @@ public sealed partial class CombatSession
                 EffectStat.CriticalChance,
                 deathStrength.Value,
                 EffectModifierMode.Flat,
-                now);
-        }
-
-        if (TryGetBerserkerHook("B-7-4", out ResolvedTalentEventHook executioner))
-        {
-            SyncStatEffect(
-                _player.Actor,
-                ExecutionerEffectId,
-                enemyHpPercent < executioner.Threshold && !_enemy.Actor.IsDead,
-                EffectStat.OutgoingPhysicalDamageMultiplier,
-                1 + executioner.Value / 100m,
-                EffectModifierMode.Multiplicative,
                 now);
         }
 
