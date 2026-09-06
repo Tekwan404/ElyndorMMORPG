@@ -249,6 +249,7 @@ export interface MerchantItem {
   consumableActions: ConsumableAction[]
   consumableCooldownCategoryId: string | null
   consumableCooldownSeconds: number
+  iconId: string | null
 }
 
 export interface MerchantSnapshot {
