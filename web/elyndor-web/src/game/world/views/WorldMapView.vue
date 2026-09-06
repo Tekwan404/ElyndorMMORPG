@@ -640,6 +640,11 @@ onMounted(() => void loadLocations())
   border-radius: var(--ui-radius-md);
   background: rgb(5 8 14 / 86%);
   backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.map-selection button {
+  pointer-events: auto;
 }
 
 .map-selection > div {
