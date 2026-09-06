@@ -16,4 +16,7 @@ public sealed record CharacterStats(
     decimal AttackSpeed,
     decimal Armor,
     decimal MagicResistance,
-    decimal Dodge);
+    decimal Dodge,
+    decimal BlockChance = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
