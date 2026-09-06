@@ -20,7 +20,14 @@ public sealed record WorldContractResponse(
     int RequiredLevel,
     string TargetMonsterId,
     string UnlockLocationId,
-    string Status);
+    string Status,
+    string? OfferLocationId = null,
+    int RewardXp = 0,
+    int RewardGold = 0);
+
+public sealed record AcceptWorldContractRequest(string ContractId);
+
+public sealed record AcceptWorldContractResponse(string ContractId, string Status);
 
 public sealed record WorldEncounterResponse(
     Guid EncounterId,
