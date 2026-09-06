@@ -1,6 +1,10 @@
 namespace Elyndor.Contracts.Combat;
 
 public sealed record CombatEffectResponse(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
+public sealed record CombatCastResponse(
+    string AbilityId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset ResolvesAtUtc);
 public sealed record CombatAbilityResponse(
     string Id,
     string DisplayName,
@@ -25,7 +29,8 @@ public sealed record CombatActorResponse(
     IReadOnlyList<CombatAbilityResponse> Abilities,
     IReadOnlyList<CombatEffectResponse> Effects,
     int Level = 1,
-    string? ArtId = null);
+    string? ArtId = null,
+    CombatCastResponse? ActiveCast = null);
 
 public sealed record CombatSnapshotResponse(
     Guid SessionId,
