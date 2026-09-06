@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { InventoryItem } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
+
+const props = defineProps<{
+  slotFilter?: EquipmentSlot | null
+}>()
 
 const BAG_CAPACITY = 40
 const session = useGameSessionStore()
@@ -14,15 +18,20 @@ const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
 const newItemIds = ref<Set<string>>(new Set())
+const contextualSlot = computed(() => props.slotFilter ?? null)
+const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
-  const typeMatches = typeFilter.value === 'all'
+  const contextualMatches = contextualSlot.value === null
+    || (item.type === 'Equipment' && item.slot !== null && slotsMatch(item.slot, contextualSlot.value))
+  const typeMatches = isContextualSlotMode.value
+    || typeFilter.value === 'all'
     || (typeFilter.value === 'equipment' && item.type === 'Equipment')
     || (typeFilter.value === 'material' && item.type === 'Material')
     || (typeFilter.value === 'consumable' && item.type === 'Consumable')
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
-  return typeMatches && rarityMatches
+  return contextualMatches && typeMatches && rarityMatches
 }))
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
@@ -38,7 +47,7 @@ const sortedItems = computed(() => {
   return items
 })
 const visibleCells = computed(() => {
-  if (typeFilter.value !== 'all' || rarityFilter.value !== 'all') return sortedItems.value
+  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all') return sortedItems.value
   return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
 })
 const usedSlots = computed(() => bagItems.value.length)
@@ -85,6 +94,38 @@ const comparisonStats: readonly {
   { label: 'Скорость атаки', value: item => item.stats.attackSpeed + item.attackSpeedPercent },
   { label: 'Макс. ресурс', value: item => item.stats.maxResource },
 ]
+
+function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
+  if (slot === 'Weapon') return 'MainHand'
+  if (slot === 'Boots') return 'Feet'
+  if (slot === 'Accessory') return 'Amulet'
+  return slot
+}
+
+function slotsMatch(itemSlot: EquipmentSlot, requestedSlot: EquipmentSlot): boolean {
+  return canonicalSlot(itemSlot) === canonicalSlot(requestedSlot)
+}
+
+function slotLabel(slot: EquipmentSlot | null): string {
+  if (!slot) return ''
+  const labels: Partial<Record<EquipmentSlot, string>> = {
+    MainHand: 'основную руку',
+    OffHand: 'вторую руку',
+    Head: 'шлем',
+    Chest: 'нагрудник',
+    Hands: 'перчатки',
+    Legs: 'поножи',
+    Feet: 'обувь',
+    Cloak: 'плащ',
+    Amulet: 'амулет',
+    Ring1: 'первое кольцо',
+    Ring2: 'второе кольцо',
+    Weapon: 'оружие',
+    Boots: 'обувь',
+    Accessory: 'амулет',
+  }
+  return labels[slot] ?? 'снаряжение'
+}
 
 function rarityRank(rarity: InventoryItem['rarity']): number {
   if (rarity === 'Unique') return 6
@@ -276,8 +317,8 @@ async function toggleSelectedLock(): Promise<void> {
   <section class="inventory-view">
     <header class="inventory-header">
       <div>
-        <p>Инвентарь</p>
-        <h1>Рюкзак</h1>
+        <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Инвентарь' }}</p>
+        <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Рюкзак' }}</h1>
       </div>
       <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 4 }">
         <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
@@ -285,7 +326,7 @@ async function toggleSelectedLock(): Promise<void> {
     </header>
 
     <section v-if="inventory" class="inventory-tools" aria-label="Фильтры инвентаря">
-      <div class="filter-row">
+      <div v-if="!isContextualSlotMode" class="filter-row">
         <small>Тип</small>
         <div class="filter-chips filter-chips--scroll">
           <button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">Все</button>
@@ -323,10 +364,11 @@ async function toggleSelectedLock(): Promise<void> {
     <section v-if="inventory" class="bag-surface">
       <header class="bag-surface__header">
         <div>
-          <small>{{ typeFilter === 'all' && rarityFilter === 'all' ? 'Все предметы' : 'Результат фильтра' }}</small>
-          <strong>{{ typeFilter === 'all' && rarityFilter === 'all' ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
+          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' ? 'Все предметы' : 'Результат фильтра' }}</small>
+          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
         </div>
-        <span v-if="typeFilter !== 'all' || rarityFilter !== 'all'">Фильтр активен</span>
+        <span v-if="isContextualSlotMode">Выбор снаряжения</span>
+        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all'">Фильтр активен</span>
       </header>
 
       <div
@@ -363,7 +405,12 @@ async function toggleSelectedLock(): Promise<void> {
         title="Рюкзак пуст"
         message="Исследуйте мир и побеждайте противников, чтобы находить добычу."
       />
-      <UILoadingState v-else state="empty" title="Ничего не найдено" message="Измените выбранные фильтры." />
+      <UILoadingState
+        v-else
+        state="empty"
+        title="Ничего не найдено"
+        :message="isContextualSlotMode ? 'В рюкзаке нет предметов для выбранного слота.' : 'Измените выбранные фильтры.'"
+      />
     </section>
 
     <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="selectedItem = null">
