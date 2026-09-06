@@ -120,6 +120,8 @@ public static class InventoryEndpoints
                         request.CharacterItemId,
                         request.MutationId,
                         bootstrap.Character.Vitals.MaxHp,
+                        bootstrap.Character.Vitals.ResourceType,
+                        bootstrap.Character.Vitals.MaxResource,
                         timeProvider.GetUtcNow(),
                         cancellationToken),
                     context);
