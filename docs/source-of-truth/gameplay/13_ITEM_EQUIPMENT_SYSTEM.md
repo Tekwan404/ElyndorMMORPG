@@ -277,13 +277,28 @@ Equip отклоняется.
 
 OFF_HAND может содержать:
 
-one-hand weapon;
-shield-like item, если когда-либо будет добавлен;
-focus/offhand accessory.
+one-hand weapon, если Class System разрешает dual-wield;
+shield;
+future focus/offhand accessory.
 
-Block как stat не возвращается автоматически из-за существования shield item.
+Щит является отдельной off-hand категорией, а не WeaponTag:
 
-Если щит появится, его gameplay определяется Item/Effect content, а не обязательным Block stat.
+OffHandCategory = SHIELD
+
+Core shield profile:
+
+BlockChancePercent;
+BlockValueMin;
+BlockValueMax;
+Armor, optional;
+other approved item stats.
+
+BlockChance определяет server-authoritative шанс блока входящего Physical Damage.
+При успешном блоке сервер роллит BlockValue в диапазоне BlockValueMin–BlockValueMax.
+Damage System определяет точный порядок применения блока.
+
+Shield нельзя экипировать вместе с two-handed MAIN_HAND weapon.
+При экипировке two-handed weapon существующий OFF_HAND снимается атомарно.
 
 18. Weapon Profile
 
@@ -362,6 +377,15 @@ primary attributes;
 
 ArmorTag определяет class requirement.
 
+Authoritative prototype armor identities:
+
+```text
+Mage    → CLOTH
+Archer  → LEATHER
+Warrior → HEAVY
+```
+
+Эти категории являются строгими разрешениями ClassProfile, а не рекомендациями.
 ArmorTag не задаёт формулу mitigation.
 
 22. Accessories
@@ -729,7 +753,7 @@ UI inventory drag-and-drop.
 - Item architecture сразу поддерживает fixed items, random affixes, set pieces, legendary effects и unique rules; контент может вводиться поэтапно.
 - Rarity set: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, UNIQUE.
 - Официальные equipment slots включают CLOAK.
-- Block/Parry не возвращаются из-за Shield item.
+- Shield является отдельной OFF_HAND категорией и даёт data-driven BlockChance + BlockValue range; Parry остаётся вне core.
 - Обычный gear не содержит прямых `PHYSICAL_PET/SPIRIT_PET Damage/Crit/AttackSpeed` процентов.
 - RequiredLevel обязателен для экипируемых предметов.
 - Set bonuses реализуются data-driven через SetDefinition.
