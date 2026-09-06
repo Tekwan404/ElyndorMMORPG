@@ -17,17 +17,15 @@ const loading = ref(false)
 const activeTab = ref<'buy' | 'sell'>('buy')
 const selectedOfferId = ref<string | null>(null)
 
-const materials = computed(() => session.snapshot?.character?.inventory.items
+const sellableItems = computed(() => session.snapshot?.character?.inventory.items
   .filter((item) =>
-    item.type === 'Material'
-    && !item.equippedSlot
+    !item.equippedSlot
     && !item.isLocked
     && item.sellPriceGold > 0,
   ) ?? [])
-const protectedMaterialsCount = computed(() => session.snapshot?.character?.inventory.items
+const protectedItemsCount = computed(() => session.snapshot?.character?.inventory.items
   .filter((item) =>
-    item.type === 'Material'
-    && !item.equippedSlot
+    !item.equippedSlot
     && item.isLocked
     && item.sellPriceGold > 0,
   ).length ?? 0)
@@ -93,8 +91,24 @@ async function buy(definitionId: string): Promise<void> {
   if (updated) merchant.value = updated
 }
 
+function inventoryItemArt(item: InventoryItem): string | undefined {
+  return itemArtUrl(item.iconId)
+}
+
+function inventoryItemGlyph(item: InventoryItem): string {
+  if (item.type === 'Equipment') return '⚔'
+  if (item.type === 'Consumable') return '✚'
+  return '◆'
+}
+
+function inventoryItemTypeLabel(item: InventoryItem): string {
+  if (item.type === 'Equipment') return 'ЭКИПИРОВКА'
+  if (item.type === 'Consumable') return 'РАСХОДНИК'
+  return 'МАТЕРИАЛ'
+}
+
 async function sell(item: InventoryItem, quantity: number): Promise<void> {
-  const updated = await session.sellMerchantMaterial(MERCHANT_ID, item.id, quantity)
+  const updated = await session.sellMerchantItem(MERCHANT_ID, item.id, quantity)
   if (updated) merchant.value = updated
 }
 </script>
@@ -217,20 +231,23 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         <header class="merchant-panel__heading">
           <div>
             <small>ПРОДАЖА</small>
-            <strong>Материалы из вашего рюкзака</strong>
+            <strong>Предметы из вашего рюкзака</strong>
           </div>
-          <span>{{ materials.length }} поз.</span>
+          <span>{{ sellableItems.length }} поз.</span>
         </header>
 
-        <p v-if="protectedMaterialsCount > 0" class="protected-hint">
-          ◆ Защищённые материалы скрыты из продажи: {{ protectedMaterialsCount }}
+        <p v-if="protectedItemsCount > 0" class="protected-hint">
+          ◆ Защищённые предметы скрыты из продажи: {{ protectedItemsCount }}
         </p>
 
-        <div v-if="materials.length" class="sell-list">
-          <article v-for="item in materials" :key="item.id" class="sell-card" :data-sell-item="item.id">
-            <span class="sell-card__icon">◆</span>
+        <div v-if="sellableItems.length" class="sell-list">
+          <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
+            <span class="sell-card__icon" :data-rarity="item.rarity">
+              <img v-if="inventoryItemArt(item)" :src="inventoryItemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
+              <template v-else>{{ inventoryItemGlyph(item) }}</template>
+            </span>
             <div class="sell-card__copy">
-              <small>МАТЕРИАЛ</small>
+              <small>{{ inventoryItemTypeLabel(item) }}</small>
               <strong>{{ item.name }}</strong>
               <span>В рюкзаке: {{ item.quantity }}</span>
             </div>
@@ -242,14 +259,17 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               <UIButton variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">
                 1 шт.
               </UIButton>
-              <UIButton :disabled="session.mutationPending" @click="sell(item, item.quantity)">
-                Всё · {{ item.sellPriceGold * item.quantity }}
+              <UIButton
+                :disabled="session.mutationPending"
+                @click="sell(item, item.quantity)"
+              >
+                {{ item.quantity > 1 ? 'Всё' : 'Продать' }} · {{ item.sellPriceGold * item.quantity }}
               </UIButton>
             </div>
           </article>
         </div>
 
-        <p v-else class="muted">В рюкзаке пока нет материалов, которые Маркус готов купить.</p>
+        <p v-else class="muted">В рюкзаке пока нет предметов, которые Маркус готов купить.</p>
       </section>
     </section>
   </UIModal>
@@ -653,6 +673,13 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   background: rgb(5 8 14 / 78%);
   color: #77bbc5;
   font-size: 1.1rem;
+}
+
+.sell-card__icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
 }
 
 .sell-card__copy {
