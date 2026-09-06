@@ -359,7 +359,7 @@ public sealed partial class CombatSession
         return Result(true, null, before);
     }
 
-    private IReadOnlyDictionary<Guid, AbilityTargetModifier>
+    private Dictionary<Guid, AbilityTargetModifier>
         ResolvePlayerAbilityTargetModifiers(
             AbilityDefinition ability,
             IReadOnlyList<Guid> targetActorIds,
@@ -392,7 +392,7 @@ public sealed partial class CombatSession
         return modifiers;
     }
 
-    private IReadOnlyList<Guid> ResolvePlayerAbilityTargetIds(
+    private Guid[] ResolvePlayerAbilityTargetIds(
         AbilityDefinition ability)
     {
         if (ability.TargetType == AbilityTargetType.Self)
