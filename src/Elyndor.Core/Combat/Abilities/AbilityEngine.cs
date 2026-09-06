@@ -215,7 +215,9 @@ public static class AbilityEngine
         foreach (Guid targetId in targetIds)
         {
             CombatActorState target = runtime.Actors[targetId];
-        {
+            AbilityTargetModifier targetModifier =
+                targetModifiers?.GetValueOrDefault(targetId)
+                ?? new AbilityTargetModifier();
             foreach (AbilityActionDefinition action in ability.Actions)
             {
                 switch (action.Type)
