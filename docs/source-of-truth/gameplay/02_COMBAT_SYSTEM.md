@@ -437,7 +437,29 @@ Resolved target set передаётся в `AbilityEngine` явно. `AbilityEn
 
 Если один AoE resolution убивает несколько enemies, death lifecycle обрабатывает каждый `ActorDied`/`EnemyKilled` в deterministic event order. Terminal `Victory` и единственный `CombatEnded` происходят только после обработки последней смерти этой пачки.
 
-На текущем переходном этапе primary/first enemy сохраняет legacy AI loop. Независимые timers/cooldowns/casts/AI state каждого enemy реализуются отдельным этапом Multi-enemy AI и не должны смешиваться с этим structural refactor.
+### Multi-enemy AI
+
+Каждый enemy в CombatSession имеет собственные server-authoritative:
+
+- AIProfile;
+- AI State;
+- NextActionAtUtc;
+- CombatRuntimeState;
+- ability cooldowns/GCD;
+- ActiveCast;
+- Effects.
+
+Один общий primary-enemy AI timer не используется.
+
+Если несколько enemies готовы действовать в один и тот же timestamp, их AI evaluations выполняются последовательно в стабильном encounter order. Это является deterministic ordering внутри single-writer CombatSession.
+
+Cast одного enemy блокирует только его собственные действия и Auto Attack до завершения cast; остальные enemies продолжают свои независимые cycles.
+
+Смерть enemy переводит только его AI State в DEAD и очищает его NextActionAtUtc. Остальные живые enemies продолжают действовать. При Defeat/Cancel живые enemy runtimes переходят в RESETTING и их schedulers останавливаются.
+
+Stun блокирует и abilities, и fallback Auto Attack конкретного monster. Silence продолжает разрешать допустимый fallback Auto Attack, но запрещённые Ability System способности не обходятся.
+
+Для текущего one-player PvE runtime monster offensive target set сервером разрешается к player ActorId; SELF abilities разрешаются к самому monster. Threat-based multi-player target selection остаётся владельцем будущего Threat/Party slice.
 
 
 Новый противник может присоединиться к уже происходящему бою.
