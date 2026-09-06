@@ -103,5 +103,7 @@ internal static class CombatContractMapper
         combatEvent.DefinitionId,
         combatEvent.Amount,
         combatEvent.OccurredAtUtc,
-        combatEvent.AmountBeforeShields);
+        combatEvent.AmountBeforeShields,
+        combatEvent.WeaponHand?.ToString(),
+        combatEvent.WeaponDefinitionId);
 }
