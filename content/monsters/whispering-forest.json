@@ -1,11 +1,13 @@
 {
-  "contentVersion": "0.9.0",
-  "balanceVersion": "0.7.0",
-  "publishedAtUtc": "2026-09-03T17:30:00+00:00",
+  "contentVersion": "0.10.0",
+  "balanceVersion": "0.8.0",
+  "publishedAtUtc": "2026-09-06T08:50:00+00:00",
   "monsterAiProfiles": [
     {
       "id": "WOLF_BASIC_AI",
-      "priorityAbilityIds": ["BITE"],
+      "priorityAbilityIds": [
+        "BITE"
+      ],
       "version": 1
     },
     {
@@ -15,7 +17,9 @@
     },
     {
       "id": "SPIDER_BASIC_AI",
-      "priorityAbilityIds": ["BITE"],
+      "priorityAbilityIds": [
+        "BITE"
+      ],
       "version": 1
     }
   ],
@@ -42,7 +46,9 @@
       "autoAttackInterval": "00:00:02.5000000",
       "autoAttackBaseDamage": 6,
       "autoAttackAttackPowerCoefficient": 0.5,
-      "abilityIds": ["BITE"],
+      "abilityIds": [
+        "BITE"
+      ],
       "aiProfileId": "WOLF_BASIC_AI",
       "version": 1,
       "xpReward": 35,
@@ -51,7 +57,9 @@
       "goldRewardMax": 8,
       "displayName": "Волк",
       "description": "Дикий волк вышел на тропу и следит за каждым движением.",
-      "artId": "wolf"
+      "artId": "wolf",
+      "autoAttackBaseDamageMin": 5,
+      "autoAttackBaseDamageMax": 7
     },
     {
       "id": "FOREST_BOAR",
@@ -84,7 +92,9 @@
       "goldRewardMax": 7,
       "displayName": "Лесной кабан",
       "description": "Тяжёлый кабан роет землю копытом и готовится броситься вперёд.",
-      "artId": "boar"
+      "artId": "boar",
+      "autoAttackBaseDamageMin": 7,
+      "autoAttackBaseDamageMax": 10
     },
     {
       "id": "GIANT_SPIDER",
@@ -108,7 +118,9 @@
       "autoAttackInterval": "00:00:01.8000000",
       "autoAttackBaseDamage": 3,
       "autoAttackAttackPowerCoefficient": 0.4,
-      "abilityIds": ["BITE"],
+      "abilityIds": [
+        "BITE"
+      ],
       "aiProfileId": "SPIDER_BASIC_AI",
       "version": 1,
       "xpReward": 25,
@@ -117,7 +129,9 @@
       "goldRewardMax": 6,
       "displayName": "Гигантский паук",
       "description": "Из корней выполз огромный паук. Он быстрый, но хрупкий.",
-      "artId": "spider"
+      "artId": "spider",
+      "autoAttackBaseDamageMin": 2,
+      "autoAttackBaseDamageMax": 4
     }
   ]
 }
