@@ -277,9 +277,20 @@ Equip отклоняется.
 
 OFF_HAND может содержать:
 
-one-hand weapon, если Class System разрешает dual-wield;
+one-hand weapon, если active derived character state разрешает эту weapon category для dual-wield;
 shield;
 future focus/offhand accessory.
+
+Dual-wield permission может приходить из Class System или Talent System, но Equip всегда
+проверяет authoritative derived state на сервере. Обычный one-hand item не становится отдельным
+off-hand item: клиент передаёт желаемый TargetSlot, а сервер разрешает OFF_HAND только для
+one-hand weapon с явным permission.
+
+Для текущего Warrior/Berserker prototype право ONE_HAND_SWORD в OFF_HAND даёт талант
+[B-4-1] Двойной Удар. Без этого таланта Warrior может использовать в OFF_HAND только SHIELD.
+
+Если в OFF_HAND находится weapon, снятие MAIN_HAND также атомарно снимает OFF_HAND weapon, чтобы
+не сохранять невалидное dual-wield состояние.
 
 Щит является отдельной off-hand категорией, а не WeaponTag:
 
