@@ -1,4 +1,6 @@
 import { mount } from '@vue/test-utils'
+
+import type { CombatActorSnapshot } from '@/api/contracts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -61,7 +63,7 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
-  it('attributes monster damage to the server-provided monster name while player auto attack is disabled', () => {
+  it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
       { id: 'STRIKE', resourceCost: 0, cooldownSeconds: 0 },
@@ -148,10 +150,14 @@ function actor(
   }[],
   level?: number,
   artId?: string | null,
-) {
+): CombatActorSnapshot {
   return {
     actorId: crypto.randomUUID(), kind, definitionId, name, hp, maxHp,
-    resourceType: kind === 'Player' ? 'RAGE' : 'NONE', resource, maxResource,
+    resourceType: kind === 'Player'
+      ? definitionId === 'MAGE' ? 'MANA' : definitionId === 'ARCHER' ? 'FOCUS' : 'RAGE'
+      : 'NONE',
+    resource,
+    maxResource,
     autoAttackEnabled: false, cooldowns: {},
     knownAbilityIds: abilities.map((ability) => ability.id),
     abilities: abilities.map((ability) => ({
