@@ -13,9 +13,23 @@ public static class TalentEquipmentPermissionResolver
         ArgumentNullException.ThrowIfNull(state);
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionId);
 
+        return HasPermission(
+            tree,
+            state.GetRanks(state.ActiveLoadoutId),
+            permissionId);
+    }
+
+    public static bool HasPermission(
+        TalentTreeDefinition tree,
+        IReadOnlyDictionary<string, int> ranks,
+        string permissionId)
+    {
+        ArgumentNullException.ThrowIfNull(tree);
+        ArgumentNullException.ThrowIfNull(ranks);
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionId);
+
         if (!EquipmentPermissionIds.All.Contains(permissionId)) return false;
 
-        IReadOnlyDictionary<string, int> ranks = state.GetRanks(state.ActiveLoadoutId);
         foreach (TalentDefinition node in tree.Nodes)
         {
             if (!ranks.TryGetValue(node.Id, out int rank) || rank <= 0) continue;
