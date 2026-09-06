@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
+import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
@@ -297,6 +298,10 @@ function typeLabel(item: InventoryItem): string {
   return item.slot ? labels[item.slot] ?? 'Снаряжение' : 'Снаряжение'
 }
 
+function itemArt(item: InventoryItem): string | undefined {
+  return itemArtUrl(item.iconId)
+}
+
 function itemGlyph(item: InventoryItem): string {
   if (item.type === 'Material') return '◆'
   if (item.type === 'Consumable') return '✚'
@@ -457,7 +462,10 @@ async function toggleSelectedLock(): Promise<void> {
           <template v-if="item">
             <span v-if="newItemIds.has(item.id)" class="bag-cell__new">NEW</span>
             <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">◆</span>
-            <span class="bag-cell__icon">{{ itemGlyph(item) }}</span>
+            <span class="bag-cell__icon">
+              <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
+              <template v-else>{{ itemGlyph(item) }}</template>
+            </span>
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
           </template>
@@ -481,7 +489,10 @@ async function toggleSelectedLock(): Promise<void> {
     <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="selectedItem = null">
       <article v-if="selectedItem" class="item-detail">
         <div class="item-detail__identity">
-          <span class="item-detail__icon" :data-rarity="selectedItem.rarity">{{ itemGlyph(selectedItem) }}</span>
+          <span class="item-detail__icon" :data-rarity="selectedItem.rarity">
+            <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" decoding="async" />
+            <template v-else>{{ itemGlyph(selectedItem) }}</template>
+          </span>
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
             <strong>Количество: {{ selectedItem.quantity }}</strong>
@@ -848,6 +859,13 @@ async function toggleSelectedLock(): Promise<void> {
   background: #080b14e8;
   color: white;
   font-size: .67rem;
+}
+
+.bag-cell__icon img,
+.item-detail__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .bag-cell__rarity {
