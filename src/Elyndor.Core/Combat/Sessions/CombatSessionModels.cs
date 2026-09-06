@@ -1,5 +1,6 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Monsters;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -26,6 +27,14 @@ public sealed record AutoAttackProfile(
     decimal? BaseDamageMax = null,
     string? WeaponDefinitionId = null,
     CombatWeaponHand? WeaponHand = null);
+
+public sealed record CombatSummonProfile(
+    string SourceDefinitionId,
+    MonsterDefinition Monster,
+    MonsterAiProfile AiProfile,
+    TimeSpan Interval,
+    int Count,
+    int MaxActive);
 
 public sealed record CombatParticipantDefinition(
     CombatActorState Actor,
