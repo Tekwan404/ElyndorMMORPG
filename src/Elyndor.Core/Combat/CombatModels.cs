@@ -15,7 +15,10 @@ public sealed record CombatStats(
     decimal ArmorPenetration,
     decimal MagicPenetration,
     decimal AttackPower = 0,
-    decimal SpellPower = 0)
+    decimal SpellPower = 0,
+    decimal BlockChance = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0)
 {
     public static CombatStats Default { get; } = new(1, 0, 0, 0, 1, 0, 0, 0, 0);
 }
@@ -118,6 +121,7 @@ public enum CombatEventType
     EffectExpired,
     EffectRemoved,
     ShieldAbsorbed,
+    DamageBlocked,
     HealingApplied,
     AbilityStarted,
     AbilityCompleted,
