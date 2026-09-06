@@ -353,7 +353,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ snapshot.player.name }}</strong>
           </div>
           <UIHealthBar
-            label="HP"
+            label="Здоровье"
             :value="snapshot.player.hp"
             :max="snapshot.player.maxHp"
           />
@@ -371,7 +371,7 @@ onUnmounted(() => window.clearInterval(timer))
             <strong>{{ enemyPresentation.name }}</strong>
           </div>
           <UIHealthBar
-            label="HP"
+            label="Здоровье"
             :value="snapshot.enemy.hp"
             :max="snapshot.enemy.maxHp"
           />
@@ -467,7 +467,7 @@ onUnmounted(() => window.clearInterval(timer))
 
       <section v-if="isTraining" class="training-stats" aria-label="Статистика тренировки">
         <div><small>ВРЕМЯ</small><strong>{{ trainingElapsedSeconds.toFixed(1) }}с</strong></div>
-        <div><small>DPS</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
+        <div><small>Урон/с</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
         <div><small>УРОН</small><strong>{{ Math.round(combat.trainingStats.totalDamage).toLocaleString('ru-RU') }}</strong></div>
         <div><small>КРИТЫ</small><strong>{{ combat.trainingStats.criticalHits }}</strong></div>
         <div><small>МАКС.</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
