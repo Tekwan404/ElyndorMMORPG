@@ -95,6 +95,17 @@ public static partial class GameContentPackageValidator
                             $"Talent node '{node.Id}' references an ability that does not exist."));
                     }
 
+                    if (node.Modifiers?.Any(modifier =>
+                        modifier.Type == TalentModifierType.EquipmentPermission
+                        && (modifier.Key != TalentModifierKeys.AllowOffHandWeapon
+                            || string.IsNullOrWhiteSpace(modifier.TargetId)
+                            || !EquipmentCategoryIds.IsWeapon(modifier.TargetId)
+                            || EquipmentCategoryIds.UsesBothHands(modifier.TargetId))) == true)
+                    {
+                        errors.Add(new("INVALID_TALENT_EQUIPMENT_PERMISSION", path,
+                            $"Talent node '{node.Id}' contains an invalid equipment permission."));
+                    }
+
                     if (node.IconId is not null && !IsCanonicalIdentifier(node.IconId))
                     {
                         errors.Add(new("INVALID_TALENT_ICON_ID", path,
