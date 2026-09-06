@@ -58,6 +58,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
   const encounterPresentation = ref<WorldEncounter | null>(null)
   const isActive = computed(() => snapshot.value?.status === 'Active')
+  const enemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
@@ -166,6 +167,16 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     await invokeRetryableCommand(
       `${method}:${sessionId}`,
       commandId => invokeWithOutcome(method, sessionId, commandId),
+    )
+  }
+
+  async function selectTarget(targetActorId: string): Promise<void> {
+    if (!snapshot.value || snapshot.value.status !== 'Active') return
+    const sessionId = snapshot.value.sessionId
+    if (snapshot.value.selectedTargetActorId === targetActorId) return
+    await invokeRetryableCommand(
+      `SelectTarget:${sessionId}:${targetActorId}`,
+      commandId => invokeWithOutcome('SelectTarget', sessionId, targetActorId, commandId),
     )
   }
 
@@ -332,6 +343,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic,
     pending,
     isActive,
+    enemies,
     isTraining,
     trainingStats,
     encounterPresentation,
@@ -342,6 +354,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     useAbility,
     useConsumable,
     toggleAutoAttack,
+    selectTarget,
     resume,
     leave,
   }
