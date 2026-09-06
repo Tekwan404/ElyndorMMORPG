@@ -179,6 +179,18 @@ public sealed class CombatApplicationService(
         ExecuteSessionCommand(accountId, sessionId,
             new StopAutoAttackCommand(commandId), cancellationToken);
 
+    public Task<CombatOperationResult> SelectTargetAsync(
+        Guid accountId,
+        Guid sessionId,
+        string commandId,
+        Guid targetActorId,
+        CancellationToken cancellationToken) =>
+        ExecuteSessionCommand(
+            accountId,
+            sessionId,
+            new SelectTargetCommand(commandId, targetActorId),
+            cancellationToken);
+
     public CombatOperationResult Resume(Guid accountId) => registry.Resume(accountId);
 
     public Task<CombatOperationResult> LeaveAsync(Guid accountId, CancellationToken cancellationToken) =>
