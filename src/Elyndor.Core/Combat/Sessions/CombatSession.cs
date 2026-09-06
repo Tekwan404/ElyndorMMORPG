@@ -284,7 +284,7 @@ public sealed partial class CombatSession
         AbilityDefinition ability = ResolvePyromancerAbility(
             ResolvePlayerAbility(baseAbility, now),
             now);
-        IReadOnlyList<Guid> targetActorIds = ResolvePlayerAbilityTargetIds(ability);
+        Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability);
         if (targetActorIds.Count == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         Guid primaryTargetActorId = targetActorIds[0];
