@@ -80,8 +80,8 @@ describe('WorldMapView', () => {
 
     expect(wrapper.text()).toContain('Карта загружена частично')
     expect(wrapper.findAll('[data-location-id]')).toHaveLength(2)
-    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').exists()).toBe(true)
-    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').exists()).toBe(true)
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]')).toBeTruthy()
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]')).toBeTruthy()
   })
 })
 
