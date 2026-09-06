@@ -12,9 +12,12 @@ describe('AppShell', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.restoreAllMocks()
+    localStorage.clear()
+    delete document.documentElement.dataset.elyndorAtmosphere
+    delete document.documentElement.dataset.elyndorMotion
   })
 
-  it('presents authoritative vitals and switches between map, location and hero views', async () => {
+  it('presents authoritative vitals and switches between game shell views', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue([
       {
         id: 'STARTER_TOWN',
@@ -41,6 +44,8 @@ describe('AppShell', () => {
     expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
     expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-nav="menu"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-nav="quests"]').attributes('disabled')).toBeDefined()
     expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
     expect(wrapper.find('.game-shell__header').exists()).toBe(false)
     expect(wrapper.get('.hud').text()).toContain('ELYNDOR')
@@ -53,6 +58,11 @@ describe('AppShell', () => {
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Развитие героя')
     expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
+
+    await wrapper.get('[data-nav="menu"]').trigger('click')
+    expect(wrapper.get('[data-nav="menu"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Меню')
+    expect(wrapper.get('main').text()).toContain('Представление мира')
   })
 
   it('explains a failed connection and offers an explicit retry', async () => {
