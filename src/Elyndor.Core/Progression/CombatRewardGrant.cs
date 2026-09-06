@@ -49,4 +49,9 @@ public sealed record CombatRewardSourceAudit(
     string MonsterId,
     int XpEarned,
     int GoldEarned,
-    int EncounterOrder);
+    int EncounterOrder,
+    IReadOnlyList<CombatRewardSourceItemAudit> Items);
+
+public sealed record CombatRewardSourceItemAudit(
+    string ItemId,
+    int Quantity);
