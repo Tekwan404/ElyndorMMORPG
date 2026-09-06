@@ -69,6 +69,28 @@ SCRIPTED
 
 Quest reward может использовать Loot System как общий item reward resolver, но Quest System остаётся владельцем факта завершения задания.
 
+### 3.1 Multi-enemy Combat Reward Sources
+
+Один победный CombatSession может подтвердить несколько `MONSTER_KILL` sources.
+
+Для normal multi-enemy combat:
+
+```text
+CombatSessionId = completion/idempotency boundary
+Enemies[]       = ordered reward source set
+```
+
+Каждый defeated enemy сохраняет собственный MonsterId и собственный loot roll result в reward-source audit. Permanent item grants всех sources выполняются в общей combat reward transaction.
+
+Повторная или конкурентная обработка того же CombatSessionId:
+
+- не reroll'ит ни одного enemy;
+- не повторяет gold;
+- не повторяет item grants;
+- возвращает persisted aggregate XP/gold result.
+
+Если разные enemy sources выдали одинаковый ItemDefinitionId, quantities могут быть агрегированы перед передачей в Item System. Это не объединяет сами reward sources в audit.
+
 4. Loot Table
 
 LootTable
