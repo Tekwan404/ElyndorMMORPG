@@ -21,14 +21,52 @@ const character = computed(() => session.snapshot?.character)
 const selectedItem = ref<InventoryItem | null>(null)
 const selectedAbility = ref<KnownAbility | null>(null)
 
-const equipment = computed(() => [
-  { id: 'head', label: 'Шлем', item: character.value?.inventory.equipped.head ?? null, glyph: '◈' },
-  { id: 'chest', label: 'Нагрудник', item: character.value?.inventory.equipped.chest ?? null, glyph: '⬟' },
-  { id: 'legs', label: 'Штаны', item: character.value?.inventory.equipped.legs ?? null, glyph: '▥' },
-  { id: 'boots', label: 'Ботинки', item: character.value?.inventory.equipped.boots ?? null, glyph: '⌁' },
-  { id: 'weapon', label: 'Оружие', item: character.value?.inventory.equipped.weapon ?? null, glyph: '⚔' },
-  { id: 'accessory', label: 'Аксессуар', item: character.value?.inventory.equipped.accessory ?? null, glyph: '✦' },
-])
+type PaperdollSide = 'left' | 'right'
+
+interface PaperdollSlot {
+  id: string
+  label: string
+  item: InventoryItem | null
+  glyph: string
+  side: PaperdollSide
+}
+
+const equipment = computed<PaperdollSlot[]>(() => {
+  const equipped = character.value?.inventory.equipped
+  return [
+    { id: 'head', label: 'Шлем', item: equipped?.head ?? null, glyph: '◈', side: 'left' },
+    { id: 'cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: '◒', side: 'left' },
+    {
+      id: 'mainHand',
+      label: 'Основная рука',
+      item: equipped?.mainHand ?? equipped?.weapon ?? null,
+      glyph: '⚔',
+      side: 'left',
+    },
+    { id: 'hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: '◫', side: 'left' },
+    { id: 'ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: '✧', side: 'left' },
+    { id: 'chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: '⬟', side: 'right' },
+    {
+      id: 'amulet',
+      label: 'Амулет',
+      item: equipped?.amulet ?? equipped?.accessory ?? null,
+      glyph: '✦',
+      side: 'right',
+    },
+    { id: 'offHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: '🛡', side: 'right' },
+    { id: 'legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: '▥', side: 'right' },
+    {
+      id: 'feet',
+      label: 'Обувь',
+      item: equipped?.feet ?? equipped?.boots ?? null,
+      glyph: '⌁',
+      side: 'right',
+    },
+    { id: 'ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: '✧', side: 'right' },
+  ]
+})
+const leftEquipment = computed(() => equipment.value.filter(slot => slot.side === 'left'))
+const rightEquipment = computed(() => equipment.value.filter(slot => slot.side === 'right'))
 const rangerPieces = computed(() => equipment.value.filter((slot) => slot.item?.setId === 'RANGER_SET').length)
 const talentAbilities = computed(() => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [])
 const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
@@ -37,11 +75,15 @@ const xpRemaining = computed(() => Math.max(0, xpTarget.value - (character.value
 
 function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (!item) return fallback
-  if (item.slot === 'Weapon') return '⚔'
+  if (item.slot === 'Weapon' || item.slot === 'MainHand') return '⚔'
+  if (item.slot === 'OffHand') return '🛡'
   if (item.slot === 'Head') return '◈'
   if (item.slot === 'Chest') return '⬟'
+  if (item.slot === 'Hands') return '◫'
   if (item.slot === 'Legs') return '▥'
-  if (item.slot === 'Boots') return '⌁'
+  if (item.slot === 'Boots' || item.slot === 'Feet') return '⌁'
+  if (item.slot === 'Cloak') return '◒'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return '✧'
   return '✦'
 }
 
@@ -87,11 +129,13 @@ function abilityInitials(ability: KnownAbility): string {
       <div class="paperdoll__stage">
         <div class="equipment-column equipment-column--left" aria-label="Снаряжение слева">
           <button
-            v-for="slot in equipment.slice(0, 3)"
+            v-for="slot in leftEquipment"
             :key="slot.id"
             type="button"
             class="equipment-slot"
             :class="{ filled: slot.item }"
+            :data-equipment-slot="slot.id"
+            :data-filled="Boolean(slot.item)"
             :disabled="!slot.item"
             @click="selectedItem = slot.item"
           >
@@ -119,11 +163,13 @@ function abilityInitials(ability: KnownAbility): string {
 
         <div class="equipment-column equipment-column--right" aria-label="Снаряжение справа">
           <button
-            v-for="slot in equipment.slice(3)"
+            v-for="slot in rightEquipment"
             :key="slot.id"
             type="button"
             class="equipment-slot"
             :class="{ filled: slot.item }"
+            :data-equipment-slot="slot.id"
+            :data-filled="Boolean(slot.item)"
             :disabled="!slot.item"
             @click="selectedItem = slot.item"
           >
