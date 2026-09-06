@@ -118,7 +118,7 @@ function canEquipNow(item: InventoryItem): boolean {
     if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) return false
   } else if (current.classId === 'ARCHER') {
     if (item.armorCategory && item.armorCategory !== 'LEATHER') return false
-    if (item.weaponCategory && !['BOW', 'DAGGER'].includes(item.weaponCategory)) return false
+    if (item.weaponCategory && item.weaponCategory !== 'BOW') return false
   } else if (current.classId === 'MAGE') {
     if (item.armorCategory && item.armorCategory !== 'CLOTH') return false
     if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) return false
