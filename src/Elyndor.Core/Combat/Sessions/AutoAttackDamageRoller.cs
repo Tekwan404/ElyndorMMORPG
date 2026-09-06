@@ -16,15 +16,25 @@ public static class AutoAttackDamageRoller
         ArgumentNullException.ThrowIfNull(random);
         ArgumentOutOfRangeException.ThrowIfNegative(attackPower);
 
-        decimal amount = RollBaseDamage(profile, random)
-            + attackPower * profile.AttackPowerCoefficient;
-        if (amount <= 0)
-            return 0;
+        decimal minimum = profile.BaseDamageMin ?? profile.BaseDamage;
+        decimal maximum = profile.BaseDamageMax ?? minimum;
+        if (minimum < 0 || maximum < minimum)
+            throw new InvalidOperationException("Auto attack damage range is invalid.");
 
-        decimal multiplier = PlayerVarianceMinMultiplier
+        decimal attackPowerContribution =
+            attackPower * profile.AttackPowerCoefficient;
+        if (minimum == maximum)
+            return minimum + attackPowerContribution;
+
+        decimal roll = random.NextUnit();
+        decimal weaponOrClassDamage =
+            minimum + (maximum - minimum) * roll;
+        decimal varianceMultiplier =
+            PlayerVarianceMinMultiplier
             + (PlayerVarianceMaxMultiplier - PlayerVarianceMinMultiplier)
-            * random.NextUnit();
-        return amount * multiplier;
+            * roll;
+        return (weaponOrClassDamage + attackPowerContribution)
+            * varianceMultiplier;
     }
 
     public static decimal RollBaseDamage(
