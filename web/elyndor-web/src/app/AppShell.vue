@@ -190,6 +190,7 @@ onMounted(() => {
 }
 
 .hud {
+  grid-row: 1;
   position: relative;
   z-index: 3;
   display: grid;
@@ -409,6 +410,7 @@ onMounted(() => {
 }
 
 .content {
+  grid-row: 2;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -421,6 +423,7 @@ onMounted(() => {
 }
 
 .navigation {
+  grid-row: 3;
   position: relative;
   z-index: 4;
   display: grid;
