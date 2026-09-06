@@ -50,12 +50,25 @@ public static partial class GameContentPackageValidator
                         $"Location danger level '{location.DangerLevel}' is not supported."));
                 }
 
-                if (location.RecommendedLevel <= 0)
+                if (location.RecommendedLevel <= 0
+                    || location.MinimumLevel <= 0
+                    || location.MaximumLevel < location.MinimumLevel
+                    || location.RecommendedLevel < location.MinimumLevel
+                    || location.RecommendedLevel > location.MaximumLevel)
                 {
                     errors.Add(new ContentValidationError(
-                        "INVALID_LOCATION_RECOMMENDED_LEVEL",
-                        $"{path}.recommendedLevel",
-                        "Location recommended level must be positive."));
+                        "INVALID_LOCATION_LEVEL_RANGE",
+                        path,
+                        "Location level range and recommended level must be positive and internally consistent."));
+                }
+
+                if (location.RequiredContractId is { Length: > 0 }
+                    && !IsCanonicalIdentifier(location.RequiredContractId))
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_LOCATION_CONTRACT_ID",
+                        $"{path}.requiredContractId",
+                        $"Location contract id '{location.RequiredContractId}' is invalid."));
                 }
             }
 
@@ -111,6 +124,61 @@ public static partial class GameContentPackageValidator
                             path,
                             $"Transition target '{targetId}' does not exist."));
                     }
+                }
+            }
+        }
+
+        internal static void ValidateWorldContracts(
+            GameContentPackage package,
+            List<ContentValidationError> errors)
+        {
+            IReadOnlyList<WorldContractDefinition> contracts = package.WorldContracts ?? [];
+            HashSet<string> ids = new(StringComparer.Ordinal);
+            HashSet<string> monsterIds = (package.Monsters ?? [])
+                .Select(monster => monster.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> locationIds = package.Locations
+                .Select(location => location.Id)
+                .ToHashSet(StringComparer.Ordinal);
+
+            for (var index = 0; index < contracts.Count; index++)
+            {
+                WorldContractDefinition contract = contracts[index];
+                string path = $"worldContracts[{index}]";
+                if (!ValidateIdentifier(contract.Id, "INVALID_WORLD_CONTRACT_ID", $"{path}.id", errors))
+                    continue;
+                if (!ids.Add(contract.Id))
+                {
+                    errors.Add(new ContentValidationError(
+                        "DUPLICATE_WORLD_CONTRACT_ID",
+                        $"{path}.id",
+                        $"World contract '{contract.Id}' is duplicated."));
+                }
+                if (string.IsNullOrWhiteSpace(contract.DisplayName)
+                    || string.IsNullOrWhiteSpace(contract.Description)
+                    || contract.RequiredLevel <= 0
+                    || !monsterIds.Contains(contract.TargetMonsterId)
+                    || !locationIds.Contains(contract.UnlockLocationId))
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_WORLD_CONTRACT",
+                        path,
+                        $"World contract '{contract.Id}' contains invalid presentation, level, monster, or unlock location."));
+                }
+            }
+
+            foreach (LocationDefinition location in package.Locations)
+            {
+                if (location.RequiredContractId is null) continue;
+                WorldContractDefinition? contract = contracts.FirstOrDefault(item =>
+                    string.Equals(item.Id, location.RequiredContractId, StringComparison.Ordinal));
+                if (contract is null
+                    || !string.Equals(contract.UnlockLocationId, location.Id, StringComparison.Ordinal))
+                {
+                    errors.Add(new ContentValidationError(
+                        "MISSING_LOCATION_CONTRACT",
+                        $"locations[{location.Id}].requiredContractId",
+                        $"Location '{location.Id}' references a missing or mismatched unlock contract."));
                 }
             }
         }
