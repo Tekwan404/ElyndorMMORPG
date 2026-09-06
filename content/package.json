@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.9.4",
-  "balanceVersion": "0.7.2",
-  "publishedAtUtc": "2026-09-05T14:52:35+00:00",
+  "contentVersion": "0.10.0",
+  "balanceVersion": "0.8.0",
+  "publishedAtUtc": "2026-09-06T08:45:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -115,11 +115,9 @@
         "ONE_HAND_SWORD",
         "TWO_HAND_SWORD",
         "AXE",
-        "MACE",
-        "SHIELD"
+        "MACE"
       ],
       "allowedArmorCategories": [
-        "MEDIUM",
         "HEAVY"
       ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
@@ -129,8 +127,14 @@
         "interval": "00:00:02",
         "baseDamage": 0,
         "attackPowerCoefficient": 0.65,
-        "resourceOnHit": 10
-      }
+        "resourceOnHit": 10,
+        "baseDamageMin": 1,
+        "baseDamageMax": 2
+      },
+      "allowedOffHandCategories": [
+        "SHIELD"
+      ],
+      "allowUnarmed": true
     },
     {
       "id": "ARCHER",
@@ -149,17 +153,16 @@
         "stamina": 2
       },
       "allowedWeaponCategories": [
-        "BOW",
-        "DAGGER",
-        "ONE_HAND_SWORD"
+        "BOW"
       ],
       "allowedArmorCategories": [
-        "LIGHT",
-        "MEDIUM"
+        "LEATHER"
       ],
       "prototypeIdentity": "Fast Agility marksman driven by Focus, priorities, and procs.",
       "startingAbilityIds": [],
-      "abilityUnlocks": []
+      "abilityUnlocks": [],
+      "allowedOffHandCategories": [],
+      "allowUnarmed": false
     },
     {
       "id": "MAGE",
@@ -179,15 +182,16 @@
       },
       "allowedWeaponCategories": [
         "STAFF",
-        "WAND",
-        "DAGGER"
+        "WAND"
       ],
       "allowedArmorCategories": [
-        "LIGHT"
+        "CLOTH"
       ],
       "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
       "startingAbilityIds": [],
-      "abilityUnlocks": []
+      "abilityUnlocks": [],
+      "allowedOffHandCategories": [],
+      "allowUnarmed": false
     }
   ],
   "statFormula": {
@@ -3200,7 +3204,9 @@
         "BITE"
       ],
       "aiProfileId": "WOLF_BASIC_AI",
-      "version": 1
+      "version": 1,
+      "autoAttackBaseDamageMin": 5,
+      "autoAttackBaseDamageMax": 7
     }
   ]
 }
