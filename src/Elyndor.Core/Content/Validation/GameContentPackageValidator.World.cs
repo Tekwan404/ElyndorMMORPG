@@ -50,8 +50,15 @@ public static partial class GameContentPackageValidator
                         $"Location danger level '{location.DangerLevel}' is not supported."));
                 }
 
-                if (location.RecommendedLevel <= 0
-                    || location.MinimumLevel <= 0
+                if (location.RecommendedLevel <= 0)
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_LOCATION_RECOMMENDED_LEVEL",
+                        $"{path}.recommendedLevel",
+                        "Location recommended level must be positive."));
+                }
+
+                if (location.MinimumLevel <= 0
                     || location.MaximumLevel < location.MinimumLevel
                     || location.RecommendedLevel < location.MinimumLevel
                     || location.RecommendedLevel > location.MaximumLevel)
