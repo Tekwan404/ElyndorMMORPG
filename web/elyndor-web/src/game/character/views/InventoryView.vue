@@ -329,6 +329,8 @@ async function useSelected(): Promise<void> {
           class="bag-cell"
           :class="{ 'bag-cell--empty': !item }"
           :data-rarity="item?.rarity"
+          :data-item-id="item?.id"
+          :data-new="item ? newItemIds.has(item.id) : undefined"
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
