@@ -13,7 +13,7 @@ import {
 } from '@/game/character/characterPresentation'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIModal, UIPanel } from '@/ui/components'
+import { UIButton, UIModal, UIPanel } from '@/ui/components'
 
 const emit = defineEmits<{
   'select-empty-slot': [slot: EquipmentSlot]
@@ -22,6 +22,7 @@ const emit = defineEmits<{
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const selectedItem = ref<InventoryItem | null>(null)
+const selectedEquipmentSlot = ref<EquipmentSlot | null>(null)
 const selectedAbility = ref<KnownAbility | null>(null)
 
 type PaperdollSide = 'left' | 'right'
@@ -83,10 +84,27 @@ const xpRemaining = computed(() => Math.max(0, xpTarget.value - (character.value
 function openEquipmentSlot(slot: PaperdollSlot): void {
   if (slot.item) {
     selectedItem.value = slot.item
+    selectedEquipmentSlot.value = slot.inventorySlot
     return
   }
 
   emit('select-empty-slot', slot.inventorySlot)
+}
+
+async function unequipSelected(): Promise<void> {
+  if (!selectedEquipmentSlot.value || session.mutationPending) return
+  await session.unequip(selectedEquipmentSlot.value)
+  if (!session.errorCode) {
+    selectedItem.value = null
+    selectedEquipmentSlot.value = null
+  }
+}
+
+function equipmentErrorMessage(code: string | null): string | null {
+  if (!code) return null
+  if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
+  if (code === 'inventory_invalid_slot') return 'Сервер не распознал слот снаряжения.'
+  return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
 function itemGlyph(item: InventoryItem | null, fallback: string): string {
@@ -234,13 +252,32 @@ function abilityInitials(ability: KnownAbility): string {
       </div>
     </UIPanel>
 
-    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="selectedItem = null">
+    <UIModal
+      :open="selectedItem !== null"
+      :title="selectedItem?.name ?? ''"
+      @close="selectedItem = null; selectedEquipmentSlot = null"
+    >
       <article v-if="selectedItem" class="detail">
         <p>{{ selectedItem.description }}</p>
         <dl><div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId">Часть комплекта Следопыта.</p>
+        <p v-if="equipmentErrorMessage(session.errorCode)" class="detail__error" role="alert">
+          {{ equipmentErrorMessage(session.errorCode) }}
+        </p>
       </article>
+      <template #actions>
+        <UIButton
+          v-if="selectedEquipmentSlot"
+          data-unequip-selected
+          variant="secondary"
+          :loading="session.mutationPending"
+          :disabled="session.mutationPending"
+          @click="unequipSelected"
+        >
+          Снять
+        </UIButton>
+      </template>
     </UIModal>
 
     <UIModal :open="selectedAbility !== null" :title="selectedAbility ? abilityName(selectedAbility) : ''" @close="selectedAbility = null">
@@ -712,6 +749,12 @@ function abilityInitials(ability: KnownAbility): string {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.detail__error {
+  margin: 0;
+  color: #ef9bab;
+  font-size: var(--ui-font-size-xs);
 }
 
 .detail {
