@@ -186,6 +186,44 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateEnforcesMultiEnemyTargetCountRules()
+    {
+        AbilityDefinition invalidN = new(
+            "TEST_N",
+            AbilityType.Instant,
+            AbilityTargetType.NEnemiesInCombat,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL");
+        AbilityDefinition invalidSingle = new(
+            "TEST_SINGLE",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            TargetCount: 2);
+        GameContentPackage package = CreatePackage() with
+        {
+            Abilities = [invalidN, invalidSingle]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Equal(2, errors.Count(error =>
+            error.Code == "INVALID_ABILITY_DEFINITION"));
+    }
+
+    [Fact]
     public void ValidateRejectsCircularTalentPrerequisites()
     {
         GameContentPackage package = CreatePackage() with
