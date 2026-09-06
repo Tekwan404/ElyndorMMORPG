@@ -196,7 +196,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
             ContentVersion = "0.10.2",
             BalanceVersion = "0.8.0",
             PublishedAtUtc = Start.AddMinutes(1),
-            Items = bundled.Items
+            Items = bundled.Items!
                 .Where(item => item.Id != stalePotion.Id)
                 .Append(stalePotion)
                 .Append(customSword)
