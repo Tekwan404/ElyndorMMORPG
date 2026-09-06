@@ -275,7 +275,6 @@ onMounted(() => void loadLocations())
           <UIButton
             v-if="selectedIsCurrent"
             data-map-open-location
-            size="sm"
             @click="emit('open-location')"
           >
             Открыть
@@ -283,7 +282,6 @@ onMounted(() => void loadLocations())
           <UIButton
             v-else
             data-map-travel-inline
-            size="sm"
             :disabled="!selectedIsReachable"
             :loading="session.mutationPending"
             @click="travel"
