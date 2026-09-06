@@ -14,6 +14,7 @@ const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const selectedItem = ref<InventoryItem | null>(null)
+const equipmentActionError = ref<string | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
@@ -169,6 +170,7 @@ function formatNumber(value: number): string {
 
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
+  equipmentActionError.value = null
   if (item) markItemSeen(item.id)
 }
 
@@ -303,7 +305,8 @@ async function equipSelected(): Promise<void> {
   const item = selectedItem.value
   if (!item || item.type !== 'Equipment') return
   await session.equip(item.id)
-  if (!session.errorCode) selectedItem.value = null
+  equipmentActionError.value = session.errorCode
+  if (!equipmentActionError.value) selectedItem.value = null
 }
 
 async function useSelected(): Promise<void> {
@@ -465,11 +468,11 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.type === 'Material' && selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">Восстанавливает {{ selectedItem.healAmount }} здоровья. В бою общий кулдаун зелий — {{ selectedItem.consumableCooldownSeconds }} сек.</p>
         <p
-          v-if="selectedItem.type === 'Equipment' && inventoryActionError(session.errorCode)"
+          v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
           class="item-detail__error"
           role="alert"
         >
-          {{ inventoryActionError(session.errorCode) }}
+          {{ inventoryActionError(equipmentActionError) }}
         </p>
       </article>
       <template #actions>
