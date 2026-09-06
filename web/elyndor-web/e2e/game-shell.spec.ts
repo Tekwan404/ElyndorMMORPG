@@ -27,6 +27,15 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Торговать' }).click()
+  const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
+  await expect(merchantDialog).toBeVisible()
+  await expect(merchantDialog.getByText('Маркус', { exact: true })).toBeVisible()
+  await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
+  await merchantDialog.getByRole('button', { name: 'Close' }).click()
+  await expect(merchantDialog).toBeHidden()
+
   await page.getByRole('button', { name: /Шепчущий лес/ }).click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   await page.getByRole('button', { name: /Deep Forest/ }).click()
@@ -81,6 +90,29 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
   )
 
   if (process.env.ELYNDOR_E2E_REAL === 'true') return
+
+  await page.route('**/api/v1/inventory/merchant/MARCUS_SUPPLIES', (route) =>
+    route.fulfill({
+      json: {
+        id: 'MARCUS_SUPPLIES',
+        name: 'Маркус',
+        description: 'Торговец припасами.',
+        gold: 0,
+        items: [
+          {
+            definitionId: 'SMALL_HEALING_POTION',
+            name: 'Малое зелье лечения',
+            type: 'Consumable',
+            rarity: 'Common',
+            description: 'Мгновенно восстанавливает здоровье.',
+            buyPriceGold: 20,
+            sellPriceGold: 0,
+            healAmount: 50,
+          },
+        ],
+      },
+    }),
+  )
 
   let hasCharacter = false
   let locationId: keyof typeof locations = 'STARTER_TOWN'
