@@ -144,7 +144,7 @@ describe('InventoryView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-item-id="FRESH_POTION"]').attributes('data-new')).toBe('true')
-    expect(wrapper.get('[data-item-id="FRESH_POTION"]').text()).toContain('NEW')
+    expect(wrapper.get('[data-item-id="FRESH_POTION"]').text()).toContain('НОВОЕ')
 
     await wrapper.get('[data-item-id="FRESH_POTION"]').trigger('click')
     await flushPromises()
