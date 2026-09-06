@@ -520,7 +520,8 @@ public sealed partial class CombatSession
                 CanMiss: false,
                 CanDodge: false,
                 CanCrit: false,
-                MinimumDamage: 0),
+                MinimumDamage: 0,
+                CanBlock: false),
             _random,
             tickAt);
         return result.Events;
