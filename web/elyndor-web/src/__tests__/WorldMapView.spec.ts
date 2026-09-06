@@ -49,6 +49,30 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-id="DEEP_FOREST"]').attributes('data-state')).toBe('locked')
   })
 
+  it('keeps map node order stable when the current location changes', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    const order = () => wrapper.findAll('[data-location-id]')
+      .map(node => node.attributes('data-location-id'))
+
+    expect(order()).toEqual(['STARTER_TOWN', 'WHISPERING_FOREST', 'DEEP_FOREST'])
+
+    session.snapshot.world = {
+      currentLocation: LOCATIONS[1]!,
+      version: 2,
+      outgoingTransitions: [LOCATIONS[0]!, LOCATIONS[2]!],
+    }
+    await flushPromises()
+
+    expect(order()).toEqual(['STARTER_TOWN', 'WHISPERING_FOREST', 'DEEP_FOREST'])
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('current')
+  })
+
   it('travels only to a server-provided outgoing transition', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
