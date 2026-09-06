@@ -109,6 +109,52 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task LockedMaterialCannotBeSold()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
+        Guid itemId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterItem item = new(
+                itemId,
+                characterId,
+                "WOLF_HIDE",
+                1,
+                Now);
+            item.SetLocked(true);
+            setup.CharacterItems.Add(item);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        MerchantOperationResult result = await service.SellMaterialAsync(
+            accountId,
+            MerchantId,
+            itemId,
+            1,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(MerchantErrorCodes.ItemLocked, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem persisted = await verify.CharacterItems
+            .AsNoTracking()
+            .SingleAsync(item => item.Id == itemId);
+        Assert.True(persisted.IsLocked);
+        Assert.Equal(1, persisted.Quantity);
+        Assert.Equal(
+            0,
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+        Assert.Equal(0, await verify.CharacterMutations.CountAsync());
+    }
+
+    [Fact]
     public async Task ConcurrentMaterialSalesCannotSellSameUnitTwice()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
