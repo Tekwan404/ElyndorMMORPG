@@ -35,7 +35,8 @@ public sealed record InventoryItemSnapshot(
     ItemDefinition Definition,
     int Quantity,
     DateTimeOffset AcquiredAtUtc,
-    EquipmentSlot? EquippedSlot);
+    EquipmentSlot? EquippedSlot,
+    bool IsLocked);
 
 public sealed record InventorySnapshot(
     IReadOnlyList<InventoryItemSnapshot> Items,
@@ -61,6 +62,7 @@ public sealed class InventoryEquipmentService(
     private const string EquipOperation = "INVENTORY_EQUIP";
     private const string UnequipOperation = "INVENTORY_UNEQUIP";
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
+    private const string SetItemLockOperation = "INVENTORY_SET_LOCK";
     private readonly CharacterDerivedStateService derivedStateService =
         new(dbContext, contentProvider);
 
@@ -268,6 +270,38 @@ public sealed class InventoryEquipmentService(
                     vitals.CurrentResource,
                     now);
                 ConsumeOne(item);
+                return null;
+            },
+            cancellationToken);
+
+    public Task<InventoryOperationResult> SetItemLockAsync(
+        Guid accountId,
+        Guid characterItemId,
+        bool isLocked,
+        Guid mutationId,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(
+            accountId,
+            mutationId,
+            SetItemLockOperation,
+            Fingerprint(
+                SetItemLockOperation,
+                characterItemId.ToString("N"),
+                isLocked ? "1" : "0"),
+            async character =>
+            {
+                CharacterItem? item = await dbContext.CharacterItems
+                    .SingleOrDefaultAsync(
+                        candidate => candidate.Id == characterItemId,
+                        cancellationToken);
+                if (item is null)
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ItemNotFound);
+                if (item.CharacterId != character.Id)
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ItemNotOwned);
+
+                item.SetLocked(isLocked);
                 return null;
             },
             cancellationToken);

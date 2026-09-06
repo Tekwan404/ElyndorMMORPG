@@ -33,6 +33,9 @@ public sealed class CharacterItem
     public string ItemDefinitionId { get; private set; }
     public int Quantity { get; private set; }
     public DateTimeOffset AcquiredAtUtc { get; private set; }
+    public bool IsLocked { get; private set; }
+
+    public void SetLocked(bool isLocked) => IsLocked = isLocked;
 
     public void AddQuantity(int quantity, int maxStack)
     {
