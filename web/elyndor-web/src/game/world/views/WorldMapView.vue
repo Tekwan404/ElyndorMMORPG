@@ -680,9 +680,21 @@ onMounted(() => void loadLocations())
   }
 }
 
+:global(html[data-elyndor-atmosphere='off']) .map-canvas__fog {
+  display: none;
+}
+
+:global(html[data-elyndor-motion='reduced']) .map-node[data-state='current'] .map-node__pulse {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .map-node[data-state='current'] .map-node__pulse {
     animation: none;
+  }
+
+  :global(html[data-elyndor-motion='full']) .map-node[data-state='current'] .map-node__pulse {
+    animation: map-pulse 2.1s ease-out infinite;
   }
 }
 
