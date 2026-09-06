@@ -340,6 +340,67 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateAcceptsMainHandWeaponDamageRange()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_DAMAGE_SWORD",
+                    "Test Damage Sword",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.MainHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    WeaponDamageMin: 8,
+                    WeaponDamageMax: 12)
+            ],
+            LootTables = []
+        };
+
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
+    public void ValidateRejectsWeaponDamageRangeOnShield()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_DAMAGE_SHIELD",
+                    "Test Damage Shield",
+                    ItemType.Equipment,
+                    ItemRarity.Common,
+                    1,
+                    false,
+                    1,
+                    EquipmentSlot.OffHand,
+                    new PrimaryStats(1, 0, 0, 0),
+                    "Test",
+                    WeaponCategory: EquipmentCategoryIds.Shield,
+                    WeaponDamageMin: 8,
+                    WeaponDamageMax: 12)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateAcceptsEquipmentPrimaryStatRanges()
     {
         GameContentPackage package = CreatePackage() with
