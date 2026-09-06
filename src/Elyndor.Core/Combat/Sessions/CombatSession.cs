@@ -288,6 +288,8 @@ public sealed partial class CombatSession
         if (targetActorIds.Count == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         Guid primaryTargetActorId = targetActorIds[0];
+        IReadOnlyDictionary<Guid, AbilityTargetModifier> targetModifiers =
+            ResolvePlayerAbilityTargetModifiers(ability, targetActorIds, now);
 
         AbilityExecutionResult execution = AbilityEngine.Execute(
             _playerRuntime,
@@ -296,7 +298,8 @@ public sealed partial class CombatSession
                 command.CommandId,
                 command.AbilityId,
                 primaryTargetActorId,
-                targetActorIds),
+                targetActorIds,
+                targetModifiers),
             now,
             _random);
         if (!execution.Succeeded)
@@ -355,6 +358,39 @@ public sealed partial class CombatSession
             TargetActorId: _player.Actor.ActorId));
         SyncBerserkerConditionalEffects(now);
         return Result(true, null, before);
+    }
+
+    private IReadOnlyDictionary<Guid, AbilityTargetModifier>
+        ResolvePlayerAbilityTargetModifiers(
+            AbilityDefinition ability,
+            IReadOnlyList<Guid> targetActorIds,
+            DateTimeOffset now)
+    {
+        Dictionary<Guid, AbilityTargetModifier> modifiers = [];
+        foreach (Guid targetActorId in targetActorIds)
+        {
+            if (!_enemiesById.TryGetValue(
+                    targetActorId,
+                    out CombatParticipantDefinition? target))
+            {
+                continue;
+            }
+
+            AbilityTargetModifier modifier = new();
+            modifier = ResolveBerserkerTargetAbilityModifier(
+                ability,
+                target.Actor,
+                modifier);
+            modifier = ResolvePyromancerTargetAbilityModifier(
+                ability,
+                target.Actor,
+                modifier,
+                now);
+            if (modifier != new AbilityTargetModifier())
+                modifiers[targetActorId] = modifier;
+        }
+
+        return modifiers;
     }
 
     private IReadOnlyList<Guid> ResolvePlayerAbilityTargetIds(
