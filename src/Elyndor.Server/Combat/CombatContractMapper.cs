@@ -41,7 +41,7 @@ internal static class CombatContractMapper
         GameContentPackage content)
     {
         CombatActorResponse selected = ToResponse(snapshot.Enemy, content);
-        CombatActorResponse[] enemies = (snapshot.Enemies ?? [snapshot.Enemy])
+        CombatActorResponse[] enemies = (snapshot.Enemies ?? new[] { snapshot.Enemy })
             .Select(enemy => ToResponse(enemy, content))
             .ToArray();
         return new CombatSnapshotResponse(
