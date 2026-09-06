@@ -59,7 +59,17 @@ MonsterDefinition
   ├── Level
   ├── BaseStatProfileId
   ├── ResourceProfileId
+  ├── CombatStats
+  │   ├── Armor
+  │   ├── MagicResistance
+  │   ├── BlockChance, optional
+  │   ├── BlockValueMin, optional
+  │   └── BlockValueMax, optional
   ├── AutoAttackProfile
+  │   ├── BaseDamageMin
+  │   ├── BaseDamageMax
+  │   ├── AttackPowerCoefficient
+  │   └── Interval
   ├── AbilityIds
   ├── AIProfileId
   ├── AggressionProfile
