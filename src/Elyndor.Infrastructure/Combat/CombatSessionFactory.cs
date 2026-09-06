@@ -26,7 +26,8 @@ public sealed class CombatSessionFactory(
     CharacterDerivedStateService derivedStateService,
     IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    CharacterAbilityCooldownStore? cooldownStore = null)
 {
     public CombatSessionFactory(
         BootstrapService bootstrapService,
@@ -207,6 +208,15 @@ public sealed class CombatSessionFactory(
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
 
+        DateTimeOffset startedAtUtc = timeProvider.GetUtcNow();
+        IReadOnlyDictionary<string, DateTimeOffset> initialCooldowns =
+            isTraining || cooldownStore is null
+                ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
+                : await cooldownStore.LoadActiveAsync(
+                    character.Id,
+                    startedAtUtc,
+                    cancellationToken);
+
         CombatSession session = new(
             Guid.NewGuid(),
             player,
@@ -215,9 +225,10 @@ public sealed class CombatSessionFactory(
             ai,
             talentModifiers,
             randomFactory.Create(),
-            timeProvider.GetUtcNow(),
+            startedAtUtc,
             contentSnapshot.ContentVersion,
-            contentSnapshot.BalanceVersion);
+            contentSnapshot.BalanceVersion,
+            initialCooldowns);
         return new CombatSessionCreationResult(
             true,
             null,
