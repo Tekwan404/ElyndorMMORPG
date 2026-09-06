@@ -23,7 +23,8 @@ public sealed record DamageRequest(
     decimal AccuracyBonus = 0,
     decimal CriticalChanceBonus = 0,
     decimal CriticalDamageBonus = 0,
-    decimal MagicPenetrationBonus = 0);
+    decimal MagicPenetrationBonus = 0,
+    bool CanBlock = true);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -38,7 +39,8 @@ public sealed record DamageResult(
     bool IsLethal,
     bool LethalPreventionTriggered,
     decimal ResultingHp,
-    IReadOnlyList<CombatEvent> Events);
+    IReadOnlyList<CombatEvent> Events,
+    decimal BlockedAmount = 0);
 
 public static class DamagePipeline
 {
@@ -144,10 +146,12 @@ public static class DamagePipeline
             ? Math.Max(modified, Math.Max(0, request.MinimumDamage))
             : 0;
         decimal rounded = decimal.Round(minimumApplied, 0, MidpointRounding.AwayFromZero);
-        decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, rounded);
+        decimal blocked = ResolveBlock(request, rounded, random);
+        decimal afterBlock = Math.Max(0, rounded - blocked);
+        decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, afterBlock);
         decimal hpDamage = Math.Min(
             request.Target.CurrentHp,
-            Math.Max(0, rounded - absorbed));
+            Math.Max(0, afterBlock - absorbed));
         bool lethal = request.Target.CanDie
                       && hpDamage >= request.Target.CurrentHp
                       && hpDamage > 0;
@@ -181,6 +185,18 @@ public static class DamagePipeline
         }
 
         List<CombatEvent> events = [];
+        if (blocked > 0)
+        {
+            events.Add(new CombatEvent(
+                CombatEventType.DamageBlocked,
+                occurredAtUtc,
+                request.Target.ActorId,
+                Amount: blocked,
+                SourceActorId: request.Source.ActorId,
+                TargetActorId: request.Target.ActorId,
+                DamageType: request.Type));
+        }
+
         if (absorbed > 0)
         {
             events.Add(new CombatEvent(
@@ -250,7 +266,8 @@ public static class DamagePipeline
             lethal,
             preventionTriggered,
             request.Target.CurrentHp,
-            events);
+            events,
+            blocked);
     }
 
     private static decimal Mitigate(DamageRequest request, decimal damage)
@@ -269,6 +286,33 @@ public static class DamagePipeline
         decimal effectiveDefense =
             Math.Max(0, defense * (1 - Math.Clamp(penetration, 0, 1)));
         return damage * MitigationConstant / (MitigationConstant + effectiveDefense);
+    }
+
+    private static decimal ResolveBlock(
+        DamageRequest request,
+        decimal incoming,
+        IGameRandom random)
+    {
+        if (!request.CanBlock
+            || request.Type != DamageType.Physical
+            || incoming <= 0
+            || request.Target.Stats.BlockChance <= 0
+            || request.Target.Stats.BlockValueMax <= 0)
+        {
+            return 0;
+        }
+
+        decimal chance = Math.Clamp(request.Target.Stats.BlockChance / 100m, 0, 1);
+        if (random.NextUnit() >= chance)
+            return 0;
+
+        decimal minimum = Math.Max(0, request.Target.Stats.BlockValueMin);
+        decimal maximum = Math.Max(minimum, request.Target.Stats.BlockValueMax);
+        decimal amount = minimum == maximum
+            ? minimum
+            : minimum + (maximum - minimum) * random.NextUnit();
+        decimal rounded = decimal.Round(amount, 0, MidpointRounding.AwayFromZero);
+        return Math.Min(incoming, Math.Max(0, rounded));
     }
 
     private static decimal AbsorbShields(CombatActorState target, decimal incoming)
