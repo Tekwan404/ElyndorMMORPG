@@ -109,13 +109,7 @@ function equipment(
 }
 
 function snapshot(
-  equipped: Partial<BootstrapSnapshot['character'] extends infer C
-    ? C extends { inventory: infer I }
-      ? I extends { equipped: infer E }
-        ? E
-        : never
-      : never
-    : never>,
+  equipped: Partial<NonNullable<BootstrapSnapshot['character']>['inventory']['equipped']>,
 ): BootstrapSnapshot {
   const equippedItems = Object.values(equipped).filter(
     (item): item is InventoryItem => item !== null && item !== undefined,
