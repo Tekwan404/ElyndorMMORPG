@@ -15,7 +15,7 @@ const hasTalentTree = computed(() => ['WARRIOR', 'MAGE'].includes(session.snapsh
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
-  { id: 'stats', label: 'Статы', available: true },
+  { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
 
