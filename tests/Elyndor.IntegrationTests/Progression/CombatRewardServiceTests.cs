@@ -136,6 +136,52 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
+    public async Task VictoryRewardRejectsDuplicateEnemyActorIdsBeforeMutation()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(Guid.CreateVersion7());
+        CombatActorSnapshot duplicate = snapshot.Enemies![0];
+        snapshot = snapshot with { Enemies = [duplicate, duplicate] };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None));
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.Equal(0, character.Experience);
+        Assert.Equal(0, character.Gold);
+        Assert.Equal(0, await context.CombatRewardGrants.CountAsync());
+        Assert.Equal(0, await context.CharacterItems.CountAsync());
+    }
+
+    [Fact]
+    public async Task VictoryRewardRejectsLivingEnemyBeforeMutation()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+        CombatSessionSnapshot snapshot = MultiEnemyVictorySnapshot(Guid.CreateVersion7());
+        CombatActorSnapshot living = snapshot.Enemies![1] with { Hp = 1 };
+        snapshot = snapshot with { Enemies = [snapshot.Enemies[0], living] };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ApplyVictoryAsync(
+                characterId,
+                snapshot,
+                CancellationToken.None));
+
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        Assert.Equal(0, character.Experience);
+        Assert.Equal(0, character.Gold);
+        Assert.Equal(0, await context.CombatRewardGrants.CountAsync());
+        Assert.Equal(0, await context.CharacterItems.CountAsync());
+    }
+
+    [Fact]
     public async Task WarriorPersonalLootCanContainOffClassEquipment()
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100);
