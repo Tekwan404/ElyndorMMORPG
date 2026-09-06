@@ -25,6 +25,7 @@ public static class WorldEndpoints
                 .ToArray()));
         group.MapPost("/world/explore", ExploreAsync);
         group.MapPost("/world/travel", TravelAsync);
+        group.MapPost("/world/contracts/accept", AcceptContractAsync);
 
         return endpoints;
     }
@@ -43,6 +44,56 @@ public static class WorldEndpoints
             accountId,
             cancellationToken);
         return Results.Ok(ToResponse(snapshot));
+    }
+
+    private static async Task<IResult> AcceptContractAsync(
+        AcceptWorldContractRequest request,
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        WorldContractService contractService,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                WorldContractAcceptResult result = await contractService.AcceptAsync(
+                    accountId,
+                    request.ContractId,
+                    cancellationToken);
+                if (result.IsSuccess)
+                {
+                    return Results.Ok(new AcceptWorldContractResponse(
+                        result.ContractId!,
+                        "ACTIVE"));
+                }
+
+                int statusCode = result.ErrorCode switch
+                {
+                    WorldContractErrorCodes.CharacterNotFound
+                        or WorldContractErrorCodes.ContractNotFound =>
+                        StatusCodes.Status404NotFound,
+                    WorldContractErrorCodes.LevelRequired
+                        or WorldContractErrorCodes.InvalidLocation =>
+                        StatusCodes.Status403Forbidden,
+                    WorldContractErrorCodes.AlreadyCompleted =>
+                        StatusCodes.Status409Conflict,
+                    _ => StatusCodes.Status422UnprocessableEntity
+                };
+                return Results.Problem(
+                    statusCode: statusCode,
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = result.ErrorCode!,
+                        ["correlationId"] = httpContext.TraceIdentifier
+                    });
+            },
+            () => InCombatProblem(httpContext),
+            cancellationToken);
     }
 
     private static async Task<IResult> ExploreAsync(
@@ -234,7 +285,10 @@ public static class WorldEndpoints
                         contract.RequiredLevel,
                         contract.TargetMonsterId,
                         contract.UnlockLocationId,
-                        contract.Status)).ToArray()),
+                        contract.Status,
+                        contract.OfferLocationId,
+                        contract.RewardXp,
+                        contract.RewardGold)).ToArray()),
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
             snapshot.ServerTimeUtc);
