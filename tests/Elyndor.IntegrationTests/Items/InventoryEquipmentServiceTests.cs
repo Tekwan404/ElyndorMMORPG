@@ -98,9 +98,9 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         InventoryEquipmentService service = await CreateServiceAsync(context);
 
         InventoryOperationResult first = await service.UseConsumableOutOfCombatAsync(
-            accountId, itemId, mutationId, 200, Now, CancellationToken.None);
+            accountId, itemId, mutationId, 200, "RAGE", 100, Now, CancellationToken.None);
         InventoryOperationResult replay = await service.UseConsumableOutOfCombatAsync(
-            accountId, itemId, mutationId, 200, Now, CancellationToken.None);
+            accountId, itemId, mutationId, 200, "RAGE", 100, Now, CancellationToken.None);
 
         Assert.True(first.IsSuccess);
         Assert.True(replay.IsSuccess);
@@ -115,6 +115,71 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             .Select(i => i.Quantity)
             .SingleAsync());
         Assert.Equal(1, await verify.CharacterMutations.CountAsync());
+    }
+
+    [Fact]
+    public async Task ResourceConsumableRestoresMatchingDurableResource()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 200,
+            classId: "WARRIOR",
+            currentResource: 10);
+        Guid itemId = await AddItemAsync(characterId, "SMALL_RAGE_POTION", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.UseConsumableOutOfCombatAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            200,
+            "RAGE",
+            100,
+            Now,
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterVitals vitals = await verify.CharacterVitals
+            .AsNoTracking()
+            .SingleAsync(candidate => candidate.CharacterId == characterId);
+        Assert.Equal(40, vitals.CurrentResource);
+        Assert.Empty(await verify.CharacterItems
+            .Where(item => item.Id == itemId)
+            .ToArrayAsync());
+    }
+
+    [Theory]
+    [InlineData("MINOR_BATTLE_TONIC")]
+    [InlineData("MINOR_ANTIDOTE")]
+    public async Task CombatOnlyConsumableIsNotSpentOutsideCombat(string definitionId)
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(currentHp: 100);
+        Guid itemId = await AddItemAsync(characterId, definitionId, 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult result = await service.UseConsumableOutOfCombatAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            200,
+            "RAGE",
+            100,
+            Now,
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ConsumableUnavailable, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(1, await verify.CharacterItems
+            .Where(item => item.Id == itemId)
+            .Select(item => item.Quantity)
+            .SingleAsync());
     }
 
     [Fact]
@@ -155,9 +220,9 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         InventoryOperationResult[] results = await Task.WhenAll(
             first.UseConsumableOutOfCombatAsync(
-                accountId, itemId, Guid.CreateVersion7(), 200, Now, CancellationToken.None),
+                accountId, itemId, Guid.CreateVersion7(), 200, "RAGE", 100, Now, CancellationToken.None),
             second.UseConsumableOutOfCombatAsync(
-                accountId, itemId, Guid.CreateVersion7(), 200, Now.AddSeconds(1), CancellationToken.None));
+                accountId, itemId, Guid.CreateVersion7(), 200, "RAGE", 100, Now.AddSeconds(1), CancellationToken.None));
 
         Assert.All(results, result => Assert.True(result.IsSuccess));
 
@@ -183,9 +248,9 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         InventoryOperationResult[] results = await Task.WhenAll(
             first.UseConsumableOutOfCombatAsync(
-                accountId, itemId, Guid.CreateVersion7(), 200, Now, CancellationToken.None),
+                accountId, itemId, Guid.CreateVersion7(), 200, "RAGE", 100, Now, CancellationToken.None),
             second.UseConsumableOutOfCombatAsync(
-                accountId, itemId, Guid.CreateVersion7(), 200, Now.AddSeconds(1), CancellationToken.None));
+                accountId, itemId, Guid.CreateVersion7(), 200, "RAGE", 100, Now.AddSeconds(1), CancellationToken.None));
 
         Assert.Single(results, result => result.IsSuccess);
         Assert.Single(results, result => result.ErrorCode == InventoryErrorCodes.ItemNotFound);
