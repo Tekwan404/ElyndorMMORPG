@@ -130,6 +130,9 @@ public static class WorldEndpoints
                             or TravelErrorCodes.UnknownLocation
                             or TravelErrorCodes.InvalidRequest
                                 ? StatusCodes.Status422UnprocessableEntity
+                        : result.ErrorCode is TravelErrorCodes.LevelRequired
+                            or TravelErrorCodes.ContractRequired
+                                ? StatusCodes.Status403Forbidden
                                 : StatusCodes.Status404NotFound;
                 return Results.Problem(
                     statusCode: statusCode,
@@ -223,7 +226,15 @@ public static class WorldEndpoints
                 : new BootstrapWorldResponse(
                     ToLocation(snapshot.World.CurrentLocation),
                     snapshot.World.Version,
-                    snapshot.World.OutgoingTransitions.Select(ToLocation).ToArray()),
+                    snapshot.World.OutgoingTransitions.Select(ToLocation).ToArray(),
+                    snapshot.World.Contracts.Select(contract => new WorldContractResponse(
+                        contract.Id,
+                        contract.DisplayName,
+                        contract.Description,
+                        contract.RequiredLevel,
+                        contract.TargetMonsterId,
+                        contract.UnlockLocationId,
+                        contract.Status)).ToArray()),
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
             snapshot.ServerTimeUtc);
@@ -233,7 +244,12 @@ public static class WorldEndpoints
             location.Id,
             location.DisplayName,
             location.DangerLevel,
-            location.RecommendedLevel);
+            location.RecommendedLevel,
+            location.MinimumLevel,
+            location.MaximumLevel,
+            location.RequiredContractId,
+            location.ArtId,
+            location.Description);
 
     private static WorldLocationResponse ToLocation(LocationDefinition location) =>
         new(
