@@ -55,12 +55,27 @@ public sealed record BootstrapLocation(
     string Id,
     string DisplayName,
     string DangerLevel,
-    int RecommendedLevel);
+    int RecommendedLevel,
+    int MinimumLevel,
+    int MaximumLevel,
+    string? RequiredContractId,
+    string? ArtId,
+    string Description);
+
+public sealed record BootstrapWorldContract(
+    string Id,
+    string DisplayName,
+    string Description,
+    int RequiredLevel,
+    string TargetMonsterId,
+    string UnlockLocationId,
+    string Status);
 
 public sealed record BootstrapWorld(
     BootstrapLocation CurrentLocation,
     long Version,
-    IReadOnlyList<BootstrapLocation> OutgoingTransitions);
+    IReadOnlyList<BootstrapLocation> OutgoingTransitions,
+    IReadOnlyList<BootstrapWorldContract> Contracts);
 
 public sealed record BootstrapSnapshot(
     Guid AccountId,
@@ -194,9 +209,35 @@ public sealed class BootstrapService(
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
+        string[] completedContractIdValues = await dbContext.CharacterContractCompletions
+            .AsNoTracking()
+            .Where(state => state.CharacterId == character.Id)
+            .Select(state => state.ContractId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<string> completedContractIds =
+            completedContractIdValues.ToHashSet(StringComparer.Ordinal);
+
         BootstrapLocation[] transitions = current.Transitions
             .Select(worldMap.GetRequired)
+            .Where(target => character.Level >= target.MinimumLevel)
+            .Where(target => target.RequiredContractId is null
+                || completedContractIds.Contains(target.RequiredContractId))
             .Select(ToLocation)
+            .ToArray();
+
+        BootstrapWorldContract[] contracts = (contentPackage.WorldContracts ?? [])
+            .Select(contract => new BootstrapWorldContract(
+                contract.Id,
+                contract.DisplayName,
+                contract.Description,
+                contract.RequiredLevel,
+                contract.TargetMonsterId,
+                contract.UnlockLocationId,
+                completedContractIds.Contains(contract.Id)
+                    ? "COMPLETED"
+                    : character.Level >= contract.RequiredLevel
+                        ? "ACTIVE"
+                        : "LOCKED"))
             .ToArray();
 
         return new BootstrapSnapshot(
@@ -227,7 +268,7 @@ public sealed class BootstrapService(
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),
                 derived.Inventory),
-            new BootstrapWorld(ToLocation(current), location.Version, transitions),
+            new BootstrapWorld(ToLocation(current), location.Version, transitions, contracts),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
             now);
@@ -273,5 +314,10 @@ public sealed class BootstrapService(
             location.Id,
             location.DisplayName,
             location.DangerLevel,
-            location.RecommendedLevel);
+            location.RecommendedLevel,
+            location.MinimumLevel,
+            location.MaximumLevel,
+            location.RequiredContractId,
+            location.ArtId,
+            location.Description);
 }
