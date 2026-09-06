@@ -192,6 +192,49 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task UnequippedEquipmentCanBeSoldToMarcus()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
+        Guid itemId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CharacterItems.Add(new CharacterItem(
+                itemId,
+                characterId,
+                "RECRUIT_IRON_SWORD",
+                1,
+                Now));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        MerchantOperationResult result = await service.SellItemAsync(
+            accountId,
+            MerchantId,
+            itemId,
+            1,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterItems
+            .Where(item => item.Id == itemId)
+            .ToArrayAsync());
+        Assert.Equal(
+            MerchantService.ResolveSellPrice(
+                (await GameContentPackageLoader.LoadAsync(
+                    Path.GetFullPath("content/package.json"))).Items!
+                    .Single(item => item.Id == "RECRUIT_IRON_SWORD")),
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+    }
+
+    [Fact]
     public async Task LockedMaterialCannotBeSold()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
