@@ -136,6 +136,7 @@ function abilityInitials(ability: KnownAbility): string {
             :class="{ filled: slot.item }"
             :data-equipment-slot="slot.id"
             :data-filled="Boolean(slot.item)"
+            :data-rarity="slot.item?.rarity"
             :disabled="!slot.item"
             @click="selectedItem = slot.item"
           >
@@ -170,6 +171,7 @@ function abilityInitials(ability: KnownAbility): string {
             :class="{ filled: slot.item }"
             :data-equipment-slot="slot.id"
             :data-filled="Boolean(slot.item)"
+            :data-rarity="slot.item?.rarity"
             :disabled="!slot.item"
             @click="selectedItem = slot.item"
           >
@@ -376,6 +378,29 @@ function abilityInitials(ability: KnownAbility): string {
   border-color: color-mix(in srgb, var(--ui-color-primary) 48%, var(--ui-color-border));
   background: linear-gradient(180deg, rgb(146 136 255 / 8%), rgb(3 6 11 / 36%));
   color: var(--ui-color-text-primary);
+}
+
+.equipment-slot:not(.filled) {
+  opacity: .58;
+}
+
+.equipment-slot[data-rarity='Uncommon'] {
+  border-color: color-mix(in srgb, var(--ui-color-success) 62%, var(--ui-color-border));
+}
+
+.equipment-slot[data-rarity='Rare'] {
+  border-color: color-mix(in srgb, var(--ui-color-secondary) 68%, var(--ui-color-border));
+}
+
+.equipment-slot[data-rarity='Epic'] {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 78%, var(--ui-color-border));
+  box-shadow: var(--ui-shadow-inset), 0 0 10px rgb(146 136 255 / 8%);
+}
+
+.equipment-slot[data-rarity='Legendary'],
+.equipment-slot[data-rarity='Unique'] {
+  border-color: var(--ui-color-gold);
+  box-shadow: var(--ui-shadow-inset), 0 0 12px rgb(232 200 102 / 10%);
 }
 
 .equipment-slot__icon {
