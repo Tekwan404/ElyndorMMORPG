@@ -912,9 +912,7 @@ public sealed class CombatSessionTests
     [Fact]
     public async Task ConcurrentDuplicateCommandsMutateSessionOnlyOnce()
     {
-        CombatSession session = CreateSession(
-            enemyHp: 10_000,
-            canAutoAttack: false);
+        CombatSession session = CreateSession(enemyHp: 10_000);
         using CombatSessionRegistry registry = new(
             new FrozenTimeProvider(Now),
             new NullPublisher(),
