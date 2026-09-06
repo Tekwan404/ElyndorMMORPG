@@ -41,6 +41,9 @@ describe('AppShell', () => {
     expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
     expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
+    expect(wrapper.find('.game-shell__header').exists()).toBe(false)
+    expect(wrapper.get('.hud').text()).toContain('ELYNDOR')
 
     await wrapper.get('[data-nav="world"]').trigger('click')
     await flushPromises()
