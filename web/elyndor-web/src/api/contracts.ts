@@ -234,7 +234,6 @@ export interface MerchantItem {
   consumableActions: ConsumableAction[]
   consumableCooldownCategoryId: string | null
   consumableCooldownSeconds: number
-  healAmount: number
 }
 
 export interface MerchantSnapshot {
