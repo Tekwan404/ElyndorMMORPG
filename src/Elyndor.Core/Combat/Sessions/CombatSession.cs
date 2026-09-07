@@ -1255,7 +1255,8 @@ public sealed partial class CombatSession
                      item => item.Key == key))
         {
             if (BerserkerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
-                || PyromancerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _))
+                || PyromancerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
+                || MageTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _))
             {
                 continue;
             }
