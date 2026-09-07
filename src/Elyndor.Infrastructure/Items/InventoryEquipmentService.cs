@@ -33,6 +33,7 @@ public static class InventoryErrorCodes
     public const string InvalidMutationId = "inventory_mutation_id_invalid";
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
+    public const string InventoryFull = "inventory_full";
 }
 
 public sealed record InventoryItemSnapshot(
@@ -323,7 +324,20 @@ public sealed class InventoryEquipmentService(
                         && aliases.Contains(candidate.Slot))
                     .ToArrayAsync(cancellationToken);
                 if (equipped.Length > 0)
+                {
+                    GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                    if (await InventoryCapacity.FreeSlotsAsync(
+                            dbContext,
+                            character.Id,
+                            contentSnapshot,
+                            cancellationToken) < equipped.Length)
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.InventoryFull);
+                    }
+
                     dbContext.CharacterEquipment.RemoveRange(equipped);
+                }
                 return null;
             },
             cancellationToken);
