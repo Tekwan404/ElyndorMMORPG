@@ -68,7 +68,11 @@ public static class DamagePipeline
             decimal levelPenalty = Math.Min(
                 Math.Max(0, request.Target.Stats.Level - request.Source.Stats.Level) * LevelPenaltyPerLevel,
                 MaxLevelPenalty);
-            decimal effectiveAccuracy = request.Source.Stats.Accuracy + request.AccuracyBonus;
+            decimal effectiveAccuracy = EffectEngine.CalculateStat(
+                request.Source,
+                EffectStat.Accuracy,
+                request.Source.Stats.Accuracy,
+                occurredAtUtc) + request.AccuracyBonus;
             decimal missChance = request.CanMiss
                 ? Math.Clamp(
                     BaseMissChance + levelPenalty - effectiveAccuracy / 100m,
@@ -109,10 +113,24 @@ public static class DamagePipeline
             1,
             occurredAtUtc,
             request.Source.ActorId);
+        decimal outgoingDamageMultiplier = EffectEngine.CalculateStat(
+            request.Source,
+            EffectStat.OutgoingDamageMultiplier,
+            1,
+            occurredAtUtc,
+            request.Target.ActorId);
         decimal outgoingPhysicalMultiplier = request.Type == DamageType.Physical
             ? EffectEngine.CalculateStat(
                 request.Source,
                 EffectStat.OutgoingPhysicalDamageMultiplier,
+                1,
+                occurredAtUtc,
+                request.Source.ActorId)
+            : 1;
+        decimal incomingMagicalMultiplier = request.Type == DamageType.Magical
+            ? EffectEngine.CalculateStat(
+                request.Target,
+                EffectStat.IncomingMagicalDamageMultiplier,
                 1,
                 occurredAtUtc,
                 request.Source.ActorId)
@@ -139,7 +157,9 @@ public static class DamagePipeline
         decimal modified = afterMitigation
             * Math.Max(0, request.DamageMultiplier)
             * incomingMultiplier
+            * outgoingDamageMultiplier
             * outgoingPhysicalMultiplier
+            * incomingMagicalMultiplier
             * incomingPhysicalMultiplier
             * Math.Max(0, talentDamageMultiplier)
             * talentIncomingMultiplier;
