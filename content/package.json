@@ -706,13 +706,12 @@
               "type": "EventTriggered",
               "key": "ON_AUTO_ATTACK",
               "values": [
-                0,
-                0,
-                0,
-                0
+                4,
+                8,
+                12,
+                15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
