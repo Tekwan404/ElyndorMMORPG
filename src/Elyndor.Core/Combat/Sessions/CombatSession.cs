@@ -1041,7 +1041,7 @@ public sealed partial class CombatSession
             if (targetIds.Length == 0)
                 continue;
 
-            IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers =
+            Dictionary<Guid, AbilityTargetModifier>? targetModifiers =
                 ResolveEnemyAbilityTargetModifiers(ability, targetIds);
 
             string commandId = $"ai:{enemyActorId:N}:{Sequence + 1}:{abilityId}";
@@ -1122,10 +1122,10 @@ public sealed partial class CombatSession
         };
     }
 
-    private IReadOnlyDictionary<Guid, AbilityTargetModifier>?
+    private Dictionary<Guid, AbilityTargetModifier>?
         ResolveEnemyAbilityTargetModifiers(
             AbilityDefinition ability,
-            IReadOnlyList<Guid> targetActorIds)
+            Guid[] targetActorIds)
     {
         if (!IsArcher
             || _companion is null
