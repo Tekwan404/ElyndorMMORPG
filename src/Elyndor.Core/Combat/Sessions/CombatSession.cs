@@ -802,6 +802,7 @@ public sealed partial class CombatSession
             if (Status != CombatSessionStatus.Active) break;
 
             SyncBerserkerConditionalEffects(due);
+            SyncArcherConditionalEffects(due);
             CompleteReadyCast(
                 _playerRuntime,
                 _player.Actor.ActorId,
@@ -821,6 +822,9 @@ public sealed partial class CombatSession
                     due);
                 if (Status != CombatSessionStatus.Active) break;
             }
+
+            if (Status == CombatSessionStatus.Active)
+                SyncArcherConditionalEffects(due);
 
             if (Status == CombatSessionStatus.Active
                 && _nextPlayerMainHandAutoAttackAtUtc <= due)
@@ -885,6 +889,7 @@ public sealed partial class CombatSession
             if (Status == CombatSessionStatus.Active)
             {
                 SyncBerserkerConditionalEffects(now);
+                SyncArcherConditionalEffects(now);
             }
         }
     }
@@ -1036,6 +1041,9 @@ public sealed partial class CombatSession
             if (targetIds.Length == 0)
                 continue;
 
+            IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers =
+                ResolveEnemyAbilityTargetModifiers(ability, targetIds);
+
             string commandId = $"ai:{enemyActorId:N}:{Sequence + 1}:{abilityId}";
             AbilityExecutionResult execution = AbilityEngine.Execute(
                 runtime,
@@ -1044,7 +1052,8 @@ public sealed partial class CombatSession
                     commandId,
                     abilityId,
                     targetIds[0],
-                    targetIds),
+                    targetIds,
+                    targetModifiers),
                 now,
                 _random);
             if (!execution.Succeeded)
@@ -1062,6 +1071,7 @@ public sealed partial class CombatSession
                 abilityId,
                 SourceActorId: enemyActorId,
                 TargetActorId: targetIds[0]));
+            SyncArcherConditionalEffects(now);
             if (Status != CombatSessionStatus.Active || enemy.Actor.IsDead)
             {
                 aiRuntime.NextActionAtUtc = null;
@@ -1109,6 +1119,36 @@ public sealed partial class CombatSession
             AbilityTargetType.SingleAlly when ability.AllowSelfTarget =>
                 [enemy.Actor.ActorId],
             _ => []
+        };
+    }
+
+    private IReadOnlyDictionary<Guid, AbilityTargetModifier>?
+        ResolveEnemyAbilityTargetModifiers(
+            AbilityDefinition ability,
+            IReadOnlyList<Guid> targetActorIds)
+    {
+        if (!IsArcher
+            || _companion is null
+            || _companion.Actor.IsDead
+            || !IsPhysicalCompanion
+            || targetActorIds.Count <= 1
+            || !targetActorIds.Contains(_companion.Actor.ActorId)
+            || ability.TargetType is not (
+                AbilityTargetType.AllEnemiesInCombat
+                or AbilityTargetType.NEnemiesInCombat)
+            || !TryGetArcherHook(
+                "B-5-2",
+                out ResolvedTalentEventHook hardened))
+        {
+            return null;
+        }
+
+        return new Dictionary<Guid, AbilityTargetModifier>
+        {
+            [_companion.Actor.ActorId] = new(
+                DamageMultiplier: Math.Max(
+                    0,
+                    1 - hardened.Value / 100m))
         };
     }
 
@@ -1414,6 +1454,13 @@ public sealed partial class CombatSession
             ApplyBerserkerCriticalHooks(combatEvent);
             ApplyPyromancerCriticalHooks(combatEvent);
             ApplyMageCriticalHooks(combatEvent);
+            ApplyArcherCriticalHooks(combatEvent);
+        }
+
+        if (combatEvent.Type == CombatEventType.CriticalHit
+            && _companion is not null
+            && combatEvent.SourceActorId == _companion.Actor.ActorId)
+        {
             ApplyArcherCriticalHooks(combatEvent);
         }
 
