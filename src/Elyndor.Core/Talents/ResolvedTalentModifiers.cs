@@ -2,8 +2,11 @@ namespace Elyndor.Core.Talents;
 
 public sealed record TalentStatModifiers(
     decimal StrengthPercent = 0,
+    decimal AgilityPercent = 0,
+    decimal IntellectPercent = 0,
     decimal StaminaPercent = 0,
     decimal AttackPowerPercent = 0,
+    decimal SpellPowerPercent = 0,
     decimal ArmorPercent = 0,
     decimal MagicResistancePercent = 0,
     decimal AccuracyPercent = 0,
@@ -11,9 +14,11 @@ public sealed record TalentStatModifiers(
     decimal CriticalChancePercent = 0,
     decimal CriticalDamagePercent = 0,
     decimal ArmorPenetrationPercent = 0,
+    decimal MagicPenetrationPercent = 0,
     decimal AttackSpeedPercent = 0,
     decimal MaxHpPercent = 0,
-    decimal MaxResourceFlat = 0);
+    decimal MaxResourceFlat = 0,
+    decimal MaxResourcePercent = 0);
 
 public sealed record TalentAbilityModifiers(
     decimal ResourceCostFlatReduction = 0,
