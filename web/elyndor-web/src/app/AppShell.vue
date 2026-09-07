@@ -46,7 +46,16 @@ const sessionErrorMessage = computed(() => {
   if (code === 'network_unavailable') return 'Не удалось связаться с сервером. Проверьте подключение и попробуйте снова.'
   if (code === 'authentication_failed') return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
   if (code === 'bootstrap_failed') return 'Не удалось загрузить состояние персонажа и мира.'
-  return `Не удалось продолжить игру. Код ошибки: ${code}`
+  if (code === 'internal_server_error' || code === 'http_500') {
+    const trace = session.errorCorrelationId
+      ? ` ID запроса: ${session.errorCorrelationId}`
+      : ''
+    return `Сервер не смог восстановить состояние игры.${trace}`
+  }
+  const trace = session.errorCorrelationId
+    ? ` · ID: ${session.errorCorrelationId}`
+    : ''
+  return `Не удалось продолжить игру. Код ошибки: ${code}${trace}`
 })
 
 const navigation: readonly {
