@@ -117,8 +117,7 @@ public static class DamagePipeline
             request.Source,
             EffectStat.OutgoingDamageMultiplier,
             1,
-            occurredAtUtc,
-            request.Target.ActorId);
+            occurredAtUtc);
         decimal outgoingPhysicalMultiplier = request.Type == DamageType.Physical
             ? EffectEngine.CalculateStat(
                 request.Source,
