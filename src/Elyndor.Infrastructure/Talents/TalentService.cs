@@ -8,6 +8,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
