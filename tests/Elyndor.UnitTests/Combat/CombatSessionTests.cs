@@ -998,6 +998,75 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void GenericAbilityTalentPublishesFromAbilityCompletion()
+    {
+        ResolvedTalentModifiers talents = ResolvedTalentModifiers.Empty with
+        {
+            EventHooks =
+            [
+                new ResolvedTalentEventHook(
+                    "GENERIC_ABILITY_TALENT",
+                    TalentModifierKeys.OnAbilityUsed,
+                    1,
+                    7,
+                    null,
+                    TimeSpan.Zero,
+                    false)
+            ]
+        };
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            talents,
+            playerResource: 0,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("generic-ability-talent", "STRIKE", EnemyId),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.ResourceChanged
+            && item.DefinitionId == "GENERIC_ABILITY_TALENT"
+            && item.Amount == 7);
+    }
+
+    [Fact]
+    public void GenericAutoAttackTalentPublishesWhenAutoAttackStarts()
+    {
+        ResolvedTalentModifiers talents = ResolvedTalentModifiers.Empty with
+        {
+            EventHooks =
+            [
+                new ResolvedTalentEventHook(
+                    "GENERIC_AUTO_ATTACK_TALENT",
+                    TalentModifierKeys.OnAutoAttack,
+                    1,
+                    4,
+                    null,
+                    TimeSpan.Zero,
+                    false)
+            ]
+        };
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            talents,
+            playerResource: 0,
+            canAutoAttack: true);
+
+        session.Handle(new StopAutoAttackCommand("generic-auto-attack-talent-stop"), Now);
+        CombatCommandResult result = session.Handle(
+            new StartAutoAttackCommand("generic-auto-attack-talent"),
+            Now.AddSeconds(1));
+
+        Assert.True(result.Succeeded);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.ResourceChanged
+            && item.DefinitionId == "GENERIC_AUTO_ATTACK_TALENT"
+            && item.Amount == 4);
+    }
+
+    [Fact]
     public async Task ConcurrentDuplicateCommandsMutateSessionOnlyOnce()
     {
         CombatSession session = CreateSession(enemyHp: 10_000);

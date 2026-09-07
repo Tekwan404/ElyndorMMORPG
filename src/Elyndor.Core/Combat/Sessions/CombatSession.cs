@@ -29,6 +29,8 @@ public sealed partial class CombatSession
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilities;
     private readonly Dictionary<Guid, EnemyAiRuntime> _enemyAiRuntimes;
     private readonly ResolvedTalentModifiers _playerTalents;
+    private readonly ResolvedTalentModifiers _genericTalentModifiers;
+    private readonly TalentRuntimeEngine _talentRuntimeEngine;
     private readonly IGameRandom _random;
     private readonly CombatSummonProfile? _summonProfile;
     private DateTimeOffset? _nextSummonAtUtc;
@@ -182,7 +184,14 @@ public sealed partial class CombatSession
         _selectedTargetActorId = _primaryEnemyActorId;
         _abilities = abilities;
         _playerTalents = playerTalents;
+        _genericTalentModifiers = playerTalents with
+        {
+            EventHooks = playerTalents.EventHooks
+                .Where(hook => !IsClassRuntimeTalent(hook.TalentId))
+                .ToArray()
+        };
         _random = random;
+        _talentRuntimeEngine = new(new TalentRuntimeState(player.Actor.ActorId, random));
         _summonProfile = summonProfile;
         if (_summonProfile is not null)
         {
@@ -750,12 +759,17 @@ public sealed partial class CombatSession
             _nextPlayerOffHandAutoAttackAtUtc = _player.OffHandAutoAttack is null
                 ? null
                 : now + InitialOffHandDelay(_player.OffHandAutoAttack);
-            Append(new CombatEvent(
+            CombatEvent autoAttackStarted = new(
                 CombatEventType.AutoAttackStarted,
                 now,
                 _player.Actor.ActorId,
                 SourceActorId: _player.Actor.ActorId,
-                TargetActorId: _enemy.Actor.ActorId));
+                TargetActorId: _enemy.Actor.ActorId);
+            Append(autoAttackStarted);
+            TriggerTalent(
+                TalentModifierKeys.OnAutoAttack,
+                now,
+                ToRuntimeEvent(autoAttackStarted, CombatRuntimeEventKind.AutoAttackStarted));
             AdvanceCore(now);
         }
 
@@ -1417,6 +1431,15 @@ public sealed partial class CombatSession
 
     private void ApplyTalentHooks(CombatEvent combatEvent)
     {
+        if (combatEvent.Type == CombatEventType.AbilityCompleted
+            && combatEvent.SourceActorId == _player.Actor.ActorId)
+        {
+            TriggerTalent(
+                TalentModifierKeys.OnAbilityUsed,
+                combatEvent.OccurredAtUtc,
+                ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.AbilityCompleted));
+        }
+
         if (combatEvent.Type == CombatEventType.DamageDealt
             && combatEvent.TargetActorId == _player.Actor.ActorId
             && combatEvent.Amount > 0)
@@ -1433,7 +1456,8 @@ public sealed partial class CombatSession
                 }
                 TriggerTalent(
                     TalentModifierKeys.OnDamageTaken,
-                    combatEvent.OccurredAtUtc);
+                    combatEvent.OccurredAtUtc,
+                    ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.DamageTaken));
             }
 
             ApplyBerserkerDamageTakenHooks(combatEvent);
@@ -1459,7 +1483,8 @@ public sealed partial class CombatSession
         {
             TriggerTalent(
                 TalentModifierKeys.OnCriticalHit,
-                combatEvent.OccurredAtUtc);
+                combatEvent.OccurredAtUtc,
+                ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.CriticalHit));
             ApplyBerserkerCriticalHooks(combatEvent);
             ApplyPyromancerCriticalHooks(combatEvent);
             ApplyMageCriticalHooks(combatEvent);
@@ -1495,33 +1520,65 @@ public sealed partial class CombatSession
             ApplyArcherHealingHooks(combatEvent);
     }
 
-    private void TriggerTalent(string key, DateTimeOffset now)
+    private void TriggerTalent(
+        string key,
+        DateTimeOffset now,
+        CombatRuntimeEvent? runtimeEvent = null)
     {
-        foreach (ResolvedTalentEventHook hook in _playerTalents.EventHooks.Where(
-                     item => item.Key == key))
+        runtimeEvent ??= CreateRuntimeEvent(key, now);
+        foreach (TalentRuntimeAction action in _talentRuntimeEngine.Publish(
+                     runtimeEvent,
+                     _genericTalentModifiers))
         {
-            if (BerserkerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
-                || PyromancerTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
-                || MageTalentRuntimeCatalog.TryGetEventKey(hook.TalentId, out _)
-                || IsArcher && ArcherTalentRuntimeCatalog.OwnsTalentId(hook.TalentId))
-            {
-                continue;
-            }
-
-            if (_talentInternalCooldowns.TryGetValue(
-                    hook.TalentId,
-                    out DateTimeOffset readyAt)
-                && readyAt > now)
-                continue;
-
-            AddResource(_player.Actor, hook.Value, now, hook.TalentId);
-            if (hook.InternalCooldown > TimeSpan.Zero)
-            {
-                _talentInternalCooldowns[hook.TalentId] =
-                    now + hook.InternalCooldown;
-            }
+            if (action.Kind == TalentRuntimeActionKind.ResourceChange)
+                AddResource(_player.Actor, action.Value, now, action.TalentId);
         }
     }
+
+    private bool IsClassRuntimeTalent(string talentId) =>
+        _player.DefinitionId switch
+        {
+            "WARRIOR" => BerserkerTalentRuntimeCatalog.TryGetEventKey(talentId, out _),
+            "MAGE" => PyromancerTalentRuntimeCatalog.TryGetEventKey(talentId, out _)
+                || MageTalentRuntimeCatalog.TryGetEventKey(talentId, out _),
+            "ARCHER" => ArcherTalentRuntimeCatalog.OwnsTalentId(talentId),
+            _ => false
+        };
+
+    private CombatRuntimeEvent CreateRuntimeEvent(string key, DateTimeOffset now) =>
+        new(
+            key switch
+            {
+                TalentModifierKeys.OnDamageTaken => CombatRuntimeEventKind.DamageTaken,
+                TalentModifierKeys.OnCriticalHit => CombatRuntimeEventKind.CriticalHit,
+                TalentModifierKeys.OnEnemyKilled => CombatRuntimeEventKind.EnemyKilled,
+                TalentModifierKeys.OnAutoAttack => CombatRuntimeEventKind.AutoAttackStarted,
+                TalentModifierKeys.OnAbilityUsed => CombatRuntimeEventKind.AbilityCompleted,
+                TalentModifierKeys.OnHpThreshold => CombatRuntimeEventKind.HpThresholdReached,
+                TalentModifierKeys.OnPartyEvent => CombatRuntimeEventKind.PartyEvent,
+                _ => throw new InvalidOperationException(
+                    $"Talent event key '{key}' is not mapped to a combat runtime event.")
+            },
+            now,
+            _player.Actor.ActorId,
+            TargetActorId: key == TalentModifierKeys.OnDamageTaken
+                ? _player.Actor.ActorId
+                : null,
+            Sequence: Sequence);
+
+    private CombatRuntimeEvent ToRuntimeEvent(
+        CombatEvent combatEvent,
+        CombatRuntimeEventKind kind) =>
+        new(
+            kind,
+            combatEvent.OccurredAtUtc,
+            combatEvent.SourceActorId ?? combatEvent.ActorId,
+            combatEvent.TargetActorId,
+            combatEvent.DefinitionId,
+            Amount: combatEvent.Amount,
+            DamageType: combatEvent.DamageType,
+            IsPeriodic: combatEvent.IsPeriodic,
+            Sequence: Sequence);
 
     private void FinishForDeath(
         CombatEvent death,
