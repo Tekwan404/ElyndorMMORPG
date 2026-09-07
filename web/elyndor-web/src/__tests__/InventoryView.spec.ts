@@ -360,6 +360,7 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     iconId: overrides.iconId ?? null,
     appearanceProfileId: overrides.appearanceProfileId ?? null,
     weaponHandsRequired: overrides.weaponHandsRequired ?? null,
+    hasRandomStats: overrides.hasRandomStats ?? false,
   }
 }
 
