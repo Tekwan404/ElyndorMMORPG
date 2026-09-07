@@ -1007,10 +1007,19 @@ public sealed partial class CombatSession
         };
     }
 
-    private static DateTimeOffset NextEnemyActionAfter(
+    private DateTimeOffset NextEnemyActionAfter(
         CombatParticipantDefinition enemy,
-        DateTimeOffset now) =>
-        now + enemy.AutoAttack.Interval;
+        DateTimeOffset now)
+    {
+        decimal multiplier = EffectEngine.CalculateStat(
+            enemy.Actor,
+            EffectStat.AttackSpeed,
+            1,
+            now);
+        double seconds = enemy.AutoAttack.Interval.TotalSeconds
+            / Math.Max(0.1, (double)multiplier);
+        return now + TimeSpan.FromSeconds(Math.Max(0.05, seconds));
+    }
 
 
     private void ResolveAutoAttack(
