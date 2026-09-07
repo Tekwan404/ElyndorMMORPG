@@ -64,6 +64,53 @@ describe('WorldView', () => {
     expect(wrapper.get('[role="alert"]').text()).toContain('world_encounter_unavailable')
   })
 
+  it('shows the Broodmother contract in the lair and accepts it explicitly', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot('WHISPERING_FOREST')
+    session.snapshot.character!.level = 14
+    session.snapshot.world!.currentLocation = {
+      id: 'BROODMOTHER_LAIR',
+      displayName: 'Логово Прародительницы',
+      dangerLevel: 'DANGEROUS',
+      recommendedLevel: 14,
+      minimumLevel: 14,
+      maximumLevel: 14,
+      requiredContractId: null,
+      artId: null,
+      description: 'Логово босса',
+    }
+    session.snapshot.world!.contracts = [
+      {
+        id: 'CONTRACT_BROODMOTHER_GATE',
+        displayName: 'Контракт: Прародительница',
+        description: 'Уничтожьте Паучью Прародительницу.',
+        requiredLevel: 14,
+        targetMonsterId: 'SPIDER_BROODMOTHER_L14',
+        unlockLocationId: 'BLIGHTED_GROVE',
+        status: 'AVAILABLE',
+        offerLocationId: 'BROODMOTHER_LAIR',
+        rewardXp: 2000,
+        rewardGold: 150,
+      },
+    ]
+    const acceptContract = vi.spyOn(session, 'acceptContract').mockResolvedValue(undefined)
+    const combat = useCombatSessionStore()
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+
+    const wrapper = mount(WorldView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-contract-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('2000 опыта')
+    expect(wrapper.get('[data-contract-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('150 золота')
+    await wrapper.get('[data-accept-contract]').trigger('click')
+    await flushPromises()
+
+    expect(acceptContract).toHaveBeenCalledWith('CONTRACT_BROODMOTHER_GATE')
+  })
+
   it('starts the server-selected encounter immediately after Explore with no confirmation step', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot('WHISPERING_FOREST')
