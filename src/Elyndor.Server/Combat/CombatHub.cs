@@ -12,11 +12,12 @@ namespace Elyndor.Server.Combat;
 [Authorize]
 public sealed class CombatHub(
     CombatApplicationService combat,
-    IContentSnapshotProvider contentProvider) : Hub
+    IContentSnapshotProvider contentProvider,
+    CombatCommandRateLimiter commandRateLimiter) : Hub
 {
     public async Task<CombatUpdateResponse> StartCombat(string encounterId)
     {
-        Guid accountId = GetAccountId();
+        Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
         if (!Guid.TryParse(encounterId, out Guid parsedEncounterId) || parsedEncounterId == Guid.Empty)
@@ -33,7 +34,7 @@ public sealed class CombatHub(
 
     public async Task<CombatUpdateResponse> StartTraining()
     {
-        Guid accountId = GetAccountId();
+        Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
         return CombatContractMapper.ToResponse(
@@ -42,40 +43,40 @@ public sealed class CombatHub(
     }
 
     public Task<CombatUpdateResponse> ResetTraining() => ToResponseAsync(
-        combat.ResetTrainingAsync(GetAccountId(), Context.ConnectionAborted));
+        combat.ResetTrainingAsync(GetCommandAccountId(), Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> UseAbility(
         Guid sessionId,
         string abilityId,
         string commandId) => ToResponseAsync(
             combat.UseAbilityAsync(
-                GetAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted));
+                GetCommandAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> UseConsumable(
         Guid sessionId,
         string itemDefinitionId,
         string commandId) => ToResponseAsync(
             combat.UseConsumableAsync(
-                GetAccountId(), sessionId, commandId, itemDefinitionId, Context.ConnectionAborted));
+                GetCommandAccountId(), sessionId, commandId, itemDefinitionId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> StartAutoAttack(
         Guid sessionId,
         string commandId) => ToResponseAsync(
             combat.StartAutoAttackAsync(
-                GetAccountId(), sessionId, commandId, Context.ConnectionAborted));
+                GetCommandAccountId(), sessionId, commandId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> StopAutoAttack(
         Guid sessionId,
         string commandId) => ToResponseAsync(
             combat.StopAutoAttackAsync(
-                GetAccountId(), sessionId, commandId, Context.ConnectionAborted));
+                GetCommandAccountId(), sessionId, commandId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> SelectTarget(
         Guid sessionId,
         Guid targetActorId,
         string commandId) => ToResponseAsync(
             combat.SelectTargetAsync(
-                GetAccountId(),
+                GetCommandAccountId(),
                 sessionId,
                 commandId,
                 targetActorId,
@@ -96,6 +97,15 @@ public sealed class CombatHub(
 
     private async Task<CombatUpdateResponse> ToResponseAsync(Task<CombatOperationResult> operation) =>
         CombatContractMapper.ToResponse(await operation, contentProvider.GetCurrent().Package);
+
+    private Guid GetCommandAccountId()
+    {
+        Guid accountId = GetAccountId();
+        if (!commandRateLimiter.TryAcquire(accountId))
+            throw new HubException("rate_limited");
+
+        return accountId;
+    }
 
     private Guid GetAccountId() =>
         Guid.TryParse(Context.User?.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId)
