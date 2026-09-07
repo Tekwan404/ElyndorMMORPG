@@ -12,9 +12,11 @@ public sealed partial class CombatSession
 {
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly CombatParticipantDefinition _player;
+    private readonly CombatParticipantDefinition? _companion;
     private readonly List<CombatParticipantDefinition> _enemies;
     private readonly Dictionary<Guid, CombatParticipantDefinition> _enemiesById;
     private readonly CombatRuntimeState _playerRuntime;
+    private readonly CombatRuntimeState? _companionRuntime;
     private readonly Dictionary<Guid, CombatRuntimeState> _enemyRuntimes;
     private readonly Guid _primaryEnemyActorId;
     private Guid _selectedTargetActorId;
@@ -36,6 +38,7 @@ public sealed partial class CombatSession
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset? _nextPlayerMainHandAutoAttackAtUtc;
     private DateTimeOffset? _nextPlayerOffHandAutoAttackAtUtc;
+    private DateTimeOffset? _nextCompanionAutoAttackAtUtc;
     private readonly Dictionary<string, DateTimeOffset> _consumableCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset _lastPlayerResourceRegenAtUtc;
     private bool _playerAutoAttackEnabled;
@@ -52,7 +55,8 @@ public sealed partial class CombatSession
         string contentVersion = "UNVERSIONED",
         string balanceVersion = "UNVERSIONED",
         IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
-        CombatSummonProfile? summonProfile = null)
+        CombatSummonProfile? summonProfile = null,
+        CombatParticipantDefinition? companion = null)
         : this(
             sessionId,
             player,
@@ -65,7 +69,8 @@ public sealed partial class CombatSession
             contentVersion,
             balanceVersion,
             initialPlayerCooldowns,
-            summonProfile)
+            summonProfile,
+            companion)
     {
     }
 
@@ -81,7 +86,8 @@ public sealed partial class CombatSession
         string contentVersion = "UNVERSIONED",
         string balanceVersion = "UNVERSIONED",
         IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
-        CombatSummonProfile? summonProfile = null)
+        CombatSummonProfile? summonProfile = null,
+        CombatParticipantDefinition? companion = null)
         : this(
             sessionId,
             player,
@@ -94,7 +100,8 @@ public sealed partial class CombatSession
             contentVersion,
             balanceVersion,
             initialPlayerCooldowns,
-            summonProfile)
+            summonProfile,
+            companion)
     {
     }
 
@@ -110,7 +117,8 @@ public sealed partial class CombatSession
         string contentVersion = "UNVERSIONED",
         string balanceVersion = "UNVERSIONED",
         IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
-        CombatSummonProfile? summonProfile = null)
+        CombatSummonProfile? summonProfile = null,
+        CombatParticipantDefinition? companion = null)
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -125,14 +133,22 @@ public sealed partial class CombatSession
         if (enemies.Count == 0)
             throw new ArgumentException("CombatSession requires at least one enemy.", nameof(enemies));
         if (player.Kind != CombatActorKind.Player
-            || enemies.Any(enemy => enemy.Kind != CombatActorKind.Monster))
+            || enemies.Any(enemy => enemy.Kind != CombatActorKind.Monster)
+            || companion is not null && companion.Kind != CombatActorKind.Companion)
         {
-            throw new ArgumentException("CombatSession requires one player and monster enemies.");
+            throw new ArgumentException(
+                "CombatSession requires one player, optional companion, and monster enemies.");
         }
         if (enemies.Select(enemy => enemy.Actor.ActorId).Distinct().Count() != enemies.Count)
             throw new ArgumentException("Enemy actor identifiers must be unique.", nameof(enemies));
         if (enemies.Any(enemy => enemy.Actor.ActorId == player.Actor.ActorId))
             throw new ArgumentException("Player and enemy actor identifiers must be unique.", nameof(enemies));
+        if (companion is not null
+            && (companion.Actor.ActorId == player.Actor.ActorId
+                || enemies.Any(enemy => enemy.Actor.ActorId == companion.Actor.ActorId)))
+        {
+            throw new ArgumentException("Companion actor identifier must be unique.", nameof(companion));
+        }
         if (enemyAiProfiles.Count != enemies.Count
             || enemies.Any(enemy =>
                 !enemyAiProfiles.TryGetValue(
@@ -150,6 +166,8 @@ public sealed partial class CombatSession
             ValidateAutoAttack(player.OffHandAutoAttack);
         foreach (CombatParticipantDefinition enemy in enemies)
             ValidateAutoAttack(enemy.AutoAttack);
+        if (companion is not null)
+            ValidateAutoAttack(companion.AutoAttack);
         if (player.ResourceRegenPerSecond < 0)
             throw new ArgumentOutOfRangeException(nameof(player), "Resource regeneration cannot be negative.");
 
@@ -157,6 +175,7 @@ public sealed partial class CombatSession
         ContentVersion = contentVersion;
         BalanceVersion = balanceVersion;
         _player = player;
+        _companion = companion;
         _enemies = enemies.ToList();
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
@@ -188,7 +207,15 @@ public sealed partial class CombatSession
         }
 
         CombatActorState[] enemyActors = _enemies.Select(enemy => enemy.Actor).ToArray();
-        _playerRuntime = CreateRuntime(player.Actor, enemyActors);
+        CombatActorState[] playerKnownActors = companion is null
+            ? enemyActors
+            : enemyActors.Append(companion.Actor).ToArray();
+        _playerRuntime = CreateRuntime(player.Actor, playerKnownActors);
+        _companionRuntime = companion is null
+            ? null
+            : CreateRuntime(
+                companion.Actor,
+                new[] { player.Actor }.Concat(enemyActors));
         if (initialPlayerCooldowns is not null)
         {
             foreach ((string abilityId, DateTimeOffset readyAtUtc) in initialPlayerCooldowns)
@@ -201,8 +228,9 @@ public sealed partial class CombatSession
             enemy => enemy.Actor.ActorId,
             enemy => CreateRuntime(
                 enemy.Actor,
-                new[] { player.Actor }.Concat(
-                    enemyActors.Where(actor => actor.ActorId != enemy.Actor.ActorId))));
+                new[] { player.Actor }
+                    .Concat(companion is null ? [] : new[] { companion.Actor })
+                    .Concat(enemyActors.Where(actor => actor.ActorId != enemy.Actor.ActorId))));
         _enemyAiRuntimes = _enemies.ToDictionary(
             enemy => enemy.Actor.ActorId,
             enemy => new EnemyAiRuntime(
@@ -221,6 +249,9 @@ public sealed partial class CombatSession
             && player.OffHandAutoAttack is not null
                 ? startedAtUtc + InitialOffHandDelay(player.OffHandAutoAttack)
                 : null;
+        _nextCompanionAutoAttackAtUtc = companion is not null && companion.CanAutoAttack
+            ? startedAtUtc + companion.AutoAttack.Interval
+            : null;
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
             startedAtUtc,
@@ -237,6 +268,7 @@ public sealed partial class CombatSession
     public CombatSessionStatus Status { get; private set; }
     public DateTimeOffset CurrentTimeUtc { get; private set; }
     public Guid PlayerActorId => _player.Actor.ActorId;
+    public Guid? CompanionActorId => _companion?.Actor.ActorId;
     public Guid EnemyActorId => _selectedTargetActorId;
     public Guid SelectedTargetActorId => _selectedTargetActorId;
     public IReadOnlyList<Guid> EnemyActorIds => _enemies.Select(enemy => enemy.Actor.ActorId).ToArray();
