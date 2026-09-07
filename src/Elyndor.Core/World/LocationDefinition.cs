@@ -15,4 +15,5 @@ public sealed record LocationDefinition(
     int MaximumLevel = 60,
     string? RequiredContractId = null,
     string? ArtId = null,
-    string Description = "");
+    string Description = "",
+    decimal TravelDurationSeconds = 5);
