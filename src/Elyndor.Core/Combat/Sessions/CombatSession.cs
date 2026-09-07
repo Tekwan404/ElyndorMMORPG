@@ -1169,12 +1169,16 @@ public sealed partial class CombatSession
                 _random)
             + attackPower * source.AutoAttack.AttackPowerCoefficient
             + spellPower * source.AutoAttack.SpellPowerCoefficient;
+        decimal archerCompanionMultiplier = source.Kind == CombatActorKind.Companion
+            ? ResolveArcherCompanionDamageMultiplier(target.Actor, now)
+            : 1;
         DamageResult damage = DamagePipeline.Resolve(
             new DamageRequest(
                 source.Actor,
                 target.Actor,
                 baseDamage,
-                source.AutoAttack.DamageType),
+                source.AutoAttack.DamageType,
+                DamageMultiplier: archerCompanionMultiplier),
             _random,
             now);
         ApplyKernelEvents(
