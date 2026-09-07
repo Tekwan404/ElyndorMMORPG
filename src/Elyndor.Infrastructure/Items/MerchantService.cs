@@ -7,6 +7,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.World;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -513,10 +514,23 @@ public sealed class MerchantService(
     private async Task<bool> IsAtMerchantLocationAsync(
         Guid characterId,
         MerchantDefinition merchant,
-        CancellationToken cancellationToken) =>
-        await dbContext.CharacterLocations.AsNoTracking().AnyAsync(
-            location => location.CharacterId == characterId && location.LocationId == merchant.LocationId,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        if (await TravelPersistence.IsTravellingAsync(
+                dbContext,
+                characterId,
+                now,
+                cancellationToken))
+        {
+            return false;
+        }
+
+        return await dbContext.CharacterLocations.AsNoTracking().AnyAsync(
+            location => location.CharacterId == characterId
+                && location.LocationId == merchant.LocationId,
             cancellationToken);
+    }
 
     private MerchantDefinition? FindMerchant(string merchantId) =>
         contentProvider.GetCurrent().Indexes.MerchantsById.GetValueOrDefault(merchantId);
