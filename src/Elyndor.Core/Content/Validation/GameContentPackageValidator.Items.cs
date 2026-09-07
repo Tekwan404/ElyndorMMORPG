@@ -32,14 +32,7 @@ public static partial class GameContentPackageValidator
                     "Level progression contains values outside its valid range."));
             }
 
-            if (package.InventoryProfile is null)
-            {
-                errors.Add(new(
-                    "MISSING_INVENTORY_PROFILE",
-                    "inventoryProfile",
-                    "Item content requires an inventory capacity profile."));
-            }
-            else if (package.InventoryProfile.DefaultCapacity <= 0)
+            if (package.InventoryProfile is { DefaultCapacity: <= 0 })
             {
                 errors.Add(new(
                     "INVALID_INVENTORY_PROFILE",
