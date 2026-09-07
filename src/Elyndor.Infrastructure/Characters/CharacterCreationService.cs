@@ -46,7 +46,6 @@ public sealed class CharacterCreationService(
     private const string AccountConstraint = "uq_characters_account_id";
     private const string CreationRequestConstraint = "uq_characters_creation_request_id";
     private const string NormalizedNameConstraint = "uq_characters_normalized_name";
-    private const string InitialLocationId = "STARTER_TOWN";
 
     private readonly GameDbContext _dbContext =
         dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -156,7 +155,7 @@ public sealed class CharacterCreationService(
             command.GenderId,
             command.ClassId,
             now);
-        CharacterLocation location = new(character.Id, InitialLocationId, 1, now);
+        CharacterLocation location = new(character.Id, WorldLocationIds.StarterTown, 1, now);
         CharacterDerivedState derived = await _derivedStateService.ResolveAsync(
             character.Id,
             command.ClassId,
