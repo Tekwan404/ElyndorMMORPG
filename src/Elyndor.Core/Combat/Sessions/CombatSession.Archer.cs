@@ -37,6 +37,8 @@ public sealed partial class CombatSession
     private const string SpiritFlowEffectId = "ARCHER_SPIRIT_FLOW";
     private const string SpiritGuardShieldEffectId = "ARCHER_SPIRIT_GUARD_SHIELD";
     private const string PetSilenceImmunityEffectId = "ARCHER_PET_SILENCE_IMMUNITY";
+    private const string PetControlRecoveryAttackSpeedEffectId = "ARCHER_PET_CONTROL_RECOVERY_AS";
+    private const string PetControlRecoveryDamageEffectId = "ARCHER_PET_CONTROL_RECOVERY_DAMAGE";
 
     private int _archerShotSequence;
     private int _markedShotSequence;
@@ -45,6 +47,7 @@ public sealed partial class CombatSession
     private DateTimeOffset? _lastOwnerHitAtUtc;
     private Guid? _lastCompanionHitTargetId;
     private DateTimeOffset? _lastCompanionHitAtUtc;
+    private bool _companionWasControlled;
 
     private bool IsArcher =>
         string.Equals(_player.DefinitionId, "ARCHER", StringComparison.Ordinal);
@@ -772,7 +775,11 @@ public sealed partial class CombatSession
         switch (CompanionArchetype)
         {
             case "PREDATOR":
-                ResolveCompanionExtraAttack(target, 1.50m, "COMMAND_ATTACK", now);
+                ResolveCompanionExtraAttack(
+                    target,
+                    1.50m * ResolvePhysicalCompanionAbilityDamageMultiplier(),
+                    "COMMAND_ATTACK",
+                    now);
                 break;
 
             case "GUARDIAN":
@@ -886,9 +893,11 @@ public sealed partial class CombatSession
         if (_companion is null || _companion.Actor.IsDead)
             return;
 
-        if (!HasArcherEffect(_companion.Actor, PetSilenceImmunityEffectId, now))
-            RemoveTalentEffects(
-                EffectEngine.RemoveByKind(_companion.Actor, EffectKind.Silence, now));
+        RemoveTalentEffects(
+            EffectEngine.RemoveByKind(
+                _companion.Actor,
+                EffectKind.Silence,
+                now));
 
         ActiveEffect? negative = _companion.Actor.ActiveEffects
             .Where(effect => effect.ExpiresAtUtc > now)
@@ -902,6 +911,8 @@ public sealed partial class CombatSession
                     _companion.Actor,
                     negative.Definition.Id,
                     now));
+
+        SyncCompanionControlRecovery(now);
     }
 
     private void ApplyArcherCriticalHooks(CombatEvent combatEvent)
@@ -1253,6 +1264,9 @@ public sealed partial class CombatSession
         if (!IsArcher)
             return;
 
+        SyncCompanionSilenceImmunity(now);
+        SyncCompanionControlRecovery(now);
+
         if (_companion is not null && !_companion.Actor.IsDead
             && IsSpiritCompanion
             && TryGetArcherHook("A-4-4", out ResolvedTalentEventHook defense))
@@ -1284,6 +1298,81 @@ public sealed partial class CombatSession
         {
             RemoveArcherEffect(_player.Actor, GuardianBarrierEffectId + "_PASSIVE", now);
         }
+    }
+
+    private void SyncCompanionSilenceImmunity(DateTimeOffset now)
+    {
+        if (_companion is null
+            || _companion.Actor.IsDead
+            || !HasArcherEffect(
+                _companion.Actor,
+                PetSilenceImmunityEffectId,
+                now))
+        {
+            return;
+        }
+
+        RemoveTalentEffects(
+            EffectEngine.RemoveByKind(
+                _companion.Actor,
+                EffectKind.Silence,
+                now));
+    }
+
+    private void SyncCompanionControlRecovery(DateTimeOffset now)
+    {
+        if (_companion is null
+            || _companion.Actor.IsDead
+            || !IsPhysicalCompanion)
+        {
+            _companionWasControlled = false;
+            return;
+        }
+
+        bool controlled =
+            EffectEngine.HasControl(
+                _companion.Actor,
+                EffectKind.Stun,
+                now)
+            || EffectEngine.HasControl(
+                _companion.Actor,
+                EffectKind.Silence,
+                now);
+
+        if (_companionWasControlled
+            && !controlled
+            && TryGetArcherHook(
+                "B-6-4",
+                out ResolvedTalentEventHook recovery))
+        {
+            ApplyCompanionMultiplier(
+                PetControlRecoveryAttackSpeedEffectId,
+                EffectStat.AttackSpeed,
+                1 + recovery.Value / 100m,
+                recovery.Duration,
+                now);
+            ApplyCompanionMultiplier(
+                PetControlRecoveryDamageEffectId,
+                EffectStat.OutgoingDamageMultiplier,
+                1 + recovery.SecondaryValue / 100m,
+                recovery.Duration,
+                now);
+        }
+
+        _companionWasControlled = controlled;
+    }
+
+    private decimal ResolvePhysicalCompanionAbilityDamageMultiplier()
+    {
+        if (!IsPhysicalCompanion
+            || !TryGetArcherHook(
+                "B-3-4",
+                out ResolvedTalentEventHook training))
+        {
+            return 1;
+        }
+
+        return 1 + training.Value / 100m;
     }
 
     private decimal EffectiveArcherResourceRegenPerSecond(
