@@ -22,6 +22,8 @@ public sealed record CharacterDerivedState(
     IReadOnlyList<string> KnownAbilityIds)
 {
     public CharacterStats Stats => StatCalculation.Stats;
+    public string EffectivePrimaryAttribute =>
+        TalentModifiers.Profiles.PrimaryAttribute ?? ClassProfile.PrimaryAttribute;
     public CompanionProfileDefinition? ActiveCompanionProfile { get; init; }
 }
 
