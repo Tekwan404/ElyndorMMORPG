@@ -79,6 +79,9 @@ public static partial class GameContentPackageValidator
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true
+                    || ability.RuntimeParameters?.Any(parameter =>
+                        string.IsNullOrWhiteSpace(parameter.Key)
+                        || parameter.Value < 0) == true
                     || string.IsNullOrWhiteSpace(ability.School))
                 {
                     errors.Add(new ContentValidationError(
