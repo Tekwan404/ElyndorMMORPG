@@ -38,14 +38,14 @@ describe('MerchantShop', () => {
     expect(wrapper.get('.merchant__wallet').text()).toContain('80')
   })
 
-  it('excludes protected materials from sell actions', async () => {
+  it('excludes protected items from sell actions and sells through the generic merchant action', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([
       material('OPEN_HIDE', 'Шкура волка', false),
       material('LOCKED_HIDE', 'Защищённая шкура', true),
     ])
     vi.spyOn(session, 'getMerchant').mockResolvedValue(merchantSnapshot())
-    const sell = vi.spyOn(session, 'sellMerchantMaterial').mockResolvedValue(merchantSnapshot())
+    const sell = vi.spyOn(session, 'sellMerchantItem').mockResolvedValue(merchantSnapshot())
 
     const wrapper = mount(MerchantShop, {
       props: { open: false },
@@ -58,7 +58,7 @@ describe('MerchantShop', () => {
 
     expect(wrapper.find('[data-sell-item="OPEN_HIDE"]').exists()).toBe(true)
     expect(wrapper.find('[data-sell-item="LOCKED_HIDE"]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Защищённые материалы скрыты из продажи: 1')
+    expect(wrapper.text()).toContain('Защищённые предметы скрыты из продажи: 1')
 
     const buttons = wrapper.get('[data-sell-item="OPEN_HIDE"]').findAll('button')
     await buttons[0]!.trigger('click')
