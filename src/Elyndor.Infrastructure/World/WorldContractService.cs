@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
+using Elyndor.Core.Quests;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -105,6 +106,18 @@ public sealed class WorldContractService(
              ON CONFLICT ("CharacterId", "ContractId") DO NOTHING
              """,
             cancellationToken);
+
+        bool hasQuestState = await dbContext.CharacterQuestStates
+            .AnyAsync(
+                state => state.CharacterId == character.Id
+                    && state.QuestId == contract.Id,
+                cancellationToken);
+        if (!hasQuestState)
+        {
+            dbContext.CharacterQuestStates.Add(
+                new CharacterQuestState(character.Id, contract.Id, now));
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return WorldContractAcceptResult.Success(contract.Id);
     }
