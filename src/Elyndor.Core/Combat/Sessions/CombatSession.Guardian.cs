@@ -409,7 +409,10 @@ public sealed partial class CombatSession
         1 + (GetGuardianHook("G-8-3")?.Value ?? 0) / 100m;
 
     private decimal GuardianThreatMultiplier =>
-        1 + (GetGuardianHook("G-5-2")?.Value ?? 0) / 100m
+        1 + (GetGuardianHook("G-5-2")?.Value ?? 0) / 100m;
+
+    private decimal GuardianAutoAttackThreatMultiplier =>
+        GuardianThreatMultiplier
         + (GetGuardianHook("G-1-4")?.Value ?? 0) / 100m;
 
     private decimal? GetGuardianHookValue(string talentId) =>

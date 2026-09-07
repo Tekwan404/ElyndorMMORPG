@@ -1500,7 +1500,9 @@ public sealed partial class CombatSession
                 threatSource,
                 combatEvent.Amount,
                 threatSource == _player.Actor.ActorId
-                    ? GuardianThreatMultiplier
+                    ? combatEvent.DefinitionId == "AUTO_ATTACK"
+                        ? GuardianAutoAttackThreatMultiplier
+                        : GuardianThreatMultiplier
                     : 1);
         }
 
@@ -1523,6 +1525,41 @@ public sealed partial class CombatSession
                     tauntSource,
                     extraThreat,
                     GuardianThreatMultiplier);
+            }
+            if (tauntSource == _player.Actor.ActorId
+                && GetGuardianHookValue("G-2-2") is { } threatReduction
+                && _companion is not null)
+            {
+                _enemyThreatTables[tauntTarget].AddThreat(
+                    _companion.Actor.ActorId,
+                    -_enemyThreatTables[tauntTarget].GetThreat(_companion.Actor.ActorId)
+                        * threatReduction / 100m);
+            }
+            if (tauntSource == _player.Actor.ActorId
+                && GetGuardianHookValue("G-9-1") is not null
+                && _companion is not null
+                && _enemiesById.TryGetValue(
+                    tauntTarget,
+                    out CombatParticipantDefinition? tauntedEnemy))
+            {
+                ApplyKernelEvents(
+                    EffectEngine.Apply(
+                        tauntedEnemy.Actor,
+                        _companion.Actor.ActorId,
+                        new EffectDefinition(
+                            "GUARDIAN_PROVOKE_ALLY_REDUCTION",
+                            EffectKind.StatModifier,
+                            TimeSpan.FromSeconds(4),
+                            1,
+                            EffectStackPolicy.Replace,
+                            0.85m,
+                            SourceSpecific: true,
+                            ModifiedStat: EffectStat.OutgoingDamageMultiplier,
+                            ModifierMode: EffectModifierMode.Multiplicative),
+                        combatEvent.OccurredAtUtc),
+                    _player.Actor.ActorId,
+                    tauntedEnemy.Actor.ActorId,
+                    "GUARDIAN_PROVOKE_ALLY_REDUCTION");
             }
         }
 

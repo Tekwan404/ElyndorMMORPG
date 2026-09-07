@@ -9,7 +9,9 @@ public static class TalentRuntimeAvailability
         || BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
         || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
         || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-        || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+        || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+        || GuardianTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+        || WarlordTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
 
     public static bool IsNodeFullySupported(TalentDefinition node) =>
         (node.Modifiers ?? []).All(modifier =>
