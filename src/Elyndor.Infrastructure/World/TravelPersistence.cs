@@ -53,8 +53,7 @@ public static class TravelPersistence
         {
             CharacterTravelState? travel = await dbContext.CharacterTravelStates
                 .FromSqlInterpolated(
-                    $"SELECT * FROM game.character_travel_states "
-                    + $"WHERE \"CharacterId\" = {characterId} FOR UPDATE")
+                    $"SELECT * FROM game.character_travel_states WHERE \"CharacterId\" = {characterId} FOR UPDATE")
                 .SingleOrDefaultAsync(cancellationToken);
             if (travel is null || travel.EndsAtUtc > now)
             {
@@ -105,4 +104,5 @@ public static class TravelPersistence
             if (ownedTransaction is not null)
                 await ownedTransaction.DisposeAsync();
         }
-    }}
+    }
+}
