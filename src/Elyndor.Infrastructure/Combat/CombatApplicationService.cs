@@ -16,7 +16,8 @@ public sealed class CombatApplicationService(
     WorldEncounterRegistry encounterRegistry,
     IContentSnapshotProvider contentProvider,
     InventoryEquipmentService inventoryService,
-    CharacterOperationGuard operationGuard)
+    CharacterOperationGuard operationGuard,
+    CombatDurabilityService? durability = null)
 {
     public CombatApplicationService(
         CombatSessionFactory factory,
@@ -31,7 +32,8 @@ public sealed class CombatApplicationService(
             encounterRegistry,
             new StaticContentSnapshotProvider(content),
             inventoryService,
-            operationGuard)
+            operationGuard,
+            null)
     {
     }
 
@@ -179,11 +181,20 @@ public sealed class CombatApplicationService(
                         []);
                 }
 
-                string? inventoryError = await inventoryService.ConsumeOneForCombatAsync(
-                    accountId,
-                    itemDefinitionId,
-                    contentSnapshot,
-                    cancellationToken);
+                string? inventoryError = durability is null
+                    ? await inventoryService.ConsumeOneForCombatAsync(
+                        accountId,
+                        itemDefinitionId,
+                        contentSnapshot,
+                        cancellationToken)
+                    : await durability.ReserveConsumableAsync(
+                        accountId,
+                        sessionId,
+                        commandId,
+                        itemDefinitionId,
+                        contentSnapshot,
+                        now,
+                        cancellationToken);
                 if (inventoryError is not null)
                 {
                     return new CombatCommandResult(
@@ -193,14 +204,38 @@ public sealed class CombatApplicationService(
                         []);
                 }
 
-                return session.Handle(
-                    new UseConsumableCommand(
-                        commandId,
-                        definition.Id,
-                        actions,
-                        definition.ConsumableCooldownCategoryId,
-                        cooldown),
-                    now);
+                try
+                {
+                    CombatCommandResult applied = session.Handle(
+                        new UseConsumableCommand(
+                            commandId,
+                            definition.Id,
+                            actions,
+                            definition.ConsumableCooldownCategoryId,
+                            cooldown),
+                        now);
+                    if (!applied.Succeeded && durability is not null)
+                    {
+                        await durability.RollbackConsumableAsync(
+                            sessionId,
+                            commandId,
+                            cancellationToken);
+                    }
+
+                    return applied;
+                }
+                catch
+                {
+                    if (durability is not null)
+                    {
+                        await durability.RollbackConsumableAsync(
+                            sessionId,
+                            commandId,
+                            cancellationToken);
+                    }
+
+                    throw;
+                }
             }, cancellationToken);
 
     public Task<CombatOperationResult> StartAutoAttackAsync(
@@ -286,12 +321,36 @@ public sealed class CombatApplicationService(
             cancellationToken);
         if (!created.Succeeded)
             return CombatOperationResult.Failure(created.ErrorCode!);
+
+        bool isTraining = string.Equals(
+            monsterId,
+            CombatSessionFactory.TrainingDummyId,
+            StringComparison.Ordinal);
+        if (!isTraining
+            && durability is not null
+            && !await durability.BeginAsync(
+                created.CharacterId,
+                created.Session!.Snapshot(),
+                cancellationToken))
+        {
+            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+        }
+
         if (!registry.TryAdd(
                 accountId,
                 created.CharacterId,
                 created.Session!,
                 created.ContentSnapshot))
+        {
+            if (!isTraining && durability is not null)
+            {
+                await durability.CompleteAsync(
+                    created.Session!.SessionId,
+                    cancellationToken);
+            }
             return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+        }
+
         return CombatOperationResult.FromSnapshot(
             created.Session!.Snapshot(),
             created.ContentSnapshot) with

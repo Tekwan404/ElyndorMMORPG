@@ -309,6 +309,63 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Items.PendingLootItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DefinitionVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RewardResolutionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("RolledAgility")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledIntellect")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledStamina")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("RolledStrength")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id")
+                        .HasName("pk_pending_loot_items");
+
+                    b.HasIndex("RewardResolutionId")
+                        .HasDatabaseName("ix_pending_loot_items_reward_resolution_id");
+
+                    b.HasIndex("CharacterId", "CreatedAtUtc")
+                        .HasDatabaseName("ix_pending_loot_items_character_created_at");
+
+                    b.ToTable("pending_loot_items", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_pending_loot_items_quantity_positive", "\"Quantity\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.Property<Guid>("CombatSessionId")
@@ -409,6 +466,81 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BalanceVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SessionId")
+                        .HasName("pk_active_combat_sessions");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_active_combat_sessions_character_id");
+
+                    b.HasIndex("StartedAtUtc")
+                        .HasDatabaseName("ix_active_combat_sessions_started_at_utc");
+
+                    b.ToTable("active_combat_sessions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommandId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DefinitionVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("MaxStack")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SessionId", "CommandId")
+                        .HasName("pk_combat_consumable_uses");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("ix_combat_consumable_uses_character_id");
+
+                    b.ToTable("combat_consumable_uses", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_combat_consumable_uses_definition_version", "\"DefinitionVersion\" > 0");
+
+                            t.HasCheckConstraint("ck_combat_consumable_uses_max_stack", "\"MaxStack\" >= 2");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -498,6 +630,46 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasName("pk_character_locations");
 
                     b.ToTable("character_locations", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.CharacterTravelState", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FromLocationId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TargetLocationId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("CharacterId")
+                        .HasName("pk_character_travel_states");
+
+                    b.HasIndex("EndsAtUtc")
+                        .HasDatabaseName("ix_character_travel_states_ends_at_utc");
+
+                    b.HasIndex("CharacterId", "RequestId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_character_travel_states_character_request");
+
+                    b.ToTable("character_travel_states", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_character_travel_states_duration", "\"EndsAtUtc\" > \"StartedAtUtc\"");
+                        });
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.TravelOperation", b =>
@@ -745,6 +917,16 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_character_items_characters_character_id");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Items.PendingLootItem", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_pending_loot_items_characters_character_id");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -763,6 +945,26 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_talent_states_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithOne()
+                        .HasForeignKey("Elyndor.Core.Combat.ActiveCombatSession", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_active_combat_sessions_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
+                {
+                    b.HasOne("Elyndor.Core.Combat.ActiveCombatSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_combat_consumable_uses_active_combat_session_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
@@ -803,6 +1005,16 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_locations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.CharacterTravelState", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithOne()
+                        .HasForeignKey("Elyndor.Core.World.CharacterTravelState", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_travel_states_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.TravelOperation", b =>

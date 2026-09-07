@@ -62,6 +62,53 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task FullInventoryRejectsPurchaseWithoutSpendingGold()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            for (var index = 0; index < 40; index++)
+            {
+                setup.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    "RECRUIT_IRON_SWORD",
+                    1,
+                    Now));
+            }
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        MerchantOperationResult result = await service.BuyAsync(
+            accountId,
+            MerchantId,
+            PotionId,
+            1,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(MerchantErrorCodes.InventoryFull, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            100,
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+        Assert.Equal(
+            40,
+            await InventoryCapacity.CountUsedSlotsAsync(
+                verify,
+                characterId,
+                CancellationToken.None));
+        Assert.Empty(await verify.CharacterMutations.ToArrayAsync());
+    }
+
+    [Fact]
     public async Task ConcurrentBuysCannotOverspendGold()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(20);

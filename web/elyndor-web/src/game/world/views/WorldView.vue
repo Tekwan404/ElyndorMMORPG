@@ -21,10 +21,14 @@ let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
 
 const world = computed(() => session.snapshot?.world)
+const activeTravel = computed(() => world.value?.travel ?? null)
+const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
-const canExplore = computed(() => world.value?.currentLocation.dangerLevel !== 'SAFE')
+const canExplore = computed(() =>
+  !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
+)
 const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
   contract.offerLocationId === currentLocationId.value
   || contract.status === 'ACTIVE'
@@ -65,7 +69,7 @@ const worldErrorMessage = computed(() => {
 })
 const recoveryMessage = computed(() => {
   const vitals = character.value?.vitals
-  if (!vitals || combat.isActive) return null
+  if (!vitals || combat.isActive || isTravelling.value) return null
   if (isStarterTown.value && vitals.currentHp < vitals.maxHp) return 'Отдых в городе: здоровье восстанавливается по 5 ед. в секунду.'
   if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) return 'После боя ярость постепенно угасает.'
   return null
@@ -78,7 +82,7 @@ const needsOutOfCombatRefresh = computed(() => {
 })
 
 async function acceptContract(contractId: string): Promise<void> {
-  if (session.mutationPending || combat.isActive) return
+  if (isTravelling.value || session.mutationPending || combat.isActive) return
   await session.acceptContract(contractId)
 }
 
@@ -103,7 +107,7 @@ async function explore(): Promise<void> {
 }
 
 async function startTraining(): Promise<void> {
-  if (!isStarterTown.value || combat.pending) return
+  if (isTravelling.value || !isStarterTown.value || combat.pending) return
   if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
     lastCombatResult.value = null
@@ -134,6 +138,10 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
     vitalsRefreshTimer = null
   }
 }
+
+watch(isTravelling, travelling => {
+  if (travelling) merchantOpen.value = false
+})
 
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
@@ -194,6 +202,16 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       <UIButton v-if="canExplore" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
     </UICard>
 
+    <UIToast
+      v-if="activeTravel"
+      tone="info"
+      title="Герой в пути"
+      data-location-travel
+    >
+      Путешествие к {{ activeTravel.targetLocationId }} уже началось. Боевые,
+      торговые и контрактные действия станут доступны после прибытия.
+    </UIToast>
+
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
@@ -252,7 +270,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           v-if="contract.status === 'AVAILABLE'"
           data-accept-contract
           :loading="session.mutationPending"
-          :disabled="session.mutationPending"
+          :disabled="isTravelling || session.mutationPending"
           @click="acceptContract(contract.id)"
         >
           Взять контракт
@@ -286,7 +304,14 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
             <strong>Манекен</strong>
             <p>Проверьте билд и ротацию без риска, зелий и наград.</p>
           </div>
-          <UIButton data-start-training :loading="combat.pending" @click="startTraining">Тренироваться</UIButton>
+          <UIButton
+            data-start-training
+            :disabled="isTravelling"
+            :loading="combat.pending"
+            @click="startTraining"
+          >
+            {{ isTravelling ? 'В пути' : 'Тренироваться' }}
+          </UIButton>
         </article>
 
         <article class="service-card service-card--merchant" data-town-service="merchant">
@@ -296,7 +321,13 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
             <strong>Маркус</strong>
             <p>Припасы, лечебные зелья и продажа добытых материалов.</p>
           </div>
-          <UIButton data-open-merchant @click="merchantOpen = true">Торговать</UIButton>
+          <UIButton
+            data-open-merchant
+            :disabled="isTravelling"
+            @click="merchantOpen = true"
+          >
+            {{ isTravelling ? 'В пути' : 'Торговать' }}
+          </UIButton>
         </article>
 
         <article class="service-card service-card--rest" data-town-service="rest">

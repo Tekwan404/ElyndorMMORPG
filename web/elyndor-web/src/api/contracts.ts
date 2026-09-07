@@ -98,6 +98,7 @@ export interface WorldLocation {
   requiredContractId: string | null
   artId: string | null
   description: string
+  travelDurationSeconds?: number
 }
 
 export interface WorldContract {
@@ -303,6 +304,13 @@ export interface CharacterVitals {
   checkpointedAtUtc: string
 }
 
+export interface BootstrapTravel {
+  fromLocationId: string
+  targetLocationId: string
+  startedAtUtc: string
+  endsAtUtc: string
+}
+
 export interface BootstrapSnapshot {
   accountId: string
   character: CharacterSnapshot | null
@@ -311,6 +319,7 @@ export interface BootstrapSnapshot {
     version: number
     outgoingTransitions: WorldLocation[]
     contracts: WorldContract[]
+    travel?: BootstrapTravel | null
   } | null
   contentVersion: string
   balanceVersion: string
@@ -328,6 +337,9 @@ export interface CreateCharacterRequest {
 export interface TravelResponse {
   locationId: string
   version: number
+  isTravelling?: boolean
+  targetLocationId?: string | null
+  endsAtUtc?: string | null
 }
 
 export type TalentLoadoutId = 'LOADOUT_1' | 'LOADOUT_2'

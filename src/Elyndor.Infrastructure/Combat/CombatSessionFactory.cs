@@ -83,6 +83,7 @@ public sealed class CombatSessionFactory(
             return Failure(CombatErrorCodes.UnsupportedMonster, character.Id);
 
         if (bootstrap.World is null
+            || bootstrap.World.Travel is not null
             || !string.Equals(
                 bootstrap.World.CurrentLocation.Id,
                 expectedLocationId,

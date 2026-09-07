@@ -88,6 +88,7 @@ public static class TalentErrorCodes
     public const string Conflict = "talent_state_conflict";
     public const string InvalidMutationId = "talent_invalid_mutation_id";
     public const string MutationConflict = "talent_mutation_conflict";
+    public const string InventoryFull = "talent_inventory_full";
 }
 
 public sealed record TalentLearnResult(

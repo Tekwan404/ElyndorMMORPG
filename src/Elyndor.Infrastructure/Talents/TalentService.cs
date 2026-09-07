@@ -8,6 +8,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -88,6 +89,18 @@ public sealed class TalentService(
                     return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
 
                 IReadOnlyDictionary<string, int> ranks = snapshot.State.GetRanks(loadoutId);
+                TalentDefinition? targetTalent = snapshot.Tree.Nodes.SingleOrDefault(node =>
+                    string.Equals(node.Id, talentId, StringComparison.Ordinal));
+                if (targetTalent is not null
+                    && !TalentRuntimeAvailability.IsNodeFullySupported(targetTalent))
+                {
+                    return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
+                }
+                if (ContainsUnavailableRuntimeTalent(snapshot.Tree, ranks))
+                {
+                    return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
+                }
+
                 TalentLearnResult learned = TalentRules.TryLearn(
                     snapshot.Tree,
                     snapshot.Character.Level,
@@ -134,10 +147,13 @@ public sealed class TalentService(
                     return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
                 if (snapshot.State.StateVersion != expectedStateVersion)
                     return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
+                IReadOnlyDictionary<string, int> targetRanks =
+                    snapshot.State.GetRanks(loadoutId);
                 if (TalentRules.ValidateBuild(
                         snapshot.Tree,
                         snapshot.Character.Level,
-                        snapshot.State.GetRanks(loadoutId)).Count > 0)
+                        targetRanks).Count > 0
+                    || ContainsUnavailableRuntimeTalent(snapshot.Tree, targetRanks))
                 {
                     return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
                 }
@@ -149,11 +165,15 @@ public sealed class TalentService(
                     cancellationToken);
                 DateTimeOffset now = timeProvider.GetUtcNow();
                 snapshot.State.SwitchLoadout(loadoutId, now, mutationId);
-                await NormalizeEquipmentPermissionsAsync(
-                    snapshot.Character,
-                    snapshot.Tree,
-                    snapshot.State,
-                    cancellationToken);
+                if (!await NormalizeEquipmentPermissionsAsync(
+                        snapshot.Character,
+                        snapshot.Tree,
+                        snapshot.State,
+                        cancellationToken))
+                {
+                    return TalentOperationResult.Failure(
+                        TalentErrorCodes.InventoryFull);
+                }
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
                     oldDerivedState,
@@ -198,11 +218,15 @@ public sealed class TalentService(
                         loadoutId,
                         StringComparison.Ordinal))
                 {
-                    await NormalizeEquipmentPermissionsAsync(
-                        snapshot.Character,
-                        snapshot.Tree,
-                        snapshot.State,
-                        cancellationToken);
+                    if (!await NormalizeEquipmentPermissionsAsync(
+                            snapshot.Character,
+                            snapshot.Tree,
+                            snapshot.State,
+                            cancellationToken))
+                    {
+                        return TalentOperationResult.Failure(
+                            TalentErrorCodes.InventoryFull);
+                    }
                 }
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
@@ -308,7 +332,14 @@ public sealed class TalentService(
         });
     }
 
-    private async Task NormalizeEquipmentPermissionsAsync(
+    private static bool ContainsUnavailableRuntimeTalent(
+        TalentTreeDefinition tree,
+        IReadOnlyDictionary<string, int> ranks) =>
+        tree.Nodes.Any(node =>
+            ranks.GetValueOrDefault(node.Id) > 0
+            && !TalentRuntimeAvailability.IsNodeFullySupported(node));
+
+    private async Task<bool> NormalizeEquipmentPermissionsAsync(
         Character character,
         TalentTreeDefinition tree,
         CharacterTalentState state,
@@ -319,7 +350,7 @@ public sealed class TalentService(
                 state,
                 EquipmentPermissionIds.DualWieldOneHandWeapon))
         {
-            return;
+            return true;
         }
 
         CharacterEquipment? offHand = await dbContext.CharacterEquipment
@@ -327,21 +358,32 @@ public sealed class TalentService(
                 equipment => equipment.CharacterId == character.Id
                     && equipment.Slot == EquipmentSlot.OffHand,
                 cancellationToken);
-        if (offHand is null) return;
+        if (offHand is null) return true;
 
         string? definitionId = await dbContext.CharacterItems
             .Where(item => item.Id == offHand.CharacterItemId
                 && item.CharacterId == character.Id)
             .Select(item => item.ItemDefinitionId)
             .SingleOrDefaultAsync(cancellationToken);
-        if (definitionId is null) return;
+        if (definitionId is null) return true;
 
         GameContentSnapshot content = contentProvider.GetCurrent();
         if (content.Indexes.ItemsById.TryGetValue(definitionId, out ItemDefinition? definition)
             && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory))
         {
+            if (await InventoryCapacity.FreeSlotsAsync(
+                    dbContext,
+                    character.Id,
+                    content,
+                    cancellationToken) < 1)
+            {
+                return false;
+            }
+
             dbContext.CharacterEquipment.Remove(offHand);
         }
+
+        return true;
     }
 
     private async Task SaveWithDerivedVitalsAsync(

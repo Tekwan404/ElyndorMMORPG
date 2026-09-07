@@ -41,8 +41,13 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await page.locator('[data-map-travel]').click()
   await page.getByRole('button', { name: 'Локация' }).click()
-  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
-  await expect(page.locator('[data-travel]')).toHaveCount(0)
+  if (process.env.ELYNDOR_E2E_REAL === 'true') {
+    await expect(page.locator('[data-location-travel]')).toBeVisible()
+  }
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(page.locator('[data-location-travel]')).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Мир' }).click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()

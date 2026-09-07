@@ -121,3 +121,18 @@ public sealed record SellMerchantItemRequest(
     Guid CharacterItemId,
     Guid MutationId,
     int Quantity = 1);
+
+public sealed record PendingLootItemResponse(
+    Guid Id,
+    string DefinitionId,
+    string Name,
+    string Type,
+    string Rarity,
+    int Quantity,
+    DateTimeOffset CreatedAtUtc,
+    ItemStatsResponse Stats);
+
+public sealed record PendingLootResponse(
+    IReadOnlyList<PendingLootItemResponse> Items);
+
+public sealed record ClaimPendingLootRequest(Guid MutationId);

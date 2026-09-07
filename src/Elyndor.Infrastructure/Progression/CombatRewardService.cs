@@ -9,6 +9,7 @@ using Elyndor.Core.Progression;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -172,7 +173,15 @@ public sealed class CombatRewardService(
 
         LootRoll[] loot = AggregateLoot(rolledLoot);
         foreach (LootRoll roll in loot)
-            await AddItemAsync(characterId, roll, now, indexes, cancellationToken);
+        {
+            await AddItemAsync(
+                characterId,
+                snapshot.SessionId,
+                roll,
+                now,
+                contentSnapshot,
+                cancellationToken);
+        }
 
         if (progressionResult.LeveledUp)
         {
@@ -339,28 +348,59 @@ public sealed class CombatRewardService(
 
     private async Task AddItemAsync(
         Guid characterId,
+        Guid rewardResolutionId,
         LootRoll roll,
         DateTimeOffset acquiredAtUtc,
-        GameContentIndexes indexes,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
-        if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
-            throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
+        GameContentIndexes indexes = contentSnapshot.Indexes;
+        if (!indexes.ItemsById.TryGetValue(
+                roll.ItemId,
+                out ItemDefinition? definition))
+        {
+            throw new InvalidOperationException(
+                $"Item '{roll.ItemId}' is missing from game content.");
+        }
 
         if (!definition.Stackable)
         {
+            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+                dbContext,
+                characterId,
+                contentSnapshot,
+                cancellationToken);
             for (var index = 0; index < roll.Quantity; index++)
             {
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
-                    characterId,
-                    definition.Id,
-                    1,
-                    acquiredAtUtc,
-                    definition.Version,
-                    definition.Type == ItemType.Equipment
-                        ? ItemInstanceStatRoller.Resolve(definition, randomFactory.Create())
-                        : null));
+                PrimaryStats? rolledStats = definition.Type == ItemType.Equipment
+                    ? ItemInstanceStatRoller.Resolve(
+                        definition,
+                        randomFactory.Create())
+                    : null;
+                if (freeSlots > 0)
+                {
+                    dbContext.CharacterItems.Add(new CharacterItem(
+                        Guid.NewGuid(),
+                        characterId,
+                        definition.Id,
+                        1,
+                        acquiredAtUtc,
+                        definition.Version,
+                        rolledStats));
+                    freeSlots--;
+                }
+                else
+                {
+                    dbContext.PendingLootItems.Add(new PendingLootItem(
+                        Guid.NewGuid(),
+                        characterId,
+                        rewardResolutionId,
+                        definition.Id,
+                        1,
+                        definition.Version,
+                        acquiredAtUtc,
+                        rolledStats));
+                }
             }
             return;
         }
@@ -384,7 +424,12 @@ public sealed class CombatRewardService(
             remaining -= toAdd;
         }
 
-        while (remaining > 0)
+        int freeStackSlots = await InventoryCapacity.FreeSlotsAsync(
+            dbContext,
+            characterId,
+            contentSnapshot,
+            cancellationToken);
+        while (remaining > 0 && freeStackSlots > 0)
         {
             int quantity = Math.Min(definition.MaxStack, remaining);
             dbContext.CharacterItems.Add(new CharacterItem(
@@ -395,6 +440,19 @@ public sealed class CombatRewardService(
                 acquiredAtUtc,
                 definition.Version));
             remaining -= quantity;
+            freeStackSlots--;
+        }
+
+        if (remaining > 0)
+        {
+            dbContext.PendingLootItems.Add(new PendingLootItem(
+                Guid.NewGuid(),
+                characterId,
+                rewardResolutionId,
+                definition.Id,
+                remaining,
+                definition.Version,
+                acquiredAtUtc));
         }
     }
 

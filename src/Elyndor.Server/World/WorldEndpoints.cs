@@ -80,7 +80,8 @@ public static class WorldEndpoints
                     WorldContractErrorCodes.LevelRequired
                         or WorldContractErrorCodes.InvalidLocation =>
                         StatusCodes.Status403Forbidden,
-                    WorldContractErrorCodes.AlreadyCompleted =>
+                    WorldContractErrorCodes.AlreadyCompleted
+                        or WorldContractErrorCodes.Travelling =>
                         StatusCodes.Status409Conflict,
                     _ => StatusCodes.Status422UnprocessableEntity
                 };
@@ -124,9 +125,14 @@ public static class WorldEndpoints
                         encounter.ArtId));
                 }
 
-                int statusCode = errorCode == WorldEncounterErrorCodes.CharacterNotFound
-                    ? StatusCodes.Status404NotFound
-                    : StatusCodes.Status422UnprocessableEntity;
+                int statusCode = errorCode switch
+                {
+                    WorldEncounterErrorCodes.CharacterNotFound =>
+                        StatusCodes.Status404NotFound,
+                    WorldEncounterErrorCodes.Travelling =>
+                        StatusCodes.Status409Conflict,
+                    _ => StatusCodes.Status422UnprocessableEntity
+                };
                 return Results.Problem(
                     statusCode: statusCode,
                     extensions: new Dictionary<string, object?>
@@ -171,11 +177,16 @@ public static class WorldEndpoints
                 {
                     return Results.Ok(new TravelResponse(
                         result.LocationId!,
-                        result.Version!.Value));
+                        result.Version!.Value,
+                        result.IsTravelling,
+                        result.TargetLocationId,
+                        result.EndsAtUtc));
                 }
 
                 int statusCode = result.ErrorCode is
-                    TravelErrorCodes.Conflict or TravelErrorCodes.IdempotencyConflict
+                    TravelErrorCodes.Conflict
+                        or TravelErrorCodes.IdempotencyConflict
+                        or TravelErrorCodes.InProgress
                         ? StatusCodes.Status409Conflict
                         : result.ErrorCode is TravelErrorCodes.InvalidTransition
                             or TravelErrorCodes.UnknownLocation
@@ -288,7 +299,14 @@ public static class WorldEndpoints
                         contract.Status,
                         contract.OfferLocationId,
                         contract.RewardXp,
-                        contract.RewardGold)).ToArray()),
+                        contract.RewardGold)).ToArray(),
+                    snapshot.World.Travel is null
+                        ? null
+                        : new BootstrapTravelResponse(
+                            snapshot.World.Travel.FromLocationId,
+                            snapshot.World.Travel.TargetLocationId,
+                            snapshot.World.Travel.StartedAtUtc,
+                            snapshot.World.Travel.EndsAtUtc)),
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
             snapshot.ServerTimeUtc);
@@ -303,7 +321,8 @@ public static class WorldEndpoints
             location.MaximumLevel,
             location.RequiredContractId,
             location.ArtId,
-            location.Description);
+            location.Description,
+            location.TravelDurationSeconds);
 
     private static WorldLocationResponse ToLocation(LocationDefinition location) =>
         new(

@@ -18,6 +18,8 @@ const loading = ref(true)
 const catalogError = ref(false)
 
 const world = computed(() => session.snapshot?.world)
+const activeTravel = computed(() => world.value?.travel ?? null)
+const isTravelling = computed(() => activeTravel.value !== null)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
 const contracts = computed(() => world.value?.contracts ?? [])
@@ -45,7 +47,7 @@ const selectedIsCurrent = computed(
   () => selectedLocation.value?.id === currentLocationId.value,
 )
 const selectedIsReachable = computed(
-  () => selectedLocation.value
+  () => !isTravelling.value && selectedLocation.value
     ? reachableLocationIds.value.has(selectedLocation.value.id)
     : false,
 )
@@ -108,7 +110,7 @@ function selectLocation(locationId: string): void {
 
 async function travel(): Promise<void> {
   const location = selectedLocation.value
-  if (!location || !selectedIsReachable.value || session.mutationPending) return
+  if (isTravelling.value || !location || !selectedIsReachable.value || session.mutationPending) return
 
   await session.travel(location.id)
   if (!session.errorCode) selectedLocationId.value = location.id
@@ -130,6 +132,9 @@ function levelRangeLabel(location: WorldLocation): string {
 }
 
 function lockReason(location: WorldLocation): string | null {
+  if (isTravelling.value && location.id !== currentLocationId.value) {
+    return 'Герой уже находится в пути. Дождитесь завершения перехода.'
+  }
   if (characterLevel.value < location.minimumLevel) {
     return `Требуется ${location.minimumLevel} уровень.`
   }
@@ -188,10 +193,34 @@ onMounted(() => void loadLocations())
         <p>Выберите известную точку. Сервер разрешит переход только по открытому маршруту.</p>
       </div>
       <div class="world-map__meta">
-        <span>Сейчас</span>
-        <strong>{{ world.currentLocation ? locationName(world.currentLocation) : '—' }}</strong>
+        <span>{{ isTravelling ? 'В пути' : 'Сейчас' }}</span>
+        <strong>
+          {{
+            isTravelling
+              ? locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName
+                ?? activeTravel?.targetLocationId
+                ?? 'Переход'
+              : world.currentLocation
+                ? locationName(world.currentLocation)
+                : '—'
+          }}
+        </strong>
       </div>
     </header>
+
+    <UIToast
+      v-if="activeTravel"
+      tone="info"
+      title="Герой в пути"
+      data-travel-status
+    >
+      Переход к
+      {{
+        locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName
+          ?? activeTravel.targetLocationId
+      }}
+      выполняется сервером. После прибытия карта обновится автоматически.
+    </UIToast>
 
     <UIToast
       v-if="catalogError"
@@ -278,11 +307,11 @@ onMounted(() => void loadLocations())
           <UIButton
             v-else
             data-map-travel-inline
-            :disabled="!selectedIsReachable"
+            :disabled="isTravelling || !selectedIsReachable"
             :loading="session.mutationPending"
             @click="travel"
           >
-            {{ selectedIsReachable ? 'Отправиться' : 'Закрыто' }}
+            {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Закрыто' }}
           </UIButton>
         </div>
 
@@ -344,11 +373,11 @@ onMounted(() => void loadLocations())
             <UIButton
               v-else
               data-map-travel
-              :disabled="!selectedIsReachable"
+              :disabled="isTravelling || !selectedIsReachable"
               :loading="session.mutationPending"
               @click="travel"
             >
-              {{ selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
+              {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
             </UIButton>
           </div>
         </div>

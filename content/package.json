@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.1",
+  "contentVersion": "0.13.3",
   "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-06T15:52:00+00:00",
+  "publishedAtUtc": "2026-09-07T09:28:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -555,7 +555,8 @@
       "recommendedLevel": 1,
       "transitions": [
         "WHISPERING_FOREST"
-      ]
+      ],
+      "travelDurationSeconds": 5
     },
     {
       "id": "WHISPERING_FOREST",
@@ -571,7 +572,8 @@
           "monsterId": "WOLF",
           "weight": 1
         }
-      ]
+      ],
+      "travelDurationSeconds": 5
     },
     {
       "id": "DEEP_FOREST",
@@ -586,7 +588,8 @@
           "monsterId": "WOLF",
           "weight": 1
         }
-      ]
+      ],
+      "travelDurationSeconds": 5
     }
   ],
   "talentTrees": [
@@ -3217,5 +3220,8 @@
       "autoAttackBaseDamageMin": 5,
       "autoAttackBaseDamageMax": 7
     }
-  ]
+  ],
+  "inventoryProfile": {
+    "defaultCapacity": 40
+  }
 }

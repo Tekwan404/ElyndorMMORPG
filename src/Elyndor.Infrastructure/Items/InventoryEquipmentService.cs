@@ -33,6 +33,7 @@ public static class InventoryErrorCodes
     public const string InvalidMutationId = "inventory_mutation_id_invalid";
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
+    public const string InventoryFull = "inventory_full";
 }
 
 public sealed record InventoryItemSnapshot(
@@ -50,6 +51,13 @@ public sealed record InventoryItemSnapshot(
 public sealed record InventorySnapshot(
     IReadOnlyList<InventoryItemSnapshot> Items,
     IReadOnlyDictionary<EquipmentSlot, InventoryItemSnapshot> Equipped);
+
+public sealed record PendingLootItemSnapshot(
+    Guid Id,
+    ItemDefinition Definition,
+    int Quantity,
+    DateTimeOffset CreatedAtUtc,
+    PrimaryStats? RolledPrimaryStats);
 
 public sealed record InventoryOperationResult(
     bool IsSuccess,
@@ -72,6 +80,7 @@ public sealed class InventoryEquipmentService(
     private const string UnequipOperation = "INVENTORY_UNEQUIP";
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
     private const string SetItemLockOperation = "INVENTORY_SET_LOCK";
+    private const string ClaimPendingLootOperation = "INVENTORY_CLAIM_PENDING_LOOT";
     private readonly CharacterDerivedStateService derivedStateService =
         new(dbContext, contentProvider);
 
@@ -119,6 +128,64 @@ public sealed class InventoryEquipmentService(
             characterId,
             cancellationToken);
     }
+
+    public async Task<IReadOnlyList<PendingLootItemSnapshot>> GetPendingLootAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        Character? character = await dbContext.Characters
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                candidate => candidate.AccountId == accountId,
+                cancellationToken);
+        if (character is null)
+            return [];
+
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        PendingLootItem[] pending = await dbContext.PendingLootItems
+            .AsNoTracking()
+            .Where(item => item.CharacterId == character.Id)
+            .OrderBy(item => item.CreatedAtUtc)
+            .ThenBy(item => item.Id)
+            .ToArrayAsync(cancellationToken);
+
+        return pending.Select(item =>
+        {
+            if (!content.Indexes.ItemsById.TryGetValue(
+                    item.ItemDefinitionId,
+                    out ItemDefinition? definition))
+            {
+                throw new InvalidOperationException(
+                    $"Pending loot item '{item.ItemDefinitionId}' is missing from content.");
+            }
+
+            return new PendingLootItemSnapshot(
+                item.Id,
+                definition,
+                item.Quantity,
+                item.CreatedAtUtc,
+                item.RolledPrimaryStats);
+        }).ToArray();
+    }
+
+    public Task<InventoryOperationResult> ClaimPendingLootAsync(
+        Guid accountId,
+        Guid mutationId,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(
+            accountId,
+            mutationId,
+            ClaimPendingLootOperation,
+            Fingerprint(ClaimPendingLootOperation),
+            async character =>
+            {
+                await ClaimPendingLootCoreAsync(
+                    character.Id,
+                    contentProvider.GetCurrent(),
+                    cancellationToken);
+                return null;
+            },
+            cancellationToken);
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,
@@ -244,6 +311,17 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.TwoHandedConflict);
                 }
 
+                if (!await CanApplyEquipmentProjectionAsync(
+                        character.Id,
+                        item.Id,
+                        canonicalSlot,
+                        definition,
+                        cancellationToken))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.InventoryFull);
+                }
+
                 CharacterEquipment? currentItemEquipment = await dbContext.CharacterEquipment
                     .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
                         && candidate.CharacterItemId == item.Id, cancellationToken);
@@ -323,7 +401,20 @@ public sealed class InventoryEquipmentService(
                         && aliases.Contains(candidate.Slot))
                     .ToArrayAsync(cancellationToken);
                 if (equipped.Length > 0)
+                {
+                    GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                    if (await InventoryCapacity.FreeSlotsAsync(
+                            dbContext,
+                            character.Id,
+                            contentSnapshot,
+                            cancellationToken) < equipped.Length)
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.InventoryFull);
+                    }
+
                     dbContext.CharacterEquipment.RemoveRange(equipped);
+                }
                 return null;
             },
             cancellationToken);
@@ -524,6 +615,143 @@ public sealed class InventoryEquipmentService(
                 return InventoryErrorCodes.Conflict;
             }
         });
+    }
+
+    private async Task<bool> CanApplyEquipmentProjectionAsync(
+        Guid characterId,
+        Guid itemId,
+        EquipmentSlot targetSlot,
+        ItemDefinition definition,
+        CancellationToken cancellationToken)
+    {
+        CharacterEquipment[] current = await dbContext.CharacterEquipment
+            .AsNoTracking()
+            .Where(equipment => equipment.CharacterId == characterId)
+            .ToArrayAsync(cancellationToken);
+
+        HashSet<Guid> projectedEquippedItemIds =
+            current.Select(equipment => equipment.CharacterItemId).ToHashSet();
+
+        foreach (CharacterEquipment equipment in current)
+        {
+            bool occupiesTarget = EquivalentEquipmentSlots(targetSlot)
+                .Contains(equipment.Slot);
+            bool displacedByTwoHandedMain =
+                targetSlot == EquipmentSlot.MainHand
+                && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory)
+                && equipment.Slot == EquipmentSlot.OffHand;
+            bool isMovingItem = equipment.CharacterItemId == itemId;
+
+            if (occupiesTarget || displacedByTwoHandedMain || isMovingItem)
+                projectedEquippedItemIds.Remove(equipment.CharacterItemId);
+        }
+
+        projectedEquippedItemIds.Add(itemId);
+
+        int totalItemSlots = await dbContext.CharacterItems
+            .AsNoTracking()
+            .CountAsync(
+                item => item.CharacterId == characterId,
+                cancellationToken);
+        int projectedInventorySlots =
+            totalItemSlots - projectedEquippedItemIds.Count;
+
+        return projectedInventorySlots <=
+            InventoryCapacity.Resolve(contentProvider.GetCurrent());
+    }
+
+    private async Task ClaimPendingLootCoreAsync(
+        Guid characterId,
+        GameContentSnapshot content,
+        CancellationToken cancellationToken)
+    {
+        PendingLootItem[] pending = await dbContext.PendingLootItems
+            .Where(item => item.CharacterId == characterId)
+            .OrderBy(item => item.CreatedAtUtc)
+            .ThenBy(item => item.Id)
+            .ToArrayAsync(cancellationToken);
+
+        foreach (PendingLootItem pendingItem in pending)
+        {
+            if (!content.Indexes.ItemsById.TryGetValue(
+                    pendingItem.ItemDefinitionId,
+                    out ItemDefinition? definition))
+            {
+                throw new InvalidOperationException(
+                    $"Pending loot item '{pendingItem.ItemDefinitionId}' is missing from content.");
+            }
+            if (!definition.Stackable)
+            {
+                if (await InventoryCapacity.FreeSlotsAsync(
+                        dbContext,
+                        characterId,
+                        content,
+                        cancellationToken) < 1)
+                {
+                    break;
+                }
+
+                dbContext.CharacterItems.Add(new CharacterItem(
+                    Guid.NewGuid(),
+                    characterId,
+                    definition.Id,
+                    1,
+                    timeProvider.GetUtcNow(),
+                    definition.Version,
+                    pendingItem.RolledPrimaryStats));
+                dbContext.PendingLootItems.Remove(pendingItem);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                continue;
+            }
+
+            int remaining = pendingItem.Quantity;
+            CharacterItem[] stacks = await dbContext.CharacterItems
+                .Where(item => item.CharacterId == characterId
+                    && item.ItemDefinitionId == definition.Id
+                    && item.DefinitionVersion == definition.Version
+                    && item.Quantity < definition.MaxStack)
+                .OrderBy(item => item.AcquiredAtUtc)
+                .ToArrayAsync(cancellationToken);
+
+            foreach (CharacterItem stack in stacks)
+            {
+                if (remaining <= 0) break;
+                int toAdd = Math.Min(
+                    definition.MaxStack - stack.Quantity,
+                    remaining);
+                if (toAdd <= 0) continue;
+                stack.AddQuantity(toAdd, definition.MaxStack);
+                remaining -= toAdd;
+            }
+
+            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+                dbContext,
+                characterId,
+                content,
+                cancellationToken);
+            while (remaining > 0 && freeSlots > 0)
+            {
+                int quantity = Math.Min(definition.MaxStack, remaining);
+                dbContext.CharacterItems.Add(new CharacterItem(
+                    Guid.NewGuid(),
+                    characterId,
+                    definition.Id,
+                    quantity,
+                    timeProvider.GetUtcNow(),
+                    definition.Version));
+                remaining -= quantity;
+                freeSlots--;
+            }
+
+            if (remaining == 0)
+                dbContext.PendingLootItems.Remove(pendingItem);
+            else
+                pendingItem.SetQuantity(remaining);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            if (remaining > 0)
+                break;
+        }
     }
 
     private async Task<bool> HasEquipmentPermissionAsync(

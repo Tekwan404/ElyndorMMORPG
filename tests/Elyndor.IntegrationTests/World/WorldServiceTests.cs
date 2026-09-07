@@ -55,6 +55,65 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task BootstrapRepairsMissingVitalsUnknownLocationAndInvalidTravel()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        Guid characterId;
+        await using (GameDbContext corrupt = postgres.CreateDbContext())
+        {
+            Character character = await corrupt.Characters.SingleAsync();
+            characterId = character.Id;
+            CharacterVitals vitals = await corrupt.CharacterVitals.SingleAsync();
+            corrupt.CharacterVitals.Remove(vitals);
+
+            CharacterLocation location = await corrupt.CharacterLocations.SingleAsync();
+            location.Relocate("REMOVED_LOCATION", Now);
+            corrupt.CharacterTravelStates.Add(new CharacterTravelState(
+                characterId,
+                Guid.CreateVersion7(),
+                "REMOVED_LOCATION",
+                "WHISPERING_FOREST",
+                Now,
+                Now.AddSeconds(5)));
+            await corrupt.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
+        BootstrapService service = new(
+            context,
+            Content,
+            Map,
+            derived,
+            timeProvider);
+
+        BootstrapSnapshot snapshot =
+            await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal("STARTER_TOWN", snapshot.World!.CurrentLocation.Id);
+        Assert.Null(snapshot.World.Travel);
+        Assert.Equal(
+            snapshot.Character!.Vitals.MaxHp,
+            snapshot.Character.Vitals.CurrentHp);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            "STARTER_TOWN",
+            await verify.CharacterLocations
+                .Where(state => state.CharacterId == characterId)
+                .Select(state => state.LocationId)
+                .SingleAsync());
+        Assert.Single(await verify.CharacterVitals
+            .Where(state => state.CharacterId == characterId)
+            .ToArrayAsync());
+        Assert.Empty(await verify.CharacterTravelStates
+            .Where(state => state.CharacterId == characterId)
+            .ToArrayAsync());
+    }
+
+    [Fact]
     public async Task BootstrapReturnsExplicitNoCharacterState()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: false);
@@ -84,12 +143,24 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         TravelResult first = await TravelAsync(accountId, requestId, "WHISPERING_FOREST");
         TravelResult replay = await TravelAsync(accountId, requestId, "WHISPERING_FOREST");
         TravelResult mismatch = await TravelAsync(accountId, requestId, "DEEP_FOREST");
+        TravelResult completed = await TravelAsync(
+            accountId,
+            requestId,
+            "WHISPERING_FOREST",
+            Map,
+            Now.AddSeconds(6));
 
         Assert.True(first.IsSuccess);
-        Assert.Equal("WHISPERING_FOREST", first.LocationId);
-        Assert.Equal(2, first.Version);
+        Assert.True(first.IsTravelling);
+        Assert.Equal("STARTER_TOWN", first.LocationId);
+        Assert.Equal(1, first.Version);
+        Assert.Equal("WHISPERING_FOREST", first.TargetLocationId);
         Assert.Equal(first, replay);
         Assert.Equal(TravelErrorCodes.IdempotencyConflict, mismatch.ErrorCode);
+        Assert.True(completed.IsSuccess);
+        Assert.False(completed.IsTravelling);
+        Assert.Equal("WHISPERING_FOREST", completed.LocationId);
+        Assert.Equal(2, completed.Version);
     }
 
     [Fact]
@@ -191,25 +262,49 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     public async Task ConcurrentTravelFromSameVersionHasOneWinnerAndNoDuplicateOperation()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        Guid firstRequestId = Guid.CreateVersion7();
+        Guid secondRequestId = Guid.CreateVersion7();
 
         Task<TravelResult>[] attempts =
         [
-            TravelAsync(accountId, Guid.CreateVersion7(), "WHISPERING_FOREST"),
-            TravelAsync(accountId, Guid.CreateVersion7(), "WHISPERING_FOREST")
+            TravelAsync(accountId, firstRequestId, "WHISPERING_FOREST"),
+            TravelAsync(accountId, secondRequestId, "WHISPERING_FOREST")
         ];
         TravelResult[] results = await Task.WhenAll(attempts);
 
-        Assert.Single(results, result => result.IsSuccess);
+        Assert.Single(results, result => result.IsSuccess && result.IsTravelling);
         Assert.Single(
             results,
-            result => result.ErrorCode is TravelErrorCodes.Conflict
-                or TravelErrorCodes.InvalidTransition);
+            result => result.ErrorCode == TravelErrorCodes.InProgress);
+
+        Guid winnerRequestId = results[0].IsSuccess
+            ? firstRequestId
+            : secondRequestId;
+
+        await using (GameDbContext duringTravel = postgres.CreateDbContext())
+        {
+            Assert.Empty(await duringTravel.TravelOperations.ToArrayAsync());
+            Assert.Single(await duringTravel.CharacterTravelStates.ToArrayAsync());
+            CharacterLocation location = await duringTravel.CharacterLocations.SingleAsync();
+            Assert.Equal("STARTER_TOWN", location.LocationId);
+            Assert.Equal(1, location.Version);
+        }
+
+        TravelResult completed = await TravelAsync(
+            accountId,
+            winnerRequestId,
+            "WHISPERING_FOREST",
+            Map,
+            Now.AddSeconds(6));
+        Assert.True(completed.IsSuccess);
+        Assert.False(completed.IsTravelling);
 
         await using GameDbContext context = postgres.CreateDbContext();
         Assert.Equal(1, await context.TravelOperations.CountAsync());
-        CharacterLocation location = await context.CharacterLocations.SingleAsync();
-        Assert.Equal("WHISPERING_FOREST", location.LocationId);
-        Assert.Equal(2, location.Version);
+        Assert.Empty(await context.CharacterTravelStates.ToArrayAsync());
+        CharacterLocation persisted = await context.CharacterLocations.SingleAsync();
+        Assert.Equal("WHISPERING_FOREST", persisted.LocationId);
+        Assert.Equal(2, persisted.Version);
     }
 
     private Task<TravelResult> TravelAsync(
@@ -218,14 +313,22 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         string targetLocationId) =>
         TravelAsync(accountId, requestId, targetLocationId, Map);
 
+    private Task<TravelResult> TravelAsync(
+        Guid accountId,
+        Guid requestId,
+        string targetLocationId,
+        WorldMap map) =>
+        TravelAsync(accountId, requestId, targetLocationId, map, Now);
+
     private async Task<TravelResult> TravelAsync(
         Guid accountId,
         Guid requestId,
         string targetLocationId,
-        WorldMap map)
+        WorldMap map,
+        DateTimeOffset now)
     {
         await using GameDbContext context = postgres.CreateDbContext();
-        TravelService service = new(context, map, new FixedTimeProvider(Now));
+        TravelService service = new(context, map, new FixedTimeProvider(now));
         return await service.TravelAsync(
             accountId,
             requestId,

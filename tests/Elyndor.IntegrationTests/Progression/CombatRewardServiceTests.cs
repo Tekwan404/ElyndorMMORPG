@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
@@ -181,6 +182,55 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(0, character.Gold);
         Assert.Equal(0, await context.CombatRewardGrants.CountAsync());
         Assert.Equal(0, await context.CharacterItems.CountAsync());
+    }
+
+    [Fact]
+    public async Task FullInventoryPersistsOverflowAsPendingLoot()
+    {
+        (Guid characterId, _) = await CreateCharacterAsync(0, 100);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            for (var index = 0; index < 40; index++)
+            {
+                setup.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    "RECRUIT_IRON_SWORD",
+                    1,
+                    Now));
+            }
+            await setup.SaveChangesAsync();
+        }
+
+        Guid sessionId = Guid.CreateVersion7();
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            VictorySnapshot(sessionId),
+            CancellationToken.None);
+
+        Assert.True(result.Granted);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            40,
+            await InventoryCapacity.CountUsedSlotsAsync(
+                verify,
+                characterId,
+                CancellationToken.None));
+        PendingLootItem[] pending = await verify.PendingLootItems
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .ToArrayAsync();
+        Assert.NotEmpty(pending);
+        Assert.All(
+            pending,
+            item => Assert.Equal(sessionId, item.RewardResolutionId));
+        Assert.Equal(
+            result.Items.Sum(item => item.Quantity),
+            pending.Sum(item => item.Quantity));
+        Assert.Equal(1, await verify.CombatRewardGrants.CountAsync());
     }
 
     [Fact]

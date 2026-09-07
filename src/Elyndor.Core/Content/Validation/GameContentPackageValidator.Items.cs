@@ -32,6 +32,14 @@ public static partial class GameContentPackageValidator
                     "Level progression contains values outside its valid range."));
             }
 
+            if (package.InventoryProfile is { DefaultCapacity: <= 0 })
+            {
+                errors.Add(new(
+                    "INVALID_INVENTORY_PROFILE",
+                    "inventoryProfile.defaultCapacity",
+                    "Inventory capacity must be positive."));
+            }
+
             IReadOnlyList<ItemDefinition> items = package.Items ?? [];
             HashSet<string> equipmentSetIds = (package.EquipmentSets ?? [])
                 .Select(set => set.Id)

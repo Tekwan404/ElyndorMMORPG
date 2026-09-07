@@ -12,10 +12,27 @@ public sealed record TravelResult(
     bool IsSuccess,
     string? LocationId,
     long? Version,
-    string? ErrorCode)
+    string? ErrorCode,
+    bool IsTravelling = false,
+    string? TargetLocationId = null,
+    DateTimeOffset? EndsAtUtc = null)
 {
-    public static TravelResult Success(string locationId, long version) =>
+    public static TravelResult Completed(string locationId, long version) =>
         new(true, locationId, version, null);
+
+    public static TravelResult Started(
+        string locationId,
+        long version,
+        string targetLocationId,
+        DateTimeOffset endsAtUtc) =>
+        new(
+            true,
+            locationId,
+            version,
+            null,
+            true,
+            targetLocationId,
+            endsAtUtc);
 
     public static TravelResult Failure(string errorCode) =>
         new(false, null, null, errorCode);
@@ -30,6 +47,7 @@ public static class TravelErrorCodes
     public const string LevelRequired = "travel_level_required";
     public const string ContractRequired = "travel_contract_required";
     public const string IdempotencyConflict = "idempotency_conflict";
+    public const string InProgress = "travel_in_progress";
     public const string Conflict = "travel_conflict";
 }
 
@@ -77,30 +95,44 @@ public sealed class TravelService
             ?? fixedWorldMap
             ?? throw new InvalidOperationException("World map content is unavailable.");
 
+        LocationDefinition target;
         try
         {
-            worldMap.GetRequired(targetLocationId);
+            target = worldMap.GetRequired(targetLocationId);
         }
         catch (KeyNotFoundException)
         {
             return TravelResult.Failure(TravelErrorCodes.UnknownLocation);
         }
 
+        if (target.TravelDurationSeconds <= 0)
+        {
+            throw new InvalidOperationException(
+                $"Location '{target.Id}' has invalid travel duration.");
+        }
+
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(
-            () => TravelCoreAsync(
-                accountId,
-                requestId,
-                targetLocationId,
-                worldMap,
-                timeProvider.GetUtcNow(),
-                cancellationToken));
+        try
+        {
+            return await strategy.ExecuteAsync(
+                () => TravelCoreAsync(
+                    accountId,
+                    requestId,
+                    target,
+                    worldMap,
+                    timeProvider.GetUtcNow(),
+                    cancellationToken));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return TravelResult.Failure(TravelErrorCodes.Conflict);
+        }
     }
 
     private async Task<TravelResult> TravelCoreAsync(
         Guid accountId,
         Guid requestId,
-        string targetLocationId,
+        LocationDefinition target,
         WorldMap worldMap,
         DateTimeOffset now,
         CancellationToken cancellationToken)
@@ -108,16 +140,22 @@ public sealed class TravelService
         dbContext.ChangeTracker.Clear();
         await using IDbContextTransaction transaction =
             await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
         Character? character = await dbContext.Characters
-            .AsNoTracking()
-            .SingleOrDefaultAsync(
-                candidate => candidate.AccountId == accountId,
-                cancellationToken);
+            .FromSqlInterpolated(
+                $"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
         if (character is null)
         {
-            await transaction.CommitAsync(cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
             return TravelResult.Failure(TravelErrorCodes.CharacterNotFound);
         }
+
+        await TravelPersistence.CompleteDueAsync(
+            dbContext,
+            character.Id,
+            now,
+            cancellationToken);
 
         TravelOperation? replay = await dbContext.TravelOperations
             .AsNoTracking()
@@ -128,24 +166,49 @@ public sealed class TravelService
         if (replay is not null)
         {
             await transaction.CommitAsync(cancellationToken);
-            return ToReplay(replay, targetLocationId);
+            return ToReplay(replay, target.Id);
         }
 
         CharacterLocation location = await dbContext.CharacterLocations
-            .AsNoTracking()
             .SingleAsync(
                 candidate => candidate.CharacterId == character.Id,
                 cancellationToken);
-        if (!worldMap.CanTravel(location.LocationId, targetLocationId))
+
+        CharacterTravelState? active = await dbContext.CharacterTravelStates
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                state => state.CharacterId == character.Id,
+                cancellationToken);
+        if (active is not null)
         {
             await transaction.CommitAsync(cancellationToken);
+            if (active.RequestId == requestId)
+            {
+                return string.Equals(
+                    active.TargetLocationId,
+                    target.Id,
+                    StringComparison.Ordinal)
+                        ? TravelResult.Started(
+                            location.LocationId,
+                            location.Version,
+                            active.TargetLocationId,
+                            active.EndsAtUtc)
+                        : TravelResult.Failure(
+                            TravelErrorCodes.IdempotencyConflict);
+            }
+
+            return TravelResult.Failure(TravelErrorCodes.InProgress);
+        }
+
+        if (!worldMap.CanTravel(location.LocationId, target.Id))
+        {
+            await transaction.RollbackAsync(cancellationToken);
             return TravelResult.Failure(TravelErrorCodes.InvalidTransition);
         }
 
-        LocationDefinition target = worldMap.GetRequired(targetLocationId);
         if (character.Level < target.MinimumLevel)
         {
-            await transaction.CommitAsync(cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
             return TravelResult.Failure(TravelErrorCodes.LevelRequired);
         }
 
@@ -159,60 +222,28 @@ public sealed class TravelService
                     cancellationToken);
             if (!completed)
             {
-                await transaction.CommitAsync(cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
                 return TravelResult.Failure(TravelErrorCodes.ContractRequired);
             }
         }
 
-        long resultVersion = checked(location.Version + 1);
-        int affectedRows = await dbContext.CharacterLocations
-            .Where(candidate => candidate.CharacterId == character.Id
-                && candidate.Version == location.Version)
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(candidate => candidate.LocationId, targetLocationId)
-                    .SetProperty(candidate => candidate.Version, resultVersion)
-                    .SetProperty(candidate => candidate.UpdatedAtUtc, now),
-                cancellationToken);
-
-        if (affectedRows == 0)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            dbContext.ChangeTracker.Clear();
-            return await ResolveConcurrentResultAsync(
-                character.Id,
-                requestId,
-                targetLocationId,
-                cancellationToken);
-        }
-
-        dbContext.TravelOperations.Add(new TravelOperation(
+        DateTimeOffset endsAtUtc = now.AddSeconds(
+            (double)target.TravelDurationSeconds);
+        dbContext.CharacterTravelStates.Add(new CharacterTravelState(
             character.Id,
             requestId,
-            targetLocationId,
-            targetLocationId,
-            resultVersion,
-            now));
+            location.LocationId,
+            target.Id,
+            now,
+            endsAtUtc));
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return TravelResult.Success(targetLocationId, resultVersion);
-    }
 
-    private async Task<TravelResult> ResolveConcurrentResultAsync(
-        Guid characterId,
-        Guid requestId,
-        string targetLocationId,
-        CancellationToken cancellationToken)
-    {
-        TravelOperation? operation = await dbContext.TravelOperations
-            .AsNoTracking()
-            .SingleOrDefaultAsync(
-                candidate => candidate.CharacterId == characterId
-                    && candidate.RequestId == requestId,
-                cancellationToken);
-        return operation is null
-            ? TravelResult.Failure(TravelErrorCodes.Conflict)
-            : ToReplay(operation, targetLocationId);
+        return TravelResult.Started(
+            location.LocationId,
+            location.Version,
+            target.Id,
+            endsAtUtc);
     }
 
     private static TravelResult ToReplay(
@@ -222,7 +253,7 @@ public sealed class TravelService
             operation.TargetLocationId,
             targetLocationId,
             StringComparison.Ordinal)
-                ? TravelResult.Success(
+                ? TravelResult.Completed(
                     operation.ResultLocationId,
                     operation.ResultVersion)
                 : TravelResult.Failure(TravelErrorCodes.IdempotencyConflict);

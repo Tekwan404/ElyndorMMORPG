@@ -7,6 +7,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.World;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -28,6 +29,7 @@ public static class MerchantErrorCodes
     public const string MutationConflict = "merchant_mutation_conflict";
     public const string NotEnoughGold = "merchant_not_enough_gold";
     public const string Conflict = "merchant_conflict";
+    public const string InventoryFull = "merchant_inventory_full";
 }
 
 public sealed record MerchantCatalogItem(ItemDefinition Definition, int SellPriceGold);
@@ -137,6 +139,18 @@ public sealed class MerchantService(
                 ItemDefinition? definition = FindItem(itemDefinitionId);
                 if (definition is null || definition.BuyPriceGold <= 0)
                     return MerchantErrorCodes.ItemNotSold;
+
+                GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                if (!await InventoryCapacity.CanAddAsync(
+                        dbContext,
+                        character.Id,
+                        definition,
+                        quantity,
+                        contentSnapshot,
+                        cancellationToken))
+                {
+                    return MerchantErrorCodes.InventoryFull;
+                }
 
                 long totalPrice = checked((long)definition.BuyPriceGold * quantity);
                 int affected = await dbContext.Characters
@@ -500,10 +514,23 @@ public sealed class MerchantService(
     private async Task<bool> IsAtMerchantLocationAsync(
         Guid characterId,
         MerchantDefinition merchant,
-        CancellationToken cancellationToken) =>
-        await dbContext.CharacterLocations.AsNoTracking().AnyAsync(
-            location => location.CharacterId == characterId && location.LocationId == merchant.LocationId,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        if (await TravelPersistence.IsTravellingAsync(
+                dbContext,
+                characterId,
+                now,
+                cancellationToken))
+        {
+            return false;
+        }
+
+        return await dbContext.CharacterLocations.AsNoTracking().AnyAsync(
+            location => location.CharacterId == characterId
+                && location.LocationId == merchant.LocationId,
             cancellationToken);
+    }
 
     private MerchantDefinition? FindMerchant(string merchantId) =>
         contentProvider.GetCurrent().Indexes.MerchantsById.GetValueOrDefault(merchantId);
