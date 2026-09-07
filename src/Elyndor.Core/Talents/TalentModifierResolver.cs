@@ -218,6 +218,8 @@ public static class TalentModifierResolver
                 profiles with { ResourceProfileId = modifier.TargetId },
             TalentModifierKeys.CompanionProfileOverride =>
                 profiles with { CompanionProfileId = modifier.TargetId },
+            TalentModifierKeys.PrimaryAttributeOverride =>
+                profiles with { PrimaryAttribute = modifier.TargetId },
             _ => profiles
         };
     }
