@@ -55,6 +55,65 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task BootstrapRepairsMissingVitalsUnknownLocationAndInvalidTravel()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        Guid characterId;
+        await using (GameDbContext corrupt = postgres.CreateDbContext())
+        {
+            Character character = await corrupt.Characters.SingleAsync();
+            characterId = character.Id;
+            CharacterVitals vitals = await corrupt.CharacterVitals.SingleAsync();
+            corrupt.CharacterVitals.Remove(vitals);
+
+            CharacterLocation location = await corrupt.CharacterLocations.SingleAsync();
+            location.Relocate("REMOVED_LOCATION", Now);
+            corrupt.CharacterTravelStates.Add(new CharacterTravelState(
+                characterId,
+                Guid.CreateVersion7(),
+                "REMOVED_LOCATION",
+                "WHISPERING_FOREST",
+                Now,
+                Now.AddSeconds(5)));
+            await corrupt.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
+        BootstrapService service = new(
+            context,
+            Content,
+            Map,
+            derived,
+            timeProvider);
+
+        BootstrapSnapshot snapshot =
+            await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal("STARTER_TOWN", snapshot.World!.CurrentLocation.Id);
+        Assert.Null(snapshot.World.Travel);
+        Assert.Equal(
+            snapshot.Character!.Vitals.MaxHp,
+            snapshot.Character.Vitals.CurrentHp);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            "STARTER_TOWN",
+            await verify.CharacterLocations
+                .Where(state => state.CharacterId == characterId)
+                .Select(state => state.LocationId)
+                .SingleAsync());
+        Assert.Single(await verify.CharacterVitals
+            .Where(state => state.CharacterId == characterId)
+            .ToArrayAsync());
+        Assert.Empty(await verify.CharacterTravelStates
+            .Where(state => state.CharacterId == characterId)
+            .ToArrayAsync());
+    }
+
+    [Fact]
     public async Task BootstrapReturnsExplicitNoCharacterState()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: false);
