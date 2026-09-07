@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -61,7 +62,7 @@ public sealed class CombatDurabilityService(
         if (string.IsNullOrWhiteSpace(commandId)
             || commandId.Length > 128)
         {
-            return Inventory.InventoryErrorCodes.Conflict;
+            return InventoryErrorCodes.Conflict;
         }
 
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
@@ -78,7 +79,7 @@ public sealed class CombatDurabilityService(
             if (character is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Inventory.InventoryErrorCodes.CharacterNotFound;
+                return InventoryErrorCodes.CharacterNotFound;
             }
 
             ActiveCombatSession? active = await dbContext.ActiveCombatSessions
@@ -90,7 +91,7 @@ public sealed class CombatDurabilityService(
             if (active is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Inventory.InventoryErrorCodes.Conflict;
+                return InventoryErrorCodes.Conflict;
             }
 
             CombatConsumableUse? existing = await dbContext.CombatConsumableUses
@@ -107,7 +108,7 @@ public sealed class CombatDurabilityService(
                     itemDefinitionId,
                     StringComparison.Ordinal)
                         ? null
-                        : Inventory.InventoryErrorCodes.MutationConflict;
+                        : InventoryErrorCodes.MutationConflict;
             }
 
             if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
@@ -118,7 +119,7 @@ public sealed class CombatDurabilityService(
                 || definition.MaxStack < 2)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Inventory.InventoryErrorCodes.NotConsumable;
+                return InventoryErrorCodes.NotConsumable;
             }
 
             CharacterItem? item = await dbContext.CharacterItems
@@ -132,7 +133,7 @@ public sealed class CombatDurabilityService(
             if (item is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Inventory.InventoryErrorCodes.ItemNotFound;
+                return InventoryErrorCodes.ItemNotFound;
             }
 
             item.RemoveQuantity(1);
