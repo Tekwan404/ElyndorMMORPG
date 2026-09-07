@@ -7,6 +7,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
+using Elyndor.Core.Quests;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -24,6 +25,7 @@ internal static class CategoryContentComposer
         "merchants",
         "monsters",
         "progression",
+        "quests",
         "resources",
         "sets",
         "talents"
@@ -218,6 +220,10 @@ internal static class CategoryContentComposer
             WorldContracts = ContentCompositionRules.MergeOptionalByKey(
                 package.WorldContracts,
                 fragment.WorldContracts,
+                item => item.Id),
+            Quests = ContentCompositionRules.MergeOptionalByKey(
+                package.Quests,
+                fragment.Quests,
                 item => item.Id)
         };
     }
@@ -242,7 +248,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
         IReadOnlyList<MerchantDefinition>? Merchants = null,
         ResourceScalingProfile? ResourceScaling = null,
-        IReadOnlyList<WorldContractDefinition>? WorldContracts = null);
+        IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
+        IReadOnlyList<QuestDefinition>? Quests = null);
 
     private sealed record LocationEncounterFragment(
         string ContentVersion,
