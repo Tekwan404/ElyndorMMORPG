@@ -11,6 +11,7 @@ public sealed record TalentAuditReport(
     int DeferredModifierCount,
     int FullyDeferredNodeCount,
     int MissingRussianTextCount,
+    int RuntimeUnmappedModifierCount,
     IReadOnlyList<TalentAuditEntry> Entries)
 {
     public static TalentAuditReport Create(GameContentPackage package)
@@ -22,6 +23,7 @@ public sealed record TalentAuditReport(
         int deferredModifierCount = 0;
         int fullyDeferredNodeCount = 0;
         int missingRussianTextCount = 0;
+        int runtimeUnmappedModifierCount = 0;
 
         foreach (TalentTreeDefinition tree in (package.TalentTrees ?? [])
                      .OrderBy(item => item.Id, StringComparer.Ordinal))
@@ -43,6 +45,9 @@ public sealed record TalentAuditReport(
                 for (var index = 0; index < modifiers.Count; index++)
                 {
                     TalentModifierDefinition modifier = modifiers[index];
+                    bool runtimeMapped = TalentRuntimeAvailability.IsModifierSupported(node, modifier);
+                    if (!runtimeMapped)
+                        runtimeUnmappedModifierCount++;
                     if (IsDeferred(modifier))
                         deferredModifierCount++;
 
@@ -63,6 +68,7 @@ public sealed record TalentAuditReport(
                         modifier.TargetId,
                         modifier.RuntimeStatus,
                         modifier.DeferredOwner,
+                        runtimeMapped,
                         ranks));
                 }
 
@@ -86,6 +92,7 @@ public sealed record TalentAuditReport(
             deferredModifierCount,
             fullyDeferredNodeCount,
             missingRussianTextCount,
+            runtimeUnmappedModifierCount,
             entries);
     }
 
@@ -114,6 +121,7 @@ public sealed record TalentAuditModifier(
     string? TargetId,
     TalentModifierRuntimeStatus RuntimeStatus,
     string? DeferredOwner,
+    bool RuntimeMapped,
     IReadOnlyList<TalentAuditRank> Ranks);
 
 public sealed record TalentAuditRank(int Rank, decimal Value, decimal? SecondaryValue);

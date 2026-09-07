@@ -29,7 +29,8 @@ try
             + $"Nodes={audit.NodeCount}, Modifiers={audit.ModifierCount}, "
             + $"DeferredModifiers={audit.DeferredModifierCount}, "
             + $"FullyDeferredNodes={audit.FullyDeferredNodeCount}, "
-            + $"MissingRussianText={audit.MissingRussianTextCount}");
+            + $"MissingRussianText={audit.MissingRussianTextCount}, "
+            + $"RuntimeUnmappedModifiers={audit.RuntimeUnmappedModifierCount}");
 
         if (strictTalents)
         {

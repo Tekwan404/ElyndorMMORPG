@@ -1,5 +1,5 @@
 {
-  "contentVersion": "0.13.3",
+  "contentVersion": "0.13.4",
   "balanceVersion": "0.8.0",
   "publishedAtUtc": "2026-09-07T09:28:00+00:00",
   "definitions": [
@@ -1568,7 +1568,7 @@
           "englishName": "Unrelenting",
           "maxRank": 4,
           "prerequisites": [],
-          "description": "CriticalChance +1.5% / 3% / 4.5% / 6%.",
+          "description": "Увеличивает шанс критического удара на 1,5% / 3% / 4,5% / 6%.",
           "branchId": "BERSERKER",
           "version": 1,
           "modifiers": [
@@ -2485,7 +2485,7 @@
           "englishName": "Formation Strength",
           "maxRank": 3,
           "prerequisites": [],
-          "description": "Stamina +2% / 4% / 6%.",
+          "description": "Увеличивает выносливость на 2% / 4% / 6%.",
           "modifiers": [
             {
               "type": "StatModifier",
