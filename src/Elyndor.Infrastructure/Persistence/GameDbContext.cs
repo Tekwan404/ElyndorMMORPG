@@ -38,6 +38,12 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterAbilityCooldown> CharacterAbilityCooldowns =>
         Set<CharacterAbilityCooldown>();
 
+    public DbSet<ActiveCombatSession> ActiveCombatSessions =>
+        Set<ActiveCombatSession>();
+
+    public DbSet<CombatConsumableUse> CombatConsumableUses =>
+        Set<CombatConsumableUse>();
+
     public DbSet<CharacterEquipment> CharacterEquipment => Set<CharacterEquipment>();
 
     public DbSet<CombatRewardGrant> CombatRewardGrants => Set<CombatRewardGrant>();
