@@ -29,7 +29,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
     IReadOnlyList<MerchantDefinition>? Merchants = null,
     ResourceScalingProfile? ResourceScaling = null,
-    IReadOnlyList<WorldContractDefinition>? WorldContracts = null);
+    IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
+    InventoryProfileDefinition? InventoryProfile = null);
 
 public sealed record GameContentDefinition(
     string Type,
@@ -116,3 +117,5 @@ public sealed record ResourceProfile(
 public sealed record ResourceScalingProfile(
     decimal ManaBase,
     decimal ManaPerIntellect);
+
+public sealed record InventoryProfileDefinition(int DefaultCapacity);
