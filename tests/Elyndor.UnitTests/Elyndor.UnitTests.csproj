@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Elyndor.Core\Elyndor.Core.csproj" />
     <ProjectReference Include="..\..\src\Elyndor.Infrastructure\Elyndor.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\tools\Elyndor.ContentValidator\Elyndor.ContentValidator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

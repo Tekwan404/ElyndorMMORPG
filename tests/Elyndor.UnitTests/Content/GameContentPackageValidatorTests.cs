@@ -248,6 +248,113 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void StrictTalentValidationRejectsDeferredModifiers()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "Урон", 1)],
+                    [
+                        new TalentDefinition(
+                            "TEST_TALENT", "BERSERKER", 1, 0, "Талант", "Talent", 1, [], "Описание",
+                            Modifiers:
+                            [
+                                new(
+                                    TalentModifierType.EventTriggered,
+                                    TalentModifierKeys.OnEnemyKilled,
+                                    [10],
+                                    RuntimeStatus: TalentModifierRuntimeStatus.Deferred,
+                                    DeferredOwner: TalentRuntimeOwners.CombatSession)
+                            ])
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.ValidateStrictTalents(package);
+
+        Assert.Contains(errors, error => error.Code == "TALENT_RUNTIME_DEFERRED");
+    }
+
+    [Fact]
+    public void StrictTalentValidationRejectsRankValueMismatch()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "Урон", 1)],
+                    [
+                        new TalentDefinition(
+                            "TEST_TALENT", "BERSERKER", 1, 0, "Талант", "Talent", 2, [], "Описание",
+                            Modifiers:
+                            [new(TalentModifierType.StatModifier, TalentModifierKeys.StrengthPercent, [1])])
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.ValidateStrictTalents(package);
+
+        Assert.Contains(errors, error => error.Code == "TALENT_RANK_VALUE_MISMATCH");
+    }
+
+    [Fact]
+    public void StrictTalentValidationRejectsZeroValueModifiers()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "Урон", 1)],
+                    [
+                        new TalentDefinition(
+                            "TEST_TALENT", "BERSERKER", 1, 0, "Талант", "Talent", 1, [], "Описание",
+                            Modifiers:
+                            [new(TalentModifierType.StatModifier, TalentModifierKeys.StrengthPercent, [0])])
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.ValidateStrictTalents(package);
+
+        Assert.Contains(errors, error => error.Code == "TALENT_ZERO_VALUE_MODIFIER");
+    }
+
+    [Fact]
+    public void StrictTalentValidationRejectsMissingRussianText()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            TalentTrees =
+            [
+                new TalentTreeDefinition(
+                    "TEST_TREE", "WARRIOR", 59, 1,
+                    [new TalentBranchDefinition("BERSERKER", "Берсерк", "Урон", 1)],
+                    [
+                        new TalentDefinition(
+                            "TEST_TALENT", "BERSERKER", 1, 0, "Talent", "Talent", 1, [], "Description",
+                            Modifiers:
+                            [new(TalentModifierType.StatModifier, TalentModifierKeys.StrengthPercent, [1])])
+                    ])
+            ]
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.ValidateStrictTalents(package);
+
+        Assert.Contains(errors, error => error.Code == "TALENT_MISSING_RUSSIAN_TEXT");
+    }
+
+    [Fact]
     public void ValidateRejectsSupportedTalentAbilityReferenceThatDoesNotExist()
     {
         GameContentPackage package = CreatePackage() with
