@@ -626,13 +626,6 @@ public sealed class InventoryEquipmentService(
                 throw new InvalidOperationException(
                     $"Pending loot item '{pendingItem.ItemDefinitionId}' is missing from content.");
             }
-            if (definition.Version != pendingItem.DefinitionVersion)
-            {
-                throw new InvalidOperationException(
-                    $"Pending loot item '{pendingItem.ItemDefinitionId}' requires definition version "
-                    + $"{pendingItem.DefinitionVersion}, but active content provides {definition.Version}.");
-            }
-
             if (!definition.Stackable)
             {
                 if (await InventoryCapacity.FreeSlotsAsync(
