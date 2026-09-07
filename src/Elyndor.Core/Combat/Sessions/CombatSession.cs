@@ -1128,15 +1128,24 @@ public sealed partial class CombatSession
             Guid[] targetActorIds)
     {
         if (!IsArcher
-            || _companion is null
-            || _companion.Actor.IsDead
-            || !IsPhysicalCompanion
-            || targetActorIds.Count <= 1
-            || !targetActorIds.Contains(_companion.Actor.ActorId)
+            || targetActorIds.Length <= 1
             || ability.TargetType is not (
                 AbilityTargetType.AllEnemiesInCombat
-                or AbilityTargetType.NEnemiesInCombat)
-            || !TryGetArcherHook(
+                or AbilityTargetType.NEnemiesInCombat))
+        {
+            return null;
+        }
+
+        CombatParticipantDefinition? companion = _companion;
+        if (companion is null
+            || companion.Actor.IsDead
+            || !IsPhysicalCompanion
+            || !targetActorIds.Contains(companion.Actor.ActorId))
+        {
+            return null;
+        }
+
+        if (!TryGetArcherHook(
                 "B-5-2",
                 out ResolvedTalentEventHook hardened))
         {
@@ -1145,7 +1154,7 @@ public sealed partial class CombatSession
 
         return new Dictionary<Guid, AbilityTargetModifier>
         {
-            [_companion.Actor.ActorId] = new(
+            [companion.Actor.ActorId] = new(
                 DamageMultiplier: Math.Max(
                     0,
                     1 - hardened.Value / 100m))
