@@ -119,7 +119,8 @@
           "type": "Damage",
           "damageType": "Physical",
           "attackPowerCoefficient": 1.4,
-          "spellPowerCoefficient": 0
+          "spellPowerCoefficient": 0,
+          "armorPenetrationBonus": 0.1
         }
       ],
       "displayName": "Пронизывающая стрела",
