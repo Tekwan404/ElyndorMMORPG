@@ -833,6 +833,32 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.Equal(canonicalWeaponId, entry.CharacterItemId);
     }
 
+    [Fact]
+    public async Task MissingItemDefinitionIsExposedAsSafeLegacyPlaceholder()
+    {
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(100, "WARRIOR");
+        Guid itemId = await AddItemAsync(
+            characterId,
+            "REMOVED_LEGACY_ITEM",
+            1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+        InventoryOperationResult result = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        InventoryItemSnapshot item = Assert.Single(
+            result.Snapshot!.Items,
+            candidate => candidate.Id == itemId);
+        Assert.Equal("REMOVED_LEGACY_ITEM", item.Definition.Id);
+        Assert.Equal(ItemType.Material, item.Definition.Type);
+        Assert.Equal(new PrimaryStats(0, 0, 0, 0), item.EffectiveStats);
+        Assert.Contains("Устаревший предмет", item.Definition.Name);
+    }
+
     private async Task<long> GrantDualWieldPermissionAsync(Guid characterId)
     {
         await using GameDbContext context = postgres.CreateDbContext();
