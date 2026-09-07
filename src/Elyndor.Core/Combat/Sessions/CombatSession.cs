@@ -427,8 +427,10 @@ public sealed partial class CombatSession
             return Result(false, CombatErrorCodes.AbilityNotKnown, before);
 
         SyncBerserkerConditionalEffects(now);
-        AbilityDefinition ability = ResolvePyromancerAbility(
-            ResolvePlayerAbility(baseAbility, now),
+        AbilityDefinition ability = ResolveMageAbility(
+            ResolvePyromancerAbility(
+                ResolvePlayerAbility(baseAbility, now),
+                now),
             now);
         Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability);
         if (targetActorIds.Length == 0)
@@ -457,6 +459,7 @@ public sealed partial class CombatSession
             primaryTargetActorId,
             command.AbilityId);
         OnPyromancerAbilityStarted(ability, now);
+        OnMageAbilityStarted(ability, now);
         if (ability.Type != AbilityType.Casted)
         {
             OnPlayerAbilitySucceeded(
@@ -464,6 +467,10 @@ public sealed partial class CombatSession
                 execution,
                 now);
             OnPyromancerAbilityResolved(
+                ability,
+                execution,
+                now);
+            OnMageAbilityResolved(
                 ability,
                 execution,
                 now);
@@ -584,6 +591,11 @@ public sealed partial class CombatSession
                 target.Actor,
                 modifier);
             modifier = ResolvePyromancerTargetAbilityModifier(
+                ability,
+                target.Actor,
+                modifier,
+                now);
+            modifier = ResolveMageTargetAbilityModifier(
                 ability,
                 target.Actor,
                 modifier,
@@ -923,6 +935,7 @@ public sealed partial class CombatSession
 
         aiRuntime.State = MonsterAiState.InCombat;
         SyncBerserkerConditionalEffects(now);
+        SyncMageConditionalEffects(now);
         foreach (string abilityId in aiRuntime.Profile.PriorityAbilityIds)
         {
             if (!enemy.KnownAbilityIds.Contains(abilityId)
@@ -1077,6 +1090,8 @@ public sealed partial class CombatSession
         if (runtime.ActiveCast?.ResolvesAtUtc > now) return;
         ActiveCast? cast = runtime.ActiveCast;
         if (cast is null) return;
+        if (runtime != _playerRuntime)
+            SyncMageConditionalEffects(now);
         AbilityExecutionResult completion =
             AbilityEngine.CompleteCast(runtime, now, _random);
         if (!completion.Succeeded) return;
@@ -1096,6 +1111,10 @@ public sealed partial class CombatSession
                 completion,
                 now);
             OnPyromancerAbilityResolved(
+                cast.Ability,
+                completion,
+                now);
+            OnMageAbilityResolved(
                 cast.Ability,
                 completion,
                 now);
@@ -1154,7 +1173,8 @@ public sealed partial class CombatSession
                 CanMiss: false,
                 CanDodge: false,
                 CanCrit: false,
-                MinimumDamage: 0),
+                MinimumDamage: 0,
+                SkipDefenseMitigation: effect.Definition.Id is "MAGE_ARCANE_ECHO" or "MAGE_ARCHMAGE_ECHO"),
             _random,
             tickAt);
         return result.Events;
@@ -1233,6 +1253,19 @@ public sealed partial class CombatSession
             }
 
             ApplyBerserkerDamageTakenHooks(combatEvent);
+            ApplyMageDamageTakenHooks(combatEvent);
+        }
+
+        if (combatEvent.Type == CombatEventType.ShieldAbsorbed
+            && combatEvent.TargetActorId == _player.Actor.ActorId)
+        {
+            ApplyMageShieldAbsorbedHooks(combatEvent);
+        }
+
+        if (combatEvent.Type == CombatEventType.ResourceChanged
+            && combatEvent.ActorId == _player.Actor.ActorId)
+        {
+            ApplyMageResourceThresholdHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.CriticalHit
@@ -1243,18 +1276,21 @@ public sealed partial class CombatSession
                 combatEvent.OccurredAtUtc);
             ApplyBerserkerCriticalHooks(combatEvent);
             ApplyPyromancerCriticalHooks(combatEvent);
+            ApplyMageCriticalHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.CriticalHit
             && combatEvent.TargetActorId == _player.Actor.ActorId)
         {
             ApplyPyromancerIncomingCriticalHooks(combatEvent);
+            ApplyMageIncomingCriticalHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.AbilityInterrupted
             && combatEvent.ActorId == _player.Actor.ActorId)
         {
             OnPyromancerAbilityInterrupted(combatEvent);
+            OnMageAbilityInterrupted(combatEvent);
         }
     }
 
@@ -1401,9 +1437,10 @@ public sealed partial class CombatSession
         if (now <= _lastPlayerResourceRegenAtUtc) return;
         TimeSpan elapsed = now - _lastPlayerResourceRegenAtUtc;
         _lastPlayerResourceRegenAtUtc = now;
-        if (_player.ResourceRegenPerSecond <= 0 || _player.Actor.IsDead) return;
+        decimal regenPerSecond = EffectivePlayerResourceRegenPerSecond(now);
+        if (regenPerSecond <= 0 || _player.Actor.IsDead) return;
 
-        decimal amount = _player.ResourceRegenPerSecond * (decimal)elapsed.TotalSeconds;
+        decimal amount = regenPerSecond * (decimal)elapsed.TotalSeconds;
         AddResource(_player.Actor, amount, now, "COMBAT_REGEN");
     }
 
@@ -1461,8 +1498,10 @@ public sealed partial class CombatSession
         CombatAbilitySnapshot[] abilities = knownAbilityIds
             .Where(_abilities.ContainsKey)
             .Select(id => definition.Kind == CombatActorKind.Player
-                ? ResolvePyromancerAbility(
-                    ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
+                ? ResolveMageAbility(
+                    ResolvePyromancerAbility(
+                        ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
+                        CurrentTimeUtc),
                     CurrentTimeUtc)
                 : _abilities[id])
             .OrderBy(ability => ability.Id, StringComparer.Ordinal)
