@@ -1863,6 +1863,14 @@
               "targetId": "ARCHER_SPIRIT"
             },
             {
+              "type": "ProfileModifier",
+              "key": "PRIMARY_ATTRIBUTE_OVERRIDE",
+              "values": [
+                1
+              ],
+              "targetId": "INTELLECT"
+            },
+            {
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
               "values": [
