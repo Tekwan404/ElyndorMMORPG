@@ -1359,6 +1359,41 @@ public sealed partial class CombatSession
         }
     }
 
+    private decimal ResolveArcherCompanionDamageMultiplier(
+        CombatActorState target,
+        DateTimeOffset now)
+    {
+        if (!IsArcher || _companion is null || _companion.Actor.IsDead)
+            return 1;
+
+        decimal multiplier = 1;
+
+        if (IsSharedTarget(target.ActorId, now))
+        {
+            if (IsPhysicalCompanion
+                && TryGetArcherHook("B-2-3", out ResolvedTalentEventHook joint))
+                multiplier *= 1 + joint.Value / 100m;
+
+            if (IsSpiritCompanion
+                && TryGetArcherHook("A-5-2", out ResolvedTalentEventHook unity))
+                multiplier *= 1 + unity.Value / 100m;
+        }
+
+        if (CompanionArchetype == "PREDATOR"
+            && HpPercent(target) < 20
+            && TryGetArcherHook("B-6-1", out ResolvedTalentEventHook execute))
+            multiplier *= 1 + execute.Value / 100m;
+
+        if (HasArcherEffect(target, BeastUnityTargetEffectId, now))
+        {
+            ActiveEffect effect =
+                FindArcherEffect(target, BeastUnityTargetEffectId, now)!;
+            multiplier *= 1 + effect.Definition.Magnitude / 100m;
+        }
+
+        return multiplier;
+    }
+
     private void ResolveCompanionExtraAttack(
         CombatActorState target,
         decimal multiplier,
