@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Items;
 using Elyndor.Core.Items;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
