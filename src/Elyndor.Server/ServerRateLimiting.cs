@@ -17,11 +17,43 @@ public sealed class ServerRateLimitingOptions
     public int ApiPermitLimit { get; init; } = 240;
     public int AuthenticationPermitLimit { get; init; } = 20;
     public int WindowSeconds { get; init; } = 60;
+    public int CombatCommandPermitLimit { get; init; } = 20;
+    public int CombatCommandWindowSeconds { get; init; } = 1;
 
     public bool IsValid() =>
         ApiPermitLimit > 0
         && AuthenticationPermitLimit > 0
-        && WindowSeconds > 0;
+        && WindowSeconds > 0
+        && CombatCommandPermitLimit > 0
+        && CombatCommandWindowSeconds > 0;
+}
+
+public sealed class CombatCommandRateLimiter(
+    ServerRateLimitingOptions settings) : IDisposable
+{
+    private readonly PartitionedRateLimiter<Guid> _limiter =
+        PartitionedRateLimiter.Create<Guid, Guid>(
+            accountId => RateLimitPartition.GetFixedWindowLimiter(
+                accountId,
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = settings.CombatCommandPermitLimit,
+                    Window = TimeSpan.FromSeconds(
+                        settings.CombatCommandWindowSeconds),
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                }));
+
+    public bool TryAcquire(Guid accountId)
+    {
+        if (accountId == Guid.Empty)
+            return false;
+
+        using RateLimitLease lease = _limiter.AttemptAcquire(accountId, 1);
+        return lease.IsAcquired;
+    }
+
+    public void Dispose() => _limiter.Dispose();
 }
 
 public static class ServerRateLimiting
@@ -38,10 +70,13 @@ public static class ServerRateLimiting
         if (!settings.IsValid())
         {
             throw new InvalidOperationException(
-                "Rate limiting requires positive permit limits and window.");
+                "Rate limiting requires positive permit limits and windows.");
         }
 
         TimeSpan window = TimeSpan.FromSeconds(settings.WindowSeconds);
+
+        services.AddSingleton(settings);
+        services.AddSingleton<CombatCommandRateLimiter>();
 
         services.AddRateLimiter(options =>
         {
