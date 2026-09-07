@@ -9,7 +9,7 @@ import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName, IconConfig, ModifierName } from '@/ui/icons/icon.types'
 
-type TalentState = 'locked' | 'level-locked' | 'available' | 'learned' | 'maxed' | 'prerequisite' | 'no-points'
+type TalentState = 'locked' | 'level-locked' | 'runtime-unavailable' | 'available' | 'learned' | 'maxed' | 'prerequisite' | 'no-points'
 
 const tiers = Array.from({ length: 9 }, (_, index) => index + 1)
 const rowHeight = 128
@@ -33,7 +33,11 @@ const availablePoints = computed(() => Math.max(0, (snapshot.value?.earnedPoints
 const activeBranch = computed(() => branches.value.find((branch) => branch.id === activeBranchId.value))
 const branchTalents = computed(() => talents.value.filter((talent) => talent.branchId === activeBranchId.value))
 const canLearnSelected = computed(() => selectedTalent.value !== null && canLearn(selectedTalent.value))
-const classLabel = computed(() => snapshot.value?.classId === 'MAGE' ? 'Маг' : 'Воин')
+const classLabel = computed(() => {
+  if (snapshot.value?.classId === 'MAGE') return 'Маг'
+  if (snapshot.value?.classId === 'ARCHER') return 'Лучник'
+  return 'Воин'
+})
 const connections = computed(() => {
   const talentIds = new Set(branchTalents.value.map((talent) => talent.id))
   return branchTalents.value.flatMap((talent) =>
@@ -63,6 +67,7 @@ function spentInBranch(branchId: string): number {
 
 function canLearn(talent: TalentNode): boolean {
   const rank = rankFor(talent.id)
+  if (talent.runtimeStatus !== 'SUPPORTED') return false
   if (rank >= talent.maxRank || availablePoints.value <= 0) return false
   if (spentInBranch(talent.branchId) < talent.requiredSpentPoints) return false
   if (talent.prerequisites.some((item) => rankFor(item.talentId) < item.requiredRank)) return false
@@ -72,6 +77,7 @@ function canLearn(talent: TalentNode): boolean {
 
 function stateFor(talent: TalentNode): TalentState {
   const rank = rankFor(talent.id)
+  if (talent.runtimeStatus !== 'SUPPORTED') return 'runtime-unavailable'
   if (rank >= talent.maxRank) return 'maxed'
   if (talent.requiredLevel !== null && (session.snapshot?.character?.level ?? 0) < talent.requiredLevel) return 'level-locked'
   if (spentInBranch(talent.branchId) < talent.requiredSpentPoints) return 'locked'
@@ -83,6 +89,11 @@ function stateFor(talent: TalentNode): TalentState {
 function stateLabel(talent: TalentNode): string {
   const state = stateFor(talent)
   if (state === 'level-locked') return `Требуется уровень ${talent.requiredLevel}`
+  if (state === 'runtime-unavailable') {
+    return talent.runtimeStatus === 'PARTIAL'
+      ? 'Талант временно недоступен: часть эффектов ещё не подключена.'
+      : 'Талант временно недоступен: игровой эффект ещё не подключён.'
+  }
   return {
     locked: 'Закрыто: вложите больше очков в ветку',
     available: 'Доступно для изучения',
@@ -300,7 +311,9 @@ onMounted(loadTalents)
         </div>
         <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
         <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
-        <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">Этот эффект пока не участвует в бою.</p>
+        <p v-if="selectedTalent.runtimeStatus !== 'SUPPORTED'" class="talent-detail__deferred">
+          Этот талант пока нельзя прокачивать: его runtime-эффекты реализованы не полностью.
+        </p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
           <div><dt>Ряд дерева</dt><dd>{{ selectedTalent.tier }}</dd></div>
@@ -320,7 +333,7 @@ onMounted(loadTalents)
 .points{display:grid;min-width:4.25rem;padding:var(--ui-space-2) var(--ui-space-3);border:1px solid color-mix(in srgb,var(--branch-accent) 46%,transparent);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-2);text-align:center}.points span,.branch-intro span,.branch-intro p,.branch-intro strong small{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}.points strong,.branch-intro strong{color:var(--branch-accent);font-size:var(--ui-font-size-xl)}
 .loadouts,.branches{display:grid;border-block:1px solid var(--ui-color-border)}.loadouts{box-shadow:inset 0 1px rgb(255 255 255 / 2%)}.loadouts{grid-template-columns:1fr 1fr auto;align-items:center;padding:var(--ui-space-2) var(--ui-space-4);background:var(--ui-color-surface-2)}.loadouts button,.branches button{min-height:var(--ui-touch-target);border:0;background:transparent;color:var(--ui-color-text-muted);font:inherit}.loadouts button.active,.branches button.active{color:var(--ui-color-text-primary)}.loadouts button.active{border:1px solid var(--ui-color-primary);border-radius:var(--ui-radius-sm)}.loadouts>small{padding-left:var(--ui-space-2);color:var(--ui-color-text-muted)}.branches{border-top:0;background:var(--ui-color-surface-1)}.branches button{position:relative;display:flex;align-items:center;justify-content:center;gap:var(--ui-space-2)}.branches button.active::after{position:absolute;right:var(--ui-space-3);bottom:-1px;left:var(--ui-space-3);height:2px;background:var(--branch-accent);content:''}.branches small{color:var(--branch-accent)}
 .tree{position:relative;margin:0 var(--ui-space-3);overflow:hidden;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-lg);background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--branch-accent) 8%,transparent),transparent 22rem),rgb(5 8 16 / 74%);box-shadow:var(--ui-shadow-inset)}.tree__connections{position:absolute;z-index:0;inset:0;width:100%;height:100%}.tree__connections path{fill:none;stroke:color-mix(in srgb,var(--branch-accent) 44%,var(--ui-color-border));stroke-width:2;vector-effect:non-scaling-stroke}.tier{position:absolute;right:0;left:0;border-bottom:1px solid var(--ui-color-border)}.tier--locked{background:rgb(3 5 10 / 32%)}.tier__label{position:absolute;z-index:2;top:var(--ui-space-1);left:var(--ui-space-2);display:grid;margin:0;color:var(--ui-color-text-muted);font-size:.58rem;text-transform:uppercase}.tier__label span{font-size:.52rem}.tier__nodes{position:relative;z-index:1;display:grid;height:100%;align-items:center;justify-items:center;padding:var(--ui-space-5) var(--ui-space-1) 0}
-.talent-node{position:relative;width:3.75rem;height:3.75rem;padding:.28rem;border:2px solid var(--ui-color-border-strong);border-radius:50%;background:var(--ui-color-surface-2);color:var(--ui-color-text-muted);box-shadow:0 0 0 4px rgb(8 12 22 / 82%);transition:transform var(--ui-transition-fast),border-color var(--ui-transition-fast),box-shadow var(--ui-transition-fast)}.talent-node:active{transform:scale(.96)}.talent-node :deep(.icon-generator){width:100%;height:100%}.talent-node__art{width:100%;height:100%;border-radius:50%;object-fit:cover}.talent-node>span{position:absolute;right:-.35rem;bottom:-.35rem;min-width:1.75rem;padding:.1rem .25rem;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-xs);background:var(--ui-color-background);color:var(--ui-color-text-primary);font-size:.64rem}.talent-node--available{border-color:var(--ui-color-primary)}.talent-node--learned,.talent-node--maxed{border-color:var(--branch-accent);box-shadow:0 0 0 4px rgb(8 12 22 / 82%),0 0 13px color-mix(in srgb,var(--branch-accent) 36%,transparent)}.talent-node--locked,.talent-node--level-locked,.talent-node--prerequisite,.talent-node--no-points{filter:grayscale(.9);opacity:.42}
+.talent-node{position:relative;width:3.75rem;height:3.75rem;padding:.28rem;border:2px solid var(--ui-color-border-strong);border-radius:50%;background:var(--ui-color-surface-2);color:var(--ui-color-text-muted);box-shadow:0 0 0 4px rgb(8 12 22 / 82%);transition:transform var(--ui-transition-fast),border-color var(--ui-transition-fast),box-shadow var(--ui-transition-fast)}.talent-node:active{transform:scale(.96)}.talent-node :deep(.icon-generator){width:100%;height:100%}.talent-node__art{width:100%;height:100%;border-radius:50%;object-fit:cover}.talent-node>span{position:absolute;right:-.35rem;bottom:-.35rem;min-width:1.75rem;padding:.1rem .25rem;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-xs);background:var(--ui-color-background);color:var(--ui-color-text-primary);font-size:.64rem}.talent-node--available{border-color:var(--ui-color-primary)}.talent-node--learned,.talent-node--maxed{border-color:var(--branch-accent);box-shadow:0 0 0 4px rgb(8 12 22 / 82%),0 0 13px color-mix(in srgb,var(--branch-accent) 36%,transparent)}.talent-node--locked,.talent-node--level-locked,.talent-node--runtime-unavailable,.talent-node--prerequisite,.talent-node--no-points{filter:grayscale(.9);opacity:.42}
 .talents__footer{margin:var(--ui-space-3);padding:var(--ui-space-3);border:1px solid var(--ui-color-border);background:var(--ui-color-surface-1)}.talents__footer div{display:grid}.talents__footer small,.talent-detail__identity p,.talent-detail__deferred,dt{color:var(--ui-color-text-muted)}.talent-detail__identity{display:flex;align-items:center;gap:var(--ui-space-3)}.talent-detail__identity :deep(.icon-generator){width:var(--ui-icon-slot-lg);height:var(--ui-icon-slot-lg)}.talent-detail__art{width:var(--ui-icon-slot-lg);height:var(--ui-icon-slot-lg);border:1px solid var(--branch-accent);border-radius:var(--ui-radius-md);object-fit:cover}.talent-detail__identity p{margin:0}.talent-detail__state{color:var(--ui-color-primary);font-weight:var(--ui-font-weight-semibold)}.talent-detail__ability{color:var(--branch-accent);font-weight:var(--ui-font-weight-semibold)}.talent-detail__description{white-space:pre-line}.talent-detail dl{display:grid;gap:var(--ui-space-2)}.talent-detail dl div{display:flex;justify-content:space-between;gap:var(--ui-space-4)}dd{margin:0;text-align:right}
 @media(max-width:350px){.talent-node{width:3.2rem;height:3.2rem}.loadouts{grid-template-columns:1fr 1fr}.loadouts>small{display:none}}
 </style>
