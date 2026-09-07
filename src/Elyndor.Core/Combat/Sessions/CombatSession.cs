@@ -180,6 +180,7 @@ public sealed partial class CombatSession
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
         _selectedTargetActorId = _primaryEnemyActorId;
+        InitializeThreatTables();
         _abilities = abilities;
         _playerTalents = playerTalents;
         _random = random;
@@ -953,6 +954,7 @@ public sealed partial class CombatSession
 
             _enemies.Add(summoned);
             _enemiesById.Add(summoned.Actor.ActorId, summoned);
+            EnsureThreatTable(summoned.Actor.ActorId);
             _enemyRuntimes.Add(
                 summoned.Actor.ActorId,
                 CreateRuntime(
@@ -1091,7 +1093,12 @@ public sealed partial class CombatSession
         }
 
         if (enemy.CanAutoAttack)
-            ResolveAutoAttack(enemy, _player, now);
+        {
+            ResolveAutoAttack(
+                enemy,
+                ResolveEnemyPrimaryTarget(enemy),
+                now);
+        }
         aiRuntime.NextActionAtUtc =
             Status == CombatSessionStatus.Active && !enemy.Actor.IsDead
                 ? NextEnemyActionAfter(enemy, now)
@@ -1105,14 +1112,12 @@ public sealed partial class CombatSession
         if (_player.Actor.IsDead)
             return [];
 
-        Guid[] hostileActors = _companion is not null && !_companion.Actor.IsDead
-            ? [_player.Actor.ActorId, _companion.Actor.ActorId]
-            : [_player.Actor.ActorId];
+        Guid[] hostileActors = ResolveEnemyHostileActorIds(enemy);
 
         return ability.TargetType switch
         {
             AbilityTargetType.Self => [enemy.Actor.ActorId],
-            AbilityTargetType.SingleEnemy => [_player.Actor.ActorId],
+            AbilityTargetType.SingleEnemy => hostileActors.Take(1).ToArray(),
             AbilityTargetType.AllEnemiesInCombat => hostileActors,
             AbilityTargetType.NEnemiesInCombat when ability.TargetCount > 0 =>
                 hostileActors.Take(ability.TargetCount).ToArray(),
@@ -1402,6 +1407,7 @@ public sealed partial class CombatSession
             if (enemyDeath)
                 pendingEnemyDeaths.Remove(normalized.ActorId);
 
+            RegisterThreat(normalized);
             Append(normalized);
             ApplyTalentHooks(normalized);
             if (normalized.Type == CombatEventType.ActorDied)
