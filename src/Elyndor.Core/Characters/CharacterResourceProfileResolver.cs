@@ -10,7 +10,8 @@ public static class CharacterResourceProfileResolver
         ResourceProfile profile,
         ResourceScalingProfile? scaling,
         CharacterStats stats,
-        decimal maxResourceFlat = 0)
+        decimal maxResourceFlat = 0,
+        decimal maxResourcePercent = 0)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(stats);
@@ -28,7 +29,9 @@ public static class CharacterResourceProfileResolver
             maxValue = scaling.ManaBase + (stats.Intellect * scaling.ManaPerIntellect);
         }
 
-        maxValue = Math.Max(0, maxValue + maxResourceFlat);
+        maxValue = Math.Max(
+            0,
+            (maxValue + maxResourceFlat) * (1 + maxResourcePercent / 100m));
         bool startsFull = profile.StartValue == profile.MaxValue;
         bool respawnsFull = profile.RespawnValue == profile.MaxValue;
 
