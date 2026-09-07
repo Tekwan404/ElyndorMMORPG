@@ -14,6 +14,7 @@ public static class WorldEncounterErrorCodes
     public const string CharacterNotFound = "world_character_not_found";
     public const string LocationUnavailable = "world_encounter_location_unavailable";
     public const string EncounterUnavailable = "world_encounter_unavailable";
+    public const string Travelling = "world_encounter_travelling";
 }
 
 public sealed record WorldEncounterSnapshot(
@@ -143,7 +144,8 @@ public sealed class WorldEncounterService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
-    WorldEncounterRegistry registry)
+    WorldEncounterRegistry registry,
+    TimeProvider timeProvider)
 {
     public WorldEncounterService(
         GameDbContext dbContext,
@@ -155,7 +157,8 @@ public sealed class WorldEncounterService(
             dbContext,
             new StaticContentSnapshotProvider(content),
             randomFactory,
-            registry)
+            registry,
+            TimeProvider.System)
     {
     }
 
@@ -172,6 +175,16 @@ public sealed class WorldEncounterService(
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
         if (character is null)
             return (null, WorldEncounterErrorCodes.CharacterNotFound);
+
+        if (await TravelPersistence.IsTravellingAsync(
+                dbContext,
+                character.Id,
+                timeProvider.GetUtcNow(),
+                cancellationToken))
+        {
+            registry.Clear(accountId);
+            return (null, WorldEncounterErrorCodes.Travelling);
+        }
 
         CharacterLocation? characterLocation = await dbContext.CharacterLocations
             .AsNoTracking()
