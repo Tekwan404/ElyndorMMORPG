@@ -10,6 +10,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20260907093000_RedPriorityCoreCorrectness")]
 public partial class RedPriorityCoreCorrectness : Migration
 {
+    private static readonly string[] CharacterTravelRequestColumns =
+        ["CharacterId", "RequestId"];
+    private static readonly string[] PendingLootCharacterCreatedColumns =
+        ["CharacterId", "CreatedAtUtc"];
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
@@ -205,14 +209,14 @@ public partial class RedPriorityCoreCorrectness : Migration
             name: "uq_character_travel_states_character_request",
             schema: "game",
             table: "character_travel_states",
-            columns: new[] { "CharacterId", "RequestId" },
+            columns: CharacterTravelRequestColumns,
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "ix_pending_loot_items_character_created_at",
             schema: "game",
             table: "pending_loot_items",
-            columns: new[] { "CharacterId", "CreatedAtUtc" });
+            columns: PendingLootCharacterCreatedColumns);
 
         migrationBuilder.CreateIndex(
             name: "ix_pending_loot_items_reward_resolution_id",
