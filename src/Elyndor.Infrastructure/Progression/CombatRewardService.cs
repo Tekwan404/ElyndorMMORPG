@@ -11,6 +11,7 @@ using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Quests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -148,16 +149,15 @@ public sealed class CombatRewardService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
-        WorldContractCompletionReward contractReward =
-            await CompleteWorldContractsAsync(
-                character,
+        QuestProgressUpdateResult questProgress =
+            await QuestProgression.ApplyKillsAsync(
+                dbContext,
+                character.Id,
                 snapshot.SessionId,
-                rewardSources,
-                content.WorldContracts ?? [],
+                rewardSources.Select(source => source.Monster.Id).ToArray(),
+                content,
                 now,
                 cancellationToken);
-        xpEarned = checked(xpEarned + contractReward.Xp);
-        goldEarned = checked(goldEarned + contractReward.Gold);
 
         CharacterProgressionResult progressionResult = CharacterProgression.GrantExperience(
             character,
@@ -218,61 +218,7 @@ public sealed class CombatRewardService(
             goldEarned,
             progressionResult,
             loot.Select(roll => ToRewardItem(roll, indexes)).ToArray(),
-            contractReward.ContractIds);
-    }
-
-    private async Task<WorldContractCompletionReward> CompleteWorldContractsAsync(
-        Character character,
-        Guid combatSessionId,
-        IReadOnlyList<ResolvedRewardSource> rewardSources,
-        IReadOnlyList<WorldContractDefinition> contracts,
-        DateTimeOffset completedAtUtc,
-        CancellationToken cancellationToken)
-    {
-        if (contracts.Count == 0)
-            return WorldContractCompletionReward.Empty;
-
-        HashSet<string> defeatedMonsterIds = rewardSources
-            .Select(source => source.Monster.Id)
-            .ToHashSet(StringComparer.Ordinal);
-        string[] completedContractIds = await dbContext.CharacterContractCompletions
-            .Where(state => state.CharacterId == character.Id)
-            .Select(state => state.ContractId)
-            .ToArrayAsync(cancellationToken);
-        HashSet<string> completed = completedContractIds.ToHashSet(StringComparer.Ordinal);
-        string[] acceptedContractIds = await dbContext.CharacterContractAcceptances
-            .Where(state => state.CharacterId == character.Id)
-            .Select(state => state.ContractId)
-            .ToArrayAsync(cancellationToken);
-        HashSet<string> accepted = acceptedContractIds.ToHashSet(StringComparer.Ordinal);
-
-        int xp = 0;
-        int gold = 0;
-        List<string> contractIds = [];
-        foreach (WorldContractDefinition contract in contracts)
-        {
-            if (character.Level < contract.RequiredLevel
-                || !accepted.Contains(contract.Id)
-                || !defeatedMonsterIds.Contains(contract.TargetMonsterId)
-                || completed.Contains(contract.Id))
-            {
-                continue;
-            }
-
-            dbContext.CharacterContractCompletions.Add(
-                new CharacterContractCompletion(
-                    character.Id,
-                    contract.Id,
-                    contract.TargetMonsterId,
-                    combatSessionId,
-                    completedAtUtc));
-            completed.Add(contract.Id);
-            contractIds.Add(contract.Id);
-            xp = checked(xp + contract.RewardXp);
-            gold = checked(gold + contract.RewardGold);
-        }
-
-        return new WorldContractCompletionReward(xp, gold, contractIds.ToArray());
+            questProgress.CompletedLegacyContractIds);
     }
 
     private static ResolvedRewardSource[] ResolveRewardSources(
@@ -454,15 +400,6 @@ public sealed class CombatRewardService(
                 definition.Version,
                 acquiredAtUtc));
         }
-    }
-
-    private sealed record WorldContractCompletionReward(
-        int Xp,
-        int Gold,
-        IReadOnlyList<string> ContractIds)
-    {
-        public static WorldContractCompletionReward Empty { get; } =
-            new(0, 0, []);
     }
 
     private sealed record ResolvedRewardSource(
