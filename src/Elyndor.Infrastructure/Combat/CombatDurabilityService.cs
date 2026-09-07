@@ -15,6 +15,14 @@ public sealed class CombatDurabilityService(
     GameDbContext dbContext,
     ILogger<CombatDurabilityService> logger)
 {
+    private static readonly Action<ILogger, Guid, Guid, bool, Exception?>
+        InterruptedCombatRecovered =
+            LoggerMessage.Define<Guid, Guid, bool>(
+                LogLevel.Warning,
+                new EventId(2101, nameof(InterruptedCombatRecovered)),
+                "Recovered interrupted combat session {SessionId} for character "
+                + "{CharacterId}; rewardCommitted={RewardCommitted}.");
+
     public async Task<bool> BeginAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
@@ -209,12 +217,12 @@ public sealed class CombatDurabilityService(
             dbContext.ActiveCombatSessions.Remove(session);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            logger.LogWarning(
-                "Recovered interrupted combat session {SessionId} for character {CharacterId}; "
-                + "rewardCommitted={RewardCommitted}.",
+            InterruptedCombatRecovered(
+                logger,
                 session.SessionId,
                 session.CharacterId,
-                rewardCommitted);
+                rewardCommitted,
+                null);
         }
 
         return sessions.Length;
