@@ -82,6 +82,13 @@ public sealed partial class CombatSession
         bool physicalShot = IsPhysicalShotAbility(ability);
         bool magicalArrow = IsMagicalArrowAbility(ability);
 
+        if (HasArcherEffect(_player.Actor, SniperFocusEffectId, now)
+            && physicalShot)
+        {
+            accuracyBonus += 10;
+            criticalChanceBonus += 8;
+        }
+
         if (physicalShot)
         {
             if (TryGetArcherHook("M-1-2", out ResolvedTalentEventHook physicalCrit))
@@ -197,6 +204,10 @@ public sealed partial class CombatSession
         bool magicalArrow = IsMagicalArrowAbility(ability);
         bool marked = HasArcherEffect(target, HunterMarkEffectId, now);
 
+        if (physicalShot
+            && HasArcherEffect(_player.Actor, SniperFocusEffectId, now))
+            armorPenetrationBonus += 0.10m;
+
         if (marked)
         {
             if (physicalShot)
@@ -240,6 +251,11 @@ public sealed partial class CombatSession
             && hpPercent < 25
             && TryGetArcherHook("M-8-1", out ResolvedTalentEventHook heartShot))
             damageMultiplier *= 1 + heartShot.Value / 100m;
+
+        ActiveEffect? deadlyStreak =
+            FindArcherEffect(_player.Actor, DeadlyStreakEffectId, now);
+        if (deadlyStreak is not null && physicalShot)
+            criticalDamageBonus += deadlyStreak.Definition.Magnitude * deadlyStreak.Stacks;
 
         ActiveEffect? brokenArmor =
             FindArcherEffect(target, BrokenArmorEffectId, now);
@@ -312,6 +328,9 @@ public sealed partial class CombatSession
 
         if (IsShotAbility(ability))
         {
+            if (IsPhysicalShotAbility(ability))
+                ConsumeArcherStackedEffect(_player.Actor, ExposedDefenseEffectId, 1, now);
+
             RemoveArcherEffect(_player.Actor, EfficientShotEffectId, now);
             RemoveArcherEffect(_player.Actor, CoordinationEffectId, now);
             RemoveArcherEffect(_player.Actor, PetCritShotEffectId, now);
@@ -1294,11 +1313,37 @@ public sealed partial class CombatSession
 
         decimal multiplier = 1;
         decimal armorPenetration = 0;
+        decimal accuracyBonus = 0;
+        decimal criticalChanceBonus = 0;
+        decimal criticalDamageBonus = 0;
         bool enchanted = HasArcherEffect(_player.Actor, EnchantedShotEffectId, now);
         bool heavy = HasArcherEffect(_player.Actor, HeavyArrowEffectId, now);
 
         if (heavy)
             multiplier *= 1.75m;
+
+        if (HasArcherEffect(_player.Actor, SniperFocusEffectId, now))
+        {
+            accuracyBonus += 10;
+            criticalChanceBonus += 8;
+            armorPenetration += 0.10m;
+        }
+
+        if (HpPercent(target.Actor) > 80
+            && TryGetArcherHook("M-2-4", out ResolvedTalentEventHook coldCalc))
+            criticalChanceBonus += coldCalc.Value;
+
+        if (HpPercent(target.Actor) < 30
+            && TryGetArcherHook("M-6-2", out ResolvedTalentEventHook instinct))
+        {
+            accuracyBonus += instinct.Value;
+            criticalChanceBonus += instinct.Value;
+        }
+
+        ActiveEffect? deadly =
+            FindArcherEffect(_player.Actor, DeadlyStreakEffectId, now);
+        if (deadly is not null)
+            criticalDamageBonus += deadly.Definition.Magnitude * deadly.Stacks;
 
         bool marked = HasArcherEffect(target.Actor, HunterMarkEffectId, now);
         if (marked)
@@ -1306,6 +1351,10 @@ public sealed partial class CombatSession
             multiplier *= 1.05m;
             if (TryGetArcherHook("M-5-2", out ResolvedTalentEventHook victim))
                 multiplier *= 1 + victim.Value / 100m;
+            if (TryGetArcherHook("M-3-2", out ResolvedTalentEventHook deepMark))
+                criticalDamageBonus += deepMark.Value;
+            if (TryGetArcherHook("M-9-1", out ResolvedTalentEventHook master))
+                criticalChanceBonus += master.SecondaryValue;
         }
 
         ActiveEffect? broken =
@@ -1313,7 +1362,19 @@ public sealed partial class CombatSession
         if (broken is not null)
             armorPenetration += broken.Definition.Magnitude / 100m;
 
-        return new(multiplier, armorPenetration, heavy, enchanted);
+        ActiveEffect? petCrit =
+            FindArcherEffect(_player.Actor, PetCritShotEffectId, now);
+        if (petCrit is not null)
+            multiplier *= 1 + petCrit.Definition.Magnitude / 100m;
+
+        return new(
+            multiplier,
+            armorPenetration,
+            accuracyBonus,
+            criticalChanceBonus,
+            criticalDamageBonus,
+            heavy,
+            enchanted);
     }
 
     private void ApplyArcherAutoAttackResolved(
@@ -1326,6 +1387,9 @@ public sealed partial class CombatSession
     {
         if (!IsArcher)
             return;
+
+        ConsumeArcherStackedEffect(_player.Actor, ExposedDefenseEffectId, 1, now);
+        RemoveArcherEffect(_player.Actor, PetCritShotEffectId, now);
 
         if (modifier.Heavy)
             RemoveArcherEffect(_player.Actor, HeavyArrowEffectId, now);
@@ -1844,9 +1908,26 @@ public sealed partial class CombatSession
     private static bool IsShotAbility(AbilityDefinition ability) =>
         IsPhysicalShotAbility(ability) || IsMagicalArrowAbility(ability);
 
+    private void ConsumeArcherStackedEffect(
+        CombatActorState actor,
+        string effectId,
+        int count,
+        DateTimeOffset now)
+    {
+        ActiveEffect? effect = FindArcherEffect(actor, effectId, now);
+        if (effect is null) return;
+
+        effect.Stacks = Math.Max(0, effect.Stacks - count);
+        if (effect.Stacks == 0)
+            RemoveArcherEffect(actor, effectId, now);
+    }
+
     private sealed record ArcherAutoAttackModifier(
         decimal DamageMultiplier,
         decimal ArmorPenetrationBonus,
+        decimal AccuracyBonus,
+        decimal CriticalChanceBonus,
+        decimal CriticalDamageBonus,
         bool Heavy,
         bool Enchanted);
 }
