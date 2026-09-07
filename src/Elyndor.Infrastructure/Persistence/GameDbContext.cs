@@ -7,6 +7,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Content;
+using Elyndor.Core.Quests;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.Persistence;
@@ -53,6 +54,12 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<CharacterContractCompletion> CharacterContractCompletions =>
         Set<CharacterContractCompletion>();
+
+    public DbSet<CharacterQuestState> CharacterQuestStates =>
+        Set<CharacterQuestState>();
+
+    public DbSet<QuestRewardGrant> QuestRewardGrants =>
+        Set<QuestRewardGrant>();
 
     public DbSet<ContentRevision> ContentRevisions => Set<ContentRevision>();
 
