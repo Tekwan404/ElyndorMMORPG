@@ -65,6 +65,39 @@ describe('AppShell', () => {
     expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
   })
 
+  it('shows accepted contracts on the quest tab', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    store.state = 'world'
+    store.snapshot = worldSnapshot()
+    store.snapshot.world!.contracts = [
+      {
+        id: 'CONTRACT_BROODMOTHER_GATE',
+        displayName: 'Контракт: Прародительница',
+        description: 'Уничтожьте Паучью Прародительницу.',
+        requiredLevel: 14,
+        targetMonsterId: 'SPIDER_BROODMOTHER_L14',
+        unlockLocationId: 'BLIGHTED_GROVE',
+        status: 'ACTIVE',
+        offerLocationId: 'BROODMOTHER_LAIR',
+        rewardXp: 2000,
+        rewardGold: 150,
+      },
+    ]
+
+    const wrapper = mount(AppShell)
+    await wrapper.get('[data-nav="quests"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-nav="quests"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-quest-view]').text()).toContain('Контракт: Прародительница')
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('Паучья Прародительница')
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('2000 опыта')
+  })
+
   it('explains a failed connection and offers an explicit retry', async () => {
     const store = useGameSessionStore()
     vi.spyOn(store, 'start').mockResolvedValue(undefined)
