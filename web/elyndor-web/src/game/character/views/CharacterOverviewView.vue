@@ -241,7 +241,10 @@ function abilityInitials(ability: KnownAbility): string {
             :title="slot.item?.name ?? slot.label"
             @click="openEquipmentSlot(slot)"
           >
-            <span class="equipment-slot__icon">{{ itemGlyph(slot.item, slot.glyph) }}</span>
+            <span class="equipment-slot__icon">
+              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <template v-else>{{ itemGlyph(slot.item, slot.glyph) }}</template>
+            </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
         </div>
