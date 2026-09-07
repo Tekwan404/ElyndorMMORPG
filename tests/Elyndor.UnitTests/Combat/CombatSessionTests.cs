@@ -9,6 +9,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Combat;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Elyndor.UnitTests.Combat;
 
@@ -341,7 +342,8 @@ public sealed class CombatSessionTests
         using CombatSessionRegistry registry = new(
             new FrozenTimeProvider(Now),
             new NullPublisher(),
-            new NullFinalizer());
+            new NullFinalizer(),
+            NullLogger<CombatSessionRegistry>.Instance);
         Guid accountId = Guid.NewGuid();
 
         Assert.True(registry.TryAdd(accountId, PlayerId, session, pinned));
@@ -381,7 +383,8 @@ public sealed class CombatSessionTests
         using CombatSessionRegistry registry = new(
             new FrozenTimeProvider(Now),
             new NullPublisher(),
-            new NullFinalizer());
+            new NullFinalizer(),
+            NullLogger<CombatSessionRegistry>.Instance);
 
         Assert.Throws<InvalidOperationException>(() =>
             registry.TryAdd(Guid.NewGuid(), PlayerId, session, wrong));
@@ -1001,7 +1004,8 @@ public sealed class CombatSessionTests
         using CombatSessionRegistry registry = new(
             new FrozenTimeProvider(Now),
             new NullPublisher(),
-            new NullFinalizer());
+            new NullFinalizer(),
+            NullLogger<CombatSessionRegistry>.Instance);
         Guid accountId = Guid.NewGuid();
         Assert.True(registry.TryAdd(accountId, PlayerId, session));
 
