@@ -44,6 +44,9 @@
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
               "values": [
+                1,
+                1,
+                1,
                 1
               ],
               "targetId": "MAGE_FIREBALL"
@@ -977,6 +980,9 @@
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
               "values": [
+                1,
+                1,
+                1,
                 1
               ],
               "targetId": "MAGE_ARCANE_SPARK"
@@ -1925,6 +1931,9 @@
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
               "values": [
+                1,
+                1,
+                1,
                 1
               ],
               "targetId": "MAGE_ICE_SHARD"
