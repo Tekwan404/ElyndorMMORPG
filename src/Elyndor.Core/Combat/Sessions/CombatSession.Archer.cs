@@ -88,8 +88,12 @@ public sealed partial class CombatSession
         if (HasArcherEffect(_player.Actor, SniperFocusEffectId, now)
             && physicalShot)
         {
-            accuracyBonus += 10;
-            criticalChanceBonus += 8;
+            accuracyBonus += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "accuracyBonus");
+            criticalChanceBonus += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "criticalChanceBonus");
         }
 
         if (physicalShot)
@@ -143,9 +147,15 @@ public sealed partial class CombatSession
             if (IsArcaneFlowActive(now)
                 && TryGetArcherHook("A-5-1", out _))
             {
-                resourceCost *= 0.85m;
-                damageMultiplier *= 1.15m;
-                magicPenetrationBonus += 0.10m;
+                resourceCost *= ArcherRuntimeParameter(
+                    "ARCANE_FLOW",
+                    "resourceCostMultiplier");
+                damageMultiplier *= ArcherRuntimeParameter(
+                    "ARCANE_FLOW",
+                    "damageMultiplier");
+                magicPenetrationBonus += ArcherRuntimeParameter(
+                    "ARCANE_FLOW",
+                    "magicPenetrationBonus");
             }
 
             if (IsArcaneFlowActive(now)
@@ -209,14 +219,26 @@ public sealed partial class CombatSession
 
         if (physicalShot
             && HasArcherEffect(_player.Actor, SniperFocusEffectId, now))
-            armorPenetrationBonus += 0.10m;
+        {
+            armorPenetrationBonus += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "armorPenetrationBonus");
+        }
 
         if (marked)
         {
             if (physicalShot)
-                damageMultiplier *= 1.05m;
+            {
+                damageMultiplier *= ArcherRuntimeParameter(
+                    "HUNTER_MARK",
+                    "physicalDamageMultiplier");
+            }
             else if (magicalArrow)
-                damageMultiplier *= 1.03m;
+            {
+                damageMultiplier *= ArcherRuntimeParameter(
+                    "HUNTER_MARK",
+                    "magicalDamageMultiplier");
+            }
 
             if (physicalShot
                 && TryGetArcherHook("M-3-2", out ResolvedTalentEventHook deepMark))
@@ -368,7 +390,9 @@ public sealed partial class CombatSession
                     TimeSpan.FromHours(12),
                     1,
                     EffectStackPolicy.Replace,
-                    1.75m),
+                    ArcherRuntimeParameter(
+                        "HEAVY_ARROW",
+                        "autoAttackDamageMultiplier")),
                 now);
             return;
         }
@@ -397,7 +421,9 @@ public sealed partial class CombatSession
                     TimeSpan.FromHours(12),
                     1,
                     EffectStackPolicy.Replace,
-                    0.70m),
+                    ArcherRuntimeParameter(
+                        "ENCHANTED_SHOT",
+                        "activationMagnitude")),
                 now);
             return;
         }
@@ -473,7 +499,13 @@ public sealed partial class CombatSession
             }
 
             if (_markedShotSequence % Math.Max(1, master.TriggerCount) == 0)
-                ResolveOwnerExtraArrow(target, 0.60m, master.TalentId, now);
+            {
+                ResolveOwnerExtraArrow(
+                    target,
+                    master.Value / 100m,
+                    master.TalentId,
+                    now);
+            }
         }
 
         if (string.Equals(ability.Id, "PIERCING_ARROW", StringComparison.Ordinal)
@@ -654,7 +686,7 @@ public sealed partial class CombatSession
             new EffectDefinition(
                 SniperFocusEffectId,
                 EffectKind.Buff,
-                TimeSpan.FromSeconds(10),
+                ArcherRuntimeDuration("SNIPER_FOCUS", "durationSeconds"),
                 1,
                 EffectStackPolicy.Replace,
                 1),
@@ -677,25 +709,35 @@ public sealed partial class CombatSession
             new EffectDefinition(
                 BeastSurgeEffectId,
                 EffectKind.Buff,
-                TimeSpan.FromSeconds(10),
+                ArcherRuntimeDuration("BEAST_SURGE", "durationSeconds"),
                 1,
                 EffectStackPolicy.Replace,
-                15),
+                (ArcherRuntimeParameter(
+                    "BEAST_SURGE",
+                    "focusRegenMultiplier") - 1m) * 100m),
             now);
+        TimeSpan beastSurgeDuration =
+            ArcherRuntimeDuration("BEAST_SURGE", "durationSeconds");
         ApplyCompanionMultiplier(
             BeastSurgePetEffectId,
             EffectStat.OutgoingDamageMultiplier,
-            1.20m,
-            TimeSpan.FromSeconds(10),
+            ArcherRuntimeParameter(
+                "BEAST_SURGE",
+                "companionDamageMultiplier"),
+            beastSurgeDuration,
             now);
         ApplyCompanionMultiplier(
             BeastSurgePetEffectId + "_AS",
             EffectStat.AttackSpeed,
-            1.20m,
-            TimeSpan.FromSeconds(10),
+            ArcherRuntimeParameter(
+                "BEAST_SURGE",
+                "companionAttackSpeedMultiplier"),
+            beastSurgeDuration,
             now);
 
-        if (HasArcherTalent("B-8-3"))
+        if (TryGetArcherHook(
+                "B-8-3",
+                out ResolvedTalentEventHook unstoppable))
         {
             _playerRuntime.Cooldowns.Remove("COMMAND_ATTACK");
             ApplyArcherEffectFrom(
@@ -704,7 +746,7 @@ public sealed partial class CombatSession
                 new EffectDefinition(
                     PetSilenceImmunityEffectId,
                     EffectKind.Buff,
-                    TimeSpan.FromSeconds(3),
+                    unstoppable.Duration,
                     1,
                     EffectStackPolicy.Replace,
                     0),
@@ -719,7 +761,7 @@ public sealed partial class CombatSession
             new EffectDefinition(
                 ArcaneFlowEffectId,
                 EffectKind.Buff,
-                TimeSpan.FromSeconds(10),
+                ArcherRuntimeDuration("ARCANE_FLOW", "durationSeconds"),
                 1,
                 EffectStackPolicy.Replace,
                 0),
@@ -755,7 +797,7 @@ public sealed partial class CombatSession
                 SpiritFlowEffectId + "_AS",
                 EffectStat.AttackSpeed,
                 1 + capstone.SecondaryValue / 100m,
-                TimeSpan.FromSeconds(10),
+                capstone.Duration,
                 now);
         }
     }
@@ -777,7 +819,10 @@ public sealed partial class CombatSession
             case "PREDATOR":
                 ResolveCompanionExtraAttack(
                     target,
-                    1.50m * ResolvePhysicalCompanionAbilityDamageMultiplier(),
+                    ArcherRuntimeParameter(
+                        "COMMAND_ATTACK",
+                        "predatorDamageMultiplier")
+                    * ResolvePhysicalCompanionAbilityDamageMultiplier(),
                     "COMMAND_ATTACK",
                     now);
                 break;
@@ -788,10 +833,14 @@ public sealed partial class CombatSession
                     new EffectDefinition(
                         GuardianBarrierEffectId,
                         EffectKind.StatModifier,
-                        TimeSpan.FromSeconds(6),
+                        ArcherRuntimeDuration(
+                            "COMMAND_ATTACK",
+                            "guardianDurationSeconds"),
                         1,
                         EffectStackPolicy.Replace,
-                        0.90m,
+                        ArcherRuntimeParameter(
+                            "COMMAND_ATTACK",
+                            "guardianIncomingDamageMultiplier"),
                         ModifiedStat: EffectStat.IncomingDamageMultiplier,
                         ModifierMode: EffectModifierMode.Multiplicative),
                     now);
@@ -1386,8 +1435,10 @@ public sealed partial class CombatSession
             && TryGetArcherHook("A-1-4", out ResolvedTalentEventHook mind))
             regen *= 1 + mind.Value / 100m;
 
-        if (HasArcherEffect(_player.Actor, BeastSurgeEffectId, now))
-            regen *= 1.15m;
+        ActiveEffect? beastSurge =
+            FindArcherEffect(_player.Actor, BeastSurgeEffectId, now);
+        if (beastSurge is not null)
+            regen *= 1 + beastSurge.Definition.Magnitude / 100m;
 
         return regen;
     }
@@ -1406,16 +1457,24 @@ public sealed partial class CombatSession
         decimal criticalChanceBonus = 0;
         decimal criticalDamageBonus = 0;
         bool enchanted = HasArcherEffect(_player.Actor, EnchantedShotEffectId, now);
-        bool heavy = HasArcherEffect(_player.Actor, HeavyArrowEffectId, now);
+        ActiveEffect? heavyEffect =
+            FindArcherEffect(_player.Actor, HeavyArrowEffectId, now);
+        bool heavy = heavyEffect is not null;
 
-        if (heavy)
-            multiplier *= 1.75m;
+        if (heavyEffect is not null)
+            multiplier *= heavyEffect.Definition.Magnitude;
 
         if (HasArcherEffect(_player.Actor, SniperFocusEffectId, now))
         {
-            accuracyBonus += 10;
-            criticalChanceBonus += 8;
-            armorPenetration += 0.10m;
+            accuracyBonus += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "accuracyBonus");
+            criticalChanceBonus += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "criticalChanceBonus");
+            armorPenetration += ArcherRuntimeParameter(
+                "SNIPER_FOCUS",
+                "armorPenetrationBonus");
         }
 
         if (HpPercent(target.Actor) > 80
@@ -1437,7 +1496,9 @@ public sealed partial class CombatSession
         bool marked = HasArcherEffect(target.Actor, HunterMarkEffectId, now);
         if (marked)
         {
-            multiplier *= 1.05m;
+            multiplier *= ArcherRuntimeParameter(
+                "HUNTER_MARK",
+                "physicalDamageMultiplier");
             if (TryGetArcherHook("M-5-2", out ResolvedTalentEventHook victim))
                 multiplier *= 1 + victim.Value / 100m;
             if (TryGetArcherHook("M-3-2", out ResolvedTalentEventHook deepMark))
@@ -1486,7 +1547,13 @@ public sealed partial class CombatSession
         if (modifier.Enchanted)
         {
             RemoveArcherEffect(_player.Actor, EnchantedShotEffectId, now);
-            ResolveSpellPowerProc(target.Actor, 0.70m, "ENCHANTED_SHOT", now);
+            ResolveSpellPowerProc(
+                target.Actor,
+                ArcherRuntimeParameter(
+                    "ENCHANTED_SHOT",
+                    "spellPowerCoefficient"),
+                "ENCHANTED_SHOT",
+                now);
         }
 
         if (damage.Avoidance != DamageAvoidance.None || damage.HpDamage <= 0)
@@ -1513,14 +1580,26 @@ public sealed partial class CombatSession
 
         if (TryGetArcherHook("M-4-1", out ResolvedTalentEventHook doubleRelease)
             && _random.NextUnit() < doubleRelease.SecondaryValue / 100m)
-            ResolveOwnerExtraArrow(target.Actor, 0.40m, doubleRelease.TalentId, now);
+        {
+            ResolveOwnerExtraArrow(
+                target.Actor,
+                doubleRelease.Value / 100m,
+                doubleRelease.TalentId,
+                now);
+        }
 
         if (HasArcherEffect(target.Actor, HunterMarkEffectId, now)
             && TryGetArcherHook("M-9-1", out ResolvedTalentEventHook master))
         {
             _markedShotSequence++;
             if (_markedShotSequence % Math.Max(1, master.TriggerCount) == 0)
-                ResolveOwnerExtraArrow(target.Actor, 0.60m, master.TalentId, now);
+            {
+                ResolveOwnerExtraArrow(
+                    target.Actor,
+                    master.Value / 100m,
+                    master.TalentId,
+                    now);
+            }
         }
     }
 
@@ -1924,6 +2003,30 @@ public sealed partial class CombatSession
             : null!;
         return hook is not null;
     }
+
+    private decimal ArcherRuntimeParameter(
+        string abilityId,
+        string parameterName)
+    {
+        if (!_abilities.TryGetValue(abilityId, out AbilityDefinition? ability)
+            || ability.RuntimeParameters is null
+            || !ability.RuntimeParameters.TryGetValue(
+                parameterName,
+                out decimal value))
+        {
+            throw new InvalidOperationException(
+                $"Archer ability '{abilityId}' is missing required runtime parameter "
+                + $"'{parameterName}'.");
+        }
+
+        return value;
+    }
+
+    private TimeSpan ArcherRuntimeDuration(
+        string abilityId,
+        string parameterName) =>
+        TimeSpan.FromSeconds(
+            (double)ArcherRuntimeParameter(abilityId, parameterName));
 
     private ActiveEffect? FindArcherEffect(
         CombatActorState actor,
