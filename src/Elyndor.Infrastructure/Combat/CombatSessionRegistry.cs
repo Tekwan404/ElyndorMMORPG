@@ -20,8 +20,21 @@ public sealed class CombatSessionRegistry(
     TimeProvider timeProvider,
     ICombatUpdatePublisher publisher,
     ICombatSessionFinalizer finalizer,
-    ILogger<CombatSessionRegistry>? logger = null) : IDisposable, ICombatActivityReader
+    ILogger<CombatSessionRegistry> logger) : IDisposable, ICombatActivityReader
 {
+    private static readonly Action<
+        ILogger,
+        Guid,
+        Guid,
+        Guid,
+        CombatSessionStatus,
+        Exception?> TickFailed =
+        LoggerMessage.Define<Guid, Guid, Guid, CombatSessionStatus>(
+            LogLevel.Error,
+            new EventId(2001, nameof(TickFailed)),
+            "Combat timer tick failed for account {AccountId}, character {CharacterId}, "
+            + "session {SessionId}, status {Status}.");
+
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _bySession = [];
@@ -196,13 +209,13 @@ public sealed class CombatSessionRegistry(
         }
         catch (Exception exception)
         {
-            logger?.LogError(
-                exception,
-                "Combat timer tick failed for account {AccountId}, character {CharacterId}, session {SessionId}, status {Status}.",
+            TickFailed(
+                logger,
                 entry.AccountId,
                 entry.CharacterId,
                 entry.Session.SessionId,
-                entry.Session.Status);
+                entry.Session.Status,
+                exception);
         }
     }
 
