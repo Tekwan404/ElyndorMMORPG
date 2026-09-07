@@ -28,6 +28,7 @@ public static class MerchantErrorCodes
     public const string MutationConflict = "merchant_mutation_conflict";
     public const string NotEnoughGold = "merchant_not_enough_gold";
     public const string Conflict = "merchant_conflict";
+    public const string InventoryFull = "merchant_inventory_full";
 }
 
 public sealed record MerchantCatalogItem(ItemDefinition Definition, int SellPriceGold);
@@ -137,6 +138,18 @@ public sealed class MerchantService(
                 ItemDefinition? definition = FindItem(itemDefinitionId);
                 if (definition is null || definition.BuyPriceGold <= 0)
                     return MerchantErrorCodes.ItemNotSold;
+
+                GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                if (!await InventoryCapacity.CanAddAsync(
+                        dbContext,
+                        character.Id,
+                        definition,
+                        quantity,
+                        contentSnapshot,
+                        cancellationToken))
+                {
+                    return MerchantErrorCodes.InventoryFull;
+                }
 
                 long totalPrice = checked((long)definition.BuyPriceGold * quantity);
                 int affected = await dbContext.Characters
