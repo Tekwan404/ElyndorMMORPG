@@ -73,8 +73,11 @@ public sealed class CharacterStatCalculator(
         decimal attackPowerBeforeTalent = (primary.Strength * formula.AttackPowerPerStrength)
             + (primary.Agility * formula.AttackPowerPerAgility)
             + equipmentDerived.AttackPowerFlat;
-        decimal spellPower = (primary.Intellect * formula.SpellPowerPerIntellect)
+        decimal spellPowerBeforeTalent = (primary.Intellect * formula.SpellPowerPerIntellect)
             + equipmentDerived.SpellPowerFlat;
+        decimal spellPower = ApplyPercent(
+            spellPowerBeforeTalent,
+            talent.SpellPowerPercent);
         decimal armorBeforeTalent = (primary.Stamina * formula.ArmorPerStamina)
             + (primary.Strength * formula.ArmorPerStrength)
             + equipmentDerived.ArmorFlat;
@@ -106,7 +109,8 @@ public sealed class CharacterStatCalculator(
         decimal magicResistance = ApplyPercent(magicResistanceBeforeTalent, talent.MagicResistancePercent);
         decimal armorPenetration = equipmentDerived.ArmorPenetrationPercent
             + talent.ArmorPenetrationPercent;
-        decimal magicPenetration = equipmentDerived.MagicPenetrationPercent;
+        decimal magicPenetration = equipmentDerived.MagicPenetrationPercent
+            + talent.MagicPenetrationPercent;
         decimal dodge = decimal.Clamp(
             primary.Agility * formula.DodgePerAgility
                 + talent.DodgePercent
@@ -168,7 +172,8 @@ public sealed class CharacterStatCalculator(
                 ("TALENT_BONUS", stats.AttackPower - attackPowerBeforeTalent)),
             ["spellPower"] = Breakdown(stats.SpellPower,
                 ("INTELLECT", primary.Intellect * formula.SpellPowerPerIntellect),
-                ("EQUIPMENT_BONUS", equipmentDerived.SpellPowerFlat)),
+                ("EQUIPMENT_BONUS", equipmentDerived.SpellPowerFlat),
+                ("TALENT_BONUS", stats.SpellPower - spellPowerBeforeTalent)),
             ["criticalChance"] = Breakdown(stats.CriticalChance,
                 ("FORMULA_BASE", formula.CriticalChanceBase),
                 ("AGILITY", primary.Agility * formula.CriticalChancePerAgility),
@@ -186,7 +191,8 @@ public sealed class CharacterStatCalculator(
                 ("EQUIPMENT_BONUS", equipmentDerived.ArmorPenetrationPercent),
                 ("TALENT_BONUS", talent.ArmorPenetrationPercent)),
             ["magicPenetration"] = Breakdown(stats.MagicPenetration,
-                ("EQUIPMENT_BONUS", equipmentDerived.MagicPenetrationPercent)),
+                ("EQUIPMENT_BONUS", equipmentDerived.MagicPenetrationPercent),
+                ("TALENT_BONUS", talent.MagicPenetrationPercent)),
             ["attackSpeed"] = Breakdown(stats.AttackSpeed,
                 ("FORMULA_BASE", formula.AttackSpeedBase),
                 ("EQUIPMENT_BONUS", formula.AttackSpeedBase * equipmentDerived.AttackSpeedPercent / 100m),

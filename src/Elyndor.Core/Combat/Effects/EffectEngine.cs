@@ -212,7 +212,8 @@ public static class EffectEngine
                 && effect.Definition.Kind == EffectKind.StatModifier
                 && effect.Definition.ModifiedStat == stat
                 && (!effect.Definition.SourceSpecific
-                    || sourceId.HasValue && effect.SourceId == sourceId.Value))
+                    || !sourceId.HasValue
+                    || effect.SourceId == sourceId.Value))
             .ToArray();
         decimal flat = modifiers
             .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Flat)
@@ -250,6 +251,23 @@ public static class EffectEngine
                 effect.Definition.Id,
                 definitionId,
                 StringComparison.Ordinal))
+            .ToArray();
+        return RemoveEffects(target, removed, now);
+    }
+
+    public static IReadOnlyList<CombatEvent> RemoveOwned(
+        CombatActorState target,
+        string definitionId,
+        Guid sourceId,
+        DateTimeOffset now)
+    {
+        ActiveEffect[] removed = target.ActiveEffects
+            .Where(effect =>
+                string.Equals(
+                    effect.Definition.Id,
+                    definitionId,
+                    StringComparison.Ordinal)
+                && effect.SourceId == sourceId)
             .ToArray();
         return RemoveEffects(target, removed, now);
     }

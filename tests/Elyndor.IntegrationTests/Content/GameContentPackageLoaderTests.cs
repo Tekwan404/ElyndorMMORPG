@@ -18,8 +18,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.11.0", package.ContentVersion);
-        Assert.Equal("0.9.1", package.BalanceVersion);
+        Assert.Equal("0.12.0", package.ContentVersion);
+        Assert.Equal("0.10.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -40,10 +40,28 @@ public sealed class GameContentPackageLoaderTests
 
         TalentTreeDefinition mageTree = Assert.Single(
             package.TalentTrees!, tree => tree.Id == "MAGE_TREE");
-        TalentBranchDefinition fire = Assert.Single(mageTree.Branches);
-        Assert.Equal("FIRE", fire.Id);
-        Assert.Equal(32, mageTree.Nodes.Count);
-        Assert.Equal(69, mageTree.Nodes.Sum(node => node.MaxRank));
+        Assert.Equal(
+            ["FIRE", "ARCANE", "FROST"],
+            mageTree.Branches.Select(branch => branch.Id));
+        Assert.All(
+            mageTree.Branches,
+            branch => Assert.Equal(
+                32,
+                mageTree.Nodes.Count(node => node.BranchId == branch.Id)));
+        Assert.Equal(96, mageTree.Nodes.Count);
+        Assert.Equal(207, mageTree.Nodes.Sum(node => node.MaxRank));
+        Assert.Contains(
+            mageTree.Nodes,
+            node => node.Id == "A-3-1"
+                && node.Modifiers!.Any(modifier =>
+                    modifier.Key == TalentModifierKeys.UnlockAbility
+                    && modifier.TargetId == "ARCANE_BURST"));
+        Assert.Contains(
+            mageTree.Nodes,
+            node => node.Id == "I-3-1"
+                && node.Modifiers!.Any(modifier =>
+                    modifier.Key == TalentModifierKeys.UnlockAbility
+                    && modifier.TargetId == "ICE_LANCE"));
 
         LocationDefinition forest = Assert.Single(
             package.Locations,

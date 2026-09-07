@@ -27,7 +27,8 @@ public static class TalentModifierResolver
                 {
                     bool runtimeOwned =
                         BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-                        || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+                        || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
                     if (runtimeOwned && modifier.Values.Count >= rank)
                         eventHooks.Add(CreateEventHook(node, modifier, rank));
                     else
@@ -120,10 +121,16 @@ public static class TalentModifierResolver
     {
         TalentModifierKeys.StrengthPercent =>
             stats with { StrengthPercent = stats.StrengthPercent + value },
+        TalentModifierKeys.AgilityPercent =>
+            stats with { AgilityPercent = stats.AgilityPercent + value },
+        TalentModifierKeys.IntellectPercent =>
+            stats with { IntellectPercent = stats.IntellectPercent + value },
         TalentModifierKeys.StaminaPercent =>
             stats with { StaminaPercent = stats.StaminaPercent + value },
         TalentModifierKeys.AttackPowerPercent =>
             stats with { AttackPowerPercent = stats.AttackPowerPercent + value },
+        TalentModifierKeys.SpellPowerPercent =>
+            stats with { SpellPowerPercent = stats.SpellPowerPercent + value },
         TalentModifierKeys.ArmorPercent =>
             stats with { ArmorPercent = stats.ArmorPercent + value },
         TalentModifierKeys.MagicResistancePercent =>
@@ -138,12 +145,16 @@ public static class TalentModifierResolver
             stats with { CriticalDamagePercent = stats.CriticalDamagePercent + value },
         TalentModifierKeys.ArmorPenetrationPercent =>
             stats with { ArmorPenetrationPercent = stats.ArmorPenetrationPercent + value },
+        TalentModifierKeys.MagicPenetrationPercent =>
+            stats with { MagicPenetrationPercent = stats.MagicPenetrationPercent + value },
         TalentModifierKeys.AttackSpeedPercent =>
             stats with { AttackSpeedPercent = stats.AttackSpeedPercent + value },
         TalentModifierKeys.MaxHpPercent =>
             stats with { MaxHpPercent = stats.MaxHpPercent + value },
         TalentModifierKeys.MaxResourceFlat =>
             stats with { MaxResourceFlat = stats.MaxResourceFlat + value },
+        TalentModifierKeys.MaxResourcePercent =>
+            stats with { MaxResourcePercent = stats.MaxResourcePercent + value },
         _ => stats
     };
 

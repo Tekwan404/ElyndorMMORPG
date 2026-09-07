@@ -143,6 +143,13 @@ public static partial class GameContentPackageValidator
                         "Warrior tree must contain exactly 96 nodes across 3 branches."));
                 }
 
+                if (string.Equals(tree.Id, "MAGE_TREE", StringComparison.Ordinal)
+                    && (tree.Nodes.Count != 96 || tree.Branches.Count != 3))
+                {
+                    errors.Add(new("INVALID_MAGE_TREE_SIZE", path,
+                        "Mage tree must contain exactly 96 nodes across 3 branches."));
+                }
+
                 if (HasTalentCycle(nodes))
                 {
                     errors.Add(new("CIRCULAR_TALENT_PREREQUISITE", path,

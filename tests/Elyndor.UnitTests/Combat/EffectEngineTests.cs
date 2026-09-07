@@ -52,6 +52,58 @@ public sealed class EffectEngineTests
     }
 
     [Fact]
+    public void SourceSpecificActorDebuffsAffectActorStatsButCanStillBeFilteredBySource()
+    {
+        CombatActorState target = CombatActorState.CreateDummy(100);
+        Guid mageA = Guid.NewGuid();
+        Guid mageB = Guid.NewGuid();
+        EffectDefinition slow = new(
+            "FROST_SLOW",
+            EffectKind.StatModifier,
+            TimeSpan.FromSeconds(6),
+            1,
+            EffectStackPolicy.Independent,
+            0.9m,
+            ModifiedStat: EffectStat.AttackSpeed,
+            ModifierMode: EffectModifierMode.Multiplicative,
+            SourceSpecific: true);
+
+        EffectEngine.Apply(target, mageA, slow, Now);
+        EffectEngine.Apply(target, mageB, slow, Now);
+
+        Assert.Equal(
+            0.81m,
+            EffectEngine.CalculateStat(target, EffectStat.AttackSpeed, 1, Now));
+        Assert.Equal(
+            0.9m,
+            EffectEngine.CalculateStat(target, EffectStat.AttackSpeed, 1, Now, mageA));
+    }
+
+    [Fact]
+    public void RemoveOwnedLeavesAnotherCastersSourceSpecificEffectIntact()
+    {
+        CombatActorState target = CombatActorState.CreateDummy(100);
+        Guid mageA = Guid.NewGuid();
+        Guid mageB = Guid.NewGuid();
+        EffectDefinition frostbite = new(
+            "FROSTBITE",
+            EffectKind.Debuff,
+            TimeSpan.FromSeconds(6),
+            3,
+            EffectStackPolicy.Stack,
+            0,
+            SourceSpecific: true);
+
+        EffectEngine.Apply(target, mageA, frostbite, Now);
+        EffectEngine.Apply(target, mageB, frostbite, Now);
+
+        EffectEngine.RemoveOwned(target, frostbite.Id, mageA, Now.AddSeconds(1));
+
+        ActiveEffect remaining = Assert.Single(target.ActiveEffects);
+        Assert.Equal(mageB, remaining.SourceId);
+    }
+
+    [Fact]
     public void StunAndSilenceRemainIndependentControlStates()
     {
         CombatActorState target = CombatActorState.CreateDummy(100);

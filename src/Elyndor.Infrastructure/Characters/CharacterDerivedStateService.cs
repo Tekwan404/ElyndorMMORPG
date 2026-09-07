@@ -129,8 +129,8 @@ public sealed class CharacterDerivedStateService(
 
         TalentPrimaryStatPercentages talentPercentages = new(
             talentModifiers.Stats.StrengthPercent,
-            0,
-            0,
+            talentModifiers.Stats.AgilityPercent,
+            talentModifiers.Stats.IntellectPercent,
             talentModifiers.Stats.StaminaPercent);
 
         CharacterStatCalculation statCalculation = new CharacterStatCalculator(
@@ -166,7 +166,8 @@ public sealed class CharacterDerivedStateService(
             baseResourceProfile,
             content.ResourceScaling,
             statCalculation.Stats,
-            talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat);
+            talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat,
+            talentModifiers.Stats.MaxResourcePercent);
 
         string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)

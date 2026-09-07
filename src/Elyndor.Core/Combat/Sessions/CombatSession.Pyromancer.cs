@@ -45,19 +45,26 @@ public sealed partial class CombatSession
     private bool IsMage =>
         string.Equals(_player.DefinitionId, "MAGE", StringComparison.Ordinal);
 
-    private bool IsPlayerAbilityKnown(string abilityId, DateTimeOffset now) =>
-        _player.KnownAbilityIds.Contains(abilityId)
-        || string.Equals(abilityId, FireCometId, StringComparison.Ordinal)
-            && IsHeatLimitActive(now)
-            && HasPyromancerTalent("F-6-1");
+    private bool IsPlayerAbilityKnown(string abilityId, DateTimeOffset now)
+    {
+        if (string.Equals(abilityId, ArcaneCascadeId, StringComparison.Ordinal))
+            return _player.KnownAbilityIds.Contains(abilityId)
+                && IsArcaneCascadeAvailable(now);
+
+        return _player.KnownAbilityIds.Contains(abilityId)
+            || string.Equals(abilityId, FireCometId, StringComparison.Ordinal)
+                && IsHeatLimitActive(now)
+                && HasPyromancerTalent("F-6-1");
+    }
 
     private HashSet<string> GetPlayerKnownAbilityIds(DateTimeOffset now)
     {
         HashSet<string> ids = new(_player.KnownAbilityIds, StringComparer.Ordinal);
         if (IsHeatLimitActive(now) && HasPyromancerTalent("F-6-1"))
-        {
             ids.Add(FireCometId);
-        }
+
+        if (!IsArcaneCascadeAvailable(now))
+            ids.Remove(ArcaneCascadeId);
 
         return ids;
     }

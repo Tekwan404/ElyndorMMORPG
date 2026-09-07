@@ -30,7 +30,10 @@ public enum EffectStat
     AttackPower,
     CriticalChance,
     AttackSpeed,
+    Accuracy,
     IncomingDamageMultiplier,
+    IncomingMagicalDamageMultiplier,
+    OutgoingDamageMultiplier,
     OutgoingPhysicalDamageMultiplier,
     IncomingPhysicalDamageMultiplier
 }

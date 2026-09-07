@@ -3,8 +3,11 @@ namespace Elyndor.Core.Talents;
 public static class TalentModifierKeys
 {
     public const string StrengthPercent = "STRENGTH_PERCENT";
+    public const string AgilityPercent = "AGILITY_PERCENT";
+    public const string IntellectPercent = "INTELLECT_PERCENT";
     public const string StaminaPercent = "STAMINA_PERCENT";
     public const string AttackPowerPercent = "ATTACK_POWER_PERCENT";
+    public const string SpellPowerPercent = "SPELL_POWER_PERCENT";
     public const string ArmorPercent = "ARMOR_PERCENT";
     public const string MagicResistancePercent = "MAGIC_RESISTANCE_PERCENT";
     public const string AccuracyPercent = "ACCURACY_PERCENT";
@@ -12,9 +15,11 @@ public static class TalentModifierKeys
     public const string CriticalChancePercent = "CRITICAL_CHANCE_PERCENT";
     public const string CriticalDamagePercent = "CRITICAL_DAMAGE_PERCENT";
     public const string ArmorPenetrationPercent = "ARMOR_PENETRATION_PERCENT";
+    public const string MagicPenetrationPercent = "MAGIC_PENETRATION_PERCENT";
     public const string AttackSpeedPercent = "ATTACK_SPEED_PERCENT";
     public const string MaxHpPercent = "MAX_HP_PERCENT";
     public const string MaxResourceFlat = "MAX_RESOURCE_FLAT";
+    public const string MaxResourcePercent = "MAX_RESOURCE_PERCENT";
     public const string UnlockAbility = "UNLOCK_ABILITY";
     public const string AbilityCooldownSeconds = "ABILITY_COOLDOWN_SECONDS";
     public const string AbilityResourceCostFlat = "ABILITY_RESOURCE_COST_FLAT";
@@ -40,10 +45,10 @@ public static class TalentModifierKeys
 
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
-        StrengthPercent, StaminaPercent, AttackPowerPercent, ArmorPercent,
+        StrengthPercent, AgilityPercent, IntellectPercent, StaminaPercent, AttackPowerPercent, SpellPowerPercent, ArmorPercent,
         MagicResistancePercent, AccuracyPercent, DodgePercent, CriticalChancePercent,
-        CriticalDamagePercent, ArmorPenetrationPercent, AttackSpeedPercent, MaxHpPercent,
-        MaxResourceFlat, UnlockAbility, AbilityCooldownSeconds, AbilityResourceCostFlat,
+        CriticalDamagePercent, ArmorPenetrationPercent, MagicPenetrationPercent, AttackSpeedPercent, MaxHpPercent,
+        MaxResourceFlat, MaxResourcePercent, UnlockAbility, AbilityCooldownSeconds, AbilityResourceCostFlat,
         AbilityResourceCostPercent, AbilityDamagePercent, AbilityArmorPenetrationPercent,
         EffectDurationSeconds, EffectMagnitudePercent, IncomingPhysicalDamageReductionPercent,
         IncomingMagicalDamageReductionPercent, DamageDealtPercent, HealingReceivedPercent,
