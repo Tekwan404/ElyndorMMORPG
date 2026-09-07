@@ -88,6 +88,18 @@ public sealed class TalentService(
                     return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
 
                 IReadOnlyDictionary<string, int> ranks = snapshot.State.GetRanks(loadoutId);
+                TalentDefinition? targetTalent = snapshot.Tree.Nodes.SingleOrDefault(node =>
+                    string.Equals(node.Id, talentId, StringComparison.Ordinal));
+                if (targetTalent is not null
+                    && !TalentRuntimeAvailability.IsNodeFullySupported(targetTalent))
+                {
+                    return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
+                }
+                if (ContainsUnavailableRuntimeTalent(snapshot.Tree, ranks))
+                {
+                    return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
+                }
+
                 TalentLearnResult learned = TalentRules.TryLearn(
                     snapshot.Tree,
                     snapshot.Character.Level,
@@ -134,10 +146,13 @@ public sealed class TalentService(
                     return TalentOperationResult.Failure(TalentErrorCodes.InvalidLoadout);
                 if (snapshot.State.StateVersion != expectedStateVersion)
                     return TalentOperationResult.Failure(TalentErrorCodes.Conflict);
+                IReadOnlyDictionary<string, int> targetRanks =
+                    snapshot.State.GetRanks(loadoutId);
                 if (TalentRules.ValidateBuild(
                         snapshot.Tree,
                         snapshot.Character.Level,
-                        snapshot.State.GetRanks(loadoutId)).Count > 0)
+                        targetRanks).Count > 0
+                    || ContainsUnavailableRuntimeTalent(snapshot.Tree, targetRanks))
                 {
                     return TalentOperationResult.Failure(TalentErrorCodes.Unavailable);
                 }
@@ -307,6 +322,13 @@ public sealed class TalentService(
             }
         });
     }
+
+    private static bool ContainsUnavailableRuntimeTalent(
+        TalentTreeDefinition tree,
+        IReadOnlyDictionary<string, int> ranks) =>
+        tree.Nodes.Any(node =>
+            ranks.GetValueOrDefault(node.Id) > 0
+            && !TalentRuntimeAvailability.IsNodeFullySupported(node));
 
     private async Task NormalizeEquipmentPermissionsAsync(
         Character character,
