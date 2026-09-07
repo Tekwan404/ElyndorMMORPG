@@ -171,7 +171,10 @@ public static class WorldEndpoints
                 {
                     return Results.Ok(new TravelResponse(
                         result.LocationId!,
-                        result.Version!.Value));
+                        result.Version!.Value,
+                        result.IsTravelling,
+                        result.TargetLocationId,
+                        result.EndsAtUtc));
                 }
 
                 int statusCode = result.ErrorCode is
@@ -288,7 +291,14 @@ public static class WorldEndpoints
                         contract.Status,
                         contract.OfferLocationId,
                         contract.RewardXp,
-                        contract.RewardGold)).ToArray()),
+                        contract.RewardGold)).ToArray(),
+                    snapshot.World.Travel is null
+                        ? null
+                        : new BootstrapTravelResponse(
+                            snapshot.World.Travel.FromLocationId,
+                            snapshot.World.Travel.TargetLocationId,
+                            snapshot.World.Travel.StartedAtUtc,
+                            snapshot.World.Travel.EndsAtUtc)),
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
             snapshot.ServerTimeUtc);
@@ -303,7 +313,8 @@ public static class WorldEndpoints
             location.MaximumLevel,
             location.RequiredContractId,
             location.ArtId,
-            location.Description);
+            location.Description,
+            location.TravelDurationSeconds);
 
     private static WorldLocationResponse ToLocation(LocationDefinition location) =>
         new(
