@@ -1313,7 +1313,11 @@ public sealed partial class CombatSession
         CombatActorState target,
         string effectId,
         DateTimeOffset now) =>
-        RemoveTalentEffects(EffectEngine.Remove(target, effectId, now));
+        RemoveTalentEffects(EffectEngine.RemoveOwned(
+            target,
+            effectId,
+            _player.Actor.ActorId,
+            now));
 
     private static AbilityActionDefinition[]? AddSpellPowerCoefficient(
         IReadOnlyList<AbilityActionDefinition>? actions,
