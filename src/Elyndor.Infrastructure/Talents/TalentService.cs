@@ -164,11 +164,15 @@ public sealed class TalentService(
                     cancellationToken);
                 DateTimeOffset now = timeProvider.GetUtcNow();
                 snapshot.State.SwitchLoadout(loadoutId, now, mutationId);
-                await NormalizeEquipmentPermissionsAsync(
-                    snapshot.Character,
-                    snapshot.Tree,
-                    snapshot.State,
-                    cancellationToken);
+                if (!await NormalizeEquipmentPermissionsAsync(
+                        snapshot.Character,
+                        snapshot.Tree,
+                        snapshot.State,
+                        cancellationToken))
+                {
+                    return TalentOperationResult.Failure(
+                        TalentErrorCodes.InventoryFull);
+                }
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
                     oldDerivedState,
@@ -213,11 +217,15 @@ public sealed class TalentService(
                         loadoutId,
                         StringComparison.Ordinal))
                 {
-                    await NormalizeEquipmentPermissionsAsync(
-                        snapshot.Character,
-                        snapshot.Tree,
-                        snapshot.State,
-                        cancellationToken);
+                    if (!await NormalizeEquipmentPermissionsAsync(
+                            snapshot.Character,
+                            snapshot.Tree,
+                            snapshot.State,
+                            cancellationToken))
+                    {
+                        return TalentOperationResult.Failure(
+                            TalentErrorCodes.InventoryFull);
+                    }
                 }
                 await SaveWithDerivedVitalsAsync(
                     snapshot.Character,
@@ -330,7 +338,7 @@ public sealed class TalentService(
             ranks.GetValueOrDefault(node.Id) > 0
             && !TalentRuntimeAvailability.IsNodeFullySupported(node));
 
-    private async Task NormalizeEquipmentPermissionsAsync(
+    private async Task<bool> NormalizeEquipmentPermissionsAsync(
         Character character,
         TalentTreeDefinition tree,
         CharacterTalentState state,
@@ -341,7 +349,7 @@ public sealed class TalentService(
                 state,
                 EquipmentPermissionIds.DualWieldOneHandWeapon))
         {
-            return;
+            return true;
         }
 
         CharacterEquipment? offHand = await dbContext.CharacterEquipment
@@ -349,21 +357,32 @@ public sealed class TalentService(
                 equipment => equipment.CharacterId == character.Id
                     && equipment.Slot == EquipmentSlot.OffHand,
                 cancellationToken);
-        if (offHand is null) return;
+        if (offHand is null) return true;
 
         string? definitionId = await dbContext.CharacterItems
             .Where(item => item.Id == offHand.CharacterItemId
                 && item.CharacterId == character.Id)
             .Select(item => item.ItemDefinitionId)
             .SingleOrDefaultAsync(cancellationToken);
-        if (definitionId is null) return;
+        if (definitionId is null) return true;
 
         GameContentSnapshot content = contentProvider.GetCurrent();
         if (content.Indexes.ItemsById.TryGetValue(definitionId, out ItemDefinition? definition)
             && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory))
         {
+            if (await InventoryCapacity.FreeSlotsAsync(
+                    dbContext,
+                    character.Id,
+                    content,
+                    cancellationToken) < 1)
+            {
+                return false;
+            }
+
             dbContext.CharacterEquipment.Remove(offHand);
         }
+
+        return true;
     }
 
     private async Task SaveWithDerivedVitalsAsync(
