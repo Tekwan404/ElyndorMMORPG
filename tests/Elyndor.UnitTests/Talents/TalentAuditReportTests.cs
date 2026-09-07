@@ -43,6 +43,23 @@ public sealed class TalentAuditReportTests
         Assert.All(coverageIds, id => Assert.Contains(":", id, StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ComposedContentContainsEveryWarlordTalentGatedAbility()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        string[] abilityIds =
+        [
+            "BATTLE_CRY", "ENDURANCE_CRY", "WAR_BANNER", "CRY_OF_VENGEANCE",
+            "VICTORY_FLAG", "RALLY_CRY", "BATTLE_STANDARD"
+        ];
+
+        Assert.All(
+            abilityIds,
+            abilityId => Assert.Contains(
+                package.Abilities!,
+                ability => ability.Id == abilityId));
+    }
+
     private static string RepositoryContentPath()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

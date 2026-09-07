@@ -136,6 +136,7 @@ public enum CombatEventType
     TauntApplied,
     ResourceChanged,
     DamageBlocked,
+    Dodge,
     ActorDied
 }
 

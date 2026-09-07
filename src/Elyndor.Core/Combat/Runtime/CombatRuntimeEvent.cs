@@ -10,6 +10,7 @@ public enum CombatRuntimeEventKind
     AutoAttackStarted,
     DamageDealt,
     DamageTaken,
+    Dodge,
     CriticalHit,
     EnemyKilled,
     HealingApplied,

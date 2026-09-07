@@ -116,7 +116,8 @@ public sealed class TalentRuntimeState
 
     private bool MatchesOwner(string key, CombatRuntimeEvent combatEvent) => key switch
     {
-        TalentModifierKeys.OnDamageTaken => combatEvent.TargetActorId == _ownerActorId,
+        TalentModifierKeys.OnDamageTaken or TalentModifierKeys.OnDodge =>
+            combatEvent.TargetActorId == _ownerActorId,
         TalentModifierKeys.OnPartyEvent => combatEvent.SourceActorId == _ownerActorId,
         _ => combatEvent.SourceActorId == _ownerActorId
     };
@@ -126,6 +127,7 @@ public sealed class TalentRuntimeState
         CombatRuntimeEventKind.AbilityCompleted => TalentModifierKeys.OnAbilityUsed,
         CombatRuntimeEventKind.AutoAttackStarted => TalentModifierKeys.OnAutoAttack,
         CombatRuntimeEventKind.DamageTaken => TalentModifierKeys.OnDamageTaken,
+        CombatRuntimeEventKind.Dodge => TalentModifierKeys.OnDodge,
         CombatRuntimeEventKind.CriticalHit => TalentModifierKeys.OnCriticalHit,
         CombatRuntimeEventKind.EnemyKilled => TalentModifierKeys.OnEnemyKilled,
         CombatRuntimeEventKind.HpThresholdReached => TalentModifierKeys.OnHpThreshold,

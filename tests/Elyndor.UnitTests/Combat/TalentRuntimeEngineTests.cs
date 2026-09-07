@@ -84,6 +84,32 @@ public sealed class TalentRuntimeEngineTests
         Assert.Single(state.Publish(Event(DateTimeOffset.UtcNow, ownerId, sequence: 1), modifiers));
     }
 
+    [Fact]
+    public void PublishMatchesDodgeHooksByOwnerTarget()
+    {
+        Guid ownerId = Guid.NewGuid();
+        ResolvedTalentModifiers modifiers = Modifiers(
+            new ResolvedTalentEventHook(
+                "TALENT_DODGE",
+                TalentModifierKeys.OnDodge,
+                1,
+                3,
+                null,
+                TimeSpan.Zero,
+                false));
+        TalentRuntimeState state = new(ownerId, new SequenceGameRandom(0));
+
+        IReadOnlyList<TalentRuntimeAction> actions = state.Publish(
+            new CombatRuntimeEvent(
+                CombatRuntimeEventKind.Dodge,
+                DateTimeOffset.UtcNow,
+                Guid.NewGuid(),
+                ownerId),
+            modifiers);
+
+        Assert.Single(actions);
+    }
+
     private static CombatRuntimeEvent Event(
         DateTimeOffset occurredAtUtc,
         Guid ownerId,

@@ -48,6 +48,27 @@ public sealed class DamageAndHealingPipelineTests
     }
 
     [Fact]
+    public void DodgeProducesACombatEventForReactiveTalents()
+    {
+        DateTimeOffset now = new(2026, 9, 8, 12, 0, 0, TimeSpan.Zero);
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Dodge = 50 });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 50, DamageType.Physical, CanMiss: false),
+            new SequenceGameRandom(0.25m),
+            now);
+
+        Assert.Equal(DamageAvoidance.Dodge, result.Avoidance);
+        Assert.Contains(result.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.Dodge
+            && combatEvent.TargetActorId == target.ActorId
+            && combatEvent.OccurredAtUtc == now);
+    }
+
+    [Fact]
     public void PhysicalDamageCanBeBlockedBeforeAbsorbShields()
     {
         CombatActorState source = CombatActorState.CreateDummy(

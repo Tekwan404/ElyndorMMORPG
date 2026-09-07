@@ -426,6 +426,206 @@
       "iconId": "bastion"
     },
     {
+      "id": "BATTLE_CRY",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 20,
+      "cooldown": "00:01:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_CRY",
+            "kind": "StatModifier",
+            "duration": "00:00:20",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.08,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Боевой клич",
+      "description": "Усиливает атаку воина и союзников на 20 секунд.",
+      "iconId": "battle-cry"
+    },
+    {
+      "id": "ENDURANCE_CRY",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 25,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_ENDURANCE_CRY",
+            "kind": "Buff",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.06
+          }
+        }
+      ],
+      "displayName": "Клич стойкости",
+      "description": "Повышает запас здоровья воинов отряда на 15 секунд.",
+      "iconId": "endurance-cry"
+    },
+    {
+      "id": "WAR_BANNER",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_WAR_BANNER",
+            "kind": "StatModifier",
+            "duration": "00:00:30",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.04,
+            "modifiedStat": "CriticalChance",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Знамя войны",
+      "description": "Устанавливает знамя, усиливающее критические удары отряда.",
+      "iconId": "war-banner"
+    },
+    {
+      "id": "CRY_OF_VENGEANCE",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 35,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_CRIT_OF_VENGEANCE",
+            "kind": "Buff",
+            "duration": "00:00:10",
+            "maxStacks": 5,
+            "stackPolicy": "Stack",
+            "magnitude": 0.35
+          }
+        }
+      ],
+      "displayName": "Клич мести",
+      "description": "Накопленная боль союзников усиливает следующую атаку воина.",
+      "iconId": "cry-of-vengeance"
+    },
+    {
+      "id": "VICTORY_FLAG",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 40,
+      "cooldown": "00:03:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_VICTORY_FLAG",
+            "kind": "StatModifier",
+            "duration": "00:00:18",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.08,
+            "modifiedStat": "OutgoingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Флаг победы",
+      "description": "Знамя победы увеличивает наносимый урон отряда.",
+      "iconId": "victory-flag"
+    },
+    {
+      "id": "RALLY_CRY",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Healing",
+          "amount": 60,
+          "canMiss": false,
+          "canCrit": false,
+          "canDodge": false
+        }
+      ],
+      "displayName": "Клич исцеления",
+      "description": "Воин мгновенно восстанавливает здоровье себе и союзникам.",
+      "iconId": "rally-cry"
+    },
+    {
+      "id": "BATTLE_STANDARD",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 50,
+      "cooldown": "00:02:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_STANDARD",
+            "kind": "StatModifier",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.1,
+            "modifiedStat": "OutgoingPhysicalDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Боевой штандарт",
+      "description": "Штандарт усиливает автоатаки воина и союзников.",
+      "iconId": "battle-standard"
+    },
+    {
       "id": "WILD_STRIKE",
       "type": "Instant",
       "targetType": "SingleEnemy",

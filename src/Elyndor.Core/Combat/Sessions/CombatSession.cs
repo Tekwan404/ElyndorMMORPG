@@ -1440,6 +1440,15 @@ public sealed partial class CombatSession
                 ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.AbilityCompleted));
         }
 
+        if (combatEvent.Type == CombatEventType.Dodge
+            && combatEvent.TargetActorId == _player.Actor.ActorId)
+        {
+            TriggerTalent(
+                TalentModifierKeys.OnDodge,
+                combatEvent.OccurredAtUtc,
+                ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.Dodge));
+        }
+
         if (combatEvent.Type == CombatEventType.DamageDealt
             && combatEvent.TargetActorId == _player.Actor.ActorId
             && combatEvent.Amount > 0)
