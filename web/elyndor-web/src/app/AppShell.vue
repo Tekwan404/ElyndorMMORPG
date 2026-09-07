@@ -20,15 +20,28 @@ const combat = useCombatSessionStore()
 const activeView = ref<ShellView>('location')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
+const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
 const portraitArt = computed(() =>
   character.value?.classId === 'WARRIOR' ? gameArt.characters.warrior : null,
 )
+function worldLocationName(locationId: string): string {
+  if (locationId === 'STARTER_TOWN') return 'Стартовый город'
+  if (locationId === 'WHISPERING_FOREST') return 'Шепчущий лес'
+  if (locationId === 'DEEP_FOREST') return 'Глубокий лес'
+  if (locationId === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
+  if (locationId === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
+  return locationId
+}
+
 const locationName = computed(() => {
+  if (activeTravel.value) {
+    return `В пути → ${worldLocationName(activeTravel.value.targetLocationId)}`
+  }
   const location = currentLocation.value
   if (!location) return 'Неизвестная область'
-  if (location.id === 'STARTER_TOWN') return 'Стартовый город'
-  if (location.id === 'WHISPERING_FOREST') return 'Шепчущий лес'
-  return location.displayName
+  return worldLocationName(location.id) === location.id
+    ? location.displayName
+    : worldLocationName(location.id)
 })
 const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
   const value = character.value?.vitals.resourceType.toLowerCase()
