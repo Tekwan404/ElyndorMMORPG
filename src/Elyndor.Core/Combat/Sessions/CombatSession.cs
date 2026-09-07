@@ -1020,7 +1020,7 @@ public sealed partial class CombatSession
         };
     }
 
-    private DateTimeOffset NextEnemyActionAfter(
+    private static DateTimeOffset NextEnemyActionAfter(
         CombatParticipantDefinition enemy,
         DateTimeOffset now)
     {
