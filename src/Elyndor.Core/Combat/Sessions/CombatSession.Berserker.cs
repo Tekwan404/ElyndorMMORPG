@@ -636,16 +636,22 @@ public sealed partial class CombatSession
                 StringComparison.Ordinal)
             && effect.ExpiresAtUtc > now);
 
+    private bool IsWarrior =>
+        string.Equals(_player.DefinitionId, "WARRIOR", StringComparison.Ordinal);
+
     private bool HasBerserkerTalent(string talentId) =>
-        _playerTalents.EventHooks.Any(hook =>
+        IsWarrior
+        && _playerTalents.EventHooks.Any(hook =>
             string.Equals(hook.TalentId, talentId, StringComparison.Ordinal));
 
     private bool TryGetBerserkerHook(
         string talentId,
         out ResolvedTalentEventHook hook)
     {
-        hook = _playerTalents.EventHooks.FirstOrDefault(item =>
-            string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!;
+        hook = IsWarrior
+            ? _playerTalents.EventHooks.FirstOrDefault(item =>
+                string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!
+            : null!;
         return hook is not null;
     }
 
