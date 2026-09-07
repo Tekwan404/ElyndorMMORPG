@@ -280,7 +280,10 @@ public sealed partial class CombatSession
                     * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
                     * archerModifier.DamageMultiplier,
                 ArmorPenetrationBonus: archerModifier.ArmorPenetrationBonus,
-                ForceCritical: consumeDeathsEmbrace),
+                ForceCritical: consumeDeathsEmbrace,
+                AccuracyBonus: archerModifier.AccuracyBonus,
+                CriticalChanceBonus: archerModifier.CriticalChanceBonus,
+                CriticalDamageBonus: archerModifier.CriticalDamageBonus),
             _random,
             now);
         ApplyKernelEvents(
