@@ -44,6 +44,7 @@ public static class TalentModifierKeys
     public const string EquipmentConditional = "EQUIPMENT_CONDITIONAL";
     public const string ResourceProfileOverride = "RESOURCE_PROFILE_OVERRIDE";
     public const string CompanionProfileOverride = "COMPANION_PROFILE_OVERRIDE";
+    public const string PrimaryAttributeOverride = "PRIMARY_ATTRIBUTE_OVERRIDE";
 
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -56,7 +57,7 @@ public static class TalentModifierKeys
         IncomingMagicalDamageReductionPercent, DamageDealtPercent, HealingReceivedPercent,
         VampirismPercent, OnDamageTaken, OnDodge, OnCriticalHit, OnEnemyKilled,
         OnAutoAttack, OnHpThreshold, OnAbilityUsed, OnPartyEvent, EquipmentConditional,
-        ResourceProfileOverride, CompanionProfileOverride
+        ResourceProfileOverride, CompanionProfileOverride, PrimaryAttributeOverride
     };
 }
 
