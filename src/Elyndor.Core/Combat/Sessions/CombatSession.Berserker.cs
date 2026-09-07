@@ -252,6 +252,9 @@ public sealed partial class CombatSession
             attackPower,
             _random);
 
+        ArcherAutoAttackModifier archerModifier =
+            ResolveArcherAutoAttackModifier(target, baseDamage, now);
+
         bool consumeDeathsEmbrace = _deathsEmbraceArmed && !_deathsEmbraceConsumed;
         decimal deathsEmbraceMultiplier = 1;
         if (consumeDeathsEmbrace)
@@ -274,7 +277,9 @@ public sealed partial class CombatSession
                 baseDamage,
                 DamageType.Physical,
                 DamageMultiplier: deathsEmbraceMultiplier
-                    * BerserkerTargetPhysicalDamageMultiplier(target.Actor),
+                    * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
+                    * archerModifier.DamageMultiplier,
+                ArmorPenetrationBonus: archerModifier.ArmorPenetrationBonus,
                 ForceCritical: consumeDeathsEmbrace),
             _random,
             now);
@@ -285,6 +290,13 @@ public sealed partial class CombatSession
             "AUTO_ATTACK",
             profile.WeaponHand,
             profile.WeaponDefinitionId);
+        ApplyArcherAutoAttackResolved(
+            target,
+            profile,
+            baseDamage,
+            damage,
+            archerModifier,
+            now);
 
         if (damage.Avoidance == DamageAvoidance.None
             && damage.HpDamage > 0
