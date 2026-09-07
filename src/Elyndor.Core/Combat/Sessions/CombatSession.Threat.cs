@@ -43,13 +43,13 @@ public sealed partial class CombatSession
             && sourceActorId == _player.Actor.ActorId)
         {
             EnsureThreatTable(targetActorId);
-            Dictionary<Guid, decimal> threat =
+            Dictionary<Guid, decimal> tauntThreat =
                 _threatByEnemyActorId[targetActorId];
-            decimal highestThreat = threat.Count == 0
+            decimal highestThreat = tauntThreat.Count == 0
                 ? 0
-                : threat.Values.Max();
-            threat[sourceActorId] = Math.Max(
-                threat.GetValueOrDefault(sourceActorId),
+                : tauntThreat.Values.Max();
+            tauntThreat[sourceActorId] = Math.Max(
+                tauntThreat.GetValueOrDefault(sourceActorId),
                 highestThreat + 1m);
             _forcedTargetsByEnemyActorId[targetActorId] = (
                 sourceActorId,
