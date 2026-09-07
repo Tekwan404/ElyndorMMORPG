@@ -116,6 +116,10 @@ function abilityLabel(abilityId: string): string {
     HEAVY_BLOW: 'Тяжёлый удар', BATTLE_FOCUS: 'Боевой фокус', BATTLE_SHOUT: 'Боевой клич',
     MAGE_FIREBALL: 'Огненный шар', MAGE_ARCANE_SPARK: 'Тайная искра', MAGE_ICE_SHARD: 'Ледяной осколок',
     FLAME_FLASH: 'Вспышка', FIRE_WAVE: 'Огненная волна', COMBUSTION: 'Возгорание', FIRE_COMET: 'Огненная комета',
+    ARCANE_BURST: 'Тайный взрыв', MANA_OVERLOAD: 'Перегрузка маны',
+    ARCANE_CASCADE: 'Арканный каскад', ARCANE_SEAL: 'Тайная печать',
+    ICE_LANCE: 'Ледяное копьё', ICE_FRACTURE: 'Ледяной раскол',
+    HEART_OF_WINTER: 'Сердце зимы', FROST_SEAL: 'Морозная печать',
   }[abilityId] ?? abilityId.replace(/_/g, ' ')
 }
 
