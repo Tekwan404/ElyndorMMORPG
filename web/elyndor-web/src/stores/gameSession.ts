@@ -31,10 +31,12 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
   const errorCode = ref<string | null>(null)
+  const errorCorrelationId = ref<string | null>(null)
   const roles = ref<string[]>([])
   const mutationPending = ref(false)
   const isReady = computed(() => state.value === 'needs-character' || state.value === 'world')
   const isAdmin = computed(() => roles.value.includes('SUPER_ADMIN'))
+  let travelRefreshTimer: ReturnType<typeof setTimeout> | null = null
 
   apiClient.setReauthenticate(async () => authenticate(true))
 
@@ -77,6 +79,36 @@ export const useGameSessionStore = defineStore('gameSession', () => {
 
   async function refreshSnapshot(): Promise<void> {
     snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
+    scheduleTravelCompletionRefresh()
+  }
+
+  function scheduleTravelCompletionRefresh(): void {
+    if (travelRefreshTimer !== null) {
+      clearTimeout(travelRefreshTimer)
+      travelRefreshTimer = null
+    }
+
+    const travel = snapshot.value?.world?.travel
+    if (!travel || !snapshot.value) return
+
+    const serverNow = Date.parse(snapshot.value.serverTimeUtc)
+    const endsAt = Date.parse(travel.endsAtUtc)
+    if (!Number.isFinite(serverNow) || !Number.isFinite(endsAt)) return
+
+    const delay = Math.max(250, Math.min(60_000, endsAt - serverNow + 250))
+    travelRefreshTimer = setTimeout(() => {
+      travelRefreshTimer = null
+      void refreshTravelCompletion()
+    }, delay)
+  }
+
+  async function refreshTravelCompletion(): Promise<void> {
+    try {
+      await refreshSnapshot()
+      state.value = snapshot.value?.character ? 'world' : 'needs-character'
+    } catch (error) {
+      handleError(error)
+    }
   }
 
   async function bootstrap(): Promise<void> {
@@ -88,6 +120,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
 
   async function start(): Promise<void> {
     errorCode.value = null
+    errorCorrelationId.value = null
     try {
       await authenticate()
       await bootstrap()
@@ -117,6 +150,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
+    errorCorrelationId.value = null
     try {
       return await apiClient.request<WorldEncounter>('/api/v1/world/explore', { method: 'POST' })
     } catch (error) {
@@ -211,6 +245,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
+    errorCorrelationId.value = null
     try {
       const merchant = await runReplaySafeGameMutation<MerchantSnapshot>({
         key,
@@ -237,6 +272,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     if (mutationPending.value) return
     mutationPending.value = true
     errorCode.value = null
+    errorCorrelationId.value = null
     try {
       await runReplaySafeGameMutation<unknown>({ key, path, idField, intent })
       await refreshSnapshot()
@@ -256,6 +292,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     if (mutationPending.value) return
     mutationPending.value = true
     errorCode.value = null
+    errorCorrelationId.value = null
     try {
       await apiClient.request<unknown>(path, {
         method: 'POST',
@@ -278,12 +315,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   function handleError(error: unknown): void {
     if (error instanceof ApiRequestError) {
       errorCode.value = error.code
+      errorCorrelationId.value = error.correlationId ?? null
       if (state.value !== 'world' && state.value !== 'needs-character') {
         state.value = 'error'
       }
       return
     }
     errorCode.value = 'network_unavailable'
+    errorCorrelationId.value = null
     if (state.value !== 'world' && state.value !== 'needs-character') {
       state.value = 'offline'
     }
@@ -293,6 +332,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     state,
     snapshot,
     errorCode,
+    errorCorrelationId,
     roles,
     mutationPending,
     isReady,
