@@ -31,11 +31,11 @@ internal static class InventorySnapshotReader
 
         InventoryItemSnapshot[] snapshots = items.Select(item =>
         {
-            if (!definitions.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
-            {
-                throw new InvalidOperationException(
-                    $"Inventory item '{item.ItemDefinitionId}' is missing from game content.");
-            }
+            ItemDefinition definition = definitions.TryGetValue(
+                    item.ItemDefinitionId,
+                    out ItemDefinition? resolved)
+                ? resolved
+                : CreateOrphanedDefinition(item);
 
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
@@ -55,4 +55,19 @@ internal static class InventorySnapshotReader
             .ToDictionary(item => item.EquippedSlot!.Value);
         return new InventorySnapshot(snapshots, equipped);
     }
+
+    private static ItemDefinition CreateOrphanedDefinition(CharacterItem item) =>
+        new(
+            item.ItemDefinitionId,
+            $"Устаревший предмет · {item.ItemDefinitionId}",
+            ItemType.Material,
+            ItemRarity.Common,
+            1,
+            true,
+            Math.Max(2, item.Quantity),
+            null,
+            new PrimaryStats(0, 0, 0, 0),
+            "Сохранённый предмет ссылается на удалённое определение контента. "
+            + "Предмет сохранён без характеристик до восстановления его определения.",
+            Version: item.DefinitionVersion);
 }
