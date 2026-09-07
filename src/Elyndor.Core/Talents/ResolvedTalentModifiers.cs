@@ -55,7 +55,8 @@ public sealed record ResolvedTalentEventHook(
 
 public sealed record TalentProfileModifiers(
     string? ResourceProfileId = null,
-    string? CompanionProfileId = null);
+    string? CompanionProfileId = null,
+    string? PrimaryAttribute = null);
 
 public sealed record ResolvedTalentModifiers(
     TalentStatModifiers Stats,
