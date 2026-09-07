@@ -59,7 +59,29 @@ public sealed record ClassProfile(
     IReadOnlyList<AbilityUnlockDefinition>? AbilityUnlocks = null,
     AutoAttackProfile? CombatAutoAttack = null,
     IReadOnlyList<string>? AllowedOffHandCategories = null,
-    bool AllowUnarmed = false);
+    bool AllowUnarmed = false,
+    IReadOnlyList<CompanionProfileDefinition>? CompanionProfiles = null,
+    string? StartingCompanionProfileId = null);
+
+public sealed record CompanionProfileDefinition(
+    string Id,
+    string Tag,
+    string Archetype,
+    string Name,
+    decimal MaxHpBase,
+    decimal MaxHpPerOwnerStamina,
+    decimal AttackPowerOwnerCoefficient,
+    decimal SpellPowerOwnerCoefficient,
+    decimal BaseDamageMin,
+    decimal BaseDamageMax,
+    TimeSpan AutoAttackInterval,
+    decimal Accuracy = 95,
+    decimal Dodge = 5,
+    decimal CriticalChance = 5,
+    decimal CriticalDamage = 1.5m,
+    decimal Armor = 0,
+    decimal MagicResistance = 0,
+    string? ArtId = null);
 
 public sealed record AbilityUnlockDefinition(string AbilityId, int UnlockLevel);
 
