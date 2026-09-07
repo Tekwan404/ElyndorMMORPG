@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
@@ -68,6 +69,30 @@ public sealed class GuardianThreatCombatSessionTests
         Assert.Equal(baselinePlayerDamage, guardianPlayerDamage);
     }
 
+    [Fact]
+    public void ProvokeForcesEnemyBackToPlayerAboveCompanionThreat()
+    {
+        CombatSession session = CreateSession(ResolvedTalentModifiers.Empty);
+
+        session.AdvanceTo(Now.AddSeconds(1.5));
+        CombatCommandResult provoke = session.Handle(
+            new UseAbilityCommand(
+                "provoke",
+                "PROVOKE",
+                EnemyId),
+            Now.AddSeconds(1.6));
+        CombatCommandResult result =
+            session.AdvanceTo(Now.AddSeconds(2));
+
+        Assert.True(provoke.Succeeded);
+        CombatEvent enemySwing = Assert.Single(
+            result.Events,
+            item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.SourceActorId == EnemyId);
+        Assert.Equal(PlayerId, enemySwing.TargetActorId);
+    }
+
     private static CombatSession CreateSession(ResolvedTalentModifiers talents)
     {
         CombatStats stats = new(
@@ -94,7 +119,7 @@ public sealed class GuardianThreatCombatSessionTests
                 BaseDamage: 100,
                 AttackPowerCoefficient: 0,
                 ResourceOnHit: 0),
-            new HashSet<string>(StringComparer.Ordinal));
+            new HashSet<string>(["PROVOKE"], StringComparer.Ordinal));
 
         CombatParticipantDefinition companion = new(
             new CombatActorState(CompanionId, 1_000, 1_000, 0, 0, stats),
@@ -126,8 +151,27 @@ public sealed class GuardianThreatCombatSessionTests
             Guid.CreateVersion7(),
             player,
             enemy,
-            new Dictionary<string, Elyndor.Core.Combat.Abilities.AbilityDefinition>(
-                StringComparer.Ordinal),
+            new Dictionary<string, AbilityDefinition>(
+                StringComparer.Ordinal)
+            {
+                ["PROVOKE"] = new(
+                    "PROVOKE",
+                    AbilityType.Taunt,
+                    AbilityTargetType.SingleEnemy,
+                    0,
+                    TimeSpan.Zero,
+                    TimeSpan.Zero,
+                    false,
+                    GlobalCooldownCategory.None,
+                    false,
+                    "PHYSICAL",
+                    Actions:
+                    [
+                        new AbilityActionDefinition(
+                            AbilityActionType.Taunt,
+                            Duration: TimeSpan.FromSeconds(3))
+                    ])
+            },
             new MonsterAiProfile("THREAT_AI", []),
             talents,
             new SequenceGameRandom(Enumerable.Repeat(0.99m, 100).ToArray()),
