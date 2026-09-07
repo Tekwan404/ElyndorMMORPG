@@ -8,6 +8,27 @@ public static class EffectEngine
         EffectDefinition definition,
         DateTimeOffset now)
     {
+        if (definition.Kind is EffectKind.Stun or EffectKind.Silence
+            && target.IncomingControlDurationMultiplier < 1)
+        {
+            definition = definition with
+            {
+                Duration = TimeSpan.FromTicks(
+                    (long)(definition.Duration.Ticks
+                        * Math.Clamp(target.IncomingControlDurationMultiplier, 0, 1)))
+            };
+        }
+        if (definition.Kind == EffectKind.Shield
+            && sourceId == target.ActorId
+            && target.OwnShieldMagnitudeMultiplier != 1)
+        {
+            definition = definition with
+            {
+                Magnitude = definition.Magnitude
+                    * Math.Max(0, target.OwnShieldMagnitudeMultiplier)
+            };
+        }
+
         Validate(definition);
         List<CombatEvent> events = [];
         List<ActiveEffect> matching = target.ActiveEffects

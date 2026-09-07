@@ -5,6 +5,7 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
+using Elyndor.Core.Combat.Targeting;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -28,6 +29,8 @@ public sealed partial class CombatSession
     private CombatParticipantDefinition _primaryEnemy => _enemiesById[_primaryEnemyActorId];
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilities;
     private readonly Dictionary<Guid, EnemyAiRuntime> _enemyAiRuntimes;
+    private readonly Dictionary<Guid, ThreatTable> _enemyThreatTables;
+    private readonly Dictionary<Guid, ForcedTargetState> _enemyForcedTargets;
     private readonly ResolvedTalentModifiers _playerTalents;
     private readonly ResolvedTalentModifiers _genericTalentModifiers;
     private readonly TalentRuntimeEngine _talentRuntimeEngine;
@@ -245,6 +248,18 @@ public sealed partial class CombatSession
             enemy => new EnemyAiRuntime(
                 enemyAiProfiles[enemy.Actor.ActorId],
                 startedAtUtc + enemy.AutoAttack.Interval));
+        _enemyThreatTables = _enemies.ToDictionary(
+            enemy => enemy.Actor.ActorId,
+            _ => new ThreatTable());
+        _enemyForcedTargets = _enemies.ToDictionary(
+            enemy => enemy.Actor.ActorId,
+            _ => new ForcedTargetState());
+        foreach (ThreatTable threat in _enemyThreatTables.Values)
+        {
+            threat.AddThreat(_player.Actor.ActorId, 1);
+            if (_companion is not null)
+                threat.AddThreat(_companion.Actor.ActorId, 1);
+        }
 
         CurrentTimeUtc = startedAtUtc;
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
@@ -991,6 +1006,12 @@ public sealed partial class CombatSession
                 new EnemyAiRuntime(
                     _summonProfile.AiProfile,
                     now + summoned.AutoAttack.Interval));
+            ThreatTable summonedThreat = new();
+            summonedThreat.AddThreat(_player.Actor.ActorId, 1);
+            if (_companion is not null)
+                summonedThreat.AddThreat(_companion.Actor.ActorId, 1);
+            _enemyThreatTables.Add(summoned.Actor.ActorId, summonedThreat);
+            _enemyForcedTargets.Add(summoned.Actor.ActorId, new ForcedTargetState());
 
             Append(new CombatEvent(
                 CombatEventType.ActorSummoned,
@@ -1065,7 +1086,7 @@ public sealed partial class CombatSession
                 continue;
             }
 
-            Guid[] targetIds = ResolveEnemyAbilityTargetIds(enemy, ability);
+            Guid[] targetIds = ResolveEnemyAbilityTargetIds(enemy, ability, now);
             if (targetIds.Length == 0)
                 continue;
 
@@ -1119,7 +1140,10 @@ public sealed partial class CombatSession
         }
 
         if (enemy.CanAutoAttack)
-            ResolveAutoAttack(enemy, _player, now);
+        {
+            CombatParticipantDefinition target = SelectEnemyPartyTarget(enemy.Actor.ActorId, now);
+            ResolveAutoAttack(enemy, target, now);
+        }
         aiRuntime.NextActionAtUtc =
             Status == CombatSessionStatus.Active && !enemy.Actor.IsDead
                 ? NextEnemyActionAfter(enemy, now)
@@ -1128,7 +1152,8 @@ public sealed partial class CombatSession
 
     private Guid[] ResolveEnemyAbilityTargetIds(
         CombatParticipantDefinition enemy,
-        AbilityDefinition ability)
+        AbilityDefinition ability,
+        DateTimeOffset now)
     {
         if (_player.Actor.IsDead)
             return [];
@@ -1140,7 +1165,7 @@ public sealed partial class CombatSession
         return ability.TargetType switch
         {
             AbilityTargetType.Self => [enemy.Actor.ActorId],
-            AbilityTargetType.SingleEnemy => [_player.Actor.ActorId],
+            AbilityTargetType.SingleEnemy => [SelectEnemyPartyTarget(enemy.Actor.ActorId, now).Actor.ActorId],
             AbilityTargetType.AllEnemiesInCombat => hostileActors,
             AbilityTargetType.NEnemiesInCombat when ability.TargetCount > 0 =>
                 hostileActors.Take(ability.TargetCount).ToArray(),
@@ -1148,6 +1173,26 @@ public sealed partial class CombatSession
                 [enemy.Actor.ActorId],
             _ => []
         };
+    }
+
+    private CombatParticipantDefinition SelectEnemyPartyTarget(
+        Guid enemyActorId,
+        DateTimeOffset now)
+    {
+        IReadOnlyList<CombatParticipantDefinition> candidates = _companion is null
+            ? [_player]
+            : [_player, _companion];
+        Guid selected = TargetSelectionPolicy.SelectForcedOrThreatTarget(
+            _enemyForcedTargets[enemyActorId],
+            _enemyThreatTables[enemyActorId],
+            candidates
+                .Where(candidate => !candidate.Actor.IsDead)
+                .Select(candidate => new CombatActor(
+                    candidate.Actor.ActorId,
+                    CombatActorSide.Friendly))
+                .ToArray(),
+            now) ?? _player.Actor.ActorId;
+        return candidates.First(candidate => candidate.Actor.ActorId == selected);
     }
 
     private Dictionary<Guid, AbilityTargetModifier>?
@@ -1445,6 +1490,42 @@ public sealed partial class CombatSession
 
     private void ApplyTalentHooks(CombatEvent combatEvent)
     {
+        if (combatEvent.TargetActorId is { } threatTarget
+            && _enemyThreatTables.TryGetValue(threatTarget, out ThreatTable? threatTable)
+            && combatEvent.SourceActorId is { } threatSource
+            && IsPartyActor(threatSource)
+            && combatEvent.Amount > 0)
+        {
+            threatTable.AddThreat(
+                threatSource,
+                combatEvent.Amount,
+                threatSource == _player.Actor.ActorId
+                    ? GuardianThreatMultiplier
+                    : 1);
+        }
+
+        if (combatEvent.Type == CombatEventType.TauntApplied
+            && combatEvent.TargetActorId is { } tauntTarget
+            && _enemyForcedTargets.TryGetValue(tauntTarget, out ForcedTargetState? forcedTarget)
+            && combatEvent.SourceActorId is { } tauntSource)
+        {
+            TimeSpan duration = TimeSpan.FromSeconds((double)combatEvent.Amount);
+            if (tauntSource == _player.Actor.ActorId
+                && GetGuardianHookValue("G-2-2") is { } extraDuration)
+            {
+                duration += TimeSpan.FromSeconds((double)extraDuration);
+            }
+            forcedTarget.Set(tauntSource, combatEvent.OccurredAtUtc, duration);
+            if (tauntSource == _player.Actor.ActorId
+                && GetGuardianHookValue("G-4-2") is { } extraThreat)
+            {
+                _enemyThreatTables[tauntTarget].AddThreat(
+                    tauntSource,
+                    extraThreat,
+                    GuardianThreatMultiplier);
+            }
+        }
+
         if (combatEvent.Type == CombatEventType.AbilityCompleted
             && combatEvent.SourceActorId == _player.Actor.ActorId)
         {
@@ -1772,7 +1853,7 @@ public sealed partial class CombatSession
         DateTimeOffset now,
         string definitionId)
     {
-        decimal actual = actor.AddResource(amount);
+        decimal actual = actor.AddResource(ScaleWarlordResource(definitionId, amount));
         if (actual == 0) return;
         Append(new CombatEvent(
             CombatEventType.ResourceChanged,

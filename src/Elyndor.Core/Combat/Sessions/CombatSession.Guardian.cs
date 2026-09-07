@@ -28,6 +28,13 @@ public sealed partial class CombatSession
         {
             _player.Actor.IncomingCriticalDamageReductionPercent = criticalReduction.Value;
         }
+        decimal controlReduction =
+            (GetGuardianHook("G-3-2")?.Value ?? 0)
+            + (GetGuardianHook("G-6-3")?.Value ?? 0);
+        _player.Actor.IncomingControlDurationMultiplier =
+            Math.Max(0, 1 - controlReduction / 100m);
+        _player.Actor.OwnShieldMagnitudeMultiplier =
+            1 + (GetGuardianHook("G-6-4")?.Value ?? 0) / 100m;
 
         if (HasGuardianTalent("G-7-2"))
         {
@@ -52,17 +59,10 @@ public sealed partial class CombatSession
         if (!IsGuardian || combatEvent.DefinitionId is null)
             return;
 
-        foreach (TalentRuntimeAction action in PublishGuardianEvent(
-                     TalentModifierKeys.OnAbilityUsed,
-                     combatEvent,
-                     hook => hook.TalentId is "G-2-2" or "G-3-2" or "G-6-3" or "G-8-2"))
-        {
-            if (action.TalentId == "G-2-2"
-                && combatEvent.DefinitionId == "PROVOKE")
-            {
-                _playerRuntime.Cooldowns.Remove("PROVOKE");
-            }
-        }
+        _ = PublishGuardianEvent(
+            TalentModifierKeys.OnAbilityUsed,
+            combatEvent,
+            hook => hook.TalentId is "G-2-2" or "G-3-2" or "G-6-3" or "G-8-2");
 
         if (combatEvent.DefinitionId == "BASTION"
             && GetGuardianHook("G-8-2") is { } bastionDodge)
@@ -407,4 +407,11 @@ public sealed partial class CombatSession
 
     private decimal GuardianRageMultiplier =>
         1 + (GetGuardianHook("G-8-3")?.Value ?? 0) / 100m;
+
+    private decimal GuardianThreatMultiplier =>
+        1 + (GetGuardianHook("G-5-2")?.Value ?? 0) / 100m
+        + (GetGuardianHook("G-1-4")?.Value ?? 0) / 100m;
+
+    private decimal? GetGuardianHookValue(string talentId) =>
+        GetGuardianHook(talentId)?.Value;
 }

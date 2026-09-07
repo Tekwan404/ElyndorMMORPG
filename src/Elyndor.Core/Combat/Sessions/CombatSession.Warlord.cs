@@ -125,6 +125,10 @@ public sealed partial class CombatSession
             talentIds.Add("W-8-1");
         if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD")
             talentIds.Add("W-9-1");
+        if (IsWarlordCry(abilityId))
+            talentIds.Add("W-7-3");
+        if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD")
+            talentIds.Add("W-8-4");
 
         foreach (TalentRuntimeAction action in PublishWarlordPartyEvent(
                      combatEvent.OccurredAtUtc,
@@ -133,6 +137,17 @@ public sealed partial class CombatSession
                      talentIds.Contains))
         {
             ApplyWarlordPartyAction(action, abilityId, combatEvent.OccurredAtUtc);
+        }
+
+        if (IsWarlordCry(abilityId)
+            && GetWarlordHook("W-7-3") is { } rhythm)
+        {
+            ReduceWarlordCryCooldowns(rhythm.Value, combatEvent.OccurredAtUtc);
+        }
+        if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD"
+            && GetWarlordHook("W-8-4") is { } commander)
+        {
+            ReduceWarlordCryCooldowns(commander.Value, combatEvent.OccurredAtUtc);
         }
 
         if (abilityId == "BATTLE_CRY")
@@ -153,6 +168,14 @@ public sealed partial class CombatSession
         if (abilityId == "VICTORY_FLAG")
         {
             ApplyWarlordPartyEffectFromHook("W-8-2", "WARLORD_UNBREAKABLE_VANGUARD", null, combatEvent.OccurredAtUtc);
+        }
+        if (abilityId == "CRY_OF_VENGEANCE" && _companion is not null)
+        {
+            ApplyKernelEvents(
+                EffectEngine.Remove(_companion.Actor, WarlordVengeanceStackEffectId, combatEvent.OccurredAtUtc),
+                _player.Actor.ActorId,
+                _companion.Actor.ActorId,
+                WarlordVengeanceStackEffectId);
         }
     }
 
@@ -201,12 +224,26 @@ public sealed partial class CombatSession
         if (combatEvent.DefinitionId == "AUTO_ATTACK")
             ApplyWarlordAutoAttackHooks(combatEvent, alreadyPublished: true);
 
-        if (HasWarlordTalent("W-4-2")
-            && GetPartyActor(targetActorId) is not null
+        if (HasWarlordAbility("CRY_OF_VENGEANCE")
             && targetActorId != _player.Actor.ActorId
             && _player.Actor.ActiveEffects.Any(effect => effect.Definition.Id == WarlordVengeanceStackEffectId))
         {
-            return;
+            ApplyKernelEvents(
+                EffectEngine.Apply(
+                    _player.Actor,
+                    _player.Actor.ActorId,
+                    new EffectDefinition(
+                        WarlordVengeanceStackEffectId,
+                        EffectKind.Buff,
+                        TimeSpan.FromSeconds(10),
+                        5,
+                        EffectStackPolicy.Stack,
+                        0.35m,
+                        DispelCategory: "WARLORD"),
+                    combatEvent.OccurredAtUtc),
+                _player.Actor.ActorId,
+                _player.Actor.ActorId,
+                WarlordVengeanceStackEffectId);
         }
     }
 
@@ -302,7 +339,7 @@ public sealed partial class CombatSession
                      death.OccurredAtUtc,
                      _player.Actor.ActorId,
                      "ENEMY_KILLED",
-                     talentId => talentId == "W-9-1"))
+                     talentId => talentId is "W-9-1"))
         {
             if (action.TalentId == "W-9-1")
             {
@@ -314,6 +351,15 @@ public sealed partial class CombatSession
                         _playerRuntime.Cooldowns[abilityId] = ready - TimeSpan.FromSeconds(1);
                     }
                 }
+            }
+        }
+
+        if (_player.Actor.ActiveEffects.Any(effect => effect.Definition.Id == WarlordBannerEffectId)
+            && HasWarlordAbility("WAR_BANNER"))
+        {
+            foreach (CombatActorState actor in PartyActors)
+            {
+                AddResource(actor, actor.MaxResource * 2 / 100m, death.OccurredAtUtc, "W-3-3");
             }
         }
     }
@@ -522,6 +568,41 @@ public sealed partial class CombatSession
     private bool HasWarlordTalent(string talentId) =>
         GetWarlordHook(talentId) is not null
         || _playerTalents.UnlockedAbilityIds.Contains(talentId);
+
+    private bool HasWarlordAbility(string abilityId) =>
+        _playerTalents.UnlockedAbilityIds.Contains(abilityId);
+
+    private decimal ResolveWarlordAutoAttackResource(decimal amount) =>
+        amount * (1 + (GetWarlordHook("W-5-3")?.Value ?? 0) / 100m);
+
+    private decimal ResolveWarlordVengeanceMultiplier()
+    {
+        ActiveEffect? stacks = _player.Actor.ActiveEffects.FirstOrDefault(effect =>
+            effect.Definition.Id == WarlordVengeanceStackEffectId);
+        if (stacks is null)
+            return 1;
+
+        _player.Actor.ActiveEffects.Remove(stacks);
+        return 1 + stacks.Stacks * stacks.Definition.Magnitude;
+    }
+
+    private void ReduceWarlordCryCooldowns(decimal seconds, DateTimeOffset now)
+    {
+        TimeSpan reduction = TimeSpan.FromSeconds((double)Math.Max(0, seconds));
+        foreach (string abilityId in WarlordAbilityIds.Where(IsWarlordCry))
+        {
+            if (_playerRuntime.Cooldowns.TryGetValue(abilityId, out DateTimeOffset ready)
+                && ready > now)
+            {
+                _playerRuntime.Cooldowns[abilityId] = ready - reduction;
+            }
+        }
+    }
+
+    private decimal ScaleWarlordResource(string definitionId, decimal amount) =>
+        definitionId is "W-3-3" or "W-6-3" or "W-8-1"
+            ? amount * (1 + (GetWarlordHook("W-6-4")?.Value ?? 0) / 100m)
+            : amount;
 
     private bool IsPartyActor(Guid actorId) =>
         actorId == _player.Actor.ActorId

@@ -277,6 +277,7 @@ public sealed partial class CombatSession
                 baseDamage,
                 DamageType.Physical,
                 DamageMultiplier: deathsEmbraceMultiplier
+                    * ResolveWarlordVengeanceMultiplier()
                     * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
                     * archerModifier.DamageMultiplier,
                 ArmorPenetrationBonus: archerModifier.ArmorPenetrationBonus,
@@ -307,7 +308,7 @@ public sealed partial class CombatSession
         {
             AddResource(
                 _player.Actor,
-                profile.ResourceOnHit,
+                ResolveWarlordAutoAttackResource(profile.ResourceOnHit),
                 now,
                 "AUTO_ATTACK");
         }
@@ -345,6 +346,19 @@ public sealed partial class CombatSession
                 doubleStrike.TalentId,
                 now);
             StartTalentCooldown(doubleStrike, now);
+        }
+
+        if (_player.Actor.ActiveEffects.Any(effect =>
+                effect.Definition.Id == WarlordBattleStandardEffectId)
+            && _random.NextUnit() < 0.10m)
+        {
+            ResolveSecondaryAutoAttack(
+                target,
+                profile,
+                baseDamage,
+                0.25m,
+                "W-7-1",
+                now);
         }
     }
 

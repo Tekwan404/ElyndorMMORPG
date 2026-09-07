@@ -55,6 +55,8 @@ public sealed class CombatActorState
     public CombatStats Stats { get; }
     public TalentCombatModifiers TalentModifiers { get; }
     public decimal IncomingCriticalDamageReductionPercent { get; set; }
+    public decimal IncomingControlDurationMultiplier { get; set; } = 1;
+    public decimal OwnShieldMagnitudeMultiplier { get; set; } = 1;
     public bool CanDie { get; }
     public List<ActiveEffect> ActiveEffects { get; } = [];
     public bool IsDead => CanDie && CurrentHp <= 0;

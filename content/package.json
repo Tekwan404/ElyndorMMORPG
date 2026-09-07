@@ -3371,10 +3371,11 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-                  "values": [
-                    3,
-                    5
-                  ],
+              "values": [
+                3,
+                5
+              ],
+              "internalCooldownSeconds": 20,
               "runtimeStatus": "Deferred",
               "deferredOwner": "PARTY"
             }
