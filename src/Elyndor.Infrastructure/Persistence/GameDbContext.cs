@@ -4,6 +4,7 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
+using Elyndor.Core.Combat;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Content;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +31,15 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<CharacterItem> CharacterItems => Set<CharacterItem>();
 
+    public DbSet<CharacterAbilityCooldown> CharacterAbilityCooldowns =>
+        Set<CharacterAbilityCooldown>();
+
     public DbSet<CharacterEquipment> CharacterEquipment => Set<CharacterEquipment>();
 
     public DbSet<CombatRewardGrant> CombatRewardGrants => Set<CombatRewardGrant>();
+
+    public DbSet<CharacterContractAcceptance> CharacterContractAcceptances =>
+        Set<CharacterContractAcceptance>();
 
     public DbSet<CharacterContractCompletion> CharacterContractCompletions =>
         Set<CharacterContractCompletion>();

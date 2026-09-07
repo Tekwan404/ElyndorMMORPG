@@ -275,7 +275,19 @@
       },
       "description": "Амулет из волчьего клыка — знак удачливого охотника.",
       "version": 1,
-      "setId": "RANGER_SET"
+      "setId": "RANGER_SET",
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "agility": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      }
     },
     {
       "id": "SMALL_HEALING_POTION",

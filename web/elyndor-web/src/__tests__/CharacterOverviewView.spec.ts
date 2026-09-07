@@ -40,6 +40,37 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     expect(wrapper.find('.paperdoll__vitals').exists()).toBe(false)
   })
 
+  it('renders item artwork in both paperdoll columns and shows exact dual-wield cadence', () => {
+    const session = useGameSessionStore()
+    const mainHand = {
+      ...equipment('MAIN_HAND_ART', 'Клинок', 'MainHand'),
+      iconId: 'item-warrior-sword',
+      weaponCategory: 'ONE_HAND_SWORD',
+      weaponBaseAttackIntervalSeconds: 2,
+    }
+    const offHand = {
+      ...equipment('OFF_HAND_ART', 'Второй клинок', 'OffHand'),
+      iconId: 'item-warrior-sword',
+      weaponCategory: 'ONE_HAND_SWORD',
+      weaponBaseAttackIntervalSeconds: 2.5,
+    }
+    const chest = {
+      ...equipment('CHEST_ART', 'Кираса', 'Chest'),
+      iconId: 'item-warrior-chestplate',
+    }
+    session.snapshot = snapshot({ mainHand, offHand, chest })
+    session.snapshot.character!.stats.attackSpeed = 1.25
+
+    const wrapper = mount(CharacterOverviewView)
+
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').find('img').exists()).toBe(true)
+    expect(wrapper.get('[data-equipment-slot="offHand"]').find('img').exists()).toBe(true)
+    expect(wrapper.get('[data-equipment-slot="chest"]').find('img').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Основная: 1.6 сек. · 0.63 уд/с')
+    expect(wrapper.text()).toContain('Вторая: 2 сек. · 0.5 уд/с')
+    expect(wrapper.text()).toContain('Итого: 1.13 уд/с')
+  })
+
   it('unequips an equipped legacy accessory through its canonical amulet slot', async () => {
     const session = useGameSessionStore()
     const legacyAccessory = equipment('LEGACY_AMULET', 'Амулет Следопыта', 'Accessory')

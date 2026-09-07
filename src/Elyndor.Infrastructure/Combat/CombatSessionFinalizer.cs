@@ -63,6 +63,13 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        CharacterAbilityCooldownStore cooldownStore =
+            scope.ServiceProvider.GetRequiredService<CharacterAbilityCooldownStore>();
+        await cooldownStore.ReplaceAsync(
+            characterId,
+            snapshot.Player.Cooldowns,
+            snapshot.ServerTimeUtc,
+            cancellationToken);
 
         // A terminal victory may be observed again after reconnect/retry. Rewards are already
         // idempotent by CombatSessionId, but replaying the pre-reward combat vitals here would

@@ -6,10 +6,13 @@
     {
       "id": "CONTRACT_BROODMOTHER_GATE",
       "displayName": "Контракт: Прародительница",
-      "description": "Уничтожьте Паучью Прародительницу в её логове. Подтверждённая сервером победа откроет путь в Осквернённую чащу.",
+      "description": "Возьмите контракт в логове и уничтожьте Паучью Прародительницу. Подтверждённая сервером победа принесёт награду и откроет путь в Осквернённую чащу.",
       "requiredLevel": 14,
       "targetMonsterId": "SPIDER_BROODMOTHER_L14",
-      "unlockLocationId": "BLIGHTED_GROVE"
+      "unlockLocationId": "BLIGHTED_GROVE",
+      "offerLocationId": "BROODMOTHER_LAIR",
+      "rewardXp": 2000,
+      "rewardGold": 150
     }
   ]
 }

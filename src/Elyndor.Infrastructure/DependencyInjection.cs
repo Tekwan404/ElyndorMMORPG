@@ -24,9 +24,11 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterDerivedStateService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
+        builder.Services.AddScoped<WorldContractService>();
         builder.Services.AddScoped<WorldEncounterService>();
         builder.Services.AddScoped<TelegramAdministrationService>();
         builder.Services.AddScoped<TalentService>();
+        builder.Services.AddScoped<CharacterAbilityCooldownStore>();
         builder.Services.AddScoped<CombatSessionFactory>();
         builder.Services.AddScoped<CombatApplicationService>();
         builder.Services.AddScoped<CombatRewardService>();

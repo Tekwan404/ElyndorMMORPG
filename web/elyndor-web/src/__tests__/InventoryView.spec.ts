@@ -34,6 +34,71 @@ describe('InventoryView', () => {
     ])
   })
 
+  it('filters inventory down to equipment the current character can wear now', async () => {
+    const store = useGameSessionStore()
+    const wearable = item({
+      id: 'WEARABLE_HELM',
+      name: 'Тяжёлый шлем',
+      type: 'Equipment',
+      rarity: 'Rare',
+      requiredLevel: 8,
+      slot: 'Head',
+      armorCategory: 'HEAVY',
+    })
+    const tooHigh = item({
+      id: 'HIGH_LEVEL_HELM',
+      name: 'Шлем ветерана',
+      type: 'Equipment',
+      rarity: 'Epic',
+      requiredLevel: 14,
+      slot: 'Head',
+      armorCategory: 'HEAVY',
+    })
+    const wrongArmor = item({
+      id: 'LEATHER_HOOD',
+      name: 'Кожаный капюшон',
+      type: 'Equipment',
+      rarity: 'Rare',
+      requiredLevel: 5,
+      slot: 'Head',
+      armorCategory: 'LEATHER',
+    })
+    const potion = consumable('TEST_POTION', 'Зелье')
+    store.snapshot = snapshot([wearable, tooHigh, wrongArmor, potion], currentWeapon())
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-inventory-equipable-filter]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-item-id="WEARABLE_HELM"]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="HIGH_LEVEL_HELM"]').exists()).toBe(false)
+    expect(wrapper.find('[data-item-id="LEATHER_HOOD"]').exists()).toBe(false)
+    expect(wrapper.find('[data-item-id="TEST_POTION"]').exists()).toBe(false)
+  })
+
+  it('labels randomized equipment instances in the item details', async () => {
+    const store = useGameSessionStore()
+    const rolled = item({
+      id: 'ROLLED_SWORD',
+      name: 'Случайный клинок',
+      type: 'Equipment',
+      rarity: 'Rare',
+      slot: 'MainHand',
+      weaponCategory: 'ONE_HAND_SWORD',
+      hasRandomStats: true,
+      stats: { strength: 7, stamina: 4 },
+    })
+    store.snapshot = snapshot([rolled], currentWeapon())
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="ROLLED_SWORD"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('Случайные характеристики')
+    expect(document.body.textContent).toContain('Сила +7')
+    expect(document.body.textContent).toContain('Выносливость +4')
+  })
+
   it('compares candidate equipment with the currently equipped item', async () => {
     const store = useGameSessionStore()
     const candidate = equipment('EPIC_BLADE', 'Клинок сумерек', 'Epic', 5, 12)
@@ -295,6 +360,7 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     iconId: overrides.iconId ?? null,
     appearanceProfileId: overrides.appearanceProfileId ?? null,
     weaponHandsRequired: overrides.weaponHandsRequired ?? null,
+    hasRandomStats: overrides.hasRandomStats ?? false,
   }
 }
 

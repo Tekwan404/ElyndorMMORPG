@@ -12,7 +12,7 @@ public sealed partial class CombatSession
 {
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly CombatParticipantDefinition _player;
-    private readonly CombatParticipantDefinition[] _enemies;
+    private readonly List<CombatParticipantDefinition> _enemies;
     private readonly Dictionary<Guid, CombatParticipantDefinition> _enemiesById;
     private readonly CombatRuntimeState _playerRuntime;
     private readonly Dictionary<Guid, CombatRuntimeState> _enemyRuntimes;
@@ -28,6 +28,8 @@ public sealed partial class CombatSession
     private readonly Dictionary<Guid, EnemyAiRuntime> _enemyAiRuntimes;
     private readonly ResolvedTalentModifiers _playerTalents;
     private readonly IGameRandom _random;
+    private readonly CombatSummonProfile? _summonProfile;
+    private DateTimeOffset? _nextSummonAtUtc;
     private readonly HashSet<string> _processedCommandIds = new(StringComparer.Ordinal);
     private readonly HashSet<Guid> _deadActors = [];
     private readonly List<CombatEvent> _events = [];
@@ -48,7 +50,9 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
+        CombatSummonProfile? summonProfile = null)
         : this(
             sessionId,
             player,
@@ -59,7 +63,9 @@ public sealed partial class CombatSession
             random,
             startedAtUtc,
             contentVersion,
-            balanceVersion)
+            balanceVersion,
+            initialPlayerCooldowns,
+            summonProfile)
     {
     }
 
@@ -73,7 +79,9 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
+        CombatSummonProfile? summonProfile = null)
         : this(
             sessionId,
             player,
@@ -84,7 +92,9 @@ public sealed partial class CombatSession
             random,
             startedAtUtc,
             contentVersion,
-            balanceVersion)
+            balanceVersion,
+            initialPlayerCooldowns,
+            summonProfile)
     {
     }
 
@@ -98,7 +108,9 @@ public sealed partial class CombatSession
         IGameRandom random,
         DateTimeOffset startedAtUtc,
         string contentVersion = "UNVERSIONED",
-        string balanceVersion = "UNVERSIONED")
+        string balanceVersion = "UNVERSIONED",
+        IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
+        CombatSummonProfile? summonProfile = null)
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -145,16 +157,46 @@ public sealed partial class CombatSession
         ContentVersion = contentVersion;
         BalanceVersion = balanceVersion;
         _player = player;
-        _enemies = enemies.ToArray();
+        _enemies = enemies.ToList();
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
         _selectedTargetActorId = _primaryEnemyActorId;
         _abilities = abilities;
         _playerTalents = playerTalents;
         _random = random;
+        _summonProfile = summonProfile;
+        if (_summonProfile is not null)
+        {
+            if (_summonProfile.Interval <= TimeSpan.Zero
+                || _summonProfile.Count <= 0
+                || _summonProfile.MaxActive <= 0
+                || !_enemies.Any(enemy => string.Equals(
+                    enemy.DefinitionId,
+                    _summonProfile.SourceDefinitionId,
+                    StringComparison.Ordinal)))
+            {
+                throw new ArgumentException("Combat summon profile is invalid.", nameof(summonProfile));
+            }
+
+            ValidateAutoAttack(new AutoAttackProfile(
+                _summonProfile.Monster.AutoAttackInterval,
+                _summonProfile.Monster.AutoAttackBaseDamage,
+                _summonProfile.Monster.AutoAttackAttackPowerCoefficient,
+                0,
+                _summonProfile.Monster.AutoAttackBaseDamageMin,
+                _summonProfile.Monster.AutoAttackBaseDamageMax));
+        }
 
         CombatActorState[] enemyActors = _enemies.Select(enemy => enemy.Actor).ToArray();
         _playerRuntime = CreateRuntime(player.Actor, enemyActors);
+        if (initialPlayerCooldowns is not null)
+        {
+            foreach ((string abilityId, DateTimeOffset readyAtUtc) in initialPlayerCooldowns)
+            {
+                if (readyAtUtc > startedAtUtc)
+                    _playerRuntime.Cooldowns[abilityId] = readyAtUtc;
+            }
+        }
         _enemyRuntimes = _enemies.ToDictionary(
             enemy => enemy.Actor.ActorId,
             enemy => CreateRuntime(
@@ -169,6 +211,9 @@ public sealed partial class CombatSession
 
         CurrentTimeUtc = startedAtUtc;
         _lastPlayerResourceRegenAtUtc = startedAtUtc;
+        _nextSummonAtUtc = _summonProfile is null
+            ? null
+            : startedAtUtc + _summonProfile.Interval;
         Status = CombatSessionStatus.Active;
         _playerAutoAttackEnabled = player.CanAutoAttack;
         _nextPlayerMainHandAutoAttackAtUtc = player.CanAutoAttack ? startedAtUtc : null;
@@ -206,6 +251,7 @@ public sealed partial class CombatSession
                 _nextPlayerOffHandAutoAttackAtUtc);
             next = Min(next, _playerRuntime.ActiveCast?.ResolvesAtUtc);
             next = Min(next, NextEffectDue(_player.Actor));
+            next = Min(next, _nextSummonAtUtc);
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 Guid enemyActorId = enemy.Actor.ActorId;
@@ -715,6 +761,12 @@ public sealed partial class CombatSession
                     ref _nextPlayerOffHandAutoAttackAtUtc);
             }
 
+            if (Status == CombatSessionStatus.Active
+                && _nextSummonAtUtc <= due)
+            {
+                ResolveSummon(due);
+            }
+
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 if (Status != CombatSessionStatus.Active)
@@ -753,6 +805,100 @@ public sealed partial class CombatSession
         }
 
         nextAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+    }
+
+    private void ResolveSummon(DateTimeOffset now)
+    {
+        if (_summonProfile is null)
+        {
+            _nextSummonAtUtc = null;
+            return;
+        }
+
+        CombatParticipantDefinition? source = _enemies.FirstOrDefault(enemy =>
+            string.Equals(
+                enemy.DefinitionId,
+                _summonProfile.SourceDefinitionId,
+                StringComparison.Ordinal)
+            && !enemy.Actor.IsDead);
+        if (source is null)
+        {
+            _nextSummonAtUtc = null;
+            return;
+        }
+
+        int activeSummons = _enemies.Count(enemy =>
+            string.Equals(
+                enemy.DefinitionId,
+                _summonProfile.Monster.Id,
+                StringComparison.Ordinal)
+            && !enemy.Actor.IsDead);
+        int available = Math.Max(0, _summonProfile.MaxActive - activeSummons);
+        int toSummon = Math.Min(_summonProfile.Count, available);
+
+        for (var index = 0; index < toSummon; index++)
+        {
+            CombatParticipantDefinition summoned = CreateSummonedParticipant(
+                _summonProfile.Monster);
+            CombatActorState[] existingEnemyActors =
+                _enemies.Select(enemy => enemy.Actor).ToArray();
+
+            _playerRuntime.AddActor(summoned.Actor);
+            foreach (CombatRuntimeState runtime in _enemyRuntimes.Values)
+                runtime.AddActor(summoned.Actor);
+
+            _enemies.Add(summoned);
+            _enemiesById.Add(summoned.Actor.ActorId, summoned);
+            _enemyRuntimes.Add(
+                summoned.Actor.ActorId,
+                CreateRuntime(
+                    summoned.Actor,
+                    new[] { _player.Actor }.Concat(existingEnemyActors)));
+            _enemyAiRuntimes.Add(
+                summoned.Actor.ActorId,
+                new EnemyAiRuntime(
+                    _summonProfile.AiProfile,
+                    now + summoned.AutoAttack.Interval));
+
+            Append(new CombatEvent(
+                CombatEventType.ActorSummoned,
+                now,
+                summoned.Actor.ActorId,
+                summoned.DefinitionId,
+                SourceActorId: source.Actor.ActorId,
+                TargetActorId: summoned.Actor.ActorId));
+        }
+
+        _nextSummonAtUtc = Status == CombatSessionStatus.Active
+            ? now + _summonProfile.Interval
+            : null;
+    }
+
+    private static CombatParticipantDefinition CreateSummonedParticipant(
+        MonsterDefinition monster)
+    {
+        CombatActorState actor = new(
+            Guid.NewGuid(),
+            monster.MaxHp,
+            monster.MaxHp,
+            0,
+            0,
+            monster.Stats);
+
+        return new CombatParticipantDefinition(
+            actor,
+            CombatActorKind.Monster,
+            monster.Id,
+            monster.DisplayName ?? monster.Name,
+            "NONE",
+            new AutoAttackProfile(
+                monster.AutoAttackInterval,
+                monster.AutoAttackBaseDamage,
+                monster.AutoAttackAttackPowerCoefficient,
+                0,
+                monster.AutoAttackBaseDamageMin,
+                monster.AutoAttackBaseDamageMax),
+            new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal));
     }
 
     private void ResolveEnemyAction(
@@ -1169,6 +1315,15 @@ public sealed partial class CombatSession
         EnemyAiRuntime killedAi = _enemyAiRuntimes[killedEnemy.Actor.ActorId];
         killedAi.State = MonsterAiState.Dead;
         killedAi.NextActionAtUtc = null;
+
+        if (_summonProfile is not null
+            && string.Equals(
+                killedEnemy.DefinitionId,
+                _summonProfile.SourceDefinitionId,
+                StringComparison.Ordinal))
+        {
+            _nextSummonAtUtc = null;
+        }
 
         CombatParticipantDefinition? nextAlive = _enemies
             .FirstOrDefault(enemy => !enemy.Actor.IsDead);

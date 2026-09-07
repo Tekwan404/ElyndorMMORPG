@@ -22,6 +22,7 @@ public static class MerchantErrorCodes
     public const string ItemNotOwned = "merchant_item_not_owned";
     public const string ItemNotSellable = "merchant_item_not_sellable";
     public const string ItemLocked = "merchant_item_locked";
+    public const string ItemEquipped = "merchant_item_equipped";
     public const string InvalidQuantity = "merchant_invalid_quantity";
     public const string InvalidMutationId = "merchant_mutation_id_invalid";
     public const string MutationConflict = "merchant_mutation_conflict";
@@ -90,6 +91,7 @@ public sealed class MerchantService(
 
     private const string BuyOperation = "MERCHANT_BUY";
     private const string SellMaterialOperation = "MERCHANT_SELL_MATERIAL";
+    private const string SellItemOperation = "MERCHANT_SELL_ITEM";
 
     public async Task<MerchantOperationResult> GetAsync(
         Guid accountId,
@@ -209,6 +211,96 @@ public sealed class MerchantService(
 
                 item.RemoveQuantity(quantity);
                 if (item.Quantity == 0) dbContext.CharacterItems.Remove(item);
+                return null;
+            },
+            cancellationToken);
+
+
+    public Task<MerchantOperationResult> SellItemAsync(
+        Guid accountId,
+        string merchantId,
+        Guid characterItemId,
+        int quantity,
+        Guid mutationId,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(
+            accountId,
+            merchantId,
+            mutationId,
+            SellItemOperation,
+            Fingerprint(
+                SellItemOperation,
+                merchantId,
+                characterItemId.ToString("N"),
+                quantity.ToString(CultureInfo.InvariantCulture)),
+            async (character, _) =>
+            {
+                if (quantity < 1 || quantity > 99)
+                    return MerchantErrorCodes.InvalidQuantity;
+
+                CharacterItem? preview = await dbContext.CharacterItems
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(
+                        candidate => candidate.Id == characterItemId,
+                        cancellationToken);
+                if (preview is null || preview.CharacterId != character.Id)
+                    return MerchantErrorCodes.ItemNotOwned;
+                if (preview.IsLocked)
+                    return MerchantErrorCodes.ItemLocked;
+                if (await dbContext.CharacterEquipment
+                    .AsNoTracking()
+                    .AnyAsync(
+                        candidate => candidate.CharacterId == character.Id
+                            && candidate.CharacterItemId == characterItemId,
+                        cancellationToken))
+                {
+                    return MerchantErrorCodes.ItemEquipped;
+                }
+
+                ItemDefinition? definition = FindItem(preview.ItemDefinitionId);
+                if (definition is null)
+                    return MerchantErrorCodes.ItemNotSellable;
+                if (quantity > preview.Quantity)
+                    return MerchantErrorCodes.InvalidQuantity;
+                if (!definition.Stackable && quantity != 1)
+                    return MerchantErrorCodes.InvalidQuantity;
+
+                int unitPrice = ResolveSellPrice(definition);
+                if (unitPrice <= 0)
+                    return MerchantErrorCodes.ItemNotSellable;
+                long totalPrice = checked((long)unitPrice * quantity);
+
+                int credited = await dbContext.Characters
+                    .Where(candidate => candidate.Id == character.Id)
+                    .ExecuteUpdateAsync(
+                        setters => setters.SetProperty(
+                            candidate => candidate.Gold,
+                            candidate => candidate.Gold + totalPrice),
+                        cancellationToken);
+                if (credited == 0)
+                    return MerchantErrorCodes.CharacterNotFound;
+
+                CharacterItem? item = await dbContext.CharacterItems
+                    .SingleOrDefaultAsync(
+                        candidate => candidate.Id == characterItemId,
+                        cancellationToken);
+                if (item is null || item.CharacterId != character.Id)
+                    return MerchantErrorCodes.ItemNotOwned;
+                if (!string.Equals(
+                        item.ItemDefinitionId,
+                        definition.Id,
+                        StringComparison.Ordinal))
+                {
+                    return MerchantErrorCodes.Conflict;
+                }
+                if (item.IsLocked)
+                    return MerchantErrorCodes.ItemLocked;
+                if (quantity > item.Quantity)
+                    return MerchantErrorCodes.InvalidQuantity;
+
+                item.RemoveQuantity(quantity);
+                if (item.Quantity == 0)
+                    dbContext.CharacterItems.Remove(item);
                 return null;
             },
             cancellationToken);
@@ -430,13 +522,33 @@ public sealed class MerchantService(
 
     public static int ResolveSellPrice(ItemDefinition definition)
     {
-        if (definition.SellPriceGold > 0) return definition.SellPriceGold;
-        if (definition.Type != ItemType.Material) return 0;
-        return definition.Rarity switch
+        if (definition.SellPriceGold > 0)
+            return definition.SellPriceGold;
+        if (definition.BuyPriceGold > 0)
+            return Math.Max(1, definition.BuyPriceGold / 4);
+
+        return definition.Type switch
         {
-            ItemRarity.Common => 2,
-            ItemRarity.Uncommon => 4,
-            ItemRarity.Rare => 8,
+            ItemType.Material => definition.Rarity switch
+            {
+                ItemRarity.Common => 2,
+                ItemRarity.Uncommon => 4,
+                ItemRarity.Rare => 8,
+                ItemRarity.Epic => 16,
+                ItemRarity.Legendary => 32,
+                ItemRarity.Unique => 64,
+                _ => 0
+            },
+            ItemType.Equipment => definition.Rarity switch
+            {
+                ItemRarity.Common => 8,
+                ItemRarity.Uncommon => 20,
+                ItemRarity.Rare => 45,
+                ItemRarity.Epic => 100,
+                ItemRarity.Legendary => 250,
+                ItemRarity.Unique => 500,
+                _ => 0
+            },
             _ => 0
         };
     }

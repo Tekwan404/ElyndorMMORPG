@@ -274,6 +274,8 @@ function eventText(event: CombatEvent, critical = false): string {
       return `${eventEnemy?.name ?? enemyName} повержен`
     case 'TargetChanged':
       return `Новая цель · ${eventEnemy?.name ?? enemyName}`
+    case 'ActorSummoned':
+      return `${actorLabel('enemy', event)} призывает · ${eventEnemy?.name ?? definition}`
     case 'CombatEnded':
       return event.definitionId === 'Victory'
         ? 'Победа'

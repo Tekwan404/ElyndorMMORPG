@@ -109,6 +109,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function acceptContract(contractId: string): Promise<void> {
+    await mutate('/api/v1/world/contracts/accept', { contractId })
+  }
+
   async function explore(): Promise<WorldEncounter | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
@@ -172,6 +176,18 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       'merchant:buy',
       '/api/v1/inventory/merchant/buy',
       { merchantId, itemDefinitionId, quantity },
+    )
+  }
+
+  async function sellMerchantItem(
+    merchantId: string,
+    characterItemId: string,
+    quantity = 1,
+  ): Promise<MerchantSnapshot | null> {
+    return await merchantMutation(
+      'merchant:sell-item',
+      '/api/v1/inventory/merchant/sell-item',
+      { merchantId, characterItemId, quantity },
     )
   }
 
@@ -287,6 +303,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     start,
     createCharacter,
     travel,
+    acceptContract,
     explore,
     equip,
     unequip,
@@ -294,6 +311,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     setItemLock,
     getMerchant,
     buyMerchantItem,
+    sellMerchantItem,
     sellMerchantMaterial,
   }
 })

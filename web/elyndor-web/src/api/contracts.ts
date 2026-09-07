@@ -107,7 +107,10 @@ export interface WorldContract {
   requiredLevel: number
   targetMonsterId: string
   unlockLocationId: string
-  status: 'LOCKED' | 'ACTIVE' | 'COMPLETED'
+  status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLETED'
+  offerLocationId: string | null
+  rewardXp: number
+  rewardGold: number
 }
 
 export interface WorldEncounter {
@@ -216,6 +219,7 @@ export interface InventoryItem {
   iconId: string | null
   appearanceProfileId: string | null
   weaponHandsRequired?: number | null
+  hasRandomStats?: boolean
 }
 
 export interface InventorySnapshot {
@@ -438,4 +442,5 @@ export interface CombatReward {
     rarity: ItemRarity
     quantity: number
   }[]
+  completedContractIds?: string[] | null
 }

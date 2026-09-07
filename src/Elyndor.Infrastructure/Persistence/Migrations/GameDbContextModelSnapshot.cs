@@ -409,6 +409,45 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AbilityId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("ReadyAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "AbilityId")
+                        .HasName("pk_character_ability_cooldowns");
+
+                    b.HasIndex("ReadyAtUtc")
+                        .HasDatabaseName("ix_character_ability_cooldowns_ready_at_utc");
+
+                    b.ToTable("character_ability_cooldowns", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.CharacterContractAcceptance", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContractId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("AcceptedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "ContractId")
+                        .HasName("pk_character_contract_acceptances");
+
+                    b.ToTable("character_contract_acceptances", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.World.CharacterContractCompletion", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -724,6 +763,26 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_talent_states_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_ability_cooldowns_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.CharacterContractAcceptance", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_contract_acceptances_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.CharacterContractCompletion", b =>

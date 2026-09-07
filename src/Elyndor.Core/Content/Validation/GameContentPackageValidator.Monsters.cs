@@ -90,6 +90,38 @@ public static partial class GameContentPackageValidator
                         $"Monster '{monster.Id}' references missing AI profile '{monster.AiProfileId}'."));
                 }
             }
+
+            for (var index = 0; index < (package.Monsters?.Count ?? 0); index++)
+            {
+                MonsterDefinition monster = package.Monsters![index];
+                string path = $"monsters[{index}]";
+                bool hasSummon = !string.IsNullOrWhiteSpace(monster.SummonMonsterId);
+                if (!hasSummon)
+                {
+                    if (monster.SummonIntervalSeconds != 0
+                        || monster.SummonCount != 0
+                        || monster.MaxActiveSummons != 0)
+                    {
+                        errors.Add(new(
+                            "INVALID_MONSTER_SUMMON_PROFILE",
+                            path,
+                            $"Monster '{monster.Id}' has partial summon configuration."));
+                    }
+                    continue;
+                }
+
+                if (!monsterIds.Contains(monster.SummonMonsterId!)
+                    || string.Equals(monster.Id, monster.SummonMonsterId, StringComparison.Ordinal)
+                    || monster.SummonIntervalSeconds <= 0
+                    || monster.SummonCount <= 0
+                    || monster.MaxActiveSummons < monster.SummonCount)
+                {
+                    errors.Add(new(
+                        "INVALID_MONSTER_SUMMON_PROFILE",
+                        path,
+                        $"Monster '{monster.Id}' has an invalid summon configuration."));
+                }
+            }
         }
 
 }

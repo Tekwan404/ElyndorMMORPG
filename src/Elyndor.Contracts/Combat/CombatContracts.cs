@@ -71,7 +71,8 @@ public sealed record CombatRewardResponse(
     bool LeveledUp,
     int PreviousLevel,
     int CurrentLevel,
-    IReadOnlyList<CombatRewardItemResponse> Items);
+    IReadOnlyList<CombatRewardItemResponse> Items,
+    IReadOnlyList<string>? CompletedContractIds = null);
 
 public sealed record CombatUpdateResponse(
     bool Succeeded,

@@ -26,7 +26,8 @@ public sealed class CombatSessionFactory(
     CharacterDerivedStateService derivedStateService,
     IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    CharacterAbilityCooldownStore? cooldownStore = null)
 {
     public CombatSessionFactory(
         BootstrapService bootstrapService,
@@ -45,7 +46,7 @@ public sealed class CombatSessionFactory(
 
     public const string TrainingDummyId = "TRAINING_DUMMY";
     public const string StarterTownId = "STARTER_TOWN";
-    private const decimal TrainingDummyMaxHp = 10_000m;
+    private const decimal TrainingDummyMaxHp = 1_000_000_000m;
     private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
     {
         "WARRIOR",
@@ -207,6 +208,41 @@ public sealed class CombatSessionFactory(
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
 
+        CombatSummonProfile? summonProfile = null;
+        if (!isTraining && !string.IsNullOrWhiteSpace(monster.SummonMonsterId))
+        {
+            if (monster.SummonIntervalSeconds <= 0
+                || monster.SummonCount <= 0
+                || monster.MaxActiveSummons <= 0
+                || !indexes.MonstersById.TryGetValue(
+                    monster.SummonMonsterId,
+                    out MonsterDefinition? summonedMonster)
+                || !indexes.MonsterAiProfilesById.TryGetValue(
+                    summonedMonster.AiProfileId,
+                    out MonsterAiProfile? summonedAi))
+            {
+                throw new InvalidOperationException(
+                    $"Monster summon profile for '{monster.Id}' is invalid.");
+            }
+
+            summonProfile = new CombatSummonProfile(
+                monster.Id,
+                summonedMonster,
+                summonedAi,
+                TimeSpan.FromSeconds((double)monster.SummonIntervalSeconds),
+                monster.SummonCount,
+                monster.MaxActiveSummons);
+        }
+
+        DateTimeOffset startedAtUtc = timeProvider.GetUtcNow();
+        IReadOnlyDictionary<string, DateTimeOffset> initialCooldowns =
+            isTraining || cooldownStore is null
+                ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
+                : await cooldownStore.LoadActiveAsync(
+                    character.Id,
+                    startedAtUtc,
+                    cancellationToken);
+
         CombatSession session = new(
             Guid.NewGuid(),
             player,
@@ -215,9 +251,11 @@ public sealed class CombatSessionFactory(
             ai,
             talentModifiers,
             randomFactory.Create(),
-            timeProvider.GetUtcNow(),
+            startedAtUtc,
             contentSnapshot.ContentVersion,
-            contentSnapshot.BalanceVersion);
+            contentSnapshot.BalanceVersion,
+            initialCooldowns,
+            summonProfile);
         return new CombatSessionCreationResult(
             true,
             null,

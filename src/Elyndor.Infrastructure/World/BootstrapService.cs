@@ -69,7 +69,10 @@ public sealed record BootstrapWorldContract(
     int RequiredLevel,
     string TargetMonsterId,
     string UnlockLocationId,
-    string Status);
+    string Status,
+    string? OfferLocationId,
+    int RewardXp,
+    int RewardGold);
 
 public sealed record BootstrapWorld(
     BootstrapLocation CurrentLocation,
@@ -217,6 +220,14 @@ public sealed class BootstrapService(
         HashSet<string> completedContractIds =
             completedContractIdValues.ToHashSet(StringComparer.Ordinal);
 
+        string[] acceptedContractIdValues = await dbContext.CharacterContractAcceptances
+            .AsNoTracking()
+            .Where(state => state.CharacterId == character.Id)
+            .Select(state => state.ContractId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<string> acceptedContractIds =
+            acceptedContractIdValues.ToHashSet(StringComparer.Ordinal);
+
         BootstrapLocation[] transitions = current.Transitions
             .Select(worldMap.GetRequired)
             .Where(target => character.Level >= target.MinimumLevel)
@@ -235,9 +246,14 @@ public sealed class BootstrapService(
                 contract.UnlockLocationId,
                 completedContractIds.Contains(contract.Id)
                     ? "COMPLETED"
-                    : character.Level >= contract.RequiredLevel
+                    : acceptedContractIds.Contains(contract.Id)
                         ? "ACTIVE"
-                        : "LOCKED"))
+                        : character.Level >= contract.RequiredLevel
+                            ? "AVAILABLE"
+                            : "LOCKED",
+                contract.OfferLocationId,
+                contract.RewardXp,
+                contract.RewardGold))
             .ToArray();
 
         return new BootstrapSnapshot(

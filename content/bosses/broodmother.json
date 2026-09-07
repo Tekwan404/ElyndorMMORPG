@@ -9,6 +9,11 @@
         "BITE"
       ],
       "version": 1
+    },
+    {
+      "id": "BROODMOTHER_SPIDERLING_AI",
+      "priorityAbilityIds": [],
+      "version": 1
     }
   ],
   "monsters": [
@@ -44,10 +49,49 @@
       "goldRewardMin": 90,
       "goldRewardMax": 130,
       "displayName": "Паучья Прародительница",
-      "description": "Хозяйка глубоких паутинных ходов. Её убийство завершает контракт и открывает путь в земли 15–20 уровня.",
+      "description": "Хозяйка глубоких паутинных ходов. Каждые 20 секунд призывает двух паучков, пока рядом не окажется до четырёх. Убийство по взятому контракту открывает путь в земли 15–20 уровня.",
       "artId": "spider-broodmother",
       "autoAttackBaseDamageMin": 34,
-      "autoAttackBaseDamageMax": 44
+      "autoAttackBaseDamageMax": 44,
+      "summonMonsterId": "BROODMOTHER_SPIDERLING_L14",
+      "summonIntervalSeconds": 20,
+      "summonCount": 2,
+      "maxActiveSummons": 4
+    },
+    {
+      "id": "BROODMOTHER_SPIDERLING_L14",
+      "name": "Паучок Прародительницы",
+      "rank": "Normal",
+      "level": 14,
+      "maxHp": 260,
+      "stats": {
+        "level": 14,
+        "accuracy": 92,
+        "dodge": 4,
+        "criticalChance": 3,
+        "criticalDamage": 1,
+        "armor": 30,
+        "magicResistance": 24,
+        "armorPenetration": 0,
+        "magicPenetration": 0,
+        "attackPower": 28,
+        "spellPower": 0
+      },
+      "autoAttackInterval": "00:00:02.6000000",
+      "autoAttackBaseDamage": 14,
+      "autoAttackAttackPowerCoefficient": 0.35,
+      "abilityIds": [],
+      "aiProfileId": "BROODMOTHER_SPIDERLING_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Паучок Прародительницы",
+      "description": "Призванный Прародительницей паучок. Не даёт отдельной награды и существует только внутри боя с боссом.",
+      "artId": "giant-spider",
+      "autoAttackBaseDamageMin": 11,
+      "autoAttackBaseDamageMax": 17
     }
   ]
 }

@@ -118,6 +118,7 @@ public enum CombatEventType
     AutoAttackStarted,
     AutoAttackStopped,
     TargetChanged,
+    ActorSummoned,
     DamageDealt,
     CriticalHit,
     EnemyKilled,
