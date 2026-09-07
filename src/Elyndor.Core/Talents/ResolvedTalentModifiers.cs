@@ -53,6 +53,10 @@ public sealed record ResolvedTalentEventHook(
     decimal CastTimeSeconds = 0,
     decimal ResourceCostReductionPercent = 0);
 
+public sealed record TalentProfileModifiers(
+    string? ResourceProfileId = null,
+    string? CompanionProfileId = null);
+
 public sealed record ResolvedTalentModifiers(
     TalentStatModifiers Stats,
     TalentCombatModifiers Combat,
@@ -61,6 +65,8 @@ public sealed record ResolvedTalentModifiers(
     IReadOnlyList<ResolvedTalentEventHook> EventHooks,
     IReadOnlyList<TalentModifierDefinition> DeferredHooks)
 {
+    public TalentProfileModifiers Profiles { get; init; } = new();
+
     public static ResolvedTalentModifiers Empty { get; } = new(
         new TalentStatModifiers(),
         new TalentCombatModifiers(),
