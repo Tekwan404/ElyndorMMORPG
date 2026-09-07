@@ -20,6 +20,8 @@ public static class InventoryEndpoints
         group.MapPost("/unequip", UnequipAsync);
         group.MapPost("/use-consumable", UseConsumableAsync);
         group.MapPost("/set-lock", SetItemLockAsync);
+        group.MapGet("/pending-loot", GetPendingLootAsync);
+        group.MapPost("/pending-loot/claim", ClaimPendingLootAsync);
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
@@ -127,6 +129,43 @@ public static class InventoryEndpoints
                         cancellationToken),
                     context);
             },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> GetPendingLootAsync(
+        ClaimsPrincipal user,
+        InventoryEquipmentService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        IReadOnlyList<PendingLootItemSnapshot> items =
+            await service.GetPendingLootAsync(accountId, cancellationToken);
+        return Results.Ok(new PendingLootResponse(
+            items.Select(ToPendingLootResponse).ToArray()));
+    }
+
+    private static async Task<IResult> ClaimPendingLootAsync(
+        ClaimPendingLootRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        InventoryEquipmentService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
+                await service.ClaimPendingLootAsync(
+                    accountId,
+                    request.MutationId,
+                    cancellationToken),
+                context),
             () => InCombatProblem(context),
             cancellationToken);
     }
@@ -336,6 +375,38 @@ public static class InventoryEndpoints
         snapshot.Equipped.TryGetValue(slot, out InventoryItemSnapshot? item)
             ? ToResponse(item)
             : null;
+
+    private static PendingLootItemResponse ToPendingLootResponse(
+        PendingLootItemSnapshot item)
+    {
+        PrimaryStats stats = item.RolledPrimaryStats ?? item.Definition.Stats;
+        return new PendingLootItemResponse(
+            item.Id,
+            item.Definition.Id,
+            item.Definition.Name,
+            item.Definition.Type.ToString(),
+            item.Definition.Rarity.ToString(),
+            item.Quantity,
+            item.CreatedAtUtc,
+            new ItemStatsResponse(
+                stats.Strength,
+                stats.Agility,
+                stats.Intellect,
+                stats.Stamina,
+                item.Definition.MaxHpFlat,
+                item.Definition.AttackPowerFlat,
+                item.Definition.SpellPowerFlat,
+                item.Definition.CriticalChancePercent,
+                item.Definition.CriticalDamagePercent,
+                item.Definition.AccuracyPercent,
+                item.Definition.ArmorFlat,
+                item.Definition.MagicResistanceFlat,
+                item.Definition.DodgePercent,
+                item.Definition.ArmorPenetrationPercent,
+                item.Definition.MagicPenetrationPercent,
+                item.Definition.AttackSpeedPercent,
+                item.Definition.MaxResourceFlat));
+    }
 
     internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item) =>
         new(
