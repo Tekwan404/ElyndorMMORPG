@@ -255,6 +255,23 @@ public static class EffectEngine
         return RemoveEffects(target, removed, now);
     }
 
+    public static IReadOnlyList<CombatEvent> RemoveOwned(
+        CombatActorState target,
+        string definitionId,
+        Guid sourceId,
+        DateTimeOffset now)
+    {
+        ActiveEffect[] removed = target.ActiveEffects
+            .Where(effect =>
+                string.Equals(
+                    effect.Definition.Id,
+                    definitionId,
+                    StringComparison.Ordinal)
+                && effect.SourceId == sourceId)
+            .ToArray();
+        return RemoveEffects(target, removed, now);
+    }
+
     public static IReadOnlyList<CombatEvent> RemoveByKind(
         CombatActorState target,
         EffectKind kind,
