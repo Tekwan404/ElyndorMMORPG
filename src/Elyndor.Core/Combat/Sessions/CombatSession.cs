@@ -1144,16 +1144,22 @@ public sealed partial class CombatSession
             EffectStat.AttackPower,
             source.Actor.Stats.AttackPower,
             now);
+        decimal spellPower = EffectEngine.CalculateStat(
+            source.Actor,
+            EffectStat.SpellPower,
+            source.Actor.Stats.SpellPower,
+            now);
         decimal baseDamage = AutoAttackDamageRoller.RollBaseDamage(
                 source.AutoAttack,
                 _random)
-            + attackPower * source.AutoAttack.AttackPowerCoefficient;
+            + attackPower * source.AutoAttack.AttackPowerCoefficient
+            + spellPower * source.AutoAttack.SpellPowerCoefficient;
         DamageResult damage = DamagePipeline.Resolve(
             new DamageRequest(
                 source.Actor,
                 target.Actor,
                 baseDamage,
-                DamageType.Physical),
+                source.AutoAttack.DamageType),
             _random,
             now);
         ApplyKernelEvents(
@@ -1437,6 +1443,12 @@ public sealed partial class CombatSession
         {
             Status = CombatSessionStatus.Defeat;
             EndCombat(death);
+            return;
+        }
+
+        if (_companion is not null && death.ActorId == _companion.Actor.ActorId)
+        {
+            _nextCompanionAutoAttackAtUtc = null;
             return;
         }
 
