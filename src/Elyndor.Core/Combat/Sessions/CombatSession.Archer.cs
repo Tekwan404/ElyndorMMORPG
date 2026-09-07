@@ -1398,7 +1398,7 @@ public sealed partial class CombatSession
         DateTimeOffset now)
     {
         if (!IsArcher)
-            return new(1, 0, false, false);
+            return new(1, 0, 0, 0, 0, false, false);
 
         decimal multiplier = 1;
         decimal armorPenetration = 0;
