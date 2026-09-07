@@ -22,6 +22,9 @@ public sealed record CharacterDerivedState(
     IReadOnlyList<string> KnownAbilityIds)
 {
     public CharacterStats Stats => StatCalculation.Stats;
+    public string EffectivePrimaryAttribute =>
+        TalentModifiers.Profiles.PrimaryAttribute ?? ClassProfile.PrimaryAttribute;
+    public CompanionProfileDefinition? ActiveCompanionProfile { get; init; }
 }
 
 public sealed class CharacterDerivedStateService(
@@ -85,14 +88,6 @@ public sealed class CharacterDerivedStateService(
             ?? throw new InvalidOperationException("Class profiles are required.");
         if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile))
             throw new InvalidOperationException($"Class profile '{classId}' is missing from game content.");
-        if (!indexes.ResourcesById.TryGetValue(
-                classProfile.ResourceProfileId,
-                out ResourceProfile? baseResourceProfile))
-        {
-            throw new InvalidOperationException(
-                $"Resource profile '{classProfile.ResourceProfileId}' is missing from game content.");
-        }
-
         InventorySnapshot inventory = await ResolveInventoryAsync(
             contentSnapshot,
             characterId,
@@ -162,6 +157,16 @@ public sealed class CharacterDerivedStateService(
                     TalentDerived = talentModifiers.Stats
                 });
 
+        string resourceProfileId =
+            talentModifiers.Profiles.ResourceProfileId ?? classProfile.ResourceProfileId;
+        if (!indexes.ResourcesById.TryGetValue(
+                resourceProfileId,
+                out ResourceProfile? baseResourceProfile))
+        {
+            throw new InvalidOperationException(
+                $"Resource profile '{resourceProfileId}' is missing from game content.");
+        }
+
         ResourceProfile effectiveResourceProfile = CharacterResourceProfileResolver.Resolve(
             baseResourceProfile,
             content.ResourceScaling,
@@ -173,6 +178,10 @@ public sealed class CharacterDerivedStateService(
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
             .ToArray();
 
+        CompanionProfileDefinition? activeCompanionProfile = ResolveCompanionProfile(
+            classProfile,
+            talentModifiers.Profiles.CompanionProfileId);
+
         return new CharacterDerivedState(
             classProfile,
             baseResourceProfile,
@@ -183,7 +192,29 @@ public sealed class CharacterDerivedStateService(
             activeTalentRanks,
             talentModifiers,
             statCalculation,
-            knownAbilityIds);
+            knownAbilityIds)
+        {
+            ActiveCompanionProfile = activeCompanionProfile
+        };
+    }
+
+    private static CompanionProfileDefinition? ResolveCompanionProfile(
+        ClassProfile classProfile,
+        string? overrideProfileId)
+    {
+        IReadOnlyList<CompanionProfileDefinition> profiles =
+            classProfile.CompanionProfiles ?? [];
+        if (profiles.Count == 0)
+            return null;
+
+        string? selectedId = overrideProfileId ?? classProfile.StartingCompanionProfileId;
+        if (string.IsNullOrWhiteSpace(selectedId))
+            return null;
+
+        return profiles.SingleOrDefault(profile =>
+            string.Equals(profile.Id, selectedId, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException(
+                $"Companion profile '{selectedId}' is missing for class '{classProfile.Id}'.");
     }
 
     private async Task<InventorySnapshot> ResolveInventoryAsync(

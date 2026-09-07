@@ -252,6 +252,9 @@ public sealed partial class CombatSession
             attackPower,
             _random);
 
+        ArcherAutoAttackModifier archerModifier =
+            ResolveArcherAutoAttackModifier(target, baseDamage, now);
+
         bool consumeDeathsEmbrace = _deathsEmbraceArmed && !_deathsEmbraceConsumed;
         decimal deathsEmbraceMultiplier = 1;
         if (consumeDeathsEmbrace)
@@ -274,8 +277,13 @@ public sealed partial class CombatSession
                 baseDamage,
                 DamageType.Physical,
                 DamageMultiplier: deathsEmbraceMultiplier
-                    * BerserkerTargetPhysicalDamageMultiplier(target.Actor),
-                ForceCritical: consumeDeathsEmbrace),
+                    * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
+                    * archerModifier.DamageMultiplier,
+                ArmorPenetrationBonus: archerModifier.ArmorPenetrationBonus,
+                ForceCritical: consumeDeathsEmbrace,
+                AccuracyBonus: archerModifier.AccuracyBonus,
+                CriticalChanceBonus: archerModifier.CriticalChanceBonus,
+                CriticalDamageBonus: archerModifier.CriticalDamageBonus),
             _random,
             now);
         ApplyKernelEvents(
@@ -285,6 +293,13 @@ public sealed partial class CombatSession
             "AUTO_ATTACK",
             profile.WeaponHand,
             profile.WeaponDefinitionId);
+        ApplyArcherAutoAttackResolved(
+            target,
+            profile,
+            baseDamage,
+            damage,
+            archerModifier,
+            now);
 
         if (damage.Avoidance == DamageAvoidance.None
             && damage.HpDamage > 0
@@ -636,16 +651,22 @@ public sealed partial class CombatSession
                 StringComparison.Ordinal)
             && effect.ExpiresAtUtc > now);
 
+    private bool IsWarrior =>
+        string.Equals(_player.DefinitionId, "WARRIOR", StringComparison.Ordinal);
+
     private bool HasBerserkerTalent(string talentId) =>
-        _playerTalents.EventHooks.Any(hook =>
+        IsWarrior
+        && _playerTalents.EventHooks.Any(hook =>
             string.Equals(hook.TalentId, talentId, StringComparison.Ordinal));
 
     private bool TryGetBerserkerHook(
         string talentId,
         out ResolvedTalentEventHook hook)
     {
-        hook = _playerTalents.EventHooks.FirstOrDefault(item =>
-            string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!;
+        hook = IsWarrior
+            ? _playerTalents.EventHooks.FirstOrDefault(item =>
+                string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!
+            : null!;
         return hook is not null;
     }
 

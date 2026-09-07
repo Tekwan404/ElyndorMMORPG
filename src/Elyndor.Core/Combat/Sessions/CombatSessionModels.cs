@@ -1,5 +1,6 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Monsters;
 
 namespace Elyndor.Core.Combat.Sessions;
@@ -15,6 +16,7 @@ public enum CombatSessionStatus
 public enum CombatActorKind
 {
     Player,
+    Companion,
     Monster
 }
 
@@ -26,7 +28,9 @@ public sealed record AutoAttackProfile(
     decimal? BaseDamageMin = null,
     decimal? BaseDamageMax = null,
     string? WeaponDefinitionId = null,
-    CombatWeaponHand? WeaponHand = null);
+    CombatWeaponHand? WeaponHand = null,
+    DamageType DamageType = DamageType.Physical,
+    decimal SpellPowerCoefficient = 0);
 
 public sealed record CombatSummonProfile(
     string SourceDefinitionId,
@@ -84,7 +88,8 @@ public sealed record CombatSessionSnapshot(
     string ContentVersion = "UNVERSIONED",
     string BalanceVersion = "UNVERSIONED",
     IReadOnlyList<CombatActorSnapshot>? Enemies = null,
-    Guid? SelectedTargetActorId = null);
+    Guid? SelectedTargetActorId = null,
+    CombatActorSnapshot? Companion = null);
 
 public static class CombatErrorCodes
 {

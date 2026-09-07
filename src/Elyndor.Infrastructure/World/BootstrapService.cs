@@ -270,7 +270,7 @@ public sealed class BootstrapService(
                     ?? throw new InvalidOperationException("Level progression content is required."))
                     .XpToNext(character.Level),
                 character.Gold,
-                classProfile.PrimaryAttribute,
+                derived.EffectivePrimaryAttribute,
                 contentPackage.BalanceVersion,
                 derived.KnownAbilityIds,
                 knownAbilities,

@@ -18,8 +18,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.12.0", package.ContentVersion);
-        Assert.Equal("0.10.0", package.BalanceVersion);
+        Assert.Equal("0.13.0", package.ContentVersion);
+        Assert.Equal("0.11.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");

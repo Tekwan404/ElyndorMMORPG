@@ -43,7 +43,8 @@ public sealed record CombatSnapshotResponse(
     string ContentVersion = "UNVERSIONED",
     string BalanceVersion = "UNVERSIONED",
     IReadOnlyList<CombatActorResponse>? Enemies = null,
-    Guid? SelectedTargetActorId = null);
+    Guid? SelectedTargetActorId = null,
+    CombatActorResponse? Companion = null);
 
 public sealed record CombatEventResponse(
     long Sequence,

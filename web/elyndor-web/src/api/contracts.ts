@@ -331,7 +331,10 @@ export interface TravelResponse {
 }
 
 export type TalentLoadoutId = 'LOADOUT_1' | 'LOADOUT_2'
-export type TalentBranchId = 'GUARDIAN' | 'BERSERKER' | 'WARLORD' | 'FIRE' | 'ARCANE' | 'FROST'
+export type TalentBranchId =
+  | 'GUARDIAN' | 'BERSERKER' | 'WARLORD'
+  | 'FIRE' | 'ARCANE' | 'FROST'
+  | 'MARKSMAN' | 'BEAST_MASTERY' | 'ARCANE_ARCHER'
 export interface TalentPrerequisite { talentId: string; requiredRank: number }
 export interface TalentNode {
   id: string; branchId: TalentBranchId; tier: number; requiredSpentPoints: number
@@ -375,7 +378,7 @@ export interface CombatCastSnapshot {
 
 export interface CombatActorSnapshot {
   actorId: string
-  kind: 'Player' | 'Monster'
+  kind: 'Player' | 'Companion' | 'Monster'
   definitionId: string
   name: string
   hp: number
@@ -405,6 +408,7 @@ export interface CombatSnapshot {
   enemy: CombatActorSnapshot
   enemies?: CombatActorSnapshot[]
   selectedTargetActorId?: string | null
+  companion?: CombatActorSnapshot | null
 }
 
 export interface CombatEvent {

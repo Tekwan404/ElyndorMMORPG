@@ -28,9 +28,12 @@ public enum EffectStackPolicy
 public enum EffectStat
 {
     AttackPower,
+    SpellPower,
     CriticalChance,
     AttackSpeed,
     Accuracy,
+    Armor,
+    MagicResistance,
     IncomingDamageMultiplier,
     IncomingMagicalDamageMultiplier,
     OutgoingDamageMultiplier,

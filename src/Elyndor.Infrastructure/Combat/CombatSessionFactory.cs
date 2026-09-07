@@ -50,6 +50,7 @@ public sealed class CombatSessionFactory(
     private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
     {
         "WARRIOR",
+        "ARCHER",
         "MAGE"
     };
 
@@ -191,6 +192,15 @@ public sealed class CombatSessionFactory(
             CanAutoAttack: classProfile.AllowUnarmed
                 || mainHandItem?.Definition.WeaponCategory is not null,
             OffHandAutoAttack: offHandAutoAttack);
+        CombatParticipantDefinition? companion =
+            derived.ActiveCompanionProfile is null
+                ? null
+                : ArcherCompanionRuntimeResolver.Resolve(
+                    derived.ActiveCompanionProfile,
+                    derived.Stats,
+                    character.Level,
+                    talentModifiers);
+
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,
@@ -255,7 +265,8 @@ public sealed class CombatSessionFactory(
             contentSnapshot.ContentVersion,
             contentSnapshot.BalanceVersion,
             initialCooldowns,
-            summonProfile);
+            summonProfile,
+            companion);
         return new CombatSessionCreationResult(
             true,
             null,
