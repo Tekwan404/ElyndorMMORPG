@@ -108,7 +108,6 @@ public sealed class BootstrapService(
     {
     }
 
-    private const string StarterTownId = "STARTER_TOWN";
     private const decimal StarterTownHpRegenPerSecond = 5m;
 
     public Task<BootstrapSnapshot> GetAsync(
@@ -169,15 +168,19 @@ public sealed class BootstrapService(
                 indexes))
             .ToArray();
 
-        CharacterVitals vitals = await dbContext.CharacterVitals
-            .SingleAsync(
-                candidate => candidate.CharacterId == character.Id,
-                cancellationToken);
-        CharacterLocation location = await dbContext.CharacterLocations
-            .AsNoTracking()
-            .SingleAsync(
-                candidate => candidate.CharacterId == character.Id,
-                cancellationToken);
+        var persistentState = await (
+            from candidateVitals in dbContext.CharacterVitals
+            join candidateLocation in dbContext.CharacterLocations
+                on candidateVitals.CharacterId equals candidateLocation.CharacterId
+            where candidateVitals.CharacterId == character.Id
+            select new
+            {
+                Vitals = candidateVitals,
+                Location = candidateLocation
+            })
+            .SingleAsync(cancellationToken);
+        CharacterVitals vitals = persistentState.Vitals;
+        CharacterLocation location = persistentState.Location;
         LocationDefinition current = worldMap.GetRequired(location.LocationId);
 
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
@@ -190,7 +193,7 @@ public sealed class BootstrapService(
             contextElapsed);
         decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
 
-        if (string.Equals(current.Id, StarterTownId, StringComparison.Ordinal)
+        if (string.Equals(current.Id, WorldLocationIds.StarterTown, StringComparison.Ordinal)
             && currentHp < stats.MaxHp)
         {
             DateTimeOffset recoveryFrom = vitals.CheckpointedAtUtc > location.UpdatedAtUtc
