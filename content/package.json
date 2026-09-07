@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.1",
+  "contentVersion": "0.13.2",
   "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-06T15:52:00+00:00",
+  "publishedAtUtc": "2026-09-07T09:25:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -3217,5 +3217,8 @@
       "autoAttackBaseDamageMin": 5,
       "autoAttackBaseDamageMax": 7
     }
-  ]
+  ],
+  "inventoryProfile": {
+    "defaultCapacity": 40
+  }
 }
