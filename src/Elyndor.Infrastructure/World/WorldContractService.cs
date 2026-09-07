@@ -13,6 +13,7 @@ public static class WorldContractErrorCodes
     public const string LevelRequired = "world_contract_level_required";
     public const string InvalidLocation = "world_contract_invalid_location";
     public const string AlreadyCompleted = "world_contract_already_completed";
+    public const string Travelling = "world_contract_travelling";
 }
 
 public sealed record WorldContractAcceptResult(
@@ -50,6 +51,17 @@ public sealed class WorldContractService(
         if (character is null)
             return WorldContractAcceptResult.Failure(WorldContractErrorCodes.CharacterNotFound);
 
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        if (await TravelPersistence.IsTravellingAsync(
+                dbContext,
+                character.Id,
+                now,
+                cancellationToken))
+        {
+            return WorldContractAcceptResult.Failure(
+                WorldContractErrorCodes.Travelling);
+        }
+
         WorldContractDefinition? contract = (contentProvider.GetCurrent().Package.WorldContracts ?? [])
             .SingleOrDefault(candidate =>
                 string.Equals(candidate.Id, contractId, StringComparison.Ordinal));
@@ -84,7 +96,6 @@ public sealed class WorldContractService(
             }
         }
 
-        DateTimeOffset now = timeProvider.GetUtcNow();
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""
              INSERT INTO game.character_contract_acceptances
