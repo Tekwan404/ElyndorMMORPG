@@ -7,10 +7,11 @@ namespace Elyndor.Infrastructure.Items;
 
 public static class InventoryCapacity
 {
+    public const int DefaultCapacity = 40;
+
     public static int Resolve(GameContentSnapshot contentSnapshot) =>
         contentSnapshot.Package.InventoryProfile?.DefaultCapacity
-        ?? throw new InvalidOperationException(
-            "Inventory profile is required when item content is enabled.");
+        ?? DefaultCapacity;
 
     public static Task<int> CountUsedSlotsAsync(
         GameDbContext dbContext,
