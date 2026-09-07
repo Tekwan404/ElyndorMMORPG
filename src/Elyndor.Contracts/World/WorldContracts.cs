@@ -11,7 +11,8 @@ public sealed record WorldLocationResponse(
     int MaximumLevel,
     string? RequiredContractId,
     string? ArtId,
-    string Description);
+    string Description,
+    decimal TravelDurationSeconds = 0);
 
 public sealed record WorldContractResponse(
     string Id,
@@ -103,11 +104,18 @@ public sealed record CharacterVitalsResponse(
     decimal MaxResource,
     DateTimeOffset CheckpointedAtUtc);
 
+public sealed record BootstrapTravelResponse(
+    string FromLocationId,
+    string TargetLocationId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset EndsAtUtc);
+
 public sealed record BootstrapWorldResponse(
     WorldLocationResponse CurrentLocation,
     long Version,
     IReadOnlyList<WorldLocationResponse> OutgoingTransitions,
-    IReadOnlyList<WorldContractResponse> Contracts);
+    IReadOnlyList<WorldContractResponse> Contracts,
+    BootstrapTravelResponse? Travel = null);
 
 public sealed record BootstrapResponse(
     Guid AccountId,
@@ -119,4 +127,9 @@ public sealed record BootstrapResponse(
 
 public sealed record TravelRequest(Guid RequestId, string TargetLocationId);
 
-public sealed record TravelResponse(string LocationId, long Version);
+public sealed record TravelResponse(
+    string LocationId,
+    long Version,
+    bool IsTravelling = false,
+    string? TargetLocationId = null,
+    DateTimeOffset? EndsAtUtc = null);
