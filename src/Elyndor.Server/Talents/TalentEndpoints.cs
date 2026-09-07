@@ -168,7 +168,7 @@ public static class TalentEndpoints
                 node.Description,
                 node.RequiredLevel,
                 node.IconId,
-                RuntimeStatus(node),
+                TalentRuntimeAvailability.RuntimeStatus(node),
                 node.Modifiers?.FirstOrDefault(modifier =>
                     modifier.Type == TalentModifierType.AbilityModifier
                     && modifier.Key == TalentModifierKeys.UnlockAbility)?.TargetId)).ToArray(),
@@ -192,25 +192,4 @@ public static class TalentEndpoints
             out accountId)
         && accountId != Guid.Empty;
 
-    private static string RuntimeStatus(TalentDefinition node)
-    {
-        bool supported = node.Modifiers?.Any(modifier =>
-            modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
-            || BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
-        bool deferred = node.Modifiers?.Any(modifier =>
-            modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
-            && !BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            && !PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            && !MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-            && !ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)) == true;
-        return (supported, deferred) switch
-        {
-            (true, true) => "PARTIAL",
-            (true, false) => "SUPPORTED",
-            _ => "DEFERRED"
-        };
-    }
 }
