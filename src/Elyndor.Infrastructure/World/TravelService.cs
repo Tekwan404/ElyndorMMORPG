@@ -105,7 +105,7 @@ public sealed class TravelService
             return TravelResult.Failure(TravelErrorCodes.UnknownLocation);
         }
 
-        if (target.TravelDurationSeconds <= 0)
+        if (target.TravelDurationSeconds < 0)
         {
             throw new InvalidOperationException(
                 $"Location '{target.Id}' has invalid travel duration.");
@@ -225,6 +225,23 @@ public sealed class TravelService
                 await transaction.RollbackAsync(cancellationToken);
                 return TravelResult.Failure(TravelErrorCodes.ContractRequired);
             }
+        }
+
+        if (target.TravelDurationSeconds == 0)
+        {
+            location.Relocate(target.Id, now);
+            dbContext.TravelOperations.Add(new TravelOperation(
+                character.Id,
+                requestId,
+                target.Id,
+                target.Id,
+                location.Version,
+                now));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return TravelResult.Completed(
+                location.LocationId,
+                location.Version);
         }
 
         DateTimeOffset endsAtUtc = now.AddSeconds(

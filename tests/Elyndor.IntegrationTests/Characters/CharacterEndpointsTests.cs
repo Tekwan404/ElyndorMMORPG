@@ -86,12 +86,10 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
             new TravelRequest(Guid.CreateVersion7(), "WHISPERING_FOREST"));
         travelResponse.EnsureSuccessStatusCode();
         TravelResponse? travel = await travelResponse.Content.ReadFromJsonAsync<TravelResponse>();
-        Assert.Equal("STARTER_TOWN", travel?.LocationId);
-        Assert.Equal(1, travel?.Version);
-        Assert.True(travel?.IsTravelling);
-        Assert.Equal("WHISPERING_FOREST", travel?.TargetLocationId);
-
-        timeProvider.Advance(TimeSpan.FromSeconds(6));
+        Assert.Equal("WHISPERING_FOREST", travel?.LocationId);
+        Assert.Equal(2, travel?.Version);
+        Assert.False(travel?.IsTravelling ?? false);
+        Assert.Null(travel?.TargetLocationId);
 
         BootstrapResponse? reconnected =
             await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap");

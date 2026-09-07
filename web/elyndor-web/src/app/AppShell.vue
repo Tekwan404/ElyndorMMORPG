@@ -6,6 +6,7 @@ import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -13,7 +14,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'location' | 'hero'
+type ShellView = 'world' | 'location' | 'hero' | 'quests'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -81,12 +82,12 @@ const navigation: readonly {
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
   { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
-  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
+  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: true },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'world' || item.id === 'location' || item.id === 'hero')) {
+  if (item.enabled && (item.id === 'world' || item.id === 'location' || item.id === 'hero' || item.id === 'quests')) {
     activeView.value = item.id
   }
 }
@@ -169,6 +170,7 @@ onMounted(() => {
       />
       <WorldView v-else-if="session.state === 'world' && activeView === 'location'" />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
+      <QuestView v-else-if="session.state === 'world' && activeView === 'quests'" />
     </main>
 
     <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">

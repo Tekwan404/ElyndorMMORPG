@@ -69,12 +69,12 @@ public static partial class GameContentPackageValidator
                         "Location level range and recommended level must be positive and internally consistent."));
                 }
 
-                if (location.TravelDurationSeconds <= 0)
+                if (location.TravelDurationSeconds < 0)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_LOCATION_TRAVEL_DURATION",
                         $"{path}.travelDurationSeconds",
-                        "Location travel duration must be positive."));
+                        "Location travel duration cannot be negative. Zero means an instant transition."));
                 }
 
                 if (location.RequiredContractId is { Length: > 0 }

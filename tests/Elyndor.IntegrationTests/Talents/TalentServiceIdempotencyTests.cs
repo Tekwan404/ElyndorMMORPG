@@ -97,7 +97,7 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
         GameContentPackage content = await LoadContentAsync();
         TalentDefinition unresolved = content.TalentTrees!
             .Single(tree => tree.ClassId == "WARRIOR")
-            .Nodes.Single(talent => talent.Id == "G-1-4");
+            .Nodes.Single(talent => talent.Id == "G-2-1");
         Assert.False(TalentRuntimeAvailability.IsNodeFullySupported(unresolved));
 
         (Guid accountId, Guid characterId) = await CreateCharacterAsync();

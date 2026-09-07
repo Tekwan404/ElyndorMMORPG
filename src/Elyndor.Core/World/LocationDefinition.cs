@@ -16,4 +16,4 @@ public sealed record LocationDefinition(
     string? RequiredContractId = null,
     string? ArtId = null,
     string Description = "",
-    decimal TravelDurationSeconds = 5);
+    decimal TravelDurationSeconds = 0);
