@@ -182,17 +182,22 @@ public sealed class TravelService
         if (active is not null)
         {
             await transaction.CommitAsync(cancellationToken);
-            return active.RequestId == requestId
-                && string.Equals(
+            if (active.RequestId == requestId)
+            {
+                return string.Equals(
                     active.TargetLocationId,
                     target.Id,
                     StringComparison.Ordinal)
-                    ? TravelResult.Started(
-                        location.LocationId,
-                        location.Version,
-                        active.TargetLocationId,
-                        active.EndsAtUtc)
-                    : TravelResult.Failure(TravelErrorCodes.InProgress);
+                        ? TravelResult.Started(
+                            location.LocationId,
+                            location.Version,
+                            active.TargetLocationId,
+                            active.EndsAtUtc)
+                        : TravelResult.Failure(
+                            TravelErrorCodes.IdempotencyConflict);
+            }
+
+            return TravelResult.Failure(TravelErrorCodes.InProgress);
         }
 
         if (!worldMap.CanTravel(location.LocationId, target.Id))
