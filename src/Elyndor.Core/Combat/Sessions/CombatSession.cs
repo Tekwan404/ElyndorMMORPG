@@ -283,6 +283,9 @@ public sealed partial class CombatSession
                 _nextPlayerOffHandAutoAttackAtUtc);
             next = Min(next, _playerRuntime.ActiveCast?.ResolvesAtUtc);
             next = Min(next, NextEffectDue(_player.Actor));
+            next = Min(next, _nextCompanionAutoAttackAtUtc);
+            next = Min(next, _companionRuntime?.ActiveCast?.ResolvesAtUtc);
+            next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
             next = Min(next, _nextSummonAtUtc);
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
@@ -422,7 +425,13 @@ public sealed partial class CombatSession
             ContentVersion,
             BalanceVersion,
             enemies,
-            _selectedTargetActorId);
+            _selectedTargetActorId,
+            _companion is null || _companionRuntime is null
+                ? null
+                : ActorSnapshot(
+                    _companion,
+                    _companionRuntime,
+                    Status == CombatSessionStatus.Active && !_companion.Actor.IsDead));
     }
 
     public CombatCommandResult Cancel(DateTimeOffset now)
@@ -436,6 +445,7 @@ public sealed partial class CombatSession
                 Status = CombatSessionStatus.Cancelled;
                 _nextPlayerMainHandAutoAttackAtUtc = null;
                 _nextPlayerOffHandAutoAttackAtUtc = null;
+                _nextCompanionAutoAttackAtUtc = null;
                 StopEnemyAi(MonsterAiState.Resetting);
                 Append(new CombatEvent(
                     CombatEventType.CombatEnded,
@@ -645,6 +655,11 @@ public sealed partial class CombatSession
         if (ability.TargetType == AbilityTargetType.Self)
             return [_player.Actor.ActorId];
 
+        if (ability.TargetType == AbilityTargetType.ActiveCompanion)
+            return _companion is not null && !_companion.Actor.IsDead
+                ? [_companion.Actor.ActorId]
+                : [];
+
         if (ability.TargetType == AbilityTargetType.SingleEnemy)
         {
             return _enemiesById.TryGetValue(
@@ -777,6 +792,13 @@ public sealed partial class CombatSession
                 _playerRuntime,
                 _player.Actor.ActorId,
                 due);
+            if (_companionRuntime is not null && _companion is not null)
+            {
+                CompleteReadyCast(
+                    _companionRuntime,
+                    _companion.Actor.ActorId,
+                    due);
+            }
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 CompleteReadyCast(
@@ -803,6 +825,25 @@ public sealed partial class CombatSession
                     _player.OffHandAutoAttack,
                     due,
                     ref _nextPlayerOffHandAutoAttackAtUtc);
+            }
+
+            if (Status == CombatSessionStatus.Active
+                && _companion is not null
+                && !_companion.Actor.IsDead
+                && _nextCompanionAutoAttackAtUtc <= due)
+            {
+                CombatParticipantDefinition? companionTarget = _enemiesById
+                    .GetValueOrDefault(_selectedTargetActorId);
+                if (companionTarget is null || companionTarget.Actor.IsDead)
+                    companionTarget = _enemies.FirstOrDefault(enemy => !enemy.Actor.IsDead);
+
+                if (companionTarget is not null)
+                    ResolveAutoAttack(_companion, companionTarget, due);
+
+                _nextCompanionAutoAttackAtUtc =
+                    Status == CombatSessionStatus.Active && !_companion.Actor.IsDead
+                        ? NextCompanionActionAfter(_companion, due)
+                        : null;
             }
 
             if (Status == CombatSessionStatus.Active
@@ -1039,17 +1080,35 @@ public sealed partial class CombatSession
         if (_player.Actor.IsDead)
             return [];
 
+        Guid[] hostileActors = _companion is not null && !_companion.Actor.IsDead
+            ? [_player.Actor.ActorId, _companion.Actor.ActorId]
+            : [_player.Actor.ActorId];
+
         return ability.TargetType switch
         {
             AbilityTargetType.Self => [enemy.Actor.ActorId],
             AbilityTargetType.SingleEnemy => [_player.Actor.ActorId],
-            AbilityTargetType.AllEnemiesInCombat => [_player.Actor.ActorId],
+            AbilityTargetType.AllEnemiesInCombat => hostileActors,
             AbilityTargetType.NEnemiesInCombat when ability.TargetCount > 0 =>
-                [_player.Actor.ActorId],
+                hostileActors.Take(ability.TargetCount).ToArray(),
             AbilityTargetType.SingleAlly when ability.AllowSelfTarget =>
                 [enemy.Actor.ActorId],
             _ => []
         };
+    }
+
+    private static DateTimeOffset NextCompanionActionAfter(
+        CombatParticipantDefinition companion,
+        DateTimeOffset now)
+    {
+        decimal multiplier = EffectEngine.CalculateStat(
+            companion.Actor,
+            EffectStat.AttackSpeed,
+            1,
+            now);
+        double seconds = companion.AutoAttack.Interval.TotalSeconds
+            / Math.Max(0.1, (double)multiplier);
+        return now + TimeSpan.FromSeconds(Math.Max(0.05, seconds));
     }
 
     private static DateTimeOffset NextEnemyActionAfter(
@@ -1165,6 +1224,19 @@ public sealed partial class CombatSession
             null);
         if (Status != CombatSessionStatus.Active) return;
 
+        if (_companion is not null)
+        {
+            ApplyKernelEvents(
+                EffectEngine.Process(
+                    _companion.Actor,
+                    now,
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _companion.Actor, tickAt)),
+                _companion.Actor.ActorId,
+                _companion.Actor.ActorId,
+                null);
+            if (Status != CombatSessionStatus.Active) return;
+        }
+
         foreach (CombatParticipantDefinition enemy in _enemies)
         {
             ApplyKernelEvents(
@@ -1186,7 +1258,9 @@ public sealed partial class CombatSession
     {
         CombatActorState? source = effect.SourceId == _player.Actor.ActorId
             ? _player.Actor
-            : _enemiesById.TryGetValue(
+            : _companion is not null && effect.SourceId == _companion.Actor.ActorId
+                ? _companion.Actor
+                : _enemiesById.TryGetValue(
                 effect.SourceId,
                 out CombatParticipantDefinition? enemySource)
                 ? enemySource.Actor
@@ -1435,6 +1509,7 @@ public sealed partial class CombatSession
         _playerAutoAttackEnabled = false;
         _nextPlayerMainHandAutoAttackAtUtc = null;
         _nextPlayerOffHandAutoAttackAtUtc = null;
+        _nextCompanionAutoAttackAtUtc = null;
         StopEnemyAi(MonsterAiState.Resetting);
         Append(new CombatEvent(
             CombatEventType.CombatEnded,
