@@ -9,6 +9,7 @@ using Elyndor.Core.Progression;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
