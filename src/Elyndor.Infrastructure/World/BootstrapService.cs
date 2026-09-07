@@ -60,7 +60,8 @@ public sealed record BootstrapLocation(
     int MaximumLevel,
     string? RequiredContractId,
     string? ArtId,
-    string Description);
+    string Description,
+    decimal TravelDurationSeconds);
 
 public sealed record BootstrapWorldContract(
     string Id,
@@ -74,11 +75,18 @@ public sealed record BootstrapWorldContract(
     int RewardXp,
     int RewardGold);
 
+public sealed record BootstrapTravel(
+    string FromLocationId,
+    string TargetLocationId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset EndsAtUtc);
+
 public sealed record BootstrapWorld(
     BootstrapLocation CurrentLocation,
     long Version,
     IReadOnlyList<BootstrapLocation> OutgoingTransitions,
-    IReadOnlyList<BootstrapWorldContract> Contracts);
+    IReadOnlyList<BootstrapWorldContract> Contracts,
+    BootstrapTravel? Travel);
 
 public sealed record BootstrapSnapshot(
     Guid AccountId,
@@ -148,6 +156,11 @@ public sealed class BootstrapService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
+        await TravelPersistence.CompleteDueAsync(
+            dbContext,
+            character.Id,
+            now,
+            cancellationToken);
         CharacterDerivedState derived = await derivedStateService.ResolveAsync(
             character.Id,
             character.ClassId,
@@ -182,6 +195,11 @@ public sealed class BootstrapService(
         CharacterVitals vitals = persistentState.Vitals;
         CharacterLocation location = persistentState.Location;
         LocationDefinition current = worldMap.GetRequired(location.LocationId);
+        CharacterTravelState? activeTravel = await dbContext.CharacterTravelStates
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                state => state.CharacterId == character.Id,
+                cancellationToken);
 
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
         TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
@@ -231,13 +249,15 @@ public sealed class BootstrapService(
         HashSet<string> acceptedContractIds =
             acceptedContractIdValues.ToHashSet(StringComparer.Ordinal);
 
-        BootstrapLocation[] transitions = current.Transitions
-            .Select(worldMap.GetRequired)
-            .Where(target => character.Level >= target.MinimumLevel)
-            .Where(target => target.RequiredContractId is null
-                || completedContractIds.Contains(target.RequiredContractId))
-            .Select(ToLocation)
-            .ToArray();
+        BootstrapLocation[] transitions = activeTravel is not null
+            ? []
+            : current.Transitions
+                .Select(worldMap.GetRequired)
+                .Where(target => character.Level >= target.MinimumLevel)
+                .Where(target => target.RequiredContractId is null
+                    || completedContractIds.Contains(target.RequiredContractId))
+                .Select(ToLocation)
+                .ToArray();
 
         BootstrapWorldContract[] contracts = (contentPackage.WorldContracts ?? [])
             .Select(contract => new BootstrapWorldContract(
@@ -287,7 +307,18 @@ public sealed class BootstrapService(
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),
                 derived.Inventory),
-            new BootstrapWorld(ToLocation(current), location.Version, transitions, contracts),
+            new BootstrapWorld(
+                ToLocation(current),
+                location.Version,
+                transitions,
+                contracts,
+                activeTravel is null
+                    ? null
+                    : new BootstrapTravel(
+                        activeTravel.FromLocationId,
+                        activeTravel.TargetLocationId,
+                        activeTravel.StartedAtUtc,
+                        activeTravel.EndsAtUtc)),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
             now);
@@ -338,5 +369,6 @@ public sealed class BootstrapService(
             location.MaximumLevel,
             location.RequiredContractId,
             location.ArtId,
-            location.Description);
+            location.Description,
+            location.TravelDurationSeconds);
 }
