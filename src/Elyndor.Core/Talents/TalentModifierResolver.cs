@@ -15,6 +15,7 @@ public static class TalentModifierResolver
         Dictionary<string, TalentAbilityModifiers> abilityModifiers = new(StringComparer.Ordinal);
         List<ResolvedTalentEventHook> eventHooks = [];
         List<TalentModifierDefinition> deferredHooks = [];
+        TalentProfileModifiers profiles = new();
 
         foreach (TalentDefinition node in tree.Nodes)
         {
@@ -46,6 +47,12 @@ public static class TalentModifierResolver
                 if (modifier.Type == TalentModifierType.EventTriggered)
                 {
                     eventHooks.Add(CreateEventHook(node, modifier, rank));
+                    continue;
+                }
+
+                if (modifier.Type == TalentModifierType.ProfileModifier)
+                {
+                    profiles = ApplyProfile(profiles, modifier);
                     continue;
                 }
 
@@ -83,7 +90,10 @@ public static class TalentModifierResolver
             abilities,
             abilityModifiers,
             eventHooks,
-            deferredHooks);
+            deferredHooks)
+        {
+            Profiles = profiles
+        };
     }
 
     private static ResolvedTalentEventHook CreateEventHook(
@@ -193,6 +203,23 @@ public static class TalentModifierResolver
         },
         _ => ability
     };
+
+    private static TalentProfileModifiers ApplyProfile(
+        TalentProfileModifiers profiles,
+        TalentModifierDefinition modifier)
+    {
+        if (string.IsNullOrWhiteSpace(modifier.TargetId))
+            return profiles;
+
+        return modifier.Key switch
+        {
+            TalentModifierKeys.ResourceProfileOverride =>
+                profiles with { ResourceProfileId = modifier.TargetId },
+            TalentModifierKeys.CompanionProfileOverride =>
+                profiles with { CompanionProfileId = modifier.TargetId },
+            _ => profiles
+        };
+    }
 
     private static TalentCombatModifiers ApplyCombat(
         TalentCombatModifiers combat,
