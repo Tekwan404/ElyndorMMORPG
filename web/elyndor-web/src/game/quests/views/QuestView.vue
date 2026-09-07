@@ -16,13 +16,13 @@ const completedContracts = computed(() =>
 
 function monsterName(id: string): string {
   if (id === 'SPIDER_BROODMOTHER_L14') return 'Паучья Прародительница'
-  return id.replaceAll('_', ' ')
+  return id.split('_').join(' ')
 }
 
 function locationName(id: string): string {
   if (id === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
   if (id === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
-  return id.replaceAll('_', ' ')
+  return id.split('_').join(' ')
 }
 
 function statusLabel(contract: WorldContract): string {
