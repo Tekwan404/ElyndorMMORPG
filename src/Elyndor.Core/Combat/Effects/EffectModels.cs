@@ -31,6 +31,8 @@ public enum EffectStat
     CriticalChance,
     AttackSpeed,
     Accuracy,
+    Armor,
+    MagicResistance,
     IncomingDamageMultiplier,
     IncomingMagicalDamageMultiplier,
     OutgoingDamageMultiplier,
