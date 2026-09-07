@@ -139,7 +139,10 @@ public sealed partial class CombatSession
             }
 
             if (IsArcaneFlowActive(now)
-                && TryGetArcherHook("A-9-1", out ResolvedTalentEventHook capstone))
+                && TryGetArcherHook(
+                    "A-9-1",
+                    "ARCANE_FLOW_CAPSTONE",
+                    out ResolvedTalentEventHook capstone))
                 criticalChanceBonus += capstone.Value;
         }
 
@@ -721,7 +724,10 @@ public sealed partial class CombatSession
         }
 
         if (_companion is not null && IsSpiritCompanion
-            && TryGetArcherHook("A-9-1", out ResolvedTalentEventHook capstone))
+            && TryGetArcherHook(
+                "A-9-1",
+                "ARCANE_FLOW_CAPSTONE",
+                out ResolvedTalentEventHook capstone))
         {
             ApplyCompanionMultiplier(
                 SpiritFlowEffectId + "_AS",
@@ -950,9 +956,12 @@ public sealed partial class CombatSession
             }
 
             if (_companion is not null && IsPhysicalCompanion
-                && TryGetArcherHook("B-9-1", out ResolvedTalentEventHook master)
+                && TryGetArcherHook(
+                    "B-9-1",
+                    "BEAST_MASTER_EXTRA_ATTACK",
+                    out ResolvedTalentEventHook master)
                 && TalentCooldownReady(master.TalentId + ":EXTRA", now)
-                && _random.NextUnit() < master.ChancePercent / 100m
+                && _random.NextUnit() < master.Value / 100m
                 && target is not null)
             {
                 ResolveCompanionExtraAttack(target, 1, master.TalentId, now);
@@ -999,7 +1008,10 @@ public sealed partial class CombatSession
                     ? durationShot
                     : packHunter.Duration;
             }
-            if (TryGetArcherHook("B-9-1", out ResolvedTalentEventHook beastMaster))
+            if (TryGetArcherHook(
+                    "B-9-1",
+                    "BEAST_MASTER_OWNER_SHOT",
+                    out ResolvedTalentEventHook beastMaster))
                 ownerShotBonus = Math.Max(ownerShotBonus, beastMaster.Value);
 
             if (ownerShotBonus > 0)
@@ -1743,6 +1755,19 @@ public sealed partial class CombatSession
         hook = IsArcher
             ? _playerTalents.EventHooks.FirstOrDefault(item =>
                 string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!
+            : null!;
+        return hook is not null;
+    }
+
+    private bool TryGetArcherHook(
+        string talentId,
+        string targetId,
+        out ResolvedTalentEventHook hook)
+    {
+        hook = IsArcher
+            ? _playerTalents.EventHooks.FirstOrDefault(item =>
+                string.Equals(item.TalentId, talentId, StringComparison.Ordinal)
+                && string.Equals(item.TargetId, targetId, StringComparison.Ordinal))!
             : null!;
         return hook is not null;
     }
