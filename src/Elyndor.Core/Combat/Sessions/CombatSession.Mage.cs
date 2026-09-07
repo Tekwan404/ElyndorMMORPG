@@ -483,10 +483,10 @@ public sealed partial class CombatSession
         if (string.Equals(ability.Id, ArcaneSealId, StringComparison.Ordinal)
             && hit)
         {
-            foreach (CombatActorState target in HitTargets(execution))
+            foreach (CombatActorState sealedTarget in HitTargets(execution))
             {
                 ApplyMageEffect(
-                    target,
+                    sealedTarget,
                     new EffectDefinition(
                         "MAGE_ARCANE_SEAL_SILENCE",
                         EffectKind.Silence,
@@ -947,11 +947,12 @@ public sealed partial class CombatSession
             return;
 
         decimal chance = echo.SecondaryValue;
-        bool overloadEcho = IsManaOverloadActive(now)
-            && TryGetMageHook("A-7-2", out ResolvedTalentEventHook overloadEchoHook);
-        if (overloadEcho)
+        ResolvedTalentEventHook? overloadEchoHook = null;
+        if (IsManaOverloadActive(now)
+            && TryGetMageHook("A-7-2", out ResolvedTalentEventHook resolvedOverloadEcho))
         {
-            if (!TalentCooldownReady(overloadEchoHook!.TalentId, now))
+            overloadEchoHook = resolvedOverloadEcho;
+            if (!TalentCooldownReady(overloadEchoHook.TalentId, now))
                 return;
             chance *= 2;
         }
@@ -978,8 +979,8 @@ public sealed partial class CombatSession
                 now);
         }
 
-        if (overloadEcho)
-            StartTalentCooldown(overloadEchoHook!, now);
+        if (overloadEchoHook is not null)
+            StartTalentCooldown(overloadEchoHook, now);
     }
 
     private void AddArcaneCharges(int count, TimeSpan duration, DateTimeOffset now)
