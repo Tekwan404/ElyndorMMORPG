@@ -281,7 +281,7 @@ public sealed class QuestService(
             if (!accepted)
             {
                 dbContext.CharacterContractAcceptances.Add(
-                    new Core.World.CharacterContractAcceptance(
+                    new Elyndor.Core.World.CharacterContractAcceptance(
                         character.Id,
                         quest.Id,
                         now));
