@@ -27,7 +27,8 @@ public static class TalentModifierResolver
                 {
                     bool runtimeOwned =
                         BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-                        || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+                        || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
                     if (runtimeOwned && modifier.Values.Count >= rank)
                         eventHooks.Add(CreateEventHook(node, modifier, rank));
                     else
