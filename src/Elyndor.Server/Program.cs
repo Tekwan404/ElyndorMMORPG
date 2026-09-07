@@ -16,6 +16,7 @@ using Elyndor.Server.Combat;
 using Elyndor.Server.Items;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -198,6 +199,35 @@ if (migrateOnStartup)
             .GetRequiredService<CombatDurabilityService>();
     await durability.RecoverInterruptedAsync(CancellationToken.None);
 }
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        Exception? exception =
+            context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        if (exception is not null)
+        {
+            ILogger logger = context.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Elyndor.UnhandledRequest");
+            StartupLogMessages.LogUnhandledRequestException(
+                logger,
+                context.Request.Method,
+                context.Request.Path,
+                context.TraceIdentifier,
+                exception);
+        }
+
+        await Results.Problem(
+            statusCode: StatusCodes.Status500InternalServerError,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = "internal_server_error",
+                ["correlationId"] = context.TraceIdentifier
+            }).ExecuteAsync(context);
+    });
+});
 
 if (frontendFileProvider is not null)
 {
