@@ -14,5 +14,11 @@ public sealed class TalentRuntimeEngine(TalentRuntimeState state)
         ResolvedTalentModifiers modifiers) =>
         _state.Publish(combatEvent, modifiers);
 
+    public IReadOnlyList<TalentRuntimeAction> Publish(
+        CombatRuntimeEvent combatEvent,
+        ResolvedTalentModifiers modifiers,
+        Func<ResolvedTalentEventHook, bool> hookFilter) =>
+        _state.Publish(combatEvent, modifiers, hookFilter);
+
     public void Reset() => _state.Reset();
 }

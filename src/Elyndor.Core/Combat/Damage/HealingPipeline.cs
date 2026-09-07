@@ -1,10 +1,13 @@
+using Elyndor.Core.Combat.Effects;
+
 namespace Elyndor.Core.Combat.Damage;
 
 public sealed record HealingRequest(
     CombatActorState Target,
     decimal BaseAmount,
     decimal HealingMultiplier = 1,
-    bool CanHealDead = false);
+    bool CanHealDead = false,
+    DateTimeOffset OccurredAtUtc = default);
 
 public sealed record HealingResult(
     decimal AttemptedAmount,
@@ -24,8 +27,18 @@ public static class HealingPipeline
             return new(request.BaseAmount, 0, 0, 0, request.Target.CurrentHp, []);
         }
 
+        DateTimeOffset occurredAtUtc = request.OccurredAtUtc == default
+            ? DateTimeOffset.MaxValue
+            : request.OccurredAtUtc;
+        decimal receivedMultiplier = EffectEngine.CalculateStat(
+            request.Target,
+            EffectStat.HealingReceivedMultiplier,
+            1,
+            occurredAtUtc);
         decimal modified = decimal.Round(
-            request.BaseAmount * Math.Max(0, request.HealingMultiplier),
+            request.BaseAmount
+                * Math.Max(0, request.HealingMultiplier)
+                * receivedMultiplier,
             0,
             MidpointRounding.AwayFromZero);
         decimal effective = Math.Min(modified, request.Target.MaxHp - request.Target.CurrentHp);

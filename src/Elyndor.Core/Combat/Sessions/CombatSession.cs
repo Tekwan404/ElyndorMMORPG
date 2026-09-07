@@ -261,6 +261,8 @@ public sealed partial class CombatSession
         _nextCompanionAutoAttackAtUtc = companion is not null && companion.CanAutoAttack
             ? startedAtUtc + companion.AutoAttack.Interval
             : null;
+        ApplyGuardianStartingEffects(startedAtUtc);
+        ApplyWarlordPassiveEffects(startedAtUtc);
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
             startedAtUtc,
@@ -482,7 +484,9 @@ public sealed partial class CombatSession
         AbilityDefinition ability = ResolveArcherAbility(
             ResolveMageAbility(
                 ResolvePyromancerAbility(
-                    ResolvePlayerAbility(baseAbility, now),
+                    ResolveWarlordAbility(
+                        ResolvePlayerAbility(baseAbility, now),
+                        now),
                     now),
                 now),
             now);
@@ -682,6 +686,16 @@ public sealed partial class CombatSession
             return _companion is not null && !_companion.Actor.IsDead
                 ? [_companion.Actor.ActorId]
                 : [];
+
+        if (ability.TargetType == AbilityTargetType.SelfAndPartyMembersInCombat)
+        {
+            Guid[] partyMembers = _companion is not null && !_companion.Actor.IsDead
+                ? [_player.Actor.ActorId, _companion.Actor.ActorId]
+                : [_player.Actor.ActorId];
+            return ability.TargetCount > 0
+                ? partyMembers.Take(ability.TargetCount).ToArray()
+                : partyMembers;
+        }
 
         if (ability.TargetType == AbilityTargetType.SingleEnemy)
         {
@@ -1438,6 +1452,8 @@ public sealed partial class CombatSession
                 TalentModifierKeys.OnAbilityUsed,
                 combatEvent.OccurredAtUtc,
                 ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.AbilityCompleted));
+            ApplyGuardianAbilityHooks(combatEvent);
+            ApplyWarlordAbilityHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.Dodge
@@ -1447,31 +1463,47 @@ public sealed partial class CombatSession
                 TalentModifierKeys.OnDodge,
                 combatEvent.OccurredAtUtc,
                 ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.Dodge));
+            ApplyGuardianDodgeHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.DamageDealt
-            && combatEvent.TargetActorId == _player.Actor.ActorId
             && combatEvent.Amount > 0)
         {
-            if (!combatEvent.IsPeriodic)
+            bool playerTarget = combatEvent.TargetActorId == _player.Actor.ActorId;
+            bool partyTarget = playerTarget
+                || _companion is not null
+                && combatEvent.TargetActorId == _companion.Actor.ActorId;
+            if (partyTarget && !combatEvent.IsPeriodic)
             {
-                if (string.Equals(_player.ResourceType, "RAGE", StringComparison.Ordinal))
+                if (playerTarget
+                    && string.Equals(_player.ResourceType, "RAGE", StringComparison.Ordinal))
                 {
                     AddResource(
                         _player.Actor,
-                        BaseRageFromDirectDamageTaken,
+                        BaseRageFromDirectDamageTaken * GuardianRageMultiplier,
                         combatEvent.OccurredAtUtc,
                         "DIRECT_DAMAGE_TAKEN");
                 }
-                TriggerTalent(
-                    TalentModifierKeys.OnDamageTaken,
-                    combatEvent.OccurredAtUtc,
-                    ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.DamageTaken));
+                if (playerTarget)
+                {
+                    TriggerTalent(
+                        TalentModifierKeys.OnDamageTaken,
+                        combatEvent.OccurredAtUtc,
+                        ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.DamageTaken));
+                    ApplyGuardianDamageTakenHooks(combatEvent);
+                }
+                ApplyWarlordPartyDamageHooks(combatEvent);
             }
 
-            ApplyBerserkerDamageTakenHooks(combatEvent);
-            ApplyMageDamageTakenHooks(combatEvent);
-            ApplyArcherDamageTakenHooks(combatEvent);
+            if (playerTarget)
+            {
+                ApplyBerserkerDamageTakenHooks(combatEvent);
+                ApplyMageDamageTakenHooks(combatEvent);
+                ApplyArcherDamageTakenHooks(combatEvent);
+            }
+
+            ApplyWarlordAutoAttackHooks(combatEvent);
+            ApplyGuardianAutoAttackHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.ShieldAbsorbed
@@ -1495,6 +1527,7 @@ public sealed partial class CombatSession
                 combatEvent.OccurredAtUtc,
                 ToRuntimeEvent(combatEvent, CombatRuntimeEventKind.CriticalHit));
             ApplyBerserkerCriticalHooks(combatEvent);
+            ApplyGuardianCriticalHooks(combatEvent);
             ApplyPyromancerCriticalHooks(combatEvent);
             ApplyMageCriticalHooks(combatEvent);
             ApplyArcherCriticalHooks(combatEvent);
@@ -1505,6 +1538,7 @@ public sealed partial class CombatSession
             && combatEvent.SourceActorId == _companion.Actor.ActorId)
         {
             ApplyArcherCriticalHooks(combatEvent);
+            ApplyWarlordPartyCriticalHooks(combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.CriticalHit
@@ -1534,6 +1568,9 @@ public sealed partial class CombatSession
         DateTimeOffset now,
         CombatRuntimeEvent? runtimeEvent = null)
     {
+        if (_genericTalentModifiers.EventHooks.Count == 0)
+            return;
+
         runtimeEvent ??= CreateRuntimeEvent(key, now);
         foreach (TalentRuntimeAction action in _talentRuntimeEngine.Publish(
                      runtimeEvent,
@@ -1547,7 +1584,9 @@ public sealed partial class CombatSession
     private bool IsClassRuntimeTalent(string talentId) =>
         _player.DefinitionId switch
         {
-            "WARRIOR" => BerserkerTalentRuntimeCatalog.TryGetEventKey(talentId, out _),
+            "WARRIOR" => BerserkerTalentRuntimeCatalog.TryGetEventKey(talentId, out _)
+                || GuardianTalentRuntimeCatalog.SupportedTalentIds.Contains(talentId)
+                || WarlordTalentRuntimeCatalog.SupportedTalentIds.Contains(talentId),
             "MAGE" => PyromancerTalentRuntimeCatalog.TryGetEventKey(talentId, out _)
                 || MageTalentRuntimeCatalog.TryGetEventKey(talentId, out _),
             "ARCHER" => ArcherTalentRuntimeCatalog.OwnsTalentId(talentId),
@@ -1607,6 +1646,7 @@ public sealed partial class CombatSession
         if (_companion is not null && death.ActorId == _companion.Actor.ActorId)
         {
             _nextCompanionAutoAttackAtUtc = null;
+            ApplyWarlordPartyDeathHooks(death.OccurredAtUtc, _companion.Actor.ActorId);
             SyncArcherConditionalEffects(death.OccurredAtUtc);
             return;
         }
@@ -1635,6 +1675,7 @@ public sealed partial class CombatSession
         ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
         ApplyPyromancerEnemyKilledHooks(death);
         ApplyArcherEnemyKilledHooks(death.OccurredAtUtc);
+        ApplyWarlordEnemyKilledHooks(death);
 
         EnemyAiRuntime killedAi = _enemyAiRuntimes[killedEnemy.Actor.ActorId];
         killedAi.State = MonsterAiState.Dead;
@@ -1782,7 +1823,9 @@ public sealed partial class CombatSession
                 ? ResolveArcherAbility(
                     ResolveMageAbility(
                         ResolvePyromancerAbility(
-                            ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
+                            ResolveWarlordAbility(
+                                ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
+                                CurrentTimeUtc),
                             CurrentTimeUtc),
                         CurrentTimeUtc),
                     CurrentTimeUtc)

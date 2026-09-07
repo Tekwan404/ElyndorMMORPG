@@ -80,7 +80,15 @@ public static class DamagePipeline
                     MaxMissChance)
                 : 0;
             decimal dodgeChance = request.CanDodge
-                ? Math.Clamp(request.Target.Stats.Dodge / 100m, 0, 1)
+                ? Math.Clamp(
+                    EffectEngine.CalculateStat(
+                        request.Target,
+                        EffectStat.Dodge,
+                        request.Target.Stats.Dodge,
+                        occurredAtUtc)
+                    / 100m,
+                    0,
+                    1)
                 : 0;
 
             if (avoidanceRoll < missChance)
@@ -102,8 +110,11 @@ public static class DamagePipeline
         bool critical = request.ForceCritical
                         || request.CanCrit
                         && random.NextUnit() < Math.Clamp(criticalChance / 100m, 0, 1);
-        decimal criticalDamage = request.Source.Stats.CriticalDamage
-            + request.CriticalDamageBonus / 100m;
+        decimal criticalDamage = Math.Max(
+            0,
+            request.Source.Stats.CriticalDamage
+                + request.CriticalDamageBonus / 100m
+                - request.Target.IncomingCriticalDamageReductionPercent / 100m);
         decimal raw = request.BaseAmount
             * (critical ? 1 + Math.Max(0, criticalDamage) : 1);
         decimal afterMitigation = request.SkipDefenseMitigation

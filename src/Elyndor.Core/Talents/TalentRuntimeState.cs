@@ -48,6 +48,12 @@ public sealed class TalentRuntimeState
     public IReadOnlyList<TalentRuntimeAction> Publish(
         CombatRuntimeEvent combatEvent,
         ResolvedTalentModifiers modifiers)
+        => Publish(combatEvent, modifiers, null);
+
+    public IReadOnlyList<TalentRuntimeAction> Publish(
+        CombatRuntimeEvent combatEvent,
+        ResolvedTalentModifiers modifiers,
+        Func<ResolvedTalentEventHook, bool>? hookFilter)
     {
         ArgumentNullException.ThrowIfNull(combatEvent);
         ArgumentNullException.ThrowIfNull(modifiers);
@@ -60,6 +66,7 @@ public sealed class TalentRuntimeState
         List<TalentRuntimeAction> actions = [];
         foreach (ResolvedTalentEventHook hook in modifiers.EventHooks
                      .Where(item => string.Equals(item.Key, key, StringComparison.Ordinal))
+                     .Where(item => hookFilter is null || hookFilter(item))
                      .OrderBy(item => item.TalentId, StringComparer.Ordinal))
         {
             if (!MatchesOwner(key, combatEvent)
