@@ -55,7 +55,8 @@ internal static class CombatContractMapper
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
             enemies,
-            snapshot.SelectedTargetActorId ?? snapshot.Enemy.ActorId);
+            snapshot.SelectedTargetActorId ?? snapshot.Enemy.ActorId,
+            snapshot.Companion is null ? null : ToResponse(snapshot.Companion, content));
     }
 
     private static CombatActorResponse ToResponse(
