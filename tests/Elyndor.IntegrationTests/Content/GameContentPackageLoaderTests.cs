@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
@@ -18,7 +19,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.13.0", package.ContentVersion);
+        Assert.Equal("0.13.1", package.ContentVersion);
         Assert.Equal("0.11.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
@@ -87,6 +88,30 @@ public sealed class GameContentPackageLoaderTests
         Assert.Same(indexes, GameContentIndexes.For(package));
         Assert.Equal("MAGE", indexes.ClassesById["MAGE"].Id);
         Assert.Equal("MAGE_FIREBALL", indexes.AbilitiesById["MAGE_FIREBALL"].Id);
+
+        AbilityDefinition hunterMark = indexes.AbilitiesById["HUNTER_MARK"];
+        Assert.Equal(
+            1.05m,
+            hunterMark.RuntimeParameters!["physicalDamageMultiplier"]);
+        Assert.Equal(
+            1.03m,
+            hunterMark.RuntimeParameters["magicalDamageMultiplier"]);
+        AbilityDefinition heavyArrow = indexes.AbilitiesById["HEAVY_ARROW"];
+        Assert.Equal(
+            1.75m,
+            heavyArrow.RuntimeParameters!["autoAttackDamageMultiplier"]);
+        AbilityDefinition beastSurge = indexes.AbilitiesById["BEAST_SURGE"];
+        Assert.Equal(
+            1.20m,
+            beastSurge.RuntimeParameters!["companionDamageMultiplier"]);
+        AbilityDefinition enchantedShot = indexes.AbilitiesById["ENCHANTED_SHOT"];
+        Assert.Equal(
+            0.70m,
+            enchantedShot.RuntimeParameters!["spellPowerCoefficient"]);
+        AbilityDefinition arcaneFlow = indexes.AbilitiesById["ARCANE_FLOW"];
+        Assert.Equal(
+            1.15m,
+            arcaneFlow.RuntimeParameters!["damageMultiplier"]);
         Assert.Equal("FOREST_WOLF_L1", indexes.MonstersById["FOREST_WOLF_L1"].Id);
         Assert.Equal("WHISPERING_FOREST", indexes.LocationsById["WHISPERING_FOREST"].Id);
     }

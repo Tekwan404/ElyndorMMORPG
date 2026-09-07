@@ -63,7 +63,8 @@ public sealed record AbilityDefinition(
     string? Description = null,
     string? IconId = null,
     int TargetCount = 0,
-    AbilityTargetSelectorProfile TargetSelectorProfile = AbilityTargetSelectorProfile.EncounterOrder);
+    AbilityTargetSelectorProfile TargetSelectorProfile = AbilityTargetSelectorProfile.EncounterOrder,
+    IReadOnlyDictionary<string, decimal>? RuntimeParameters = null);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,

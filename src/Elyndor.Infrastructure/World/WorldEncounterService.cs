@@ -32,24 +32,42 @@ public sealed record PendingWorldEncounter(
     string MonsterId,
     DateTimeOffset CreatedAtUtc);
 
-public sealed class WorldEncounterRegistry(TimeProvider timeProvider)
+public sealed class WorldEncounterRegistry : IDisposable
 {
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan PurgeInterval = TimeSpan.FromMinutes(1);
+
+    private readonly TimeProvider _timeProvider;
     private readonly object _gate = new();
     private readonly Dictionary<Guid, PendingWorldEncounter> _byAccount = [];
+    private readonly ITimer _purgeTimer;
+    private bool _disposed;
+
+    public WorldEncounterRegistry(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _purgeTimer = _timeProvider.CreateTimer(
+            _ => PurgeExpired(),
+            null,
+            PurgeInterval,
+            PurgeInterval);
+    }
 
     public PendingWorldEncounter Register(Guid accountId, string locationId, string monsterId)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentException.ThrowIfNullOrWhiteSpace(locationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(monsterId);
 
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         PendingWorldEncounter encounter = new(
             Guid.CreateVersion7(),
             locationId,
             monsterId,
-            timeProvider.GetUtcNow());
+            now);
         lock (_gate)
         {
+            PurgeExpiredLocked(now);
             _byAccount[accountId] = encounter;
         }
 
@@ -58,17 +76,13 @@ public sealed class WorldEncounterRegistry(TimeProvider timeProvider)
 
     public bool TryConsume(Guid accountId, Guid encounterId, out PendingWorldEncounter encounter)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_gate)
         {
+            PurgeExpiredLocked(_timeProvider.GetUtcNow());
             encounter = null!;
             if (!_byAccount.TryGetValue(accountId, out PendingWorldEncounter? current))
                 return false;
-
-            if (timeProvider.GetUtcNow() - current.CreatedAtUtc > Lifetime)
-            {
-                _byAccount.Remove(accountId);
-                return false;
-            }
 
             if (current.EncounterId != encounterId)
                 return false;
@@ -81,9 +95,46 @@ public sealed class WorldEncounterRegistry(TimeProvider timeProvider)
 
     public void Clear(Guid accountId)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_gate)
         {
             _byAccount.Remove(accountId);
+        }
+    }
+
+    public int PurgeExpired()
+    {
+        if (_disposed)
+            return 0;
+
+        lock (_gate)
+        {
+            return PurgeExpiredLocked(_timeProvider.GetUtcNow());
+        }
+    }
+
+    private int PurgeExpiredLocked(DateTimeOffset now)
+    {
+        Guid[] expiredAccountIds = _byAccount
+            .Where(pair => now - pair.Value.CreatedAtUtc > Lifetime)
+            .Select(pair => pair.Key)
+            .ToArray();
+        foreach (Guid accountId in expiredAccountIds)
+            _byAccount.Remove(accountId);
+
+        return expiredAccountIds.Length;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _purgeTimer.Dispose();
+        lock (_gate)
+        {
+            _byAccount.Clear();
         }
     }
 }
