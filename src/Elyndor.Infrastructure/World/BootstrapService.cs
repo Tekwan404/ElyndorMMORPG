@@ -9,6 +9,7 @@ using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.World;
 
@@ -100,7 +101,8 @@ public sealed class BootstrapService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ILogger<BootstrapService>? logger = null)
 {
     public BootstrapService(
         GameDbContext dbContext,
@@ -112,11 +114,20 @@ public sealed class BootstrapService(
             dbContext,
             new StaticContentSnapshotProvider(contentPackage),
             derivedStateService,
-            timeProvider)
+            timeProvider,
+            null)
     {
     }
 
     private const decimal StarterTownHpRegenPerSecond = 5m;
+
+    private static readonly Action<ILogger, Guid, string, Exception?>
+        RepairedCharacterState =
+            LoggerMessage.Define<Guid, string>(
+                LogLevel.Warning,
+                new EventId(2201, nameof(RepairedCharacterState)),
+                "Repaired bootstrap state for character {CharacterId}: {Repair}.");
+
 
     public Task<BootstrapSnapshot> GetAsync(
         Guid accountId,
@@ -156,11 +167,6 @@ public sealed class BootstrapService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
-        await TravelPersistence.CompleteDueAsync(
-            dbContext,
-            character.Id,
-            now,
-            cancellationToken);
         CharacterDerivedState derived = await derivedStateService.ResolveAsync(
             character.Id,
             character.ClassId,
@@ -181,25 +187,83 @@ public sealed class BootstrapService(
                 indexes))
             .ToArray();
 
-        var persistentState = await (
-            from candidateVitals in dbContext.CharacterVitals
-            join candidateLocation in dbContext.CharacterLocations
-                on candidateVitals.CharacterId equals candidateLocation.CharacterId
-            where candidateVitals.CharacterId == character.Id
-            select new
-            {
-                Vitals = candidateVitals,
-                Location = candidateLocation
-            })
-            .SingleAsync(cancellationToken);
-        CharacterVitals vitals = persistentState.Vitals;
-        CharacterLocation location = persistentState.Location;
-        LocationDefinition current = worldMap.GetRequired(location.LocationId);
+        CharacterVitals? vitals = await dbContext.CharacterVitals
+            .SingleOrDefaultAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
+        CharacterLocation? location = await dbContext.CharacterLocations
+            .SingleOrDefaultAsync(
+                candidate => candidate.CharacterId == character.Id,
+                cancellationToken);
         CharacterTravelState? activeTravel = await dbContext.CharacterTravelStates
+            .SingleOrDefaultAsync(
+                state => state.CharacterId == character.Id,
+                cancellationToken);
+
+        bool repaired = false;
+        if (vitals is null)
+        {
+            vitals = new CharacterVitals(
+                character.Id,
+                stats.MaxHp,
+                effectiveResourceProfile.StartValue,
+                now,
+                now);
+            dbContext.CharacterVitals.Add(vitals);
+            repaired = true;
+            LogRepair(character.Id, "missing_vitals_created");
+        }
+
+        bool locationMissing = location is null;
+        bool locationUnknown = location is not null
+            && !indexes.LocationsById.ContainsKey(location.LocationId);
+        if (locationMissing)
+        {
+            location = new CharacterLocation(
+                character.Id,
+                WorldLocationIds.StarterTown,
+                1,
+                now);
+            dbContext.CharacterLocations.Add(location);
+            repaired = true;
+            LogRepair(character.Id, "missing_location_created");
+        }
+        else if (locationUnknown)
+        {
+            location!.Relocate(WorldLocationIds.StarterTown, now);
+            repaired = true;
+            LogRepair(character.Id, "unknown_location_relocated");
+        }
+
+        if (activeTravel is not null
+            && (!indexes.LocationsById.ContainsKey(activeTravel.FromLocationId)
+                || !indexes.LocationsById.ContainsKey(activeTravel.TargetLocationId)
+                || !string.Equals(
+                    location!.LocationId,
+                    activeTravel.FromLocationId,
+                    StringComparison.Ordinal)))
+        {
+            dbContext.CharacterTravelStates.Remove(activeTravel);
+            activeTravel = null;
+            repaired = true;
+            LogRepair(character.Id, "invalid_travel_cancelled");
+        }
+
+        if (repaired)
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+        await TravelPersistence.CompleteDueAsync(
+            dbContext,
+            character.Id,
+            now,
+            cancellationToken);
+
+        activeTravel = await dbContext.CharacterTravelStates
             .AsNoTracking()
             .SingleOrDefaultAsync(
                 state => state.CharacterId == character.Id,
                 cancellationToken);
+        LocationDefinition current = worldMap.GetRequired(location!.LocationId);
 
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
         TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
@@ -322,6 +386,12 @@ public sealed class BootstrapService(
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
             now);
+    }
+
+    private void LogRepair(Guid characterId, string repair)
+    {
+        if (logger is not null)
+            RepairedCharacterState(logger, characterId, repair, null);
     }
 
     private static BootstrapAbility ToBootstrapAbility(
