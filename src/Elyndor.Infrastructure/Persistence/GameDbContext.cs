@@ -31,6 +31,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<CharacterItem> CharacterItems => Set<CharacterItem>();
 
+    public DbSet<PendingLootItem> PendingLootItems => Set<PendingLootItem>();
+
     public DbSet<CharacterAbilityCooldown> CharacterAbilityCooldowns =>
         Set<CharacterAbilityCooldown>();
 
