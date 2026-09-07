@@ -1039,7 +1039,7 @@ public sealed partial class CombatSession
                 continue;
             }
 
-            Guid[] targetIds = ResolveEnemyAbilityTargetIds(enemy, ability);
+            Guid[] targetIds = ResolveEnemyAbilityTargetIds(enemy, ability, now);
             if (targetIds.Length == 0)
                 continue;
 
@@ -1096,7 +1096,7 @@ public sealed partial class CombatSession
         {
             ResolveAutoAttack(
                 enemy,
-                ResolveEnemyPrimaryTarget(enemy),
+                ResolveEnemyPrimaryTarget(enemy, now),
                 now);
         }
         aiRuntime.NextActionAtUtc =
@@ -1107,12 +1107,13 @@ public sealed partial class CombatSession
 
     private Guid[] ResolveEnemyAbilityTargetIds(
         CombatParticipantDefinition enemy,
-        AbilityDefinition ability)
+        AbilityDefinition ability,
+        DateTimeOffset now)
     {
         if (_player.Actor.IsDead)
             return [];
 
-        Guid[] hostileActors = ResolveEnemyHostileActorIds(enemy);
+        Guid[] hostileActors = ResolveEnemyHostileActorIds(enemy, now);
 
         return ability.TargetType switch
         {
