@@ -134,7 +134,6 @@ public sealed class CombatDurabilityService(
                 .Where(candidate =>
                     candidate.CharacterId == character.Id
                     && candidate.ItemDefinitionId == itemDefinitionId
-                    && candidate.DefinitionVersion == definition.Version
                     && candidate.Quantity > 0)
                 .OrderBy(candidate => candidate.AcquiredAtUtc)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -153,7 +152,7 @@ public sealed class CombatDurabilityService(
                 commandId,
                 character.Id,
                 definition.Id,
-                definition.Version,
+                item.DefinitionVersion,
                 definition.MaxStack,
                 usedAtUtc));
             await dbContext.SaveChangesAsync(cancellationToken);
