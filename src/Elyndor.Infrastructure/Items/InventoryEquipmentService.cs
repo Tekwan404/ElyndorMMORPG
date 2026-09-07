@@ -311,6 +311,17 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.TwoHandedConflict);
                 }
 
+                if (!await CanApplyEquipmentProjectionAsync(
+                        character.Id,
+                        item.Id,
+                        canonicalSlot,
+                        definition,
+                        cancellationToken))
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.InventoryFull);
+                }
+
                 CharacterEquipment? currentItemEquipment = await dbContext.CharacterEquipment
                     .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id
                         && candidate.CharacterItemId == item.Id, cancellationToken);
@@ -604,6 +615,49 @@ public sealed class InventoryEquipmentService(
                 return InventoryErrorCodes.Conflict;
             }
         });
+    }
+
+    private async Task<bool> CanApplyEquipmentProjectionAsync(
+        Guid characterId,
+        Guid itemId,
+        EquipmentSlot targetSlot,
+        ItemDefinition definition,
+        CancellationToken cancellationToken)
+    {
+        CharacterEquipment[] current = await dbContext.CharacterEquipment
+            .AsNoTracking()
+            .Where(equipment => equipment.CharacterId == characterId)
+            .ToArrayAsync(cancellationToken);
+
+        HashSet<Guid> projectedEquippedItemIds =
+            current.Select(equipment => equipment.CharacterItemId).ToHashSet();
+
+        foreach (CharacterEquipment equipment in current)
+        {
+            bool occupiesTarget = EquivalentEquipmentSlots(targetSlot)
+                .Contains(equipment.Slot);
+            bool displacedByTwoHandedMain =
+                targetSlot == EquipmentSlot.MainHand
+                && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory)
+                && equipment.Slot == EquipmentSlot.OffHand;
+            bool isMovingItem = equipment.CharacterItemId == itemId;
+
+            if (occupiesTarget || displacedByTwoHandedMain || isMovingItem)
+                projectedEquippedItemIds.Remove(equipment.CharacterItemId);
+        }
+
+        projectedEquippedItemIds.Add(itemId);
+
+        int totalItemSlots = await dbContext.CharacterItems
+            .AsNoTracking()
+            .CountAsync(
+                item => item.CharacterId == characterId,
+                cancellationToken);
+        int projectedInventorySlots =
+            totalItemSlots - projectedEquippedItemIds.Count;
+
+        return projectedInventorySlots <=
+            InventoryCapacity.Resolve(contentProvider.GetCurrent());
     }
 
     private async Task ClaimPendingLootCoreAsync(
