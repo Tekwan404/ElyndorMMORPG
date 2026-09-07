@@ -106,7 +106,9 @@ public static class DamagePipeline
             + request.CriticalDamageBonus / 100m;
         decimal raw = request.BaseAmount
             * (critical ? 1 + Math.Max(0, criticalDamage) : 1);
-        decimal afterMitigation = request.SkipDefenseMitigation ? raw : Mitigate(request, raw);
+        decimal afterMitigation = request.SkipDefenseMitigation
+            ? raw
+            : Mitigate(request, raw, occurredAtUtc);
         decimal incomingMultiplier = EffectEngine.CalculateStat(
             request.Target,
             EffectStat.IncomingDamageMultiplier,
@@ -330,7 +332,10 @@ public static class DamagePipeline
             decimal.Round(blockValue, 0, MidpointRounding.AwayFromZero));
     }
 
-    private static decimal Mitigate(DamageRequest request, decimal damage)
+    private static decimal Mitigate(
+        DamageRequest request,
+        decimal damage,
+        DateTimeOffset occurredAtUtc)
     {
         if (request.Type == DamageType.True)
         {
@@ -338,8 +343,16 @@ public static class DamagePipeline
         }
 
         decimal defense = request.Type == DamageType.Physical
-            ? request.Target.Stats.Armor
-            : request.Target.Stats.MagicResistance;
+            ? EffectEngine.CalculateStat(
+                request.Target,
+                EffectStat.Armor,
+                request.Target.Stats.Armor,
+                occurredAtUtc)
+            : EffectEngine.CalculateStat(
+                request.Target,
+                EffectStat.MagicResistance,
+                request.Target.Stats.MagicResistance,
+                occurredAtUtc);
         decimal penetration = request.Type == DamageType.Physical
             ? request.Source.Stats.ArmorPenetration + request.ArmorPenetrationBonus
             : request.Source.Stats.MagicPenetration + request.MagicPenetrationBonus;
