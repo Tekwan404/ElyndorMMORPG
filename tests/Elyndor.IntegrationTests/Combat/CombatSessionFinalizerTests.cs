@@ -247,7 +247,11 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
             hp: 25,
             maxHp: 150,
             resource: 0,
-            maxResource: 100);
+            maxResource: 100,
+            cooldowns: new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
+            {
+                ["STRIKE"] = Now.AddSeconds(20)
+            });
         CombatActorSnapshot enemy = Actor(
             Guid.CreateVersion7(),
             CombatActorKind.Monster,
