@@ -28,6 +28,7 @@ public enum EffectStackPolicy
 public enum EffectStat
 {
     AttackPower,
+    SpellPower,
     CriticalChance,
     AttackSpeed,
     Accuracy,
