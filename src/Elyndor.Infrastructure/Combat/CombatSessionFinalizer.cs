@@ -61,8 +61,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
-        CombatDurabilityService durability =
-            scope.ServiceProvider.GetRequiredService<CombatDurabilityService>();
+        CombatDurabilityService? durability =
+            scope.ServiceProvider.GetService<CombatDurabilityService>();
         CharacterAbilityCooldownStore cooldownStore =
             scope.ServiceProvider.GetRequiredService<CharacterAbilityCooldownStore>();
         await cooldownStore.ReplaceAsync(
@@ -83,9 +83,12 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     cancellationToken);
             if (existingReward is not null)
             {
-                await durability.CompleteAsync(
-                    snapshot.SessionId,
-                    cancellationToken);
+                if (durability is not null)
+                {
+                    await durability.CompleteAsync(
+                        snapshot.SessionId,
+                        cancellationToken);
+                }
                 return new CombatRewardApplicationResult(
                     false,
                     existingReward.XpEarned,
@@ -170,9 +173,12 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     cancellationToken);
         }
 
-        await durability.CompleteAsync(
-            snapshot.SessionId,
-            cancellationToken);
+        if (durability is not null)
+        {
+            await durability.CompleteAsync(
+                snapshot.SessionId,
+                cancellationToken);
+        }
         return reward;
     }
 }
