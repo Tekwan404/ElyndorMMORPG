@@ -30,6 +30,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<TalentService>();
         builder.Services.AddScoped<CharacterAbilityCooldownStore>();
         builder.Services.AddScoped<CombatSessionFactory>();
+        builder.Services.AddScoped<CombatDurabilityService>();
         builder.Services.AddScoped<CombatApplicationService>();
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<InventoryEquipmentService>();
