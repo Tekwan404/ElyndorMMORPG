@@ -88,8 +88,11 @@ public sealed class MageCombatSessionTests
             cursor);
         Assert.True(started.Succeeded);
 
-        CombatCommandResult completed = session.AdvanceTo(cursor.AddSeconds(1.2));
+        CombatCastSnapshot activeCast = Assert.IsType<CombatCastSnapshot>(
+            started.Snapshot.Player.ActiveCast);
+        CombatCommandResult completed = session.AdvanceTo(activeCast.ResolvesAtUtc);
 
+        Assert.Null(completed.Snapshot.Player.ActiveCast);
         Assert.DoesNotContain(
             completed.Snapshot.Player.Effects,
             effect => effect.Id == "MAGE_ARCANE_CHARGE");
