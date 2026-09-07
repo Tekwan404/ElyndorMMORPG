@@ -45,7 +45,7 @@ public sealed class CombatSessionFactory(
     }
 
     public const string TrainingDummyId = "TRAINING_DUMMY";
-    public const string StarterTownId = "STARTER_TOWN";
+    public const string StarterTownId = WorldLocationIds.StarterTown;
     private const decimal TrainingDummyMaxHp = 1_000_000_000m;
     private static readonly HashSet<string> PlayableCombatClassIds = new(StringComparer.Ordinal)
     {

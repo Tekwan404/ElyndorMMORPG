@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Progression;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -18,8 +19,22 @@ public interface ICombatActivityReader
 public sealed class CombatSessionRegistry(
     TimeProvider timeProvider,
     ICombatUpdatePublisher publisher,
-    ICombatSessionFinalizer finalizer) : IDisposable, ICombatActivityReader
+    ICombatSessionFinalizer finalizer,
+    ILogger<CombatSessionRegistry> logger) : IDisposable, ICombatActivityReader
 {
+    private static readonly Action<
+        ILogger,
+        Guid,
+        Guid,
+        Guid,
+        CombatSessionStatus,
+        Exception?> TickFailed =
+        LoggerMessage.Define<Guid, Guid, Guid, CombatSessionStatus>(
+            LogLevel.Error,
+            new EventId(2001, nameof(TickFailed)),
+            "Combat timer tick failed for account {AccountId}, character {CharacterId}, "
+            + "session {SessionId}, status {Status}.");
+
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _bySession = [];
@@ -183,7 +198,25 @@ public sealed class CombatSessionRegistry(
         TimeSpan due = dueAt.Value - timeProvider.GetUtcNow();
         if (due < TimeSpan.Zero) due = TimeSpan.Zero;
         entry.Timer = timeProvider.CreateTimer(
-            _ => _ = TickAsync(entry), null, due, Timeout.InfiniteTimeSpan);
+            _ => _ = TickSafelyAsync(entry), null, due, Timeout.InfiniteTimeSpan);
+    }
+
+    private async Task TickSafelyAsync(SessionEntry entry)
+    {
+        try
+        {
+            await TickAsync(entry);
+        }
+        catch (Exception exception)
+        {
+            TickFailed(
+                logger,
+                entry.AccountId,
+                entry.CharacterId,
+                entry.Session.SessionId,
+                entry.Session.Status,
+                exception);
+        }
     }
 
     private async Task TickAsync(SessionEntry entry)
@@ -193,6 +226,9 @@ public sealed class CombatSessionRegistry(
         {
             if (!_byAccount.TryGetValue(entry.AccountId, out SessionEntry? current)
                 || !ReferenceEquals(current, entry)) return;
+
+            entry.Timer?.Dispose();
+            entry.Timer = null;
             CombatCommandResult result = entry.Session.AdvanceTo(timeProvider.GetUtcNow());
             Schedule(entry);
             await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);

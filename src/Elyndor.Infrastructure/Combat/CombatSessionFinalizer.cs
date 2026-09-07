@@ -31,8 +31,6 @@ public interface ICombatSessionFinalizer
 /// </summary>
 public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : ICombatSessionFinalizer
 {
-    private const string StarterTownId = "STARTER_TOWN";
-
     public Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
@@ -127,8 +125,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     DateTimeOffset relocateAt = checkpointAt < location.UpdatedAtUtc
                         ? location.UpdatedAtUtc
                         : checkpointAt;
-                    if (!string.Equals(location.LocationId, StarterTownId, StringComparison.Ordinal))
-                        location.Relocate(StarterTownId, relocateAt);
+                    if (!string.Equals(location.LocationId, WorldLocationIds.StarterTown, StringComparison.Ordinal))
+                        location.Relocate(WorldLocationIds.StarterTown, relocateAt);
                     checkpointAt = relocateAt;
                 }
 
