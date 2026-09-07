@@ -189,6 +189,15 @@ if (migrateOnStartup || restorePublishedOnStartup)
     }
 }
 
+await using (AsyncServiceScope combatRecoveryScope =
+    app.Services.CreateAsyncScope())
+{
+    CombatDurabilityService durability =
+        combatRecoveryScope.ServiceProvider
+            .GetRequiredService<CombatDurabilityService>();
+    await durability.RecoverInterruptedAsync(CancellationToken.None);
+}
+
 if (frontendFileProvider is not null)
 {
     app.Lifetime.ApplicationStopped.Register(frontendFileProvider.Dispose);
