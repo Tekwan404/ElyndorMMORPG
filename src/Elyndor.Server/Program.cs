@@ -189,9 +189,10 @@ if (migrateOnStartup || restorePublishedOnStartup)
     }
 }
 
-await using (AsyncServiceScope combatRecoveryScope =
-    app.Services.CreateAsyncScope())
+if (migrateOnStartup)
 {
+    await using AsyncServiceScope combatRecoveryScope =
+        app.Services.CreateAsyncScope();
     CombatDurabilityService durability =
         combatRecoveryScope.ServiceProvider
             .GetRequiredService<CombatDurabilityService>();
