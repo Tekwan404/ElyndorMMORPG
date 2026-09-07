@@ -21,12 +21,12 @@ public sealed class MageCombatSessionTests
     public void FourArcaneSparksExposeCascadeAndCascadeConsumesTwoCharges()
     {
         ResolvedTalentModifiers talents = Talents(
-            unlocked: ["ARCANE_CASCADE"],
+            unlocked: new HashSet<string>(["ARCANE_CASCADE"], StringComparer.Ordinal),
             Hook("A-2-1", TalentModifierKeys.OnAbilityUsed, 1, 1, duration: TimeSpan.FromSeconds(12)),
             Hook("A-6-1", TalentModifierKeys.OnAbilityUsed, 1, 2));
         CombatSession session = CreateSession(
             talents,
-            ["MAGE_ARCANE_SPARK", "ARCANE_CASCADE"]);
+            new HashSet<string>(["MAGE_ARCANE_SPARK", "ARCANE_CASCADE"], StringComparer.Ordinal));
 
         Assert.DoesNotContain("ARCANE_CASCADE", session.Snapshot().Player.KnownAbilityIds);
 
@@ -63,12 +63,12 @@ public sealed class MageCombatSessionTests
     public void ArcaneBurstScalesWithChargesConsumesThemAndReturnsMana()
     {
         ResolvedTalentModifiers talents = Talents(
-            unlocked: [],
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
             Hook("A-2-1", TalentModifierKeys.OnAbilityUsed, 1, 1, duration: TimeSpan.FromSeconds(12)),
             Hook("A-5-3", TalentModifierKeys.OnAbilityUsed, 4, 5));
         CombatSession session = CreateSession(
             talents,
-            ["MAGE_ARCANE_SPARK", "ARCANE_BURST"],
+            new HashSet<string>(["MAGE_ARCANE_SPARK", "ARCANE_BURST"], StringComparer.Ordinal),
             playerResource: 200,
             maxResource: 200);
 
@@ -101,7 +101,7 @@ public sealed class MageCombatSessionTests
     public void FrostbiteBuildsToThreeStacksAndIceLanceConsumesOne()
     {
         ResolvedTalentModifiers talents = Talents(
-            unlocked: [],
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
             Hook(
                 "I-2-1",
                 TalentModifierKeys.OnAbilityUsed,
@@ -110,7 +110,7 @@ public sealed class MageCombatSessionTests
                 duration: TimeSpan.FromSeconds(6)));
         CombatSession session = CreateSession(
             talents,
-            ["MAGE_ICE_SHARD", "ICE_LANCE"]);
+            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_LANCE"], StringComparer.Ordinal));
 
         DateTimeOffset cursor = Now.AddMilliseconds(1);
         for (var index = 0; index < 3; index++)
@@ -146,7 +146,7 @@ public sealed class MageCombatSessionTests
     public void IncomingCriticalCreatesCrystalShield()
     {
         ResolvedTalentModifiers talents = Talents(
-            unlocked: [],
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
             Hook(
                 "I-2-3",
                 TalentModifierKeys.OnDamageTaken,
@@ -156,7 +156,7 @@ public sealed class MageCombatSessionTests
                 duration: TimeSpan.FromSeconds(5)));
         CombatSession session = CreateSession(
             talents,
-            ["MAGE_ICE_SHARD"],
+            new HashSet<string>(["MAGE_ICE_SHARD"], StringComparer.Ordinal),
             enemyCriticalChance: 100,
             enemyAutoAttackDamage: 10,
             enemyAutoAttackInterval: TimeSpan.FromSeconds(1));
