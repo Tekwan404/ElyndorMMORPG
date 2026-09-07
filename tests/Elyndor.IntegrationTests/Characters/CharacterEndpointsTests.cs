@@ -38,7 +38,8 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
     [Fact]
     public async Task AuthenticatedCreationPersistsAndReplaysCharacter()
     {
-        await using WebApplicationFactory<Program> factory = CreateFactory();
+        var timeProvider = new MutableTimeProvider(Now);
+        await using WebApplicationFactory<Program> factory = CreateFactory(timeProvider);
         using HttpClient client = factory.CreateClient();
         await AuthenticateDevelopmentAsync(client);
         Guid requestId = Guid.CreateVersion7();
@@ -85,8 +86,12 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
             new TravelRequest(Guid.CreateVersion7(), "WHISPERING_FOREST"));
         travelResponse.EnsureSuccessStatusCode();
         TravelResponse? travel = await travelResponse.Content.ReadFromJsonAsync<TravelResponse>();
-        Assert.Equal("WHISPERING_FOREST", travel?.LocationId);
-        Assert.Equal(2, travel?.Version);
+        Assert.Equal("STARTER_TOWN", travel?.LocationId);
+        Assert.Equal(1, travel?.Version);
+        Assert.True(travel?.IsTravelling);
+        Assert.Equal("WHISPERING_FOREST", travel?.TargetLocationId);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(6));
 
         BootstrapResponse? reconnected =
             await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap");
@@ -120,7 +125,8 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.False(string.IsNullOrWhiteSpace(error?.CorrelationId));
     }
 
-    private WebApplicationFactory<Program> CreateFactory() =>
+    private WebApplicationFactory<Program> CreateFactory(
+        TimeProvider? timeProvider = null) =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -137,7 +143,8 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
                 builder.ConfigureServices(services =>
                 {
                     services.RemoveAll<TimeProvider>();
-                    services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
+                    services.AddSingleton<TimeProvider>(
+                        timeProvider ?? new FixedTimeProvider(Now));
                 });
             });
 
@@ -158,5 +165,14 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset current = utcNow;
+
+        public override DateTimeOffset GetUtcNow() => current;
+
+        public void Advance(TimeSpan duration) => current += duration;
     }
 }
