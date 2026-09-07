@@ -212,7 +212,8 @@ public static class EffectEngine
                 && effect.Definition.Kind == EffectKind.StatModifier
                 && effect.Definition.ModifiedStat == stat
                 && (!effect.Definition.SourceSpecific
-                    || sourceId.HasValue && effect.SourceId == sourceId.Value))
+                    || !sourceId.HasValue
+                    || effect.SourceId == sourceId.Value))
             .ToArray();
         decimal flat = modifiers
             .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Flat)
