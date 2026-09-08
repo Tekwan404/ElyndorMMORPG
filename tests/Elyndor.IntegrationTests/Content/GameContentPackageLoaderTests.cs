@@ -1,6 +1,8 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Talents;
+using Elyndor.Core.Items;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 
@@ -118,6 +120,38 @@ public sealed class GameContentPackageLoaderTests
             arcaneFlow.RuntimeParameters!["damageMultiplier"]);
         Assert.Equal("FOREST_WOLF_L1", indexes.MonstersById["FOREST_WOLF_L1"].Id);
         Assert.Equal("WHISPERING_FOREST", indexes.LocationsById["WHISPERING_FOREST"].Id);
+
+        Assert.Equal(12, package.EquipmentSets!.Count(set => set.Id.StartsWith("SET_", StringComparison.Ordinal)));
+        DungeonDefinition ancientMine = Assert.Single(package.Dungeons!, dungeon => dungeon.Id == "ANCIENT_MINE");
+        Assert.Equal(
+            [
+                "ANCIENT_MINE_WOLF_L15",
+                "ANCIENT_MINE_BOAR_L15",
+                "ANCIENT_MINE_SPIDER_L16",
+                "ANCIENT_MINE_GOBLIN_L16",
+                "ANCIENT_MINE_BROODMOTHER_L16"
+            ],
+            ancientMine.Encounters.Select(encounter => encounter.MonsterId));
+
+        LootTableDefinition mineBossLoot = Assert.Single(
+            package.LootTables!,
+            table => table.Id == "ANCIENT_MINE_BOSS_LOOT");
+        Assert.Contains(mineBossLoot.Entries, entry => entry.ItemId == "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD");
+        Assert.Contains(mineBossLoot.Entries, entry => entry.ItemId == "DUNGEON_MINES_MAGE_LEGENDARY_STAFF");
+        Assert.Contains(mineBossLoot.Entries, entry => entry.ItemId == "DUNGEON_MINES_ARCHER_LEGENDARY_BOW");
+
+        HashSet<string> obtainableItemIds = package.LootTables
+            .SelectMany(table => table.Entries)
+            .Select(entry => entry.ItemId)
+            .ToHashSet(StringComparer.Ordinal);
+        ItemDefinition[] currentProgressionItems = package.Items!
+            .Where(item => item.RequiredLevel is 2 or 6 or 10 or 14 or 18)
+            .Where(item => item.Id.StartsWith("WARRIOR_", StringComparison.Ordinal)
+                || item.Id.StartsWith("MAGE_", StringComparison.Ordinal)
+                || item.Id.StartsWith("ARCHER_", StringComparison.Ordinal))
+            .ToArray();
+        Assert.NotEmpty(currentProgressionItems);
+        Assert.All(currentProgressionItems, item => Assert.Contains(item.Id, obtainableItemIds));
     }
 
     [Fact]
