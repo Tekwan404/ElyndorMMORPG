@@ -52,6 +52,12 @@ function statusPriority(quest: Quest): number {
   return 4
 }
 
+function contractTitle(quest: Quest): string {
+  return quest.displayName.startsWith('Контракт: ')
+    ? quest.displayName.slice('Контракт: '.length)
+    : quest.displayName
+}
+
 function statusLabel(quest: Quest): string {
   if (quest.status === 'READY_TO_CLAIM') return 'ГОТОВ К СДАЧЕ'
   if (quest.status === 'ACTIVE') return 'ПРИНЯТ'
@@ -111,7 +117,7 @@ async function claim(quest: Quest): Promise<void> {
                 КОНТРАКТ №{{ contract.contractNumber ?? contract.id }}
                 · {{ statusLabel(contract) }}
               </small>
-              <h3>{{ contract.displayName.replace(/^Контракт:\s*/u, '') }}</h3>
+              <h3>{{ contractTitle(contract) }}</h3>
             </div>
             <span>ур. {{ contract.requiredLevel }}</span>
           </header>
