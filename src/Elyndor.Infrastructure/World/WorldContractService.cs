@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
+using Elyndor.Core.Quests;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ public static class WorldContractErrorCodes
     public const string ContractNotFound = "world_contract_not_found";
     public const string LevelRequired = "world_contract_level_required";
     public const string InvalidLocation = "world_contract_invalid_location";
+    public const string PrerequisiteRequired = "world_contract_prerequisite_required";
     public const string AlreadyCompleted = "world_contract_already_completed";
     public const string Travelling = "world_contract_travelling";
 }
@@ -62,7 +64,8 @@ public sealed class WorldContractService(
                 WorldContractErrorCodes.Travelling);
         }
 
-        WorldContractDefinition? contract = (contentProvider.GetCurrent().Package.WorldContracts ?? [])
+        GameContentPackage content = contentProvider.GetCurrent().Package;
+        WorldContractDefinition? contract = (content.WorldContracts ?? [])
             .SingleOrDefault(candidate =>
                 string.Equals(candidate.Id, contractId, StringComparison.Ordinal));
         if (contract is null)
@@ -96,6 +99,30 @@ public sealed class WorldContractService(
             }
         }
 
+        QuestDefinition? quest = QuestCatalog.Find(content, contract.Id);
+        foreach (string prerequisite in quest?.PrerequisiteQuestIds ?? [])
+        {
+            bool prerequisiteCompleted =
+                await dbContext.QuestRewardGrants.AsNoTracking().AnyAsync(
+                    grant => grant.CharacterId == character.Id
+                        && grant.QuestId == prerequisite,
+                    cancellationToken)
+                || await dbContext.CharacterQuestStates.AsNoTracking().AnyAsync(
+                    state => state.CharacterId == character.Id
+                        && state.QuestId == prerequisite
+                        && state.Status == QuestStateStatuses.Completed,
+                    cancellationToken)
+                || await dbContext.CharacterContractCompletions.AsNoTracking().AnyAsync(
+                    state => state.CharacterId == character.Id
+                        && state.ContractId == prerequisite,
+                    cancellationToken);
+            if (!prerequisiteCompleted)
+            {
+                return WorldContractAcceptResult.Failure(
+                    WorldContractErrorCodes.PrerequisiteRequired);
+            }
+        }
+
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""
              INSERT INTO game.character_contract_acceptances
@@ -105,6 +132,18 @@ public sealed class WorldContractService(
              ON CONFLICT ("CharacterId", "ContractId") DO NOTHING
              """,
             cancellationToken);
+
+        bool hasQuestState = await dbContext.CharacterQuestStates
+            .AnyAsync(
+                state => state.CharacterId == character.Id
+                    && state.QuestId == contract.Id,
+                cancellationToken);
+        if (!hasQuestState)
+        {
+            dbContext.CharacterQuestStates.Add(
+                new CharacterQuestState(character.Id, contract.Id, now));
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return WorldContractAcceptResult.Success(contract.Id);
     }

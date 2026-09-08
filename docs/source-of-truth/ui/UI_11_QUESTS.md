@@ -13,7 +13,7 @@
 
 # 1. Назначение
 
-Quest UI manages active/available/completed tasks while a compact tracker remains visible on gameplay screens.
+Quest UI manages available, active, ready-to-turn-in, and completed tasks while a compact tracker remains visible on gameplay screens.
 
 ---
 
@@ -22,12 +22,15 @@ Quest UI manages active/available/completed tasks while a compact tracker remain
 ```text
 КВЕСТЫ
 
-[АКТИВНЫЕ] [ДОСТУПНЫЕ] [ИСТОРИЯ]
+[ДОСТУПНЫЕ] [АКТИВНЫЕ]
+[ГОТОВЫ К СДАЧЕ] [ВЫПОЛНЕННЫЕ]
 
-Tracked 2/3
+В работе: 2
 ```
 
-History can be lightweight in first version.
+The journal is server-authoritative and reads `/api/v1/quests/`.
+Locked quests remain hidden from the four player-facing lists until their
+level, prerequisite, and offer-location requirements are satisfied.
 
 ---
 
@@ -82,14 +85,17 @@ Opens World with selected location/route preview.
 
 # 7. Completion
 
-Ready-to-turn-in visually distinct.
+Ready-to-turn-in is a first-class journal state and is visually distinct.
 
-If remote completion allowed by quest definition:
+Current 1–20 progression supports remote turn-in after the server confirms
+all objectives. Claim uses an idempotent mutation and grants XP, gold, and
+items exactly once:
+
 ```text
-[ ЗАВЕРШИТЬ ]
+[ ПОЛУЧИТЬ НАГРАДУ ]
 ```
 
-Otherwise show required NPC/location.
+Active quests may be abandoned; completed quests remain in history.
 
 ---
 
@@ -118,3 +124,5 @@ Quest System remains owner progress.
 4. Rewards show XP/Gold/items.
 5. Dungeon/Crafting quest objectives supported.
 6. QuestProtected items cannot be destroyed/sold.
+7. Four journal states are player-facing: Available, Active, Ready to Claim, Completed.
+8. The level 1–20 story chain and the Broodmother contract use the same Quest System API.

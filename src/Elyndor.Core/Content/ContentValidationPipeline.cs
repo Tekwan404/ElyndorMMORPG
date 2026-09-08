@@ -121,6 +121,7 @@ public sealed class WorldValidator : IContentValidationStage
     {
         GameContentPackageValidator.ValidateLocations(context.Package.Locations, context.Errors);
         GameContentPackageValidator.ValidateWorldContracts(context.Package, context.Errors);
+        GameContentPackageValidator.ValidateQuests(context.Package, context.Errors);
         context.Errors.AddRange(WorldEncounterContentValidator.Validate(context.Package));
     }
 }

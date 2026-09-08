@@ -8,6 +8,7 @@ using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Quests;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -25,6 +26,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
         builder.Services.AddScoped<WorldContractService>();
+        builder.Services.AddScoped<QuestService>();
         builder.Services.AddScoped<WorldEncounterService>();
         builder.Services.AddScoped<TelegramAdministrationService>();
         builder.Services.AddScoped<TalentService>();

@@ -78,7 +78,8 @@ public static class WorldEndpoints
                         or WorldContractErrorCodes.ContractNotFound =>
                         StatusCodes.Status404NotFound,
                     WorldContractErrorCodes.LevelRequired
-                        or WorldContractErrorCodes.InvalidLocation =>
+                        or WorldContractErrorCodes.InvalidLocation
+                        or WorldContractErrorCodes.PrerequisiteRequired =>
                         StatusCodes.Status403Forbidden,
                     WorldContractErrorCodes.AlreadyCompleted
                         or WorldContractErrorCodes.Travelling =>
