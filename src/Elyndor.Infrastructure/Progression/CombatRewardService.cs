@@ -13,6 +13,7 @@ using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Quests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -179,16 +180,15 @@ public sealed class CombatRewardService(
                 now,
                 cancellationToken);
 
-        WorldContractCompletionReward contractReward =
-            await CompleteWorldContractsAsync(
-                character,
+        QuestProgressUpdateResult questProgress =
+            await QuestProgression.ApplyKillsAsync(
+                dbContext,
+                character.Id,
                 snapshot.SessionId,
-                rewardSources,
-                content.WorldContracts ?? [],
+                rewardSources.Select(source => source.Monster.Id).ToArray(),
+                content,
                 now,
                 cancellationToken);
-        xpEarned = checked(xpEarned + contractReward.Xp);
-        goldEarned = checked(goldEarned + contractReward.Gold);
 
         CharacterProgressionResult progressionResult = CharacterProgression.GrantExperience(
             character,
@@ -271,7 +271,7 @@ public sealed class CombatRewardService(
             goldEarned,
             progressionResult,
             personalLoot.Select(roll => ToRewardItem(roll, indexes)).ToArray(),
-            contractReward.ContractIds,
+            questProgress.CompletedLegacyContractIds,
             pendingLootRolls);
     }
 
@@ -696,6 +696,11 @@ public sealed class CombatRewardService(
         }
     }
 
+    private sealed record ResolvedRewardSource(
+        CombatActorSnapshot Enemy,
+        MonsterDefinition Monster,
+        int EncounterOrder);
+
     private sealed record WorldContractCompletionReward(
         int Xp,
         int Gold,
@@ -704,11 +709,6 @@ public sealed class CombatRewardService(
         public static WorldContractCompletionReward Empty { get; } =
             new(0, 0, []);
     }
-
-    private sealed record ResolvedRewardSource(
-        CombatActorSnapshot Enemy,
-        MonsterDefinition Monster,
-        int EncounterOrder);
 
     private static CombatRewardItemResult ToRewardItem(
         LootRoll roll,

@@ -13,6 +13,8 @@ import type {
   CreateCharacterRequest,
   EquipmentSlot,
   MerchantSnapshot,
+  QuestClaimResponse,
+  QuestJournalResponse,
   WorldEncounter,
 } from '@/api/contracts'
 import { getTelegramInitData } from '@/telegram/telegramWebApp'
@@ -30,6 +32,7 @@ export type GameSessionState =
 export const useGameSessionStore = defineStore('gameSession', () => {
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
+  const questJournal = ref<QuestJournalResponse | null>(null)
   const errorCode = ref<string | null>(null)
   const errorCorrelationId = ref<string | null>(null)
   const roles = ref<string[]>([])
@@ -142,8 +145,52 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function refreshQuestJournal(): Promise<QuestJournalResponse | null> {
+    try {
+      questJournal.value = await apiClient.request<QuestJournalResponse>('/api/v1/quests/')
+      return questJournal.value
+    } catch (error) {
+      handleError(error)
+      return null
+    }
+  }
+
+  async function acceptQuest(questId: string): Promise<void> {
+    await mutate('/api/v1/quests/accept', { questId })
+    await refreshQuestJournal()
+  }
+
+  async function abandonQuest(questId: string): Promise<void> {
+    await mutate('/api/v1/quests/abandon', { questId })
+    await refreshQuestJournal()
+  }
+
+  async function claimQuest(questId: string): Promise<QuestClaimResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const response = await runReplaySafeGameMutation<QuestClaimResponse>({
+        key: `quest:claim:${questId}`,
+        path: '/api/v1/quests/claim',
+        idField: 'mutationId',
+        intent: { questId },
+      })
+      await refreshSnapshot()
+      questJournal.value = await apiClient.request<QuestJournalResponse>('/api/v1/quests/')
+      state.value = snapshot.value?.character ? 'world' : 'needs-character'
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function acceptContract(contractId: string): Promise<void> {
-    await mutate('/api/v1/world/contracts/accept', { contractId })
+    await acceptQuest(contractId)
   }
 
   async function explore(): Promise<WorldEncounter | null> {
@@ -331,6 +378,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   return {
     state,
     snapshot,
+    questJournal,
     errorCode,
     errorCorrelationId,
     roles,
@@ -343,6 +391,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     start,
     createCharacter,
     travel,
+    refreshQuestJournal,
+    acceptQuest,
+    abandonQuest,
+    claimQuest,
     acceptContract,
     explore,
     equip,

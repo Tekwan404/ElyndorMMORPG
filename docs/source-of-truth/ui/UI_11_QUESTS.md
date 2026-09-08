@@ -1,9 +1,9 @@
-# Elyndor — UI/UX Specification 11 — Quests
+# Elyndor — UI/UX Specification 11 — Adventure Journal
 
 **Document:** `docs/source-of-truth/ui/UI_11_QUESTS.md`
-**Status:** Approved foundation  
-**Platform:** Telegram Mini App  
-**Orientation:** Mobile Portrait First  
+**Status:** Approved implementation baseline
+**Platform:** Telegram Mini App
+**Orientation:** Mobile Portrait First
 **Depends on:**
 - `docs/source-of-truth/gameplay/17_QUEST_SYSTEM.md`
 - `docs/source-of-truth/ui/UI_01_GLOBAL_GAME_SHELL.md`
@@ -11,110 +11,150 @@
 
 ---
 
-# 1. Назначение
+# 1. Player-facing principle
 
-Quest UI manages active/available/completed tasks while a compact tracker remains visible on gameplay screens.
+The unified Quest System is an internal server-authoritative engine.
 
----
+The player-facing game must not present Elyndor as one global list of available quests.
 
-# 2. Root Structure
-
-```text
-КВЕСТЫ
-
-[АКТИВНЫЕ] [ДОСТУПНЫЕ] [ИСТОРИЯ]
-
-Tracked 2/3
-```
-
-History can be lightweight in first version.
-
----
-
-# 3. Quest Card
+New work is discovered through the world:
 
 ```text
-ОХОТА НА ВОЛКОВ
-Dark Forest
+Location / NPC / discovery
+→ Story or Errand
 
-Волки: 3/8
-Награда:
-850 XP · 120 Gold
+Adventurer Guild representative / expedition post
+→ Contract
 
-[ОТКРЫТЬ]
+Adventure Journal
+→ active work, ready-to-claim work, completed history
 ```
+
+The bottom navigation label is **Журнал**, not a universal quest board.
 
 ---
 
-# 4. Quest Details
+# 2. Journal structure
 
-Shows:
-- title/lore;
+```text
+ИСТОРИЯ ПРИКЛЮЧЕНИЙ
+
+[СЮЖЕТ] [ПОРУЧЕНИЯ]
+[КОНТРАКТЫ] [ЗАВЕРШЕНО]
+```
+
+The journal reads `/api/v1/quests/`.
+
+`AVAILABLE` and `LOCKED` remain server-derived states, but are not a global player-facing browse list.
+
+---
+
+# 3. Story and errands
+
+Available Story and Side/Errand definitions appear in the current Location UI when their server availability conditions are met.
+
+Story presentation includes:
+- title;
+- source/issuer when relevant;
+- region;
+- description;
+- level;
+- reward preview;
+- action to continue/start the story.
+
+Errand presentation includes:
+- issuer;
+- local context;
+- objective;
+- reward;
+- action **Принять поручение**.
+
+Side errands must not automatically become mandatory gates for the main story unless explicitly designed as such.
+
+---
+
+# 4. Adventurer Guild contracts
+
+Contracts are official registered work and are presented through an Adventurer Guild surface.
+
+Current implementation supports:
+- Starter Town Guild representation;
+- field/expedition post where content provides a local contract;
+- registrar;
+- contract number;
+- issuer/customer;
+- region;
+- threat level;
+- required level;
+- reward;
+- availability/active/ready/completed state.
+
+The player action is **Принять контракт**, not “take quest”.
+
+---
+
+# 5. Active card
+
+Active Story / Errand / Contract cards show:
+- title;
+- category;
+- source;
+- region;
 - objectives;
 - progress;
-- destination;
 - rewards;
-- requirements;
-- track/untrack.
+- unlocks;
+- ready-to-claim state.
 
 No hidden technical IDs.
 
 ---
 
-# 5. Tracker
+# 6. Completion
 
-Maximum 2–3 tracked quests.
-Player can manually choose tracked quests.
-Auto-track newly accepted only if free slot.
+Ready-to-claim remains a first-class authoritative state.
+
+Claim uses an idempotent mutation and grants XP, Gold, and items exactly once.
+
+```text
+[ ПОЛУЧИТЬ НАГРАДУ ]
+```
+
+Completed entries remain in journal history.
 
 ---
 
-# 6. Map / Location Link
+# 7. Tracker
 
-Objective with known destination:
+Future tracker:
+- maximum 2–3 tracked active entries;
+- active work only;
+- never becomes a replacement for world discovery.
+
+---
+
+# 8. Map / location integration
+
+World and Location are the primary discovery surfaces.
+
+Future supported links:
 ```text
 [ ПОКАЗАТЬ НА КАРТЕ ]
 ```
 
-Opens World with selected location/route preview.
+World events and discovery chains are added only after their runtime systems exist; UI must not fake them as working content.
 
 ---
 
-# 7. Completion
+# 9. Current 1–20 implementation
 
-Ready-to-turn-in visually distinct.
+The level 1–20 content intentionally interleaves:
+- Story;
+- Errands;
+- Contracts.
 
-If remote completion allowed by quest definition:
-```text
-[ ЗАВЕРШИТЬ ]
-```
+Errands are optional branches where possible.
 
-Otherwise show required NPC/location.
+Contracts periodically gate/bridge major story progression.
 
----
-
-# 8. Objective Types
-
-UI supports:
-- kill;
-- collect;
-- boss;
-- world event;
-- dungeon;
-- craft;
-- profession level;
-- recipe learning;
-- travel/visit.
-
-Quest System remains owner progress.
-
----
-
-# 9. Approved Decisions
-
-1. Root tab Quests exists.
-2. Tracker 2–3 quests.
-3. World/Location integrate quest markers.
-4. Rewards show XP/Gold/items.
-5. Dungeon/Crafting quest objectives supported.
-6. QuestProtected items cannot be destroyed/sold.
+The Broodmother contract is registered through the Adventurer Guild and remains the authoritative gate that opens Blighted Grove after the confirmed boss kill.

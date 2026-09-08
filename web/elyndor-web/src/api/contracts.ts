@@ -220,6 +220,60 @@ export interface WorldContract {
   rewardGold: number
 }
 
+
+export type QuestStatus = 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'READY_TO_CLAIM' | 'COMPLETED'
+
+export interface QuestObjective {
+  id: string
+  type: 'KillMonster' | 'CollectItem' | string
+  targetId: string
+  currentCount: number
+  requiredCount: number
+  completed: boolean
+  consumeOnClaim: boolean
+}
+
+export interface QuestRewardItem {
+  itemId: string
+  quantity: number
+}
+
+export interface Quest {
+  id: string
+  displayName: string
+  description: string
+  type: 'STORY' | 'SIDE' | 'CONTRACT' | string
+  requiredLevel: number
+  offerLocationId: string
+  status: QuestStatus
+  objectives: QuestObjective[]
+  rewardXp: number
+  rewardGold: number
+  rewardItems: QuestRewardItem[]
+  prerequisiteQuestIds: string[]
+  unlockLocationId: string | null
+  issuerName: string | null
+  issuerRole: string | null
+  regionName: string | null
+  contractNumber: string | null
+  threatLevel: string | null
+}
+
+export interface QuestJournalResponse {
+  quests: Quest[]
+}
+
+export interface QuestClaimResponse {
+  questId: string
+  granted: boolean
+  xpEarned: number
+  goldEarned: number
+  leveledUp: boolean
+  previousLevel: number
+  currentLevel: number
+  items: QuestRewardItem[]
+}
+
 export interface WorldEncounter {
   encounterId: string
   monsterId: string

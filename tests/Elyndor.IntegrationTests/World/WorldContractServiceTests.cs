@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Quests;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
@@ -39,8 +40,9 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
 
         CharacterLocation location = await context.CharacterLocations
             .SingleAsync(candidate => candidate.CharacterId == characterId);
-        location.Relocate("BROODMOTHER_LAIR", Now);
+        location.Relocate("STARTER_TOWN", Now);
         await context.SaveChangesAsync();
+        await CompleteBroodmotherPrerequisiteAsync(context, characterId);
 
         WorldContractAcceptResult accepted = await service.AcceptAsync(
             accountId,
@@ -60,8 +62,14 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
     {
         (Guid accountId, _) = await CreateCharacterAsync(
             level: 14,
-            locationId: "BROODMOTHER_LAIR");
+            locationId: "STARTER_TOWN");
         await using GameDbContext context = postgres.CreateDbContext();
+        await CompleteBroodmotherPrerequisiteAsync(
+            context,
+            await context.Characters
+                .Where(character => character.AccountId == accountId)
+                .Select(character => character.Id)
+                .SingleAsync());
         WorldContractService service = await CreateServiceAsync(context);
 
         Assert.True((await service.AcceptAsync(
@@ -74,6 +82,47 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
             CancellationToken.None)).IsSuccess);
 
         Assert.Equal(1, await context.CharacterContractAcceptances.CountAsync());
+    }
+
+    [Fact]
+    public async Task BroodmotherContractCannotBypassQuestChain()
+    {
+        (Guid accountId, _) = await CreateCharacterAsync(
+            level: 14,
+            locationId: "STARTER_TOWN");
+        await using GameDbContext context = postgres.CreateDbContext();
+        WorldContractService service = await CreateServiceAsync(context);
+
+        WorldContractAcceptResult blocked = await service.AcceptAsync(
+            accountId,
+            "CONTRACT_BROODMOTHER_GATE",
+            CancellationToken.None);
+
+        Assert.False(blocked.IsSuccess);
+        Assert.Equal(
+            WorldContractErrorCodes.PrerequisiteRequired,
+            blocked.ErrorCode);
+        Assert.Empty(await context.CharacterContractAcceptances
+            .AsNoTracking()
+            .ToArrayAsync());
+        Assert.Empty(await context.CharacterQuestStates
+            .AsNoTracking()
+            .ToArrayAsync());
+    }
+
+    private static async Task CompleteBroodmotherPrerequisiteAsync(
+        GameDbContext context,
+        Guid characterId)
+    {
+        context.QuestRewardGrants.Add(new QuestRewardGrant(
+            characterId,
+            "QUEST_13_BROODMOTHER_TRACE",
+            Guid.CreateVersion7(),
+            0,
+            0,
+            "[]",
+            Now));
+        await context.SaveChangesAsync();
     }
 
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(

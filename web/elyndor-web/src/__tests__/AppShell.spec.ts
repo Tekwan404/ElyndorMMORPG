@@ -65,6 +65,58 @@ describe('AppShell', () => {
     expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
   })
 
+  it('shows the authoritative quest journal on the quest tab', async () => {
+    vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/quests/') {
+        return {
+          quests: [
+            {
+              id: 'CONTRACT_BROODMOTHER_GATE',
+              displayName: 'Контракт: Прародительница',
+              description: 'Уничтожьте Паучью Прародительницу.',
+              type: 'CONTRACT',
+              requiredLevel: 14,
+              offerLocationId: 'BROODMOTHER_LAIR',
+              status: 'ACTIVE',
+              objectives: [
+                {
+                  id: 'KILL_BROODMOTHER',
+                  type: 'KillMonster',
+                  targetId: 'SPIDER_BROODMOTHER_L14',
+                  currentCount: 0,
+                  requiredCount: 1,
+                  completed: false,
+                  consumeOnClaim: false,
+                },
+              ],
+              rewardXp: 2000,
+              rewardGold: 150,
+              rewardItems: [],
+              prerequisiteQuestIds: ['QUEST_13_BROODMOTHER_TRACE'],
+              unlockLocationId: 'BLIGHTED_GROVE',
+            },
+          ],
+        } as never
+      }
+      return [] as never
+    })
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    store.state = 'world'
+    store.snapshot = worldSnapshot()
+
+    const wrapper = mount(AppShell)
+    await wrapper.get('[data-nav="quests"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-nav="quests"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-quest-view]').text()).toContain('Контракт: Прародительница')
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('Паучья Прародительница')
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
+      .toContain('2000 опыта')
+  })
+
   it('explains a failed connection and offers an explicit retry', async () => {
     const store = useGameSessionStore()
     vi.spyOn(store, 'start').mockResolvedValue(undefined)

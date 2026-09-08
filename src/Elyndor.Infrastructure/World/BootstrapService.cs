@@ -4,6 +4,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
+using Elyndor.Core.Quests;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
@@ -314,6 +315,22 @@ public sealed class BootstrapService(
         HashSet<string> acceptedContractIds =
             acceptedContractIdValues.ToHashSet(StringComparer.Ordinal);
 
+        string[] completedQuestStateIds = await dbContext.CharacterQuestStates
+            .AsNoTracking()
+            .Where(state => state.CharacterId == character.Id
+                && state.Status == QuestStateStatuses.Completed)
+            .Select(state => state.QuestId)
+            .ToArrayAsync(cancellationToken);
+        string[] rewardedQuestIds = await dbContext.QuestRewardGrants
+            .AsNoTracking()
+            .Where(grant => grant.CharacterId == character.Id)
+            .Select(grant => grant.QuestId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<string> completedQuestIds = completedContractIds
+            .Concat(completedQuestStateIds)
+            .Concat(rewardedQuestIds)
+            .ToHashSet(StringComparer.Ordinal);
+
         BootstrapLocation[] transitions = activeTravel is not null
             ? []
             : current.Transitions
@@ -325,23 +342,34 @@ public sealed class BootstrapService(
                 .ToArray();
 
         BootstrapWorldContract[] contracts = (contentPackage.WorldContracts ?? [])
-            .Select(contract => new BootstrapWorldContract(
-                contract.Id,
-                contract.DisplayName,
-                contract.Description,
-                contract.RequiredLevel,
-                contract.TargetMonsterId,
-                contract.UnlockLocationId,
-                completedContractIds.Contains(contract.Id)
+            .Select(contract =>
+            {
+                QuestDefinition? quest = QuestCatalog.Find(
+                    contentPackage,
+                    contract.Id);
+                bool prerequisitesMet = (quest?.PrerequisiteQuestIds ?? [])
+                    .All(completedQuestIds.Contains);
+                string status = completedContractIds.Contains(contract.Id)
                     ? "COMPLETED"
                     : acceptedContractIds.Contains(contract.Id)
                         ? "ACTIVE"
                         : character.Level >= contract.RequiredLevel
+                            && prerequisitesMet
                             ? "AVAILABLE"
-                            : "LOCKED",
-                contract.OfferLocationId,
-                contract.RewardXp,
-                contract.RewardGold))
+                            : "LOCKED";
+
+                return new BootstrapWorldContract(
+                    contract.Id,
+                    contract.DisplayName,
+                    contract.Description,
+                    contract.RequiredLevel,
+                    contract.TargetMonsterId,
+                    contract.UnlockLocationId,
+                    status,
+                    contract.OfferLocationId,
+                    contract.RewardXp,
+                    contract.RewardGold);
+            })
             .ToArray();
 
         return new BootstrapSnapshot(

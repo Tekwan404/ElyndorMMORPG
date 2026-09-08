@@ -1,7 +1,7 @@
 {
   "contentVersion": "0.13.5",
   "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-07T09:28:00+00:00",
+  "publishedAtUtc": "2026-09-07T15:15:00+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -756,7 +756,7 @@
       "transitions": [
         "WHISPERING_FOREST"
       ],
-      "travelDurationSeconds": 5
+      "travelDurationSeconds": 0
     },
     {
       "id": "WHISPERING_FOREST",
@@ -773,7 +773,7 @@
           "weight": 1
         }
       ],
-      "travelDurationSeconds": 5
+      "travelDurationSeconds": 0
     },
     {
       "id": "DEEP_FOREST",
@@ -789,7 +789,7 @@
           "weight": 1
         }
       ],
-      "travelDurationSeconds": 5
+      "travelDurationSeconds": 0
     }
   ],
   "talentTrees": [

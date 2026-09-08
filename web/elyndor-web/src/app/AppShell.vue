@@ -7,7 +7,7 @@ import { classLabel, resourceLabel } from '@/game/character/characterPresentatio
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
-import QuestsView from '@/game/quests/views/QuestsView.vue'
+import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -183,7 +183,7 @@ onMounted(() => {
         @open-party="openMenu('party')"
       />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
-      <QuestsView v-else-if="session.state === 'world' && activeView === 'quests'" />
+      <QuestView v-else-if="session.state === 'world' && activeView === 'quests'" />
       <MenuView
         v-else-if="session.state === 'world' && activeView === 'menu'"
         :initial-section="menuSection"

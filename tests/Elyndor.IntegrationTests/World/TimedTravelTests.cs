@@ -25,7 +25,10 @@ public sealed class TimedTravelTests(PostgresFixture postgres) : IAsyncLifetime
         var time = new MutableTimeProvider(Now);
         var content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        WorldMap worldMap = new(content.Locations);
+        WorldMap worldMap = new(
+            content.Locations
+                .Select(location => location with { TravelDurationSeconds = 5 })
+                .ToArray());
         Guid requestId = Guid.CreateVersion7();
 
         await using GameDbContext context = postgres.CreateDbContext();
@@ -92,7 +95,10 @@ public sealed class TimedTravelTests(PostgresFixture postgres) : IAsyncLifetime
             Path.GetFullPath("content/package.json"));
         TravelService service = new(
             postgres.CreateDbContext(),
-            new WorldMap(content.Locations),
+            new WorldMap(
+                content.Locations
+                    .Select(location => location with { TravelDurationSeconds = 5 })
+                    .ToArray()),
             time);
 
         TravelResult first = await service.TravelAsync(

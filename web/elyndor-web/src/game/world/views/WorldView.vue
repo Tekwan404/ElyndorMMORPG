@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
+import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -23,6 +24,7 @@ const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
 const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
+const guildOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
 const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
@@ -46,11 +48,26 @@ const locationContracts = computed(() => (world.value?.contracts ?? []).filter((
   || contract.status === 'ACTIVE'
     && currentLocationId.value === 'BROODMOTHER_LAIR',
 ))
+const locationQuestLeads = computed(() => (session.questJournal?.quests ?? []).filter(quest =>
+  quest.status === 'AVAILABLE'
+  && quest.type !== 'CONTRACT'
+  && quest.offerLocationId === currentLocationId.value,
+))
+const hasLocalGuildContracts = computed(() => (session.questJournal?.quests ?? []).some(quest =>
+  quest.type === 'CONTRACT'
+  && quest.offerLocationId === currentLocationId.value
+  && quest.status !== 'COMPLETED',
+))
 const locationName = computed(() => world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() =>
   world.value?.currentLocation.description
   || 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.',
 )
+
+async function acceptQuest(questId: string): Promise<void> {
+  if (isTravelling.value || session.mutationPending || combat.isActive) return
+  await session.acceptQuest(questId)
+}
 const sceneBackground = computed(() => {
   if (currentLocationId.value === 'STARTER_TOWN') return gameArt.world.starterTown
   if (currentLocationId.value === 'ANCIENT_MINE') return gameArt.world.ancientRuins
@@ -170,12 +187,16 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
 }
 
 watch(isTravelling, travelling => {
-  if (travelling) merchantOpen.value = false
+  if (travelling) {
+    merchantOpen.value = false
+    guildOpen.value = false
+  }
 })
 
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
     merchantOpen.value = false
+    guildOpen.value = false
   }
   if (locationId) void restoreCombat()
 }, { immediate: true })
@@ -193,7 +214,10 @@ onBeforeUnmount(() => {
   syncVitalsRefreshTimer(false)
   window.clearInterval(lootTimer)
 })
-onMounted(() => { void party.refresh() })
+onMounted(() => {
+  void party.refresh()
+  void session.refreshQuestJournal()
+})
 </script>
 
 <template>
@@ -311,6 +335,49 @@ onMounted(() => { void party.refresh() })
       </article>
     </section>
 
+    <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
+      <header class="section-heading">
+        <div>
+          <small>ЛЮДИ И ИСТОРИИ</small>
+          <strong id="stories-title">Что происходит рядом</strong>
+        </div>
+        <span>{{ locationQuestLeads.length }}</span>
+      </header>
+      <div class="story-list">
+        <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
+          <div class="story-card__icon" aria-hidden="true">✦</div>
+          <div class="story-card__copy">
+            <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
+            <strong>{{ quest.displayName }}</strong>
+            <p>{{ quest.description }}</p>
+            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
+          </div>
+          <UIButton :disabled="isTravelling || session.mutationPending" @click="acceptQuest(quest.id)">
+            {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
+          </UIButton>
+        </article>
+      </div>
+    </section>
+
+    <section v-if="!isStarterTown && hasLocalGuildContracts" class="field-guild" aria-labelledby="field-guild-title">
+      <header class="section-heading">
+        <div>
+          <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
+          <strong id="field-guild-title">Экспедиционный пост</strong>
+        </div>
+        <span>КОНТРАКТЫ</span>
+      </header>
+      <article class="activity-card">
+        <div class="activity-card__icon" aria-hidden="true">⚔</div>
+        <div class="activity-card__copy">
+          <small>ПОЛЕВОЙ РЕГИСТРАТОР</small>
+          <strong>Журнал контрактов экспедиции</strong>
+          <p>Здесь регистрируют работу, связанную с угрозами текущего региона.</p>
+        </div>
+        <UIButton data-open-field-guild @click="guildOpen = true">Открыть журнал</UIButton>
+      </article>
+    </section>
+
     <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
       <header class="section-heading">
         <div>
@@ -402,6 +469,16 @@ onMounted(() => { void party.refresh() })
           </UIButton>
         </article>
 
+        <article class="service-card service-card--guild" data-town-service="guild">
+          <span class="service-card__icon" aria-hidden="true">⚔</span>
+          <div class="service-card__copy">
+            <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
+            <strong>Представительство Гильдии</strong>
+            <p>Регистрация официальных контрактов и региональных угроз.</p>
+          </div>
+          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
+        </article>
+
         <article class="service-card service-card--rest" data-town-service="rest">
           <span class="service-card__icon" aria-hidden="true">✦</span>
           <div class="service-card__copy">
@@ -415,6 +492,11 @@ onMounted(() => { void party.refresh() })
     </section>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
+    <AdventurerGuildBoard
+      :open="guildOpen"
+      :location-id="currentLocationId ?? ''"
+      @close="guildOpen = false"
+    />
   </section>
 </template>
 
