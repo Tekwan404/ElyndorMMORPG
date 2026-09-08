@@ -5,10 +5,50 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppShell from '@/app/AppShell.vue'
 import { apiClient } from '@/api/apiClient'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useCombatSessionStore } from '@/stores/combatSession'
+import { usePartyStore } from '@/game/party/partyStore'
+import { useDungeonStore } from '@/game/party/dungeonStore'
 
 vi.mock('@/telegram/telegramWebApp', () => ({ initializeTelegramWebApp: vi.fn<() => void>() }))
 
 describe('AppShell', () => {
+  it('shows combat above the menu when a shared encounter becomes active', async () => {
+    setActivePinia(createPinia())
+    const session = useGameSessionStore()
+    vi.spyOn(session, 'start').mockResolvedValue(undefined)
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    session.state = 'world'
+    session.snapshot = worldSnapshot()
+    session.snapshot.world!.currentLocation.id = 'ANCIENT_MINE'
+    const characterId = session.snapshot.character!.id
+    const party = usePartyStore()
+    party.snapshot = { partyId: 'party', leaderCharacterId: characterId, members: [], version: 1 }
+    vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
+    const dungeon = useDungeonStore()
+    dungeon.previews = [{ id: 'ANCIENT_MINE' } as (typeof dungeon.previews)[number]]
+    dungeon.current = {
+      runId: 'run', dungeonId: 'ANCIENT_MINE', state: 'Active', currentEncounterIndex: 0,
+      members: [{ characterId, state: 'Active' }], encounters: [{ encounterIndex: 0, state: 'Pending' }],
+    } as NonNullable<typeof dungeon.current>
+    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
+    const combat = useCombatSessionStore()
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+    vi.spyOn(combat, 'startDungeonEncounter').mockImplementation(async () => {
+      combat.$patch({ snapshot: { status: 'Active' } as NonNullable<typeof combat.snapshot> })
+      return true
+    })
+    const wrapper = mount(AppShell, { global: { stubs: { CombatView: { template: '<div data-global-combat />' } } } })
+    await wrapper.get('[data-nav="menu"]').trigger('click')
+    await wrapper.findAll('button').find(button => button.text() === 'Группа')!.trigger('click')
+    await flushPromises()
+    await wrapper.findAll('button').find(button => button.text() === 'Начать бой')!.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
+    expect(wrapper.find('.navigation').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.restoreAllMocks()

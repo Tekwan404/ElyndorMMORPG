@@ -27,7 +27,11 @@ public sealed partial class CombatSession
     private readonly CombatRuntimeState? _companionRuntime;
     private readonly Dictionary<Guid, CombatRuntimeState> _enemyRuntimes;
     private readonly Guid _primaryEnemyActorId;
-    private Guid _selectedTargetActorId;
+    private Guid _selectedTargetActorId
+    {
+        get => _activePlayerState.SelectedTargetActorId;
+        set => _activePlayerState.SelectedTargetActorId = value;
+    }
 
     // Transitional compatibility projection: existing class runtimes operate on the
     // currently selected enemy while the authoritative session state stores all enemies.
@@ -246,7 +250,6 @@ public sealed partial class CombatSession
         _enemies = enemies.ToList();
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
-        _selectedTargetActorId = _primaryEnemyActorId;
         _random = random;
         _abilities = abilities;
         _playerStatesByActorId = new Dictionary<Guid, CombatPlayerRuntimeState>();
@@ -262,6 +265,7 @@ public sealed partial class CombatSession
                         .Concat(companion is null ? [] : [companion.Actor])
                         .Concat(enemies.Select(item => item.Actor))));
             state.InitializeTalentRuntime(_random);
+            state.SelectedTargetActorId = _primaryEnemyActorId;
             _playerStatesByActorId.Add(playerDefinition.Participant.Actor.ActorId, state);
         }
         _activePlayerState = _playerStatesByActorId[player.Actor.ActorId];
@@ -705,12 +709,12 @@ public sealed partial class CombatSession
                 _enemyRuntimes[enemy.Actor.ActorId],
                 Status == CombatSessionStatus.Active && !enemy.Actor.IsDead))
             .ToArray();
-        CombatActorSnapshot selected = enemies.Single(enemy =>
-            enemy.ActorId == _selectedTargetActorId);
         CombatPlayerRuntimeState requester = requesterCharacterId is { } requested
             && _playerStatesByActorId.TryGetValue(requested, out CombatPlayerRuntimeState? requestedState)
                 ? requestedState
                 : _activePlayerState;
+        CombatActorSnapshot selected = enemies.Single(enemy =>
+            enemy.ActorId == requester.SelectedTargetActorId);
         ContributionSnapshot? contribution = _contributionLedger.TryGetSnapshot(
             requester.Definition.Actor.ActorId,
             out ContributionSnapshot? recordedContribution)
@@ -753,7 +757,7 @@ public sealed partial class CombatSession
             ContentVersion,
             BalanceVersion,
             enemies,
-            _selectedTargetActorId,
+            requester.SelectedTargetActorId,
             _companion is null || _companionRuntime is null
                 ? null
                 : ActorSnapshot(
@@ -1323,7 +1327,9 @@ public sealed partial class CombatSession
             CombatActorState[] existingEnemyActors =
                 _enemies.Select(enemy => enemy.Actor).ToArray();
 
-            _playerRuntime.AddActor(summoned.Actor);
+            foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)
+                playerState.Runtime.AddActor(summoned.Actor);
+            _companionRuntime?.AddActor(summoned.Actor);
             foreach (CombatRuntimeState runtime in _enemyRuntimes.Values)
                 runtime.AddActor(summoned.Actor);
 
@@ -1334,14 +1340,17 @@ public sealed partial class CombatSession
                 summoned.Actor.ActorId,
                 CreateRuntime(
                     summoned.Actor,
-                    new[] { _player.Actor }.Concat(existingEnemyActors)));
+                    _playerStatesByActorId.Values.Select(state => state.Definition.Actor)
+                        .Concat(existingEnemyActors)
+                        .Concat(_companion is null ? [] : new[] { _companion.Actor })));
             _enemyAiRuntimes.Add(
                 summoned.Actor.ActorId,
                 new EnemyAiRuntime(
                     _summonProfile.AiProfile,
                     now + summoned.AutoAttack.Interval));
             ThreatTable summonedThreat = new();
-            summonedThreat.AddThreat(_player.Actor.ActorId, 1);
+            foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)
+                summonedThreat.AddThreat(playerState.Definition.Actor.ActorId, 1);
             if (_companion is not null)
                 summonedThreat.AddThreat(_companion.Actor.ActorId, 1);
             _enemyThreatTables.Add(summoned.Actor.ActorId, summonedThreat);
@@ -2201,15 +2210,16 @@ public sealed partial class CombatSession
             return;
         }
 
-        if (_selectedTargetActorId == killedEnemy.Actor.ActorId)
+        foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values
+                     .Where(state => state.SelectedTargetActorId == killedEnemy.Actor.ActorId))
         {
-            _selectedTargetActorId = nextAlive.Actor.ActorId;
+            state.SelectedTargetActorId = nextAlive.Actor.ActorId;
             Append(new CombatEvent(
                 CombatEventType.TargetChanged,
                 death.OccurredAtUtc,
-                _player.Actor.ActorId,
+                state.Definition.Actor.ActorId,
                 nextAlive.DefinitionId,
-                SourceActorId: _player.Actor.ActorId,
+                SourceActorId: state.Definition.Actor.ActorId,
                 TargetActorId: nextAlive.Actor.ActorId));
         }
 
@@ -2330,6 +2340,24 @@ public sealed partial class CombatSession
     }
 
     private CombatActorSnapshot ActorSnapshot(
+        CombatParticipantDefinition definition,
+        CombatRuntimeState runtime,
+        bool autoAttackEnabled)
+    {
+        CombatPlayerRuntimeState previous = _activePlayerState;
+        try
+        {
+            if (_playerStatesByActorId.TryGetValue(definition.Actor.ActorId, out CombatPlayerRuntimeState? owner))
+                _activePlayerState = owner;
+            return BuildActorSnapshot(definition, runtime, autoAttackEnabled);
+        }
+        finally
+        {
+            _activePlayerState = previous;
+        }
+    }
+
+    private CombatActorSnapshot BuildActorSnapshot(
         CombatParticipantDefinition definition,
         CombatRuntimeState runtime,
         bool autoAttackEnabled)
@@ -2468,6 +2496,7 @@ public sealed partial class CombatSession
             TalentRuntimeEngine = new(new TalentRuntimeState(Definition.Actor.ActorId, random));
 
         public CombatParticipantDefinition Definition { get; }
+        public Guid SelectedTargetActorId { get; set; }
         public CombatRuntimeState Runtime { get; }
         public ResolvedTalentModifiers Talents { get; }
         public ResolvedTalentModifiers GenericTalentModifiers { get; }

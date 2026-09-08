@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import CombatView from '@/game/combat/views/CombatView.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
@@ -101,6 +102,20 @@ function openMenu(section: MenuSection): void {
   activeView.value = 'menu'
 }
 
+watch(() => session.state, async state => {
+  if (state !== 'world') return
+  try {
+    await combat.connect()
+    await combat.resume()
+  } catch {
+    // The combat store retains the connection error and supports retry/reconnect.
+  }
+}, { immediate: true })
+
+watch(() => combat.isActive, (active, wasActive) => {
+  if (!active && wasActive) void session.refreshSnapshot()
+})
+
 onMounted(() => {
   initializeTelegramWebApp()
   void session.start()
@@ -174,6 +189,7 @@ onMounted(() => {
         <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
+      <CombatView v-else-if="session.state === 'world' && combat.isActive" @leave="activeView = 'location'" />
       <WorldMapView
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="activeView = 'location'"

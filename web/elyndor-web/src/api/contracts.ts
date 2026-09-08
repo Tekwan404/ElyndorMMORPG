@@ -100,6 +100,8 @@ export interface PlayerSearchResult {
 export type FriendProfile = PlayerSearchResult
 
 export interface FriendRequest {
+  requesterName?: string | null
+  targetName?: string | null
   id: string
   requesterCharacterId: string
   targetCharacterId: string
@@ -130,6 +132,7 @@ export interface PartySnapshot {
 }
 
 export interface PartyInvite {
+  inviterName?: string | null
   id: string
   partyId: string
   inviterCharacterId: string

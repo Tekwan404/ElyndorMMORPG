@@ -1,0 +1,126 @@
+{
+  "contentVersion": "0.13.0",
+  "balanceVersion": "0.11.0",
+  "publishedAtUtc": "2026-09-07T06:45:00+00:00",
+  "classProfiles": [
+    {
+      "id": "ARCHER",
+      "primaryAttribute": "AGILITY",
+      "resourceProfileId": "FOCUS",
+      "baseStats": {
+        "strength": 5,
+        "agility": 9,
+        "intellect": 5,
+        "stamina": 7
+      },
+      "levelGrowth": {
+        "strength": 1,
+        "agility": 3,
+        "intellect": 1,
+        "stamina": 2
+      },
+      "allowedWeaponCategories": [
+        "BOW"
+      ],
+      "allowedArmorCategories": [
+        "LEATHER"
+      ],
+      "prototypeIdentity": "Bow-based ranged fighter with a permanent companion. Talent loadouts shift power between precision, physical pet coordination, and magical arrows with a spirit companion.",
+      "startingAbilityIds": [],
+      "abilityUnlocks": [],
+      "allowedOffHandCategories": [],
+      "allowUnarmed": false,
+      "combatAutoAttack": {
+        "interval": "00:00:02.4000000",
+        "baseDamage": 0,
+        "attackPowerCoefficient": 0.65,
+        "resourceOnHit": 4,
+        "baseDamageMin": 0,
+        "baseDamageMax": 0
+      },
+      "companionProfiles": [
+        {
+          "id": "ARCHER_STARTER_PREDATOR",
+          "tag": "PHYSICAL_PET",
+          "archetype": "PREDATOR",
+          "name": "Охотничий волк",
+          "maxHpBase": 85,
+          "maxHpPerOwnerStamina": 5,
+          "attackPowerOwnerCoefficient": 0.42,
+          "spellPowerOwnerCoefficient": 0,
+          "baseDamageMin": 3,
+          "baseDamageMax": 6,
+          "autoAttackInterval": "00:00:03.0000000",
+          "accuracy": 95,
+          "dodge": 5,
+          "criticalChance": 5,
+          "criticalDamage": 1.5,
+          "armor": 12,
+          "magicResistance": 8,
+          "artId": "forest-wolf"
+        },
+        {
+          "id": "ARCHER_GUARDIAN",
+          "tag": "PHYSICAL_PET",
+          "archetype": "GUARDIAN",
+          "name": "Зверь-страж",
+          "maxHpBase": 120,
+          "maxHpPerOwnerStamina": 7,
+          "attackPowerOwnerCoefficient": 0.3,
+          "spellPowerOwnerCoefficient": 0,
+          "baseDamageMin": 2,
+          "baseDamageMax": 5,
+          "autoAttackInterval": "00:00:03.4000000",
+          "accuracy": 93,
+          "dodge": 3,
+          "criticalChance": 3,
+          "criticalDamage": 1.5,
+          "armor": 22,
+          "magicResistance": 14,
+          "artId": "forest-wolf"
+        },
+        {
+          "id": "ARCHER_TRAPPER",
+          "tag": "PHYSICAL_PET",
+          "archetype": "TRAPPER",
+          "name": "Зверь-ловчий",
+          "maxHpBase": 90,
+          "maxHpPerOwnerStamina": 5.5,
+          "attackPowerOwnerCoefficient": 0.36,
+          "spellPowerOwnerCoefficient": 0,
+          "baseDamageMin": 3,
+          "baseDamageMax": 5,
+          "autoAttackInterval": "00:00:03.1000000",
+          "accuracy": 98,
+          "dodge": 7,
+          "criticalChance": 4,
+          "criticalDamage": 1.5,
+          "armor": 10,
+          "magicResistance": 10,
+          "artId": "forest-wolf"
+        },
+        {
+          "id": "ARCHER_SPIRIT",
+          "tag": "SPIRIT_PET",
+          "archetype": "SPIRIT",
+          "name": "Эфирный дух",
+          "maxHpBase": 75,
+          "maxHpPerOwnerStamina": 4,
+          "attackPowerOwnerCoefficient": 0,
+          "spellPowerOwnerCoefficient": 0.4,
+          "baseDamageMin": 2,
+          "baseDamageMax": 4,
+          "autoAttackInterval": "00:00:03.0000000",
+          "accuracy": 98,
+          "dodge": 8,
+          "criticalChance": 5,
+          "criticalDamage": 1.5,
+          "armor": 6,
+          "magicResistance": 24,
+          "artId": null
+        }
+      ],
+      "startingCompanionProfileId": "ARCHER_STARTER_PREDATOR"
+    }
+  ]
+}

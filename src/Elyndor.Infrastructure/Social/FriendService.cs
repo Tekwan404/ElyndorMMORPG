@@ -32,7 +32,9 @@ public sealed record FriendRequestView(
     Guid RequesterCharacterId,
     Guid TargetCharacterId,
     FriendRequestStatus Status,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? RequesterName = null,
+    string? TargetName = null);
 
 public sealed record FriendProfile(
     Guid CharacterId,
@@ -146,15 +148,25 @@ public sealed class FriendService(
             .OrderBy(request => request.CreatedAtUtc)
             .ToArrayAsync(cancellationToken);
 
+        Guid[] requestCharacterIds = requests.SelectMany(request =>
+            new[] { request.RequesterCharacterId, request.TargetCharacterId }).Distinct().ToArray();
+        Dictionary<Guid, string> names = await dbContext.Characters.AsNoTracking()
+            .Where(character => requestCharacterIds.Contains(character.Id))
+            .ToDictionaryAsync(character => character.Id, character => character.Name, cancellationToken);
+        FriendRequestView WithNames(FriendRequest request) => ToView(request) with
+        {
+            RequesterName = names.GetValueOrDefault(request.RequesterCharacterId),
+            TargetName = names.GetValueOrDefault(request.TargetCharacterId)
+        };
         return new FriendSnapshot(
             friends,
             requests
                 .Where(request => request.TargetCharacterId == current.Id)
-                .Select(ToView)
+                .Select(WithNames)
                 .ToArray(),
             requests
                 .Where(request => request.RequesterCharacterId == current.Id)
-                .Select(ToView)
+                .Select(WithNames)
                 .ToArray());
     }
 

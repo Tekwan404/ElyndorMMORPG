@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
-import CombatView from '@/game/combat/views/CombatView.vue'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
@@ -156,15 +155,6 @@ async function chooseLootRoll(lootRollId: string, choice: 'Need' | 'Greed' | 'Pa
   await combat.chooseLootRoll(lootRollId, choice)
 }
 
-async function restoreCombat(): Promise<void> {
-  try {
-    await combat.connect()
-    await combat.resume()
-  } catch {
-    // Мир остаётся доступным при временной ошибке realtime.
-  }
-}
-
 async function attachToPartyCombat(): Promise<void> {
   if (!combat.isAwaitingAttachment || !combat.snapshot || combat.pending) return
   await combat.attachCombat(combat.snapshot.sessionId)
@@ -198,16 +188,15 @@ watch(currentLocationId, (locationId, previousLocationId) => {
     merchantOpen.value = false
     guildOpen.value = false
   }
-  if (locationId) void restoreCombat()
 }, { immediate: true })
 
 watch(() => combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
     if (combat.snapshot) lastEnemyName.value = combat.snapshot.enemy.name
-    lastCombatResult.value = status
+    lastCombatResult.value = combat.participantStatus === 'Fled' ? 'Cancelled' : status
     void session.refreshSnapshot()
   }
-})
+}, { immediate: true })
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
 onBeforeUnmount(() => {
@@ -221,9 +210,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <CombatView v-if="combat.isActive" @leave="lastCombatResult = 'Cancelled'" />
-
-  <section v-else-if="world && character" class="world">
+  <section v-if="world && character" class="world">
     <section class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
       <div class="scene__shade" />
       <div class="scene__content">
@@ -242,7 +229,6 @@ onMounted(() => {
 
     <div v-if="session.errorCode" class="world-error" role="alert">
       <strong>{{ worldErrorMessage }}</strong>
-      <small>{{ session.errorCode }}</small>
     </div>
 
     <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>

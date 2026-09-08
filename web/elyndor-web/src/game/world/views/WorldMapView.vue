@@ -4,6 +4,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { apiClient } from '@/api/apiClient'
 import type { WorldLocation } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { useDungeonStore } from '@/game/party/dungeonStore'
+import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIToast } from '@/ui/components'
 
@@ -12,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const session = useGameSessionStore()
+const dungeon = useDungeonStore()
 const locations = ref<WorldLocation[]>([])
 const selectedLocationId = ref<string | null>(null)
 const loading = ref(true)
@@ -115,6 +118,14 @@ async function travel(): Promise<void> {
 
   await session.travel(location.id)
   if (!session.errorCode) selectedLocationId.value = location.id
+}
+
+async function enterAncientMine(): Promise<void> {
+  if (characterLevel.value < 15 || isTravelling.value) return
+  if (await dungeon.teleport('ANCIENT_MINE')) {
+    await session.refreshSnapshot()
+    emit('open-location')
+  }
 }
 
 function locationName(location: WorldLocation): string {
@@ -240,6 +251,14 @@ onMounted(() => void loadLocations())
     />
 
     <template v-else>
+      <UICard data-dungeon-map-entry>
+        <h2>Древняя шахта</h2>
+        <p>Подземелье · ур. 15+ · 1–5 игроков</p>
+        <p>Вход из Глубокого леса. Пять столкновений, финальный босс — Паучья Прародительница.</p>
+        <p v-if="dungeon.errorCode" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
+        <UIButton v-if="currentLocationId === 'ANCIENT_MINE'" @click="emit('open-location')">Открыть подземелье</UIButton>
+        <UIButton v-else :disabled="characterLevel < 15 || isTravelling" :loading="dungeon.teleporting" @click="enterAncientMine">Ко входу в подземелье</UIButton>
+      </UICard>
       <section
         class="map-canvas"
         :style="{ '--map-art': `url(${mapArt})` }"

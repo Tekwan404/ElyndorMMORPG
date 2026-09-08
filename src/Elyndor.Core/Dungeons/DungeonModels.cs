@@ -116,6 +116,12 @@ public sealed class DungeonRun
         CompletedAtUtc = completedAtUtc;
     }
 
+    public void Abandon()
+    {
+        EnsureActive();
+        State = DungeonRunState.Abandoned;
+    }
+
     private void EnsureActive()
     {
         if (State != DungeonRunState.Active)

@@ -1,0 +1,24 @@
+{
+  "contentVersion": "0.12.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-08T00:00:00+00:00",
+  "dungeons": [
+    {
+      "id": "ANCIENT_MINE",
+      "displayName": "Древняя шахта",
+      "description": "Заброшенная шахта под глубоким лесом. Четыре стража охраняют путь к главному логову.",
+      "minimumLevel": 1,
+      "maximumLevel": 60,
+      "entryLocationId": "ANCIENT_MINE",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        { "id": "MINE_GUARDIAN_1", "monsterId": "DEEP_WOLF_L6", "checkpointId": "MINE_ENTRANCE" },
+        { "id": "MINE_GUARDIAN_2", "monsterId": "CORRUPTED_BOAR_L7", "checkpointId": "OLD_LIFT" },
+        { "id": "MINE_GUARDIAN_3", "monsterId": "DEEP_SPIDER_L8", "checkpointId": "CRYSTAL_GALLERY" },
+        { "id": "MINE_GUARDIAN_4", "monsterId": "GOBLIN_SCOUT_L9", "checkpointId": "LOWER_SHAFT" },
+        { "id": "MINE_BOSS", "monsterId": "SPIDER_BROODMOTHER_L14", "checkpointId": "ANCIENT_HEART", "isBoss": true }
+      ]
+    }
+  ]
+}

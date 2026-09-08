@@ -1,0 +1,23 @@
+{
+  "contentVersion": "0.8.0",
+  "balanceVersion": "0.7.0",
+  "publishedAtUtc": "2026-09-02T15:40:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "RANGER_SET",
+      "name": "Комплект Следопыта",
+      "bonuses": [
+        {
+          "requiredPieces": 3,
+          "attackSpeedPercent": 5,
+          "dodgePercent": 0
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 10,
+          "dodgePercent": 5
+        }
+      ]
+    }
+  ]
+}

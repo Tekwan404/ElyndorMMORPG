@@ -1,4 +1,5 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Parties;
 using Elyndor.Core.Social;
 using Elyndor.Infrastructure.Persistence;
@@ -46,7 +47,8 @@ public sealed record PartyInviteView(
     PartyInviteMode Mode,
     PartyInviteStatus Status,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset ExpiresAtUtc,
+    string? InviterName = null);
 
 public sealed record PartyOperationResult(
     bool IsSuccess,
@@ -171,7 +173,14 @@ public sealed class PartyService(
                 && invite.ExpiresAtUtc > now)
             .OrderBy(invite => invite.CreatedAtUtc)
             .ToArrayAsync(cancellationToken);
-        return invites.Select(ToView).ToArray();
+        Guid[] inviterIds = invites.Select(invite => invite.InviterCharacterId).Distinct().ToArray();
+        Dictionary<Guid, string> names = await dbContext.Characters.AsNoTracking()
+            .Where(candidate => inviterIds.Contains(candidate.Id))
+            .ToDictionaryAsync(candidate => candidate.Id, candidate => candidate.Name, cancellationToken);
+        return invites.Select(invite => ToView(invite) with
+        {
+            InviterName = names.GetValueOrDefault(invite.InviterCharacterId)
+        }).ToArray();
     }
 
     public async Task<PartyOperationResult> InviteAsync(
@@ -431,6 +440,18 @@ public sealed class PartyService(
         Guid[] membersBeforeMutation = party.Members
             .Select(member => member.CharacterId)
             .ToArray();
+        Guid[] activeRunIds = await dbContext.DungeonRuns
+            .Where(run => run.PartyId == party.Id && run.State == DungeonRunState.Active)
+            .Select(run => run.Id).ToArrayAsync(cancellationToken);
+        foreach (Guid runId in activeRunIds.Order())
+        {
+            if (dbContext.Database.IsNpgsql())
+            {
+                string runLock = $"dungeon-run:{runId:N}";
+                await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                    $"SELECT pg_advisory_xact_lock(hashtext({runLock}))", cancellationToken);
+            }
+        }
         try
         {
             switch (mutation)
@@ -474,6 +495,14 @@ public sealed class PartyService(
                     && membersBeforeMutation.Contains(member.CharacterId))
                 .ToArrayAsync(cancellationToken);
             dbContext.PartyMembers.RemoveRange(members);
+        }
+
+        if (party.Members.Count == 0 || mutation == PartyMutation.Disband)
+        {
+            DungeonRun[] runs = await dbContext.DungeonRuns
+                .Where(run => activeRunIds.Contains(run.Id) && run.State == DungeonRunState.Active)
+                .ToArrayAsync(cancellationToken);
+            foreach (DungeonRun run in runs) run.Abandon();
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

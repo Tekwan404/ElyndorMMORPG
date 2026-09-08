@@ -12,6 +12,16 @@ import { UIButton, UIHealthBar } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const combat = useCombatSessionStore()
+const combatErrorMessage = computed(() => {
+  switch (combat.errorCode) {
+    case 'combat_ability_on_cooldown': return 'Способность ещё восстанавливается.'
+    case 'combat_insufficient_resource': return 'Недостаточно ресурса для этой способности.'
+    case 'combat_invalid_target': return 'Выберите доступную цель.'
+    case 'combat_actor_dead': return 'Павший герой не может действовать.'
+    case 'combat_not_found': return 'Бой уже завершён. Вернитесь в локацию.'
+    default: return 'Не удалось выполнить действие. Проверьте связь и попробуйте ещё раз.'
+  }
+})
 const session = useGameSessionStore()
 const now = ref(Date.now())
 const logOpen = ref(false)
@@ -661,11 +671,12 @@ onUnmounted(() => window.clearInterval(timer))
             <span>↗</span>
             <div>
               <strong>Сбежать</strong>
-              <small>При наличии союзников</small>
+              <small>Остаться в локации</small>
             </div>
           </button>
 
           <button
+            v-if="isTraining"
             type="button"
             class="utility-action utility-action--leave"
             data-leave-combat
@@ -740,7 +751,7 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <p v-if="combat.errorCode" class="error">
-        Не удалось выполнить действие: {{ combat.errorCode }}
+        {{ combatErrorMessage }}
       </p>
     </template>
 

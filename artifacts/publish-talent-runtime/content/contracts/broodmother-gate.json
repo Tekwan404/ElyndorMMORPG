@@ -1,0 +1,18 @@
+{
+  "contentVersion": "0.11.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-06T19:40:00+00:00",
+  "worldContracts": [
+    {
+      "id": "CONTRACT_BROODMOTHER_GATE",
+      "displayName": "Контракт: Прародительница",
+      "description": "Возьмите контракт в логове и уничтожьте Паучью Прародительницу. Подтверждённая сервером победа принесёт награду и откроет путь в Осквернённую чащу.",
+      "requiredLevel": 14,
+      "targetMonsterId": "SPIDER_BROODMOTHER_L14",
+      "unlockLocationId": "BLIGHTED_GROVE",
+      "offerLocationId": "BROODMOTHER_LAIR",
+      "rewardXp": 2000,
+      "rewardGold": 150
+    }
+  ]
+}

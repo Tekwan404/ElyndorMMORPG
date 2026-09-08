@@ -20,10 +20,8 @@ public sealed partial class CombatSession
         if (_threatByEnemyActorId.ContainsKey(enemyActorId))
             return;
 
-        Dictionary<Guid, decimal> threat = new()
-        {
-            [_player.Actor.ActorId] = 1m
-        };
+        Dictionary<Guid, decimal> threat = _playerStatesByActorId.Keys
+            .ToDictionary(actorId => actorId, _ => 1m);
         if (_companion is not null)
             threat[_companion.Actor.ActorId] = 0m;
 

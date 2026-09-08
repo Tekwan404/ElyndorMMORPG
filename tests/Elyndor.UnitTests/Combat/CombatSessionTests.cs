@@ -25,6 +25,34 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void MixedClassSnapshotsKeepEachPlayersAbilities()
+    {
+        CombatPlayerDefinition[] others = new[] { ("MAGE", "MANA"), ("ARCHER", "FOCUS") }
+            .Select(pair => new CombatPlayerDefinition(Guid.NewGuid(), new CombatParticipantDefinition(
+                new CombatActorState(Guid.NewGuid(), 200, 200, 100, 100, CombatStats.Default),
+                CombatActorKind.Player, pair.Item1, pair.Item1, pair.Item2,
+                new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+                new HashSet<string>(["BITE"], StringComparer.Ordinal), CanAutoAttack: false),
+                ResolvedTalentModifiers.Empty)).ToArray();
+        CombatSession session = CreateSession(10_000, playerResource: 50,
+            canAutoAttack: false, additionalPlayers: others);
+        Assert.True(session.Handle(PlayerId,
+            new UseAbilityCommand("warrior-action", "STRIKE", Guid.Empty), Now).Succeeded);
+        Assert.True(session.Handle(PlayerId, new UseConsumableCommand(
+            "warrior-potion", "POTION", [new ResolvedConsumableAction(ConsumableActionType.RestoreResource, 1, ResourceType: "RAGE")],
+            "POTION", TimeSpan.FromSeconds(30)), Now).Succeeded);
+        foreach (CombatPlayerDefinition other in others)
+        {
+            CombatActorSnapshot snapshot = session.Snapshot(other.Participant.Actor.ActorId).Player;
+            Assert.Contains("BITE", snapshot.KnownAbilityIds);
+            Assert.DoesNotContain("STRIKE", snapshot.KnownAbilityIds);
+            Assert.Empty(snapshot.ConsumableCooldowns!);
+        }
+        Assert.Contains("STRIKE", session.Snapshot(PlayerId).Player.KnownAbilityIds);
+        Assert.Contains("POTION", session.Snapshot(PlayerId).Player.ConsumableCooldowns!.Keys);
+    }
+
+    [Fact]
     public void MultipleAttachedPlayersUseTheirOwnRuntimeAndShareOneSession()
     {
         Guid secondActorId = Guid.Parse("60000000-0000-0000-0000-000000000001");
@@ -230,6 +258,13 @@ public sealed class CombatSessionTests
         Assert.Equal(secondActorId, registry.Resume(secondAccountId).Snapshot!.Player.ActorId);
         Assert.Contains(leaderAccountId, publisher.AccountIds);
         Assert.Contains(secondAccountId, publisher.AccountIds);
+        Assert.True((await registry.ExecuteParticipantAsync(secondAccountId,
+            (active, characterId, now) => active.Handle(characterId, new FleeCommand("member-flees"), now),
+            CancellationToken.None)).Succeeded);
+        registry.ClearFinished(secondAccountId);
+        Assert.False(registry.Resume(secondAccountId).Succeeded);
+        Assert.True(registry.HasActiveCombat(leaderAccountId));
+        Assert.Equal(CombatSessionStatus.Active, registry.Resume(leaderAccountId).Snapshot!.Status);
     }
 
     [Fact]
@@ -381,14 +416,30 @@ public sealed class CombatSessionTests
             Count: 2,
             MaxActive: 4);
 
+        CombatParticipantDefinition ally = new(
+            new CombatActorState(Guid.NewGuid(), 10_000, 10_000, 100, 100, CombatStats.Default),
+            CombatActorKind.Player, "MAGE", "Mage", "MANA",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal), CanAutoAttack: false);
+
         CombatSession session = CreateSession(
             enemyHp: 10_000,
             playerResource: 100,
             canAutoAttack: false,
-            summonProfile: summon);
+            summonProfile: summon,
+            additionalPlayers: [new(Guid.NewGuid(), ally, ResolvedTalentModifiers.Empty)]);
 
         CombatCommandResult firstWave = session.AdvanceTo(Now.AddSeconds(20));
         Assert.Equal(3, firstWave.Snapshot.Enemies!.Count);
+        Guid summonedId = firstWave.Snapshot.Enemies.First(enemy => enemy.DefinitionId == spiderling.Id).ActorId;
+        foreach (Guid actorId in new[] { PlayerId, ally.Actor.ActorId })
+        {
+            Assert.Contains(session.Snapshot(actorId).Enemies!, enemy => enemy.ActorId == summonedId);
+            Assert.True(session.Handle(actorId, new SelectTargetCommand($"target-{actorId}", summonedId), Now.AddSeconds(20)).Succeeded);
+            CombatCommandResult attack = session.Handle(actorId,
+                new UseAbilityCommand($"attack-{actorId}", "STRIKE", Guid.Empty), Now.AddSeconds(20));
+            Assert.True(attack.Succeeded, attack.ErrorCode);
+        }
         Assert.Equal(
             2,
             firstWave.Events.Count(item =>

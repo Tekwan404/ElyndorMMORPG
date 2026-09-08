@@ -22,7 +22,8 @@ public sealed record PartyInviteResponse(
     string Mode,
     string Status,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset ExpiresAtUtc,
+    string? InviterName = null);
 
 public sealed record CreatePartyRequest(Guid RequestId);
 

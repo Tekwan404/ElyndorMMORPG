@@ -1,0 +1,146 @@
+{
+  "contentVersion": "0.11.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-06T19:40:00+00:00",
+  "items": [
+    {
+      "id": "DEEP_FOREST_CHARM",
+      "name": "Оберег Глубокого леса",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 8,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 1,
+        "agility": 1,
+        "intellect": 1,
+        "stamina": 4
+      },
+      "description": "Редкий оберег, пропитанный сырой силой Глубокого леса.",
+      "version": 1,
+      "maxHpFlat": 30,
+      "criticalChancePercent": 1.5,
+      "buyPriceGold": 0,
+      "sellPriceGold": 45,
+      "iconId": "item-warrior-amulet",
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "agility": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "intellect": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "BROODMOTHER_FANG_CHARM",
+      "name": "Клык Прародительницы",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 2,
+        "agility": 2,
+        "intellect": 2,
+        "stamina": 6
+      },
+      "description": "Трофей за победу над Прародительницей. Сильный универсальный предмет для перехода в следующую зону.",
+      "version": 1,
+      "maxHpFlat": 65,
+      "criticalChancePercent": 2.5,
+      "attackPowerFlat": 8,
+      "spellPowerFlat": 8,
+      "buyPriceGold": 0,
+      "sellPriceGold": 120,
+      "iconId": "item-warrior-amulet",
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "intellect": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "BLIGHTED_GROVE_RING",
+      "name": "Кольцо Осквернённой чащи",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 2,
+        "agility": 2,
+        "intellect": 2,
+        "stamina": 5
+      },
+      "description": "Редкое кольцо из земель за логовом Прародительницы.",
+      "version": 1,
+      "maxHpFlat": 45,
+      "attackPowerFlat": 7,
+      "spellPowerFlat": 7,
+      "criticalChancePercent": 2,
+      "buyPriceGold": 0,
+      "sellPriceGold": 85,
+      "iconId": "item-warrior-ring",
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "intellect": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      }
+    }
+  ]
+}

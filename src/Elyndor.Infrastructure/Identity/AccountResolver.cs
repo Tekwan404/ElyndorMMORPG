@@ -56,6 +56,8 @@ public sealed class AccountResolver(
         await using IDbContextTransaction transaction =
             await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
+        await SynchronizeUsernameOwnerAsync(telegramUserId, telegramUsername, cancellationToken);
+
         bool exists = await _dbContext.Accounts
             .AnyAsync(
                 account => account.TelegramUserId == telegramUserId,
@@ -103,6 +105,7 @@ public sealed class AccountResolver(
     {
         await using IDbContextTransaction transaction =
             await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await SynchronizeUsernameOwnerAsync(telegramUserId, telegramUsername, cancellationToken);
         Account account = await TouchAndLoadAsync(
             telegramUserId,
             telegramUsername,
@@ -123,10 +126,28 @@ public sealed class AccountResolver(
                 candidate => candidate.TelegramUserId == telegramUserId,
                 cancellationToken);
         account.RecordSeen(seenAtUtc);
-        if (!string.IsNullOrWhiteSpace(telegramUsername))
-            account.SetTelegramUsername(telegramUsername);
+        account.SetTelegramUsername(telegramUsername);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return account;
+    }
+
+    private async Task SynchronizeUsernameOwnerAsync(
+        long telegramUserId,
+        string? username,
+        CancellationToken cancellationToken)
+    {
+        // Serialize account and username transfers together, including removal. Authentication
+        // is infrequent; one transaction lock also avoids deadlocks when two users swap names.
+        await _dbContext.Database.ExecuteSqlRawAsync(
+            "SELECT pg_advisory_xact_lock(hashtext('telegram-username-ownership'))", cancellationToken);
+        if (string.IsNullOrWhiteSpace(username)) return;
+        string normalized = TelegramUsernamePolicy.Normalize(username);
+        await _dbContext.Accounts
+            .Where(account => account.TelegramUserId != telegramUserId
+                && account.NormalizedTelegramUsername == normalized)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(account => account.TelegramUsername, (string?)null)
+                .SetProperty(account => account.NormalizedTelegramUsername, (string?)null), cancellationToken);
     }
 
     private static bool IsTelegramUserIdConflict(DbUpdateException exception) =>

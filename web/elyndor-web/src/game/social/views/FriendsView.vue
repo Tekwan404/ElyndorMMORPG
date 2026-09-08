@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 
 import { usePartyStore } from '@/game/party/partyStore'
+import { classLabel } from '@/game/character/characterPresentation'
+import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useSocialStore } from '@/game/social/socialStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIPanel } from '@/ui/components'
@@ -14,6 +16,11 @@ const searching = ref(false)
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const isPartyLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
 const friendIds = computed(() => new Set(social.friends.map(friend => friend.characterId)))
+const inviting = ref<string | null>(null)
+function canInvite(characterId: string): boolean {
+  return isPartyLeader.value && (party.snapshot?.members.length ?? 5) < 5
+    && !party.snapshot?.members.some(member => member.characterId === characterId)
+}
 
 async function search(): Promise<void> {
   searching.value = true
@@ -27,7 +34,13 @@ async function addFriend(characterId: string): Promise<void> {
 }
 
 async function inviteToParty(characterId: string): Promise<void> {
-  await party.invite(characterId, friendIds.value.has(characterId) ? 'Friend' : 'Direct')
+  if (inviting.value || !canInvite(characterId)) return
+  inviting.value = characterId
+  try {
+    await party.invite(characterId, friendIds.value.has(characterId) ? 'Friend' : 'Direct')
+  } finally {
+    inviting.value = null
+  }
 }
 
 onMounted(() => {
@@ -45,7 +58,7 @@ onMounted(() => {
       <span>{{ social.friends.length }} друзей</span>
     </header>
 
-    <p v-if="social.errorCode" class="error-state" role="alert">Ошибка: {{ social.errorCode }}</p>
+    <p v-if="social.errorCode || party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(social.errorCode || party.errorCode!) }}</p>
 
     <UIPanel title="Найти игрока">
       <form class="search-form" @submit.prevent="search">
@@ -56,11 +69,11 @@ onMounted(() => {
         <article v-for="player in social.searchResults" :key="player.characterId" class="player-row">
           <div>
             <strong>{{ player.name }}</strong>
-            <small>ур. {{ player.level }} · {{ player.classId }} · {{ player.publicCode }}</small>
+            <small>ур. {{ player.level }} · {{ classLabel(player.classId) }} · {{ player.publicCode }}</small>
           </div>
           <UIButton variant="secondary" @click="addFriend(player.characterId)">Добавить</UIButton>
           <UIButton
-            v-if="isPartyLeader"
+            v-if="canInvite(player.characterId)"
             data-party-invite
             @click="inviteToParty(player.characterId)"
           >В группу</UIButton>
@@ -70,7 +83,7 @@ onMounted(() => {
 
     <UIPanel v-if="social.incomingRequests.length" title="Входящие заявки">
       <article v-for="request in social.incomingRequests" :key="request.id" class="player-row">
-        <small>Заявка от игрока {{ request.requesterCharacterId }}</small>
+        <small>Заявка от {{ request.requesterName ?? 'героя' }}</small>
         <div class="actions">
           <UIButton @click="social.decideRequest(request, true)">Принять</UIButton>
           <UIButton variant="secondary" @click="social.decideRequest(request, false)">Отклонить</UIButton>
@@ -80,18 +93,23 @@ onMounted(() => {
 
     <UIPanel v-if="social.outgoingRequests.length" title="Исходящие заявки">
       <article v-for="request in social.outgoingRequests" :key="request.id" class="player-row">
-        <small>Заявка игроку {{ request.targetCharacterId }}</small>
+        <small>Заявка: {{ request.targetName ?? 'герой' }}</small>
       </article>
     </UIPanel>
 
     <UIPanel title="Мои друзья">
+      <template v-if="!party.snapshot">
+        <p class="empty-state">Создайте группу, чтобы приглашать друзей прямо отсюда.</p>
+        <UIButton :disabled="party.loading" @click="party.create">Создать группу</UIButton>
+      </template>
       <p v-if="!social.friends.length" class="empty-state">Пока здесь тихо. Найди первого товарища.</p>
       <article v-for="friend in social.friends" :key="friend.characterId" class="player-row">
         <div>
           <strong>{{ friend.name }}</strong>
-          <small>ур. {{ friend.level }} · {{ friend.classId }}</small>
+          <small>ур. {{ friend.level }} · {{ classLabel(friend.classId) }}</small>
         </div>
         <span class="online-state">готов</span>
+        <UIButton v-if="canInvite(friend.characterId)" data-party-invite :disabled="inviting !== null" @click="inviteToParty(friend.characterId)">В группу</UIButton>
         <UIButton
           variant="secondary"
           data-remove-friend

@@ -159,7 +159,9 @@ public static class SocialEndpoints
             request.RequesterCharacterId,
             request.TargetCharacterId,
             request.Status.ToString(),
-            request.CreatedAtUtc);
+            request.CreatedAtUtc,
+            request.RequesterName,
+            request.TargetName);
 
     private static IResult Problem(string code, int statusCode, HttpContext context) =>
         Results.Problem(

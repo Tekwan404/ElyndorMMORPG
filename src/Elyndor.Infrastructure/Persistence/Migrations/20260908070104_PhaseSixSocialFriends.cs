@@ -23,9 +23,10 @@ public partial class PhaseSixSocialFriends : Migration
                 defaultValue: "");
 
             migrationBuilder.Sql(
-                "UPDATE game.characters "
-                + "SET \"PublicCode\" = 'ELY-' || upper(substr(replace(\"Id\"::text, '-', ''), 1, 10)) "
-                + "WHERE \"PublicCode\" = '';" );
+                "WITH codes AS (SELECT \"Id\", row_number() OVER (ORDER BY \"Id\") AS number FROM game.characters) "
+                + "UPDATE game.characters AS character "
+                + "SET \"PublicCode\" = 'ELY-' || upper(lpad(to_hex(codes.number), 10, '0')) "
+                + "FROM codes WHERE character.\"Id\" = codes.\"Id\";" );
 
             migrationBuilder.AlterColumn<string>(
                 name: "PublicCode",

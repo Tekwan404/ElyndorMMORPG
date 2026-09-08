@@ -841,3 +841,20 @@ completed encounter roster or its rewards.
 The first approved dungeon slice is Ancient Mine: 1-5 players, four ordinary
 encounters, one final boss, personal ordinary loot, and a current-encounter
 reset after a wipe.
+
+## Current playable flow
+
+Ancient Mine is exposed on the world map and at its entrance, with level 15+
+and party size 1–5 requirements. The existing teleport entry action is also
+available from the map. The leader creates the run and starts encounters;
+CombatView is owned by the application shell and appears for every active
+participant regardless of the previously selected tab or reconnect.
+
+After a wipe, participants recover at the dungeon entrance, retaining completed
+encounters. When all run members explicitly exit, the run becomes Abandoned.
+Party disband also abandons the run, while preserving any current combat roster.
+Abandoned runs cannot progress when that combat later finishes.
+
+Ordinary exploration has no inter-encounter waiting period. Ability cooldowns
+remain authoritative and unchanged. Fleeing ends only the caller's participation,
+persists their vitals, grants no unfinished-combat reward and keeps their location.

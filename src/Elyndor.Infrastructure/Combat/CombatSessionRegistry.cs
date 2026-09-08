@@ -273,12 +273,21 @@ public sealed class CombatSessionRegistry(
             || binding is null)
             return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
-        return CombatOperationResult.FromSnapshot(
-            entry.Session.Snapshot(binding.CharacterId),
-            entry.ContentSnapshot) with
+        return entry.GetPublishedSnapshot(accountId);
+    }
+
+    public async Task PublishCurrentAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry)) return;
+        await entry.Gate.WaitAsync(cancellationToken);
+        try
         {
-            Reward = entry.GetReward(binding.CharacterId)
-        };
+            await PublishToParticipantsAsync(entry, entry.GetPublishedSnapshot(accountId), cancellationToken);
+        }
+        finally
+        {
+            entry.Gate.Release();
+        }
     }
 
     public void ClearFinished(Guid accountId)
@@ -286,6 +295,16 @@ public sealed class CombatSessionRegistry(
         if (_byAccount.TryGetValue(accountId, out SessionEntry? entry)
             && entry.Session.Status != CombatSessionStatus.Active)
             Remove(entry);
+        else if (entry is not null && entry.TryGetBinding(accountId, out ParticipantBinding? binding)
+            && binding is not null && entry.FinalizedParticipants.ContainsKey(binding.CharacterId)
+            && entry.Session.ParticipantRoster.GetStatus(binding.CharacterId) == CombatParticipantStatus.Fled)
+        {
+            lock (_indexGate)
+            {
+                _byAccount.TryRemove(new KeyValuePair<Guid, SessionEntry>(accountId, entry));
+                _byCharacter.TryRemove(new KeyValuePair<Guid, SessionEntry>(binding.CharacterId, entry));
+            }
+        }
     }
 
     public async Task<bool> DiscardAsync(Guid accountId, CancellationToken cancellationToken)
@@ -382,7 +401,6 @@ public sealed class CombatSessionRegistry(
         CancellationToken cancellationToken)
     {
         if (snapshot is null
-            || snapshot.Status == CombatSessionStatus.Active
             || entry.Finalized)
             return;
 
@@ -390,7 +408,9 @@ public sealed class CombatSessionRegistry(
         {
             CombatParticipantSnapshot? participant = snapshot.ParticipantRoster?
                 .FirstOrDefault(item => item.CharacterId == binding.CharacterId);
-            if (participant?.Status == CombatParticipantStatus.Rostered)
+            if (participant?.Status == CombatParticipantStatus.Rostered
+                || entry.FinalizedParticipants.ContainsKey(binding.CharacterId)
+                || snapshot.Status == CombatSessionStatus.Active && participant?.Status != CombatParticipantStatus.Fled)
                 continue;
 
             CombatRewardApplicationResult? reward = await finalizer.FinalizeAsync(
@@ -399,9 +419,10 @@ public sealed class CombatSessionRegistry(
                 entry.ContentSnapshot,
                 cancellationToken);
             entry.SetReward(binding.CharacterId, reward);
+            entry.FinalizedParticipants.TryAdd(binding.CharacterId, true);
         }
 
-        entry.Finalized = true;
+        entry.Finalized = snapshot.Status != CombatSessionStatus.Active;
     }
 
     private async Task PublishToParticipantsAsync(
@@ -411,11 +432,14 @@ public sealed class CombatSessionRegistry(
     {
         foreach (ParticipantBinding binding in entry.Bindings)
         {
+            if (!_byAccount.TryGetValue(binding.AccountId, out SessionEntry? current) || !ReferenceEquals(current, entry))
+                continue;
             CombatOperationResult participantResult = operationResult with
             {
                 Snapshot = entry.Session.Snapshot(binding.CharacterId),
                 Reward = entry.GetReward(binding.CharacterId)
             };
+            entry.SetPublishedSnapshot(binding.AccountId, participantResult);
             await publisher.PublishAsync(
                 binding.AccountId,
                 participantResult,
@@ -442,8 +466,8 @@ public sealed class CombatSessionRegistry(
         {
             foreach (ParticipantBinding binding in entry.Bindings)
             {
-                _byAccount.TryRemove(binding.AccountId, out _);
-                _byCharacter.TryRemove(binding.CharacterId, out _);
+                _byAccount.TryRemove(new KeyValuePair<Guid, SessionEntry>(binding.AccountId, entry));
+                _byCharacter.TryRemove(new KeyValuePair<Guid, SessionEntry>(binding.CharacterId, entry));
             }
 
             _bySession.TryRemove(entry.Session.SessionId, out _);
@@ -474,6 +498,7 @@ public sealed class CombatSessionRegistry(
     {
         private readonly Dictionary<Guid, ParticipantBinding> _bindingsByAccount = [];
         private readonly Dictionary<Guid, CombatRewardApplicationResult?> _rewardsByCharacter = [];
+        private readonly ConcurrentDictionary<Guid, CombatOperationResult> _publishedSnapshots = [];
 
         public CombatSession Session { get; } = session;
         public GameContentSnapshot? ContentSnapshot { get; } = contentSnapshot;
@@ -481,15 +506,27 @@ public sealed class CombatSessionRegistry(
         public SemaphoreSlim Gate { get; } = new(1, 1);
         public ITimer? Timer { get; set; }
         public bool Finalized { get; set; }
+        public ConcurrentDictionary<Guid, bool> FinalizedParticipants { get; } = [];
         public Guid LeaderAccountId => _bindingsByAccount.Values.First().AccountId;
         public Guid LeaderCharacterId => _bindingsByAccount.Values.First().CharacterId;
         public IReadOnlyCollection<Guid> AccountIds => _bindingsByAccount.Keys.ToArray();
         public IReadOnlyCollection<ParticipantBinding> Bindings => _bindingsByAccount.Values.ToArray();
 
-        public void AddBinding(CombatParticipantBinding binding) =>
+        public void AddBinding(CombatParticipantBinding binding)
+        {
             _bindingsByAccount.Add(
                 binding.AccountId,
                 new ParticipantBinding(binding.AccountId, binding.CharacterId));
+            SetPublishedSnapshot(binding.AccountId,
+                CombatOperationResult.FromSnapshot(Session.Snapshot(binding.CharacterId), ContentSnapshot));
+        }
+
+        public void SetPublishedSnapshot(Guid accountId, CombatOperationResult result) =>
+            _publishedSnapshots[accountId] = result with { Succeeded = true, ErrorCode = null, Events = [] };
+
+        public CombatOperationResult GetPublishedSnapshot(Guid accountId) =>
+            _publishedSnapshots.GetValueOrDefault(accountId)
+                ?? CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
         public bool TryGetBinding(Guid accountId, out ParticipantBinding? binding) =>
             _bindingsByAccount.TryGetValue(accountId, out binding);

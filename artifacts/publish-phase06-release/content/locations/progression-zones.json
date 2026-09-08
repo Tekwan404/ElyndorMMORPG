@@ -1,0 +1,178 @@
+{
+  "contentVersion": "0.11.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-06T19:40:00+00:00",
+  "locations": [
+    {
+      "id": "STARTER_TOWN",
+      "displayName": "Стартовый город",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 1,
+      "transitions": [
+        "WHISPERING_FOREST"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 60,
+      "requiredContractId": null,
+      "artId": "starter-town",
+      "description": "Безопасный город искателей приключений. Здесь можно восстановиться, подготовиться и выйти в первые охотничьи угодья."
+    },
+    {
+      "id": "WHISPERING_FOREST",
+      "displayName": "Шепчущий лес",
+      "dangerLevel": "ADVENTURE",
+      "recommendedLevel": 3,
+      "transitions": [
+        "STARTER_TOWN",
+        "DEEP_FOREST"
+      ],
+      "encounters": [
+        {
+          "monsterId": "FOREST_WOLF_L1",
+          "weight": 1
+        },
+        {
+          "monsterId": "FOREST_BOAR_L2",
+          "weight": 1
+        },
+        {
+          "monsterId": "GIANT_SPIDER_L3",
+          "weight": 1
+        },
+        {
+          "monsterId": "FOREST_WOLF_L4",
+          "weight": 1
+        },
+        {
+          "monsterId": "ALPHA_WOLF_L5",
+          "weight": 0.7
+        }
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 5,
+      "requiredContractId": null,
+      "artId": "whispering-forest",
+      "description": "Первые опасные тропы за городскими стенами. Подходит для проверки ранней прокачки, добычи и боевой ротации."
+    },
+    {
+      "id": "DEEP_FOREST",
+      "displayName": "Глубокий лес",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 9,
+      "transitions": [
+        "WHISPERING_FOREST",
+        "BROODMOTHER_LAIR",
+        "ANCIENT_MINE"
+      ],
+      "encounters": [
+        {
+          "monsterId": "DEEP_WOLF_L6",
+          "weight": 1
+        },
+        {
+          "monsterId": "CORRUPTED_BOAR_L7",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEEP_SPIDER_L8",
+          "weight": 1
+        },
+        {
+          "monsterId": "GOBLIN_SCOUT_L9",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEEP_WOLF_L10",
+          "weight": 0.9
+        },
+        {
+          "monsterId": "ALPHA_WOLF_L11",
+          "weight": 0.7
+        }
+      ],
+      "minimumLevel": 6,
+      "maximumLevel": 11,
+      "requiredContractId": null,
+      "artId": "whispering-forest",
+      "description": "Тёмная часть леса, где знакомые хищники становятся заметно сильнее, а добыча и опыт ценнее."
+    },
+    {
+      "id": "ANCIENT_MINE",
+      "displayName": "Древняя шахта",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 9,
+      "transitions": [
+        "DEEP_FOREST"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 60,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Вход в инстанс Древней шахты. Сюда группа возвращается после путешествия и начинает забег.",
+      "travelDurationSeconds": 5
+    },
+    {
+      "id": "BROODMOTHER_LAIR",
+      "displayName": "Логово Прародительницы",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 14,
+      "transitions": [
+        "DEEP_FOREST",
+        "BLIGHTED_GROVE"
+      ],
+      "encounters": [
+        {
+          "monsterId": "SPIDER_BROODMOTHER_L14",
+          "weight": 1
+        }
+      ],
+      "minimumLevel": 14,
+      "maximumLevel": 14,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Изолированное логово древней паучьей Прародительницы. Победа над ней завершает контракт и открывает путь дальше."
+    },
+    {
+      "id": "BLIGHTED_GROVE",
+      "displayName": "Осквернённая чаща",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 17,
+      "transitions": [
+        "BROODMOTHER_LAIR"
+      ],
+      "encounters": [
+        {
+          "monsterId": "BANDIT_ROGUE_L15",
+          "weight": 1
+        },
+        {
+          "monsterId": "BANDIT_ARCHER_L16",
+          "weight": 1
+        },
+        {
+          "monsterId": "CORRUPTED_BOAR_L17",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_SPIDER_L18",
+          "weight": 1
+        },
+        {
+          "monsterId": "BANDIT_ROGUE_L19",
+          "weight": 0.9
+        },
+        {
+          "monsterId": "ALPHA_WOLF_L20",
+          "weight": 0.7
+        }
+      ],
+      "minimumLevel": 15,
+      "maximumLevel": 20,
+      "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
+      "artId": "caravan-road",
+      "description": "Зона 15–20 уровня за логовом босса. Доступ открывается только после выполнения контракта Прародительницы."
+    }
+  ]
+}

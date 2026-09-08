@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { classLabel } from '@/game/character/characterPresentation'
+import { socialErrorMessage } from '@/game/social/socialPresentation'
 
 import { usePartyStore } from '@/game/party/partyStore'
 import { useDungeonStore } from '@/game/party/dungeonStore'
@@ -82,11 +84,11 @@ async function startDungeon(): Promise<void> {
       <span>{{ party.snapshot?.members.length ?? 0 }} / 5</span>
     </header>
 
-    <p v-if="party.errorCode" class="error-state" role="alert">Ошибка: {{ party.errorCode }}</p>
+    <p v-if="party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(party.errorCode) }}</p>
 
     <UIPanel v-if="party.invites.length" title="Приглашения">
       <article v-for="invite in party.invites" :key="invite.id" class="invite-row">
-        <div><strong>Приглашение в группу</strong><small>от {{ invite.inviterCharacterId }}</small></div>
+        <div><strong>Приглашение в группу</strong><small>от {{ invite.inviterName ?? 'героя' }}</small></div>
         <div class="actions">
           <UIButton @click="party.acceptInvite(invite.id)">Войти</UIButton>
           <UIButton variant="secondary" @click="party.declineInvite(invite.id)">Нет</UIButton>
@@ -103,7 +105,7 @@ async function startDungeon(): Promise<void> {
         </div>
         <div>
           <strong>{{ member.name }} <span v-if="member.isLeader">★</span></strong>
-          <small>ур. {{ member.level }} · {{ member.classId }}</small>
+          <small>ур. {{ member.level }} · {{ classLabel(member.classId) }}</small>
         </div>
         <span v-if="member.characterId === currentCharacterId && member.isLeader" class="leader-label">лидер</span>
       </article>
@@ -115,7 +117,7 @@ async function startDungeon(): Promise<void> {
       <UIButton @click="party.create">Создать группу</UIButton>
     </UIPanel>
     <UIPanel v-if="dungeon.previews.length" title="Древняя шахта">
-      <p v-if="dungeon.errorCode" class="error-state" role="alert">Ошибка: {{ dungeon.errorCode }}</p>
+      <p v-if="dungeon.errorCode" class="error-state" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
       <p class="empty-state">Подземелье — отдельный инстанс. Вход выполняется мгновенной телепортацией.</p>
       <UIButton
         v-if="!isAtDungeon"
@@ -127,9 +129,12 @@ async function startDungeon(): Promise<void> {
       <small v-if="characterLevel < 15" class="empty-state">Доступно с 15 уровня.</small>
       <small v-else-if="isAtDungeon" class="dungeon-location-state">Вы уже на входе в подземелье.</small>
       <template v-if="dungeon.current">
+        <p v-if="dungeon.current.state === 'Completed'">Подземелье пройдено!</p>
+        <p v-else-if="dungeon.current.state === 'Abandoned'">Забег покинут.</p>
+        <p v-else-if="!isLeader">Следующий бой запускает лидер группы.</p>
+        <UIButton v-if="dungeon.current.state !== 'Active' && isLeader" @click="createDungeon(dungeon.current.dungeonId)">Новый забег</UIButton>
         <p class="empty-state">
-          {{ dungeon.current.displayName }} · {{ dungeon.current.currentEncounterIndex + 1 }} / {{ dungeon.current.encounterCount }}
-          · checkpoint: {{ dungeon.current.currentCheckpointId }}
+          {{ dungeon.current.displayName }} · {{ Math.min(dungeon.current.currentEncounterIndex + 1, dungeon.current.encounterCount) }} / {{ dungeon.current.encounterCount }}
         </p>
         <div class="dungeon-progress">
           <span
@@ -147,13 +152,13 @@ async function startDungeon(): Promise<void> {
           v-else-if="isLeader && currentLocationId === 'ANCIENT_MINE' && dungeon.current.state === 'Active'"
           :loading="combat.pending"
           @click="startDungeon"
-        >Начать encounter</UIButton>
+        >Начать бой</UIButton>
         <UIButton
           v-if="isLeader && dungeon.current.encounters.some(encounter => encounter.state === 'Wiped')"
           data-dungeon-restart
           variant="secondary"
           @click="restartDungeon"
-        >Перезапустить encounter</UIButton>
+        >Повторить бой</UIButton>
         <UIButton
           v-if="currentRunMember?.state === 'Active' && !dungeon.current.encounters.some(encounter => encounter.state === 'Active')"
           data-dungeon-exit
@@ -161,11 +166,11 @@ async function startDungeon(): Promise<void> {
           @click="exitDungeon"
         >Выйти из забега</UIButton>
         <small v-if="!needsDungeonEntry && currentLocationId !== 'ANCIENT_MINE'" class="empty-state">
-          Сначала переместите группу в ANCIENT_MINE.
+          Сначала переместите группу в Древнюю шахту.
         </small>
       </template>
       <template v-else>
-        <p class="empty-state">Лидер создаёт забег после сбора группы. В забеге пять encounter’ов: четыре обычных и босс.</p>
+        <p class="empty-state">Подземелье · ур. 15+ · 1–5 игроков. Пять столкновений; финальный босс — Паучья Прародительница.</p>
         <UIButton
           v-for="preview in dungeon.previews"
           :key="preview.id"

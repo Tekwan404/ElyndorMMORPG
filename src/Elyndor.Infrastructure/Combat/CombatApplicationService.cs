@@ -156,6 +156,10 @@ public sealed class CombatApplicationService(
             if (durability is not null)
                 await durability.CompleteAsync(result.Snapshot.SessionId, cancellationToken);
         }
+        else
+        {
+            await registry.PublishCurrentAsync(accountId, cancellationToken);
+        }
         return bound
             ? result
             : CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);

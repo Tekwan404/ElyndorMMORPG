@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { socialErrorMessage } from '@/game/social/socialPresentation'
 
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -71,15 +72,20 @@ async function exitRun(): Promise<void> {
     <div class="dungeon-location-card__requirements">
       <span>Уровень 15–60</span>
       <span>Группа 1–5</span>
-      <span>5 encounter’ов</span>
+      <span>5 столкновений</span>
     </div>
 
-    <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">Не удалось выполнить действие: {{ dungeon.errorCode }}</p>
+    <p>Финальный босс: Паучья Прародительница</p>
+    <UIButton variant="secondary" @click="emit('open-party')">Открыть группу</UIButton>
+    <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
 
     <template v-if="dungeon.current">
+      <p v-if="dungeon.current.state === 'Completed'">Подземелье пройдено!</p>
+      <p v-else-if="dungeon.current.state === 'Abandoned'">Забег завершён без награды за прохождение.</p>
+      <p v-else-if="!isLeader">Следующее столкновение запускает лидер группы.</p>
       <div class="dungeon-run-status">
-        <strong>Текущий забег · {{ dungeon.current.currentEncounterIndex + 1 }}/{{ dungeon.current.encounterCount }}</strong>
-        <small>Checkpoint: {{ dungeon.current.currentCheckpointId }}</small>
+        <strong>Текущий забег · {{ Math.min(dungeon.current.currentEncounterIndex + 1, dungeon.current.encounterCount) }}/{{ dungeon.current.encounterCount }}</strong>
+        <small>Пройдено столкновений: {{ dungeon.current.currentEncounterIndex }}</small>
       </div>
       <div class="dungeon-progress" aria-label="Прогресс подземелья">
         <span v-for="encounter in dungeon.current.encounters" :key="encounter.encounterId" :data-state="encounter.state">
@@ -87,17 +93,18 @@ async function exitRun(): Promise<void> {
         </span>
       </div>
       <div class="dungeon-actions">
-        <UIButton v-if="needsEntry" variant="secondary" @click="enterRun">Войти в текущий забег</UIButton>
-        <UIButton v-else-if="canStart" :loading="combat.pending" data-start-dungeon @click="startEncounter">Начать encounter</UIButton>
+        <UIButton v-if="needsEntry && dungeon.current.state === 'Active'" variant="secondary" @click="enterRun">Войти в текущий забег</UIButton>
+        <UIButton v-if="dungeon.current.state !== 'Active' && isLeader" @click="createRun">Новый забег</UIButton>
+        <UIButton v-else-if="canStart" :loading="combat.pending" data-start-dungeon @click="startEncounter">Начать бой</UIButton>
         <UIButton v-if="isLeader && dungeon.current.encounters.some(encounter => encounter.state === 'Wiped')" variant="secondary" @click="restartEncounter">Перезапустить</UIButton>
         <UIButton v-if="currentMember?.state === 'Active' && !dungeon.current.encounters.some(encounter => encounter.state === 'Active')" variant="ghost" @click="exitRun">Выйти из забега</UIButton>
       </div>
     </template>
 
     <template v-else>
-      <p v-if="!party.snapshot" class="dungeon-hint">Для запуска нужен party roster. Сначала создай группу или прими приглашение.</p>
+      <p v-if="!party.snapshot" class="dungeon-hint">Создайте группу или примите приглашение перед входом в подземелье.</p>
       <p v-else-if="!isLeader" class="dungeon-hint">Забег создаёт только лидер группы.</p>
-      <UIButton v-if="!party.snapshot" variant="secondary" @click="emit('open-party')">Открыть группу</UIButton>
+      <UIButton v-if="!party.snapshot" variant="secondary" @click="party.create">Создать группу</UIButton>
       <UIButton v-else-if="isLeader" data-create-dungeon @click="createRun">Создать забег</UIButton>
     </template>
   </UICard>

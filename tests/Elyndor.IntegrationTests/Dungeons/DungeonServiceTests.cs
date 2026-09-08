@@ -26,6 +26,29 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task DisbandAbandonsActiveRunWithoutChangingEncounterRoster()
+    {
+        (Guid leader, _, _) = await SeedPartyCharactersAsync();
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        await using GameDbContext context = postgres.CreateDbContext();
+        FixedTimeProvider time = new(Now);
+        PartyService parties = new(context, time);
+        DungeonService dungeons = new(context, parties, new StaticContentSnapshotProvider(content), time);
+        Assert.True((await parties.CreateAsync(leader, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        DungeonOperationResult created = await dungeons.CreateAsync(leader, "ANCIENT_MINE", Guid.NewGuid(), CancellationToken.None);
+        Assert.True(created.Succeeded);
+        var (prepared, error) = await dungeons.PrepareEncounterAsync(leader, created.Run!.RunId, CancellationToken.None);
+        Assert.Null(error);
+        Assert.NotNull(prepared);
+        Assert.True(await dungeons.BindCombatAsync(prepared.RunId, prepared.EncounterId, Guid.NewGuid(), CancellationToken.None));
+        Assert.True((await parties.DisbandAsync(leader, CancellationToken.None)).IsSuccess);
+        context.ChangeTracker.Clear();
+        DungeonRun run = await context.DungeonRuns.Include(item => item.Encounters).ThenInclude(item => item.Members).SingleAsync();
+        Assert.Equal(DungeonRunState.Abandoned, run.State);
+        Assert.Single(run.Encounters.Single().Members);
+    }
+
+    [Fact]
     public async Task MemberAddedDuringActiveEncounterJoinsOnlyTheNextEncounter()
     {
         (Guid leaderAccountId, Guid firstMemberAccountId, Guid lateMemberAccountId) =

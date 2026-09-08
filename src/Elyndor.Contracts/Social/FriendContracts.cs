@@ -21,7 +21,9 @@ public sealed record FriendRequestResponse(
     Guid RequesterCharacterId,
     Guid TargetCharacterId,
     string Status,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? RequesterName = null,
+    string? TargetName = null);
 
 public sealed record FriendsSnapshotResponse(
     IReadOnlyList<FriendProfileResponse> Friends,

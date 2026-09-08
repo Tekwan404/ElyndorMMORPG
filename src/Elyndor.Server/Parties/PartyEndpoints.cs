@@ -13,6 +13,7 @@ public static class PartyEndpoints
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1/party")
             .RequireAuthorization()
             .WithTags("Party");
+        group.AddEndpointFilter<PartyUpdateFilter>();
 
         group.MapGet("", GetAsync);
         group.MapGet("/invites", GetInvitesAsync);
@@ -179,7 +180,8 @@ public static class PartyEndpoints
             invite.Mode.ToString(),
             invite.Status.ToString(),
             invite.CreatedAtUtc,
-            invite.ExpiresAtUtc);
+            invite.ExpiresAtUtc,
+            invite.InviterName);
 
     private static Guid GetAccountId(ClaimsPrincipal user) =>
         TryGetAccountId(user, out Guid accountId)

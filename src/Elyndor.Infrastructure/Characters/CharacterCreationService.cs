@@ -97,13 +97,30 @@ public sealed class CharacterCreationService(
         }
 
         IExecutionStrategy executionStrategy = _dbContext.Database.CreateExecutionStrategy();
-        return await executionStrategy.ExecuteAsync(
-            () => CreateCoreAsync(
-                accountId,
-                command,
-                name,
-                _timeProvider.GetUtcNow(),
-                cancellationToken));
+        return await executionStrategy.ExecuteAsync(async () =>
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    return await CreateCoreAsync(
+                        accountId,
+                        command,
+                        name,
+                        _timeProvider.GetUtcNow(),
+                        cancellationToken);
+                }
+                catch (DbUpdateException exception) when (attempt < 4
+                    && exception.InnerException is PostgresException
+                    {
+                        SqlState: PostgresErrorCodes.UniqueViolation,
+                        ConstraintName: "uq_characters_public_code"
+                    })
+                {
+                    _dbContext.ChangeTracker.Clear();
+                }
+            }
+        });
     }
 
     public Task<Character?> GetAsync(

@@ -1,0 +1,399 @@
+{
+  "contentVersion": "0.12.0",
+  "balanceVersion": "0.10.0",
+  "publishedAtUtc": "2026-09-07T04:55:00+00:00",
+  "definitions": [
+    {
+      "type": "CLASS",
+      "id": "MAGE",
+      "references": [
+        {
+          "type": "ABILITY",
+          "id": "MAGE_FIREBALL"
+        },
+        {
+          "type": "ABILITY",
+          "id": "MAGE_ARCANE_SPARK"
+        },
+        {
+          "type": "ABILITY",
+          "id": "MAGE_ICE_SHARD"
+        }
+      ]
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_FIREBALL",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_ARCANE_SPARK",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "MAGE_ICE_SHARD",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FLAME_FLASH",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FIRE_WAVE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "COMBUSTION",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FIRE_COMET",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "ARCANE_BURST",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "MANA_OVERLOAD",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "ARCANE_CASCADE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "ARCANE_SEAL",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "ICE_LANCE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "ICE_FRACTURE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "HEART_OF_WINTER",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "FROST_SEAL",
+      "references": []
+    }
+  ],
+  "abilities": [
+    {
+      "id": "MAGE_FIREBALL",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:01.8000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.25
+        }
+      ],
+      "displayName": "Огненный шар",
+      "description": "Поток огня, наносящий магический урон одной цели."
+    },
+    {
+      "id": "MAGE_ARCANE_SPARK",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:03",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.75
+        }
+      ],
+      "displayName": "Тайная искра",
+      "description": "Мгновенный выброс тайной магии по одной цели."
+    },
+    {
+      "id": "MAGE_ICE_SHARD",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:01.5000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.05
+        }
+      ],
+      "displayName": "Ледяной осколок",
+      "description": "Ледяной снаряд, наносящий магический урон одной цели."
+    },
+    {
+      "id": "FLAME_FLASH",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.95
+        }
+      ],
+      "displayName": "Вспышка",
+      "description": "Мгновенная огненная атака Пироманта."
+    },
+    {
+      "id": "FIRE_WAVE",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.75
+        }
+      ],
+      "displayName": "Огненная волна",
+      "description": "Волна пламени, поражающая всех противников в бою."
+    },
+    {
+      "id": "COMBUSTION",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:01:40",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [],
+      "displayName": "Возгорание",
+      "description": "Вводит Пироманта в усиленное огненное состояние."
+    },
+    {
+      "id": "FIRE_COMET",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00.5000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 2.4
+        }
+      ],
+      "displayName": "Огненная комета",
+      "description": "Быстрый мощный огненный каст, открываемый Пределом жара."
+    },
+    {
+      "id": "ARCANE_BURST",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 25,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:01.2000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.1
+        }
+      ],
+      "displayName": "Тайный взрыв",
+      "description": "Поглощает накопленные Тайные заряды и превращает их в мощный направленный выброс."
+    },
+    {
+      "id": "MANA_OVERLOAD",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:01:40",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [],
+      "displayName": "Перегрузка маны",
+      "description": "Короткое окно усиления Тайной магии: больше силы и пробивания ценой повышенного расхода маны."
+    },
+    {
+      "id": "ARCANE_CASCADE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 1.5
+        }
+      ],
+      "displayName": "Арканный каскад",
+      "description": "Мгновенный выброс, доступный при высоком числе Тайных зарядов и расходующий два заряда."
+    },
+    {
+      "id": "ARCANE_SEAL",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 25,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "ARCANE",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.6
+        }
+      ],
+      "displayName": "Тайная печать",
+      "description": "Точный тайный удар, который при попадании накладывает немоту на 2 секунды."
+    },
+    {
+      "id": "ICE_LANCE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.95
+        }
+      ],
+      "displayName": "Ледяное копьё",
+      "description": "Мгновенное ледяное копьё. Особенно опасно против цели, накопившей Обморожение."
+    },
+    {
+      "id": "ICE_FRACTURE",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 28,
+      "cooldown": "00:00:12",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.7
+        }
+      ],
+      "displayName": "Ледяной раскол",
+      "description": "Взрыв холода по всем противникам. Полное Обморожение превращает удар в короткое оглушение."
+    },
+    {
+      "id": "HEART_OF_WINTER",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:01:40",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [],
+      "displayName": "Сердце зимы",
+      "description": "Короткое окно усиления Льда: больше урона, быстрее Ледяной осколок и ниже расход маны."
+    },
+    {
+      "id": "FROST_SEAL",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 22,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Magical",
+          "spellPowerCoefficient": 0.55
+        }
+      ],
+      "displayName": "Морозная печать",
+      "description": "Ледяной удар, который при попадании накладывает немоту на 2 секунды."
+    }
+  ]
+}

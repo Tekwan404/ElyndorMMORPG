@@ -1,0 +1,2799 @@
+{
+  "contentVersion": "0.12.0",
+  "balanceVersion": "0.10.0",
+  "publishedAtUtc": "2026-09-07T04:55:00+00:00",
+  "talentTrees": [
+    {
+      "id": "MAGE_TREE",
+      "classId": "MAGE",
+      "maxSpendablePoints": 59,
+      "version": 1,
+      "branches": [
+        {
+          "id": "FIRE",
+          "name": "Пламя",
+          "fantasy": "Критические удары, горение и мощные короткие burst-окна",
+          "nodeCount": 32
+        },
+        {
+          "id": "ARCANE",
+          "name": "Тайная магия",
+          "fantasy": "Управление маной, Тайные заряды и управляемый burst",
+          "nodeCount": 32
+        },
+        {
+          "id": "FROST",
+          "name": "Лёд",
+          "fantasy": "Контроль темпа, Обморожение и защитные окна",
+          "nodeCount": 32
+        }
+      ],
+      "nodes": [
+        {
+          "id": "F-1-1",
+          "branchId": "FIRE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Точное Пламя",
+          "englishName": "Precise Flame",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Первый ранг открывает «Огненный шар». Также повышает точность всех огненных заклинаний на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "targetId": "MAGE_FIREBALL"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_ACCURACY"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-1-2",
+          "branchId": "FIRE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Искра Критика",
+          "englishName": "Critical Spark",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Шанс критического удара всех огненных заклинаний повышается на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_CRITICAL_CHANCE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-1-3",
+          "branchId": "FIRE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Жар Внутри",
+          "englishName": "Inner Heat",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Урон огненных заклинаний от силы заклинаний повышается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_SPELL_POWER"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-1-4",
+          "branchId": "FIRE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Экономное Горение",
+          "englishName": "Efficient Burning",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический удар огненным заклинанием восстанавливает 2 / 4 маны. Срабатывает не чаще одного раза в секунду.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "internalCooldownSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-2-1",
+          "branchId": "FIRE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Разогретый Огненный шар",
+          "englishName": "Heated Fireball",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "«Огненный шар» наносит на 4% / 8% / 12% больше урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                4,
+                8,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-2-2",
+          "branchId": "FIRE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Искра Воспламенения",
+          "englishName": "Ignition Spark",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический «Огненный шар» поджигает цель на 4 сек. Горение наносит каждую секунду урон в размере 4% / 7% твоей силы заклинаний, зафиксированной в момент поджога.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                4,
+                7
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 4,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-2-3",
+          "branchId": "FIRE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Первый Ожог",
+          "englishName": "First Burn",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Огненные заклинания наносят на 4% / 8% больше урона целям, у которых больше 80% здоровья.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ENEMY_ABOVE",
+              "threshold": 80
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-2-4",
+          "branchId": "FIRE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Быстрый Розжиг",
+          "englishName": "Quick Kindling",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После «Тайной искры» или «Ледяного осколка» следующий «Огненный шар» в течение 5 сек. произносится на 0,10 / 0,20 сек. быстрее. Эффект не складывается.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0.1,
+                0.2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-3-1",
+          "branchId": "FIRE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Вспышка",
+          "englishName": "Flame Flash",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Вспышку»: мгновенное огненное заклинание, наносящее 95% силы заклинаний. Стоимость 18 маны, перезарядка 8 сек.; может критовать.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "FLAME_FLASH"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-3-2",
+          "branchId": "FIRE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Пожирающее Пламя",
+          "englishName": "Devouring Flame",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "F-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Твои огненные заклинания наносят на 2% / 4% / 6% больше урона цели, которая горит от твоего эффекта Горения.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BURN"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-3-3",
+          "branchId": "FIRE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Горячая Кровь",
+          "englishName": "Hot Blood",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический «Огненный шар» на 5 сек. подготавливает «Горячую кровь»: следующее огненное заклинание стоит на 10% / 20% меньше маны.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                10,
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-3-4",
+          "branchId": "FIRE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Пламенный Пробой",
+          "englishName": "Flame Penetration",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Магическое пробивание огненных заклинаний повышается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_MAGIC_PENETRATION"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-4-1",
+          "branchId": "FIRE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Огненная Волна",
+          "englishName": "Fire Wave",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Огненную волну»: мгновенно наносит всем противникам в бою 75% силы заклинаний. Стоимость 30 маны, перезарядка 10 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "FIRE_WAVE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-4-2",
+          "branchId": "FIRE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Раздувание",
+          "englishName": "Fanning",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Урон Горения повышается на 10% / 20%. Критический «Огненный шар» обновляет твоё Горение до 4 сек., не создавая второй отдельный эффект.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                10,
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BURN"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-4-3",
+          "branchId": "FIRE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Неугасимый Ритм",
+          "englishName": "Unfading Rhythm",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Два огненных заклинания, успешно попавших подряд, дают следующему огненному заклинанию +4% / +8% к шансу критического удара. Промах или прерывание сбрасывает серию.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_RHYTHM",
+              "triggerCount": 2
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-4-4",
+          "branchId": "FIRE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Опаляющий Финал",
+          "englishName": "Searing Finale",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Огненные заклинания наносят на 5% / 10% больше урона целям ниже 25% здоровья.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ENEMY_BELOW",
+              "threshold": 25
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-5-1",
+          "branchId": "FIRE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Возгорание",
+          "englishName": "Combustion",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Возгорание» — способность вне глобальной перезарядки. На 10 сек. огненные заклинания получают +15% к урону от силы заклинаний и +8% к шансу критического удара. Перезарядка 100 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "COMBUSTION"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "COMBUSTION",
+              "secondaryValues": [
+                8
+              ],
+              "durationSeconds": 10
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-5-2",
+          "branchId": "FIRE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Огненный След",
+          "englishName": "Flame Trail",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После попадания «Вспышкой» следующий «Огненный шар» в течение 5 сек. наносит на 8% / 15% больше урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-5-3",
+          "branchId": "FIRE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Жажда Жара",
+          "englishName": "Heat Thirst",
+          "maxRank": 4,
+          "prerequisites": [
+            {
+              "talentId": "F-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Каждый критический удар огненным заклинанием уменьшает оставшуюся перезарядку «Вспышки» на 0,5 / 1 / 1,5 / 2 сек. Срабатывает не чаще одного раза в секунду.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                0.5,
+                1,
+                1.5,
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "internalCooldownSeconds": 1,
+              "targetId": "FLAME_FLASH"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-5-4",
+          "branchId": "FIRE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Разрушительный Огонь",
+          "englishName": "Destructive Fire",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Дополнительный урон критических ударов огненными заклинаниями повышается на 8% / 15%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_CRITICAL_DAMAGE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-6-1",
+          "branchId": "FIRE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Предел Жара",
+          "englishName": "Heat Limit",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "F-2-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "F-5-4",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После трёх критических «Огненных шаров» подряд на 8 сек. становится доступна «Огненная комета»: 0 маны, 0,5 сек. произнесения и 240% силы заклинаний. Некритический «Огненный шар» сбрасывает серию.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                3
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 8
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-6-2",
+          "branchId": "FIRE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Перегрев",
+          "englishName": "Overheat",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-6-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока доступна «Огненная комета», её шанс критического удара повышается на 5% / 10%. Попадание кометой также накладывает Горение на 4 сек. с уроном 4% / 7% силы заклинаний в секунду.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_COMET",
+              "secondaryValues": [
+                4,
+                7
+              ],
+              "durationSeconds": 4,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-6-3",
+          "branchId": "FIRE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Пламенная Индукция",
+          "englishName": "Flame Induction",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время «Возгорания» «Огненный шар» произносится на 0,15 / 0,30 сек. быстрее.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0.15,
+                0.3
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-6-4",
+          "branchId": "FIRE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Пылающий Ответ",
+          "englishName": "Blazing Response",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После полученного критического магического удара следующее огненное заклинание в течение 6 сек. наносит на 5% / 10% больше урона. Срабатывает не чаще раза в 8 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "internalCooldownSeconds": 8,
+              "targetId": "MAGICAL_CRITICAL",
+              "durationSeconds": 6
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-7-1",
+          "branchId": "FIRE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Кометный Удар",
+          "englishName": "Comet Strike",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "F-6-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Критическая «Огненная комета» через 1 сек. дополнительно наносит 35% силы заклинаний. Вторичный урон не критует и не запускает новые срабатывания талантов.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                35
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_COMET",
+              "durationSeconds": 1,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-7-2",
+          "branchId": "FIRE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Пепельная Метка",
+          "englishName": "Ashen Mark",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический «Огненный шар» помечает цель на 6 сек. Пока метка активна, твоё магическое пробивание против этой цели повышается на 5% / 10%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_FIREBALL",
+              "durationSeconds": 6
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-7-3",
+          "branchId": "FIRE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Неистовство Пламени",
+          "englishName": "Inferno",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "F-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время «Возгорания» каждое успешно попавшее огненное заклинание даёт 1 заряд «Инферно», максимум 3. Каждый заряд повышает огненный урон на 2% / 3% / 4%; заряды исчезают вместе с «Возгоранием».",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                3,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "COMBUSTION"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-7-4",
+          "branchId": "FIRE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Пожар Без Остатка",
+          "englishName": "Total Conflagration",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Если враг погибает от твоего огненного урона, ты восстанавливаешь 5% / 8% максимальной маны, а «Вспышка» сразу готова снова. Срабатывает не чаще раза в 8 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ENEMY_KILLED",
+              "values": [
+                5,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "internalCooldownSeconds": 8,
+              "targetId": "FIRE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-8-1",
+          "branchId": "FIRE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Идеальное Возгорание",
+          "englishName": "Perfect Combustion",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "F-5-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "F-4-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Активация «Возгорания» сразу сбрасывает перезарядку «Вспышки» и «Огненной волны». Первый «Огненный шар» во время этого эффекта получает +15% к шансу критического удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "COMBUSTION"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-8-2",
+          "branchId": "FIRE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Сердце Пожара",
+          "englishName": "Heart of Fire",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "F-4-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока цель горит от твоего Горения, дополнительный урон критических огненных ударов по ней повышается на 5% / 10%. Новый «Огненный шар» поддерживает Горение минимум 4 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BURN"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-8-3",
+          "branchId": "FIRE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Звезда Пепла",
+          "englishName": "Ash Star",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "F-7-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Огненная комета» наносит на 20% больше урона цели, у которой меньше 30% здоровья.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FIRE_COMET",
+              "threshold": 30
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "F-9-1",
+          "branchId": "FIRE",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ВОПЛОЩЕНИЕ ПЛАМЕНИ",
+          "englishName": "Avatar of Flame",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "F-8-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "F-8-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вершина Пламени. Огненный урон постоянно повышен на 8%, а «Возгорание» длится на 3 сек. дольше. После «Огненной кометы» следующий «Огненный шар» в течение 5 сек. произносится за 1 сек. и стоит на 50% меньше маны. Критическая комета уменьшает оставшуюся перезарядку «Возгорания» на 3 сек. не чаще раза в 6 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "internalCooldownSeconds": 6,
+              "targetId": "FIRE",
+              "secondaryValues": [
+                3
+              ],
+              "durationSeconds": 5,
+              "castTimeSeconds": 1,
+              "resourceCostReductionPercent": 50
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-1-1",
+          "branchId": "ARCANE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Тайная Точность",
+          "englishName": "Arcane Precision",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Первый ранг открывает «Тайную искру». Точность мага повышается на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "targetId": "MAGE_ARCANE_SPARK"
+            },
+            {
+              "type": "StatModifier",
+              "key": "ACCURACY_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-1-2",
+          "branchId": "ARCANE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Глубокий Резерв",
+          "englishName": "Deep Reserve",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Максимальный запас маны увеличивается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "MAX_RESOURCE_PERCENT",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-1-3",
+          "branchId": "ARCANE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Чистая Сила",
+          "englishName": "Pure Power",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Сила заклинаний увеличивается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "SPELL_POWER_PERCENT",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-1-4",
+          "branchId": "ARCANE",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Экономия Формулы",
+          "englishName": "Formula Economy",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Все заклинания мага расходуют на 3% / 6% меньше маны.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_MANA_COST"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-2-1",
+          "branchId": "ARCANE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Тайный Заряд",
+          "englishName": "Arcane Charge",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Попадание «Тайной искрой» создаёт Тайный заряд на 12 сек. Заряды складываются до 4 и обновляют длительность.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_CHARGE",
+              "durationSeconds": 12
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-2-2",
+          "branchId": "ARCANE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Накопленная Мощь",
+          "englishName": "Stored Power",
+          "maxRank": 4,
+          "prerequisites": [
+            {
+              "talentId": "A-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Каждый Тайный заряд усиливает урон «Тайной искры» на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_ARCANE_SPARK"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-2-3",
+          "branchId": "ARCANE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Проводник Маны",
+          "englishName": "Mana Conduit",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Пока маны больше 70%, магическое пробивание повышается на 4% / 8%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_HIGH_MANA",
+              "threshold": 70
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-2-4",
+          "branchId": "ARCANE",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Стабильное Плетение",
+          "englishName": "Stable Weaving",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После успешного заклинания с временем произнесения восстанавливается 1 / 2 маны. Срабатывает не чаще раза в секунду.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1,
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_CAST_MANA",
+              "internalCooldownSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-3-1",
+          "branchId": "ARCANE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Тайный Взрыв",
+          "englishName": "Arcane Burst",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Открывает «Тайный взрыв»: 1,2 сек. произнесения, 25 маны, 6 сек. перезарядки. Урон: 110% силы заклинаний +35% за каждый Тайный заряд; расходует все заряды.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ARCANE_BURST"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-3-2",
+          "branchId": "ARCANE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Усиленный Заряд",
+          "englishName": "Empowered Charge",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "При четырёх Тайных зарядах «Тайный взрыв» получает +8% / +15% к шансу критического удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_BURST"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-3-3",
+          "branchId": "ARCANE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Тайное Проникновение",
+          "englishName": "Arcane Penetration",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Магическое пробивание повышается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "MAGIC_PENETRATION_PERCENT",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-3-4",
+          "branchId": "ARCANE",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Остаточный Импульс",
+          "englishName": "Residual Impulse",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После «Тайного взрыва», поглотившего 3+ заряда, следующая «Тайная искра» в течение 5 сек. наносит +10% / +20% урона. На 1 ранге её стоимость снижается вдвое, на 2 ранге она бесплатна.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                10,
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_RESIDUAL",
+              "secondaryValues": [
+                50,
+                100
+              ],
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-4-1",
+          "branchId": "ARCANE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Эхо Заклинания",
+          "englishName": "Spell Echo",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После успешного заклинания с временем произнесения есть 8% / 14% шанс через 0,5 сек. повторить 35% нанесённого им магического урона. Эхо не критует и не запускает новые срабатывания.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                35,
+                35
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_ECHO",
+              "chancePercent": 8,
+              "secondaryValues": [
+                8,
+                14
+              ],
+              "durationSeconds": 0.5,
+              "tickIntervalSeconds": 0.5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-4-2",
+          "branchId": "ARCANE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Манаворот",
+          "englishName": "Mana Cycle",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Когда маны меньше 30%, её восстановление в бою ускоряется на 20% / 40% / 60%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                20,
+                40,
+                60
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_LOW_MANA_REGEN",
+              "threshold": 30
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-4-3",
+          "branchId": "ARCANE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Переполнение",
+          "englishName": "Overflow",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Пока маны больше 80%, сила заклинаний повышается на 4% / 8%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_HIGH_MANA_POWER",
+              "threshold": 80
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-4-4",
+          "branchId": "ARCANE",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Точный Расчёт",
+          "englishName": "Precise Calculation",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Если заклинание мага промахнулось, возвращается 40% / 70% потраченной на него маны.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                40,
+                70
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_MISS_REFUND"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-5-1",
+          "branchId": "ARCANE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Перегрузка Маны",
+          "englishName": "Mana Overload",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Открывает «Перегрузку маны» (вне глобальной перезарядки): на 10 сек. +15% к силе заклинаний и +10% к магическому пробиванию, но заклинания стоят на 10% больше. «Тайная искра» создаёт 2 заряда. Перезарядка 100 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "MANA_OVERLOAD"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MANA_OVERLOAD",
+              "secondaryValues": [
+                10
+              ],
+              "durationSeconds": 10
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-5-2",
+          "branchId": "ARCANE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Контролируемый Взрыв",
+          "englishName": "Controlled Burst",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Тайный взрыв» с четырьмя и более зарядами наносит +10% / +20% урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                10,
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_BURST_4"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-5-3",
+          "branchId": "ARCANE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Возврат Энергии",
+          "englishName": "Energy Return",
+          "maxRank": 4,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После «Тайного взрыва» возвращается 2 / 3 / 4 / 5 маны за каждый поглощённый Тайный заряд.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_BURST_RETURN"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-5-4",
+          "branchId": "ARCANE",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Раскол Формулы",
+          "englishName": "Formula Fracture",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критическое попадание заклинанием мага на 5 сек. повышает твоё магическое пробивание против этой цели на 3% / 6%. Эффект не складывается.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_FORMULA_FRACTURE",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-6-1",
+          "branchId": "ARCANE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Арканный Каскад",
+          "englishName": "Arcane Cascade",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "При 4+ Тайных зарядах открывается «Арканный каскад»: мгновенно наносит 150% силы заклинаний, стоит 20 маны, имеет 8 сек. перезарядки и расходует 2 заряда.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ARCANE_CASCADE"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_CASCADE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-6-2",
+          "branchId": "ARCANE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Сбережённое Время",
+          "englishName": "Saved Time",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После «Тайного взрыва» следующее заклинание с временем произнесения в течение 5 сек. произносится на 0,15 / 0,30 сек. быстрее.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0.15,
+                0.3
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_SAVED_TIME",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-6-3",
+          "branchId": "ARCANE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Мана Не Пропадает",
+          "englishName": "Mana Never Wasted",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Если восстановление маны превышает максимум, 25% / 50% лишней маны превращается в щит на 5 сек., но не более 3% максимального здоровья. Срабатывает не чаще раза в 8 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                25,
+                50
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_OVERFLOW_SHIELD",
+              "threshold": 3,
+              "durationSeconds": 5,
+              "internalCooldownSeconds": 8
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-6-4",
+          "branchId": "ARCANE",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Тайное Подавление",
+          "englishName": "Arcane Suppression",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Тайную печать»: 60% силы заклинаний магического урона и немота на 2 сек. Стоимость 25 маны, перезарядка 30 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ARCANE_SEAL"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-7-1",
+          "branchId": "ARCANE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Совершенный Взрыв",
+          "englishName": "Perfect Burst",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Тайный взрыв» произносится на 0,15 / 0,30 сек. быстрее и наносит +5% / +10% урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_BURST_PERFECT",
+              "secondaryValues": [
+                0.15,
+                0.3
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-7-2",
+          "branchId": "ARCANE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Эхо Перегрузки",
+          "englishName": "Overload Echo",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-4-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "A-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время «Перегрузки маны» шанс «Эха заклинания» удваивается. Эхо не может срабатывать чаще одного раза в 2 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_OVERLOAD_ECHO",
+              "internalCooldownSeconds": 2
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-7-3",
+          "branchId": "ARCANE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Резонанс Школ",
+          "englishName": "School Resonance",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "После огненного или ледяного заклинания следующее тайное попадание в течение 5 сек. наносит +5% / +10% / +15% урона. После тайного попадания следующее огненное или ледяное получает +3% / +6% / +9%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_RESONANCE",
+              "secondaryValues": [
+                3,
+                6,
+                9
+              ],
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-7-4",
+          "branchId": "ARCANE",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Последний Резерв",
+          "englishName": "Last Reserve",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Когда мана впервые падает ниже 15%, мгновенно восстанавливается 8% / 15% максимальной маны. Повторное срабатывание возможно через 60 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                8,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_LAST_RESERVE",
+              "threshold": 15,
+              "internalCooldownSeconds": 60
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-8-1",
+          "branchId": "ARCANE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Абсолютная Формула",
+          "englishName": "Absolute Formula",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-7-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Тайный взрыв» при 4+ зарядах не может промахнуться и получает +15% к шансу критического удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_ABSOLUTE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-8-2",
+          "branchId": "ARCANE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Бесконечная Цепь",
+          "englishName": "Infinite Chain",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Критический «Тайный взрыв», поглотивший 4+ заряда, после завершения создаёт 1 / 2 новых Тайных заряда.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                1,
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_INFINITE_CHAIN"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-8-3",
+          "branchId": "ARCANE",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Совершенная Перегрузка",
+          "englishName": "Perfect Overload",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-5-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "A-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "При активации «Перегрузки маны» восстанавливается 15% максимальной маны и сразу сбрасывается перезарядка «Тайного взрыва».",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_PERFECT_OVERLOAD"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "A-9-1",
+          "branchId": "ARCANE",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "АРХИМАГ",
+          "englishName": "ARCHMAGE",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "A-8-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "A-8-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вершина Тайной магии. Сила заклинаний +8%. Максимум Тайных зарядов повышается до 5. «Тайный взрыв» использует пятый заряд по обычной формуле; при расходовании 5 зарядов 35% итогового урона повторяется через 1 сек. как некритическое тайное эхо.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "SPELL_POWER_PERCENT",
+              "values": [
+                8
+              ]
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                35
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ARCANE_ARCHMAGE",
+              "durationSeconds": 1,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-1-1",
+          "branchId": "FROST",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Холодная Точность",
+          "englishName": "Cold Precision",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Первый ранг открывает «Ледяной осколок». Точность ледяных заклинаний повышается на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "targetId": "MAGE_ICE_SHARD"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_ACCURACY"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-1-2",
+          "branchId": "FROST",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Острый Лёд",
+          "englishName": "Sharp Ice",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Шанс критического удара ледяных заклинаний повышается на 2% / 4% / 6% / 8%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CRITICAL"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-1-3",
+          "branchId": "FROST",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Закалённый Разум",
+          "englishName": "Hardened Mind",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Магическое сопротивление увеличивается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "MAGIC_RESISTANCE_PERCENT",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-1-4",
+          "branchId": "FROST",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Экономия Холода",
+          "englishName": "Cold Economy",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Ледяные заклинания расходуют на 5% / 10% меньше маны.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_MANA_COST"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-2-1",
+          "branchId": "FROST",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Обморожение",
+          "englishName": "Frostbite",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Попадание «Ледяным осколком» накладывает Обморожение на 6 сек., до 3 зарядов. Каждый заряд снижает скорость атак цели на 1% / 2% / 3% / 4%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROSTBITE",
+              "durationSeconds": 6,
+              "triggerCount": 3
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-2-2",
+          "branchId": "FROST",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Ледяная Трещина",
+          "englishName": "Ice Crack",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "По цели с 3 зарядами Обморожения твои ледяные заклинания наносят +4% / +8% урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_3_STACK_DAMAGE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-2-3",
+          "branchId": "FROST",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Хрустальный Отклик",
+          "englishName": "Crystal Response",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После полученного критического удара создаётся щит на 2% / 4% максимального здоровья на 5 сек. Срабатывает не чаще раза в 12 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CRIT_SHIELD",
+              "durationSeconds": 5,
+              "internalCooldownSeconds": 12
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-2-4",
+          "branchId": "FROST",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Чистый Снег",
+          "englishName": "Pure Snow",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После попадания «Ледяным осколком» следующее заклинание мага в течение 4 сек. получает +3% / +6% к точности.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CLEAN_SNOW",
+              "durationSeconds": 4
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-3-1",
+          "branchId": "FROST",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Ледяное Копьё",
+          "englishName": "Ice Lance",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Открывает «Ледяное копьё»: мгновенно наносит 95% силы заклинаний, стоит 18 маны, перезарядка 6 сек. По цели с 3 зарядами Обморожения наносит +25% урона и поглощает 1 заряд.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ICE_LANCE"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                25
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ICE_LANCE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-3-2",
+          "branchId": "FROST",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Хрупкость",
+          "englishName": "Brittle",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критическое ледяное попадание накладывает Хрупкость на 6 сек.: твой критический урон по этой цели повышается на 5% / 10%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BRITTLE",
+              "durationSeconds": 6
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-3-3",
+          "branchId": "FROST",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Белый Шум",
+          "englishName": "White Noise",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Каждый заряд Обморожения дополнительно снижает точность цели на 1% / 2%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1,
+                2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROSTBITE_ACCURACY"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-3-4",
+          "branchId": "FROST",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Ледяной Пробой",
+          "englishName": "Frost Penetration",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Магическое пробивание ледяных заклинаний повышается на 3% / 6% / 9% / 12%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_PENETRATION"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-4-1",
+          "branchId": "FROST",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Ледяной Раскол",
+          "englishName": "Ice Fracture",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Открывает «Ледяной раскол»: наносит всем врагам 70% силы заклинаний, стоит 28 маны, перезарядка 12 сек. Цели с 3 зарядами Обморожения оглушаются на 1 сек. и теряют эти заряды.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ICE_FRACTURE"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ICE_FRACTURE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-4-2",
+          "branchId": "FROST",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Прочная Корка",
+          "englishName": "Strong Crust",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Щиты, создаваемые твоими ледяными талантами, поглощают на 5% / 10% больше урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_SHIELD_POWER"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-4-3",
+          "branchId": "FROST",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Морозный Ответ",
+          "englishName": "Frost Response",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После полностью поглощённого щитом удара следующий ледяной спелл в течение 5 сек. наносит +5% / +10% урона. Срабатывает не чаще раза в 5 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_RESPONSE",
+              "durationSeconds": 5,
+              "internalCooldownSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-4-4",
+          "branchId": "FROST",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Ровный Холод",
+          "englishName": "Steady Cold",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "«Ледяной осколок» произносится на 0,10 / 0,20 сек. быстрее.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                0.1,
+                0.2
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "MAGE_ICE_SHARD"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-5-1",
+          "branchId": "FROST",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Сердце Зимы",
+          "englishName": "Heart of Winter",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Сердце зимы» (вне глобальной перезарядки): 10 сек. +12% к ледяному урону, «Ледяной осколок» на 0,25 сек. быстрее, ледяные заклинания стоят на 15% меньше. Перезарядка 100 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "HEART_OF_WINTER"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "HEART_OF_WINTER",
+              "secondaryValues": [
+                15
+              ],
+              "castTimeSeconds": 0.25,
+              "durationSeconds": 10
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-5-2",
+          "branchId": "FROST",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Расколотый Панцирь",
+          "englishName": "Shattered Shell",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-3-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "I-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Ледяное копьё» по цели с Хрупкостью наносит +8% / +15% урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8,
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ICE_LANCE_BRITTLE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-5-3",
+          "branchId": "FROST",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Ледяная Экономия",
+          "englishName": "Frost Economy",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Критическое ледяное попадание восстанавливает 1 / 2 / 3 / 4 маны. Не чаще раза в секунду.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CRIT_MANA",
+              "internalCooldownSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-5-4",
+          "branchId": "FROST",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Холодный Прицел",
+          "englishName": "Cold Aim",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "По цели ниже 30% здоровья ледяные заклинания получают +3% / +6% к точности и шансу критического удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_EXECUTE_AIM",
+              "threshold": 30
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-6-1",
+          "branchId": "FROST",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Печать Молчания",
+          "englishName": "Seal of Silence",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Морозную печать»: 55% силы заклинаний магического урона и немота на 2 сек. Стоимость 22 маны, перезарядка 30 сек.",
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "FROST_SEAL"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-6-2",
+          "branchId": "FROST",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Усиленный Отклик",
+          "englishName": "Empowered Response",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Щит «Хрустального отклика» становится 3% / 5% максимального здоровья и действует на 1 сек. дольше. Перезарядка срабатывания остаётся 12 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                3,
+                5
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CRIT_SHIELD_UPGRADE",
+              "durationSeconds": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-6-3",
+          "branchId": "FROST",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Треснувший Лёд",
+          "englishName": "Cracked Ice",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Когда Обморожение достигает 3 зарядов, следующий «Ледяной осколок» в течение 5 сек. получает +5% / +10% к шансу критического удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CRACKED_ICE",
+              "durationSeconds": 5
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-6-4",
+          "branchId": "FROST",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Стужа Без Паники",
+          "englishName": "Cold Without Panic",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Пока на тебе действует оглушение или немота, входящий магический урон снижается на 3% / 6%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_CONTROL_DEFENSE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-7-1",
+          "branchId": "FROST",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Совершенное Копьё",
+          "englishName": "Perfect Lance",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Перезарядка «Ледяного копья» уменьшается на 0,5 / 1 сек. Бонус урона по цели с 3 Обморожениями повышается до +35% / +45%.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                35,
+                45
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "ICE_LANCE_PERFECT",
+              "secondaryValues": [
+                0.5,
+                1
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-7-2",
+          "branchId": "FROST",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Зимнее Давление",
+          "englishName": "Winter Pressure",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Цель с 3 зарядами твоего Обморожения наносит на 3% / 5% меньше урона.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                5
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_PRESSURE"
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-7-3",
+          "branchId": "FROST",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Холодная Серия",
+          "englishName": "Cold Sequence",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Три успешных ледяных заклинания подряд усиливают следующее: стоимость маны −10% / −20% / −30%, урон +3% / +5% / +7%. Промах или прерывание сбрасывает серию.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                3,
+                5,
+                7
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_SEQUENCE",
+              "secondaryValues": [
+                10,
+                20,
+                30
+              ],
+              "triggerCount": 3,
+              "durationSeconds": 8
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-7-4",
+          "branchId": "FROST",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Белая Тишина",
+          "englishName": "White Silence",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-6-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "После немоты от «Морозной печати» скорость атак цели дополнительно снижается на 10% на 4 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_SEAL_SLOW",
+              "durationSeconds": 4
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-8-1",
+          "branchId": "FROST",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Абсолютный Раскол",
+          "englishName": "Absolute Fracture",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-4-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "I-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "«Ледяной раскол» по цели с 3 Обморожениями после оглушения также накладывает Хрупкость на 6 сек.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                1
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_FRACTURE_BRITTLE",
+              "durationSeconds": 6
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-8-2",
+          "branchId": "FROST",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Совершенное Сердце",
+          "englishName": "Perfect Heart",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "I-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время «Сердца зимы» шанс критического удара ледяных заклинаний повышается на 4% / 8%, а перезарядка «Ледяного копья» идёт в 1,5 раза быстрее.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                4,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_PERFECT_HEART",
+              "secondaryValues": [
+                50,
+                50
+              ]
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-8-3",
+          "branchId": "FROST",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Лёд Не Ломается",
+          "englishName": "Ice Does Not Break",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-6-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Один раз за бой при падении здоровья ниже 20% создаётся щит на 8% максимального здоровья на 6 сек. Щит не спасает от уже смертельного удара.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_EMERGENCY_SHIELD",
+              "threshold": 20,
+              "durationSeconds": 6
+            }
+          ],
+          "version": 1
+        },
+        {
+          "id": "I-9-1",
+          "branchId": "FROST",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ВЛАДЫКА ХОЛОДА",
+          "englishName": "LORD OF FROST",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "I-8-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "I-8-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вершина Льда. Ледяной урон +8%. Максимум Обморожения повышается до 4. Четвёртый заряд — Глубокая заморозка: следующее «Ледяное копьё» поглощает все 4 заряда, наносит +60% урона и оглушает цель на 1 сек. (не чаще раза в 12 сек. на цель). Во время «Сердца зимы» «Ледяной осколок» по цели с 3+ зарядами произносится ещё на 0,15 сек. быстрее.",
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "FROST_LORD",
+              "secondaryValues": [
+                60
+              ],
+              "durationSeconds": 1,
+              "internalCooldownSeconds": 12
+            }
+          ],
+          "version": 1
+        }
+      ]
+    }
+  ]
+}

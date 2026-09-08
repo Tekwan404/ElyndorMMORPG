@@ -303,3 +303,12 @@ not itself combat participation.
 The combat session must expose participant ownership and state separately from
 the existing companion projection. A player must never be represented as a
 companion.
+
+## Party and run termination policy
+
+Disbanding a party, including the departure of its last member, abandons its
+active dungeon run in the same database transaction. It does not cancel the
+already started combat or rewrite that encounter's roster. The encounter may
+finish, but an abandoned run cannot advance or start another encounter.
+Leader departure while other members remain transfers leadership normally.
+Party changes are published to connected members so their group UI refreshes.

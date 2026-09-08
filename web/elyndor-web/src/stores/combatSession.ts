@@ -9,6 +9,8 @@ import {
 } from '@microsoft/signalr'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
+import { usePartyStore } from '@/game/party/partyStore'
+import { useDungeonStore } from '@/game/party/dungeonStore'
 import type {
   CombatEvent,
   CombatLootRoll,
@@ -115,6 +117,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         .build()
       connection.on('CombatUpdated', applyUpdate)
       connection.on('CombatEnded', applyUpdate)
+      connection.on('PartyUpdated', () => {
+        void usePartyStore().refresh()
+        void useDungeonStore().refresh()
+      })
       connection.onreconnecting((error) => {
         connectionState.value = 'connecting'
         if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
@@ -476,6 +482,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic,
     pending,
     isActive,
+    participantStatus,
     isParticipantActive,
     isAwaitingAttachment,
     enemies,

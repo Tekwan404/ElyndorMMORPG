@@ -17,6 +17,23 @@ public sealed class AccountResolverTests(PostgresFixture postgres) : IAsyncLifet
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task SignedUsernameChangesRemovalAndTransferReplaceOldOwnership()
+    {
+        await using GameDbContext context = postgres.CreateDbContext();
+        AccountResolver resolver = new(context, new FixedTimeProvider(InitialTime));
+        await resolver.ResolveAsync(42, "old_name", CancellationToken.None);
+        await resolver.ResolveAsync(42, "new_name", CancellationToken.None);
+        Assert.False(await context.Accounts.AnyAsync(account => account.NormalizedTelegramUsername == "old_name"));
+        await resolver.ResolveAsync(84, "new_name", CancellationToken.None);
+        context.ChangeTracker.Clear();
+        Assert.Null((await context.Accounts.SingleAsync(account => account.TelegramUserId == 42)).TelegramUsername);
+        Assert.Equal("new_name", (await context.Accounts.SingleAsync(account => account.TelegramUserId == 84)).NormalizedTelegramUsername);
+        await resolver.ResolveAsync(84, null, CancellationToken.None);
+        context.ChangeTracker.Clear();
+        Assert.All(await context.Accounts.ToArrayAsync(), account => Assert.Null(account.NormalizedTelegramUsername));
+    }
+
+    [Fact]
     public async Task ConcurrentFirstLoginConvergesOnOneAccount()
     {
         Task<Account>[] resolutions = Enumerable.Range(0, 8)

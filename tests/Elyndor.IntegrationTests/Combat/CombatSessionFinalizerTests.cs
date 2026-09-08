@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
@@ -173,8 +174,10 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         Assert.Null(result);
     }
 
-    [Fact]
-    public async Task DefeatedLevel60MageRespawnsWithScaledMana()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DefeatRespawnsButFleeKeepsLocationAndVitals(bool fled)
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -224,17 +227,28 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         CombatSessionFinalizer finalizer = new(
             provider.GetRequiredService<IServiceScopeFactory>());
 
+        CombatSessionSnapshot terminal = DefeatSnapshot();
+        if (fled)
+        {
+            terminal = terminal with
+            {
+                Player = terminal.Player with { ActorId = characterId, Hp = 50, Resource = 20 },
+                ParticipantRoster = [new CombatParticipantSnapshot(accountId, characterId, characterId,
+                    CombatParticipantStatus.Fled, Now, Now, Now, null)]
+            };
+        }
         await finalizer.FinalizeAsync(
             characterId,
-            DefeatSnapshot(),
+            terminal,
             CancellationToken.None);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         CharacterVitals vitals = await verify.CharacterVitals.AsNoTracking().SingleAsync();
         CharacterLocation location = await verify.CharacterLocations.AsNoTracking().SingleAsync();
-        Assert.Equal(1040, vitals.CurrentResource);
+        Assert.Equal(fled ? 20 : 1040, vitals.CurrentResource);
         Assert.True(vitals.CurrentHp > 0);
-        Assert.Equal("STARTER_TOWN", location.LocationId);
+        Assert.Equal(fled ? "WHISPERING_FOREST" : "STARTER_TOWN", location.LocationId);
+        if (fled) Assert.Equal(50, vitals.CurrentHp);
     }
 
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)

@@ -134,7 +134,13 @@ describe('WorldView', () => {
     expect(startCombat).toHaveBeenCalledWith(WOLF_ENCOUNTER)
     expect(wrapper.find('[data-world-encounter]').exists()).toBe(false)
     expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Волк')
+    expect(combat.isActive).toBe(true)
+    combat.snapshot = { ...combat.snapshot!, status: 'Victory' }
+    await flushPromises()
+    expect(wrapper.get('[data-explore]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-explore]').trigger('click')
+    await flushPromises()
+    expect(explore).toHaveBeenCalledTimes(2)
   })
 
   it('keeps a rostered remote participant in the world until they reach the combat location', async () => {

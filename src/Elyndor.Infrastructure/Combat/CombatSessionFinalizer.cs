@@ -44,7 +44,10 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         GameContentSnapshot? contentSnapshot,
         CancellationToken cancellationToken)
     {
-        if (snapshot.Status == CombatSessionStatus.Active)
+        bool fled = snapshot.ParticipantRoster?.Any(participant =>
+            participant.CharacterId == characterId
+            && participant.Status == Elyndor.Core.Combat.Participants.CombatParticipantStatus.Fled) == true;
+        if (snapshot.Status == CombatSessionStatus.Active && !fled)
             return null;
 
         // Training is a sandbox over the real combat runtime. It must never mutate durable
@@ -64,7 +67,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         CombatDurabilityService? durability =
             scope.ServiceProvider.GetService<CombatDurabilityService>();
-        if (durability is not null)
+        if (durability is not null && snapshot.Status != CombatSessionStatus.Active)
         {
             await durability.RecordTerminalSnapshotAsync(
                 snapshot.SessionId,
@@ -106,7 +109,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         // A terminal victory may be observed again after reconnect/retry. Rewards are already
         // idempotent by CombatSessionId, but replaying the pre-reward combat vitals here would
         // overwrite authoritative post-reward state (for example a level-up full heal).
-        if (snapshot.Status == CombatSessionStatus.Victory)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
         {
             var existingReward = await dbContext.CombatRewardGrants
                 .AsNoTracking()
@@ -153,7 +156,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 ? vitals.CheckpointedAtUtc
                 : snapshot.ServerTimeUtc;
 
-            if (snapshot.Status == CombatSessionStatus.Defeat && character is not null)
+            if ((snapshot.Status == CombatSessionStatus.Defeat || snapshot.Player.Hp <= 0) && character is not null
+                && !fled)
             {
                 CharacterDerivedState derived = contentSnapshot is null
                     ? await derivedStateService.ResolveAsync(
@@ -170,16 +174,22 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
                 if (location is not null)
                 {
+                    string? dungeonId = await dbContext.DungeonEncounters
+                        .Where(encounter => encounter.CombatSessionId == snapshot.SessionId)
+                        .Select(encounter => encounter.Run!.DungeonId)
+                        .SingleOrDefaultAsync(cancellationToken);
+                    string respawnLocation = dungeonId is null
+                        ? WorldLocationIds.StarterTown
+                        : dungeonService?.GetDefinition(dungeonId)?.EntryLocationId ?? location.LocationId;
                     DateTimeOffset relocateAt = checkpointAt < location.UpdatedAtUtc
                         ? location.UpdatedAtUtc
                         : checkpointAt;
-                    if (!string.Equals(location.LocationId, WorldLocationIds.StarterTown, StringComparison.Ordinal))
-                        location.Relocate(WorldLocationIds.StarterTown, relocateAt);
+                    if (!string.Equals(location.LocationId, respawnLocation, StringComparison.Ordinal))
+                        location.Relocate(respawnLocation, relocateAt);
                     checkpointAt = relocateAt;
                 }
 
-                // Prototype respawn: defeat has no XP/item penalty. The player returns to
-                // the safe town immediately ready to play again.
+                // Dungeon defeats recover at the entrance; ordinary defeat returns to town.
                 vitals.BeginContext(
                     derived.Stats.MaxHp,
                     derived.EffectiveResourceProfile.RespawnValue,
@@ -197,7 +207,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         }
 
         CombatRewardApplicationResult? reward = null;
-        if (snapshot.Status == CombatSessionStatus.Victory)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
         {
             CombatRewardService rewards =
                 scope.ServiceProvider.GetRequiredService<CombatRewardService>();
@@ -220,7 +230,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 characterId,
                 cancellationToken);
         }
-        if (dungeonService is not null)
+        if (dungeonService is not null && snapshot.Status != CombatSessionStatus.Active)
         {
             await dungeonService.HandleCombatFinishedAsync(
                 snapshot,

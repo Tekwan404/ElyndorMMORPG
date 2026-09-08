@@ -214,8 +214,18 @@ public sealed class DungeonService(
         if (validationError is not null)
             return DungeonOperationResult.Failure(validationError);
 
+        Guid lockedPartyId = party.PartyId;
         await using IDbContextTransaction? transaction =
-            await BeginAdvisoryLockAsync($"dungeon-party:{party.PartyId:N}", cancellationToken);
+            await BeginAdvisoryLockAsync($"party-membership:{lockedPartyId:N}", cancellationToken);
+        dbContext.ChangeTracker.Clear();
+        party = await partyService.GetAsync(accountId, cancellationToken);
+        if (party is null || party.PartyId != lockedPartyId)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
+        if (party.LeaderCharacterId != character.Id)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
+        validationError = await ValidateMembersAsync(party, definition, cancellationToken);
+        if (validationError is not null)
+            return DungeonOperationResult.Failure(validationError);
         DungeonRun? existingByRequest = await LoadRunByRequestAsync(creationRequestId, cancellationToken);
         if (existingByRequest is not null)
         {
@@ -407,6 +417,8 @@ public sealed class DungeonService(
             return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInRun);
 
         member.MarkLeft();
+        if (run.Members.All(candidate => candidate.State == DungeonRunMemberState.Left))
+            run.Abandon();
         await dbContext.SaveChangesAsync(cancellationToken);
         await CommitAsync(transaction, cancellationToken);
         return new DungeonOperationResult(true, null, ToView(run, definition));
@@ -524,7 +536,7 @@ public sealed class DungeonService(
             await BeginAdvisoryLockAsync($"dungeon-run:{runId:N}", cancellationToken);
         DungeonEncounter? encounter = await dbContext.DungeonEncounters
             .SingleOrDefaultAsync(candidate => candidate.Id == encounterId
-                && candidate.RunId == runId, cancellationToken);
+                && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active, cancellationToken);
         if (encounter is null || encounter.State != DungeonEncounterState.Pending)
             return false;
         encounter.Activate(combatSessionId);
@@ -552,6 +564,13 @@ public sealed class DungeonService(
         if (encounter is null || encounter.State != DungeonEncounterState.Active)
             return;
 
+        if (dbContext.Database.IsNpgsql())
+        {
+            string runLock = $"dungeon-run:{encounter.RunId:N}";
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(hashtext({runLock}))", cancellationToken);
+        }
+
         DateTimeOffset now = timeProvider.GetUtcNow();
         if (snapshot.Status == CombatSessionStatus.Victory)
         {
@@ -567,6 +586,11 @@ public sealed class DungeonService(
 
             DungeonRun run = await dbContext.DungeonRuns
                 .SingleAsync(candidate => candidate.Id == encounter.RunId, cancellationToken);
+            if (run.State != DungeonRunState.Active)
+            {
+                await CommitAsync(transaction, cancellationToken);
+                return;
+            }
             DungeonDefinition definition = contentProvider.GetCurrent().Indexes.DungeonsById[run.DungeonId];
             run.AdvanceEncounter(now);
             if (run.CurrentEncounterIndex >= definition.Encounters.Count)
