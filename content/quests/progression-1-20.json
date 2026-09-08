@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.14.0",
+  "contentVersion": "0.14.1",
   "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-08T07:45:00+00:00",
+  "publishedAtUtc": "2026-09-08T05:50:00+00:00",
   "quests": [
     {
       "id": "QUEST_01_FIRST_HUNT",
@@ -9,7 +9,7 @@
       "description": "Стража просит проверить тропы Шепчущего леса и сократить стаю молодых волков.",
       "type": "Story",
       "requiredLevel": 1,
-      "offerLocationId": "WHISPERING_FOREST",
+      "offerLocationId": "STARTER_TOWN",
       "objectives": [
         {
           "id": "KILL_WOLVES",
