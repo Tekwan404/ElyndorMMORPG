@@ -603,7 +603,8 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 }
 
 .location-activities,
-.location-contracts,
+.world-stories,
+.field-guild,
 .town-services,
 .location-routes {
   overflow: hidden;
@@ -612,92 +613,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   background:
     linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
   box-shadow: var(--ui-shadow-inset);
-}
-
-.contract-card {
-  display: grid;
-  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-4);
-  background:
-    radial-gradient(circle at 8% 50%, rgb(146 136 255 / 10%), transparent 9rem),
-    linear-gradient(90deg, rgb(146 136 255 / 5%), transparent 70%);
-}
-
-.contract-card__icon {
-  display: grid;
-  width: 3.1rem;
-  height: 3.1rem;
-  place-items: center;
-  border: 1px solid rgb(146 136 255 / 26%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 82%);
-  color: #b8b2ff;
-  font-size: 1.2rem;
-}
-
-.contract-card__copy {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.contract-card__copy small {
-  color: #aaa3ff;
-  font-size: .53rem;
-  font-weight: 800;
-  letter-spacing: .07em;
-}
-
-.contract-card__copy strong {
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-sm);
-}
-
-.contract-card__copy p {
-  margin: 0;
-  color: var(--ui-color-text-muted);
-  font-size: .66rem;
-  line-height: 1.4;
-}
-
-.contract-card__reward {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin-top: 4px;
-  font-size: .58rem;
-}
-
-.contract-card__reward span,
-.contract-card__reward em {
-  color: var(--ui-color-text-muted);
-  font-style: normal;
-}
-
-.contract-card__reward b {
-  color: var(--ui-color-gold);
-}
-
-.contract-card__status {
-  padding: 6px 9px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-text-muted);
-  font-size: .58rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.contract-card__status--active {
-  border-color: rgb(146 136 255 / 30%);
-  color: #c2bdff;
-}
-
-.contract-card__status--done {
-  border-color: rgb(79 185 150 / 30%);
-  color: #84d5bb;
 }
 
 .activity-card {
