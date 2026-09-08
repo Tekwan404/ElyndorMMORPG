@@ -19,7 +19,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.14.1", package.ContentVersion);
+        Assert.Equal("0.15.0", package.ContentVersion);
         Assert.Equal("0.11.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
@@ -32,6 +32,8 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal(40, package.InventoryProfile!.DefaultCapacity);
         Assert.Equal(20, package.Quests!.Count);
         Assert.Contains(package.Quests, quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
+        Assert.Equal(5, package.Quests!.Count(quest => quest.Type == Elyndor.Core.Quests.QuestType.Contract));
+        Assert.Equal(7, package.Quests.Count(quest => quest.Type == Elyndor.Core.Quests.QuestType.Side));
         Assert.All(
             package.Locations,
             location => Assert.Equal(0, location.TravelDurationSeconds));
