@@ -1324,6 +1324,42 @@
       "armorFlat": 145
     },
     {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+      "name": "Сапоги Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 15,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "primaryStatRanges": {
+        "agility": {
+          "min": 15,
+          "max": 21,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 11,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 64
+    },
+    {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
       "name": "Перчатки Чёрного Созвездия",
       "type": "Equipment",
