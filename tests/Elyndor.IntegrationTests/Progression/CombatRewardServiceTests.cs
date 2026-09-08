@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Quests;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Characters;
@@ -252,7 +253,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
-    public async Task AcceptedBossContractCompletesExactlyOnceAndAddsContractReward()
+    public async Task AcceptedBossContractBecomesReadyWithoutAutoGrantingQuestReward()
     {
         (Guid characterId, _) = await CreateCharacterAsync(0, 100, level: 14);
         Guid sessionId = Guid.CreateVersion7();
@@ -279,11 +280,19 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         Assert.True(first.Granted);
         Assert.False(replay.Granted);
-        Assert.Equal(10_500, first.XpEarned);
-        Assert.Equal(240, first.GoldEarned);
+        Assert.Equal(8_500, first.XpEarned);
+        Assert.Equal(90, first.GoldEarned);
         Assert.Contains(
             "CONTRACT_BROODMOTHER_GATE",
             first.CompletedContractIds ?? []);
+        Assert.Empty(await context.QuestRewardGrants.AsNoTracking().ToArrayAsync());
+
+        CharacterQuestState questState = await context.CharacterQuestStates
+            .AsNoTracking()
+            .SingleAsync(state =>
+                state.CharacterId == characterId
+                && state.QuestId == "CONTRACT_BROODMOTHER_GATE");
+        Assert.Equal(QuestStateStatuses.ReadyToClaim, questState.Status);
 
         CharacterContractCompletion completion = await context.CharacterContractCompletions
             .AsNoTracking()
