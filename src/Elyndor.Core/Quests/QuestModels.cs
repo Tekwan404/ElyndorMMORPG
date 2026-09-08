@@ -36,4 +36,9 @@ public sealed record QuestDefinition(
     int RewardGold = 0,
     IReadOnlyList<QuestItemRewardDefinition>? RewardItems = null,
     IReadOnlyList<string>? PrerequisiteQuestIds = null,
-    string? UnlockLocationId = null);
+    string? UnlockLocationId = null,
+    string? IssuerName = null,
+    string? IssuerRole = null,
+    string? RegionName = null,
+    string? ContractNumber = null,
+    string? ThreatLevel = null);
