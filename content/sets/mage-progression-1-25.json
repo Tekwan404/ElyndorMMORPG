@@ -1,0 +1,81 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_MAGE_THREE_ELEMENTS",
+      "name": "Сердце Трёх Стихий",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 2
+        },
+        {
+          "requiredPieces": 4,
+          "maxResourceFlat": 15
+        },
+        {
+          "requiredPieces": 6,
+          "magicPenetrationPercent": 4
+        }
+      ]
+    },
+    {
+      "id": "SET_MAGE_SHATTERED_STAR",
+      "name": "Одеяния Расколотой Звезды",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "attackSpeedPercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 3
+        },
+        {
+          "requiredPieces": 6,
+          "spellPowerFlat": 18
+        }
+      ]
+    },
+    {
+      "id": "SET_MAGE_SILENT_ARCHON",
+      "name": "Регалии Безмолвного Архонта",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 25
+        },
+        {
+          "requiredPieces": 4,
+          "magicPenetrationPercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "spellPowerFlat": 20
+        }
+      ]
+    },
+    {
+      "id": "SET_MAGE_ECLIPSED_ORACLE",
+      "name": "Одеяния Затмённого Оракула",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 35
+        },
+        {
+          "requiredPieces": 4,
+          "magicPenetrationPercent": 6
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 5,
+          "spellPowerFlat": 28
+        }
+      ]
+    }
+  ]
+}
