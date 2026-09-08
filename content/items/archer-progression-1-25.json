@@ -216,7 +216,7 @@
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
-      "name": "Наплечники Шепчущего Леса",
+      "name": "Плащ Шепчущего Леса",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
@@ -461,7 +461,7 @@
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS",
-      "name": "Наплечники Серой Тропы",
+      "name": "Плащ Серой Тропы",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
@@ -711,7 +711,7 @@
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
-      "name": "Наплечники Тернового Следа",
+      "name": "Плащ Тернового Следа",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
@@ -962,7 +962,7 @@
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
-      "name": "Наплечники Лунного Листа",
+      "name": "Плащ Лунного Листа",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
@@ -1213,7 +1213,7 @@
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
-      "name": "Наплечники Звёздного Зверобоя",
+      "name": "Плащ Звёздного Зверобоя",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
@@ -1464,7 +1464,7 @@
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
-      "name": "Наплечники Чёрного Созвездия",
+      "name": "Плащ Чёрного Созвездия",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 23,
