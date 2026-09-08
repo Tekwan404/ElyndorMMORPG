@@ -180,7 +180,7 @@
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
-      "name": "Наплечники Синей Свечи",
+      "name": "Плащ Синей Свечи",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
@@ -456,7 +456,7 @@
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_SHOULDERS",
-      "name": "Наплечники Забытого Ученика",
+      "name": "Плащ Забытого Ученика",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
@@ -737,7 +737,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
-      "name": "Наплечники Трёх Стихий",
+      "name": "Плащ Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
@@ -1019,7 +1019,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
-      "name": "Наплечники Расколотой Звезды",
+      "name": "Плащ Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
@@ -1301,7 +1301,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
-      "name": "Наплечники Безмолвного Архонта",
+      "name": "Плащ Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
@@ -1583,7 +1583,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
-      "name": "Наплечники Затмённого Оракула",
+      "name": "Плащ Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 23,
