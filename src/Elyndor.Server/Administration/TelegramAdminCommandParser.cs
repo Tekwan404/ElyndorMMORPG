@@ -19,7 +19,14 @@ public static class TelegramAdminCommandParser
             name = name[..name.IndexOf('@')];
         }
 
-        if (name == "/help" && arguments.Length == 0)
+        // Private admin chat accepts both Telegram-style slash commands and ordinary
+        // text commands: "/level 123 10" and "level 123 10" are equivalent.
+        if (name.StartsWith('/'))
+        {
+            name = name[1..];
+        }
+
+        if (name == "help" && arguments.Length == 0)
         {
             return AdminCommandParseResult.Success(new(AdminCommandType.Help));
         }
@@ -31,17 +38,17 @@ public static class TelegramAdminCommandParser
 
         return name switch
         {
-            "/char" when remainder.Length == 0 => Success(AdminCommandType.ShowCharacter, targetId),
-            "/restore" when remainder.Length == 0 => Success(AdminCommandType.Restore, targetId),
-            "/level" => ParseLevel(targetId, remainder),
-            "/location" => ParseSingleValue(AdminCommandType.SetLocation, targetId, remainder),
-            "/class" => ParseSingleValue(AdminCommandType.SetClass, targetId, remainder),
-            "/race" => ParseSingleValue(AdminCommandType.SetRace, targetId, remainder),
-            "/rename" when remainder.Length > 0 =>
+            "char" when remainder.Length == 0 => Success(AdminCommandType.ShowCharacter, targetId),
+            "restore" when remainder.Length == 0 => Success(AdminCommandType.Restore, targetId),
+            "level" => ParseLevel(targetId, remainder),
+            "location" => ParseSingleValue(AdminCommandType.SetLocation, targetId, remainder),
+            "class" => ParseSingleValue(AdminCommandType.SetClass, targetId, remainder),
+            "race" => ParseSingleValue(AdminCommandType.SetRace, targetId, remainder),
+            "rename" when remainder.Length > 0 =>
                 AdminCommandParseResult.Success(new(AdminCommandType.Rename, targetId, remainder)),
-            "/msg" when remainder is { Length: > 0 and <= 4096 } =>
+            "msg" when remainder is { Length: > 0 and <= 4096 } =>
                 AdminCommandParseResult.Success(new(AdminCommandType.Message, targetId, remainder)),
-            "/delete" => ParseDelete(targetId, remainder),
+            "delete" => ParseDelete(targetId, remainder),
             _ => AdminCommandParseResult.Failure("admin_command_unknown")
         };
     }
