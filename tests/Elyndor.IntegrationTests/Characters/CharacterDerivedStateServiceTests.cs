@@ -176,28 +176,28 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
 
         await using (GameDbContext setup = postgres.CreateDbContext())
         {
-            CharacterTalentState state = new(
+            CharacterTalentState talentState = new(
                 characterId,
                 archerTree.Id,
                 archerTree.Version,
                 Now);
-            state.ReplaceRanks(
+            talentState.ReplaceRanks(
                 TalentLoadoutIds.Loadout1,
                 new Dictionary<string, int> { ["A-1-1"] = 1 },
                 Now);
-            setup.CharacterTalentStates.Add(state);
+            setup.CharacterTalentStates.Add(talentState);
             await setup.SaveChangesAsync();
         }
 
         await using GameDbContext context = postgres.CreateDbContext();
         CharacterDerivedStateService service = CreateService(context, content);
-        CharacterDerivedState state = await service.ResolveAsync(
+        CharacterDerivedState resolved = await service.ResolveAsync(
             characterId, "ARCHER", 60, CancellationToken.None);
 
-        Assert.Equal("MANA", state.EffectiveResourceProfile.Id);
-        Assert.Equal("INTELLECT", state.EffectivePrimaryAttribute);
-        Assert.Equal("ARCHER_SPIRIT", state.ActiveCompanionProfile?.Id);
-        Assert.Contains("ARCANE_ARROW", state.KnownAbilityIds);
+        Assert.Equal("MANA", resolved.EffectiveResourceProfile.Id);
+        Assert.Equal("INTELLECT", resolved.EffectivePrimaryAttribute);
+        Assert.Equal("ARCHER_SPIRIT", resolved.ActiveCompanionProfile?.Id);
+        Assert.Contains("ARCANE_ARROW", resolved.KnownAbilityIds);
     }
 
     [Fact]
