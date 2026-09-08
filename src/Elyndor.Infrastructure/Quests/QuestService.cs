@@ -52,7 +52,12 @@ public sealed record QuestJournalEntry(
     int RewardGold,
     IReadOnlyList<QuestItemRewardDefinition> RewardItems,
     IReadOnlyList<string> PrerequisiteQuestIds,
-    string? UnlockLocationId);
+    string? UnlockLocationId,
+    string? IssuerName,
+    string? IssuerRole,
+    string? RegionName,
+    string? ContractNumber,
+    string? ThreatLevel);
 
 public sealed record QuestJournalSnapshot(
     IReadOnlyList<QuestJournalEntry> Quests);
@@ -204,7 +209,12 @@ public sealed class QuestService(
                 quest.RewardGold,
                 quest.RewardItems ?? [],
                 quest.PrerequisiteQuestIds ?? [],
-                quest.UnlockLocationId));
+                quest.UnlockLocationId,
+                quest.IssuerName,
+                quest.IssuerRole,
+                quest.RegionName,
+                quest.ContractNumber,
+                quest.ThreatLevel));
         }
 
         return new QuestJournalSnapshot(entries);
