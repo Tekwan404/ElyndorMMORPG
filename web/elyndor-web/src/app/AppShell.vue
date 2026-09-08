@@ -6,6 +6,8 @@ import { gameArt } from '@/assets/gameArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
+import QuestsView from '@/game/quests/views/QuestsView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -13,11 +15,12 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'location' | 'hero'
+type ShellView = 'world' | 'location' | 'hero' | 'quests' | 'menu'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
 const activeView = ref<ShellView>('location')
+const menuSection = ref<MenuSection>('profile')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
@@ -28,6 +31,7 @@ function worldLocationName(locationId: string): string {
   if (locationId === 'STARTER_TOWN') return 'Стартовый город'
   if (locationId === 'WHISPERING_FOREST') return 'Шепчущий лес'
   if (locationId === 'DEEP_FOREST') return 'Глубокий лес'
+  if (locationId === 'ANCIENT_MINE') return 'Древняя шахта'
   if (locationId === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
   if (locationId === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
   return locationId
@@ -72,7 +76,7 @@ const sessionErrorMessage = computed(() => {
 })
 
 const navigation: readonly {
-  id: ShellView | 'quests' | 'menu'
+  id: ShellView
   label: string
   icon: string
   enabled: boolean
@@ -81,14 +85,20 @@ const navigation: readonly {
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
   { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
-  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: false },
-  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
+  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: true },
+  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: true },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled && (item.id === 'world' || item.id === 'location' || item.id === 'hero')) {
+  if (item.enabled) {
     activeView.value = item.id
+    if (item.id === 'menu') menuSection.value = 'profile'
   }
+}
+
+function openMenu(section: MenuSection): void {
+  menuSection.value = section
+  activeView.value = 'menu'
 }
 
 onMounted(() => {
@@ -110,6 +120,7 @@ onMounted(() => {
           <small class="hud__brand">ELYNDOR</small>
           <b>{{ character.name }}</b>
           <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
+          <small class="hud__code">{{ character.publicCode ?? 'ELY ID недоступен' }}</small>
         </button>
 
         <div class="hud__meta">
@@ -167,8 +178,16 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="activeView = 'location'"
       />
-      <WorldView v-else-if="session.state === 'world' && activeView === 'location'" />
+      <WorldView
+        v-else-if="session.state === 'world' && activeView === 'location'"
+        @open-party="openMenu('party')"
+      />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
+      <QuestsView v-else-if="session.state === 'world' && activeView === 'quests'" />
+      <MenuView
+        v-else-if="session.state === 'world' && activeView === 'menu'"
+        :initial-section="menuSection"
+      />
     </main>
 
     <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">
@@ -308,6 +327,13 @@ onMounted(() => {
   margin-top: 2px;
   color: var(--ui-color-text-muted);
   font-size: .57rem;
+}
+
+.hud__code {
+  margin-top: 2px;
+  color: #aaa5e8;
+  font-size: .5rem;
+  letter-spacing: .08em;
 }
 
 .hud__meta {

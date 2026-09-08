@@ -33,6 +33,33 @@ public sealed record CombatActorResponse(
     CombatCastResponse? ActiveCast = null,
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null);
 
+public sealed record CombatContributionResponse(
+    Guid CharacterId,
+    int QualifyingActions,
+    decimal DamageDealt,
+    decimal EffectiveHealing,
+    decimal SupportContribution,
+    decimal TankingContribution,
+    DateTimeOffset JoinedAtUtc,
+    DateTimeOffset? FledAtUtc,
+    DateTimeOffset? DiedAtUtc);
+
+public sealed record CombatParticipantResponse(
+    Guid AccountId,
+    Guid CharacterId,
+    Guid ActorId,
+    string Status,
+    DateTimeOffset RosteredAtUtc,
+    DateTimeOffset? JoinedAtUtc,
+    DateTimeOffset? FledAtUtc,
+    DateTimeOffset? DiedAtUtc);
+
+public sealed record CombatParticipantContributionResponse(
+    CombatContributionResponse Contribution,
+    bool IsEligible,
+    string Reason,
+    decimal ContributionScore);
+
 public sealed record CombatSnapshotResponse(
     Guid SessionId,
     long Sequence,
@@ -44,7 +71,12 @@ public sealed record CombatSnapshotResponse(
     string BalanceVersion = "UNVERSIONED",
     IReadOnlyList<CombatActorResponse>? Enemies = null,
     Guid? SelectedTargetActorId = null,
-    CombatActorResponse? Companion = null);
+    CombatActorResponse? Companion = null,
+    CombatContributionResponse? PlayerContribution = null,
+    IReadOnlyList<CombatActorResponse>? Players = null,
+    IReadOnlyList<CombatParticipantResponse>? ParticipantRoster = null,
+    bool? PlayerContributionEligible = null,
+    IReadOnlyList<CombatParticipantContributionResponse>? ParticipantContributions = null);
 
 public sealed record CombatEventResponse(
     long Sequence,
@@ -66,6 +98,22 @@ public sealed record CombatRewardItemResponse(
     string Rarity,
     int Quantity);
 
+public sealed record CombatLootRollResponse(
+    Guid LootRollId,
+    string ItemId,
+    string Name,
+    string Rarity,
+    int Quantity,
+    DateTimeOffset EndsAtUtc,
+    IReadOnlyList<Guid> EligibleCharacterIds,
+    bool CanNeed);
+
+public sealed record CombatLootRollChoiceResponse(
+    bool Succeeded,
+    string? ErrorCode,
+    CombatLootRollResponse? Roll,
+    Guid? WinnerCharacterId);
+
 public sealed record CombatRewardResponse(
     int XpEarned,
     int GoldEarned,
@@ -73,7 +121,8 @@ public sealed record CombatRewardResponse(
     int PreviousLevel,
     int CurrentLevel,
     IReadOnlyList<CombatRewardItemResponse> Items,
-    IReadOnlyList<string>? CompletedContractIds = null);
+    IReadOnlyList<string>? CompletedContractIds = null,
+    IReadOnlyList<CombatLootRollResponse>? LootRolls = null);
 
 public sealed record CombatUpdateResponse(
     bool Succeeded,

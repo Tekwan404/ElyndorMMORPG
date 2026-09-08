@@ -213,20 +213,23 @@ automatic Dungeon member change
 Текущий default:
 
 ```text
-MemberSnapshot immutable after first encounter begins
+DungeonRun membership may grow or shrink through explicit entry/leave rules.
+Each DungeonEncounterMember snapshot is immutable after that encounter begins.
 ```
 
 ---
 
 # 10. No Replacement Exploit
 
-После начала первого encounter нельзя:
+После начала текущего encounter нельзя:
 
-- пригласить сильного игрока;
-- заменить участника;
-- дать ему только boss reward.
+- добавить нового игрока в active encounter;
+- заменить участника в active encounter;
+- дать новому игроку reward этого encounter.
 
-Для replacement нужен новый DungeonInstance, если future content явно не разрешит иное.
+После завершения или wipe active encounter новый участник может быть
+зафиксирован в следующем encounter roster. Для замены уже завершённого
+участника в текущем encounter нужен новый DungeonInstance.
 
 ---
 
@@ -808,3 +811,33 @@ DungeonExited
 9. Quest progress приходит только из confirmed Dungeon events.
 10. Lockout проверяется сервером.
 11. DungeonInstance scope изолирует группы друг от друга.
+
+---
+
+# Approved Per-Encounter Membership Extension
+
+The dungeon run membership snapshot is not an immutable roster for the whole
+run. It records who may enter the run, while each encounter creates a separate
+immutable combat roster.
+
+The lifecycle is:
+
+```text
+DungeonRun membership
+        |
+        +--> Encounter 1 combat roster (frozen at start)
+        +--> Encounter 2 combat roster (frozen at start)
+        +--> Encounter 3 combat roster (frozen at start)
+        +--> Encounter 4 combat roster (frozen at start)
+        +--> Boss combat roster (frozen at start)
+```
+
+A player who joins the party or enters the run after an encounter has started
+cannot enter that active encounter. After the encounter is completed or wiped,
+the player may participate in the next encounter or the restarted encounter.
+Leaving the party or run removes future eligibility but does not rewrite a
+completed encounter roster or its rewards.
+
+The first approved dungeon slice is Ancient Mine: 1-5 players, four ordinary
+encounters, one final boss, personal ordinary loot, and a current-encounter
+reset after a wipe.

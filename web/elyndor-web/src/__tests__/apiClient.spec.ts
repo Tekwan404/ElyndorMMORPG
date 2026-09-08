@@ -35,6 +35,13 @@ describe('ApiClient', () => {
     expect(localStorageSpy).not.toHaveBeenCalled()
   })
 
+  it('treats an empty 204 response as null', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    const client = new ApiClient(fetchMock)
+
+    await expect(client.request('/api/v1/party')).resolves.toBeNull()
+  })
+
   it('reauthenticates and retries a request only once after 401', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'expired' }, 401)).mockResolvedValueOnce(jsonResponse({ restored: true }))
     const client = new ApiClient(fetchMock)

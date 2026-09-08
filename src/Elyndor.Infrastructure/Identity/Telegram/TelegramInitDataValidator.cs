@@ -3,6 +3,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Elyndor.Core.Identity;
 
 namespace Elyndor.Infrastructure.Identity.Telegram;
 
@@ -97,13 +98,16 @@ public sealed class TelegramInitDataValidator(TimeProvider timeProvider)
             return Failure(TelegramInitDataValidationErrorCodes.UserMissing);
         }
 
-        if (!TryGetTelegramUserId(userJson, out long telegramUserId))
+        if (!TryGetTelegramUser(
+                userJson,
+                out long telegramUserId,
+                out string? telegramUsername))
         {
             return Failure(TelegramInitDataValidationErrorCodes.UserInvalid);
         }
 
         return TelegramInitDataValidationResult.Success(
-            new TelegramInitData(telegramUserId, authenticatedAtUtc));
+            new TelegramInitData(telegramUserId, authenticatedAtUtc, telegramUsername));
     }
 
     private static TelegramInitDataValidationResult? TryParseFields(
@@ -193,17 +197,43 @@ public sealed class TelegramInitDataValidator(TimeProvider timeProvider)
         return HMACSHA256.HashData(secretKey, Encoding.UTF8.GetBytes(dataCheckString));
     }
 
-    private static bool TryGetTelegramUserId(string userJson, out long telegramUserId)
+    private static bool TryGetTelegramUser(
+        string userJson,
+        out long telegramUserId,
+        out string? telegramUsername)
     {
         telegramUserId = 0;
+        telegramUsername = null;
 
         try
         {
             using JsonDocument user = JsonDocument.Parse(userJson);
-            return user.RootElement.ValueKind == JsonValueKind.Object
-                && user.RootElement.TryGetProperty("id", out JsonElement id)
-                && id.TryGetInt64(out telegramUserId)
-                && telegramUserId > 0;
+            if (user.RootElement.ValueKind != JsonValueKind.Object
+                || !user.RootElement.TryGetProperty("id", out JsonElement id)
+                || !id.TryGetInt64(out telegramUserId)
+                || telegramUserId <= 0)
+            {
+                return false;
+            }
+
+            if (user.RootElement.TryGetProperty("username", out JsonElement username)
+                && username.ValueKind == JsonValueKind.String)
+            {
+                string? value = username.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    try
+                    {
+                        telegramUsername = TelegramUsernamePolicy.Normalize(value);
+                    }
+                    catch (ArgumentException)
+                    {
+                        telegramUsername = null;
+                    }
+                }
+            }
+
+            return true;
         }
         catch (JsonException)
         {

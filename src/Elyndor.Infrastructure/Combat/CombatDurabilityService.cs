@@ -1,20 +1,34 @@
+using System.Text.Json;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Contribution;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 namespace Elyndor.Infrastructure.Combat;
 
+public sealed record CombatDurabilityBeginResult(bool Succeeded, bool Created);
+
 public sealed class CombatDurabilityService(
     GameDbContext dbContext,
-    ILogger<CombatDurabilityService> logger)
+    ILogger<CombatDurabilityService> logger,
+    IServiceScopeFactory? scopeFactory = null)
 {
+    private static readonly JsonSerializerOptions TerminalSnapshotJsonOptions = new()
+    {
+        Converters = { new ReadOnlyStringSetJsonConverter() }
+    };
+
     private static readonly Action<ILogger, Guid, Guid, bool, Exception?>
         InterruptedCombatRecovered =
             LoggerMessage.Define<Guid, Guid, bool>(
@@ -22,8 +36,34 @@ public sealed class CombatDurabilityService(
                 new EventId(2101, nameof(InterruptedCombatRecovered)),
                 "Recovered interrupted combat session {SessionId} for character "
                 + "{CharacterId}; rewardCommitted={RewardCommitted}.");
+    private static readonly Action<ILogger, Guid, Exception?>
+        TerminalCombatRecoveryFailed =
+            LoggerMessage.Define<Guid>(
+                LogLevel.Error,
+                new EventId(2102, nameof(TerminalCombatRecoveryFailed)),
+                "Failed to finalize durable terminal combat session {SessionId}; "
+                + "the recovery journal will remain for retry.");
 
     public async Task<bool> BeginAsync(
+        Guid characterId,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken)
+    {
+        CombatDurabilityBeginResult result = await BeginParticipantAsync(
+            characterId,
+            snapshot,
+            cancellationToken);
+        return result.Succeeded;
+    }
+
+    public Task<CombatDurabilityBeginResult> BeginParticipantAsync(
+        Guid characterId,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            () => BeginParticipantCoreAsync(characterId, snapshot, cancellationToken));
+
+    private async Task<CombatDurabilityBeginResult> BeginParticipantCoreAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
         CancellationToken cancellationToken)
@@ -31,13 +71,21 @@ public sealed class CombatDurabilityService(
         if (characterId == Guid.Empty)
             throw new ArgumentException("Character id cannot be empty.", nameof(characterId));
 
+        await using IDbContextTransaction? transaction =
+            await BeginAdvisoryLockAsync($"combat-character:{characterId:N}", cancellationToken);
+
         ActiveCombatSession? existing = await dbContext.ActiveCombatSessions
             .AsNoTracking()
             .SingleOrDefaultAsync(
                 state => state.CharacterId == characterId,
                 cancellationToken);
         if (existing is not null)
-            return existing.SessionId == snapshot.SessionId;
+        {
+            await CommitAsync(transaction, cancellationToken);
+            return new(
+                existing.SessionId == snapshot.SessionId,
+                false);
+        }
 
         dbContext.ActiveCombatSessions.Add(new ActiveCombatSession(
             snapshot.SessionId,
@@ -46,8 +94,18 @@ public sealed class CombatDurabilityService(
             snapshot.ContentVersion,
             snapshot.BalanceVersion));
         await dbContext.SaveChangesAsync(cancellationToken);
-        return true;
+        await CommitAsync(transaction, cancellationToken);
+        return new(true, true);
     }
+
+    public Task RemoveParticipantAsync(
+        Guid sessionId,
+        Guid characterId,
+        CancellationToken cancellationToken) =>
+        dbContext.ActiveCombatSessions
+            .Where(state => state.SessionId == sessionId
+                && state.CharacterId == characterId)
+            .ExecuteDeleteAsync(cancellationToken);
 
     public async Task CompleteAsync(
         Guid sessionId,
@@ -56,6 +114,40 @@ public sealed class CombatDurabilityService(
         await dbContext.ActiveCombatSessions
             .Where(state => state.SessionId == sessionId)
             .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    public async Task CompleteParticipantAsync(
+        Guid sessionId,
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.ActiveCombatSessions
+            .Where(state => state.SessionId == sessionId
+                && state.CharacterId == characterId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    public async Task RecordTerminalSnapshotAsync(
+        Guid sessionId,
+        CombatSessionSnapshot snapshot,
+        CancellationToken cancellationToken)
+    {
+        if (snapshot.Status == CombatSessionStatus.Active)
+            throw new ArgumentException(
+                "Only terminal combat snapshots can be persisted.",
+                nameof(snapshot));
+
+        string snapshotJson = JsonSerializer.Serialize(
+            snapshot,
+            TerminalSnapshotJsonOptions);
+        await dbContext.ActiveCombatSessions
+            .Where(state => state.SessionId == sessionId
+                && state.TerminalSnapshotJson == null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    state => state.TerminalSnapshotJson,
+                    snapshotJson),
+                cancellationToken);
     }
 
     public async Task<string?> ReserveConsumableAsync(
@@ -191,40 +283,160 @@ public sealed class CombatDurabilityService(
         CancellationToken cancellationToken)
     {
         ActiveCombatSession[] sessions = await dbContext.ActiveCombatSessions
+            .AsNoTracking()
             .OrderBy(state => state.StartedAtUtc)
             .ToArrayAsync(cancellationToken);
         if (sessions.Length == 0)
             return 0;
 
-        foreach (ActiveCombatSession session in sessions)
+        IServiceScope? recoveryScope = scopeFactory?.CreateScope();
+        try
         {
-            bool rewardCommitted = await dbContext.CombatRewardGrants
-                .AsNoTracking()
-                .AnyAsync(
-                    grant => grant.CombatSessionId == session.SessionId,
-                    cancellationToken);
-            if (!rewardCommitted)
+            ICombatSessionFinalizer? finalizer = recoveryScope?.ServiceProvider
+                .GetService<ICombatSessionFinalizer>();
+
+            foreach (IGrouping<Guid, ActiveCombatSession> sessionGroup in sessions.GroupBy(
+                         session => session.SessionId))
             {
-                CombatConsumableUse[] uses = await dbContext.CombatConsumableUses
-                    .Where(use => use.SessionId == session.SessionId)
-                    .OrderBy(use => use.UsedAtUtc)
-                    .ToArrayAsync(cancellationToken);
-                foreach (CombatConsumableUse use in uses)
-                    await RefundUseAsync(use, cancellationToken);
+                ActiveCombatSession[] participantStates = sessionGroup.ToArray();
+                ActiveCombatSession session = participantStates[0];
+                bool rewardCommitted = await dbContext.CombatRewardGrants
+                    .AsNoTracking()
+                    .AnyAsync(
+                        grant => grant.CombatSessionId == session.SessionId,
+                        cancellationToken);
+
+                bool finalizedTerminalCombat = false;
+                bool terminalRecoveryAttempted = false;
+                string? terminalSnapshotJson = participantStates
+                    .Select(state => state.TerminalSnapshotJson)
+                    .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+                if (finalizer is not null
+                    && !string.IsNullOrWhiteSpace(terminalSnapshotJson))
+                {
+                    try
+                    {
+                        CombatSessionSnapshot? terminalSnapshot =
+                            JsonSerializer.Deserialize<CombatSessionSnapshot>(
+                                terminalSnapshotJson,
+                                TerminalSnapshotJsonOptions);
+                        if (terminalSnapshot is not null
+                            && terminalSnapshot.Status != CombatSessionStatus.Active)
+                        {
+                            terminalRecoveryAttempted = true;
+                            foreach (ActiveCombatSession participant in participantStates)
+                            {
+                                CombatSessionSnapshot participantSnapshot =
+                                    ProjectSnapshotForCharacter(
+                                        terminalSnapshot,
+                                        participant.CharacterId);
+                                await finalizer.FinalizeAsync(
+                                    participant.CharacterId,
+                                    participantSnapshot,
+                                    cancellationToken);
+                            }
+
+                            finalizedTerminalCombat = !await dbContext.ActiveCombatSessions
+                                .AsNoTracking()
+                                .AnyAsync(
+                                    state => state.SessionId == session.SessionId,
+                                    cancellationToken);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        TerminalCombatRecoveryFailed(
+                            logger,
+                            session.SessionId,
+                            exception);
+                    }
+                }
+
+                if (!finalizedTerminalCombat && !terminalRecoveryAttempted)
+                {
+                    if (!rewardCommitted)
+                    {
+                        CombatConsumableUse[] uses = await dbContext.CombatConsumableUses
+                            .Where(use => use.SessionId == session.SessionId)
+                            .OrderBy(use => use.UsedAtUtc)
+                            .ToArrayAsync(cancellationToken);
+                        foreach (CombatConsumableUse use in uses)
+                            await RefundUseAsync(use, cancellationToken);
+                    }
+
+                    DungeonEncounter? interruptedEncounter = await dbContext.DungeonEncounters
+                        .SingleOrDefaultAsync(
+                            encounter => encounter.CombatSessionId == session.SessionId,
+                            cancellationToken);
+                    interruptedEncounter?.MarkWiped();
+
+                    dbContext.ActiveCombatSessions.RemoveRange(participantStates);
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                }
+
+                if (!terminalRecoveryAttempted || finalizedTerminalCombat)
+                {
+                    InterruptedCombatRecovered(
+                        logger,
+                        session.SessionId,
+                        session.CharacterId,
+                        rewardCommitted || finalizedTerminalCombat,
+                        null);
+                }
             }
-
-            dbContext.ActiveCombatSessions.Remove(session);
-            await dbContext.SaveChangesAsync(cancellationToken);
-
-            InterruptedCombatRecovered(
-                logger,
-                session.SessionId,
-                session.CharacterId,
-                rewardCommitted,
-                null);
+        }
+        finally
+        {
+            recoveryScope?.Dispose();
         }
 
         return sessions.Length;
+    }
+
+    private static CombatSessionSnapshot ProjectSnapshotForCharacter(
+        CombatSessionSnapshot snapshot,
+        Guid characterId)
+    {
+        CombatParticipantSnapshot? participant = snapshot.ParticipantRoster?
+            .FirstOrDefault(candidate => candidate.CharacterId == characterId);
+        CombatActorSnapshot? player = participant is null
+            ? snapshot.Players?.FirstOrDefault(candidate => candidate.ActorId == characterId)
+            : snapshot.Players?.FirstOrDefault(candidate =>
+                candidate.ActorId == participant.ActorId);
+        player ??= snapshot.Player;
+
+        ContributionEligibilityResult? contribution = snapshot.ParticipantContributions?
+            .FirstOrDefault(candidate => candidate.Snapshot.CharacterId == characterId);
+        return snapshot with
+        {
+            Player = player,
+            PlayerContribution = contribution?.Snapshot
+                ?? (snapshot.PlayerContribution?.CharacterId == characterId
+                    ? snapshot.PlayerContribution
+                    : null),
+            PlayerContributionEligible = contribution?.IsEligible
+                ?? (snapshot.PlayerContribution?.CharacterId == characterId
+                    ? snapshot.PlayerContributionEligible
+                    : null)
+        };
+    }
+
+    private sealed class ReadOnlyStringSetJsonConverter : JsonConverter<IReadOnlySet<string>>
+    {
+        public override IReadOnlySet<string> Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            string[] values = JsonSerializer.Deserialize<string[]>(ref reader, options) ?? [];
+            return new HashSet<string>(values, StringComparer.Ordinal);
+        }
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            IReadOnlySet<string> value,
+            JsonSerializerOptions options) =>
+            JsonSerializer.Serialize(writer, value.ToArray(), options);
     }
 
     private async Task RefundUseAsync(
@@ -253,5 +465,28 @@ public sealed class CombatDurabilityService(
             1,
             use.UsedAtUtc,
             use.DefinitionVersion));
+    }
+
+    private async Task<IDbContextTransaction?> BeginAdvisoryLockAsync(
+        string lockKey,
+        CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsNpgsql())
+            return null;
+
+        IDbContextTransaction transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
+            cancellationToken);
+        return transaction;
+    }
+
+    private static async Task CommitAsync(
+        IDbContextTransaction? transaction,
+        CancellationToken cancellationToken)
+    {
+        if (transaction is not null)
+            await transaction.CommitAsync(cancellationToken);
     }
 }

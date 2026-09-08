@@ -5,6 +5,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
+using Elyndor.Core.Dungeons;
 
 namespace Elyndor.Core.Content;
 
@@ -31,6 +32,7 @@ public sealed class GameContentIndexes
         MonsterAiProfilesById = ToDictionary(package.MonsterAiProfiles, item => item.Id);
         LocationsById = package.Locations.ToDictionary(item => item.Id, StringComparer.Ordinal);
         WorldContractsById = ToDictionary(package.WorldContracts, item => item.Id);
+        DungeonsById = ToDictionary(package.Dungeons, item => item.Id);
     }
 
     public IReadOnlyDictionary<GameContentDefinitionKey, GameContentDefinition> DefinitionsByKey { get; }
@@ -48,6 +50,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, MonsterAiProfile> MonsterAiProfilesById { get; }
     public IReadOnlyDictionary<string, LocationDefinition> LocationsById { get; }
     public IReadOnlyDictionary<string, WorldContractDefinition> WorldContractsById { get; }
+    public IReadOnlyDictionary<string, DungeonDefinition> DungeonsById { get; }
 
     public static GameContentIndexes For(GameContentPackage package)
     {

@@ -1,11 +1,13 @@
 using System.Text.Json;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
@@ -22,7 +24,18 @@ public sealed record CombatRewardApplicationResult(
     int GoldEarned,
     CharacterProgressionResult? Progression,
     IReadOnlyList<CombatRewardItemResult> Items,
-    IReadOnlyList<string>? CompletedContractIds = null);
+    IReadOnlyList<string>? CompletedContractIds = null,
+    IReadOnlyList<CombatLootRollResult>? LootRolls = null);
+
+public sealed record CombatLootRollResult(
+    Guid LootRollId,
+    string ItemId,
+    string Name,
+    ItemRarity Rarity,
+    int Quantity,
+    DateTimeOffset EndsAtUtc,
+    IReadOnlyList<Guid> EligibleCharacterIds,
+    bool CanNeed);
 
 public sealed record CombatRewardItemResult(
     string ItemId,
@@ -103,17 +116,25 @@ public sealed class CombatRewardService(
         CombatRewardGrant? existingGrant = await dbContext.CombatRewardGrants
             .AsNoTracking()
             .SingleOrDefaultAsync(
-                grant => grant.CombatSessionId == snapshot.SessionId,
+                grant => grant.CombatSessionId == snapshot.SessionId
+                    && grant.CharacterId == characterId,
                 cancellationToken);
         if (existingGrant is not null)
         {
+            CombatLootRollResult[] pendingRolls = await LoadPendingLootRollsAsync(
+                snapshot.SessionId,
+                character,
+                contentSnapshot,
+                indexes: contentSnapshot.Indexes,
+                cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return new CombatRewardApplicationResult(
                 false,
                 existingGrant.XpEarned,
                 existingGrant.GoldEarned,
                 null,
-                []);
+                [],
+                LootRolls: pendingRolls);
         }
 
         GameContentPackage content = contentSnapshot.Package;
@@ -123,18 +144,20 @@ public sealed class CombatRewardService(
             ?? throw new InvalidOperationException("Level progression content is required for combat rewards.");
 
         List<CombatRewardSourceAudit> sourceAudits = [];
-        List<LootRoll> rolledLoot = [];
+        List<LootRoll> rolledPersonalLoot = [];
         int xpEarned = 0;
         int goldEarned = 0;
         foreach (ResolvedRewardSource source in rewardSources)
         {
             int sourceXp = source.Monster.XpReward;
             int sourceGold = RollGold(source.Monster);
-            IReadOnlyList<LootRoll> sourceLoot = RollLoot(source.Monster, indexes);
+            IReadOnlyList<LootRoll> sourceLoot = RollLoot(source.Monster, indexes)
+                .Where(roll => !IsValuableLoot(roll, indexes))
+                .ToArray();
 
             xpEarned = checked(xpEarned + sourceXp);
             goldEarned = checked(goldEarned + sourceGold);
-            rolledLoot.AddRange(sourceLoot);
+            rolledPersonalLoot.AddRange(sourceLoot);
             sourceAudits.Add(new CombatRewardSourceAudit(
                 source.Enemy.ActorId,
                 source.Monster.Id,
@@ -148,6 +171,14 @@ public sealed class CombatRewardService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
+        IReadOnlyList<LootRoll> sharedValuableLoot =
+            await GetOrCreateSharedValuableLootAsync(
+                snapshot,
+                rewardSources,
+                indexes,
+                now,
+                cancellationToken);
+
         WorldContractCompletionReward contractReward =
             await CompleteWorldContractsAsync(
                 character,
@@ -171,16 +202,38 @@ public sealed class CombatRewardService(
                     candidate => candidate.Gold + goldEarned),
                 cancellationToken);
 
-        LootRoll[] loot = AggregateLoot(rolledLoot);
+        LootRoll[] loot = AggregateLoot(rolledPersonalLoot);
+        List<LootRoll> personalLoot = [];
+        List<CombatLootRollResult> pendingLootRolls = [];
+        CharacterDerivedState? derivedForLoot = null;
         foreach (LootRoll roll in loot)
         {
-            await AddItemAsync(
-                characterId,
-                snapshot.SessionId,
-                roll,
-                now,
+            if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))
+                throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
+
+            await AddItemAsync(characterId, snapshot.SessionId, roll, now, contentSnapshot, cancellationToken);
+            personalLoot.Add(roll);
+        }
+
+        foreach (LootRoll roll in sharedValuableLoot)
+        {
+            if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))
+                throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
+
+            derivedForLoot ??= await derivedStateService.ResolveAsync(
+                character.Id,
+                character.ClassId,
+                character.Level,
                 contentSnapshot,
                 cancellationToken);
+            CombatLootRollResult groupRoll = await CreateOrLoadLootRollAsync(
+                snapshot,
+                item,
+                roll.Quantity,
+                now,
+                CanNeed(item, character, derivedForLoot),
+                cancellationToken);
+            pendingLootRolls.Add(groupRoll);
         }
 
         if (progressionResult.LeveledUp)
@@ -217,8 +270,195 @@ public sealed class CombatRewardService(
             xpEarned,
             goldEarned,
             progressionResult,
-            loot.Select(roll => ToRewardItem(roll, indexes)).ToArray(),
-            contractReward.ContractIds);
+            personalLoot.Select(roll => ToRewardItem(roll, indexes)).ToArray(),
+            contractReward.ContractIds,
+            pendingLootRolls);
+    }
+
+    private async Task<CombatLootRollResult> CreateOrLoadLootRollAsync(
+        CombatSessionSnapshot snapshot,
+        ItemDefinition item,
+        int quantity,
+        DateTimeOffset now,
+        bool canNeed,
+        CancellationToken cancellationToken)
+    {
+        await AcquireLootRollLockAsync(
+            snapshot.SessionId,
+            item.Id,
+            cancellationToken);
+        CombatLootRoll? existing = await dbContext.CombatLootRolls
+            .SingleOrDefaultAsync(
+                roll => roll.CombatSessionId == snapshot.SessionId
+                    && roll.ItemDefinitionId == item.Id,
+                cancellationToken);
+        if (existing is not null)
+            return ToLootRollResult(existing, item, canNeed);
+
+        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
+        Guid dungeonRunId = await dbContext.DungeonEncounters
+            .Where(encounter => encounter.CombatSessionId == snapshot.SessionId)
+            .Select(encounter => (Guid?)encounter.RunId)
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? snapshot.SessionId;
+        CombatLootRoll created = new(
+            Guid.NewGuid(),
+            dungeonRunId,
+            snapshot.SessionId,
+            item.Id,
+            item.Rarity,
+            quantity,
+            Guid.NewGuid(),
+            now.AddSeconds(25),
+            JsonSerializer.Serialize(eligibleCharacterIds));
+        dbContext.CombatLootRolls.Add(created);
+        return ToLootRollResult(created, item, canNeed);
+    }
+
+    private async Task<IReadOnlyList<LootRoll>> GetOrCreateSharedValuableLootAsync(
+        CombatSessionSnapshot snapshot,
+        IReadOnlyList<ResolvedRewardSource> rewardSources,
+        GameContentIndexes indexes,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        await AcquireSharedLootLockAsync(snapshot.SessionId, cancellationToken);
+        CombatSharedLootResolution? existing = await dbContext.CombatSharedLootResolutions
+            .SingleOrDefaultAsync(
+                resolution => resolution.CombatSessionId == snapshot.SessionId,
+                cancellationToken);
+        if (existing is not null)
+        {
+            return JsonSerializer.Deserialize<LootRoll[]>(existing.GroupLootJson) ?? [];
+        }
+
+        List<LootRoll> rolled = [];
+        foreach (ResolvedRewardSource source in rewardSources)
+        {
+            rolled.AddRange(
+                RollLoot(source.Monster, indexes)
+                    .Where(roll => IsValuableLoot(roll, indexes)));
+        }
+
+        LootRoll[] sharedLoot = AggregateLoot(rolled);
+        dbContext.CombatSharedLootResolutions.Add(
+            new CombatSharedLootResolution(
+                snapshot.SessionId,
+                JsonSerializer.Serialize(sharedLoot),
+                now));
+        return sharedLoot;
+    }
+
+    private async Task AcquireSharedLootLockAsync(
+        Guid sessionId,
+        CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsNpgsql())
+            return;
+
+        string lockKey = $"shared:{sessionId:N}";
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
+            cancellationToken);
+    }
+
+    private async Task AcquireLootRollLockAsync(
+        Guid sessionId,
+        string itemDefinitionId,
+        CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsNpgsql())
+            return;
+
+        string lockKey = $"{sessionId:N}:{itemDefinitionId}";
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
+            cancellationToken);
+    }
+
+    private static bool IsValuableLoot(LootRoll roll, GameContentIndexes indexes) =>
+        indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item)
+        && LootRollRules.IsValuableWearable(item);
+
+    private static Guid[] ResolveEligibleCharacterIds(CombatSessionSnapshot snapshot)
+    {
+        Guid[] eligibleCharacterIds = snapshot.ParticipantContributions is { Count: > 0 }
+            ? snapshot.ParticipantContributions
+                .Where(participant => participant.IsEligible)
+                .Select(participant => participant.Snapshot.CharacterId)
+                .Distinct()
+                .OrderBy(characterId => characterId)
+                .ToArray()
+            : [snapshot.PlayerContribution?.CharacterId ?? snapshot.Player.ActorId];
+
+        return eligibleCharacterIds;
+    }
+
+    private async Task<CombatLootRollResult[]> LoadPendingLootRollsAsync(
+        Guid sessionId,
+        Character character,
+        GameContentSnapshot contentSnapshot,
+        GameContentIndexes indexes,
+        CancellationToken cancellationToken)
+    {
+        CombatLootRoll[] rolls = await dbContext.CombatLootRolls
+            .AsNoTracking()
+            .Where(roll => roll.CombatSessionId == sessionId
+                && roll.State == CombatLootRollState.Open)
+            .ToArrayAsync(cancellationToken);
+        CombatLootRoll[] validRolls = rolls
+            .Where(roll => indexes.ItemsById.ContainsKey(roll.ItemDefinitionId))
+            .ToArray();
+        if (validRolls.Length == 0)
+            return [];
+
+        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            contentSnapshot,
+            cancellationToken);
+        return validRolls
+            .Select(roll => ToLootRollResult(
+                roll,
+                indexes.ItemsById[roll.ItemDefinitionId],
+                CanNeed(indexes.ItemsById[roll.ItemDefinitionId], character, derived)))
+            .ToArray();
+    }
+
+    private static CombatLootRollResult ToLootRollResult(
+        CombatLootRoll roll,
+        ItemDefinition item,
+        bool canNeed)
+    {
+        Guid[] eligible = JsonSerializer.Deserialize<Guid[]>(roll.EligibleCharacterIdsJson) ?? [];
+        return new CombatLootRollResult(
+            roll.LootRollId,
+            item.Id,
+            item.Name,
+            item.Rarity,
+            roll.Quantity,
+            roll.EndsAtUtc,
+            eligible,
+            canNeed);
+    }
+
+    private static bool CanNeed(
+        ItemDefinition item,
+        Character character,
+        CharacterDerivedState derived)
+    {
+        bool hasDualWieldPermission = derived.TalentTree is not null
+            && TalentEquipmentPermissionResolver.HasPermission(
+                derived.TalentTree,
+                derived.ActiveTalentRanks,
+                EquipmentPermissionIds.DualWieldOneHandWeapon);
+        return LootRollRules.CanNeed(
+            item,
+            character.ClassId,
+            character.Level,
+            derived.ClassProfile,
+            hasDualWieldPermission);
     }
 
     private async Task<WorldContractCompletionReward> CompleteWorldContractsAsync(

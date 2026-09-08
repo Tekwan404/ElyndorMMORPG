@@ -25,6 +25,7 @@ content/
 ├── abilities/
 ├── bosses/
 ├── classes/
+├── dungeons/
 ├── items/
 ├── locations/
 ├── loot/

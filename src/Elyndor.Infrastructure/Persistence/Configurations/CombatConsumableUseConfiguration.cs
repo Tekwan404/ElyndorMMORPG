@@ -34,9 +34,10 @@ public sealed class CombatConsumableUseConfiguration :
 
         builder.HasOne<ActiveCombatSession>()
             .WithMany()
-            .HasForeignKey(state => state.SessionId)
+            .HasForeignKey(state => new { state.SessionId, state.CharacterId })
+            .HasPrincipalKey(state => new { state.SessionId, state.CharacterId })
             .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_combat_consumable_uses_active_combat_session_id");
+            .HasConstraintName("fk_combat_consumable_uses_active_combat_session");
 
         builder.HasIndex(state => state.CharacterId)
             .HasDatabaseName("ix_combat_consumable_uses_character_id");

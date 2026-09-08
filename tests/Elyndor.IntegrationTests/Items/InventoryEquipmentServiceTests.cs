@@ -989,7 +989,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
         Character character = new(
-            characterId, accountId, Guid.CreateVersion7(), "Inventory", $"INV{characterId:N}"[..16],
+            characterId, accountId, Guid.CreateVersion7(), "Inventory", $"INV{Guid.NewGuid():N}"[..16],
             "HUMAN", "MALE", classId, Now);
         character.SetLevel(level);
         context.Characters.Add(character);

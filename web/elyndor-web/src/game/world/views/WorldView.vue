@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
+import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { usePartyStore } from '@/game/party/partyStore'
 import { UIButton, UICard, UIToast } from '@/ui/components'
+
+const emit = defineEmits<{ 'open-party': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
@@ -14,20 +18,28 @@ const STARTER_TOWN_ID = 'STARTER_TOWN'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
+const party = usePartyStore()
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
+const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
+const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
 
 const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
+const isAncientMine = computed(() => currentLocationId.value === 'ANCIENT_MINE')
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
+)
+const canStartWorldCombat = computed(() =>
+  party.snapshot === null
+    || party.snapshot.leaderCharacterId === character.value?.id,
 )
 const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
   contract.offerLocationId === currentLocationId.value
@@ -41,6 +53,7 @@ const locationDescription = computed(() =>
 )
 const sceneBackground = computed(() => {
   if (currentLocationId.value === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (currentLocationId.value === 'ANCIENT_MINE') return gameArt.world.ancientRuins
   if (currentLocationId.value === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
   if (currentLocationId.value === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
   return gameArt.world.whisperingForest
@@ -94,7 +107,11 @@ function contractStatusLabel(status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLE
 }
 
 async function explore(): Promise<void> {
-  if (!canExplore.value || combat.isActive || session.mutationPending || combat.pending) return
+  if (!canExplore.value
+    || !canStartWorldCombat.value
+    || combat.isActive
+    || session.mutationPending
+    || combat.pending) return
 
   lastCombatResult.value = null
   const encounter = await session.explore()
@@ -114,6 +131,14 @@ async function startTraining(): Promise<void> {
   }
 }
 
+function lootRemaining(endsAtUtc: string): number {
+  return Math.max(0, (Date.parse(endsAtUtc) - lootNow.value) / 1_000)
+}
+
+async function chooseLootRoll(lootRollId: string, choice: 'Need' | 'Greed' | 'Pass'): Promise<void> {
+  await combat.chooseLootRoll(lootRollId, choice)
+}
+
 async function restoreCombat(): Promise<void> {
   try {
     await combat.connect()
@@ -121,6 +146,11 @@ async function restoreCombat(): Promise<void> {
   } catch {
     // Мир остаётся доступным при временной ошибке realtime.
   }
+}
+
+async function attachToPartyCombat(): Promise<void> {
+  if (!combat.isAwaitingAttachment || !combat.snapshot || combat.pending) return
+  await combat.attachCombat(combat.snapshot.sessionId)
 }
 
 async function refreshOutOfCombatVitals(): Promise<void> {
@@ -159,7 +189,11 @@ watch(() => combat.snapshot?.status, (status) => {
 })
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
-onBeforeUnmount(() => syncVitalsRefreshTimer(false))
+onBeforeUnmount(() => {
+  syncVitalsRefreshTimer(false)
+  window.clearInterval(lootTimer)
+})
+onMounted(() => { void party.refresh() })
 </script>
 
 <template>
@@ -180,10 +214,26 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       </div>
     </section>
 
+    <DungeonLocationCard v-if="isAncientMine" @open-party="emit('open-party')" />
+
     <div v-if="session.errorCode" class="world-error" role="alert">
       <strong>{{ worldErrorMessage }}</strong>
       <small>{{ session.errorCode }}</small>
     </div>
+
+    <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>
+      <div class="reward-card__heading">
+        <small>РЎРћР’РњР•РЎРўРќР«Р™ Р‘РћР™</small>
+        <strong>Группа уже сражается</strong>
+      </div>
+      <p>Доберись до локации боя и присоединись к текущему столкновению.</p>
+      <UIButton
+        :loading="combat.pending"
+        :disabled="isTravelling"
+        data-attach-party-combat
+        @click="attachToPartyCombat"
+      >Войти в бой</UIButton>
+    </UICard>
 
     <UICard v-if="lastCombatResult === 'Victory'" class="reward-card">
       <div class="reward-card__heading">
@@ -199,7 +249,29 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
         </ul>
       </div>
-      <UIButton v-if="canExplore" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+      <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+    </UICard>
+
+    <UICard v-if="combat.lootRolls.length" class="loot-roll-card">
+      <div class="reward-card__heading">
+        <small>ЦЕННАЯ ДОБЫЧА</small>
+        <strong>Выберите участие в розыгрыше</strong>
+      </div>
+      <article v-for="roll in combat.lootRolls" :key="roll.lootRollId" class="loot-roll-row">
+        <div>
+          <strong>{{ roll.name }} ×{{ roll.quantity }}</strong>
+          <small>{{ roll.rarity }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
+        </div>
+        <div class="loot-roll-actions">
+          <UIButton
+            :disabled="combat.pending || !roll.canNeed"
+            :title="roll.canNeed ? 'Приоритетный бросок' : 'Персонаж не может использовать этот предмет'"
+            @click="chooseLootRoll(roll.lootRollId, 'Need')"
+          >Нужно</UIButton>
+          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Greed')">Претендовать</UIButton>
+          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Pass')">Отказаться</UIButton>
+        </div>
+      </article>
     </UICard>
 
     <UIToast
@@ -235,7 +307,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <strong>Осмотреть {{ locationName }}</strong>
           <p>Найдите противника или событие. Результат выбирает сервер из контента текущей локации.</p>
         </div>
-        <UIButton data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
+        <UIButton v-if="canStartWorldCombat" data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
       </article>
     </section>
 
@@ -518,6 +590,42 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 .reward-card ul {
   margin: var(--ui-space-2) 0 0;
   padding-left: 1.2rem;
+}
+
+.loot-roll-card {
+  display: grid;
+  gap: var(--ui-space-3);
+  border-color: rgb(219 164 83 / 42%);
+  background: linear-gradient(135deg, rgb(72 48 21 / 72%), rgb(12 13 20 / 96%));
+}
+
+.loot-roll-card .reward-card__heading small {
+  color: #e4bc76;
+}
+
+.loot-roll-row {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.loot-roll-row > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.loot-roll-row small {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.loot-roll-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .section-heading {

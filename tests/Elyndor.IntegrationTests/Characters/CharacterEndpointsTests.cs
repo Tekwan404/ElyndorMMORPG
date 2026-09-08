@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
+using Elyndor.Contracts.Dungeons;
 using Elyndor.Contracts.Identity;
 using Elyndor.Contracts.World;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.AspNetCore.Hosting;
@@ -74,7 +76,7 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal("STARTER_TOWN", initialWorld?.World?.CurrentLocation.Id);
         WorldLocationResponse[]? locations =
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
-        Assert.Equal(5, locations?.Length);
+        Assert.Equal(6, locations?.Length);
 
         HttpResponseMessage invalidTravel = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
@@ -123,6 +125,58 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         ApiErrorResponse? error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
         Assert.Equal("character_name_mixed_scripts", error?.Code);
         Assert.False(string.IsNullOrWhiteSpace(error?.CorrelationId));
+    }
+
+    [Fact]
+    public async Task DungeonEndpointsExposeCheckpointAndAllowRunExit()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactory();
+        using HttpClient client = factory.CreateClient();
+        await AuthenticateDevelopmentAsync(client);
+
+        HttpResponseMessage characterResponse = await client.PostAsJsonAsync(
+            "/api/v1/character",
+            new CreateCharacterRequest(
+                Guid.CreateVersion7(),
+                "DungeonRunner",
+                "HUMAN",
+                "MALE",
+                "WARRIOR"));
+        characterResponse.EnsureSuccessStatusCode();
+        CharacterResponse character =
+            (await characterResponse.Content.ReadFromJsonAsync<CharacterResponse>())!;
+
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            CharacterLocation location = await context.CharacterLocations
+                .SingleAsync(candidate => candidate.CharacterId == character.Id);
+            location.Relocate("ANCIENT_MINE", Now);
+            await context.SaveChangesAsync();
+        }
+
+        HttpResponseMessage partyResponse = await client.PostAsJsonAsync(
+            "/api/v1/party",
+            new { requestId = Guid.CreateVersion7() });
+        partyResponse.EnsureSuccessStatusCode();
+
+        HttpResponseMessage runResponse = await client.PostAsJsonAsync(
+            "/api/v1/dungeons/runs",
+            new { requestId = Guid.CreateVersion7(), dungeonId = "ANCIENT_MINE" });
+        runResponse.EnsureSuccessStatusCode();
+        DungeonRunResponse run =
+            (await runResponse.Content.ReadFromJsonAsync<DungeonRunResponse>())!;
+        Assert.Equal("MINE_ENTRANCE", run.CurrentCheckpointId);
+        Assert.Equal("Active", run.State);
+
+        HttpResponseMessage exitResponse = await client.PostAsync(
+            $"/api/v1/dungeons/runs/{run.RunId}/exit",
+            content: null);
+        exitResponse.EnsureSuccessStatusCode();
+        DungeonRunResponse exited =
+            (await exitResponse.Content.ReadFromJsonAsync<DungeonRunResponse>())!;
+        Assert.Equal(
+            "Left",
+            exited.Members.Single(member => member.CharacterId == character.Id).State);
     }
 
     private WebApplicationFactory<Program> CreateFactory(

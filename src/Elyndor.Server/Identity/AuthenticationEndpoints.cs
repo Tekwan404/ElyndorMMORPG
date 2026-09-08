@@ -57,6 +57,7 @@ public static class AuthenticationEndpoints
         long telegramUserId = validation.Data!.TelegramUserId;
         Account account = await accountResolver.ResolveAsync(
             telegramUserId,
+            validation.Data.TelegramUsername,
             cancellationToken);
         return CreateSuccess(
             account,

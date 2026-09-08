@@ -263,7 +263,7 @@ Party can create/join a DungeonInstance.
 
 At instance creation Dungeon System stores MemberSnapshot.
 
-After first encounter begins:
+Party membership is not copied into the dungeon automatically after creation:
 
 ```text
 Party membership change
@@ -271,6 +271,35 @@ Party membership change
 Dungeon membership change
 ```
 
-This prevents late replacement/reward abuse.
+An explicit dungeon entry is required. A player added to the party after an
+encounter has started may enter the run, but is eligible only for a later
+encounter or a retry after the current encounter is completed or wiped. The
+active encounter roster remains frozen, preventing late replacement/reward
+abuse.
 
-Party remains owner current membership; Dungeon remains owner instance membership snapshot.
+Party remains the owner of current membership; Dungeon owns the mutable run
+membership and the immutable roster of each concrete encounter.
+
+---
+
+# Approved Multiplayer Combat Extension
+
+The party leader starts a shared world combat session. The combat session owns
+the authoritative participant roster for that encounter; party membership is
+not itself combat participation.
+
+- The roster is frozen when the encounter starts.
+- A member who was in the party at start but was in another location may join
+  after reaching the encounter location.
+- A character added to the party after combat starts cannot join that combat.
+- A participant who flees cannot rejoin the same combat.
+- Combat remains active when an individual participant flees. If the last
+  active participant flees, the session ends in defeat.
+- Contribution eligibility is based on authoritative participation events, not
+  on a universal damage percentage. Damage, effective healing, support,
+  mitigation, threat/taunt, qualifying actions, and participation time may be
+  considered by the activity policy.
+
+The combat session must expose participant ownership and state separately from
+the existing companion projection. A player must never be represented as a
+companion.

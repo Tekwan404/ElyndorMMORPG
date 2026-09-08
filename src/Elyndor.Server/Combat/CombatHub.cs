@@ -2,8 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Combat;
+using Elyndor.Core.Items;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Combat;
+using Elyndor.Infrastructure.Progression;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -12,6 +15,7 @@ namespace Elyndor.Server.Combat;
 [Authorize]
 public sealed class CombatHub(
     CombatApplicationService combat,
+    CombatLootRollService lootRolls,
     IContentSnapshotProvider contentProvider,
     CombatCommandRateLimiter commandRateLimiter) : Hub
 {
@@ -39,6 +43,16 @@ public sealed class CombatHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
         return CombatContractMapper.ToResponse(
             await combat.StartTrainingAsync(accountId, cancellationToken),
+            contentProvider.GetCurrent().Package);
+    }
+
+    public async Task<CombatUpdateResponse> StartDungeonEncounter(Guid runId)
+    {
+        Guid accountId = GetCommandAccountId();
+        CancellationToken cancellationToken = Context.ConnectionAborted;
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
+        return CombatContractMapper.ToResponse(
+            await combat.StartDungeonEncounterAsync(accountId, runId, cancellationToken),
             contentProvider.GetCurrent().Package);
     }
 
@@ -90,8 +104,61 @@ public sealed class CombatHub(
         return CombatContractMapper.ToResponse(combat.Resume(accountId), contentProvider.GetCurrent().Package);
     }
 
-    public Task<CombatUpdateResponse> LeaveCombat() => ToResponseAsync(
-        combat.LeaveAsync(GetAccountId(), Context.ConnectionAborted));
+    public async Task<CombatUpdateResponse> AttachCombat(Guid sessionId)
+    {
+        Guid accountId = GetCommandAccountId();
+        CancellationToken cancellationToken = Context.ConnectionAborted;
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
+        return CombatContractMapper.ToResponse(
+            await combat.AttachAsync(accountId, sessionId, cancellationToken),
+            contentProvider.GetCurrent().Package);
+    }
+
+    public Task<CombatUpdateResponse> LeaveCombat(string commandId) => ToResponseAsync(
+        combat.LeaveAsync(
+            GetCommandAccountId(),
+            commandId,
+            Context.ConnectionAborted));
+
+    public Task<CombatUpdateResponse> FleeCombat(
+        Guid sessionId,
+        string commandId) => ToResponseAsync(
+        combat.FleeAsync(
+            GetCommandAccountId(),
+            sessionId,
+            commandId,
+            Context.ConnectionAborted));
+
+    public async Task<CombatLootRollChoiceResponse> ChooseLootRoll(
+        Guid lootRollId,
+        string choice)
+    {
+        Guid accountId = GetCommandAccountId();
+        if (!Enum.TryParse(choice, ignoreCase: true, out LootChoice parsedChoice))
+            return new(false, "loot_choice_invalid", null, null);
+
+        CombatLootRollChoiceResult result = await lootRolls.ChooseAsync(
+            accountId,
+            lootRollId,
+            parsedChoice,
+            Context.ConnectionAborted);
+        return new(
+            result.Succeeded,
+            result.ErrorCode,
+            result.Roll is null ? null : ToLootRollResponse(result.Roll, result.CanNeed),
+            result.WinnerCharacterId);
+    }
+
+    public async Task<IReadOnlyList<CombatLootRollResponse>> GetLootRolls()
+    {
+        Guid accountId = GetAccountId();
+        IReadOnlyList<CombatLootRollAvailability> rolls = await lootRolls.GetOpenAsync(
+            accountId,
+            Context.ConnectionAborted);
+        return rolls.Select(availability => ToLootRollResponse(
+            availability.Roll,
+            availability.CanNeed)).ToArray();
+    }
 
     internal static string GroupName(Guid accountId) => $"combat:{accountId:N}";
 
@@ -112,4 +179,24 @@ public sealed class CombatHub(
         && accountId != Guid.Empty
             ? accountId
             : throw new HubException("authentication_required");
+
+    private CombatLootRollResponse ToLootRollResponse(
+        CombatLootRoll roll,
+        bool canNeed)
+    {
+        GameContentPackage content = contentProvider.GetCurrent().Package;
+        ItemDefinition? item = content.Items?.SingleOrDefault(candidate =>
+            string.Equals(candidate.Id, roll.ItemDefinitionId, StringComparison.Ordinal));
+        Guid[] eligible = System.Text.Json.JsonSerializer.Deserialize<Guid[]>(
+            roll.EligibleCharacterIdsJson) ?? [];
+        return new CombatLootRollResponse(
+            roll.LootRollId,
+            roll.ItemDefinitionId,
+            item?.Name ?? roll.ItemDefinitionId,
+            roll.Rarity.ToString(),
+            roll.Quantity,
+            roll.EndsAtUtc,
+            eligible,
+            canNeed);
+    }
 }

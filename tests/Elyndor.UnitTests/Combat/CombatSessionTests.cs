@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Items;
 using Elyndor.Core.Content;
@@ -22,6 +23,331 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyId = Guid.Parse("30000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyTwoId = Guid.Parse("40000000-0000-0000-0000-000000000001");
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
+
+    [Fact]
+    public void MultipleAttachedPlayersUseTheirOwnRuntimeAndShareOneSession()
+    {
+        Guid secondActorId = Guid.Parse("60000000-0000-0000-0000-000000000001");
+        CombatParticipantDefinition secondPlayer = new(
+            new CombatActorState(
+                secondActorId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default with { AttackPower = 30 }),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Second Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0.65m, 10),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false,
+            additionalPlayers:
+            [
+                new(Guid.NewGuid(), secondPlayer, ResolvedTalentModifiers.Empty)
+            ]);
+
+        CombatCommandResult first = session.Handle(
+            PlayerId,
+            new UseAbilityCommand("first-player-strike", "STRIKE", Guid.Empty),
+            Now);
+        Assert.True(first.Succeeded, first.ErrorCode);
+        Assert.Empty(session.Snapshot(secondActorId).Player.Cooldowns);
+        CombatCommandResult second = session.Handle(
+            secondActorId,
+            new UseAbilityCommand("second-player-strike", "STRIKE", Guid.Empty),
+            Now);
+
+        Assert.True(first.Succeeded);
+        Assert.True(second.Succeeded, second.ErrorCode);
+        Assert.Equal(2, second.Snapshot.Players!.Count);
+        Assert.Contains(first.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == PlayerId);
+        Assert.Contains(second.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == secondActorId);
+    }
+
+    [Fact]
+    public void RosteredPlayerCanAttachAfterCombatStartsAndThenAct()
+    {
+        Guid secondActorId = Guid.Parse("63000000-0000-0000-0000-000000000001");
+        CombatParticipantDefinition secondPlayer = new(
+            new CombatActorState(
+                secondActorId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default with { AttackPower = 30 }),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Late Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0.65m, 10),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false,
+            additionalPlayers:
+            [
+                new(Guid.NewGuid(), secondPlayer, ResolvedTalentModifiers.Empty, InitiallyAttached: false)
+            ]);
+
+        Assert.Equal(
+            CombatParticipantStatus.Rostered,
+            session.Snapshot(secondActorId).ParticipantRoster!
+                .Single(item => item.CharacterId == secondActorId).Status);
+        Assert.True(session.TryAttachParticipant(secondActorId, Now.AddSeconds(5), out string? error), error);
+
+        CombatCommandResult result = session.Handle(
+            secondActorId,
+            new UseAbilityCommand("late-player-strike", "STRIKE", Guid.Empty),
+            Now.AddSeconds(5));
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal(
+            CombatParticipantStatus.Active,
+            result.Snapshot.ParticipantRoster!
+                .Single(item => item.CharacterId == secondActorId).Status);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.DamageDealt
+            && item.SourceActorId == secondActorId);
+    }
+
+    [Fact]
+    public void FleeingOneParticipantDoesNotCancelTheSharedCombatAndIsIdempotent()
+    {
+        Guid secondActorId = Guid.Parse("62000000-0000-0000-0000-000000000001");
+        CombatParticipantDefinition secondPlayer = new(
+            new CombatActorState(
+                secondActorId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Second Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            canAutoAttack: false,
+            additionalPlayers:
+            [
+                new(Guid.NewGuid(), secondPlayer, ResolvedTalentModifiers.Empty)
+            ]);
+
+        CombatCommandResult first = session.Handle(
+            secondActorId,
+            new FleeCommand("flee-first"),
+            Now);
+        CombatCommandResult retry = session.Handle(
+            secondActorId,
+            new FleeCommand("flee-first"),
+            Now.AddSeconds(1));
+
+        Assert.True(first.Succeeded, first.ErrorCode);
+        Assert.True(retry.Succeeded, retry.ErrorCode);
+        Assert.Equal(CombatSessionStatus.Active, first.Snapshot.Status);
+        Assert.Equal(CombatParticipantStatus.Fled, retry.Snapshot.ParticipantRoster!
+            .Single(item => item.CharacterId == secondActorId).Status);
+        Assert.Equal(CombatParticipantStatus.Active, retry.Snapshot.ParticipantRoster!
+            .Single(item => item.CharacterId == PlayerId).Status);
+
+        CombatCommandResult leaderFlee = session.Handle(
+            PlayerId,
+            new FleeCommand("flee-leader"),
+            Now.AddSeconds(2));
+        Assert.Equal(CombatSessionStatus.Defeat, leaderFlee.Snapshot.Status);
+    }
+
+    [Fact]
+    public async Task RegistrySharesSessionAndRoutesParticipantSnapshotPerAccount()
+    {
+        Guid secondActorId = Guid.Parse("61000000-0000-0000-0000-000000000001");
+        Guid leaderAccountId = Guid.Parse("71000000-0000-0000-0000-000000000001");
+        Guid secondAccountId = Guid.Parse("72000000-0000-0000-0000-000000000001");
+        CombatParticipantDefinition secondPlayer = new(
+            new CombatActorState(
+                secondActorId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default with { AttackPower = 30 }),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Second Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0.65m, 10),
+            new HashSet<string>(["STRIKE"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false,
+            additionalPlayers:
+            [
+                new(secondAccountId, secondPlayer, ResolvedTalentModifiers.Empty)
+            ]);
+        RecordingPublisher publisher = new();
+        using CombatSessionRegistry registry = new(
+            new FrozenTimeProvider(Now),
+            publisher,
+            new NullFinalizer(),
+            NullLogger<CombatSessionRegistry>.Instance);
+
+        Assert.True(registry.TryAdd(
+            leaderAccountId,
+            PlayerId,
+            session,
+            additionalParticipants: [new(secondAccountId, secondActorId)]));
+
+        CombatOperationResult result = await registry.ExecuteParticipantAsync(
+            secondAccountId,
+            (active, characterId, now) => active.Handle(
+                characterId,
+                new UseAbilityCommand("registry-second-strike", "STRIKE", Guid.Empty),
+                now),
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal(secondActorId, result.Snapshot!.Player.ActorId);
+        Assert.Equal(PlayerId, registry.Resume(leaderAccountId).Snapshot!.Player.ActorId);
+        Assert.Equal(secondActorId, registry.Resume(secondAccountId).Snapshot!.Player.ActorId);
+        Assert.Contains(leaderAccountId, publisher.AccountIds);
+        Assert.Contains(secondAccountId, publisher.AccountIds);
+    }
+
+    [Fact]
+    public async Task RosteredParticipantCanTravelUntilAttachAndMustMatchCombatLocation()
+    {
+        Guid secondActorId = Guid.Parse("64000000-0000-0000-0000-000000000001");
+        Guid leaderAccountId = Guid.Parse("74000000-0000-0000-0000-000000000001");
+        Guid secondAccountId = Guid.Parse("75000000-0000-0000-0000-000000000001");
+        CombatParticipantDefinition secondPlayer = new(
+            new CombatActorState(
+                secondActorId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Travelling Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            canAutoAttack: false,
+            additionalPlayers:
+            [
+                new(secondAccountId, secondPlayer, ResolvedTalentModifiers.Empty, InitiallyAttached: false)
+            ]);
+        using CombatSessionRegistry registry = new(
+            new FrozenTimeProvider(Now),
+            new RecordingPublisher(),
+            new NullFinalizer(),
+            NullLogger<CombatSessionRegistry>.Instance);
+
+        Assert.True(registry.TryAdd(
+            leaderAccountId,
+            PlayerId,
+            session,
+            additionalParticipants: [new(secondAccountId, secondActorId)],
+            locationId: "WHISPERING_FOREST"));
+        Assert.False(registry.HasActiveCombat(secondAccountId));
+
+        CombatOperationResult wrongLocation = await registry.AttachAsync(
+            secondAccountId,
+            session.SessionId,
+            secondActorId,
+            "STARTER_TOWN",
+            CancellationToken.None);
+        Assert.False(wrongLocation.Succeeded);
+        Assert.Equal(CombatErrorCodes.InvalidLocation, wrongLocation.ErrorCode);
+
+        CombatOperationResult attached = await registry.AttachAsync(
+            secondAccountId,
+            session.SessionId,
+            secondActorId,
+            "WHISPERING_FOREST",
+            CancellationToken.None);
+        Assert.True(attached.Succeeded, attached.ErrorCode);
+        Assert.True(registry.HasActiveCombat(secondAccountId));
+    }
+
+    [Fact]
+    public void SnapshotIncludesContributionRecordedFromAuthoritativeCombatEvents()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("contribution-command", "STRIKE", Guid.Empty),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Snapshot.PlayerContribution);
+        Assert.True(result.Snapshot.PlayerContribution!.DamageDealt > 0);
+        Assert.True(result.Snapshot.PlayerContribution.QualifyingActions > 0);
+    }
+
+    [Fact]
+    public void ParticipantOwnedCommandRejectsACharacterThatDoesNotOwnTheSessionActor()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            Guid.NewGuid(),
+            new UseAbilityCommand("foreign-command", "STRIKE", Guid.Empty),
+            Now);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(CombatErrorCodes.ParticipantNotActive, result.ErrorCode);
+    }
+
+    [Fact]
+    public void FleeEndsTheSessionAsDefeatWhenNoActiveParticipantRemains()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            session.PlayerActorId,
+            new FleeCommand("flee-command"),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CombatSessionStatus.Defeat, result.Snapshot.Status);
+        Assert.Equal(Now, result.Snapshot.PlayerContribution!.FledAtUtc);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.CombatEnded
+            && item.DefinitionId == CombatSessionStatus.Defeat.ToString());
+    }
 
     [Fact]
     public void TimedSummonProfileAddsSpiderlingsAndRespectsActiveCap()
@@ -1431,7 +1757,8 @@ public sealed class CombatSessionTests
         decimal playerResource = 0,
         bool canAutoAttack = true,
         IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
-        CombatSummonProfile? summonProfile = null)
+        CombatSummonProfile? summonProfile = null,
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -1492,7 +1819,11 @@ public sealed class CombatSessionTests
         return new CombatSession(
             SessionId, player, enemy, abilities, ai,
             talents ?? ResolvedTalentModifiers.Empty, random, Now,
-            contentVersion, balanceVersion, initialPlayerCooldowns, summonProfile);
+            contentVersion,
+            balanceVersion,
+            initialPlayerCooldowns,
+            summonProfile,
+            additionalPlayers: additionalPlayers);
     }
 
     private static object EventSignature(CombatEvent item) => new
@@ -1510,6 +1841,20 @@ public sealed class CombatSessionTests
         public Task PublishAsync(
             Guid accountId, CombatOperationResult update, CancellationToken cancellationToken) =>
             Task.CompletedTask;
+    }
+
+    private sealed class RecordingPublisher : ICombatUpdatePublisher
+    {
+        public List<Guid> AccountIds { get; } = [];
+
+        public Task PublishAsync(
+            Guid accountId,
+            CombatOperationResult update,
+            CancellationToken cancellationToken)
+        {
+            AccountIds.Add(accountId);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class NullFinalizer : ICombatSessionFinalizer

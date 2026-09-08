@@ -8,6 +8,9 @@ using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Social;
+using Elyndor.Infrastructure.Parties;
+using Elyndor.Infrastructure.Dungeons;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -33,12 +36,17 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatDurabilityService>();
         builder.Services.AddScoped<CombatApplicationService>();
         builder.Services.AddScoped<CombatRewardService>();
+        builder.Services.AddScoped<CombatLootRollService>();
+        builder.Services.AddHostedService<CombatLootRollExpiryWorker>();
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();
         builder.Services.AddScoped<ContentPublicationService>();
         builder.Services.AddScoped<ContentAdministrationService>();
+        builder.Services.AddScoped<FriendService>();
+        builder.Services.AddScoped<PartyService>();
+        builder.Services.AddScoped<DungeonService>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();

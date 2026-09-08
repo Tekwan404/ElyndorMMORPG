@@ -182,6 +182,7 @@ function abilityInitials(ability: KnownAbility): string {
           <p class="eyebrow">Герой</p>
           <h1>Снаряжение</h1>
           <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }}</p>
+          <small class="public-code">ELY ID · {{ character.publicCode ?? '—' }}</small>
         </div>
         <div class="paperdoll__meta">
           <strong>Уровень {{ character.level }}</strong>
@@ -409,6 +410,12 @@ function abilityInitials(ability: KnownAbility): string {
   margin-top: 3px;
   color: var(--ui-color-text-secondary);
   font-size: var(--ui-font-size-xs);
+}
+
+.public-code {
+  color: var(--ui-color-primary);
+  font-size: .62rem;
+  letter-spacing: .08em;
 }
 
 .eyebrow {

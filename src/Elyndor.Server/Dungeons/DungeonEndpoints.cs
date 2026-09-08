@@ -1,0 +1,221 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Elyndor.Contracts.Dungeons;
+using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Dungeons;
+
+namespace Elyndor.Server.Dungeons;
+
+public static class DungeonEndpoints
+{
+    public static IEndpointRouteBuilder MapDungeonEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        RouteGroupBuilder group = endpoints.MapGroup("/api/v1/dungeons")
+            .RequireAuthorization()
+            .WithTags("Dungeons");
+        group.MapGet("", GetPreviews);
+        group.MapGet("/current", GetCurrentAsync);
+        group.MapPost("/teleport", TeleportAsync);
+        group.MapPost("/runs", CreateAsync);
+        group.MapPost("/runs/{runId:guid}/enter", EnterAsync);
+        group.MapPost("/runs/{runId:guid}/restart", RestartAsync);
+        group.MapPost("/runs/{runId:guid}/exit", ExitAsync);
+        return endpoints;
+    }
+
+    private static IResult GetPreviews(DungeonService service) =>
+        Results.Ok(service.GetDefinitions().Select(definition => new DungeonPreviewResponse(
+            definition.Id,
+            definition.DisplayName,
+            definition.Description,
+            definition.MinimumLevel,
+            definition.MaximumLevel,
+            definition.EntryLocationId,
+            definition.MinimumPartySize,
+            definition.MaximumPartySize,
+            definition.Encounters.Select(encounter => new DungeonEncounterPreviewResponse(
+                encounter.Id,
+                encounter.MonsterId,
+                encounter.CheckpointId,
+                encounter.IsBoss)).ToArray())).ToArray());
+
+    private static async Task<IResult> GetCurrentAsync(
+        ClaimsPrincipal user,
+        DungeonService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        DungeonRunView? run = await service.GetCurrentAsync(accountId, cancellationToken);
+        return run is null ? Results.NoContent() : Results.Ok(ToResponse(run));
+    }
+
+    private static async Task<IResult> CreateAsync(
+        CreateDungeonRunRequest request,
+        ClaimsPrincipal user,
+        DungeonService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToResult(await service.CreateAsync(
+            accountId,
+            request.DungeonId,
+            request.RequestId,
+            cancellationToken));
+    }
+
+    private static async Task<IResult> TeleportAsync(
+        TeleportToDungeonRequest request,
+        ClaimsPrincipal user,
+        DungeonService service,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToTeleportResult(await service.TeleportToEntryAsync(
+                accountId,
+                request.DungeonId,
+                request.RequestId,
+                cancellationToken)),
+            () => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = CharacterOperationErrorCodes.InCombat,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                }),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> EnterAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonService service,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(await service.EnterAsync(accountId, runId, cancellationToken)),
+            () => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = CharacterOperationErrorCodes.InCombat,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                }),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> RestartAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonService service,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(await service.RestartEncounterAsync(
+                accountId,
+                runId,
+                cancellationToken)),
+            () => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = CharacterOperationErrorCodes.InCombat,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                }),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> ExitAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonService service,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(await service.ExitAsync(
+                accountId,
+                runId,
+                cancellationToken)),
+            () => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = CharacterOperationErrorCodes.InCombat,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                }),
+            cancellationToken);
+    }
+
+    private static IResult ToResult(DungeonOperationResult result) =>
+        result.Succeeded
+            ? Results.Ok(result.Run is null ? null : ToResponse(result.Run))
+            : Results.Problem(
+                statusCode: result.ErrorCode is DungeonErrorCodes.NotLeader
+                    or DungeonErrorCodes.LevelRequired
+                    or DungeonErrorCodes.InvalidLocation
+                        ? StatusCodes.Status403Forbidden
+                        : result.ErrorCode is DungeonErrorCodes.RunNotFound
+                            or DungeonErrorCodes.DungeonNotFound
+                            or DungeonErrorCodes.CharacterNotFound
+                            or DungeonErrorCodes.MemberNotInRun
+                                ? StatusCodes.Status404NotFound
+                                : StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
+
+    private static IResult ToTeleportResult(DungeonTeleportResult result) =>
+        result.Succeeded
+            ? Results.Ok(new DungeonTeleportResponse(
+                result.DungeonId!,
+                result.LocationId!,
+                result.LocationVersion!.Value))
+            : Results.Problem(
+                statusCode: result.ErrorCode is DungeonErrorCodes.LevelRequired
+                    ? StatusCodes.Status403Forbidden
+                    : result.ErrorCode is DungeonErrorCodes.DungeonNotFound
+                        or DungeonErrorCodes.CharacterNotFound
+                            ? StatusCodes.Status404NotFound
+                            : StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
+
+    private static DungeonRunResponse ToResponse(DungeonRunView run) =>
+        new(
+            run.RunId,
+            run.DungeonId,
+            run.DisplayName,
+            run.Description,
+            run.State.ToString(),
+            run.CurrentEncounterIndex,
+            run.CurrentCheckpointId,
+            run.EncounterCount,
+            run.PartyId,
+            run.Members.Select(member => new DungeonRunMemberResponse(
+                member.CharacterId,
+                member.State.ToString(),
+                member.JoinedAtUtc)).ToArray(),
+            run.Encounters.Select(encounter => new DungeonEncounterResponse(
+                encounter.EncounterId,
+                encounter.EncounterIndex,
+                encounter.MonsterId,
+                encounter.State.ToString(),
+                encounter.WipeCount,
+                encounter.CharacterIds)).ToArray());
+
+    private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
+        Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)
+        && accountId != Guid.Empty;
+}

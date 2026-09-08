@@ -62,7 +62,8 @@
       "recommendedLevel": 9,
       "transitions": [
         "WHISPERING_FOREST",
-        "BROODMOTHER_LAIR"
+        "BROODMOTHER_LAIR",
+        "ANCIENT_MINE"
       ],
       "encounters": [
         {
@@ -95,6 +96,22 @@
       "requiredContractId": null,
       "artId": "whispering-forest",
       "description": "Тёмная часть леса, где знакомые хищники становятся заметно сильнее, а добыча и опыт ценнее."
+    },
+    {
+      "id": "ANCIENT_MINE",
+      "displayName": "Древняя шахта",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 15,
+      "transitions": [
+        "DEEP_FOREST"
+      ],
+      "encounters": [],
+      "minimumLevel": 15,
+      "maximumLevel": 60,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Вход в инстанс Древней шахты. Сюда группа возвращается после путешествия и начинает забег.",
+      "travelDurationSeconds": 5
     },
     {
       "id": "BROODMOTHER_LAIR",

@@ -17,8 +17,14 @@ public sealed class AccountResolver(
     private readonly TimeProvider _timeProvider =
         timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
+    public Task<Account> ResolveAsync(
+        long telegramUserId,
+        CancellationToken cancellationToken) =>
+        ResolveAsync(telegramUserId, null, cancellationToken);
+
     public async Task<Account> ResolveAsync(
         long telegramUserId,
+        string? telegramUsername,
         CancellationToken cancellationToken)
     {
         if (telegramUserId <= 0)
@@ -32,11 +38,16 @@ public sealed class AccountResolver(
         IExecutionStrategy executionStrategy = _dbContext.Database.CreateExecutionStrategy();
 
         return await executionStrategy.ExecuteAsync(
-            () => ResolveCoreAsync(telegramUserId, now, cancellationToken));
+            () => ResolveCoreAsync(
+                telegramUserId,
+                telegramUsername,
+                now,
+                cancellationToken));
     }
 
     private async Task<Account> ResolveCoreAsync(
         long telegramUserId,
+        string? telegramUsername,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
@@ -54,6 +65,7 @@ public sealed class AccountResolver(
         {
             Account account = await TouchAndLoadAsync(
                 telegramUserId,
+                telegramUsername,
                 now,
                 cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -61,6 +73,8 @@ public sealed class AccountResolver(
         }
 
         Account created = new(Guid.CreateVersion7(), telegramUserId, now);
+        if (!string.IsNullOrWhiteSpace(telegramUsername))
+            created.SetTelegramUsername(telegramUsername);
         _dbContext.Accounts.Add(created);
 
         try
@@ -73,12 +87,17 @@ public sealed class AccountResolver(
         {
             await transaction.RollbackAsync(cancellationToken);
             _dbContext.ChangeTracker.Clear();
-            return await ResolveWinnerAsync(telegramUserId, now, cancellationToken);
+            return await ResolveWinnerAsync(
+                telegramUserId,
+                telegramUsername,
+                now,
+                cancellationToken);
         }
     }
 
     private async Task<Account> ResolveWinnerAsync(
         long telegramUserId,
+        string? telegramUsername,
         DateTimeOffset seenAtUtc,
         CancellationToken cancellationToken)
     {
@@ -86,6 +105,7 @@ public sealed class AccountResolver(
             await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         Account account = await TouchAndLoadAsync(
             telegramUserId,
+            telegramUsername,
             seenAtUtc,
             cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -94,23 +114,19 @@ public sealed class AccountResolver(
 
     private async Task<Account> TouchAndLoadAsync(
         long telegramUserId,
+        string? telegramUsername,
         DateTimeOffset seenAtUtc,
         CancellationToken cancellationToken)
     {
-        await _dbContext.Accounts
-            .Where(account => account.TelegramUserId == telegramUserId
-                && account.LastSeenAtUtc < seenAtUtc)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(
-                    account => account.LastSeenAtUtc,
-                    seenAtUtc),
-                cancellationToken);
-
-        return await _dbContext.Accounts
-            .AsNoTracking()
+        Account account = await _dbContext.Accounts
             .SingleAsync(
-                account => account.TelegramUserId == telegramUserId,
+                candidate => candidate.TelegramUserId == telegramUserId,
                 cancellationToken);
+        account.RecordSeen(seenAtUtc);
+        if (!string.IsNullOrWhiteSpace(telegramUsername))
+            account.SetTelegramUsername(telegramUsername);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return account;
     }
 
     private static bool IsTelegramUserIdConflict(DbUpdateException exception) =>

@@ -92,13 +92,13 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
     }
 
     [Fact]
-    public async Task UnresolvedGuardianTalentCannotConsumePlayerPoint()
+    public async Task SupportedGuardianTalentConsumesPlayerPointAndPersists()
     {
         GameContentPackage content = await LoadContentAsync();
         TalentDefinition unresolved = content.TalentTrees!
             .Single(tree => tree.ClassId == "WARRIOR")
             .Nodes.Single(talent => talent.Id == "G-1-4");
-        Assert.False(TalentRuntimeAvailability.IsNodeFullySupported(unresolved));
+        Assert.True(TalentRuntimeAvailability.IsNodeFullySupported(unresolved));
 
         (Guid accountId, Guid characterId) = await CreateCharacterAsync();
         await using GameDbContext context = postgres.CreateDbContext();
@@ -114,15 +114,14 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
             Guid.CreateVersion7().ToString(),
             CancellationToken.None);
 
-        Assert.False(result.IsSuccess);
-        Assert.Equal(TalentErrorCodes.Unavailable, result.ErrorCode);
+        Assert.True(result.IsSuccess, result.ErrorCode);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         CharacterTalentState state = await verify.CharacterTalentStates
             .AsNoTracking()
             .SingleAsync(candidate => candidate.CharacterId == characterId);
-        Assert.Empty(state.GetRanks(TalentLoadoutIds.Loadout1));
-        Assert.Empty(await verify.CharacterMutations
+        Assert.Equal(1, state.GetRanks(TalentLoadoutIds.Loadout1)[unresolved.Id]);
+        Assert.Single(await verify.CharacterMutations
             .Where(mutation => mutation.CharacterId == characterId)
             .ToArrayAsync());
     }

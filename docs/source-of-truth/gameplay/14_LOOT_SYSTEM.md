@@ -561,3 +561,49 @@ DungeonCompletionId, optional
 ```
 
 These fields provide audit/idempotency context and do not transfer ownership of Dungeon/Boss state to Loot.
+
+---
+
+# Approved Dungeon Group Equipment Roll Extension
+
+Personal loot remains the default for ordinary materials, reagents,
+consumables, and low-value drops. Every eligible participant receives an
+independent server-side roll; one player's result does not reduce another
+player's result.
+
+Valuable equipment uses a persisted group loot roll. At the start of the
+approved dungeon slice, equipment with rarity `Rare`, `Epic`, `Legendary`, or
+`Unique` creates a roll with these choices:
+
+The valuable portion of the encounter loot table is evaluated once per combat
+session and persisted before participant-specific reward transactions. An
+empty evaluation is persisted as well, so later participant finalization can
+never create a second independent group roll.
+
+```text
+NEED  - priority roll; server-approved only when the character can equip it
+GREED - normal roll; the character wants the item for any reason
+PASS  - does not participate
+```
+
+Resolution order:
+
+1. Roll randomly among all valid `NEED` choices.
+2. If there are no valid `NEED` choices, roll randomly among `GREED` choices.
+3. If everyone passes or times out, the item is not granted.
+
+`NEED` validation is authoritative and checks class, level requirement,
+equipment slot, weapon category, armor category, and off-hand restrictions.
+The client may disable an invalid button for UX, but the server must reject a
+forged choice.
+
+The roll is persisted before granting the item. It contains the dungeon run,
+combat session, item definition and version, rolled item-instance data,
+eligible character rows, choices, state, end time, and concurrency version.
+Choices are idempotent. The timeout is server authoritative, resolves as
+`PASS`, and never blocks the next dungeon encounter. The winner grant is
+idempotent and cannot create a second item on retry, reconnect, or restart.
+
+Loot eligibility comes from the encounter's `CombatRoster` and its
+`ParticipationPolicy`; a player who was not in that encounter does not see or
+receive its loot roll.

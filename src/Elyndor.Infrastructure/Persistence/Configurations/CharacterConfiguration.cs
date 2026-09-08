@@ -24,6 +24,7 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
 
         builder.Property(character => character.Name).HasMaxLength(16).IsRequired();
         builder.Property(character => character.NormalizedName).HasMaxLength(16).IsRequired();
+        builder.Property(character => character.PublicCode).HasMaxLength(14).IsRequired();
         builder.Property(character => character.RaceId).HasMaxLength(16).IsRequired();
         builder.Property(character => character.GenderId).HasMaxLength(16).IsRequired();
         builder.Property(character => character.ClassId).HasMaxLength(16).IsRequired();
@@ -47,5 +48,8 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
         builder.HasIndex(character => character.NormalizedName)
             .IsUnique()
             .HasDatabaseName("uq_characters_normalized_name");
+        builder.HasIndex(character => character.PublicCode)
+            .IsUnique()
+            .HasDatabaseName("uq_characters_public_code");
     }
 }

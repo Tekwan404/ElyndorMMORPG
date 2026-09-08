@@ -11,7 +11,7 @@ public sealed class ActiveCombatSessionConfiguration :
     public void Configure(EntityTypeBuilder<ActiveCombatSession> builder)
     {
         builder.ToTable("active_combat_sessions");
-        builder.HasKey(state => state.SessionId)
+        builder.HasKey(state => new { state.SessionId, state.CharacterId })
             .HasName("pk_active_combat_sessions");
         builder.Property(state => state.ContentVersion)
             .HasMaxLength(32)
@@ -19,6 +19,8 @@ public sealed class ActiveCombatSessionConfiguration :
         builder.Property(state => state.BalanceVersion)
             .HasMaxLength(32)
             .IsRequired();
+        builder.Property(state => state.TerminalSnapshotJson)
+            .HasColumnType("jsonb");
         builder.Property(state => state.StartedAtUtc).IsRequired();
 
         builder.HasOne<Character>()
@@ -30,6 +32,8 @@ public sealed class ActiveCombatSessionConfiguration :
         builder.HasIndex(state => state.CharacterId)
             .IsUnique()
             .HasDatabaseName("uq_active_combat_sessions_character_id");
+        builder.HasIndex(state => state.SessionId)
+            .HasDatabaseName("ix_active_combat_sessions_session_id");
         builder.HasIndex(state => state.StartedAtUtc)
             .HasDatabaseName("ix_active_combat_sessions_started_at_utc");
     }

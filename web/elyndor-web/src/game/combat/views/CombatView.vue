@@ -19,6 +19,9 @@ const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
 const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
+const combatPlayers = computed(() => snapshot.value?.players ?? (snapshot.value ? [snapshot.value.player] : []))
+const isParticipantActive = computed(() => combat.isParticipantActive)
+const lootRolls = computed(() => combat.lootRolls)
 const battlefieldArt = computed(() => {
   const locationId = session.snapshot?.world?.currentLocation.id
   if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
@@ -281,6 +284,8 @@ function eventText(event: CombatEvent, critical = false): string {
         ? 'Победа'
         : event.definitionId === 'Defeat'
           ? 'Поражение'
+          : event.definitionId === 'FLED'
+            ? 'Вы сбежали из боя'
           : isTraining.value
             ? 'Тренировка завершена'
             : 'Бой завершён'
@@ -342,6 +347,24 @@ async function leaveCombat(): Promise<void> {
   if (left) emit('leave')
 }
 
+async function fleeCombat(): Promise<void> {
+  if (isTraining.value || combat.pending) return
+  await combat.flee()
+}
+
+async function attachCombat(): Promise<void> {
+  if (!snapshot.value || isParticipantActive.value) return
+  await combat.attachCombat(snapshot.value.sessionId)
+}
+
+function lootRollRemaining(endsAtUtc: string): number {
+  return Math.max(0, (Date.parse(endsAtUtc) - now.value) / 1_000)
+}
+
+async function chooseLootRoll(lootRollId: string, choice: 'Need' | 'Greed' | 'Pass'): Promise<void> {
+  await combat.chooseLootRoll(lootRollId, choice)
+}
+
 onUnmounted(() => window.clearInterval(timer))
 </script>
 
@@ -379,6 +402,35 @@ onUnmounted(() => window.clearInterval(timer))
           />
         </section>
       </header>
+
+      <section
+        v-if="combatPlayers.length > 1"
+        class="combat-party-roster"
+        aria-label="Состав группы в бою"
+        data-combat-party-roster
+      >
+        <article
+          v-for="player in combatPlayers"
+          :key="player.actorId"
+          class="combat-party-roster__member"
+          :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
+        >
+          <strong>{{ player.name }}</strong>
+          <small>{{ Math.ceil(player.hp) }} / {{ Math.ceil(player.maxHp) }}</small>
+        </article>
+      </section>
+
+      <section
+        v-if="!isTraining && snapshot.status === 'Active' && !isParticipantActive"
+        class="combat-join"
+        data-combat-join
+      >
+        <strong>Бой уже идёт</strong>
+        <span>Ты можешь присоединиться, когда находишься в этой локации.</span>
+        <button type="button" :disabled="combat.pending" @click="attachCombat">
+          Войти в бой
+        </button>
+      </section>
 
       <nav
         v-if="aliveEnemies.length > 1"
@@ -475,7 +527,7 @@ onUnmounted(() => window.clearInterval(timer))
         <div><small>МАКС.</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
       </section>
 
-      <section class="combat-actions">
+      <section v-if="isParticipantActive" class="combat-actions">
         <div class="player-state-row">
           <div class="effect-strip effect-strip--player">
             <span
@@ -599,6 +651,21 @@ onUnmounted(() => window.clearInterval(timer))
           </button>
 
           <button
+            v-if="!isTraining"
+            type="button"
+            class="utility-action utility-action--flee"
+            data-flee-combat
+            :disabled="combat.pending"
+            @click="fleeCombat"
+          >
+            <span>↗</span>
+            <div>
+              <strong>Сбежать</strong>
+              <small>При наличии союзников</small>
+            </div>
+          </button>
+
+          <button
             type="button"
             class="utility-action utility-action--leave"
             data-leave-combat
@@ -612,6 +679,39 @@ onUnmounted(() => window.clearInterval(timer))
             </div>
           </button>
         </div>
+      </section>
+
+      <section
+        v-if="lootRolls.length"
+        class="loot-rolls"
+        aria-label="Розыгрыш ценной добычи"
+        data-loot-rolls
+      >
+        <article v-for="roll in lootRolls" :key="roll.lootRollId" class="loot-roll">
+          <div class="loot-roll__heading">
+            <div>
+              <small>ЦЕННАЯ ДОБЫЧА · {{ roll.rarity }}</small>
+              <strong>{{ roll.name }}<span v-if="roll.quantity > 1"> ×{{ roll.quantity }}</span></strong>
+            </div>
+            <time>{{ Math.ceil(lootRollRemaining(roll.endsAtUtc)) }}с</time>
+          </div>
+          <div class="loot-roll__actions">
+            <button
+              type="button"
+              :disabled="combat.pending || !roll.canNeed"
+              :title="roll.canNeed ? 'Приоритетный бросок' : 'Персонаж не может использовать этот предмет'"
+              @click="chooseLootRoll(roll.lootRollId, 'Need')"
+            >
+              <strong>НУЖНО</strong><small>Приоритетный бросок</small>
+            </button>
+            <button type="button" :disabled="combat.pending" @click="chooseLootRoll(roll.lootRollId, 'Greed')">
+              <strong>ПРЕТЕНДОВАТЬ</strong><small>Обычный бросок</small>
+            </button>
+            <button type="button" :disabled="combat.pending" @click="chooseLootRoll(roll.lootRollId, 'Pass')">
+              <strong>ОТКАЗАТЬСЯ</strong><small>Не участвовать</small>
+            </button>
+          </div>
+        </article>
       </section>
 
       <section class="combat-log">
@@ -1072,6 +1172,33 @@ onUnmounted(() => window.clearInterval(timer))
   box-shadow: var(--ui-shadow-inset);
 }
 
+.combat-join {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgb(215 168 88 / 38%);
+  border-radius: var(--ui-radius-lg);
+  background: rgb(35 25 14 / 92%);
+  color: var(--ui-color-text-muted);
+  font-size: .68rem;
+}
+
+.combat-join strong {
+  color: #f3d18c;
+  font-family: var(--ui-font-display);
+  font-size: .8rem;
+}
+
+.combat-join button {
+  min-height: 38px;
+  border: 1px solid rgb(215 168 88 / 58%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(215 168 88 / 16%);
+  color: #ffe8b2;
+  font: inherit;
+  font-weight: 800;
+}
+
 .player-state-row {
   display: flex;
   min-width: 0;
@@ -1274,8 +1401,97 @@ onUnmounted(() => window.clearInterval(timer))
   border-color: rgb(216 95 114 / 24%);
 }
 
+.utility-action--flee {
+  border-color: rgb(219 164 83 / 28%);
+}
+
 .utility-action:disabled {
   opacity: .4;
+}
+
+.loot-rolls {
+  display: grid;
+  gap: 6px;
+}
+
+.loot-roll {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid rgb(219 164 83 / 42%);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(135deg, rgb(72 48 21 / 72%), rgb(12 13 20 / 96%));
+}
+
+.loot-roll__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.loot-roll__heading > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.loot-roll__heading small {
+  color: #e4bc76;
+  font-size: .43rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.loot-roll__heading strong {
+  overflow: hidden;
+  color: var(--ui-color-text-primary);
+  font-size: .64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loot-roll__heading time {
+  flex: 0 0 auto;
+  color: #e4bc76;
+  font-size: .54rem;
+  font-weight: 800;
+}
+
+.loot-roll__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.loot-roll__actions button {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 6px 5px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(5 7 12 / 72%);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  text-align: left;
+}
+
+.loot-roll__actions button:first-child {
+  border-color: rgb(219 164 83 / 50%);
+}
+
+.loot-roll__actions button strong {
+  font-size: .47rem;
+}
+
+.loot-roll__actions button small {
+  color: var(--ui-color-text-muted);
+  font-size: .39rem;
+}
+
+.loot-roll__actions button:disabled {
+  opacity: .45;
 }
 
 .combat-log {

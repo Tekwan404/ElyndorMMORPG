@@ -22,7 +22,8 @@ public sealed class ContentValidationPipeline
             new ItemValidator(),
             new MerchantValidator(),
             new MonsterValidator(),
-            new WorldValidator()
+            new WorldValidator(),
+            new DungeonValidator()
         ]);
 
     public IReadOnlyList<ContentValidationError> Validate(GameContentPackage package)
@@ -123,4 +124,10 @@ public sealed class WorldValidator : IContentValidationStage
         GameContentPackageValidator.ValidateWorldContracts(context.Package, context.Errors);
         context.Errors.AddRange(WorldEncounterContentValidator.Validate(context.Package));
     }
+}
+
+public sealed class DungeonValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        GameContentPackageValidator.ValidateDungeons(context.Package, context.Errors);
 }

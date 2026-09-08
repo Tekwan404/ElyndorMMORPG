@@ -11,6 +11,7 @@ import {
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type {
   CombatEvent,
+  CombatLootRoll,
   CombatReward,
   CombatSnapshot,
   CombatUpdate,
@@ -52,16 +53,33 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const snapshot = ref<CombatSnapshot | null>(null)
   const events = ref<CombatEvent[]>([])
   const reward = ref<CombatReward | null>(null)
+  const lootRolls = ref<CombatLootRoll[]>([])
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
   const encounterPresentation = ref<WorldEncounter | null>(null)
-  const isActive = computed(() => snapshot.value?.status === 'Active')
+  const participantStatus = computed(() => {
+    const current = snapshot.value
+    if (!current || !current.participantRoster) return null
+    return current.participantRoster.find(
+      participant => participant.actorId === current.player.actorId,
+    )?.status ?? null
+  })
+  const isParticipantActive = computed(() =>
+    participantStatus.value === null
+      || participantStatus.value === 'Active'
+      || participantStatus.value === 'Dead',
+  )
+  const isAwaitingAttachment = computed(() =>
+    snapshot.value?.status === 'Active' && participantStatus.value === 'Rostered',
+  )
+  const isActive = computed(() => snapshot.value?.status === 'Active' && isParticipantActive.value)
   const enemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
+  let lootRefreshTimer: number | null = null
   const retryCommandIds = new Map<string, string>()
 
   async function connect(): Promise<void> {
@@ -125,6 +143,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   async function startCombat(encounter: WorldEncounter): Promise<boolean> {
     reward.value = null
+    clearLootRolls()
     encounterPresentation.value = encounter
     const succeeded = await invoke('StartCombat', encounter.encounterId)
     if (!succeeded) encounterPresentation.value = null
@@ -133,8 +152,20 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   async function startTraining(): Promise<boolean> {
     reward.value = null
+    clearLootRolls()
     encounterPresentation.value = null
     return await invoke('StartTraining')
+  }
+
+  async function startDungeonEncounter(runId: string): Promise<boolean> {
+    reward.value = null
+    clearLootRolls()
+    return await invoke('StartDungeonEncounter', runId)
+  }
+
+  async function attachCombat(sessionId: string): Promise<boolean> {
+    if (!sessionId) return false
+    return await invoke('AttachCombat', sessionId)
   }
 
   async function resetTraining(): Promise<boolean> {
@@ -187,14 +218,17 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         events.value = []
+        reward.value = null
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
         retryCommandIds.clear()
+        clearLootRolls()
         errorCode.value = null
         diagnostic.value = null
         return true
       }
       applyUpdate(update)
+      await refreshLootRolls()
       return update.succeeded
     } catch (error) {
       recordFailure('resume', 'ResumeCombat', error)
@@ -203,15 +237,33 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function leave(): Promise<boolean> {
-    const succeeded = await invoke('LeaveCombat')
+    if (!snapshot.value) return false
+    const sessionId = snapshot.value.sessionId
+    const succeeded = await invokeRetryableCommand(
+      `LeaveCombat:${sessionId}`,
+      commandId => invokeWithOutcome('LeaveCombat', commandId),
+    )
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
       events.value = []
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
       retryCommandIds.clear()
+      clearLootRolls()
     }
     return succeeded
+  }
+
+  async function flee(): Promise<boolean> {
+    if (!snapshot.value || snapshot.value.status !== 'Active') return false
+    return await invokeRetryableCommand(
+      `FleeCombat:${snapshot.value.sessionId}`,
+      commandId => invokeWithOutcome(
+        'FleeCombat',
+        snapshot.value!.sessionId,
+        commandId,
+      ),
+    )
   }
 
   async function invoke(method: string, ...args: unknown[]): Promise<boolean> {
@@ -235,6 +287,53 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         recordFailure('hub_invoke', method, error)
       }
       return { succeeded: false, receivedResponse: false }
+    } finally {
+      pending.value = false
+    }
+  }
+
+  async function refreshLootRolls(): Promise<void> {
+    if (connection?.state !== HubConnectionState.Connected) return
+    try {
+      lootRolls.value = await connection.invoke<CombatLootRoll[]>('GetLootRolls')
+      if (lootRolls.value.length === 0) stopLootRefresh()
+      else ensureLootRefresh()
+    } catch (error) {
+      recordFailure('hub_invoke', 'GetLootRolls', error)
+    }
+  }
+
+  async function chooseLootRoll(
+    lootRollId: string,
+    choice: 'Need' | 'Greed' | 'Pass',
+  ): Promise<boolean> {
+    if (pending.value) return false
+    pending.value = true
+    errorCode.value = null
+    diagnostic.value = null
+    try {
+      await connect()
+      const response = await connection!.invoke<{
+        succeeded: boolean
+        errorCode: string | null
+        roll: CombatLootRoll | null
+        winnerCharacterId: string | null
+      }>('ChooseLootRoll', lootRollId, choice)
+      if (response.succeeded) {
+        if (response.roll === null) {
+          lootRolls.value = lootRolls.value.filter((roll) => roll.lootRollId !== lootRollId)
+          if (lootRolls.value.length === 0) stopLootRefresh()
+        } else {
+          const index = lootRolls.value.findIndex((roll) => roll.lootRollId === lootRollId)
+          if (index >= 0) lootRolls.value[index] = response.roll
+        }
+      } else {
+        errorCode.value = response.errorCode
+      }
+      return response.succeeded
+    } catch (error) {
+      recordFailure('hub_invoke', 'ChooseLootRoll', error)
+      return false
     } finally {
       pending.value = false
     }
@@ -268,6 +367,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       snapshot.value = null
       events.value = []
       reward.value = null
+      clearLootRolls()
       if (encounterPresentation.value?.monsterId !== incomingSnapshot.enemy.definitionId) {
         encounterPresentation.value = null
       }
@@ -290,7 +390,39 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
     events.value = [...events.value, ...fresh].slice(-40)
     accumulateTrainingStats(fresh, incomingSnapshot ?? snapshot.value)
-    if (update.reward) reward.value = update.reward
+    if (update.reward) {
+      reward.value = update.reward
+      if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
+    }
+  }
+
+  function mergeLootRolls(incoming: CombatLootRoll[]): void {
+    const byId = new Map(lootRolls.value.map((roll) => [roll.lootRollId, roll]))
+    for (const roll of incoming) byId.set(roll.lootRollId, roll)
+    lootRolls.value = [...byId.values()]
+    if (lootRolls.value.length > 0) ensureLootRefresh()
+  }
+
+  function clearLootRolls(): void {
+    lootRolls.value = []
+    stopLootRefresh()
+  }
+
+  function ensureLootRefresh(): void {
+    if (lootRefreshTimer !== null) return
+    lootRefreshTimer = window.setInterval(() => {
+      if (lootRolls.value.length === 0) {
+        stopLootRefresh()
+        return
+      }
+      void refreshLootRolls()
+    }, 2_000)
+  }
+
+  function stopLootRefresh(): void {
+    if (lootRefreshTimer === null) return
+    window.clearInterval(lootRefreshTimer)
+    lootRefreshTimer = null
   }
 
   function accumulateTrainingStats(fresh: CombatEvent[], current: CombatSnapshot | null): void {
@@ -339,10 +471,13 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     snapshot,
     events,
     reward,
+    lootRolls,
     errorCode,
     diagnostic,
     pending,
     isActive,
+    isParticipantActive,
+    isAwaitingAttachment,
     enemies,
     isTraining,
     trainingStats,
@@ -350,6 +485,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     connect,
     startCombat,
     startTraining,
+    startDungeonEncounter,
+    attachCombat,
     resetTraining,
     useAbility,
     useConsumable,
@@ -357,6 +494,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     selectTarget,
     resume,
     leave,
+    flee,
+    refreshLootRolls,
+    chooseLootRoll,
   }
 })
 
