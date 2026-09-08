@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.14.1",
+  "contentVersion": "0.15.0",
   "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-08T05:50:00+00:00",
+  "publishedAtUtc": "2026-09-08T06:02:00+00:00",
   "quests": [
     {
       "id": "QUEST_01_FIRST_HUNT",
@@ -20,13 +20,16 @@
       ],
       "rewardXp": 90,
       "rewardGold": 15,
-      "prerequisiteQuestIds": []
+      "prerequisiteQuestIds": [],
+      "issuerName": "Городской дозор",
+      "issuerRole": "Стража Стартового города",
+      "regionName": "Шепчущий лес"
     },
     {
       "id": "QUEST_02_WOLF_HIDES",
       "displayName": "Шкуры для дозора",
       "description": "Соберите пригодные шкуры волков для ремонта снаряжения городского дозора.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 2,
       "offerLocationId": "WHISPERING_FOREST",
       "objectives": [
@@ -48,13 +51,16 @@
       ],
       "prerequisiteQuestIds": [
         "QUEST_01_FIRST_HUNT"
-      ]
+      ],
+      "issuerName": "Дозорный лесного поста",
+      "issuerRole": "Поручение дозора",
+      "regionName": "Шепчущий лес"
     },
     {
       "id": "QUEST_03_BOAR_TRAIL",
       "displayName": "Кабанья тропа",
       "description": "Лесные кабаны разоряют безопасные тропы. Разгоните стадо у дороги.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 3,
       "offerLocationId": "WHISPERING_FOREST",
       "objectives": [
@@ -68,8 +74,11 @@
       "rewardXp": 190,
       "rewardGold": 28,
       "prerequisiteQuestIds": [
-        "QUEST_02_WOLF_HIDES"
-      ]
+        "QUEST_01_FIRST_HUNT"
+      ],
+      "issuerName": "Смотритель тракта",
+      "issuerRole": "Местное поручение",
+      "regionName": "Шепчущий лес"
     },
     {
       "id": "QUEST_04_SILKEN_THREAT",
@@ -96,16 +105,19 @@
       "rewardXp": 280,
       "rewardGold": 36,
       "prerequisiteQuestIds": [
-        "QUEST_03_BOAR_TRAIL"
-      ]
+        "QUEST_01_FIRST_HUNT"
+      ],
+      "issuerName": "Следопыт дозора",
+      "issuerRole": "Разведка",
+      "regionName": "Шепчущий лес"
     },
     {
       "id": "QUEST_05_ALPHA_OF_WHISPERS",
       "displayName": "Альфа Шепчущего леса",
       "description": "Матёрый альфа держит стаю у перехода в Глубокий лес. Сломите сопротивление хищников.",
-      "type": "Story",
+      "type": "Contract",
       "requiredLevel": 5,
-      "offerLocationId": "WHISPERING_FOREST",
+      "offerLocationId": "STARTER_TOWN",
       "objectives": [
         {
           "id": "KILL_ALPHA",
@@ -124,7 +136,12 @@
       ],
       "prerequisiteQuestIds": [
         "QUEST_04_SILKEN_THREAT"
-      ]
+      ],
+      "issuerName": "Гильдия авантюристов",
+      "issuerRole": "Регистратор",
+      "regionName": "Шепчущий лес",
+      "contractNumber": "WF-005",
+      "threatLevel": "Средняя"
     },
     {
       "id": "QUEST_06_DEEPER_TRACKS",
@@ -145,13 +162,16 @@
       "rewardGold": 65,
       "prerequisiteQuestIds": [
         "QUEST_05_ALPHA_OF_WHISPERS"
-      ]
+      ],
+      "issuerName": "Разведка дозора",
+      "issuerRole": "Полевой отчёт",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "QUEST_07_CORRUPTED_TUSKS",
       "displayName": "Осквернённые клыки",
       "description": "Осквернённые кабаны стали агрессивнее. Уничтожьте зверей и принесите клыки как доказательство.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 7,
       "offerLocationId": "DEEP_FOREST",
       "objectives": [
@@ -173,7 +193,10 @@
       "rewardGold": 80,
       "prerequisiteQuestIds": [
         "QUEST_06_DEEPER_TRACKS"
-      ]
+      ],
+      "issuerName": "Охотник глубокого леса",
+      "issuerRole": "Поручение охотника",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "QUEST_08_VENOM_IN_DARK",
@@ -206,16 +229,19 @@
         }
       ],
       "prerequisiteQuestIds": [
-        "QUEST_07_CORRUPTED_TUSKS"
-      ]
+        "QUEST_06_DEEPER_TRACKS"
+      ],
+      "issuerName": "Лесная разведка",
+      "issuerRole": "Расследование",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "QUEST_09_GOBLIN_SCOUTS",
       "displayName": "Чужие следы",
       "description": "На лесных тропах замечены гоблины-разведчики. Не дайте им составить карту подходов.",
-      "type": "Story",
+      "type": "Contract",
       "requiredLevel": 9,
-      "offerLocationId": "DEEP_FOREST",
+      "offerLocationId": "STARTER_TOWN",
       "objectives": [
         {
           "id": "KILL_GOBLINS",
@@ -228,13 +254,18 @@
       "rewardGold": 115,
       "prerequisiteQuestIds": [
         "QUEST_08_VENOM_IN_DARK"
-      ]
+      ],
+      "issuerName": "Гильдия авантюристов",
+      "issuerRole": "Регистратор",
+      "regionName": "Глубокий лес",
+      "contractNumber": "DF-009",
+      "threatLevel": "Средняя"
     },
     {
       "id": "QUEST_10_PACK_PRESSURE",
       "displayName": "Давление стаи",
       "description": "Матёрые волки собираются в большие стаи. Удержите центральную тропу Глубокого леса.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 10,
       "offerLocationId": "DEEP_FOREST",
       "objectives": [
@@ -248,16 +279,19 @@
       "rewardXp": 2200,
       "rewardGold": 140,
       "prerequisiteQuestIds": [
-        "QUEST_09_GOBLIN_SCOUTS"
-      ]
+        "QUEST_08_VENOM_IN_DARK"
+      ],
+      "issuerName": "Лесной пост",
+      "issuerRole": "Поручение дозора",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "QUEST_11_OLD_ALPHA",
       "displayName": "Старый вожак",
       "description": "Старый альфа-волк не подпускает разведчиков к северной части леса. Победите вожака стаи.",
-      "type": "Story",
+      "type": "Contract",
       "requiredLevel": 11,
-      "offerLocationId": "DEEP_FOREST",
+      "offerLocationId": "STARTER_TOWN",
       "objectives": [
         {
           "id": "KILL_OLD_ALPHA",
@@ -275,14 +309,19 @@
         }
       ],
       "prerequisiteQuestIds": [
-        "QUEST_10_PACK_PRESSURE"
-      ]
+        "QUEST_09_GOBLIN_SCOUTS"
+      ],
+      "issuerName": "Гильдия авантюристов",
+      "issuerRole": "Распорядитель охоты",
+      "regionName": "Глубокий лес",
+      "contractNumber": "DF-011",
+      "threatLevel": "Высокая"
     },
     {
       "id": "QUEST_12_FANG_PROOF",
       "displayName": "Доказательство охотника",
       "description": "Прежде чем идти к логову, докажите, что способны держать удар старой стаи и принести целые волчьи клыки.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 12,
       "offerLocationId": "DEEP_FOREST",
       "objectives": [
@@ -304,7 +343,10 @@
       "rewardGold": 200,
       "prerequisiteQuestIds": [
         "QUEST_11_OLD_ALPHA"
-      ]
+      ],
+      "issuerName": "Охотник Гильдии",
+      "issuerRole": "Полевое поручение",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "QUEST_13_BROODMOTHER_TRACE",
@@ -337,8 +379,11 @@
         }
       ],
       "prerequisiteQuestIds": [
-        "QUEST_12_FANG_PROOF"
-      ]
+        "QUEST_11_OLD_ALPHA"
+      ],
+      "issuerName": "Разведка Гильдии",
+      "issuerRole": "Расследование угрозы",
+      "regionName": "Глубокий лес"
     },
     {
       "id": "CONTRACT_BROODMOTHER_GATE",
@@ -346,7 +391,7 @@
       "description": "Войдите в логово и уничтожьте Паучью Прародительницу. Победа откроет путь в Осквернённую чащу.",
       "type": "Contract",
       "requiredLevel": 14,
-      "offerLocationId": "BROODMOTHER_LAIR",
+      "offerLocationId": "STARTER_TOWN",
       "objectives": [
         {
           "id": "KILL_BROODMOTHER",
@@ -360,7 +405,12 @@
       "prerequisiteQuestIds": [
         "QUEST_13_BROODMOTHER_TRACE"
       ],
-      "unlockLocationId": "BLIGHTED_GROVE"
+      "unlockLocationId": "BLIGHTED_GROVE",
+      "issuerName": "Гильдия авантюристов",
+      "issuerRole": "Распорядитель охоты",
+      "regionName": "Логово Прародительницы",
+      "contractNumber": "BF-014",
+      "threatLevel": "Высокая"
     },
     {
       "id": "QUEST_15_BANDIT_FOOTHOLD",
@@ -381,13 +431,16 @@
       "rewardGold": 260,
       "prerequisiteQuestIds": [
         "CONTRACT_BROODMOTHER_GATE"
-      ]
+      ],
+      "issuerName": "Экспедиционный отряд",
+      "issuerRole": "Полевой отчёт",
+      "regionName": "Осквернённая чаща"
     },
     {
       "id": "QUEST_16_ARROWS_FROM_GLOOM",
       "displayName": "Стрелы из чащи",
       "description": "Разбойники-лучники контролируют просеки. Снимите стрелков с выгодных позиций.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 16,
       "offerLocationId": "BLIGHTED_GROVE",
       "objectives": [
@@ -402,13 +455,16 @@
       "rewardGold": 310,
       "prerequisiteQuestIds": [
         "QUEST_15_BANDIT_FOOTHOLD"
-      ]
+      ],
+      "issuerName": "Разведчик экспедиции",
+      "issuerRole": "Полевое поручение",
+      "regionName": "Осквернённая чаща"
     },
     {
       "id": "QUEST_17_BLIGHTED_BOARS",
       "displayName": "Вепри Осквернённой чащи",
       "description": "Осквернение изменило местных вепрей. Уменьшите их стаю прежде, чем она выйдет к дорогам.",
-      "type": "Story",
+      "type": "Side",
       "requiredLevel": 17,
       "offerLocationId": "BLIGHTED_GROVE",
       "objectives": [
@@ -422,8 +478,11 @@
       "rewardXp": 19000,
       "rewardGold": 370,
       "prerequisiteQuestIds": [
-        "QUEST_16_ARROWS_FROM_GLOOM"
-      ]
+        "QUEST_15_BANDIT_FOOTHOLD"
+      ],
+      "issuerName": "Снабженец экспедиции",
+      "issuerRole": "Поручение лагеря",
+      "regionName": "Осквернённая чаща"
     },
     {
       "id": "QUEST_18_WEBBED_GROVE",
@@ -443,14 +502,17 @@
       "rewardXp": 27500,
       "rewardGold": 430,
       "prerequisiteQuestIds": [
-        "QUEST_17_BLIGHTED_BOARS"
-      ]
+        "QUEST_15_BANDIT_FOOTHOLD"
+      ],
+      "issuerName": "Экспедиционный отряд",
+      "issuerRole": "Исследование территории",
+      "regionName": "Осквернённая чаща"
     },
     {
       "id": "QUEST_19_VETERAN_BANDITS",
       "displayName": "Опытные головорезы",
       "description": "Лучшие бойцы разбойников пытаются вернуть контроль над чащей. Сломите их сопротивление.",
-      "type": "Story",
+      "type": "Contract",
       "requiredLevel": 19,
       "offerLocationId": "BLIGHTED_GROVE",
       "objectives": [
@@ -471,7 +533,12 @@
       ],
       "prerequisiteQuestIds": [
         "QUEST_18_WEBBED_GROVE"
-      ]
+      ],
+      "issuerName": "Экспедиционный пост Гильдии",
+      "issuerRole": "Регистратор полевого поста",
+      "regionName": "Осквернённая чаща",
+      "contractNumber": "BG-019",
+      "threatLevel": "Высокая"
     },
     {
       "id": "QUEST_20_BLIGHTED_ALPHA",
@@ -498,7 +565,10 @@
       ],
       "prerequisiteQuestIds": [
         "QUEST_19_VETERAN_BANDITS"
-      ]
+      ],
+      "issuerName": "Экспедиционный пост Гильдии",
+      "issuerRole": "Финальный отчёт экспедиции",
+      "regionName": "Осквернённая чаща"
     }
   ]
 }
