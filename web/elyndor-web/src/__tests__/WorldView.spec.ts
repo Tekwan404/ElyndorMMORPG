@@ -21,6 +21,7 @@ describe('WorldView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.spyOn(useGameSessionStore(), 'refreshQuestJournal').mockResolvedValue(null)
+    document.body.innerHTML = ''
   })
 
   it('renders only the current location and leaves travel to the World map', () => {
@@ -34,7 +35,7 @@ describe('WorldView', () => {
     expect(wrapper.findAll('[data-town-service]')).toHaveLength(4)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
-    expect(wrapper.get('[data-town-service="guild"]').text()).toContain('Гильдия авантюристов')
+    expect(wrapper.get('[data-town-service="guild"]').text()).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
   })
 
   it('renders explore as a dedicated current-location activity outside the artwork', async () => {
@@ -96,15 +97,19 @@ describe('WorldView', () => {
     }
     const acceptQuest = vi.spyOn(session, 'acceptQuest').mockResolvedValue(undefined)
 
-    const wrapper = mount(WorldView)
+    const wrapper = mount(WorldView, { attachTo: document.body })
     await flushPromises()
     await wrapper.get('[data-open-adventurer-guild]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.get('[data-adventurer-guild-board]').text()).toContain('КОНТРАКТ №BF-014')
-    expect(wrapper.get('[data-adventurer-guild-board]').text()).toContain('Заказчик')
-    await wrapper.get('[data-guild-accept-contract]').trigger('click')
+    const board = document.body.querySelector('[data-adventurer-guild-board]')
+    expect(board?.textContent).toContain('КОНТРАКТ №BF-014')
+    expect(board?.textContent).toContain('Заказчик')
+    const acceptButton = document.body.querySelector('[data-guild-accept-contract]') as HTMLButtonElement
+    acceptButton.click()
+    await flushPromises()
     expect(acceptQuest).toHaveBeenCalledWith('CONTRACT_BROODMOTHER_GATE')
+    wrapper.unmount()
   })
 
   it('starts the server-selected encounter immediately after Explore with no confirmation step', async () => {
