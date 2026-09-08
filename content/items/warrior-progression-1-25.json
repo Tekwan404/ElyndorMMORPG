@@ -213,7 +213,7 @@
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
-      "name": "Наплечники Пограничника",
+      "name": "Плащ Пограничника",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
@@ -491,7 +491,7 @@
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_SHOULDERS",
-      "name": "Наплечники Железного Дозора",
+      "name": "Плащ Железного Дозора",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
@@ -774,7 +774,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
-      "name": "Наплечники Серого Волка",
+      "name": "Плащ Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
@@ -1025,7 +1025,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
-      "name": "Наплечники Багровой Ярости",
+      "name": "Плащ Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
@@ -1309,7 +1309,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
-      "name": "Наплечники Первого Стража",
+      "name": "Плащ Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
@@ -1593,7 +1593,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
-      "name": "Наплечники Чёрного Бастиона",
+      "name": "Плащ Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 23,
