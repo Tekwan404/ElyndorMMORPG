@@ -82,7 +82,7 @@ const navigation: readonly {
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
   { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
-  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: true },
+  { id: 'quests', label: 'Журнал', icon: gameArt.navigation.quests, enabled: true },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: false },
 ]
 
