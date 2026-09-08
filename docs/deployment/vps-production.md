@@ -434,6 +434,8 @@ Authentication__Telegram__BotToken=CHANGE_ME
 
 Administration__Telegram__Enabled=true
 Administration__Telegram__WebhookSecret=CHANGE_ME_AT_LEAST_32_BYTES
+Administration__Telegram__WebhookUrl=https://game.elyndor.su/api/v1/administration/telegram/webhook
+Administration__Telegram__RegisterWebhookOnStartup=true
 Administration__Telegram__AllowedUserIds__0=CHANGE_ME
 ```
 
@@ -1077,6 +1079,33 @@ Production endpoint:
 https://game.elyndor.su/api/v1/administration/telegram/webhook
 ```
 
+В Production `Elyndor.Server` сам регистрирует webhook через Telegram Bot API
+после старта. Регистрация включает только:
+
+```json
+["message"]
+```
+
+поэтому существующие приватные текстовые admin-команды попадают в
+`TelegramAdminEndpoints`. При регистрации используется тот же `HttpClient`,
+которым сервер отправляет одноразовый код Admin V2 и ответы бота. Если исходящий
+доступ до Telegram идёт через системный proxy/Xray, webhook registration идёт
+тем же маршрутом.
+
+Если Telegram временно недоступен, backend продолжает работать, а регистрация
+повторяется раз в минуту. На каждой успешной регистрации
+`drop_pending_updates=true`, чтобы старые destructive-команды, накопившиеся
+во время недоступности сервера, не выполнялись после восстановления.
+
+Настройки:
+
+```dotenv
+Administration__Telegram__Enabled=true
+Administration__Telegram__WebhookSecret=CHANGE_ME_AT_LEAST_32_BYTES
+Administration__Telegram__WebhookUrl=https://game.elyndor.su/api/v1/administration/telegram/webhook
+Administration__Telegram__RegisterWebhookOnStartup=true
+```
+
 Bot token и webhook secret хранятся только в:
 
 ```text
@@ -1090,7 +1119,28 @@ Bot token и webhook secret хранятся только в:
 ```bash
 systemctl restart elyndor
 curl -fsS http://127.0.0.1:5080/api/v1/status
+journalctl -u elyndor -n 100 --no-pager | grep -i telegram
 ```
+
+Если VPS использует локальный SOCKS5 Xray на `127.0.0.1:10808`, текущее
+состояние webhook можно проверить так:
+
+```bash
+set -a
+source /etc/elyndor/elyndor.env
+set +a
+
+curl --socks5-hostname 127.0.0.1:10808 \
+  "https://api.telegram.org/bot${Authentication__Telegram__BotToken}/getWebhookInfo"
+```
+
+В ответе ожидается URL:
+
+```text
+https://game.elyndor.su/api/v1/administration/telegram/webhook
+```
+
+и отсутствие последней ошибки доставки.
 
 ---
 
