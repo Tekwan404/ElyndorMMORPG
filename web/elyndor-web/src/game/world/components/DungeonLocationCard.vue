@@ -70,12 +70,12 @@ async function exitRun(): Promise<void> {
 
     <p>Пять столкновений под глубоким лесом. Лидер запускает бой, остальные участники входят в текущий забег из этой локации.</p>
     <div class="dungeon-location-card__requirements">
-      <span>Уровень 15–60</span>
+      <span>Уровень 15+ · враги 15–16</span>
       <span>Группа 1–5</span>
       <span>5 столкновений</span>
     </div>
 
-    <p>Финальный босс: Паучья Прародительница</p>
+    <p>Финальный босс: Прародительница Глубин</p>
     <UIButton variant="secondary" @click="emit('open-party')">Открыть группу</UIButton>
     <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
 
