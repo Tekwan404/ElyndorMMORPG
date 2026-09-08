@@ -1,4 +1,5 @@
 using Elyndor.ContentValidator;
+using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.UnitTests.Talents;
@@ -6,7 +7,7 @@ namespace Elyndor.UnitTests.Talents;
 public sealed class TalentAuditReportTests
 {
     [Fact]
-    public async Task AuditCountsAllComposedTalentTreesAndDeferredModifiers()
+    public async Task AuditRequiresEveryComposedTalentModifierToBeRuntimeSupported()
     {
         var package = await GameContentPackageLoader.LoadAsync(
             RepositoryContentPath());
@@ -16,9 +17,16 @@ public sealed class TalentAuditReportTests
         Assert.Equal(3, report.TreeCount);
         Assert.Equal(288, report.NodeCount);
         Assert.Equal(321, report.ModifierCount);
-        Assert.Equal(230, report.DeferredModifierCount);
-        Assert.Equal(209, report.FullyDeferredNodeCount);
-        Assert.Equal(0, report.RuntimeUnmappedModifierCount);
+        Assert.Equal(0, report.DeferredModifierCount);
+        Assert.Equal(0, report.FullyDeferredNodeCount);
+        Assert.True(
+            report.RuntimeUnmappedModifierCount == 0,
+            string.Join(
+                ", ",
+                report.Entries
+                    .SelectMany(entry => entry.Modifiers)
+                    .Where(modifier => !modifier.RuntimeMapped)
+                    .Select(modifier => modifier.CoverageId)));
         Assert.Equal(
             report.RuntimeUnmappedModifierCount,
             report.Entries
@@ -55,9 +63,37 @@ public sealed class TalentAuditReportTests
 
         Assert.All(
             abilityIds,
-            abilityId => Assert.Contains(
-                package.Abilities!,
-                ability => ability.Id == abilityId));
+                abilityId => Assert.Contains(
+                    package.Abilities!,
+                    ability => ability.Id == abilityId));
+    }
+
+    [Fact]
+    public void AuditDoesNotTreatAnUnknownSupportedEventAsRuntimeImplemented()
+    {
+        TalentDefinition node = new(
+            "UNKNOWN-1-1",
+            "UNKNOWN_BRANCH",
+            1,
+            0,
+            "Проверка",
+            "Test",
+            1,
+            [],
+            "Проверка runtime",
+            Modifiers:
+            [
+                new(
+                    TalentModifierType.EventTriggered,
+                    TalentModifierKeys.OnPartyEvent,
+                    [1],
+                    RuntimeStatus: TalentModifierRuntimeStatus.Supported)
+            ]);
+
+        Assert.False(
+            TalentRuntimeAvailability.IsModifierSupported(
+                node,
+                node.Modifiers![0]));
     }
 
     private static string RepositoryContentPath()

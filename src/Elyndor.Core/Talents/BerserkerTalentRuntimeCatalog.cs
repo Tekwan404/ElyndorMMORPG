@@ -5,8 +5,10 @@ public static class BerserkerTalentRuntimeCatalog
     private static readonly IReadOnlyDictionary<string, string> EventKeys =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
+            ["B-1-2"] = TalentModifierKeys.OnEnemyKilled,
             ["B-2-1"] = TalentModifierKeys.OnHpThreshold,
             ["B-2-4"] = TalentModifierKeys.OnAbilityUsed,
+            ["B-3-1"] = TalentModifierKeys.OnCriticalHit,
             ["B-3-4"] = TalentModifierKeys.OnCriticalHit,
             ["B-4-1"] = TalentModifierKeys.OnAutoAttack,
             ["B-4-4"] = TalentModifierKeys.OnHpThreshold,
@@ -30,12 +32,20 @@ public static class BerserkerTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        string.Equals(node.BranchId, "BERSERKER", StringComparison.Ordinal)
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.CombatSession,
             StringComparison.Ordinal)
+        && string.Equals(node.BranchId, "BERSERKER", StringComparison.Ordinal)
+        && EventKeys.TryGetValue(node.Id, out string? expectedKey)
+        && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        string.Equals(node.BranchId, "BERSERKER", StringComparison.Ordinal)
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && EventKeys.TryGetValue(node.Id, out string? expectedKey)
         && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
 

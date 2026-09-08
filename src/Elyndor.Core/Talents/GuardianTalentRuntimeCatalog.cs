@@ -5,6 +5,7 @@ public static class GuardianTalentRuntimeCatalog
     private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> RuntimeKeys =
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal)
         {
+            ["G-1-2"] = Keys(TalentModifierKeys.OnDamageTaken),
             ["G-1-4"] = Keys(TalentModifierKeys.OnAutoAttack),
             ["G-2-1"] = Keys(TalentModifierKeys.OnHpThreshold),
             ["G-2-2"] = Keys(TalentModifierKeys.OnAbilityUsed),
@@ -31,12 +32,20 @@ public static class GuardianTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        node.BranchId == "GUARDIAN"
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.CombatSession,
             StringComparison.Ordinal)
+        && node.BranchId == "GUARDIAN"
+        && RuntimeKeys.TryGetValue(node.Id, out IReadOnlySet<string>? keys)
+        && keys.Contains(modifier.Key);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        node.BranchId == "GUARDIAN"
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && RuntimeKeys.TryGetValue(node.Id, out IReadOnlySet<string>? keys)
         && keys.Contains(modifier.Key);
 

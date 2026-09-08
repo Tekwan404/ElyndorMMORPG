@@ -36,7 +36,7 @@ public sealed class BerserkerTalentRuntimeCatalogTests
     {
         string[] expected =
         [
-            "B-2-1", "B-2-4", "B-3-4", "B-4-1", "B-4-4", "B-5-4",
+            "B-1-2", "B-2-1", "B-2-4", "B-3-1", "B-3-4", "B-4-1", "B-4-4", "B-5-4",
             "B-6-2", "B-6-3", "B-6-4", "B-7-1", "B-7-2", "B-7-3",
             "B-7-4", "B-8-1", "B-8-2", "B-8-3", "B-9-1"
         ];

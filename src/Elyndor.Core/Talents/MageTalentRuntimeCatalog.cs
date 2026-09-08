@@ -70,12 +70,20 @@ public static class MageTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        node.BranchId is "ARCANE" or "FROST"
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.CombatSession,
             StringComparison.Ordinal)
+        && node.BranchId is "ARCANE" or "FROST"
+        && EventKeys.TryGetValue(node.Id, out string? expectedKey)
+        && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        node.BranchId is "ARCANE" or "FROST"
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && EventKeys.TryGetValue(node.Id, out string? expectedKey)
         && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
 

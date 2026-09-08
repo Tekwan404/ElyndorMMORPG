@@ -1,5 +1,5 @@
 {
-  "contentVersion": "0.13.4",
+  "contentVersion": "0.13.5",
   "balanceVersion": "0.8.0",
   "publishedAtUtc": "2026-09-07T09:28:00+00:00",
   "definitions": [
@@ -911,8 +911,7 @@
                 12,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -943,8 +942,7 @@
                 2,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -969,8 +967,7 @@
               "secondaryValues": [
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1018,8 +1015,7 @@
                 3
               ],
               "threshold": 70,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1046,8 +1042,7 @@
                 15,
                 25
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1070,8 +1065,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1118,8 +1112,7 @@
                 10,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1143,8 +1136,7 @@
               ],
               "threshold": 25,
               "durationSeconds": 6,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1182,8 +1174,7 @@
                 300
               ],
               "targetId": "PROVOKE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1231,8 +1222,7 @@
                 5
               ],
               "internalCooldownSeconds": 2,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1279,8 +1269,7 @@
                 6,
                 9
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1326,8 +1315,7 @@
               ],
               "chancePercent": 12,
               "durationSeconds": 8,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1350,8 +1338,7 @@
                 1,
                 1.5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1373,8 +1360,7 @@
               "values": [
                 25
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1402,8 +1388,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1454,8 +1439,7 @@
                 1
               ],
               "triggerCount": 1,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1503,8 +1487,7 @@
                 10
               ],
               "threshold": 35,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1527,8 +1510,7 @@
                 65
               ],
               "chancePercent": 25,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1561,8 +1543,7 @@
                 15
               ],
               "targetId": "BASTION",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1584,8 +1565,7 @@
               "values": [
                 35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1622,8 +1602,7 @@
                 0.35
               ],
               "internalCooldownSeconds": 2,
-              "runtimeStatus": "Deferred",
-                  "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1743,8 +1722,7 @@
                 7,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 4,
                 8
@@ -1822,8 +1800,7 @@
                 4,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20,
               "durationSeconds": 3
             }
@@ -1931,8 +1908,7 @@
                 4,
                 7
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WILD_STRIKE",
               "durationSeconds": 4,
               "tickIntervalSeconds": 1
@@ -1958,8 +1934,7 @@
               "values": [
                 45
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "chancePercent": 15,
               "internalCooldownSeconds": 2
             },
@@ -2061,8 +2036,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 1,
                 2
@@ -2167,8 +2141,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK"
             }
           ],
@@ -2215,8 +2188,7 @@
               "values": [
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "AUTO_ATTACK",
               "durationSeconds": 8
             }
@@ -2247,8 +2219,7 @@
                 3,
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK"
             }
           ],
@@ -2279,8 +2250,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK",
               "internalCooldownSeconds": 3
             }
@@ -2314,8 +2284,7 @@
               "values": [
                 30
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK",
               "chancePercent": 100
             }
@@ -2343,8 +2312,7 @@
                 9,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 25
             }
           ],
@@ -2374,8 +2342,7 @@
                 5,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WHIRLWIND",
               "durationSeconds": 6,
               "tickIntervalSeconds": 1
@@ -2402,8 +2369,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20
             }
           ],
@@ -2436,8 +2402,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WHIRLWIND"
             }
           ],
@@ -2477,8 +2442,7 @@
                 1
               ],
               "targetId": "WILD_STRIKE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -2501,8 +2465,7 @@
               "values": [
                 200
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 10
             }
           ],
@@ -2541,8 +2504,7 @@
               "values": [
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "chancePercent": 20
             }
           ],
@@ -2568,8 +2530,7 @@
                 10,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2593,8 +2554,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2640,8 +2600,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2664,8 +2623,7 @@
                 1
               ],
               "targetId": "BATTLE_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2694,8 +2652,7 @@
                 4,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2746,8 +2703,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2770,8 +2726,7 @@
                 1
               ],
               "targetId": "ENDURANCE_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2794,8 +2749,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2818,8 +2772,7 @@
                 1
               ],
               "targetId": "WAR_BANNER",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2843,8 +2796,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2873,8 +2825,7 @@
                 5,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2897,8 +2848,7 @@
                 1
               ],
               "targetId": "CRY_OF_VENGEANCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2922,8 +2872,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2947,8 +2896,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2971,8 +2919,7 @@
                 1
               ],
               "targetId": "VICTORY_FLAG",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3001,8 +2948,7 @@
                     14,
                     20
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3026,8 +2972,7 @@
                     16,
                     24
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3055,8 +3000,7 @@
                     2,
                     4
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3079,8 +3023,7 @@
                 1
               ],
               "targetId": "RALLY_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3109,8 +3052,7 @@
                     5,
                     8
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3132,8 +3074,7 @@
                   "values": [
                     10
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3157,8 +3098,7 @@
                     20,
                     30
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3181,8 +3121,7 @@
                 1
               ],
               "targetId": "BATTLE_STANDARD",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3209,8 +3148,7 @@
                     4,
                     7
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3233,8 +3171,7 @@
                     3,
                     6
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3258,8 +3195,7 @@
                     4,
                     6
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3293,8 +3229,7 @@
                   "secondaryValues": [
                     6
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3321,8 +3256,7 @@
                   "values": [
                     2
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3346,8 +3280,7 @@
                     2,
                     3
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3376,8 +3309,7 @@
                 5
               ],
               "internalCooldownSeconds": 20,
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3402,8 +3334,7 @@
                   "secondaryValues": [
                     6
                   ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         }

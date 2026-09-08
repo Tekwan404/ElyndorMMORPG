@@ -86,8 +86,7 @@
                 6
               ],
               "targetId": "PHYSICAL_SHOT_CRITICAL",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -113,8 +112,7 @@
                 4
               ],
               "targetId": "ARCHER_HIT_RESOURCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 1
             }
           ],
@@ -207,8 +205,7 @@
                 6
               ],
               "targetId": "PHYSICAL_PET_BASE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 2,
                 4,
@@ -238,8 +235,7 @@
                 6
               ],
               "targetId": "MARKSMAN_HIGH_HP_CRIT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 80
             }
           ],
@@ -291,8 +287,7 @@
                 10
               ],
               "targetId": "HUNTER_MARK_CRITICAL_DAMAGE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -340,8 +335,7 @@
                 20
               ],
               "targetId": "PHYSICAL_SHOT_RESOURCE_DISCOUNT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 5
             }
           ],
@@ -366,8 +360,7 @@
                 40
               ],
               "targetId": "MARKSMAN_DOUBLE_RELEASE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 8,
                 14
@@ -400,8 +393,7 @@
                 10
               ],
               "targetId": "AIMED_SHOT_PRECISION",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 4,
                 8
@@ -434,8 +426,7 @@
                 10
               ],
               "targetId": "PIERCING_ARROW_EXPOSE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 8,
               "triggerCount": 2
             }
@@ -461,8 +452,7 @@
                 10
               ],
               "targetId": "PHYSICAL_PET_ATTACK_SPEED",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 4,
               "internalCooldownSeconds": 5
             }
@@ -515,8 +505,7 @@
                 8
               ],
               "targetId": "MARKED_VICTIM",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 5,
                 10
@@ -580,8 +569,7 @@
                 8
               ],
               "targetId": "ARCHER_SHOT_RHYTHM",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "triggerCount": 3
             }
           ],
@@ -607,8 +595,7 @@
                 3
               ],
               "targetId": "MARKSMAN_DEADLY_STREAK",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 6,
               "triggerCount": 3
             }
@@ -634,8 +621,7 @@
                 6
               ],
               "targetId": "MARKSMAN_EXECUTE_AIM",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 30
             }
           ],
@@ -682,8 +668,7 @@
                 65
               ],
               "targetId": "PHYSICAL_PET_COVER",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 5
             }
           ],
@@ -716,8 +701,7 @@
                 15
               ],
               "targetId": "AIMED_SHOT_MARK",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "castTimeSeconds": 0.25
             }
           ],
@@ -743,8 +727,7 @@
                 10
               ],
               "targetId": "BROKEN_ARMOR",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 6
             }
           ],
@@ -769,8 +752,7 @@
                 70
               ],
               "targetId": "PHYSICAL_MISS_REFUND",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -794,8 +776,7 @@
                 40
               ],
               "targetId": "MARKSMAN_QUICK_DRAW",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 10,
                 20
@@ -828,8 +809,7 @@
                 25
               ],
               "targetId": "AIMED_SHOT_EXECUTE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 25
             }
           ],
@@ -890,8 +870,7 @@
                 1
               ],
               "targetId": "SNIPER_FOCUS_RESET",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -928,8 +907,7 @@
                 60
               ],
               "targetId": "MARKSMAN_MASTER_ARROW",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "triggerCount": 5,
               "secondaryValues": [
                 5
@@ -942,8 +920,7 @@
                 1
               ],
               "targetId": "SNIPER_FOCUS",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 2
             }
           ],
@@ -970,8 +947,7 @@
                 15
               ],
               "targetId": "PHYSICAL_PET_HP",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -997,8 +973,7 @@
                 9
               ],
               "targetId": "PHYSICAL_PET_DAMAGE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1024,8 +999,7 @@
                 25
               ],
               "targetId": "PHYSICAL_PET_RESOURCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 3,
                 3,
@@ -1102,8 +1076,7 @@
                 9
               ],
               "targetId": "PHYSICAL_PET_DEFENSE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 2,
                 4,
@@ -1133,8 +1106,7 @@
                 4
               ],
               "targetId": "BEAST_SHARED_TARGET",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1181,8 +1153,7 @@
                 42
               ],
               "targetId": "PREDATOR_BLEED",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 6,
               "tickIntervalSeconds": 1
             }
@@ -1208,8 +1179,7 @@
                 18
               ],
               "targetId": "GUARDIAN_INTERCEPT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 30,
                 30
@@ -1238,8 +1208,7 @@
                 10
               ],
               "targetId": "TRAPPER_RHYTHM_BREAK",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 3,
                 6
@@ -1270,8 +1239,7 @@
                 12
               ],
               "targetId": "PHYSICAL_PET_ABILITY_DAMAGE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1295,8 +1263,7 @@
                 12
               ],
               "targetId": "PHYSICAL_PET_FURY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 5
             }
           ],
@@ -1321,8 +1288,7 @@
                 10
               ],
               "targetId": "PET_CRIT_OWNER_SHOT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 5
             }
           ],
@@ -1347,8 +1313,7 @@
                 6
               ],
               "targetId": "PET_BLEED_OWNER_DAMAGE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1421,8 +1386,7 @@
                 15
               ],
               "targetId": "PHYSICAL_PET_AOE_REDUCTION",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1446,8 +1410,7 @@
                 4
               ],
               "targetId": "BEAST_TARGET_UNITY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 4,
               "threshold": 2
             }
@@ -1495,8 +1458,7 @@
                 15
               ],
               "targetId": "PREDATOR_EXECUTE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20
             }
           ],
@@ -1521,8 +1483,7 @@
                 4
               ],
               "targetId": "GUARDIAN_LIVING_BARRIER",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 50
             }
           ],
@@ -1546,8 +1507,7 @@
                 2
               ],
               "targetId": "TRAPPER_COMMAND_SILENCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 2,
               "internalCooldownSeconds": 20
             }
@@ -1573,8 +1533,7 @@
                 10
               ],
               "targetId": "PET_CONTROL_RECOVERY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 3,
                 6
@@ -1607,8 +1566,7 @@
                 15
               ],
               "targetId": "PREDATOR_BLEED_MASTERY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 2
             }
           ],
@@ -1637,8 +1595,7 @@
                 20
               ],
               "targetId": "GUARDIAN_UNBREAKABLE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20,
               "secondaryValues": [
                 10
@@ -1671,8 +1628,7 @@
                 5
               ],
               "targetId": "TRAPPER_PERFECT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1696,8 +1652,7 @@
                 10
               ],
               "targetId": "PET_SHARED_HEAL",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1722,8 +1677,7 @@
                 8
               ],
               "targetId": "PHYSICAL_PET_CRIT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 4,
                 7,
@@ -1751,8 +1705,7 @@
                 15
               ],
               "targetId": "COMMAND_COORDINATION",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 20
               ],
@@ -1779,8 +1732,7 @@
                 1
               ],
               "targetId": "BEAST_SURGE_UNSTOPPABLE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 3
             }
           ],
@@ -1804,8 +1756,7 @@
                 10
               ],
               "targetId": "BEAST_MASTER_BASE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 10
               ]
@@ -1817,8 +1768,7 @@
                 20
               ],
               "targetId": "BEAST_MASTER_EXTRA_ATTACK",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 3
             },
             {
@@ -1828,8 +1778,7 @@
                 10
               ],
               "targetId": "BEAST_MASTER_OWNER_SHOT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 5
             }
           ],
@@ -1902,8 +1851,7 @@
                 6
               ],
               "targetId": "MAGICAL_ARROW_ACCURACY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -1951,8 +1899,7 @@
                 8
               ],
               "targetId": "ARCANE_ARCHER_MANA_REGEN",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2000,8 +1947,7 @@
                 9
               ],
               "targetId": "SPIRIT_PET_BASE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 2,
                 4,
@@ -2055,8 +2001,7 @@
                 4
               ],
               "targetId": "ARCANE_MARK_DAMAGE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2102,8 +2047,7 @@
                 25
               ],
               "targetId": "SPIRIT_MANA_RETURN",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 3,
                 3
@@ -2134,8 +2078,7 @@
                 6
               ],
               "targetId": "MAGICAL_ARROW_CRITICAL",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2159,8 +2102,7 @@
                 8
               ],
               "targetId": "SPIRIT_AFTER_ARROW",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 4
             }
           ],
@@ -2212,8 +2154,7 @@
                 48
               ],
               "targetId": "PHANTOM_BURN",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 6,
               "tickIntervalSeconds": 1
             }
@@ -2239,8 +2180,7 @@
                 65
               ],
               "targetId": "SPIRIT_RESPONSE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 4
             }
           ],
@@ -2265,8 +2205,7 @@
                 6
               ],
               "targetId": "SPIRIT_OWNER_RESISTANCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2312,8 +2251,7 @@
                 4
               ],
               "targetId": "SPIRIT_SHARED_TARGET",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2339,8 +2277,7 @@
                 9
               ],
               "targetId": "MAGICAL_ARROW_COST",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "version": 1
@@ -2364,8 +2301,7 @@
                 10
               ],
               "targetId": "ARCANE_VULNERABILITY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 6
             }
           ],
@@ -2390,8 +2326,7 @@
                 36
               ],
               "targetId": "ETHEREAL_POISON",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 10,
                 18
@@ -2422,8 +2357,7 @@
                 5
               ],
               "targetId": "SPIRIT_GUARD_SHIELD",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "durationSeconds": 5,
               "internalCooldownSeconds": 12
             }
@@ -2449,8 +2383,7 @@
                 15
               ],
               "targetId": "ARCANE_LOW_MANA_COST",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 30
             }
           ],
@@ -2537,8 +2470,7 @@
                 50
               ],
               "targetId": "SPIRIT_SPELL_ECHO",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "chancePercent": 12,
               "internalCooldownSeconds": 5
             }
@@ -2566,8 +2498,7 @@
                 9
               ],
               "targetId": "ARCANE_HIGH_MANA_POWER",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 70
             }
           ],
@@ -2592,8 +2523,7 @@
                 15
               ],
               "targetId": "ARCANE_LAST_SPARK",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 15,
               "internalCooldownSeconds": 60
             }
@@ -2623,8 +2553,7 @@
                 15
               ],
               "targetId": "GHOST_VOLLEY_EXPOSURE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 5
               ],
@@ -2653,8 +2582,7 @@
                 15
               ],
               "targetId": "SPIRIT_TRUE_FORM",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 2,
                 4,
@@ -2682,8 +2610,7 @@
                 15
               ],
               "targetId": "ARCANE_FLOW_PERFECT",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 15
               ],
@@ -2724,8 +2651,7 @@
                 55
               ],
               "targetId": "ARCANE_ARCHER_CAPSTONE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 40
               ],
@@ -2738,8 +2664,7 @@
                 5
               ],
               "targetId": "ARCANE_FLOW_CAPSTONE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 15
               ]

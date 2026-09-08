@@ -84,12 +84,20 @@ public static class ArcherTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        node.BranchId is "MARKSMAN" or "BEAST_MASTERY" or "ARCANE_ARCHER"
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.CombatSession,
             StringComparison.Ordinal)
+        && node.BranchId is "MARKSMAN" or "BEAST_MASTERY" or "ARCANE_ARCHER"
+        && EventKeys.TryGetValue(node.Id, out IReadOnlySet<string>? expectedKeys)
+        && expectedKeys.Contains(modifier.Key);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        node.BranchId is "MARKSMAN" or "BEAST_MASTERY" or "ARCANE_ARCHER"
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && EventKeys.TryGetValue(node.Id, out IReadOnlySet<string>? expectedKeys)
         && expectedKeys.Contains(modifier.Key);
 

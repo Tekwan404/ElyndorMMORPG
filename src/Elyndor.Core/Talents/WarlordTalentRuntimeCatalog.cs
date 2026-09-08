@@ -41,12 +41,20 @@ public static class WarlordTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        node.BranchId == "WARLORD"
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.Party,
             StringComparison.Ordinal)
+        && node.BranchId == "WARLORD"
+        && RuntimeKeys.TryGetValue(node.Id, out IReadOnlySet<string>? keys)
+        && keys.Contains(modifier.Key);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        node.BranchId == "WARLORD"
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && RuntimeKeys.TryGetValue(node.Id, out IReadOnlySet<string>? keys)
         && keys.Contains(modifier.Key);
 

@@ -127,6 +127,17 @@ public sealed partial class CombatSession
         if (combatEvent.SourceActorId != _player.Actor.ActorId) return;
         DateTimeOffset now = combatEvent.OccurredAtUtc;
 
+        if (TryGetBerserkerHook("B-3-1", out ResolvedTalentEventHook criticalInstinct)
+            && TalentCooldownReady(criticalInstinct.TalentId, now))
+        {
+            AddResource(
+                _player.Actor,
+                criticalInstinct.Value,
+                now,
+                criticalInstinct.TalentId);
+            StartTalentCooldown(criticalInstinct, now);
+        }
+
         CombatParticipantDefinition? eventTarget =
             combatEvent.TargetActorId is { } targetActorId
             && _enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? resolvedTarget)
@@ -228,6 +239,15 @@ public sealed partial class CombatSession
 
     private void ApplyBerserkerEnemyKilledHooks(DateTimeOffset now)
     {
+        if (TryGetBerserkerHook("B-1-2", out ResolvedTalentEventHook bloodthirst))
+        {
+            AddResource(
+                _player.Actor,
+                bloodthirst.Value,
+                now,
+                bloodthirst.TalentId);
+        }
+
         if (IsBerserkActive(now)
             && HasBerserkerTalent("B-8-2"))
         {
