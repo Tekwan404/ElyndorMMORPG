@@ -243,7 +243,6 @@
           "step": 1
         }
       },
-      "armorCategory": "HEAVY",
       "armorFlat": 15.5
     },
     {
@@ -522,7 +521,6 @@
           "step": 1
         }
       },
-      "armorCategory": "HEAVY",
       "armorFlat": 26.5
     },
     {
@@ -807,7 +805,6 @@
         }
       },
       "setId": "SET_WARRIOR_GREY_FANG",
-      "armorCategory": "HEAVY",
       "armorFlat": 40.5
     },
     {
@@ -1059,7 +1056,6 @@
         }
       },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
-      "armorCategory": "HEAVY",
       "armorFlat": 61
     },
     {
@@ -1344,7 +1340,6 @@
         }
       },
       "setId": "SET_WARRIOR_FIRST_GUARD",
-      "armorCategory": "HEAVY",
       "armorFlat": 88
     },
     {
@@ -1629,7 +1624,6 @@
         }
       },
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "armorCategory": "HEAVY",
       "armorFlat": 121.5
     },
     {
