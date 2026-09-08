@@ -241,6 +241,14 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.All(
             persistedRun.Encounters,
             encounter => Assert.Equal(DungeonEncounterState.Completed, encounter.State));
+
+        context.ChangeTracker.Clear();
+        DungeonRunView? completedAfterRefresh = await dungeonService.GetCurrentAsync(
+            leaderAccountId,
+            CancellationToken.None);
+        Assert.NotNull(completedAfterRefresh);
+        Assert.Equal(DungeonRunState.Completed, completedAfterRefresh!.State);
+        Assert.Equal(run.EncounterCount, completedAfterRefresh.CurrentEncounterIndex);
     }
 
     [Fact]
