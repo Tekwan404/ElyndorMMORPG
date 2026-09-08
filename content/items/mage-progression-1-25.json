@@ -1,0 +1,1729 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "items": [
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_CHEST",
+      "name": "Мантия Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 3,
+        "stamina": 1
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 3,
+          "max": 7,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 13.5
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_FEET",
+      "name": "Сапоги Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 1,
+        "stamina": 0
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 0,
+          "max": 1,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 5.5
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_HANDS",
+      "name": "Перчатки Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 1,
+        "stamina": 0
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 0,
+          "max": 1,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 6.5
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_HEAD",
+      "name": "Капюшон Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 2,
+        "stamina": 1
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 8.5
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_LEGS",
+      "name": "Поножи Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 3,
+        "stamina": 1
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 12
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
+      "name": "Наплечники Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 2,
+        "stamina": 1
+      },
+      "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 8
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_STAFF",
+      "name": "Посох Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 2,
+        "stamina": 0
+      },
+      "description": "Двуручный посох прогрессии «Одеяния Синей Свечи».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 2,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 0,
+          "max": 1,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 7,
+      "weaponDamageMax": 12
+    },
+    {
+      "id": "MAGE_COMMON_BLUE_CANDLE_WAND",
+      "name": "Жезл Синей Свечи",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 2,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Одеяния Синей Свечи».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 5,
+      "weaponDamageMax": 8
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_CHEST",
+      "name": "Мантия Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 7,
+        "stamina": 3
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 22.5
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FEET",
+      "name": "Сапоги Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 3,
+        "stamina": 1
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 9.5
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HANDS",
+      "name": "Перчатки Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 3,
+        "stamina": 1
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 10.5
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HEAD",
+      "name": "Капюшон Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 4,
+        "stamina": 2
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 14.5
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_LEGS",
+      "name": "Поножи Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 6,
+        "stamina": 3
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 20
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_SHOULDERS",
+      "name": "Наплечники Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 4,
+        "stamina": 2
+      },
+      "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 13
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_STAFF",
+      "name": "Посох Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 6,
+        "stamina": 1
+      },
+      "description": "Двуручный посох прогрессии «Руны Забытого Ученика».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 13,
+      "weaponDamageMax": 21
+    },
+    {
+      "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_WAND",
+      "name": "Жезл Забытого Ученика",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 4,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Руны Забытого Ученика».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 9,
+      "weaponDamageMax": 15
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_CHEST",
+      "name": "Мантия Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 11,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 11,
+          "max": 18,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 34
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_FEET",
+      "name": "Сапоги Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 5,
+        "stamina": 2
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 14.5
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_HANDS",
+      "name": "Перчатки Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 5,
+        "stamina": 2
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 16
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_HEAD",
+      "name": "Капюшон Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 7,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 7,
+          "max": 12,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 22
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_LEGS",
+      "name": "Поножи Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 10,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 30
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+      "name": "Наплечники Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 6,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 19.5
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_STAFF",
+      "name": "Посох Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 9,
+        "stamina": 2
+      },
+      "description": "Двуручный посох прогрессии «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 22,
+      "weaponDamageMax": 34
+    },
+    {
+      "id": "MAGE_RARE_THREE_ELEMENTS_WAND",
+      "name": "Жезл Трёх Стихий",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 6,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Сердце Трёх Стихий».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 15,
+      "weaponDamageMax": 24
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+      "name": "Мантия Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 16,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 16,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 51.5
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_FEET",
+      "name": "Сапоги Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 7,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 22.5
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_HANDS",
+      "name": "Перчатки Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 8,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 25
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_HEAD",
+      "name": "Капюшон Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 10,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 10,
+          "max": 17,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 33
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_LEGS",
+      "name": "Поножи Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 14,
+        "stamina": 7
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 14,
+          "max": 23,
+          "step": 1
+        },
+        "stamina": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 45
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+      "name": "Наплечники Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 9,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 9,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 29
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_STAFF",
+      "name": "Посох Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 13,
+        "stamina": 3
+      },
+      "description": "Двуручный посох прогрессии «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 13,
+          "max": 21,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 34,
+      "weaponDamageMax": 52
+    },
+    {
+      "id": "MAGE_EPIC_SHATTERED_STAR_WAND",
+      "name": "Жезл Расколотой Звезды",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 9,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 24,
+      "weaponDamageMax": 37
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
+      "name": "Мантия Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 24,
+        "stamina": 12
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 24,
+          "max": 35,
+          "step": 1
+        },
+        "stamina": {
+          "min": 12,
+          "max": 18,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 73
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
+      "name": "Сапоги Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 11,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 11,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 32.5
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
+      "name": "Перчатки Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 12,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 12,
+          "max": 17,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 35
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
+      "name": "Капюшон Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 15,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 15,
+          "max": 22,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 46.5
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
+      "name": "Поножи Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 21,
+        "stamina": 11
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 21,
+          "max": 31,
+          "step": 1
+        },
+        "stamina": {
+          "min": 11,
+          "max": 16,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 64
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
+      "name": "Наплечники Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 13,
+        "stamina": 7
+      },
+      "description": "Часть комплекта «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 13,
+          "max": 20,
+          "step": 1
+        },
+        "stamina": {
+          "min": 7,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_SILENT_ARCHON",
+      "armorCategory": "CLOTH",
+      "armorFlat": 40.5
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
+      "name": "Посох Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 19,
+        "stamina": 4
+      },
+      "description": "Двуручный посох прогрессии «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 19,
+          "max": 28,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 49,
+      "weaponDamageMax": 76
+    },
+    {
+      "id": "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
+      "name": "Жезл Безмолвного Архонта",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 13,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Регалии Безмолвного Архонта».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 13,
+          "max": 19,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 35,
+      "weaponDamageMax": 54
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+      "name": "Мантия Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 33,
+        "stamina": 17
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 33,
+          "max": 47,
+          "step": 1
+        },
+        "stamina": {
+          "min": 17,
+          "max": 25,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 102
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+      "name": "Сапоги Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 15,
+        "stamina": 7
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 15,
+          "max": 21,
+          "step": 1
+        },
+        "stamina": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 45
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+      "name": "Перчатки Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 16,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 16,
+          "max": 23,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 49
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+      "name": "Капюшон Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 21,
+        "stamina": 11
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 21,
+          "max": 30,
+          "step": 1
+        },
+        "stamina": {
+          "min": 11,
+          "max": 16,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 65
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+      "name": "Поножи Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 29,
+        "stamina": 15
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 29,
+          "max": 41,
+          "step": 1
+        },
+        "stamina": {
+          "min": 15,
+          "max": 22,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 89.5
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+      "name": "Наплечники Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 18,
+        "stamina": 10
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 10,
+          "max": 14,
+          "step": 1
+        }
+      },
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 57
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
+      "name": "Посох Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 26,
+        "stamina": 6
+      },
+      "description": "Двуручный посох прогрессии «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 26,
+          "max": 38,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 68,
+      "weaponDamageMax": 102
+    },
+    {
+      "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
+      "name": "Жезл Затмённого Оракула",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 18,
+        "stamina": 0
+      },
+      "description": "Одноручный магический жезл прогрессии «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        }
+      },
+      "weaponCategory": "WAND",
+      "weaponDamageMin": 48,
+      "weaponDamageMax": 73
+    },
+    {
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+      "name": "Око Погасшей Звезды",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 40,
+        "stamina": 18
+      },
+      "description": "Именной посох 25 уровня. Unique не является отдельным сетовым тиром.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 40,
+          "max": 54,
+          "step": 1
+        },
+        "stamina": {
+          "min": 18,
+          "max": 27,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 88,
+      "weaponDamageMax": 118
+    }
+  ]
+}
