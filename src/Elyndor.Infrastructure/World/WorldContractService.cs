@@ -13,6 +13,7 @@ public static class WorldContractErrorCodes
     public const string ContractNotFound = "world_contract_not_found";
     public const string LevelRequired = "world_contract_level_required";
     public const string InvalidLocation = "world_contract_invalid_location";
+    public const string PrerequisiteRequired = "world_contract_prerequisite_required";
     public const string AlreadyCompleted = "world_contract_already_completed";
     public const string Travelling = "world_contract_travelling";
 }
@@ -63,7 +64,8 @@ public sealed class WorldContractService(
                 WorldContractErrorCodes.Travelling);
         }
 
-        WorldContractDefinition? contract = (contentProvider.GetCurrent().Package.WorldContracts ?? [])
+        GameContentPackage content = contentProvider.GetCurrent().Package;
+        WorldContractDefinition? contract = (content.WorldContracts ?? [])
             .SingleOrDefault(candidate =>
                 string.Equals(candidate.Id, contractId, StringComparison.Ordinal));
         if (contract is null)
@@ -94,6 +96,30 @@ public sealed class WorldContractService(
             {
                 return WorldContractAcceptResult.Failure(
                     WorldContractErrorCodes.InvalidLocation);
+            }
+        }
+
+        QuestDefinition? quest = QuestCatalog.Find(content, contract.Id);
+        foreach (string prerequisite in quest?.PrerequisiteQuestIds ?? [])
+        {
+            bool prerequisiteCompleted =
+                await dbContext.QuestRewardGrants.AsNoTracking().AnyAsync(
+                    grant => grant.CharacterId == character.Id
+                        && grant.QuestId == prerequisite,
+                    cancellationToken)
+                || await dbContext.CharacterQuestStates.AsNoTracking().AnyAsync(
+                    state => state.CharacterId == character.Id
+                        && state.QuestId == prerequisite
+                        && state.Status == QuestStateStatuses.Completed,
+                    cancellationToken)
+                || await dbContext.CharacterContractCompletions.AsNoTracking().AnyAsync(
+                    state => state.CharacterId == character.Id
+                        && state.ContractId == prerequisite,
+                    cancellationToken);
+            if (!prerequisiteCompleted)
+            {
+                return WorldContractAcceptResult.Failure(
+                    WorldContractErrorCodes.PrerequisiteRequired);
             }
         }
 
