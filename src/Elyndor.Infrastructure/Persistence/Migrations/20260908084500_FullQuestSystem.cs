@@ -10,6 +10,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20260908084500_FullQuestSystem")]
 public partial class FullQuestSystem : Migration
 {
+    private static readonly string[] CharacterQuestStatusColumns =
+        ["CharacterId", "Status"];
+
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
@@ -118,7 +121,7 @@ public partial class FullQuestSystem : Migration
             name: "ix_character_quest_states_character_status",
             schema: "game",
             table: "character_quest_states",
-            columns: new[] { "CharacterId", "Status" });
+            columns: CharacterQuestStatusColumns);
 
         migrationBuilder.CreateIndex(
             name: "uq_quest_reward_grants_claim_mutation_id",
