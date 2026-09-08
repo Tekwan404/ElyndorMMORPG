@@ -1,0 +1,169 @@
+{
+  "contentVersion": "0.15.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:22:00+00:00",
+  "lootTables": [
+    {
+      "id": "ANCIENT_MINE_E1_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "SPIDER_SILK",
+          "dropChance": 0.45,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "SMALL_HEALING_POTION",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_MAGE_HOOD_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_ARCHER_LEGS_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ANCIENT_MINE_E2_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "BOAR_HIDE",
+          "dropChance": 0.45,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "SMALL_HEALING_POTION",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_WARRIOR_HELM_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ANCIENT_MINE_E3_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "SPIDER_SILK",
+          "dropChance": 0.55,
+          "minQuantity": 1,
+          "maxQuantity": 3
+        },
+        {
+          "itemId": "SPIDER_VENOM_SAC",
+          "dropChance": 0.25,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_MAGE_HOOD_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_ARCHER_LEGS_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ANCIENT_MINE_E4_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_WARRIOR_HELM_RARE",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_MAGE_BOOTS_EPIC",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_ARCHER_GLOVES_EPIC",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ANCIENT_MINE_BOSS_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "SPIDER_SILK",
+          "dropChance": 1,
+          "minQuantity": 4,
+          "maxQuantity": 8
+        },
+        {
+          "itemId": "SPIDER_VENOM_SAC",
+          "dropChance": 1,
+          "minQuantity": 2,
+          "maxQuantity": 4
+        },
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "dropChance": 0.6,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_MAGE_LEGENDARY_STAFF",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DUNGEON_MINES_ARCHER_LEGENDARY_BOW",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    }
+  ]
+}
