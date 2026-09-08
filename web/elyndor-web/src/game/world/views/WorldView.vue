@@ -233,7 +233,7 @@ onMounted(() => {
 
     <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>
       <div class="reward-card__heading">
-        <small>РЎРћР’РњР•РЎРўРќР«Р™ Р‘РћР™</small>
+        <small>СОВМЕСТНЫЙ БОЙ</small>
         <strong>Группа уже сражается</strong>
       </div>
       <p>Доберись до локации боя и присоединись к текущему столкновению.</p>
