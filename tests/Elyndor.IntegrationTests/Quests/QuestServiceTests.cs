@@ -47,7 +47,7 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(
             level: 1,
-            locationId: "WHISPERING_FOREST");
+            locationId: "STARTER_TOWN");
 
         await using GameDbContext context = postgres.CreateDbContext();
         (QuestService service, GameContentPackage content) =
