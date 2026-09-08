@@ -1,0 +1,81 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_WARRIOR_GREY_FANG",
+      "name": "Клык Серого Волка",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 2
+        },
+        {
+          "requiredPieces": 4,
+          "attackSpeedPercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 4
+        }
+      ]
+    },
+    {
+      "id": "SET_WARRIOR_CRIMSON_FURY",
+      "name": "Клятва Багровой Ярости",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 3
+        },
+        {
+          "requiredPieces": 4,
+          "attackSpeedPercent": 5
+        },
+        {
+          "requiredPieces": 6,
+          "attackPowerFlat": 18
+        }
+      ]
+    },
+    {
+      "id": "SET_WARRIOR_FIRST_GUARD",
+      "name": "Наследие Первого Стража",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 120
+        },
+        {
+          "requiredPieces": 4,
+          "armorFlat": 55
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 3,
+          "armorPenetrationPercent": 3
+        }
+      ]
+    },
+    {
+      "id": "SET_WARRIOR_BLACK_BASTION",
+      "name": "Доспехи Чёрного Бастиона",
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 180
+        },
+        {
+          "requiredPieces": 4,
+          "armorFlat": 85
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "armorPenetrationPercent": 5
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.11.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-06T19:42:00+00:00",
+  "contentVersion": "0.15.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:26:00+00:00",
   "lootTables": [
     {
       "id": "WHISPERING_FOREST_WOLF",
@@ -34,6 +34,54 @@
         {
           "itemId": "SMALL_HEALING_POTION",
           "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_CHEST",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_HEAD",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_FEET",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_LEGS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_WAND",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.035,
           "minQuantity": 1,
           "maxQuantity": 1
         }
@@ -72,6 +120,54 @@
           "dropChance": 0.18,
           "minQuantity": 1,
           "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_FEET",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_LEGS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_WEAPON",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_HANDS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_BOW",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -106,6 +202,48 @@
         {
           "itemId": "SMALL_HEALING_POTION",
           "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_HANDS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_COMMON_BORDER_STEEL_SHIELD",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_CHEST",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_HEAD",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_STAFF",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.035,
           "minQuantity": 1,
           "maxQuantity": 1
         }
@@ -144,6 +282,282 @@
           "dropChance": 0.18,
           "minQuantity": 1,
           "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_CHEST",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_FEET",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_HANDS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_HEAD",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_LEGS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_SHIELD",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_SHOULDERS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_UNCOMMON_IRON_WATCH_WEAPON",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_CHEST",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FEET",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HANDS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HEAD",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_LEGS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_SHOULDERS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_STAFF",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_WAND",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_BOW",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_CHEST",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_FEET",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_HANDS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_HEAD",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_LEGS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_CHEST",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_FEET",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_HANDS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_HEAD",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_LEGS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_SHIELD",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_RARE_GREY_FANG_WEAPON",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_CHEST",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_FEET",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_HANDS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_HEAD",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_LEGS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_STAFF",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_WAND",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_BOW",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_CHEST",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_FEET",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_HANDS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_HEAD",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_LEGS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -174,6 +588,138 @@
           "dropChance": 0.6,
           "minQuantity": 1,
           "maxQuantity": 2
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_FEET",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_HANDS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_STAFF",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_WAND",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_BOW",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -202,6 +748,144 @@
         {
           "itemId": "DEEP_FOREST_CHARM",
           "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_BOW",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_CHEST",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
+          "dropChance": 0.004,
           "minQuantity": 1,
           "maxQuantity": 1
         }

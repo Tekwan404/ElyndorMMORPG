@@ -343,7 +343,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
     private sealed class FixedRandomFactory : IGameRandomFactory
     {
         public IGameRandom Create() =>
-            new SequenceGameRandom(0, 0, 0, 0, 0, 0);
+            new SequenceGameRandom(Enumerable.Repeat(0m, 256).ToArray());
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

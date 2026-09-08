@@ -1,0 +1,336 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:02:00+00:00",
+  "items": [
+    {
+      "id": "DUNGEON_MINES_WARRIOR_HELM_RARE",
+      "name": "Шлем Каменного Дозора",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 9,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Тяжёлый шлем старого шахтного гарнизона, усиленный пластинами вокруг лба и висков.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 64,
+      "iconId": "dungeon_mines_warrior_helm_rare"
+    },
+    {
+      "id": "DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC",
+      "name": "Рукавицы Железного Забоя",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 10,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Тяжёлые рукавицы, рассчитанные на бой в тесных штреках и удары о камень.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 53,
+      "iconId": "dungeon_mines_warrior_gauntlets_epic"
+    },
+    {
+      "id": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
+      "name": "Оплот Хранителя Глубин",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 8,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 12
+      },
+      "description": "Массивный щит Хранителя Глубин из чёрного шахтного железа.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 8,
+          "max": 13,
+          "step": 1
+        },
+        "stamina": {
+          "min": 12,
+          "max": 18,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 128,
+      "blockChancePercent": 4,
+      "blockValueMin": 28,
+      "blockValueMax": 42,
+      "iconId": "dungeon_mines_warrior_legendary_shield"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_HOOD_RARE",
+      "name": "Капюшон Эха Глубин",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 10,
+        "stamina": 5
+      },
+      "description": "Капюшон из пропитанной минералами ткани, откликающийся на магию древних шахт.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 10,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 25.5,
+      "iconId": "dungeon_mines_mage_hood_rare"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_BOOTS_EPIC",
+      "name": "Сапоги Рунного Шага",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 10,
+        "stamina": 5
+      },
+      "description": "Лёгкие сапоги с древними рунами движения нижних уровней шахты.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "armorCategory": "CLOTH",
+      "armorFlat": 23,
+      "iconId": "dungeon_mines_mage_boots_epic"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_LEGENDARY_STAFF",
+      "name": "Сердце Глубинного Кристалла",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 18,
+        "stamina": 8
+      },
+      "description": "Древний посох с кристаллом, продолжающим пульсировать магией после столетий под землёй.",
+      "version": 1,
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "primaryStatRanges": {
+        "intellect": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 44,
+      "weaponDamageMax": 62,
+      "iconId": "dungeon_mines_mage_legendary_staff"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_LEGS_RARE",
+      "name": "Поножи Каменного Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 10,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Гибкие поножи следопытов, исследовавших шахты задолго до нынешних искателей приключений.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 48,
+      "iconId": "dungeon_mines_archer_legs_rare"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_GLOVES_EPIC",
+      "name": "Перчатки Беззвучного Штрека",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 11,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Тонкие перчатки с усиленной ладонью и пальцами, удобные для стрельбы в тесных тоннелях.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 11,
+          "max": 17,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 38.5,
+      "iconId": "dungeon_mines_archer_gloves_epic"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_LEGENDARY_BOW",
+      "name": "Лук Подземного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 18,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Лук из тёмного шахтного дерева и редкой металлической жилы; на плечах мерцают точки, похожие на звёзды.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 46,
+      "weaponDamageMax": 65,
+      "iconId": "dungeon_mines_archer_legendary_bow"
+    }
+  ]
+}

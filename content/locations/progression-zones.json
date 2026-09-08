@@ -111,7 +111,7 @@
       "requiredContractId": null,
       "artId": "ancient-ruins",
       "description": "Вход в инстанс Древней шахты. Сюда группа возвращается после путешествия и начинает забег.",
-      "travelDurationSeconds": 5
+      "travelDurationSeconds": 0
     },
     {
       "id": "BROODMOTHER_LAIR",

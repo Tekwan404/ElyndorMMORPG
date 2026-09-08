@@ -400,19 +400,25 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             snapshot,
             CancellationToken.None);
 
-        Assert.Single(otherResult.LootRolls ?? []);
-        Assert.Single(await context.CombatLootRolls.AsNoTracking().ToArrayAsync());
+        Assert.NotEmpty(otherResult.LootRolls ?? []);
+        int sharedRollCount = otherResult.LootRolls!.Count;
+        Assert.Equal(
+            sharedRollCount,
+            await context.CombatLootRolls.AsNoTracking().CountAsync());
 
         CombatRewardApplicationResult ownerResult = await service.ApplyVictoryAsync(
             ownerCharacterId,
             snapshot,
             CancellationToken.None);
 
-        Assert.Single(ownerResult.LootRolls ?? []);
+        Assert.Equal(sharedRollCount, ownerResult.LootRolls?.Count ?? 0);
+        Assert.Equal(
+            otherResult.LootRolls.Select(roll => roll.ItemId).OrderBy(id => id),
+            ownerResult.LootRolls!.Select(roll => roll.ItemId).OrderBy(id => id));
         Assert.DoesNotContain(
             ownerResult.Items,
             item => item.ItemId == "BROODMOTHER_FANG_CHARM");
-        Assert.Equal(1, await context.CombatLootRolls.CountAsync());
+        Assert.Equal(sharedRollCount, await context.CombatLootRolls.CountAsync());
     }
 
     [Fact]

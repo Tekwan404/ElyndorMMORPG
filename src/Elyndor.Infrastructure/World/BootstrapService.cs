@@ -177,7 +177,6 @@ public sealed class BootstrapService(
             cancellationToken);
         CharacterStats stats = derived.Stats;
         ClassProfile classProfile = derived.ClassProfile;
-        ResourceProfile resourceProfile = derived.BaseResourceProfile;
         ResourceProfile effectiveResourceProfile = derived.EffectiveResourceProfile;
 
         BootstrapAbility[] knownAbilities = derived.KnownAbilityIds
@@ -396,7 +395,7 @@ public sealed class BootstrapService(
                 new BootstrapVitals(
                     currentHp,
                     stats.MaxHp,
-                    resourceProfile.Id,
+                    effectiveResourceProfile.Id,
                     currentResource,
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),

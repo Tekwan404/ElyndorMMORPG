@@ -6,7 +6,9 @@ using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Talents;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
@@ -111,6 +113,71 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Empty(await verify.CharacterTravelStates
             .Where(state => state.CharacterId == characterId)
             .ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task BootstrapExposesArcaneArcherEffectiveManaResource()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        TalentTreeDefinition archerTree =
+            content.TalentTrees!.Single(tree => tree.Id == "ARCHER_TREE");
+
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Accounts.Add(new Account(
+                accountId,
+                Interlocked.Increment(ref _nextTelegramUserId),
+                Now));
+            Character character = new(
+                characterId,
+                accountId,
+                Guid.CreateVersion7(),
+                "Archer",
+                $"ARCHER{characterId:N}"[..16],
+                "HUMAN",
+                "MALE",
+                "ARCHER",
+                Now);
+            character.SetLevel(60);
+            setup.Characters.Add(character);
+            setup.CharacterLocations.Add(
+                new CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+            setup.CharacterVitals.Add(
+                new CharacterVitals(characterId, 150, 100, Now, Now));
+
+            CharacterTalentState talents = new(
+                characterId,
+                archerTree.Id,
+                archerTree.Version,
+                Now);
+            talents.ReplaceRanks(
+                TalentLoadoutIds.Loadout1,
+                new Dictionary<string, int> { ["A-1-1"] = 1 },
+                Now);
+            setup.CharacterTalentStates.Add(talents);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, content, timeProvider);
+        CharacterDerivedStateService derived = new(context, content, inventory);
+        BootstrapService service = new(
+            context,
+            content,
+            new WorldMap(content.Locations),
+            derived,
+            timeProvider);
+
+        BootstrapSnapshot snapshot =
+            await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal("MANA", snapshot.Character!.Vitals.ResourceType);
+        Assert.Contains("ARCANE_ARROW", snapshot.Character.KnownAbilityIds);
+        Assert.Equal("INTELLECT", snapshot.Character.PrimaryAttribute);
     }
 
     [Fact]

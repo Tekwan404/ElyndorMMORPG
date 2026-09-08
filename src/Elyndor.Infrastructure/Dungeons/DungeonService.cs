@@ -277,9 +277,9 @@ public sealed class DungeonService(
             .Include(candidate => candidate.Members)
             .Include(candidate => candidate.Encounters)
                 .ThenInclude(encounter => encounter.Members)
-            .Where(candidate => candidate.PartyId == party.PartyId
-                && candidate.State == DungeonRunState.Active)
-            .OrderByDescending(candidate => candidate.CreatedAtUtc)
+            .Where(candidate => candidate.PartyId == party.PartyId)
+            .OrderByDescending(candidate => candidate.State == DungeonRunState.Active)
+            .ThenByDescending(candidate => candidate.CreatedAtUtc)
             .FirstOrDefaultAsync(cancellationToken);
         if (run is null || !contentProvider.GetCurrent().Indexes.DungeonsById
                 .TryGetValue(run.DungeonId, out DungeonDefinition? definition))

@@ -108,7 +108,6 @@ onMounted(() => {
           <strong>{{ friend.name }}</strong>
           <small>ур. {{ friend.level }} · {{ classLabel(friend.classId) }}</small>
         </div>
-        <span class="online-state">готов</span>
         <UIButton v-if="canInvite(friend.characterId)" data-party-invite :disabled="inviting !== null" @click="inviteToParty(friend.characterId)">В группу</UIButton>
         <UIButton
           variant="secondary"

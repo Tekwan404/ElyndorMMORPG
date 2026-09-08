@@ -170,7 +170,7 @@ async function startDungeon(): Promise<void> {
         </small>
       </template>
       <template v-else>
-        <p class="empty-state">Подземелье · ур. 15+ · 1–5 игроков. Пять столкновений; финальный босс — Паучья Прародительница.</p>
+        <p class="empty-state">Подземелье · ур. 15+ · 1–5 игроков. Враги 15–16 уровня; финальный босс — Прародительница Глубин.</p>
         <UIButton
           v-for="preview in dungeon.previews"
           :key="preview.id"
