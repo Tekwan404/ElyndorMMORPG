@@ -772,3 +772,31 @@ CharacterId
 ```
 
 Economy System is Wallet owner.
+
+
+---
+
+# Source of Truth Revision v6 — World-first presentation
+
+The Quest System remains a unified internal engine, but player-facing presentation is split by world meaning:
+
+```text
+STORY
+→ discovered through world/story sources
+
+SIDE
+→ presented as NPC/local errands
+
+CONTRACT
+→ registered through Adventurer Guild representatives/posts
+```
+
+Rules:
+
+1. The Adventure Journal is not a global browse list of AVAILABLE quests.
+2. AVAILABLE Story/Side content is surfaced by the current Location/world source.
+3. AVAILABLE Contract content is surfaced by an Adventurer Guild registrar or expedition post.
+4. Contract presentation metadata includes issuer, region, contract number, and threat level.
+5. Side errands should not become mandatory main-story gates by default.
+6. One internal QuestState/QuestProgress/Reward pipeline continues to own persistence, progress and idempotency.
+7. World Events remain a separate future discovery source and are not faked by the Quest UI before their runtime owner exists.
