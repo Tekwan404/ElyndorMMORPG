@@ -413,8 +413,8 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         Assert.Equal(sharedRollCount, ownerResult.LootRolls?.Count ?? 0);
         Assert.Equal(
-            otherResult.LootRolls.Select(roll => roll.ItemDefinitionId).OrderBy(id => id),
-            ownerResult.LootRolls!.Select(roll => roll.ItemDefinitionId).OrderBy(id => id));
+            otherResult.LootRolls.Select(roll => roll.ItemId).OrderBy(id => id),
+            ownerResult.LootRolls!.Select(roll => roll.ItemId).OrderBy(id => id));
         Assert.DoesNotContain(
             ownerResult.Items,
             item => item.ItemId == "BROODMOTHER_FANG_CHARM");
