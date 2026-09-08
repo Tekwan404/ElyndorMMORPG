@@ -78,7 +78,7 @@ builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
 builder.Services.AddSingleton<ITelegramMessageSender, TelegramBotMessageSender>();
-builder.Services.AddSingleton<TelegramAdminUpdateProcessor>();
+builder.Services.AddScoped<TelegramAdminUpdateProcessor>();
 builder.Services.AddSingleton<TelegramWebhookRegistrationService>();
 builder.Services.AddHostedService<TelegramWebhookRegistrationWorker>();
 builder.Services.AddHostedService<TelegramAdminLongPollingWorker>();
