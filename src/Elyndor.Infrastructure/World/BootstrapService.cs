@@ -177,7 +177,6 @@ public sealed class BootstrapService(
             cancellationToken);
         CharacterStats stats = derived.Stats;
         ClassProfile classProfile = derived.ClassProfile;
-        ResourceProfile resourceProfile = derived.BaseResourceProfile;
         ResourceProfile effectiveResourceProfile = derived.EffectiveResourceProfile;
 
         BootstrapAbility[] knownAbilities = derived.KnownAbilityIds
