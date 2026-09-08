@@ -210,7 +210,6 @@
           "step": 1
         }
       },
-      "armorCategory": "CLOTH",
       "armorFlat": 8
     },
     {
@@ -487,7 +486,6 @@
           "step": 1
         }
       },
-      "armorCategory": "CLOTH",
       "armorFlat": 13
     },
     {
@@ -770,7 +768,6 @@
         }
       },
       "setId": "SET_MAGE_THREE_ELEMENTS",
-      "armorCategory": "CLOTH",
       "armorFlat": 19.5
     },
     {
@@ -1053,7 +1050,6 @@
         }
       },
       "setId": "SET_MAGE_SHATTERED_STAR",
-      "armorCategory": "CLOTH",
       "armorFlat": 29
     },
     {
@@ -1336,7 +1332,6 @@
         }
       },
       "setId": "SET_MAGE_SILENT_ARCHON",
-      "armorCategory": "CLOTH",
       "armorFlat": 40.5
     },
     {
@@ -1619,7 +1614,6 @@
         }
       },
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "armorCategory": "CLOTH",
       "armorFlat": 57
     },
     {
