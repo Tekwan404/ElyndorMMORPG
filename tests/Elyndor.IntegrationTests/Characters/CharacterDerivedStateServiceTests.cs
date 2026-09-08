@@ -167,6 +167,40 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
     }
 
     [Fact]
+    public async Task ArcaneArcherTalentOverridesResourcePrimaryAttributeCompanionAndAbility()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        (Guid characterId, _) = await CreateCharacterAsync("ARCHER", 60);
+        TalentTreeDefinition archerTree =
+            content.TalentTrees!.Single(tree => tree.Id == "ARCHER_TREE");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterTalentState state = new(
+                characterId,
+                archerTree.Id,
+                archerTree.Version,
+                Now);
+            state.ReplaceRanks(
+                TalentLoadoutIds.Loadout1,
+                new Dictionary<string, int> { ["A-1-1"] = 1 },
+                Now);
+            setup.CharacterTalentStates.Add(state);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterDerivedStateService service = CreateService(context, content);
+        CharacterDerivedState state = await service.ResolveAsync(
+            characterId, "ARCHER", 60, CancellationToken.None);
+
+        Assert.Equal("MANA", state.EffectiveResourceProfile.Id);
+        Assert.Equal("INTELLECT", state.EffectivePrimaryAttribute);
+        Assert.Equal("ARCHER_SPIRIT", state.ActiveCompanionProfile?.Id);
+        Assert.Contains("ARCANE_ARROW", state.KnownAbilityIds);
+    }
+
+    [Fact]
     public async Task TalentStateFromPreviousClassIsIgnored()
     {
         GameContentPackage content = await LoadContentAsync();
