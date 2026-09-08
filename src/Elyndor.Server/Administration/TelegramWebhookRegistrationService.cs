@@ -16,6 +16,7 @@ public sealed class TelegramWebhookRegistrationService(
     {
         TelegramAdminOptions options = adminOptions.Value;
         if (!options.Enabled
+            || options.UseLongPolling
             || !options.RegisterWebhookOnStartup
             || !options.TryGetWebhookUri(out Uri? webhookUri))
         {

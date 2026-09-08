@@ -14,14 +14,17 @@ public sealed class TelegramAdminOptions
 
     public bool RegisterWebhookOnStartup { get; init; } = true;
 
+    public bool UseLongPolling { get; init; }
+
     public long[] AllowedUserIds { get; init; } = [];
 
     public bool IsConfigured =>
         AllowedUserIds.All(id => id > 0)
         && (!Enabled
-            || (WebhookSecret.Length >= 32
-                && AllowedUserIds.Length > 0
-                && (!RegisterWebhookOnStartup || TryGetWebhookUri(out _))));
+            || (AllowedUserIds.Length > 0
+                && (UseLongPolling
+                    || (WebhookSecret.Length >= 32
+                        && (!RegisterWebhookOnStartup || TryGetWebhookUri(out _))))));
 
     public bool IsAllowedUser(long telegramUserId) =>
         telegramUserId > 0

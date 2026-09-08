@@ -21,6 +21,7 @@ describe('WorldView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.spyOn(useGameSessionStore(), 'refreshQuestJournal').mockResolvedValue(null)
+    vi.spyOn(useGameSessionStore(), 'refreshSnapshot').mockResolvedValue(undefined)
     document.body.innerHTML = ''
   })
 
@@ -66,7 +67,7 @@ describe('WorldView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-explore]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[role="alert"]').text()).toContain('world_encounter_unavailable')
+    expect(wrapper.get('[role="alert"]').text()).toContain('В этой области сейчас не удалось найти противника.')
   })
 
   it('surfaces available story from the current location instead of the journal', async () => {
@@ -137,8 +138,8 @@ describe('WorldView', () => {
     expect(combat.isActive).toBe(true)
     combat.snapshot = { ...combat.snapshot!, status: 'Victory' }
     await flushPromises()
-    expect(wrapper.get('[data-explore]').attributes('disabled')).toBeUndefined()
-    await wrapper.get('[data-explore]').trigger('click')
+    expect(wrapper.get('[data-explore-after-victory]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-explore-after-victory]').trigger('click')
     await flushPromises()
     expect(explore).toHaveBeenCalledTimes(2)
   })
