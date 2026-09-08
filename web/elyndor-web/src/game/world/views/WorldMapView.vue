@@ -254,7 +254,7 @@ onMounted(() => void loadLocations())
       <UICard data-dungeon-map-entry>
         <h2>Древняя шахта</h2>
         <p>Подземелье · ур. 15+ · 1–5 игроков</p>
-        <p>Вход из Глубокого леса. Пять столкновений, финальный босс — Паучья Прародительница.</p>
+        <p>Телепорт ко входу доступен с 15 уровня. Пять столкновений, финальный босс — Прародительница Глубин.</p>
         <p v-if="dungeon.errorCode" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
         <UIButton v-if="currentLocationId === 'ANCIENT_MINE'" @click="emit('open-location')">Открыть подземелье</UIButton>
         <UIButton v-else :disabled="characterLevel < 15 || isTravelling" :loading="dungeon.teleporting" @click="enterAncientMine">Ко входу в подземелье</UIButton>
