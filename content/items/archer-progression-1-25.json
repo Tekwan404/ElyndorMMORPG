@@ -1,0 +1,1507 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T20:58:00+00:00",
+  "items": [
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_BOW",
+      "name": "Лук Шепчущей Ветви",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Лук прогрессии «Следопыт Шепчущего Леса».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 2,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 1,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 7,
+      "weaponDamageMax": 12
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
+      "name": "Куртка Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 3,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 3,
+          "max": 7,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 19.5
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
+      "name": "Сапоги Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 9
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
+      "name": "Перчатки Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 1,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 9.5
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+      "name": "Капюшон Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 12.5
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+      "name": "Поножи Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 3,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 17
+    },
+    {
+      "id": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
+      "name": "Наплечники Шепчущего Леса",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 2,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 10.5
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_BOW",
+      "name": "Лук Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 6,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Лук прогрессии «Серая Тропа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 13,
+      "weaponDamageMax": 21
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_CHEST",
+      "name": "Куртка Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 7,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 32.5
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_FEET",
+      "name": "Сапоги Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 3,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 14.5
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_HANDS",
+      "name": "Перчатки Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 3,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 15.5
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_HEAD",
+      "name": "Капюшон Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 4,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 21
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_LEGS",
+      "name": "Поножи Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 6,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 28.5
+    },
+    {
+      "id": "ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS",
+      "name": "Наплечники Серой Тропы",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 4,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "LEATHER",
+      "armorFlat": 18
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_BOW",
+      "name": "Лук Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 9,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Лук прогрессии «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 22,
+      "weaponDamageMax": 34
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_CHEST",
+      "name": "Куртка Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 11,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 11,
+          "max": 18,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 49
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_FEET",
+      "name": "Сапоги Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 5,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 21.5
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_HANDS",
+      "name": "Перчатки Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 5,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 23.5
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_HEAD",
+      "name": "Капюшон Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 7,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 7,
+          "max": 12,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 31
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_LEGS",
+      "name": "Поножи Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 10,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 43
+    },
+    {
+      "id": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
+      "name": "Наплечники Тернового Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 6,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 27.5
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_BOW",
+      "name": "Лук Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 13,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Лук прогрессии «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 13,
+          "max": 21,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 34,
+      "weaponDamageMax": 52
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+      "name": "Куртка Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 16,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 16,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 73.5
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+      "name": "Сапоги Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 7,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 32.5
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+      "name": "Перчатки Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 8,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 35
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+      "name": "Капюшон Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 10,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 10,
+          "max": 17,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 47
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+      "name": "Поножи Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 14,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 14,
+          "max": 23,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 64.5
+    },
+    {
+      "id": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+      "name": "Наплечники Лунного Листа",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 9,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 9,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 41
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_BOW",
+      "name": "Лук Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 19,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Лук прогрессии «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 19,
+          "max": 28,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 49,
+      "weaponDamageMax": 76
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_CHEST",
+      "name": "Куртка Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 24,
+        "intellect": 0,
+        "stamina": 13
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 24,
+          "max": 35,
+          "step": 1
+        },
+        "stamina": {
+          "min": 13,
+          "max": 19,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 104
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
+      "name": "Сапоги Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 11,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 11,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 46
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
+      "name": "Перчатки Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 12,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 12,
+          "max": 17,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 50
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
+      "name": "Капюшон Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 15,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 15,
+          "max": 22,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 66.5
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
+      "name": "Поножи Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 21,
+        "intellect": 0,
+        "stamina": 11
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 21,
+          "max": 31,
+          "step": 1
+        },
+        "stamina": {
+          "min": 11,
+          "max": 17,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 91.5
+    },
+    {
+      "id": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
+      "name": "Наплечники Звёздного Зверобоя",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 13,
+        "intellect": 0,
+        "stamina": 7
+      },
+      "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 13,
+          "max": 20,
+          "step": 1
+        },
+        "stamina": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_STAR_HUNTER",
+      "armorCategory": "LEATHER",
+      "armorFlat": 58
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
+      "name": "Лук Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 26,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Лук прогрессии «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 26,
+          "max": 38,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 68,
+      "weaponDamageMax": 102
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+      "name": "Куртка Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 33,
+        "intellect": 0,
+        "stamina": 18
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 33,
+          "max": 47,
+          "step": 1
+        },
+        "stamina": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 145
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+      "name": "Перчатки Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 16,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 16,
+          "max": 23,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 70
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+      "name": "Капюшон Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 21,
+        "intellect": 0,
+        "stamina": 12
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 21,
+          "max": 30,
+          "step": 1
+        },
+        "stamina": {
+          "min": 12,
+          "max": 17,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 93
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+      "name": "Поножи Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 29,
+        "intellect": 0,
+        "stamina": 16
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 29,
+          "max": 41,
+          "step": 1
+        },
+        "stamina": {
+          "min": 16,
+          "max": 23,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 127.5
+    },
+    {
+      "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
+      "name": "Наплечники Чёрного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 18,
+        "intellect": 0,
+        "stamina": 10
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 10,
+          "max": 15,
+          "step": 1
+        }
+      },
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 81
+    },
+    {
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+      "name": "Лук Последнего Созвездия",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 40,
+        "intellect": 0,
+        "stamina": 19
+      },
+      "description": "Именной лук 25 уровня. Unique не является отдельным сетовым тиром.",
+      "version": 1,
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "primaryStatRanges": {
+        "agility": {
+          "min": 40,
+          "max": 54,
+          "step": 1
+        },
+        "stamina": {
+          "min": 19,
+          "max": 28,
+          "step": 1
+        }
+      },
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 92,
+      "weaponDamageMax": 124
+    }
+  ]
+}
