@@ -22,7 +22,6 @@ public sealed class TelegramAdminOptions
         AllowedUserIds.All(id => id > 0)
         && (!Enabled
             || (AllowedUserIds.Length > 0
-                && !(UseLongPolling && RegisterWebhookOnStartup)
                 && (UseLongPolling
                     || (WebhookSecret.Length >= 32
                         && (!RegisterWebhookOnStartup || TryGetWebhookUri(out _))))));
