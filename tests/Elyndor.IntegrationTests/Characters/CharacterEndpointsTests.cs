@@ -5,6 +5,7 @@ using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Dungeons;
 using Elyndor.Contracts.Identity;
 using Elyndor.Contracts.World;
+using Elyndor.Core.Characters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
@@ -146,6 +147,9 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
 
         await using (GameDbContext context = postgres.CreateDbContext())
         {
+            Character storedCharacter = await context.Characters
+                .SingleAsync(candidate => candidate.Id == character.Id);
+            storedCharacter.SetLevel(15);
             CharacterLocation location = await context.CharacterLocations
                 .SingleAsync(candidate => candidate.CharacterId == character.Id);
             location.Relocate("ANCIENT_MINE", Now);

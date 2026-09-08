@@ -247,7 +247,6 @@ public sealed partial class CombatSession
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
         _selectedTargetActorId = _primaryEnemyActorId;
-        InitializeThreatTables();
         _random = random;
         _abilities = abilities;
         _playerStatesByActorId = new Dictionary<Guid, CombatPlayerRuntimeState>();
@@ -266,6 +265,7 @@ public sealed partial class CombatSession
             _playerStatesByActorId.Add(playerDefinition.Participant.Actor.ActorId, state);
         }
         _activePlayerState = _playerStatesByActorId[player.Actor.ActorId];
+        InitializeThreatTables();
         _participantRoster = new CombatParticipantRoster(
             playerDefinitions
                 .Select(item => new CombatParticipantIdentity(

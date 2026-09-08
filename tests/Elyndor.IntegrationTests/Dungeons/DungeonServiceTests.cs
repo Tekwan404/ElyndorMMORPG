@@ -420,10 +420,13 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
             new Account(leaderAccountId, 6001, Now),
             new Account(firstMemberAccountId, 6002, Now),
             new Account(lateMemberAccountId, 6003, Now));
-        context.Characters.AddRange(
-            CreateCharacter(leaderCharacterId, leaderAccountId, "Leader"),
-            CreateCharacter(firstMemberCharacterId, firstMemberAccountId, "First"),
-            CreateCharacter(lateMemberCharacterId, lateMemberAccountId, "Late"));
+        Character leader = CreateCharacter(leaderCharacterId, leaderAccountId, "Leader");
+        Character firstMember = CreateCharacter(firstMemberCharacterId, firstMemberAccountId, "First");
+        Character lateMember = CreateCharacter(lateMemberCharacterId, lateMemberAccountId, "Late");
+        leader.SetLevel(15);
+        firstMember.SetLevel(15);
+        lateMember.SetLevel(15);
+        context.Characters.AddRange(leader, firstMember, lateMember);
         context.CharacterVitals.AddRange(
             CreateVitals(leaderCharacterId),
             CreateVitals(firstMemberCharacterId),

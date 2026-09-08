@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
+using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Parties;
 using Elyndor.Core.Social;
@@ -229,7 +230,11 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
         using HttpClient memberClient = CreateAuthenticatedClient(factory, memberAccountId, 9302);
         CharacterResponse leader = await CreateCharacterAsync(leaderClient, "DungeonLeader");
         CharacterResponse member = await CreateCharacterAsync(memberClient, "DungeonMember");
-        await SeedFriendsAndPartyAsync(leader.Id, member.Id, "ANCIENT_MINE");
+        await SeedFriendsAndPartyAsync(
+            leader.Id,
+            member.Id,
+            "ANCIENT_MINE",
+            requireDungeonLevel: true);
 
         Guid runId;
         using (IServiceScope scope = factory.Services.CreateScope())
@@ -389,13 +394,23 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
     private async Task SeedFriendsAndPartyAsync(
         Guid leaderCharacterId,
         Guid memberCharacterId,
-        string locationId = "WHISPERING_FOREST")
+        string locationId = "WHISPERING_FOREST",
+        bool requireDungeonLevel = false)
     {
         await using GameDbContext context = postgres.CreateDbContext();
         CharacterLocation leaderLocation = await context.CharacterLocations
             .SingleAsync(location => location.CharacterId == leaderCharacterId);
         CharacterLocation memberLocation = await context.CharacterLocations
             .SingleAsync(location => location.CharacterId == memberCharacterId);
+        Character leaderCharacter = await context.Characters
+            .SingleAsync(character => character.Id == leaderCharacterId);
+        Character memberCharacter = await context.Characters
+            .SingleAsync(character => character.Id == memberCharacterId);
+        if (requireDungeonLevel)
+        {
+            leaderCharacter.SetLevel(15);
+            memberCharacter.SetLevel(15);
+        }
         leaderLocation.Relocate(locationId, Now);
         memberLocation.Relocate(locationId, Now);
         Friendship friendship = Friendship.Create(
