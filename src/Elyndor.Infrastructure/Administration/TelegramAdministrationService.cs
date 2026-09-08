@@ -479,7 +479,8 @@ public sealed class TelegramAdministrationService(
             && !audit.ResultCode.Contains("not_found", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("mismatch", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("uncertain", StringComparison.Ordinal)
-            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal),
+            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("blocked", StringComparison.Ordinal),
             audit.ResultCode,
             audit.ResultSummary,
             duplicate);
