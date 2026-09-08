@@ -352,7 +352,10 @@ onMounted(() => {
             <p>{{ quest.description }}</p>
             <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
           </div>
-          <UIButton :disabled="isTravelling || session.mutationPending" @click="acceptQuest(quest.id)">
+          <UIButton
+            data-accept-world-quest
+            :disabled="isTravelling || session.mutationPending"
+            @click="acceptQuest(quest.id)">
             {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
           </UIButton>
         </article>
