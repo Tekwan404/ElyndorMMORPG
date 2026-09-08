@@ -31,7 +31,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Торговать' }).click()
   const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
   await expect(merchantDialog).toBeVisible()
-  await expect(merchantDialog.getByText('Маркус', { exact: true })).toBeVisible()
+  await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
