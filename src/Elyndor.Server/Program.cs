@@ -75,6 +75,8 @@ builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
 builder.Services.AddSingleton<ITelegramMessageSender, TelegramBotMessageSender>();
+builder.Services.AddSingleton<TelegramWebhookRegistrationService>();
+builder.Services.AddHostedService<TelegramWebhookRegistrationWorker>();
 builder.Services.AddSingleton<AdminWebAuthenticationService>();
 builder.Services.AddOptions<TelegramAdminOptions>()
     .BindConfiguration(TelegramAdminOptions.SectionName)
