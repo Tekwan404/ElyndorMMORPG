@@ -18,7 +18,10 @@ const WOLF_ENCOUNTER: WorldEncounter = {
 }
 
 describe('WorldView', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.spyOn(useGameSessionStore(), 'refreshQuestJournal').mockResolvedValue(null)
+  })
 
   it('renders only the current location and leaves travel to the World map', () => {
     const store = useGameSessionStore()
@@ -71,7 +74,6 @@ describe('WorldView', () => {
     session.questJournal = {
       quests: [worldQuest('QUEST_STORY', 'STORY', 'AVAILABLE', 'WHISPERING_FOREST')],
     }
-    vi.spyOn(session, 'refreshQuestJournal').mockResolvedValue(session.questJournal)
     const acceptQuest = vi.spyOn(session, 'acceptQuest').mockResolvedValue(undefined)
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
@@ -92,7 +94,6 @@ describe('WorldView', () => {
     session.questJournal = {
       quests: [worldQuest('CONTRACT_BROODMOTHER_GATE', 'CONTRACT', 'AVAILABLE', 'STARTER_TOWN')],
     }
-    vi.spyOn(session, 'refreshQuestJournal').mockResolvedValue(session.questJournal)
     const acceptQuest = vi.spyOn(session, 'acceptQuest').mockResolvedValue(undefined)
 
     const wrapper = mount(WorldView)
