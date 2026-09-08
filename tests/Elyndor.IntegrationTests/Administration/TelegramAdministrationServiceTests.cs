@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
+using Elyndor.Core.Parties;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Administration;
@@ -70,6 +71,39 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Empty(await context.Characters.ToListAsync());
         Assert.Empty(await context.CharacterVitals.ToListAsync());
         Assert.Empty(await context.CharacterLocations.ToListAsync());
+    }
+
+    [Fact]
+    public async Task DeletePartyLeaderReturnsTerminalFailureAndDoesNotPoisonRetry()
+    {
+        Guid characterId = await SeedCharacterAsync(732_707_324);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Parties.Add(Party.Create(
+                Guid.CreateVersion7(),
+                Guid.CreateVersion7(),
+                characterId,
+                Now));
+            await setup.SaveChangesAsync();
+        }
+
+        AdministrationOperation operation = new(
+            AdministrationOperationType.Delete,
+            732_707_324,
+            "Arthas");
+
+        AdministrationResult first = await ExecuteAsync(9006, operation);
+        AdministrationResult retry = await ExecuteAsync(9006, operation);
+
+        Assert.False(first.IsSuccess);
+        Assert.Equal("admin_character_party_blocked", first.Code);
+        Assert.False(retry.IsSuccess);
+        Assert.True(retry.IsDuplicate);
+        Assert.Equal("admin_character_party_blocked", retry.Code);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        Assert.Equal(1, await context.Characters.CountAsync());
+        Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
     }
 
     [Fact]
