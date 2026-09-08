@@ -396,7 +396,7 @@ public sealed class BootstrapService(
                 new BootstrapVitals(
                     currentHp,
                     stats.MaxHp,
-                    resourceProfile.Id,
+                    effectiveResourceProfile.Id,
                     currentResource,
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),
