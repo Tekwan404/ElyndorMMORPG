@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Options;
+
 namespace Elyndor.Server.Administration;
 
 public sealed class TelegramWebhookRegistrationWorker(
     TelegramWebhookRegistrationService registrationService,
+    IOptions<TelegramAdminOptions> adminOptions,
     IHostEnvironment environment,
     ILogger<TelegramWebhookRegistrationWorker> logger) : BackgroundService
 {
@@ -9,7 +12,11 @@ public sealed class TelegramWebhookRegistrationWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!environment.IsProduction())
+        TelegramAdminOptions options = adminOptions.Value;
+        if (!environment.IsProduction()
+            || !options.Enabled
+            || options.UseLongPolling
+            || !options.RegisterWebhookOnStartup)
         {
             return;
         }
