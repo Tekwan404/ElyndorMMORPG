@@ -1,0 +1,504 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-08T07:45:00+00:00",
+  "quests": [
+    {
+      "id": "QUEST_01_FIRST_HUNT",
+      "displayName": "Первая охота",
+      "description": "Стража просит проверить тропы Шепчущего леса и сократить стаю молодых волков.",
+      "type": "Story",
+      "requiredLevel": 1,
+      "offerLocationId": "WHISPERING_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_WOLVES",
+          "type": "KillMonster",
+          "targetId": "FOREST_WOLF_L1",
+          "requiredCount": 3
+        }
+      ],
+      "rewardXp": 90,
+      "rewardGold": 15,
+      "prerequisiteQuestIds": []
+    },
+    {
+      "id": "QUEST_02_WOLF_HIDES",
+      "displayName": "Шкуры для дозора",
+      "description": "Соберите пригодные шкуры волков для ремонта снаряжения городского дозора.",
+      "type": "Story",
+      "requiredLevel": 2,
+      "offerLocationId": "WHISPERING_FOREST",
+      "objectives": [
+        {
+          "id": "COLLECT_HIDES",
+          "type": "CollectItem",
+          "targetId": "WOLF_HIDE",
+          "requiredCount": 4,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 140,
+      "rewardGold": 22,
+      "rewardItems": [
+        {
+          "itemId": "SMALL_HEALING_POTION",
+          "quantity": 2
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_01_FIRST_HUNT"
+      ]
+    },
+    {
+      "id": "QUEST_03_BOAR_TRAIL",
+      "displayName": "Кабанья тропа",
+      "description": "Лесные кабаны разоряют безопасные тропы. Разгоните стадо у дороги.",
+      "type": "Story",
+      "requiredLevel": 3,
+      "offerLocationId": "WHISPERING_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_BOARS",
+          "type": "KillMonster",
+          "targetId": "FOREST_BOAR_L2",
+          "requiredCount": 3
+        }
+      ],
+      "rewardXp": 190,
+      "rewardGold": 28,
+      "prerequisiteQuestIds": [
+        "QUEST_02_WOLF_HIDES"
+      ]
+    },
+    {
+      "id": "QUEST_04_SILKEN_THREAT",
+      "displayName": "Шёлковая угроза",
+      "description": "Гигантские пауки расплодились у старых деревьев. Уничтожьте гнёзда и принесите паучий шёлк.",
+      "type": "Story",
+      "requiredLevel": 4,
+      "offerLocationId": "WHISPERING_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_SPIDERS",
+          "type": "KillMonster",
+          "targetId": "GIANT_SPIDER_L3",
+          "requiredCount": 4
+        },
+        {
+          "id": "COLLECT_SILK",
+          "type": "CollectItem",
+          "targetId": "SPIDER_SILK",
+          "requiredCount": 3,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 280,
+      "rewardGold": 36,
+      "prerequisiteQuestIds": [
+        "QUEST_03_BOAR_TRAIL"
+      ]
+    },
+    {
+      "id": "QUEST_05_ALPHA_OF_WHISPERS",
+      "displayName": "Альфа Шепчущего леса",
+      "description": "Матёрый альфа держит стаю у перехода в Глубокий лес. Сломите сопротивление хищников.",
+      "type": "Story",
+      "requiredLevel": 5,
+      "offerLocationId": "WHISPERING_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_ALPHA",
+          "type": "KillMonster",
+          "targetId": "ALPHA_WOLF_L5",
+          "requiredCount": 2
+        }
+      ],
+      "rewardXp": 420,
+      "rewardGold": 50,
+      "rewardItems": [
+        {
+          "itemId": "MINOR_ANTIDOTE",
+          "quantity": 1
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_04_SILKEN_THREAT"
+      ]
+    },
+    {
+      "id": "QUEST_06_DEEPER_TRACKS",
+      "displayName": "Следы в глубине",
+      "description": "В Глубоком лесу появились более крупные волки. Очистите первую линию троп.",
+      "type": "Story",
+      "requiredLevel": 6,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_DEEP_WOLVES",
+          "type": "KillMonster",
+          "targetId": "DEEP_WOLF_L6",
+          "requiredCount": 3
+        }
+      ],
+      "rewardXp": 600,
+      "rewardGold": 65,
+      "prerequisiteQuestIds": [
+        "QUEST_05_ALPHA_OF_WHISPERS"
+      ]
+    },
+    {
+      "id": "QUEST_07_CORRUPTED_TUSKS",
+      "displayName": "Осквернённые клыки",
+      "description": "Осквернённые кабаны стали агрессивнее. Уничтожьте зверей и принесите клыки как доказательство.",
+      "type": "Story",
+      "requiredLevel": 7,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_CORRUPTED_BOARS",
+          "type": "KillMonster",
+          "targetId": "CORRUPTED_BOAR_L7",
+          "requiredCount": 3
+        },
+        {
+          "id": "COLLECT_TUSKS",
+          "type": "CollectItem",
+          "targetId": "BOAR_TUSK",
+          "requiredCount": 3,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 850,
+      "rewardGold": 80,
+      "prerequisiteQuestIds": [
+        "QUEST_06_DEEPER_TRACKS"
+      ]
+    },
+    {
+      "id": "QUEST_08_VENOM_IN_DARK",
+      "displayName": "Яд во тьме",
+      "description": "Глубинные пауки мешают разведке. Сократите их численность и соберите ядовитые железы.",
+      "type": "Story",
+      "requiredLevel": 8,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_DEEP_SPIDERS",
+          "type": "KillMonster",
+          "targetId": "DEEP_SPIDER_L8",
+          "requiredCount": 4
+        },
+        {
+          "id": "COLLECT_VENOM",
+          "type": "CollectItem",
+          "targetId": "SPIDER_VENOM_SAC",
+          "requiredCount": 2,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 1150,
+      "rewardGold": 95,
+      "rewardItems": [
+        {
+          "itemId": "MINOR_ANTIDOTE",
+          "quantity": 2
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_07_CORRUPTED_TUSKS"
+      ]
+    },
+    {
+      "id": "QUEST_09_GOBLIN_SCOUTS",
+      "displayName": "Чужие следы",
+      "description": "На лесных тропах замечены гоблины-разведчики. Не дайте им составить карту подходов.",
+      "type": "Story",
+      "requiredLevel": 9,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_GOBLINS",
+          "type": "KillMonster",
+          "targetId": "GOBLIN_SCOUT_L9",
+          "requiredCount": 4
+        }
+      ],
+      "rewardXp": 1550,
+      "rewardGold": 115,
+      "prerequisiteQuestIds": [
+        "QUEST_08_VENOM_IN_DARK"
+      ]
+    },
+    {
+      "id": "QUEST_10_PACK_PRESSURE",
+      "displayName": "Давление стаи",
+      "description": "Матёрые волки собираются в большие стаи. Удержите центральную тропу Глубокого леса.",
+      "type": "Story",
+      "requiredLevel": 10,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_MATURE_WOLVES",
+          "type": "KillMonster",
+          "targetId": "DEEP_WOLF_L10",
+          "requiredCount": 5
+        }
+      ],
+      "rewardXp": 2200,
+      "rewardGold": 140,
+      "prerequisiteQuestIds": [
+        "QUEST_09_GOBLIN_SCOUTS"
+      ]
+    },
+    {
+      "id": "QUEST_11_OLD_ALPHA",
+      "displayName": "Старый вожак",
+      "description": "Старый альфа-волк не подпускает разведчиков к северной части леса. Победите вожака стаи.",
+      "type": "Story",
+      "requiredLevel": 11,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_OLD_ALPHA",
+          "type": "KillMonster",
+          "targetId": "ALPHA_WOLF_L11",
+          "requiredCount": 3
+        }
+      ],
+      "rewardXp": 3000,
+      "rewardGold": 170,
+      "rewardItems": [
+        {
+          "itemId": "DEEP_FOREST_CHARM",
+          "quantity": 1
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_10_PACK_PRESSURE"
+      ]
+    },
+    {
+      "id": "QUEST_12_FANG_PROOF",
+      "displayName": "Доказательство охотника",
+      "description": "Прежде чем идти к логову, докажите, что способны держать удар старой стаи и принести целые волчьи клыки.",
+      "type": "Story",
+      "requiredLevel": 12,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_ALPHA_GUARD",
+          "type": "KillMonster",
+          "targetId": "ALPHA_WOLF_L11",
+          "requiredCount": 4
+        },
+        {
+          "id": "COLLECT_FANGS",
+          "type": "CollectItem",
+          "targetId": "WOLF_FANG",
+          "requiredCount": 5,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 3800,
+      "rewardGold": 200,
+      "prerequisiteQuestIds": [
+        "QUEST_11_OLD_ALPHA"
+      ]
+    },
+    {
+      "id": "QUEST_13_BROODMOTHER_TRACE",
+      "displayName": "След Прародительницы",
+      "description": "Следы яда ведут к древнему логову. Соберите образцы и расчистите путь перед решающей охотой.",
+      "type": "Story",
+      "requiredLevel": 13,
+      "offerLocationId": "DEEP_FOREST",
+      "objectives": [
+        {
+          "id": "KILL_WEB_GUARD",
+          "type": "KillMonster",
+          "targetId": "DEEP_SPIDER_L8",
+          "requiredCount": 6
+        },
+        {
+          "id": "COLLECT_VENOM_SAMPLES",
+          "type": "CollectItem",
+          "targetId": "SPIDER_VENOM_SAC",
+          "requiredCount": 4,
+          "consumeOnClaim": true
+        }
+      ],
+      "rewardXp": 4700,
+      "rewardGold": 230,
+      "rewardItems": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "quantity": 2
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_12_FANG_PROOF"
+      ]
+    },
+    {
+      "id": "CONTRACT_BROODMOTHER_GATE",
+      "displayName": "Контракт: Прародительница",
+      "description": "Войдите в логово и уничтожьте Паучью Прародительницу. Победа откроет путь в Осквернённую чащу.",
+      "type": "Contract",
+      "requiredLevel": 14,
+      "offerLocationId": "BROODMOTHER_LAIR",
+      "objectives": [
+        {
+          "id": "KILL_BROODMOTHER",
+          "type": "KillMonster",
+          "targetId": "SPIDER_BROODMOTHER_L14",
+          "requiredCount": 1
+        }
+      ],
+      "rewardXp": 2000,
+      "rewardGold": 150,
+      "prerequisiteQuestIds": [
+        "QUEST_13_BROODMOTHER_TRACE"
+      ],
+      "unlockLocationId": "BLIGHTED_GROVE"
+    },
+    {
+      "id": "QUEST_15_BANDIT_FOOTHOLD",
+      "displayName": "Разбойничий плацдарм",
+      "description": "За логовом начинается новая территория. Разбейте первые группы лесных разбойников.",
+      "type": "Story",
+      "requiredLevel": 15,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BANDITS",
+          "type": "KillMonster",
+          "targetId": "BANDIT_ROGUE_L15",
+          "requiredCount": 4
+        }
+      ],
+      "rewardXp": 9000,
+      "rewardGold": 260,
+      "prerequisiteQuestIds": [
+        "CONTRACT_BROODMOTHER_GATE"
+      ]
+    },
+    {
+      "id": "QUEST_16_ARROWS_FROM_GLOOM",
+      "displayName": "Стрелы из чащи",
+      "description": "Разбойники-лучники контролируют просеки. Снимите стрелков с выгодных позиций.",
+      "type": "Story",
+      "requiredLevel": 16,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BANDIT_ARCHERS",
+          "type": "KillMonster",
+          "targetId": "BANDIT_ARCHER_L16",
+          "requiredCount": 4
+        }
+      ],
+      "rewardXp": 13000,
+      "rewardGold": 310,
+      "prerequisiteQuestIds": [
+        "QUEST_15_BANDIT_FOOTHOLD"
+      ]
+    },
+    {
+      "id": "QUEST_17_BLIGHTED_BOARS",
+      "displayName": "Вепри Осквернённой чащи",
+      "description": "Осквернение изменило местных вепрей. Уменьшите их стаю прежде, чем она выйдет к дорогам.",
+      "type": "Story",
+      "requiredLevel": 17,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BLIGHTED_BOARS",
+          "type": "KillMonster",
+          "targetId": "CORRUPTED_BOAR_L17",
+          "requiredCount": 5
+        }
+      ],
+      "rewardXp": 19000,
+      "rewardGold": 370,
+      "prerequisiteQuestIds": [
+        "QUEST_16_ARROWS_FROM_GLOOM"
+      ]
+    },
+    {
+      "id": "QUEST_18_WEBBED_GROVE",
+      "displayName": "Паутина чащи",
+      "description": "Осквернённые пауки затянули тропы плотной паутиной. Очистите проходы силой.",
+      "type": "Story",
+      "requiredLevel": 18,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BLIGHTED_SPIDERS",
+          "type": "KillMonster",
+          "targetId": "BLIGHTED_SPIDER_L18",
+          "requiredCount": 5
+        }
+      ],
+      "rewardXp": 27500,
+      "rewardGold": 430,
+      "prerequisiteQuestIds": [
+        "QUEST_17_BLIGHTED_BOARS"
+      ]
+    },
+    {
+      "id": "QUEST_19_VETERAN_BANDITS",
+      "displayName": "Опытные головорезы",
+      "description": "Лучшие бойцы разбойников пытаются вернуть контроль над чащей. Сломите их сопротивление.",
+      "type": "Story",
+      "requiredLevel": 19,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_VETERAN_BANDITS",
+          "type": "KillMonster",
+          "targetId": "BANDIT_ROGUE_L19",
+          "requiredCount": 6
+        }
+      ],
+      "rewardXp": 39000,
+      "rewardGold": 500,
+      "rewardItems": [
+        {
+          "itemId": "BLIGHTED_GROVE_RING",
+          "quantity": 1
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_18_WEBBED_GROVE"
+      ]
+    },
+    {
+      "id": "QUEST_20_BLIGHTED_ALPHA",
+      "displayName": "Хозяин осквернённой стаи",
+      "description": "Осквернённый альфа-волк собирает вокруг себя оставшихся хищников. Победите его и завершите путь 1–20.",
+      "type": "Story",
+      "requiredLevel": 20,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BLIGHTED_ALPHA",
+          "type": "KillMonster",
+          "targetId": "ALPHA_WOLF_L20",
+          "requiredCount": 5
+        }
+      ],
+      "rewardXp": 55000,
+      "rewardGold": 650,
+      "rewardItems": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "quantity": 3
+        }
+      ],
+      "prerequisiteQuestIds": [
+        "QUEST_19_VETERAN_BANDITS"
+      ]
+    }
+  ]
+}
