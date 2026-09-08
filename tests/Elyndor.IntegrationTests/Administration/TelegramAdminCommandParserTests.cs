@@ -6,7 +6,9 @@ public sealed class TelegramAdminCommandParserTests
 {
     [Theory]
     [InlineData("/rename 123 Aldor the-Brave", AdminCommandType.Rename, "Aldor the-Brave")]
+    [InlineData("rename 123 Aldor the-Brave", AdminCommandType.Rename, "Aldor the-Brave")]
     [InlineData("/msg 123 Server restart in five minutes", AdminCommandType.Message, "Server restart in five minutes")]
+    [InlineData("msg 123 Server restart in five minutes", AdminCommandType.Message, "Server restart in five minutes")]
     public void ParsePreservesTrailingText(string text, AdminCommandType type, string value)
     {
         AdminCommandParseResult result = TelegramAdminCommandParser.Parse(text);
@@ -15,6 +17,31 @@ public sealed class TelegramAdminCommandParserTests
         Assert.Equal(type, result.Command!.Type);
         Assert.Equal(123, result.Command.TargetTelegramUserId);
         Assert.Equal(value, result.Command.Value);
+    }
+
+    [Theory]
+    [InlineData("/help")]
+    [InlineData("help")]
+    [InlineData("/help@elyndor_bot")]
+    public void HelpAcceptsSlashPlainTextAndBotSuffix(string text)
+    {
+        AdminCommandParseResult result = TelegramAdminCommandParser.Parse(text);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(AdminCommandType.Help, result.Command!.Type);
+    }
+
+    [Theory]
+    [InlineData("/level 123 15")]
+    [InlineData("level 123 15")]
+    public void LevelAcceptsSlashAndPlainText(string text)
+    {
+        AdminCommandParseResult result = TelegramAdminCommandParser.Parse(text);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(AdminCommandType.SetLevel, result.Command!.Type);
+        Assert.Equal(123, result.Command.TargetTelegramUserId);
+        Assert.Equal(15, result.Command.NumericValue);
     }
 
     [Fact]
