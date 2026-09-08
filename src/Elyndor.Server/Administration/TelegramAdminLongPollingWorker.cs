@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Elyndor.Server.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Server.Administration;
@@ -9,7 +10,7 @@ public sealed class TelegramAdminLongPollingWorker(
     HttpClient httpClient,
     IOptions<AuthenticationOptions> authenticationOptions,
     IOptions<TelegramAdminOptions> adminOptions,
-    TelegramAdminUpdateProcessor processor,
+    IServiceScopeFactory scopeFactory,
     IHostEnvironment environment,
     ILogger<TelegramAdminLongPollingWorker> logger) : BackgroundService
 {
@@ -45,6 +46,9 @@ public sealed class TelegramAdminLongPollingWorker(
 
                 foreach (TelegramUpdate update in response.Result.OrderBy(item => item.UpdateId))
                 {
+                    await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+                    TelegramAdminUpdateProcessor processor =
+                        scope.ServiceProvider.GetRequiredService<TelegramAdminUpdateProcessor>();
                     await processor.ProcessAsync(update, stoppingToken);
                     offset = Math.Max(offset, update.UpdateId + 1);
                 }
