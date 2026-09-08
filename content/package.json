@@ -1,5 +1,5 @@
 {
-  "contentVersion": "0.13.4",
+  "contentVersion": "0.13.5",
   "balanceVersion": "0.8.0",
   "publishedAtUtc": "2026-09-07T15:15:00+00:00",
   "definitions": [
@@ -426,6 +426,206 @@
       "iconId": "bastion"
     },
     {
+      "id": "BATTLE_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 20,
+      "cooldown": "00:01:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_CRY",
+            "kind": "StatModifier",
+            "duration": "00:00:20",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.08,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Боевой клич",
+      "description": "Усиливает атаку воина и союзников на 20 секунд.",
+      "iconId": "battle-cry"
+    },
+    {
+      "id": "ENDURANCE_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 25,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_ENDURANCE_CRY",
+            "kind": "Buff",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.06
+          }
+        }
+      ],
+      "displayName": "Клич стойкости",
+      "description": "Повышает запас здоровья воинов отряда на 15 секунд.",
+      "iconId": "endurance-cry"
+    },
+    {
+      "id": "WAR_BANNER",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_WAR_BANNER",
+            "kind": "StatModifier",
+            "duration": "00:00:30",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.04,
+            "modifiedStat": "CriticalChance",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Знамя войны",
+      "description": "Устанавливает знамя, усиливающее критические удары отряда.",
+      "iconId": "war-banner"
+    },
+    {
+      "id": "CRY_OF_VENGEANCE",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 35,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_CRIT_OF_VENGEANCE",
+            "kind": "Buff",
+            "duration": "00:00:10",
+            "maxStacks": 5,
+            "stackPolicy": "Stack",
+            "magnitude": 0.35
+          }
+        }
+      ],
+      "displayName": "Клич мести",
+      "description": "Накопленная боль союзников усиливает следующую атаку воина.",
+      "iconId": "cry-of-vengeance"
+    },
+    {
+      "id": "VICTORY_FLAG",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 40,
+      "cooldown": "00:03:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_VICTORY_FLAG",
+            "kind": "StatModifier",
+            "duration": "00:00:18",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.08,
+            "modifiedStat": "OutgoingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Флаг победы",
+      "description": "Знамя победы увеличивает наносимый урон отряда.",
+      "iconId": "victory-flag"
+    },
+    {
+      "id": "RALLY_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Healing",
+          "amount": 60,
+          "canMiss": false,
+          "canCrit": false,
+          "canDodge": false
+        }
+      ],
+      "displayName": "Клич исцеления",
+      "description": "Воин мгновенно восстанавливает здоровье себе и союзникам.",
+      "iconId": "rally-cry"
+    },
+    {
+      "id": "BATTLE_STANDARD",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 50,
+      "cooldown": "00:02:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_STANDARD",
+            "kind": "StatModifier",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.1,
+            "modifiedStat": "OutgoingPhysicalDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Боевой штандарт",
+      "description": "Штандарт усиливает автоатаки воина и союзников.",
+      "iconId": "battle-standard"
+    },
+    {
       "id": "WILD_STRIKE",
       "type": "Instant",
       "targetType": "SingleEnemy",
@@ -742,8 +942,7 @@
                 2,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -763,10 +962,12 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0
+                1
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "secondaryValues": [
+                10
+              ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -809,12 +1010,12 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "threshold": 70,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -834,11 +1035,14 @@
               "type": "EventTriggered",
               "key": "ON_DODGE",
               "values": [
-                0,
-                0
+                50,
+                70
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "secondaryValues": [
+                15,
+                25
+              ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -858,11 +1062,10 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                10,
+                20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -905,12 +1108,11 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0,
-                0,
-                0
+                5,
+                10,
+                15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -930,10 +1132,11 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0
+                15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "threshold": 25,
+              "durationSeconds": 6,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -964,15 +1167,14 @@
               "targetId": "PROVOKE"
             },
             {
-              "type": "AbilityModifier",
+              "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                150,
+                300
               ],
               "targetId": "PROVOKE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1016,11 +1218,11 @@
               "type": "EventTriggered",
               "key": "ON_DODGE",
               "values": [
-                0,
-                0
+                3,
+                5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "internalCooldownSeconds": 2,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1062,13 +1264,12 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0,
-                0,
-                0,
-                0
+                2,
+                4,
+                6,
+                9
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1110,10 +1311,11 @@
               "type": "EventTriggered",
               "key": "ON_AUTO_ATTACK",
               "values": [
-                0
+                4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "chancePercent": 12,
+              "durationSeconds": 8,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1133,11 +1335,10 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0
+                1,
+                1.5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1157,10 +1358,9 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0
+                25
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1185,11 +1385,10 @@
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                10,
+                20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1237,10 +1436,10 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0
+                1
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "triggerCount": 1,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1284,11 +1483,11 @@
               "type": "EventTriggered",
               "key": "ON_HP_THRESHOLD",
               "values": [
-                0,
-                0
+                5,
+                10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "threshold": 35,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1308,10 +1507,10 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0
+                65
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "chancePercent": 25,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1337,15 +1536,14 @@
           "version": 1,
           "modifiers": [
             {
-              "type": "AbilityModifier",
+              "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                0,
-                0
+                8,
+                15
               ],
               "targetId": "BASTION",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1365,10 +1563,9 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0
+                35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1402,10 +1599,10 @@
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                0
+                0.35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "internalCooldownSeconds": 2,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -1525,8 +1722,7 @@
                 7,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 4,
                 8
@@ -1567,7 +1763,7 @@
           "englishName": "Unrelenting",
           "maxRank": 4,
           "prerequisites": [],
-          "description": "CriticalChance +1.5% / 3% / 4.5% / 6%.",
+          "description": "Увеличивает шанс критического удара на 1,5% / 3% / 4,5% / 6%.",
           "branchId": "BERSERKER",
           "version": 1,
           "modifiers": [
@@ -1604,8 +1800,7 @@
                 4,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20,
               "durationSeconds": 3
             }
@@ -1713,8 +1908,7 @@
                 4,
                 7
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WILD_STRIKE",
               "durationSeconds": 4,
               "tickIntervalSeconds": 1
@@ -1740,8 +1934,7 @@
               "values": [
                 45
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "chancePercent": 15,
               "internalCooldownSeconds": 2
             },
@@ -1843,8 +2036,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "secondaryValues": [
                 1,
                 2
@@ -1949,8 +2141,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK"
             }
           ],
@@ -1997,8 +2188,7 @@
               "values": [
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "AUTO_ATTACK",
               "durationSeconds": 8
             }
@@ -2029,8 +2219,7 @@
                 3,
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK"
             }
           ],
@@ -2061,8 +2250,7 @@
                 2,
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK",
               "internalCooldownSeconds": 3
             }
@@ -2096,8 +2284,7 @@
               "values": [
                 30
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BERSERK",
               "chancePercent": 100
             }
@@ -2125,8 +2312,7 @@
                 9,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 25
             }
           ],
@@ -2156,8 +2342,7 @@
                 5,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WHIRLWIND",
               "durationSeconds": 6,
               "tickIntervalSeconds": 1
@@ -2184,8 +2369,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 20
             }
           ],
@@ -2218,8 +2402,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "WHIRLWIND"
             }
           ],
@@ -2255,12 +2438,11 @@
               "type": "EventTriggered",
               "key": "ON_ENEMY_KILLED",
               "values": [
-                0,
-                0
+                1,
+                1
               ],
               "targetId": "WILD_STRIKE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported"
             }
           ],
           "iconId": "BERSERKER_WAR_MASK"
@@ -2283,8 +2465,7 @@
               "values": [
                 200
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "threshold": 10
             }
           ],
@@ -2323,8 +2504,7 @@
               "values": [
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "chancePercent": 20
             }
           ],
@@ -2346,12 +2526,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                5,
+                10,
+                15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2371,12 +2550,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2418,12 +2596,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2446,8 +2623,7 @@
                 1
               ],
               "targetId": "BATTLE_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2467,12 +2643,16 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                10,
+                15,
+                20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "secondaryValues": [
+                4,
+                4,
+                4
+              ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2484,7 +2664,7 @@
           "englishName": "Formation Strength",
           "maxRank": 3,
           "prerequisites": [],
-          "description": "Stamina +2% / 4% / 6%.",
+          "description": "Увеличивает выносливость на 2% / 4% / 6%.",
           "modifiers": [
             {
               "type": "StatModifier",
@@ -2520,11 +2700,10 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0
+                2,
+                4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2547,8 +2726,7 @@
                 1
               ],
               "targetId": "ENDURANCE_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2568,11 +2746,10 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0
+                2,
+                4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2595,8 +2772,7 @@
                 1
               ],
               "targetId": "WAR_BANNER",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2616,12 +2792,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2646,12 +2821,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                3,
+                5,
+                8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2674,8 +2848,7 @@
                 1
               ],
               "targetId": "CRY_OF_VENGEANCE",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2695,12 +2868,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2720,12 +2892,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0,
-                0
+                1,
+                2,
+                3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2748,8 +2919,7 @@
                 1
               ],
               "targetId": "VICTORY_FLAG",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2773,13 +2943,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    7,
+                    14,
+                    20
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2798,13 +2967,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    8,
+                    16,
+                    24
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2828,12 +2996,11 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    2,
+                    4
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2856,8 +3023,7 @@
                 1
               ],
               "targetId": "RALLY_CRY",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2881,13 +3047,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    3,
+                    5,
+                    8
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2906,11 +3071,10 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    10
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2929,13 +3093,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    10,
+                    20,
+                    30
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2958,8 +3121,7 @@
                 1
               ],
               "targetId": "BATTLE_STANDARD",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -2978,12 +3140,15 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    6,
+                    10
+                  ],
+                  "secondaryValues": [
+                    4,
+                    7
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3002,12 +3167,11 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    3,
+                    6
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3026,13 +3190,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    2,
+                    4,
+                    6
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3060,11 +3223,13 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    8
+                  ],
+                  "secondaryValues": [
+                    6
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3088,11 +3253,10 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    2
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3111,13 +3275,12 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0,
-                0,
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    1,
+                    2,
+                    3
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3142,11 +3305,11 @@
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
               "values": [
-                0,
-                0
+                3,
+                5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "internalCooldownSeconds": 20,
+              "runtimeStatus": "Supported"
             }
           ]
         },
@@ -3165,11 +3328,13 @@
             {
               "type": "EventTriggered",
               "key": "ON_PARTY_EVENT",
-              "values": [
-                0
-              ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+                  "values": [
+                    4
+                  ],
+                  "secondaryValues": [
+                    6
+                  ],
+              "runtimeStatus": "Supported"
             }
           ]
         }

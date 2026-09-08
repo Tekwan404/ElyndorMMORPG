@@ -6,6 +6,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
 
 namespace Elyndor.Core.Content;
@@ -31,6 +32,7 @@ public sealed record GameContentPackage(
     IReadOnlyList<MerchantDefinition>? Merchants = null,
     ResourceScalingProfile? ResourceScaling = null,
     IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
+    IReadOnlyList<DungeonDefinition>? Dungeons = null,
     InventoryProfileDefinition? InventoryProfile = null,
     IReadOnlyList<QuestDefinition>? Quests = null);
 

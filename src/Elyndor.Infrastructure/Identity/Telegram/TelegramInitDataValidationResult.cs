@@ -2,7 +2,8 @@ namespace Elyndor.Infrastructure.Identity.Telegram;
 
 public sealed record TelegramInitData(
     long TelegramUserId,
-    DateTimeOffset AuthenticatedAtUtc);
+    DateTimeOffset AuthenticatedAtUtc,
+    string? TelegramUsername = null);
 
 public sealed record TelegramInitDataValidationResult(
     bool IsValid,

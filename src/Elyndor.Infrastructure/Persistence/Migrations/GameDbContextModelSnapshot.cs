@@ -115,6 +115,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
+                    b.Property<string>("PublicCode")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)");
+
                     b.Property<string>("RaceId")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -135,6 +140,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_characters_normalized_name");
 
+                    b.HasIndex("PublicCode")
+                        .IsUnique()
+                        .HasDatabaseName("uq_characters_public_code");
+
                     b.ToTable("characters", "game", t =>
                         {
                             t.HasCheckConstraint("ck_characters_experience_non_negative", "\"Experience\" >= 0");
@@ -142,7 +151,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_characters_gold_non_negative", "\"Gold\" >= 0");
                         });
                 });
-
 
             modelBuilder.Entity("Elyndor.Core.Characters.CharacterMutation", b =>
                 {
@@ -204,6 +212,466 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BalanceVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ContentVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TerminalSnapshotJson")
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("SessionId", "CharacterId")
+                        .HasName("pk_active_combat_sessions");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_active_combat_sessions_character_id");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("ix_active_combat_sessions_session_id");
+
+                    b.HasIndex("StartedAtUtc")
+                        .HasDatabaseName("ix_active_combat_sessions_started_at_utc");
+
+                    b.ToTable("active_combat_sessions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AbilityId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("ReadyAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "AbilityId")
+                        .HasName("pk_character_ability_cooldowns");
+
+                    b.HasIndex("ReadyAtUtc")
+                        .HasDatabaseName("ix_character_ability_cooldowns_ready_at_utc");
+
+                    b.ToTable("character_ability_cooldowns", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommandId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DefinitionVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("MaxStack")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SessionId", "CommandId")
+                        .HasName("pk_combat_consumable_uses");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("ix_combat_consumable_uses_character_id");
+
+                    b.HasIndex("SessionId", "CharacterId");
+
+                    b.ToTable("combat_consumable_uses", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_combat_consumable_uses_definition_version", "\"DefinitionVersion\" > 0");
+
+                            t.HasCheckConstraint("ck_combat_consumable_uses_max_stack", "\"MaxStack\" >= 2");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatLootRoll", b =>
+                {
+                    b.Property<Guid>("LootRollId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ChoicesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DungeonRunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EligibleCharacterIdsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ItemInstanceSeed")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Rarity")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset?>("ResolvedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RollsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid?>("WinnerCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LootRollId")
+                        .HasName("pk_combat_loot_rolls");
+
+                    b.HasIndex("CombatSessionId", "ItemDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_combat_loot_rolls_session_item");
+
+                    b.HasIndex("State", "EndsAtUtc")
+                        .HasDatabaseName("ix_combat_loot_rolls_state_ends_at_utc");
+
+                    b.ToTable("combat_loot_rolls", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_combat_loot_rolls_quantity_positive", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatSharedLootResolution", b =>
+                {
+                    b.Property<Guid>("CombatSessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("GroupLootJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("ResolvedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CombatSessionId")
+                        .HasName("pk_combat_shared_loot_resolutions");
+
+                    b.ToTable("combat_shared_loot_resolutions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("DetailsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReleaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RevisionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_audit_entries");
+
+                    b.HasIndex("OccurredAtUtc")
+                        .HasDatabaseName("ix_content_audit_entries_occurred_at");
+
+                    b.HasIndex("ReleaseId")
+                        .HasDatabaseName("ix_content_audit_entries_release_id");
+
+                    b.HasIndex("RevisionId")
+                        .HasDatabaseName("ix_content_audit_entries_revision_id");
+
+                    b.ToTable("content_audit_entries", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentRelease", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<DateTimeOffset>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PublishedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("RevisionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_releases");
+
+                    b.HasIndex("PublishedAtUtc")
+                        .HasDatabaseName("ix_content_releases_published_at");
+
+                    b.HasIndex("RevisionId", "PublishedAtUtc")
+                        .HasDatabaseName("ix_content_releases_revision_published_at");
+
+                    b.ToTable("content_releases", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Content.ContentRevision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BalanceVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ContentVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PayloadSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("SourcePublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_revisions");
+
+                    b.HasIndex("CreatedAtUtc")
+                        .HasDatabaseName("ix_content_revisions_created_at");
+
+                    b.HasIndex("PayloadSha256")
+                        .HasDatabaseName("ix_content_revisions_payload_sha256");
+
+                    b.HasIndex("ContentVersion", "BalanceVersion")
+                        .HasDatabaseName("ix_content_revisions_versions");
+
+                    b.ToTable("content_revisions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EncounterIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MonsterId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("WipeCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dungeon_encounters");
+
+                    b.HasIndex("CombatSessionId")
+                        .HasDatabaseName("ix_dungeon_encounters_combat_session_id");
+
+                    b.HasIndex("RunId", "EncounterIndex")
+                        .IsUnique()
+                        .HasDatabaseName("uq_dungeon_encounters_run_index");
+
+                    b.ToTable("dungeon_encounters", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounterMember", b =>
+                {
+                    b.Property<Guid>("EncounterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("EncounterId", "CharacterId")
+                        .HasName("pk_dungeon_encounter_members");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("ix_dungeon_encounter_members_character_id");
+
+                    b.ToTable("dungeon_encounter_members", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreationRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CurrentEncounterIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DungeonId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dungeon_runs");
+
+                    b.HasIndex("CreationRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_dungeon_runs_creation_request_id");
+
+                    b.HasIndex("PartyId", "State")
+                        .HasDatabaseName("ix_dungeon_runs_party_state");
+
+                    b.ToTable("dungeon_runs", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonRunMember", b =>
+                {
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("RunId", "CharacterId")
+                        .HasName("pk_dungeon_run_members");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("ix_dungeon_run_members_character_id");
+
+                    b.ToTable("dungeon_run_members", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Identity.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -216,11 +684,23 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("LastSeenAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("NormalizedTelegramUsername")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<long>("TelegramUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("TelegramUsername")
+                        .HasMaxLength(33)
+                        .HasColumnType("character varying(33)");
+
                     b.HasKey("Id")
                         .HasName("pk_accounts");
+
+                    b.HasIndex("NormalizedTelegramUsername")
+                        .IsUnique()
+                        .HasDatabaseName("uq_accounts_normalized_telegram_username");
 
                     b.HasIndex("TelegramUserId")
                         .IsUnique()
@@ -268,15 +748,15 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(1);
 
-                    b.Property<string>("ItemDefinitionId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
                     b.Property<bool>("IsLocked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -366,10 +846,110 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Parties.Party", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreationRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LeaderCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("pk_parties");
+
+                    b.HasIndex("CreationRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_parties_creation_request_id");
+
+                    b.HasIndex("LeaderCharacterId")
+                        .HasDatabaseName("ix_parties_leader_character_id");
+
+                    b.ToTable("parties", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Parties.PartyInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InviterCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TargetCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_party_invites");
+
+                    b.HasIndex("InviterCharacterId");
+
+                    b.HasIndex("PartyId");
+
+                    b.HasIndex("TargetCharacterId", "Status")
+                        .HasDatabaseName("ix_party_invites_target_status");
+
+                    b.ToTable("party_invites", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Parties.PartyMember", b =>
+                {
+                    b.Property<Guid>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PartyId", "CharacterId")
+                        .HasName("pk_party_members");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_party_members_character_id");
+
+                    b.ToTable("party_members", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.Property<Guid>("CombatSessionId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CharacterId")
@@ -398,7 +978,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<int>("XpEarned")
                         .HasColumnType("integer");
 
-                    b.HasKey("CombatSessionId")
+                    b.HasKey("CombatSessionId", "CharacterId")
                         .HasName("pk_combat_reward_grants");
 
                     b.HasIndex("CharacterId")
@@ -420,7 +1000,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("QuestId")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
@@ -467,7 +1046,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("QuestId")
-                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
@@ -502,6 +1080,78 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_quest_reward_grants_xp_non_negative", "\"XpEarned\" >= 0");
                         });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Social.FriendRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DecidedByCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PairKey")
+                        .IsRequired()
+                        .HasMaxLength(73)
+                        .HasColumnType("character varying(73)");
+
+                    b.Property<Guid>("RequesterCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TargetCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_friend_requests");
+
+                    b.HasIndex("RequesterCharacterId");
+
+                    b.HasIndex("TargetCharacterId")
+                        .HasDatabaseName("ix_friend_requests_target_character_id");
+
+                    b.HasIndex("PairKey", "Status")
+                        .IsUnique()
+                        .HasDatabaseName("uq_friend_requests_pending_pair")
+                        .HasFilter("\"Status\" = 0");
+
+                    b.ToTable("friend_requests", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Social.Friendship", b =>
+                {
+                    b.Property<string>("PairKey")
+                        .HasMaxLength(73)
+                        .HasColumnType("character varying(73)");
+
+                    b.Property<Guid>("CharacterAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterBId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("PairKey")
+                        .HasName("pk_friendships");
+
+                    b.HasIndex("CharacterAId")
+                        .HasDatabaseName("ix_friendships_character_a_id");
+
+                    b.HasIndex("CharacterBId")
+                        .HasDatabaseName("ix_friendships_character_b_id");
+
+                    b.ToTable("friendships", "game");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
@@ -554,102 +1204,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_character_talent_states_state_version", "\"StateVersion\" > 0");
                         });
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
-                {
-                    b.Property<Guid>("SessionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BalanceVersion")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ContentVersion")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTimeOffset>("StartedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("SessionId")
-                        .HasName("pk_active_combat_sessions");
-
-                    b.HasIndex("CharacterId")
-                        .IsUnique()
-                        .HasDatabaseName("uq_active_combat_sessions_character_id");
-
-                    b.HasIndex("StartedAtUtc")
-                        .HasDatabaseName("ix_active_combat_sessions_started_at_utc");
-
-                    b.ToTable("active_combat_sessions", "game");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
-                {
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CommandId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("DefinitionVersion")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ItemDefinitionId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int>("MaxStack")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("UsedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("SessionId", "CommandId")
-                        .HasName("pk_combat_consumable_uses");
-
-                    b.HasIndex("CharacterId")
-                        .HasDatabaseName("ix_combat_consumable_uses_character_id");
-
-                    b.ToTable("combat_consumable_uses", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_combat_consumable_uses_definition_version", "\"DefinitionVersion\" > 0");
-
-                            t.HasCheckConstraint("ck_combat_consumable_uses_max_stack", "\"MaxStack\" >= 2");
-                        });
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
-                {
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AbilityId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTimeOffset>("ReadyAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("CharacterId", "AbilityId")
-                        .HasName("pk_character_ability_cooldowns");
-
-                    b.HasIndex("ReadyAtUtc")
-                        .HasDatabaseName("ix_character_ability_cooldowns_ready_at_utc");
-
-                    b.ToTable("character_ability_cooldowns", "game");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.CharacterContractAcceptance", b =>
@@ -792,136 +1346,64 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("travel_operations", "game");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Content.ContentAuditEntry", b =>
+            modelBuilder.Entity("Elyndor.Core.Characters.Character", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
+                    b.HasOne("Elyndor.Core.Identity.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("Actor")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("DetailsJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset>("OccurredAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ReleaseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("RevisionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("pk_content_audit_entries");
-
-                    b.HasIndex("OccurredAtUtc")
-                        .HasDatabaseName("ix_content_audit_entries_occurred_at");
-
-                    b.HasIndex("ReleaseId")
-                        .HasDatabaseName("ix_content_audit_entries_release_id");
-
-                    b.HasIndex("RevisionId")
-                        .HasDatabaseName("ix_content_audit_entries_revision_id");
-
-                    b.ToTable("content_audit_entries", "game");
+                        .HasConstraintName("fk_characters_accounts_account_id");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Content.ContentRelease", b =>
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterMutation", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
-
-                    b.Property<DateTimeOffset>("PublishedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PublishedBy")
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<Guid>("RevisionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id")
-                        .HasName("pk_content_releases");
-
-                    b.HasIndex("PublishedAtUtc")
-                        .HasDatabaseName("ix_content_releases_published_at");
-
-                    b.HasIndex("RevisionId", "PublishedAtUtc")
-                        .HasDatabaseName("ix_content_releases_revision_published_at");
-
-                    b.ToTable("content_releases", "game");
+                        .HasConstraintName("fk_character_mutations_characters_character_id");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Content.ContentRevision", b =>
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BalanceVersion")
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithOne()
+                        .HasForeignKey("Elyndor.Core.Characters.CharacterVitals", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasConstraintName("fk_character_vitals_characters_character_id");
+                });
 
-                    b.Property<string>("ContentVersion")
+            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithOne()
+                        .HasForeignKey("Elyndor.Core.Combat.ActiveCombatSession", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasConstraintName("fk_active_combat_sessions_characters_character_id");
+                });
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
+            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasConstraintName("fk_character_ability_cooldowns_characters_character_id");
+                });
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
-
-                    b.Property<string>("PayloadJson")
+            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
+                {
+                    b.HasOne("Elyndor.Core.Combat.ActiveCombatSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PayloadSha256")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTimeOffset>("SourcePublishedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id")
-                        .HasName("pk_content_revisions");
-
-                    b.HasIndex("CreatedAtUtc")
-                        .HasDatabaseName("ix_content_revisions_created_at");
-
-                    b.HasIndex("PayloadSha256")
-                        .HasDatabaseName("ix_content_revisions_payload_sha256");
-
-                    b.HasIndex("ContentVersion", "BalanceVersion")
-                        .HasDatabaseName("ix_content_revisions_versions");
-
-                    b.ToTable("content_revisions", "game");
+                        .HasConstraintName("fk_combat_consumable_uses_active_combat_session");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Content.ContentAuditEntry", b =>
@@ -949,35 +1431,33 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_content_releases_content_revisions_revision_id");
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Characters.Character", b =>
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
                 {
-                    b.HasOne("Elyndor.Core.Identity.Account", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
+                    b.HasOne("Elyndor.Core.Dungeons.DungeonRun", "Run")
+                        .WithMany("Encounters")
+                        .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_characters_accounts_account_id");
+                        .IsRequired();
+
+                    b.Navigation("Run");
                 });
 
-
-            modelBuilder.Entity("Elyndor.Core.Characters.CharacterMutation", b =>
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounterMember", b =>
                 {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithMany()
-                        .HasForeignKey("CharacterId")
+                    b.HasOne("Elyndor.Core.Dungeons.DungeonEncounter", null)
+                        .WithMany("Members")
+                        .HasForeignKey("EncounterId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_character_mutations_characters_character_id");
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonRunMember", b =>
                 {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithOne()
-                        .HasForeignKey("Elyndor.Core.Characters.CharacterVitals", "CharacterId")
+                    b.HasOne("Elyndor.Core.Dungeons.DungeonRun", null)
+                        .WithMany("Members")
+                        .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_character_vitals_characters_character_id");
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Elyndor.Core.Items.CharacterEquipment", b =>
@@ -1017,6 +1497,57 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_pending_loot_items_characters_character_id");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Parties.Party", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("LeaderCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_parties_leader_character");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Parties.PartyInvite", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("InviterCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_party_invites_inviter_character_id");
+
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_party_invites_party_id");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("TargetCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_party_invites_target_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Parties.PartyMember", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_party_members_character_id");
+
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany("Members")
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_party_members_parties_party_id");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -1025,46 +1556,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_combat_reward_grants_characters_character_id");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
-                {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithOne()
-                        .HasForeignKey("Elyndor.Core.Talents.CharacterTalentState", "CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_character_talent_states_characters_character_id");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.ActiveCombatSession", b =>
-                {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithOne()
-                        .HasForeignKey("Elyndor.Core.Combat.ActiveCombatSession", "CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_active_combat_sessions_characters_character_id");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.CombatConsumableUse", b =>
-                {
-                    b.HasOne("Elyndor.Core.Combat.ActiveCombatSession", null)
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_combat_consumable_uses_active_combat_session_id");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Combat.CharacterAbilityCooldown", b =>
-                {
-                    b.HasOne("Elyndor.Core.Characters.Character", null)
-                        .WithMany()
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_character_ability_cooldowns_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Quests.CharacterQuestState", b =>
@@ -1085,6 +1576,50 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_quest_reward_grants_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Social.FriendRequest", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("RequesterCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_friend_requests_requester_character");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("TargetCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_friend_requests_target_character");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Social.Friendship", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_friendships_character_a");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_friendships_character_b");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithOne()
+                        .HasForeignKey("Elyndor.Core.Talents.CharacterTalentState", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_talent_states_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.CharacterContractAcceptance", b =>
@@ -1135,6 +1670,23 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_travel_operations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
+                {
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonRun", b =>
+                {
+                    b.Navigation("Encounters");
+
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Parties.Party", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

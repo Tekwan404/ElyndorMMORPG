@@ -29,6 +29,7 @@ public sealed record BootstrapAbility(
 public sealed record BootstrapCharacter(
     Guid Id,
     string Name,
+    string PublicCode,
     string RaceId,
     string GenderId,
     string ClassId,
@@ -376,6 +377,7 @@ public sealed class BootstrapService(
             new BootstrapCharacter(
                 character.Id,
                 character.Name,
+                character.PublicCode,
                 character.RaceId,
                 character.GenderId,
                 character.ClassId,

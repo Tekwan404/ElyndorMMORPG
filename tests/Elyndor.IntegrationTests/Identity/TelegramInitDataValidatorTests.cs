@@ -37,6 +37,27 @@ public sealed class TelegramInitDataValidatorTests
     }
 
     [Fact]
+    public void ValidateExtractsTelegramUsernameWhenPresent()
+    {
+        TelegramInitDataValidator validator = CreateValidator("2026-08-30T00:02:00Z");
+        string initData = CreateSignedInitData(
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["auth_date"] = "1788048000",
+                ["user"] = "{\"id\":42,\"username\":\"Mage_One\"}"
+            });
+
+        TelegramInitDataValidationResult result = validator.Validate(
+            initData,
+            BotToken,
+            MaxAge,
+            MaxFutureSkew);
+
+        Assert.True(result.IsValid);
+        Assert.Equal("mage_one", result.Data!.TelegramUsername);
+    }
+
+    [Fact]
     public void ValidateRejectsInvalidHash()
     {
         TelegramInitDataValidator validator = CreateValidator("2026-08-30T00:02:00Z");

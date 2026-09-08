@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
@@ -11,15 +12,19 @@ using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Parties;
 
 namespace Elyndor.Infrastructure.Combat;
+
+public sealed record CombatSessionParticipant(Guid AccountId, Guid CharacterId);
 
 public sealed record CombatSessionCreationResult(
     bool Succeeded,
     string? ErrorCode,
     Guid CharacterId,
     CombatSession? Session,
-    GameContentSnapshot? ContentSnapshot = null);
+    GameContentSnapshot? ContentSnapshot = null,
+    IReadOnlyList<CombatSessionParticipant>? Participants = null);
 
 public sealed class CombatSessionFactory(
     BootstrapService bootstrapService,
@@ -27,7 +32,8 @@ public sealed class CombatSessionFactory(
     IContentSnapshotProvider contentProvider,
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider,
-    CharacterAbilityCooldownStore? cooldownStore = null)
+    CharacterAbilityCooldownStore? cooldownStore = null,
+    PartyService? partyService = null)
 {
     public CombatSessionFactory(
         BootstrapService bootstrapService,
@@ -58,7 +64,8 @@ public sealed class CombatSessionFactory(
         Guid accountId,
         string monsterId,
         string expectedLocationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null)
     {
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         GameContentPackage content = contentSnapshot.Package;
@@ -101,13 +108,30 @@ public sealed class CombatSessionFactory(
                 return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         }
         else if (currentLocation.Encounters?.Any(encounter =>
-                     string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal)) != true)
+                     string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal)) != true
+            && content.Dungeons?.Any(dungeon =>
+                string.Equals(dungeon.EntryLocationId, expectedLocationId, StringComparison.Ordinal)
+                && dungeon.Encounters.Any(encounter =>
+                    string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal))) != true)
         {
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         }
 
         if (character.Vitals.CurrentHp <= 0)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+
+        PartyCombatMember[] partyMembers = isTraining
+            ? [new(accountId, character.Id, true)]
+            : partyMembersOverride?.ToArray()
+                ?? (partyService is null
+                    ? [new(accountId, character.Id, true)]
+                    : (await partyService.GetCombatMembersAsync(accountId, cancellationToken)).ToArray());
+        if (partyMembers.Length == 0
+            || partyMembers.Length > CombatParticipantRoster.DefaultMaximumParticipants
+            || partyMembers.SingleOrDefault(member => member.IsLeader)?.CharacterId != character.Id)
+        {
+            return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+        }
 
         CharacterDerivedState derived = await derivedStateService.ResolveAsync(
             character.Id,
@@ -246,6 +270,37 @@ public sealed class CombatSessionFactory(
         }
 
         DateTimeOffset startedAtUtc = timeProvider.GetUtcNow();
+        List<CombatPlayerDefinition> additionalPlayers = [];
+        foreach (PartyCombatMember member in partyMembers.Where(item => item.CharacterId != character.Id))
+        {
+            BootstrapSnapshot memberBootstrap = await bootstrapService.GetAsync(
+                member.AccountId,
+                contentSnapshot,
+                cancellationToken,
+                checkpoint: true);
+            if (memberBootstrap.Character is null
+                || memberBootstrap.World is null
+                || memberBootstrap.Character.Vitals.CurrentHp <= 0
+                || !PlayableCombatClassIds.Contains(memberBootstrap.Character.ClassId))
+            {
+                return Failure(CombatErrorCodes.InvalidLocation, character.Id);
+            }
+
+            bool initiallyAttached = memberBootstrap.World.Travel is null
+                && string.Equals(
+                    memberBootstrap.World.CurrentLocation.Id,
+                    expectedLocationId,
+                    StringComparison.Ordinal);
+
+            additionalPlayers.Add(await CreatePlayerDefinitionAsync(
+                memberBootstrap,
+                contentSnapshot,
+                isTraining: false,
+                startedAtUtc,
+                cancellationToken,
+                initiallyAttached));
+        }
+
         IReadOnlyDictionary<string, DateTimeOffset> initialCooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
@@ -267,13 +322,105 @@ public sealed class CombatSessionFactory(
             contentSnapshot.BalanceVersion,
             initialCooldowns,
             summonProfile,
-            companion);
+            companion,
+            accountId,
+            additionalPlayers);
+        CombatSessionParticipant[] participants = partyMembers
+            .Select(member => new CombatSessionParticipant(member.AccountId, member.CharacterId))
+            .ToArray();
         return new CombatSessionCreationResult(
             true,
             null,
             character.Id,
             session,
-            contentSnapshot);
+            contentSnapshot,
+            participants);
+    }
+
+    private async Task<CombatPlayerDefinition> CreatePlayerDefinitionAsync(
+        BootstrapSnapshot bootstrap,
+        GameContentSnapshot contentSnapshot,
+        bool isTraining,
+        DateTimeOffset startedAtUtc,
+        CancellationToken cancellationToken,
+        bool initiallyAttached = true)
+    {
+        BootstrapCharacter character = bootstrap.Character
+            ?? throw new InvalidOperationException("Combat participant character is missing.");
+        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            contentSnapshot,
+            cancellationToken);
+        ClassProfile classProfile = derived.ClassProfile;
+        if (classProfile.CombatAutoAttack is null)
+            throw new InvalidOperationException(
+                $"Class {classProfile.Id} has no combat auto attack profile.");
+
+        InventoryItemSnapshot? mainHandItem = GetEquippedItem(
+            derived.Inventory,
+            EquipmentSlot.MainHand);
+        InventoryItemSnapshot? offHandItem = GetEquippedItem(
+            derived.Inventory,
+            EquipmentSlot.OffHand);
+        decimal attackSpeedMultiplier = Math.Max(0.1m, derived.Stats.AttackSpeed);
+        AutoAttackProfile playerAutoAttack = BuildPlayerAutoAttackProfile(
+            classProfile.CombatAutoAttack,
+            mainHandItem,
+            attackSpeedMultiplier,
+            CombatWeaponHand.MainHand);
+        AutoAttackProfile? offHandAutoAttack = derived.TalentTree is not null
+            && TalentEquipmentPermissionResolver.HasPermission(
+                derived.TalentTree,
+                derived.ActiveTalentRanks,
+                EquipmentPermissionIds.DualWieldOneHandWeapon)
+            && offHandItem is not null
+            && EquipmentCategoryIds.IsOneHandedWeapon(offHandItem.Definition.WeaponCategory)
+                ? BuildPlayerAutoAttackProfile(
+                    classProfile.CombatAutoAttack,
+                    offHandItem,
+                    attackSpeedMultiplier,
+                    CombatWeaponHand.OffHand)
+                : null;
+
+        decimal playerHp = isTraining ? character.Vitals.MaxHp : character.Vitals.CurrentHp;
+        decimal playerResource = isTraining
+            ? character.Vitals.MaxResource
+            : character.Vitals.CurrentResource;
+        CombatActorState actor = new(
+            character.Id,
+            character.Vitals.MaxHp,
+            playerHp,
+            character.Vitals.MaxResource,
+            playerResource,
+            ToCombatStats(character.Level, character.Stats),
+            derived.TalentModifiers.Combat);
+        CombatParticipantDefinition participant = new(
+            actor,
+            CombatActorKind.Player,
+            character.ClassId,
+            character.Name,
+            character.Vitals.ResourceType,
+            playerAutoAttack,
+            new HashSet<string>(derived.KnownAbilityIds, StringComparer.Ordinal),
+            derived.EffectiveResourceProfile.CombatRegenPerSecond,
+            CanAutoAttack: classProfile.AllowUnarmed
+                || mainHandItem?.Definition.WeaponCategory is not null,
+            OffHandAutoAttack: offHandAutoAttack);
+        IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
+            isTraining || cooldownStore is null
+                ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
+                : await cooldownStore.LoadActiveAsync(
+                    character.Id,
+                    startedAtUtc,
+                    cancellationToken);
+        return new CombatPlayerDefinition(
+            bootstrap.AccountId,
+            participant,
+            derived.TalentModifiers,
+            cooldowns,
+            initiallyAttached);
     }
 
     private static InventoryItemSnapshot? GetEquippedItem(

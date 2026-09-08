@@ -60,8 +60,7 @@
                 6,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_ACCURACY"
             }
           ],
@@ -87,8 +86,7 @@
                 6,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_CRITICAL_CHANCE"
             }
           ],
@@ -114,8 +112,7 @@
                 9,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_SPELL_POWER"
             }
           ],
@@ -139,8 +136,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 1
             }
           ],
@@ -165,8 +161,7 @@
                 8,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL"
             }
           ],
@@ -190,8 +185,7 @@
                 4,
                 7
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 4,
               "tickIntervalSeconds": 1
@@ -217,8 +211,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ENEMY_ABOVE",
               "threshold": 80
             }
@@ -243,8 +236,7 @@
                 0.1,
                 0.2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 5
             }
@@ -297,8 +289,7 @@
                 4,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BURN"
             }
           ],
@@ -322,8 +313,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 5
             }
@@ -350,8 +340,7 @@
                 9,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_MAGIC_PENETRATION"
             }
           ],
@@ -402,8 +391,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BURN"
             }
           ],
@@ -427,8 +415,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_RHYTHM",
               "triggerCount": 2
             }
@@ -453,8 +440,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ENEMY_BELOW",
               "threshold": 25
             }
@@ -486,8 +472,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "COMBUSTION",
               "secondaryValues": [
                 8
@@ -520,8 +505,7 @@
                 8,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 5
             }
@@ -553,8 +537,7 @@
                 1.5,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 1,
               "targetId": "FLAME_FLASH"
             }
@@ -579,8 +562,7 @@
                 8,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_CRITICAL_DAMAGE"
             }
           ],
@@ -612,8 +594,7 @@
               "values": [
                 3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 8
             }
@@ -643,8 +624,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_COMET",
               "secondaryValues": [
                 4,
@@ -679,8 +659,7 @@
                 0.15,
                 0.3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL"
             }
           ],
@@ -704,8 +683,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 8,
               "targetId": "MAGICAL_CRITICAL",
               "durationSeconds": 6
@@ -735,8 +713,7 @@
               "values": [
                 35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_COMET",
               "durationSeconds": 1,
               "tickIntervalSeconds": 1
@@ -762,8 +739,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_FIREBALL",
               "durationSeconds": 6
             }
@@ -794,8 +770,7 @@
                 3,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "COMBUSTION"
             }
           ],
@@ -824,8 +799,7 @@
                 5,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 8,
               "targetId": "FIRE"
             }
@@ -858,8 +832,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "COMBUSTION"
             }
           ],
@@ -888,8 +861,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BURN"
             }
           ],
@@ -917,8 +889,7 @@
               "values": [
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FIRE_COMET",
               "threshold": 30
             }
@@ -951,8 +922,7 @@
               "values": [
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "internalCooldownSeconds": 6,
               "targetId": "FIRE",
               "secondaryValues": [
@@ -1066,8 +1036,7 @@
                 3,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_MANA_COST"
             }
           ],
@@ -1090,8 +1059,7 @@
               "values": [
                 1
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_CHARGE",
               "durationSeconds": 12
             }
@@ -1123,8 +1091,7 @@
                 6,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_ARCANE_SPARK"
             }
           ],
@@ -1148,8 +1115,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_HIGH_MANA",
               "threshold": 70
             }
@@ -1174,8 +1140,7 @@
                 1,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_CAST_MANA",
               "internalCooldownSeconds": 1
             }
@@ -1232,8 +1197,7 @@
                 8,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_BURST"
             }
           ],
@@ -1286,8 +1250,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_RESIDUAL",
               "secondaryValues": [
                 50,
@@ -1316,8 +1279,7 @@
                 35,
                 35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_ECHO",
               "chancePercent": 8,
               "secondaryValues": [
@@ -1349,8 +1311,7 @@
                 40,
                 60
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_LOW_MANA_REGEN",
               "threshold": 30
             }
@@ -1375,8 +1336,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_HIGH_MANA_POWER",
               "threshold": 80
             }
@@ -1401,8 +1361,7 @@
                 40,
                 70
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_MISS_REFUND"
             }
           ],
@@ -1438,8 +1397,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MANA_OVERLOAD",
               "secondaryValues": [
                 10
@@ -1472,8 +1430,7 @@
                 10,
                 20
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_BURST_4"
             }
           ],
@@ -1504,8 +1461,7 @@
                 4,
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_BURST_RETURN"
             }
           ],
@@ -1529,8 +1485,7 @@
                 3,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_FORMULA_FRACTURE",
               "durationSeconds": 5
             }
@@ -1567,8 +1522,7 @@
               "values": [
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_CASCADE"
             }
           ],
@@ -1597,8 +1551,7 @@
                 0.15,
                 0.3
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_SAVED_TIME",
               "durationSeconds": 5
             }
@@ -1623,8 +1576,7 @@
                 25,
                 50
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_OVERFLOW_SHIELD",
               "threshold": 3,
               "durationSeconds": 5,
@@ -1678,8 +1630,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_BURST_PERFECT",
               "secondaryValues": [
                 0.15,
@@ -1715,8 +1666,7 @@
               "values": [
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_OVERLOAD_ECHO",
               "internalCooldownSeconds": 2
             }
@@ -1742,8 +1692,7 @@
                 10,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_RESONANCE",
               "secondaryValues": [
                 3,
@@ -1773,8 +1722,7 @@
                 8,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_LAST_RESERVE",
               "threshold": 15,
               "internalCooldownSeconds": 60
@@ -1804,8 +1752,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_ABSOLUTE"
             }
           ],
@@ -1834,8 +1781,7 @@
                 1,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_INFINITE_CHAIN"
             }
           ],
@@ -1867,8 +1813,7 @@
               "values": [
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_PERFECT_OVERLOAD"
             }
           ],
@@ -1907,8 +1852,7 @@
               "values": [
                 35
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ARCANE_ARCHMAGE",
               "durationSeconds": 1,
               "tickIntervalSeconds": 1
@@ -1947,8 +1891,7 @@
                 6,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_ACCURACY"
             }
           ],
@@ -1974,8 +1917,7 @@
                 6,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CRITICAL"
             }
           ],
@@ -2023,8 +1965,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_MANA_COST"
             }
           ],
@@ -2050,8 +1991,7 @@
                 3,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROSTBITE",
               "durationSeconds": 6,
               "triggerCount": 3
@@ -2082,8 +2022,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_3_STACK_DAMAGE"
             }
           ],
@@ -2107,8 +2046,7 @@
                 2,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CRIT_SHIELD",
               "durationSeconds": 5,
               "internalCooldownSeconds": 12
@@ -2134,8 +2072,7 @@
                 3,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CLEAN_SNOW",
               "durationSeconds": 4
             }
@@ -2172,8 +2109,7 @@
               "values": [
                 25
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ICE_LANCE"
             }
           ],
@@ -2197,8 +2133,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "BRITTLE",
               "durationSeconds": 6
             }
@@ -2228,8 +2163,7 @@
                 1,
                 2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROSTBITE_ACCURACY"
             }
           ],
@@ -2255,8 +2189,7 @@
                 9,
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_PENETRATION"
             }
           ],
@@ -2292,8 +2225,7 @@
               "values": [
                 1
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ICE_FRACTURE"
             }
           ],
@@ -2322,8 +2254,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_SHIELD_POWER"
             }
           ],
@@ -2347,8 +2278,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_RESPONSE",
               "durationSeconds": 5,
               "internalCooldownSeconds": 5
@@ -2374,8 +2304,7 @@
                 0.1,
                 0.2
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "MAGE_ICE_SHARD"
             }
           ],
@@ -2406,8 +2335,7 @@
               "values": [
                 12
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "HEART_OF_WINTER",
               "secondaryValues": [
                 15
@@ -2445,8 +2373,7 @@
                 8,
                 15
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ICE_LANCE_BRITTLE"
             }
           ],
@@ -2472,8 +2399,7 @@
                 3,
                 4
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CRIT_MANA",
               "internalCooldownSeconds": 1
             }
@@ -2498,8 +2424,7 @@
                 3,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_EXECUTE_AIM",
               "threshold": 30
             }
@@ -2551,8 +2476,7 @@
                 3,
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CRIT_SHIELD_UPGRADE",
               "durationSeconds": 1
             }
@@ -2582,8 +2506,7 @@
                 5,
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CRACKED_ICE",
               "durationSeconds": 5
             }
@@ -2608,8 +2531,7 @@
                 3,
                 6
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_CONTROL_DEFENSE"
             }
           ],
@@ -2638,8 +2560,7 @@
                 35,
                 45
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "ICE_LANCE_PERFECT",
               "secondaryValues": [
                 0.5,
@@ -2672,8 +2593,7 @@
                 3,
                 5
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_PRESSURE"
             }
           ],
@@ -2698,8 +2618,7 @@
                 5,
                 7
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_SEQUENCE",
               "secondaryValues": [
                 10,
@@ -2734,8 +2653,7 @@
               "values": [
                 10
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_SEAL_SLOW",
               "durationSeconds": 4
             }
@@ -2768,8 +2686,7 @@
               "values": [
                 1
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_FRACTURE_BRITTLE",
               "durationSeconds": 6
             }
@@ -2799,8 +2716,7 @@
                 4,
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_PERFECT_HEART",
               "secondaryValues": [
                 50,
@@ -2832,8 +2748,7 @@
               "values": [
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_EMERGENCY_SHIELD",
               "threshold": 20,
               "durationSeconds": 6
@@ -2867,8 +2782,7 @@
               "values": [
                 8
               ],
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION",
+              "runtimeStatus": "Supported",
               "targetId": "FROST_LORD",
               "secondaryValues": [
                 60

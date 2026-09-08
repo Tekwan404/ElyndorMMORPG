@@ -146,6 +146,85 @@ public sealed class MageCombatSessionTests
     }
 
     [Fact]
+    public void IceLanceUsesTalentBonusWhenItConsumesThreeFrostbiteStacks()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
+            Hook(
+                "I-2-1",
+                TalentModifierKeys.OnAbilityUsed,
+                4,
+                4,
+                duration: TimeSpan.FromSeconds(6)),
+            Hook("I-3-1", TalentModifierKeys.OnAbilityUsed, 1, 40));
+        CombatSession session = CreateSession(
+            talents,
+            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_LANCE"], StringComparer.Ordinal));
+
+        DateTimeOffset cursor = Now.AddMilliseconds(1);
+        for (var index = 0; index < 3; index++)
+        {
+            Assert.True(session.Handle(
+                new UseAbilityCommand($"shard-{index}", "MAGE_ICE_SHARD", EnemyId),
+                cursor).Succeeded);
+            cursor += TimeSpan.FromSeconds(1.5);
+            session.AdvanceTo(cursor);
+            cursor += TimeSpan.FromMilliseconds(1);
+        }
+
+        decimal beforeHp = session.Snapshot().Enemy.Hp;
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("lance", "ICE_LANCE", EnemyId),
+            cursor);
+
+        Assert.True(result.Succeeded);
+        CombatEvent damage = Assert.Single(
+            result.Events,
+            combatEvent => combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.DefinitionId == "ICE_LANCE");
+        Assert.Equal(133m, damage.Amount);
+        Assert.Equal(beforeHp - damage.Amount, result.Snapshot.Enemy.Hp);
+    }
+
+    [Fact]
+    public void IceFractureUsesTalentHookForItsFrostbiteStunDuration()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
+            Hook(
+                "I-2-1",
+                TalentModifierKeys.OnAbilityUsed,
+                4,
+                4,
+                duration: TimeSpan.FromSeconds(6)),
+            Hook("I-4-1", TalentModifierKeys.OnAbilityUsed, 1, 2));
+        CombatSession session = CreateSession(
+            talents,
+            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_FRACTURE"], StringComparer.Ordinal));
+
+        DateTimeOffset cursor = Now.AddMilliseconds(1);
+        for (var index = 0; index < 3; index++)
+        {
+            Assert.True(session.Handle(
+                new UseAbilityCommand($"shard-{index}", "MAGE_ICE_SHARD", EnemyId),
+                cursor).Succeeded);
+            cursor += TimeSpan.FromSeconds(1.5);
+            session.AdvanceTo(cursor);
+            cursor += TimeSpan.FromMilliseconds(1);
+        }
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("fracture", "ICE_FRACTURE", EnemyId),
+            cursor);
+
+        Assert.True(result.Succeeded);
+        CombatEffectSnapshot stun = Assert.Single(
+            result.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_ICE_FRACTURE_STUN");
+        Assert.Equal(cursor.AddSeconds(2), stun.ExpiresAtUtc);
+    }
+
+    [Fact]
     public void IncomingCriticalCreatesCrystalShield()
     {
         ResolvedTalentModifiers talents = Talents(
@@ -307,7 +386,9 @@ public sealed class MageCombatSessionTests
             ["MAGE_ICE_SHARD"] = Damage(
                 "MAGE_ICE_SHARD", AbilityType.Casted, "FROST", 18, 0, 1.5, 1.05m),
             ["ICE_LANCE"] = Damage(
-                "ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m)
+                "ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m),
+            ["ICE_FRACTURE"] = Damage(
+                "ICE_FRACTURE", AbilityType.Instant, "FROST", 28, 12, 0, 0.70m)
         };
 
     private static AbilityDefinition Damage(

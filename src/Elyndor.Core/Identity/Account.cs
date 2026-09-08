@@ -4,6 +4,8 @@ public sealed class Account
 {
     private Account()
     {
+        TelegramUsername = null;
+        NormalizedTelegramUsername = null;
     }
 
     public Account(Guid id, long telegramUserId, DateTimeOffset createdAtUtc)
@@ -35,6 +37,10 @@ public sealed class Account
 
     public long TelegramUserId { get; private set; }
 
+    public string? TelegramUsername { get; private set; }
+
+    public string? NormalizedTelegramUsername { get; private set; }
+
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
     public DateTimeOffset LastSeenAtUtc { get; private set; }
@@ -50,5 +56,19 @@ public sealed class Account
         {
             LastSeenAtUtc = seenAtUtc;
         }
+    }
+
+    public void SetTelegramUsername(string? username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            TelegramUsername = null;
+            NormalizedTelegramUsername = null;
+            return;
+        }
+
+        string normalized = TelegramUsernamePolicy.Normalize(username);
+        TelegramUsername = username.Trim();
+        NormalizedTelegramUsername = normalized;
     }
 }

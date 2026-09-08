@@ -1,12 +1,16 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
+using Elyndor.Core.Parties;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Parties;
+using Elyndor.Infrastructure.Dungeons;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -17,7 +21,10 @@ public sealed class CombatApplicationService(
     IContentSnapshotProvider contentProvider,
     InventoryEquipmentService inventoryService,
     CharacterOperationGuard operationGuard,
-    CombatDurabilityService? durability = null)
+    CombatDurabilityService? durability = null,
+    PartyService? partyService = null,
+    DungeonService? dungeonService = null,
+    BootstrapService? bootstrapService = null)
 {
     public CombatApplicationService(
         CombatSessionFactory factory,
@@ -33,6 +40,9 @@ public sealed class CombatApplicationService(
             new StaticContentSnapshotProvider(content),
             inventoryService,
             operationGuard,
+            null,
+            null,
+            null,
             null)
     {
     }
@@ -54,6 +64,15 @@ public sealed class CombatApplicationService(
             () => StartTrainingCoreAsync(accountId, cancellationToken),
             cancellationToken);
 
+    public Task<CombatOperationResult> StartDungeonEncounterAsync(
+        Guid accountId,
+        Guid runId,
+        CancellationToken cancellationToken) =>
+        operationGuard.ExecuteExclusiveAsync(
+            accountId,
+            () => StartDungeonEncounterCoreAsync(accountId, runId, cancellationToken),
+            cancellationToken);
+
     public Task<CombatOperationResult> ResetTrainingAsync(
         Guid accountId,
         CancellationToken cancellationToken) =>
@@ -69,6 +88,15 @@ public sealed class CombatApplicationService(
     {
         CombatOperationResult? active = PrepareStart(accountId);
         if (active is not null) return active;
+
+        if (partyService is not null
+            && (await partyService.GetCombatMembersAsync(accountId, cancellationToken))
+                .SingleOrDefault(member => member.AccountId == accountId)
+                is not { IsLeader: true })
+        {
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+        }
+
         if (!encounterRegistry.TryConsume(accountId, encounterId, out PendingWorldEncounter pending))
             return CombatOperationResult.Failure(CombatErrorCodes.InvalidEncounter);
 
@@ -93,6 +121,46 @@ public sealed class CombatApplicationService(
             cancellationToken);
     }
 
+    private async Task<CombatOperationResult> StartDungeonEncounterCoreAsync(
+        Guid accountId,
+        Guid runId,
+        CancellationToken cancellationToken)
+    {
+        CombatOperationResult? active = PrepareStart(accountId);
+        if (active is not null) return active;
+        if (dungeonService is null)
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        (DungeonPreparation? preparation, string? errorCode) =
+            await dungeonService.PrepareEncounterAsync(accountId, runId, cancellationToken);
+        if (preparation is null)
+            return CombatOperationResult.Failure(errorCode ?? CombatErrorCodes.CommandRejected);
+
+        CombatOperationResult result = await StartCoreAsync(
+            accountId,
+            preparation.MonsterId,
+            preparation.LocationId,
+            cancellationToken,
+            preparation.Participants);
+        if (!result.Succeeded || result.Snapshot is null)
+            return result;
+
+        bool bound = await dungeonService.BindCombatAsync(
+            preparation.RunId,
+            preparation.EncounterId,
+            result.Snapshot.SessionId,
+            cancellationToken);
+        if (!bound)
+        {
+            await registry.DiscardAsync(accountId, cancellationToken);
+            if (durability is not null)
+                await durability.CompleteAsync(result.Snapshot.SessionId, cancellationToken);
+        }
+        return bound
+            ? result
+            : CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+    }
+
     private async Task<CombatOperationResult> ResetTrainingCoreAsync(
         Guid accountId,
         CancellationToken cancellationToken)
@@ -110,15 +178,17 @@ public sealed class CombatApplicationService(
 
     public Task<CombatOperationResult> UseAbilityAsync(
         Guid accountId, Guid sessionId, string commandId, string abilityId,
-        CancellationToken cancellationToken) => registry.ExecuteAsync(
+        CancellationToken cancellationToken) => registry.ExecuteParticipantAsync(
             accountId,
-            (session, pinnedContent, now) =>
+            (session, characterId, pinnedContent, now) =>
             {
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound,
-                        session.Snapshot(), []);
+                        session.Snapshot(characterId), []);
                 return session.Handle(
-                    new UseAbilityCommand(commandId, abilityId, Guid.Empty), now);
+                    characterId,
+                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    now);
             }, cancellationToken);
 
     public Task<CombatOperationResult> UseConsumableAsync(
@@ -126,16 +196,16 @@ public sealed class CombatApplicationService(
         Guid sessionId,
         string commandId,
         string itemDefinitionId,
-        CancellationToken cancellationToken) => registry.ExecuteAsync(
+        CancellationToken cancellationToken) => registry.ExecuteParticipantAsync(
             accountId,
-            async (session, pinnedContent, now) =>
+            async (session, characterId, pinnedContent, now) =>
             {
                 if (session.SessionId != sessionId)
-                    return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []);
-                if (IsTraining(session.Snapshot()))
-                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(), []);
+                    return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(characterId), []);
+                if (IsTraining(session.Snapshot(characterId)))
+                    return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(characterId), []);
                 if (session.HasProcessedCommand(commandId))
-                    return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(), []);
+                    return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(characterId), []);
 
                 GameContentSnapshot contentSnapshot =
                     pinnedContent ?? contentProvider.GetCurrent();
@@ -149,7 +219,7 @@ public sealed class CombatApplicationService(
                     return new CombatCommandResult(
                         false,
                         CombatErrorCodes.CommandRejected,
-                        session.Snapshot(),
+                        session.Snapshot(characterId),
                         []);
                 }
 
@@ -161,7 +231,7 @@ public sealed class CombatApplicationService(
                     return new CombatCommandResult(
                         false,
                         CombatErrorCodes.CommandRejected,
-                        session.Snapshot(),
+                        session.Snapshot(characterId),
                         []);
                 }
 
@@ -177,7 +247,7 @@ public sealed class CombatApplicationService(
                     return new CombatCommandResult(
                         false,
                         validationError,
-                        session.Snapshot(),
+                        session.Snapshot(characterId),
                         []);
                 }
 
@@ -207,6 +277,7 @@ public sealed class CombatApplicationService(
                 try
                 {
                     CombatCommandResult applied = session.Handle(
+                        characterId,
                         new UseConsumableCommand(
                             commandId,
                             definition.Id,
@@ -262,8 +333,95 @@ public sealed class CombatApplicationService(
 
     public CombatOperationResult Resume(Guid accountId) => registry.Resume(accountId);
 
-    public Task<CombatOperationResult> LeaveAsync(Guid accountId, CancellationToken cancellationToken) =>
-        registry.LeaveAsync(accountId, cancellationToken);
+    public async Task<CombatOperationResult> AttachAsync(
+        Guid accountId,
+        Guid sessionId,
+        CancellationToken cancellationToken)
+    {
+        if (partyService is null)
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        PartyCombatMember? member = (await partyService.GetCombatMembersAsync(
+                accountId,
+                cancellationToken))
+            .SingleOrDefault(candidate => candidate.AccountId == accountId);
+        if (member is null || bootstrapService is null)
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        CombatOperationResult current = registry.Resume(accountId);
+        if (!current.Succeeded
+            || current.Snapshot is null
+            || current.Snapshot.SessionId != sessionId)
+        {
+            return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
+        }
+
+        BootstrapSnapshot bootstrap = await bootstrapService.GetAsync(
+            accountId,
+            contentProvider.GetCurrent(),
+            cancellationToken,
+            checkpoint: true);
+        if (bootstrap.World is null || bootstrap.World.Travel is not null)
+            return CombatOperationResult.Failure(CombatErrorCodes.InvalidLocation);
+
+        CombatDurabilityBeginResult? durabilityBegin = null;
+        if (durability is not null)
+        {
+            durabilityBegin = await durability.BeginParticipantAsync(
+                member.CharacterId,
+                current.Snapshot,
+                cancellationToken);
+            if (!durabilityBegin.Succeeded)
+                return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+        }
+
+        CombatOperationResult result = await registry.AttachAsync(
+                accountId,
+                sessionId,
+                member.CharacterId,
+                bootstrap.World.CurrentLocation.Id,
+                cancellationToken);
+        if (!result.Succeeded
+            && durability is not null
+            && durabilityBegin?.Created == true)
+        {
+            await durability.RemoveParticipantAsync(
+                sessionId,
+                member.CharacterId,
+                cancellationToken);
+        }
+
+        return result;
+    }
+
+    public async Task<CombatOperationResult> LeaveAsync(
+        Guid accountId,
+        string commandId,
+        CancellationToken cancellationToken)
+    {
+        CombatOperationResult current = registry.Resume(accountId);
+        if (!current.Succeeded || current.Snapshot is null)
+            return current;
+        if (IsTraining(current.Snapshot))
+            return await registry.LeaveAsync(accountId, cancellationToken);
+
+        return await FleeAsync(
+            accountId,
+            current.Snapshot.SessionId,
+            commandId,
+            cancellationToken);
+    }
+
+    public Task<CombatOperationResult> FleeAsync(
+        Guid accountId,
+        Guid sessionId,
+        string commandId,
+        CancellationToken cancellationToken) =>
+        ExecuteSessionCommand(
+            accountId,
+            sessionId,
+            new FleeCommand(commandId),
+            cancellationToken);
 
     private static ResolvedConsumableAction[]? ResolveConsumableActions(
         ItemDefinition definition,
@@ -312,13 +470,15 @@ public sealed class CombatApplicationService(
         Guid accountId,
         string monsterId,
         string locationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null)
     {
         CombatSessionCreationResult created = await factory.CreateAsync(
             accountId,
             monsterId,
             locationId,
-            cancellationToken);
+            cancellationToken,
+            partyMembersOverride);
         if (!created.Succeeded)
             return CombatOperationResult.Failure(created.ErrorCode!);
 
@@ -328,19 +488,48 @@ public sealed class CombatApplicationService(
             StringComparison.Ordinal);
         if (!isTraining
             && durability is not null
-            && !await durability.BeginAsync(
-                created.CharacterId,
-                created.Session!.Snapshot(),
-                cancellationToken))
+            )
         {
-            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+            HashSet<Guid> initiallyAttachedCharacterIds = created.Session!
+                .Snapshot()
+                .ParticipantRoster?
+                .Where(participant => participant.Status == CombatParticipantStatus.Active)
+                .Select(participant => participant.CharacterId)
+                .ToHashSet()
+                ?? [created.CharacterId];
+            foreach (CombatSessionParticipant participant in (created.Participants
+                         ?? [new CombatSessionParticipant(accountId, created.CharacterId)])
+                         .Where(participant => initiallyAttachedCharacterIds.Contains(participant.CharacterId)))
+            {
+                if (await durability.BeginAsync(
+                        participant.CharacterId,
+                        created.Session!.Snapshot(participant.CharacterId),
+                        cancellationToken))
+                    continue;
+
+                await durability.CompleteAsync(
+                    created.Session!.SessionId,
+                    cancellationToken);
+                return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+            }
         }
+
+        CombatSessionParticipant[] participants = created.Participants?.ToArray()
+            ?? [new CombatSessionParticipant(accountId, created.CharacterId)];
+        CombatParticipantBinding[] additionalParticipants = participants
+            .Where(participant => participant.CharacterId != created.CharacterId)
+            .Select(participant => new CombatParticipantBinding(
+                participant.AccountId,
+                participant.CharacterId))
+            .ToArray();
 
         if (!registry.TryAdd(
                 accountId,
                 created.CharacterId,
                 created.Session!,
-                created.ContentSnapshot))
+                created.ContentSnapshot,
+                additionalParticipants,
+                locationId))
         {
             if (!isTraining && durability is not null)
             {
@@ -361,10 +550,10 @@ public sealed class CombatApplicationService(
 
     private Task<CombatOperationResult> ExecuteSessionCommand(
         Guid accountId, Guid sessionId, CombatCommand command, CancellationToken cancellationToken) =>
-        registry.ExecuteAsync(accountId, (session, now) =>
+        registry.ExecuteParticipantAsync(accountId, (session, characterId, now) =>
             session.SessionId == sessionId
-                ? session.Handle(command, now)
-                : new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(), []),
+                ? session.Handle(characterId, command, now)
+                : new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(characterId), []),
             cancellationToken);
 
     private static bool IsTraining(CombatSessionSnapshot snapshot) =>

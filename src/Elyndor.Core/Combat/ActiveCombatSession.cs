@@ -34,4 +34,11 @@ public sealed class ActiveCombatSession
     public DateTimeOffset StartedAtUtc { get; private set; }
     public string ContentVersion { get; private set; }
     public string BalanceVersion { get; private set; }
+    public string? TerminalSnapshotJson { get; private set; }
+
+    public void RecordTerminalSnapshot(string snapshotJson)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(snapshotJson);
+        TerminalSnapshotJson ??= snapshotJson;
+    }
 }

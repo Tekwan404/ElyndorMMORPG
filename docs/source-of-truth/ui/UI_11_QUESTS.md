@@ -1,9 +1,9 @@
 # Elyndor — UI/UX Specification 11 — Adventure Journal
 
-**Document:** `docs/source-of-truth/ui/UI_11_QUESTS.md`  
-**Status:** Approved implementation baseline  
-**Platform:** Telegram Mini App  
-**Orientation:** Mobile Portrait First  
+**Document:** `docs/source-of-truth/ui/UI_11_QUESTS.md`
+**Status:** Approved implementation baseline
+**Platform:** Telegram Mini App
+**Orientation:** Mobile Portrait First
 **Depends on:**
 - `docs/source-of-truth/gameplay/17_QUEST_SYSTEM.md`
 - `docs/source-of-truth/ui/UI_01_GLOBAL_GAME_SHELL.md`

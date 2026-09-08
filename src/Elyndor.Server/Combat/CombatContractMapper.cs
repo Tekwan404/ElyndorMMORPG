@@ -34,7 +34,16 @@ internal static class CombatContractMapper
                     item.Type.ToString(),
                     item.Rarity.ToString(),
                     item.Quantity)).ToArray(),
-                result.Reward.CompletedContractIds));
+                result.Reward.CompletedContractIds,
+                result.Reward.LootRolls?.Select(roll => new CombatLootRollResponse(
+                    roll.LootRollId,
+                    roll.ItemId,
+                    roll.Name,
+                    roll.Rarity.ToString(),
+                    roll.Quantity,
+                    roll.EndsAtUtc,
+                    roll.EligibleCharacterIds,
+                    roll.CanNeed)).ToArray()));
     }
 
     private static CombatSnapshotResponse ToResponse(
@@ -56,7 +65,45 @@ internal static class CombatContractMapper
             snapshot.BalanceVersion,
             enemies,
             snapshot.SelectedTargetActorId ?? snapshot.Enemy.ActorId,
-            snapshot.Companion is null ? null : ToResponse(snapshot.Companion, content));
+            snapshot.Companion is null ? null : ToResponse(snapshot.Companion, content),
+            snapshot.PlayerContribution is null
+                ? null
+                : new CombatContributionResponse(
+                    snapshot.PlayerContribution.CharacterId,
+                    snapshot.PlayerContribution.QualifyingActions,
+                    snapshot.PlayerContribution.DamageDealt,
+                    snapshot.PlayerContribution.EffectiveHealing,
+                    snapshot.PlayerContribution.SupportContribution,
+                    snapshot.PlayerContribution.TankingContribution,
+                    snapshot.PlayerContribution.JoinedAtUtc,
+                    snapshot.PlayerContribution.FledAtUtc,
+                    snapshot.PlayerContribution.DiedAtUtc),
+            snapshot.Players?.Select(player => ToResponse(player, content)).ToArray(),
+            snapshot.ParticipantRoster?.Select(participant => new CombatParticipantResponse(
+                participant.AccountId,
+                participant.CharacterId,
+                participant.ActorId,
+                participant.Status.ToString(),
+                participant.RosteredAtUtc,
+                participant.JoinedAtUtc,
+                participant.FledAtUtc,
+                participant.DiedAtUtc)).ToArray(),
+            snapshot.PlayerContributionEligible,
+            snapshot.ParticipantContributions?.Select(item =>
+                new CombatParticipantContributionResponse(
+                    new CombatContributionResponse(
+                        item.Snapshot.CharacterId,
+                        item.Snapshot.QualifyingActions,
+                        item.Snapshot.DamageDealt,
+                        item.Snapshot.EffectiveHealing,
+                        item.Snapshot.SupportContribution,
+                        item.Snapshot.TankingContribution,
+                        item.Snapshot.JoinedAtUtc,
+                        item.Snapshot.FledAtUtc,
+                        item.Snapshot.DiedAtUtc),
+                    item.IsEligible,
+                    item.Reason,
+                    item.ContributionScore)).ToArray());
     }
 
     private static CombatActorResponse ToResponse(

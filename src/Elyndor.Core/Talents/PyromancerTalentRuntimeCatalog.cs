@@ -43,12 +43,20 @@ public static class PyromancerTalentRuntimeCatalog
     public static bool SupportsLegacyDeferred(
         TalentDefinition node,
         TalentModifierDefinition modifier) =>
-        string.Equals(node.BranchId, "FIRE", StringComparison.Ordinal)
-        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+        modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
         && string.Equals(
             modifier.DeferredOwner,
             TalentRuntimeOwners.CombatSession,
             StringComparison.Ordinal)
+        && string.Equals(node.BranchId, "FIRE", StringComparison.Ordinal)
+        && EventKeys.TryGetValue(node.Id, out string? expectedKey)
+        && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
+
+    public static bool SupportsRuntime(
+        TalentDefinition node,
+        TalentModifierDefinition modifier) =>
+        string.Equals(node.BranchId, "FIRE", StringComparison.Ordinal)
+        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
         && EventKeys.TryGetValue(node.Id, out string? expectedKey)
         && string.Equals(modifier.Key, expectedKey, StringComparison.Ordinal);
 

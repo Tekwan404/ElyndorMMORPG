@@ -62,6 +62,7 @@ public sealed record CharacterStatBreakdownResponse(
 public sealed record BootstrapCharacterResponse(
     Guid Id,
     string Name,
+    string PublicCode,
     string RaceId,
     string GenderId,
     string ClassId,

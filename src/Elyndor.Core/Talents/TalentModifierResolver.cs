@@ -30,13 +30,20 @@ public static class TalentModifierResolver
                         BerserkerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                         || PyromancerTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                         || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || GuardianTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || WarlordTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                         || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
-                    if (runtimeOwned && modifier.Values.Count >= rank)
-                        eventHooks.Add(CreateEventHook(node, modifier, rank));
-                    else
+                    if (!runtimeOwned || modifier.Values.Count < rank)
+                    {
                         deferredHooks.Add(modifier);
+                        continue;
+                    }
 
-                    continue;
+                    if (modifier.Type == TalentModifierType.EventTriggered)
+                    {
+                        eventHooks.Add(CreateEventHook(node, modifier, rank));
+                        continue;
+                    }
                 }
 
                 if (modifier.Values.Count < rank)

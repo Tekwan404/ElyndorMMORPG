@@ -12,7 +12,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   })
   page.on('pageerror', (error) => browserErrors.push(error.message))
   page.on('requestfailed', (request) => {
-    if (isMockRealtimeRequest(request.url())) return
+    if (isMockRealtimeRequest(request.url()) || isExpectedNavigationAbort(request)) return
     browserErrors.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText}`)
   })
   await installMockApiUnlessReal(page)
@@ -31,7 +31,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Торговать' }).click()
   const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
   await expect(merchantDialog).toBeVisible()
-  await expect(merchantDialog.getByText('Маркус', { exact: true })).toBeVisible()
+  await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
@@ -176,10 +176,26 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
       .targetLocationId
     await route.fulfill({ json: { locationId, version: 2 } })
   })
+  await page.route('**/api/v1/party', (route) =>
+    route.fulfill({ json: null }),
+  )
+  await page.route('**/api/v1/party/invites', (route) =>
+    route.fulfill({ json: [] }),
+  )
+  await page.route('**/api/v1/dungeons', (route) =>
+    route.fulfill({ json: [] }),
+  )
+  await page.route('**/api/v1/dungeons/current', (route) =>
+    route.fulfill({ json: null }),
+  )
 }
 
 function isMockRealtimeRequest(url: string): boolean {
   return process.env.ELYNDOR_E2E_REAL !== 'true' && url.includes('/hubs/combat')
+}
+
+function isExpectedNavigationAbort(request: { failure(): { errorText?: string } | null }): boolean {
+  return request.failure()?.errorText === 'net::ERR_ABORTED'
 }
 
 function isExpectedMockRealtimeFailure(message: string, sourceUrl = ''): boolean {

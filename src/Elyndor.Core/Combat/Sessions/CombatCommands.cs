@@ -32,3 +32,5 @@ public sealed record StopAutoAttackCommand(string CommandId) : CombatCommand(Com
 public sealed record SelectTargetCommand(
     string CommandId,
     Guid TargetActorId) : CombatCommand(CommandId);
+
+public sealed record FleeCommand(string CommandId) : CombatCommand(CommandId);

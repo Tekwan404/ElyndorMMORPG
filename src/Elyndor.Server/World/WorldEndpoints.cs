@@ -226,6 +226,7 @@ public static class WorldEndpoints
                 : new BootstrapCharacterResponse(
                     snapshot.Character.Id,
                     snapshot.Character.Name,
+                    snapshot.Character.PublicCode,
                     snapshot.Character.RaceId,
                     snapshot.Character.GenderId,
                     snapshot.Character.ClassId,

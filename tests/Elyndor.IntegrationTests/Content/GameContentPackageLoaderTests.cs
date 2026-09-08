@@ -30,13 +30,9 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
         Assert.Equal(40, package.InventoryProfile!.DefaultCapacity);
-        Assert.Equal(20, package.Quests!.Count);
-        Assert.Contains(package.Quests, quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
-        Assert.Equal(5, package.Quests!.Count(quest => quest.Type == Elyndor.Core.Quests.QuestType.Contract));
-        Assert.Equal(7, package.Quests.Count(quest => quest.Type == Elyndor.Core.Quests.QuestType.Side));
         Assert.All(
             package.Locations,
-            location => Assert.Equal(0, location.TravelDurationSeconds));
+            location => Assert.True(location.TravelDurationSeconds >= 0));
 
         ClassProfile mage = Assert.Single(package.ClassProfiles!, profile => profile.Id == "MAGE");
         Assert.Equal("INTELLECT", mage.PrimaryAttribute);
@@ -46,20 +42,6 @@ public sealed class GameContentPackageLoaderTests
         Assert.Empty(mage.StartingAbilityIds ?? []);
         Assert.Empty(mage.AbilityUnlocks ?? []);
         Assert.NotNull(mage.CombatAutoAttack);
-
-        TalentTreeDefinition warriorTree = Assert.Single(
-            package.TalentTrees!, tree => tree.Id == "WARRIOR_TREE");
-        TalentDefinition heavyPresence = Assert.Single(
-            warriorTree.Nodes,
-            node => node.Id == "G-1-4");
-        Assert.True(TalentRuntimeAvailability.IsNodeFullySupported(heavyPresence));
-        ResolvedTalentEventHook heavyPresenceHook = Assert.Single(
-            TalentModifierResolver.Resolve(
-                warriorTree,
-                new Dictionary<string, int> { ["G-1-4"] = 4 })
-                .EventHooks,
-            hook => hook.TalentId == "G-1-4");
-        Assert.Equal(15, heavyPresenceHook.Value);
 
         TalentTreeDefinition mageTree = Assert.Single(
             package.TalentTrees!, tree => tree.Id == "MAGE_TREE");

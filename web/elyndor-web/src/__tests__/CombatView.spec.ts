@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 
-import type { CombatActorSnapshot } from '@/api/contracts'
+import type { CombatActorSnapshot, CombatLootRoll } from '@/api/contracts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -167,7 +167,45 @@ describe('CombatView', () => {
     expect(wrapper.get('[data-player-cast]').text()).toContain('Огненный шар')
     expect(wrapper.get('[data-enemy-cast]').text()).toContain('Укус')
   })
+
+  it('disables Need for a loot item rejected by the server equipability contract', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'MAGE', 'Mage', 100, 120, 80, 100, [])
+    const enemy = actor('Monster', 'SPIDER_BROODMOTHER_L14', 'Broodmother', 0, 220, 0, 0, [])
+    store.snapshot = {
+      sessionId: crypto.randomUUID(),
+      sequence: 10,
+      status: 'Victory',
+      serverTimeUtc: '2026-09-01T12:00:00Z',
+      contentVersion: '0.13.5',
+      balanceVersion: '0.11.0',
+      player,
+      enemy,
+    }
+    store.lootRolls = [lootRoll(false)]
+
+    const wrapper = mount(CombatView)
+
+    const buttons = wrapper.findAll('[data-loot-rolls] .loot-roll__actions button')
+    expect(buttons).toHaveLength(3)
+    expect(buttons[0]!.attributes('disabled')).toBeDefined()
+    expect(buttons[1]!.attributes('disabled')).toBeUndefined()
+    expect(buttons[2]!.attributes('disabled')).toBeUndefined()
+  })
 })
+
+function lootRoll(canNeed: boolean): CombatLootRoll {
+  return {
+    lootRollId: crypto.randomUUID(),
+    itemId: 'RECRUIT_IRON_SWORD',
+    name: 'Iron Sword',
+    rarity: 'Epic',
+    quantity: 1,
+    endsAtUtc: new Date(Date.now() + 20_000).toISOString(),
+    eligibleCharacterIds: [],
+    canNeed,
+  }
+}
 
 function actor(
   kind: 'Player' | 'Monster', definitionId: string, name: string,

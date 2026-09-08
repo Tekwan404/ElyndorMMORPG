@@ -59,7 +59,7 @@ public static class DamagePipeline
         ArgumentOutOfRangeException.ThrowIfNegative(request.BaseAmount);
         if (request.Source.IsDead || request.Target.IsDead)
         {
-            return Empty(request, DamageAvoidance.Immune);
+            return Empty(request, DamageAvoidance.Immune, occurredAtUtc);
         }
 
         if (request.CanMiss || request.CanDodge)
@@ -80,17 +80,25 @@ public static class DamagePipeline
                     MaxMissChance)
                 : 0;
             decimal dodgeChance = request.CanDodge
-                ? Math.Clamp(request.Target.Stats.Dodge / 100m, 0, 1)
+                ? Math.Clamp(
+                    EffectEngine.CalculateStat(
+                        request.Target,
+                        EffectStat.Dodge,
+                        request.Target.Stats.Dodge,
+                        occurredAtUtc)
+                    / 100m,
+                    0,
+                    1)
                 : 0;
 
             if (avoidanceRoll < missChance)
             {
-                return Empty(request, DamageAvoidance.Miss);
+                return Empty(request, DamageAvoidance.Miss, occurredAtUtc);
             }
 
             if (avoidanceRoll < missChance + dodgeChance)
             {
-                return Empty(request, DamageAvoidance.Dodge);
+                return Empty(request, DamageAvoidance.Dodge, occurredAtUtc);
             }
         }
 
@@ -102,8 +110,11 @@ public static class DamagePipeline
         bool critical = request.ForceCritical
                         || request.CanCrit
                         && random.NextUnit() < Math.Clamp(criticalChance / 100m, 0, 1);
-        decimal criticalDamage = request.Source.Stats.CriticalDamage
-            + request.CriticalDamageBonus / 100m;
+        decimal criticalDamage = Math.Max(
+            0,
+            request.Source.Stats.CriticalDamage
+                + request.CriticalDamageBonus / 100m
+                - request.Target.IncomingCriticalDamageReductionPercent / 100m);
         decimal raw = request.BaseAmount
             * (critical ? 1 + Math.Max(0, criticalDamage) : 1);
         decimal afterMitigation = request.SkipDefenseMitigation
@@ -389,8 +400,25 @@ public static class DamagePipeline
         return incoming - remaining;
     }
 
-    private static DamageResult Empty(DamageRequest request, DamageAvoidance avoidance) =>
-        new(
+    private static DamageResult Empty(
+        DamageRequest request,
+        DamageAvoidance avoidance,
+        DateTimeOffset occurredAtUtc)
+    {
+        IReadOnlyList<CombatEvent> events = avoidance == DamageAvoidance.Dodge
+            ?
+            [
+                new CombatEvent(
+                    CombatEventType.Dodge,
+                    occurredAtUtc,
+                    request.Target.ActorId,
+                    SourceActorId: request.Source.ActorId,
+                    TargetActorId: request.Target.ActorId,
+                    DamageType: request.Type)
+            ]
+            : [];
+
+        return new(
             request.BaseAmount,
             avoidance,
             false,
@@ -405,5 +433,6 @@ public static class DamagePipeline
             false,
             false,
             request.Target.CurrentHp,
-            []);
+            events);
+    }
 }

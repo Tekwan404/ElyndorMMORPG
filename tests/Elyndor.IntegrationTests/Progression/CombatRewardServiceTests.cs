@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Contribution;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
@@ -366,18 +368,220 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(granted.Items.Sum(item => item.Quantity), persistedLootQuantity);
     }
 
+    [Fact]
+    public async Task ValuableGroupLootIsVisibleToEveryEligibleParticipantAndCreatedOnce()
+    {
+        (Guid firstCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "ArthasOwner");
+        (Guid secondCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "ArthasOther");
+        Guid ownerCharacterId = firstCharacterId.CompareTo(secondCharacterId) < 0
+            ? firstCharacterId
+            : secondCharacterId;
+        Guid otherCharacterId = ownerCharacterId == firstCharacterId
+            ? secondCharacterId
+            : firstCharacterId;
+        CombatSessionSnapshot snapshot = MultiplayerBossVictorySnapshot(
+            Guid.CreateVersion7(),
+            ownerCharacterId,
+            otherCharacterId);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult otherResult = await service.ApplyVictoryAsync(
+            otherCharacterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Single(otherResult.LootRolls ?? []);
+        Assert.Single(await context.CombatLootRolls.AsNoTracking().ToArrayAsync());
+
+        CombatRewardApplicationResult ownerResult = await service.ApplyVictoryAsync(
+            ownerCharacterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Single(ownerResult.LootRolls ?? []);
+        Assert.DoesNotContain(
+            ownerResult.Items,
+            item => item.ItemId == "BROODMOTHER_FANG_CHARM");
+        Assert.Equal(1, await context.CombatLootRolls.CountAsync());
+    }
+
+    [Fact]
+    public async Task SharedValuableLootIsRolledOnceWhenOnlyTheFirstPersonalRollFindsIt()
+    {
+        (Guid firstCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "FirstRoller");
+        (Guid secondCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "SecondRoller");
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        const string lootTableId = "TEST_SHARED_VALUABLE_LOOT";
+        content = content with
+        {
+            Monsters = content.Monsters!
+                .Select(monster => monster.Id == "SPIDER_BROODMOTHER_L14"
+                    ? monster with { LootTableId = lootTableId }
+                    : monster)
+                .ToArray(),
+            LootTables =
+            [
+                new LootTableDefinition(
+                    lootTableId,
+                    [new LootTableEntry(
+                        "BROODMOTHER_FANG_CHARM",
+                        0.5m,
+                        1,
+                        1)])
+            ]
+        };
+
+        Guid sessionId = Guid.CreateVersion7();
+        CombatSessionSnapshot snapshot = MultiplayerBossVictorySnapshot(
+            sessionId,
+            firstCharacterId,
+            secondCharacterId);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(
+            context,
+            content,
+            new QueueGameRandomFactory(
+                new SequenceGameRandom(0.99m),
+                new SequenceGameRandom(0m),
+                new SequenceGameRandom(0m),
+                new SequenceGameRandom(0.99m),
+                new SequenceGameRandom(0.99m)));
+
+        CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
+            firstCharacterId,
+            snapshot,
+            CancellationToken.None);
+        CombatRewardApplicationResult second = await service.ApplyVictoryAsync(
+            secondCharacterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Single(first.LootRolls ?? []);
+        Assert.Single(second.LootRolls ?? []);
+        Assert.Equal(first.LootRolls![0].LootRollId, second.LootRolls![0].LootRollId);
+        Assert.Empty(first.Items);
+        Assert.Empty(second.Items);
+        Assert.Single(await context.CombatSharedLootResolutions.AsNoTracking().ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task OpenLootRollReportsNeedAvailabilityForCurrentCharacter()
+    {
+        (Guid characterId, Guid accountId) = await CreateCharacterAsync(
+            0,
+            100,
+            classId: "MAGE",
+            name: "Merlin");
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CombatLootRolls.Add(new CombatLootRoll(
+                Guid.CreateVersion7(),
+                Guid.CreateVersion7(),
+                Guid.CreateVersion7(),
+                "RECRUIT_IRON_SWORD",
+                ItemRarity.Rare,
+                1,
+                Guid.CreateVersion7(),
+                Now.AddSeconds(25),
+                JsonSerializer.Serialize(new[] { characterId })));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatLootRollService service = await CreateLootRollServiceAsync(context);
+
+        IReadOnlyList<CombatLootRollAvailability> rolls = await service.GetOpenAsync(
+            accountId,
+            CancellationToken.None);
+
+        CombatLootRollAvailability roll = Assert.Single(rolls);
+        Assert.False(roll.CanNeed);
+    }
+
+    [Fact]
+    public async Task IneligibleCharacterCannotReadLootRollFromChoiceResponse()
+    {
+        (Guid eligibleCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            classId: "WARRIOR",
+            name: "EligibleRoller");
+        (_, Guid ineligibleAccountId) = await CreateCharacterAsync(
+            0,
+            100,
+            classId: "MAGE",
+            name: "IneligibleRoller");
+
+        Guid lootRollId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CombatLootRolls.Add(new CombatLootRoll(
+                lootRollId,
+                Guid.CreateVersion7(),
+                Guid.CreateVersion7(),
+                "RECRUIT_IRON_SWORD",
+                ItemRarity.Rare,
+                1,
+                Guid.CreateVersion7(),
+                Now.AddSeconds(25),
+                JsonSerializer.Serialize(new[] { eligibleCharacterId })));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatLootRollService service = await CreateLootRollServiceAsync(context);
+
+        CombatLootRollChoiceResult result = await service.ChooseAsync(
+            ineligibleAccountId,
+            lootRollId,
+            LootChoice.Pass,
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("loot_roll_not_eligible", result.ErrorCode);
+        Assert.Null(result.Roll);
+        Assert.Null(result.WinnerCharacterId);
+        Assert.Single(await context.CombatLootRolls.AsNoTracking().ToArrayAsync());
+    }
+
     private async Task<(Guid CharacterId, Guid AccountId)> CreateCharacterAsync(
         long experience,
         decimal currentHp,
-        int level = 1)
+        int level = 1,
+        string name = "Arthas",
+        string classId = "WARRIOR")
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
         await using GameDbContext context = postgres.CreateDbContext();
         context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
         Character character = new(
-            characterId, accountId, Guid.CreateVersion7(), "Arthas", $"ARTHAS{characterId:N}"[..16],
-            "HUMAN", "MALE", "WARRIOR", Now);
+            characterId,
+            accountId,
+            Guid.CreateVersion7(),
+            name,
+            $"{name.ToUpperInvariant()}{characterId:N}"[..16],
+            "HUMAN", "MALE", classId, Now);
         character.SetLevel(level);
         character.SetExperience(experience);
         context.Characters.Add(character);
@@ -387,9 +591,12 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         return (characterId, accountId);
     }
 
-    private static async Task<CombatRewardService> CreateServiceAsync(GameDbContext context)
+    private static async Task<CombatRewardService> CreateServiceAsync(
+        GameDbContext context,
+        GameContentPackage? contentOverride = null,
+        IGameRandomFactory? randomFactory = null)
     {
-        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+        GameContentPackage content = contentOverride ?? await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
         TimeProvider timeProvider = new FixedTimeProvider(Now);
         InventoryEquipmentService inventory = new(context, content, timeProvider);
@@ -397,6 +604,22 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         return new CombatRewardService(
             context,
             content,
+            derived,
+            randomFactory ?? new FixedRandomFactory(),
+            timeProvider);
+    }
+
+    private static async Task<CombatLootRollService> CreateLootRollServiceAsync(
+        GameDbContext context)
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, content, timeProvider);
+        CharacterDerivedStateService derived = new(context, content, inventory);
+        return new CombatLootRollService(
+            context,
+            new StaticContentSnapshotProvider(content),
             derived,
             new FixedRandomFactory(),
             timeProvider);
@@ -453,6 +676,58 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             enemy);
     }
 
+    private static CombatSessionSnapshot MultiplayerBossVictorySnapshot(
+        Guid sessionId,
+        Guid ownerCharacterId,
+        Guid otherCharacterId)
+    {
+        CombatActorSnapshot owner = Actor(
+            ownerCharacterId,
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Owner");
+        CombatActorSnapshot other = Actor(
+            otherCharacterId,
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Other");
+        CombatActorSnapshot enemy = Actor(
+            Guid.CreateVersion7(),
+            CombatActorKind.Monster,
+            "SPIDER_BROODMOTHER_L14",
+            "Broodmother");
+        ContributionSnapshot ownerContribution = new(
+            ownerCharacterId,
+            Now.AddMinutes(-1),
+            null,
+            null,
+            1,
+            100,
+            0,
+            0,
+            0);
+        ContributionSnapshot otherContribution = ownerContribution with
+        {
+            CharacterId = otherCharacterId
+        };
+
+        return new CombatSessionSnapshot(
+            sessionId,
+            10,
+            CombatSessionStatus.Victory,
+            Now,
+            owner,
+            enemy,
+            Enemies: [enemy],
+            SelectedTargetActorId: enemy.ActorId,
+            Players: [owner, other],
+            ParticipantContributions:
+            [
+                new(true, "qualified", 100, ownerContribution),
+                new(true, "qualified", 100, otherContribution)
+            ]);
+    }
+
     private static CombatActorSnapshot Actor(
         Guid id,
         CombatActorKind kind,
@@ -465,6 +740,19 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     {
         public IGameRandom Create() =>
             new SequenceGameRandom(Enumerable.Repeat(0m, 64).ToArray());
+    }
+
+    private sealed class QueueGameRandomFactory(params IGameRandom[] randoms) : IGameRandomFactory
+    {
+        private int _index;
+
+        public IGameRandom Create()
+        {
+            if (_index >= randoms.Length)
+                throw new InvalidOperationException("The deterministic RNG queue is exhausted.");
+
+            return randoms[_index++];
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

@@ -192,4 +192,32 @@ describe('combatSession realtime authentication', () => {
       code: 'combat_negotiate_failed',
     })
   })
+
+  it('clears stale reward state when the server no longer has the combat session', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    signalRMock.invoke.mockResolvedValue({
+      succeeded: false,
+      errorCode: 'combat_not_found',
+      snapshot: null,
+      events: [],
+      reward: null,
+    })
+
+    const store = useCombatSessionStore()
+    store.reward = {
+      xpEarned: 25,
+      goldEarned: 10,
+      leveledUp: false,
+      previousLevel: 1,
+      currentLevel: 1,
+      items: [],
+      completedContractIds: [],
+      lootRolls: [],
+    }
+
+    await store.connect()
+    expect(await store.resume()).toBe(true)
+    expect(store.reward).toBeNull()
+    expect(store.snapshot).toBeNull()
+  })
 })

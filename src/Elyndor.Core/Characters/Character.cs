@@ -6,6 +6,7 @@ public sealed class Character
     {
         Name = null!;
         NormalizedName = null!;
+        PublicCode = null!;
         RaceId = null!;
         GenderId = null!;
         ClassId = null!;
@@ -37,6 +38,7 @@ public sealed class Character
         CreationRequestId = creationRequestId;
         Name = name;
         NormalizedName = normalizedName;
+        PublicCode = BuildPublicCode(id);
         RaceId = raceId;
         GenderId = genderId;
         ClassId = classId;
@@ -55,6 +57,8 @@ public sealed class Character
     public string Name { get; private set; }
 
     public string NormalizedName { get; private set; }
+
+    public string PublicCode { get; private set; }
 
     public string RaceId { get; private set; }
 
@@ -124,5 +128,13 @@ public sealed class Character
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(raceId);
         RaceId = raceId;
+    }
+
+    private static string BuildPublicCode(Guid id)
+    {
+        // UUIDv7 starts with a timestamp. Using its prefix makes characters
+        // created in the same millisecond receive the same public code.
+        string idHex = id.ToString("N");
+        return $"ELY-{idHex[22..]}".ToUpperInvariant();
     }
 }

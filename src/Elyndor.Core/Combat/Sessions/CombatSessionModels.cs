@@ -2,6 +2,9 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Combat.Contribution;
+using Elyndor.Core.Combat.Participants;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -52,6 +55,13 @@ public sealed record CombatParticipantDefinition(
     bool CanAutoAttack = true,
     AutoAttackProfile? OffHandAutoAttack = null);
 
+public sealed record CombatPlayerDefinition(
+    Guid AccountId,
+    CombatParticipantDefinition Participant,
+    ResolvedTalentModifiers TalentModifiers,
+    IReadOnlyDictionary<string, DateTimeOffset>? InitialCooldowns = null,
+    bool InitiallyAttached = true);
+
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
 public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
 public sealed record CombatCastSnapshot(
@@ -89,7 +99,12 @@ public sealed record CombatSessionSnapshot(
     string BalanceVersion = "UNVERSIONED",
     IReadOnlyList<CombatActorSnapshot>? Enemies = null,
     Guid? SelectedTargetActorId = null,
-    CombatActorSnapshot? Companion = null);
+    CombatActorSnapshot? Companion = null,
+    ContributionSnapshot? PlayerContribution = null,
+    IReadOnlyList<CombatActorSnapshot>? Players = null,
+    IReadOnlyList<CombatParticipantSnapshot>? ParticipantRoster = null,
+    bool? PlayerContributionEligible = null,
+    IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null);
 
 public static class CombatErrorCodes
 {
@@ -111,6 +126,7 @@ public static class CombatErrorCodes
     public const string ConsumableNotNeeded = "combat_consumable_not_needed";
     public const string ConsumableUnavailable = "combat_consumable_unavailable";
     public const string AutoAttackUnavailable = "combat_auto_attack_unavailable";
+    public const string ParticipantNotActive = "combat_participant_not_active";
 }
 
 public sealed record CombatCommandResult(

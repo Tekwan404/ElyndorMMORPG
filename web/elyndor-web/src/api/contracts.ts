@@ -88,6 +88,112 @@ export interface ApiProblem {
   status?: number
 }
 
+export interface PlayerSearchResult {
+  characterId: string
+  name: string
+  level: number
+  classId: string
+  publicCode: string
+  telegramUsername: string | null
+}
+
+export type FriendProfile = PlayerSearchResult
+
+export interface FriendRequest {
+  id: string
+  requesterCharacterId: string
+  targetCharacterId: string
+  status: 'Pending' | 'Accepted' | 'Declined'
+  createdAtUtc: string
+}
+
+export interface FriendsSnapshot {
+  friends: FriendProfile[]
+  incomingRequests: FriendRequest[]
+  outgoingRequests: FriendRequest[]
+}
+
+export interface PartyMember {
+  characterId: string
+  name: string
+  level: number
+  classId: string
+  isLeader: boolean
+  joinedAtUtc: string
+}
+
+export interface PartySnapshot {
+  partyId: string
+  leaderCharacterId: string
+  version: number
+  members: PartyMember[]
+}
+
+export interface PartyInvite {
+  id: string
+  partyId: string
+  inviterCharacterId: string
+  targetCharacterId: string
+  mode: 'Friend' | 'Direct'
+  status: 'Pending' | 'Accepted' | 'Declined' | 'Expired' | 'Cancelled'
+  createdAtUtc: string
+  expiresAtUtc: string
+}
+
+export interface DungeonPreview {
+  id: string
+  displayName: string
+  description: string
+  minimumLevel: number
+  maximumLevel: number
+  entryLocationId: string
+  minimumPartySize: number
+  maximumPartySize: number
+  encounters: DungeonEncounterPreview[]
+}
+
+export interface DungeonTeleportResponse {
+  dungeonId: string
+  locationId: string
+  locationVersion: number
+}
+
+export interface DungeonEncounterPreview {
+  id: string
+  monsterId: string
+  checkpointId: string
+  isBoss: boolean
+}
+
+export interface DungeonRun {
+  runId: string
+  dungeonId: string
+  displayName: string
+  description: string
+  state: 'Active' | 'Completed' | 'Abandoned'
+  currentEncounterIndex: number
+  currentCheckpointId: string
+  encounterCount: number
+  partyId: string
+  members: DungeonRunMember[]
+  encounters: DungeonEncounter[]
+}
+
+export interface DungeonRunMember {
+  characterId: string
+  state: 'Active' | 'Left'
+  joinedAtUtc: string
+}
+
+export interface DungeonEncounter {
+  encounterId: string
+  encounterIndex: number
+  monsterId: string
+  state: 'Pending' | 'Active' | 'Wiped' | 'Completed'
+  wipeCount: number
+  characterIds: string[]
+}
+
 export interface WorldLocation {
   id: string
   displayName: string
@@ -194,6 +300,7 @@ export interface KnownAbility {
 export interface CharacterSnapshot {
   id: string
   name: string
+  publicCode?: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE'
@@ -463,6 +570,36 @@ export interface CombatActorSnapshot {
   artId?: string | null
 }
 
+export interface CombatContributionSnapshot {
+  characterId: string
+  qualifyingActions: number
+  damageDealt: number
+  effectiveHealing: number
+  supportContribution: number
+  tankingContribution: number
+  joinedAtUtc: string
+  fledAtUtc?: string | null
+  diedAtUtc?: string | null
+}
+
+export interface CombatParticipantSnapshot {
+  accountId: string
+  characterId: string
+  actorId: string
+  status: 'Rostered' | 'Active' | 'Fled' | 'Dead' | 'Completed'
+  rosteredAtUtc: string
+  joinedAtUtc?: string | null
+  fledAtUtc?: string | null
+  diedAtUtc?: string | null
+}
+
+export interface CombatParticipantContributionSnapshot {
+  contribution: CombatContributionSnapshot
+  isEligible: boolean
+  reason: string
+  contributionScore: number
+}
+
 export interface CombatSnapshot {
   sessionId: string
   sequence: number
@@ -475,6 +612,11 @@ export interface CombatSnapshot {
   enemies?: CombatActorSnapshot[]
   selectedTargetActorId?: string | null
   companion?: CombatActorSnapshot | null
+  playerContribution?: CombatContributionSnapshot | null
+  players?: CombatActorSnapshot[] | null
+  participantRoster?: CombatParticipantSnapshot[] | null
+  playerContributionEligible?: boolean | null
+  participantContributions?: CombatParticipantContributionSnapshot[] | null
 }
 
 export interface CombatEvent {
@@ -513,4 +655,16 @@ export interface CombatReward {
     quantity: number
   }[]
   completedContractIds?: string[] | null
+  lootRolls?: CombatLootRoll[] | null
+}
+
+export interface CombatLootRoll {
+  lootRollId: string
+  itemId: string
+  name: string
+  rarity: ItemRarity
+  quantity: number
+  endsAtUtc: string
+  eligibleCharacterIds: string[]
+  canNeed: boolean
 }

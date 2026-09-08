@@ -335,7 +335,11 @@ public sealed partial class CombatSession
                 }
                 else if (stacks >= 3)
                 {
-                    decimal bonus = 25;
+                    decimal bonus = TryGetMageHook(
+                        "I-3-1",
+                        out ResolvedTalentEventHook iceLance)
+                            ? iceLance.Value
+                            : 25;
                     if (TryGetMageHook("I-7-1", out ResolvedTalentEventHook perfectLance))
                         bonus = perfectLance.Value;
                     damageMultiplier *= 1 + bonus / 100m;
@@ -658,7 +662,11 @@ public sealed partial class CombatSession
                     new EffectDefinition(
                         "MAGE_ICE_FRACTURE_STUN",
                         EffectKind.Stun,
-                        TimeSpan.FromSeconds(1),
+                        TryGetMageHook("I-4-1", out ResolvedTalentEventHook fracture)
+                            ? fracture.Value > 0
+                                ? TimeSpan.FromSeconds((double)fracture.Value)
+                                : TimeSpan.FromSeconds(1)
+                            : TimeSpan.FromSeconds(1),
                         1,
                         EffectStackPolicy.Replace,
                         0,

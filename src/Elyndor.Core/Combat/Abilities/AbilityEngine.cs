@@ -145,7 +145,8 @@ public static class AbilityEngine
             or AbilityTargetType.SingleAlly
             or AbilityTargetType.SingleEnemy
             or AbilityTargetType.AllEnemiesInCombat
-            or AbilityTargetType.NEnemiesInCombat))
+            or AbilityTargetType.NEnemiesInCombat
+            or AbilityTargetType.SelfAndPartyMembersInCombat))
             return AbilityErrorCode.InvalidTarget;
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
@@ -172,6 +173,11 @@ public static class AbilityEngine
             or AbilityTargetType.NEnemiesInCombat
             && targetIds.Any(targetId => targetId == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.SelfAndPartyMembersInCombat
+            && (targetIds.Length == 0 || !targetIds.Contains(runtime.Actor.ActorId)))
+        {
+            return AbilityErrorCode.InvalidTarget;
+        }
         if (ability.TargetType == AbilityTargetType.AllEnemiesInCombat
             && ability.TargetCount > 0
             && targetIds.Length > ability.TargetCount)
@@ -264,7 +270,7 @@ public static class AbilityEngine
                         break;
                     case AbilityActionType.Healing:
                         HealingResult healing = HealingPipeline.Resolve(
-                            new HealingRequest(target, action.Amount));
+                            new HealingRequest(target, action.Amount, OccurredAtUtc: now));
                         events.AddRange(healing.Events.Select(
                             combatEvent => combatEvent with { OccurredAtUtc = now }));
                         break;
@@ -310,7 +316,8 @@ public static class AbilityEngine
         AbilityIntent intent)
     {
         if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
-            or AbilityTargetType.NEnemiesInCombat)
+            or AbilityTargetType.NEnemiesInCombat
+            or AbilityTargetType.SelfAndPartyMembersInCombat)
         {
             return intent.TargetIds?.ToArray() ?? [];
         }

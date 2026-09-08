@@ -1,0 +1,650 @@
+{
+  "schema": "ELYNDOR_DUNGEON_LOOT_CONTENT_V1",
+  "contentVersion": "0.1.0-draft",
+  "balanceVersion": "0.1.0-draft",
+  "dungeon": {
+    "id": "ANCIENT_MINES",
+    "name": "Древние шахты",
+    "recommendedLevel": {
+      "min": 14,
+      "max": 16
+    },
+    "partySize": {
+      "min": 1,
+      "max": 5
+    },
+    "encounters": [
+      {
+        "id": "ANCIENT_MINES_E1",
+        "name": "Заваленный штрек",
+        "order": 1
+      },
+      {
+        "id": "ANCIENT_MINES_E2",
+        "name": "Ржавые механизмы",
+        "order": 2
+      },
+      {
+        "id": "ANCIENT_MINES_E3",
+        "name": "Гнездо глубинников",
+        "order": 3
+      },
+      {
+        "id": "ANCIENT_MINES_E4",
+        "name": "Забытый караул",
+        "order": 4
+      },
+      {
+        "id": "ANCIENT_MINES_BOSS",
+        "name": "Хранитель Глубин",
+        "order": 5,
+        "boss": true
+      }
+    ]
+  },
+  "lootRules": {
+    "materialsGoldConsumables": {
+      "mode": "PERSONAL_INDEPENDENT_ROLL",
+      "guaranteedPerPlayer": false,
+      "requiresValidContribution": true
+    },
+    "valuableEquipment": {
+      "mode": "SHARED_GROUP_ROLL",
+      "decisions": [
+        "NEED",
+        "CLAIM",
+        "PASS"
+      ],
+      "needRequiresEquippableByCharacter": true,
+      "claimAllowedWhenNotEquippable": true,
+      "priority": "NEED_THEN_CLAIM",
+      "timeoutSeconds": 25,
+      "timeoutDecision": "PASS",
+      "requiresCombatRosterMembership": true,
+      "requiresValidContribution": true,
+      "resolutionIdempotent": true
+    },
+    "classDropWeighting": "NONE"
+  },
+  "items": [
+    {
+      "id": "DUNGEON_MINES_WARRIOR_HELM_RARE",
+      "name": "Шлем Каменного Дозора",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "slot": "Head",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "iconId": "dungeon_mines_warrior_helm_rare",
+      "description": "Тяжёлый шлем старого шахтного гарнизона, усиленный пластинами вокруг лба и висков.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 14,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 52,
+          "max": 76,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "strength": {
+            "min": 9,
+            "max": 14,
+            "step": 1
+          },
+          "stamina": {
+            "min": 6,
+            "max": 10,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "accuracyPercent",
+          "armorPenetrationPercent"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 0,
+          "randomMax": 1
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E2",
+          "ANCIENT_MINES_E4"
+        ],
+        "chancePercentPerEligibleKill": 7.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "HEAVY"
+    },
+    {
+      "id": "DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC",
+      "name": "Рукавицы Железного Забоя",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "slot": "Hands",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "iconId": "dungeon_mines_warrior_gauntlets_epic",
+      "description": "Тяжёлые рукавицы, рассчитанные на бой в тесных штреках и удары о камень.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 15,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 43,
+          "max": 63,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "strength": {
+            "min": 10,
+            "max": 16,
+            "step": 1
+          },
+          "stamina": {
+            "min": 6,
+            "max": 9,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "attackSpeedPercent",
+          "armorPenetrationPercent",
+          "accuracyPercent"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E4"
+        ],
+        "chancePercentPerEligibleKill": 5.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "HEAVY"
+    },
+    {
+      "id": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
+      "name": "Оплот Хранителя Глубин",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "slot": "OffHand",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "iconId": "dungeon_mines_warrior_legendary_shield",
+      "description": "Массивный щит Хранителя Глубин из чёрного шахтного железа.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 16,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 108,
+          "max": 148,
+          "step": 1
+        },
+        "blockChancePercentRange": {
+          "min": 3.0,
+          "max": 5.0,
+          "step": 0.1
+        },
+        "blockValueRange": {
+          "min": 28,
+          "max": 42,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "stamina": {
+            "min": 12,
+            "max": 18,
+            "step": 1
+          },
+          "strength": {
+            "min": 8,
+            "max": 13,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "maxHpFlat",
+          "accuracyPercent",
+          "criticalChancePercent"
+        ],
+        "affixCount": {
+          "guaranteed": 3,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true,
+        "prefixSuffixNaming": false
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_BOSS"
+        ],
+        "chancePercentPerEligibleKill": 2.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "offHandCategory": "SHIELD"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_HOOD_RARE",
+      "name": "Капюшон Эха Глубин",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "slot": "Head",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "iconId": "dungeon_mines_mage_hood_rare",
+      "description": "Капюшон из пропитанной минералами ткани, откликающийся на магию древних шахт.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 14,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 20,
+          "max": 31,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "intellect": {
+            "min": 10,
+            "max": 15,
+            "step": 1
+          },
+          "stamina": {
+            "min": 5,
+            "max": 8,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "magicPenetrationPercent",
+          "maxResourceFlat"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 0,
+          "randomMax": 1
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E1",
+          "ANCIENT_MINES_E3"
+        ],
+        "chancePercentPerEligibleKill": 7.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "CLOTH"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_BOOTS_EPIC",
+      "name": "Сапоги Рунного Шага",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "slot": "Feet",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "iconId": "dungeon_mines_mage_boots_epic",
+      "description": "Лёгкие сапоги с древними рунами движения нижних уровней шахты.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 15,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 18,
+          "max": 28,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "intellect": {
+            "min": 10,
+            "max": 16,
+            "step": 1
+          },
+          "stamina": {
+            "min": 5,
+            "max": 8,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "attackSpeedPercent",
+          "criticalChancePercent",
+          "magicPenetrationPercent",
+          "maxResourceFlat"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E4"
+        ],
+        "chancePercentPerEligibleKill": 5.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "CLOTH"
+    },
+    {
+      "id": "DUNGEON_MINES_MAGE_LEGENDARY_STAFF",
+      "name": "Сердце Глубинного Кристалла",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "slot": "MainHand",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "iconId": "dungeon_mines_mage_legendary_staff",
+      "description": "Древний посох с кристаллом, продолжающим пульсировать магией после столетий под землёй.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 16,
+          "max": 16
+        },
+        "weaponDamageRange": {
+          "min": 44,
+          "max": 62,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "intellect": {
+            "min": 18,
+            "max": 26,
+            "step": 1
+          },
+          "stamina": {
+            "min": 8,
+            "max": 13,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "spellPowerFlat",
+          "criticalChancePercent",
+          "magicPenetrationPercent",
+          "maxResourceFlat"
+        ],
+        "affixCount": {
+          "guaranteed": 3,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true,
+        "prefixSuffixNaming": false
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_BOSS"
+        ],
+        "chancePercentPerEligibleKill": 2.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "weaponCategory": "STAFF"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_LEGS_RARE",
+      "name": "Поножи Каменного Следа",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 14,
+      "slot": "Legs",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "dungeon_mines_archer_legs_rare",
+      "description": "Гибкие поножи следопытов, исследовавших шахты задолго до нынешних искателей приключений.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 14,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 39,
+          "max": 57,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "agility": {
+            "min": 10,
+            "max": 16,
+            "step": 1
+          },
+          "stamina": {
+            "min": 6,
+            "max": 9,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "accuracyPercent",
+          "dodgePercent"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 0,
+          "randomMax": 1
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E1",
+          "ANCIENT_MINES_E3"
+        ],
+        "chancePercentPerEligibleKill": 7.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "LEATHER"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_GLOVES_EPIC",
+      "name": "Перчатки Беззвучного Штрека",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 15,
+      "slot": "Hands",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "dungeon_mines_archer_gloves_epic",
+      "description": "Тонкие перчатки с усиленной ладонью и пальцами, удобные для стрельбы в тесных тоннелях.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 15,
+          "max": 16
+        },
+        "baseArmorRange": {
+          "min": 31,
+          "max": 46,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "agility": {
+            "min": 11,
+            "max": 17,
+            "step": 1
+          },
+          "stamina": {
+            "min": 5,
+            "max": 8,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "attackSpeedPercent",
+          "accuracyPercent",
+          "dodgePercent",
+          "armorPenetrationPercent"
+        ],
+        "affixCount": {
+          "guaranteed": 2,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_E4"
+        ],
+        "chancePercentPerEligibleKill": 5.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "armorCategory": "LEATHER"
+    },
+    {
+      "id": "DUNGEON_MINES_ARCHER_LEGENDARY_BOW",
+      "name": "Лук Подземного Созвездия",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 16,
+      "slot": "MainHand",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "dungeon_mines_archer_legendary_bow",
+      "description": "Лук из тёмного шахтного дерева и редкой металлической жилы; на плечах мерцают точки, похожие на звёзды.",
+      "generation": {
+        "itemLevelRange": {
+          "min": 16,
+          "max": 16
+        },
+        "weaponDamageRange": {
+          "min": 46,
+          "max": 65,
+          "step": 1
+        },
+        "guaranteedStatRanges": {
+          "agility": {
+            "min": 18,
+            "max": 26,
+            "step": 1
+          },
+          "stamina": {
+            "min": 8,
+            "max": 12,
+            "step": 1
+          }
+        },
+        "randomAffixPool": [
+          "criticalChancePercent",
+          "attackSpeedPercent",
+          "accuracyPercent",
+          "armorPenetrationPercent",
+          "dodgePercent"
+        ],
+        "affixCount": {
+          "guaranteed": 3,
+          "randomMin": 1,
+          "randomMax": 2
+        },
+        "starsFromFinalPotential": true,
+        "prefixSuffixNaming": false
+      },
+      "drop": {
+        "sources": [
+          "ANCIENT_MINES_BOSS"
+        ],
+        "chancePercentPerEligibleKill": 2.0,
+        "groupRoll": true
+      },
+      "tradePolicy": {
+        "tradeable": true,
+        "auctionable": true,
+        "bindRule": "NONE"
+      },
+      "version": 1,
+      "weaponCategory": "BOW"
+    }
+  ],
+  "summary": {
+    "warriorItems": 3,
+    "mageItems": 3,
+    "archerItems": 3,
+    "totalItems": 9,
+    "legendaryItems": 3
+  }
+}

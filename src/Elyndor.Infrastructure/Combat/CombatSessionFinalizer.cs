@@ -5,6 +5,7 @@ using Elyndor.Infrastructure.Characters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Progression;
+using Elyndor.Infrastructure.Dungeons;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -63,6 +64,37 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
         CombatDurabilityService? durability =
             scope.ServiceProvider.GetService<CombatDurabilityService>();
+        if (durability is not null)
+        {
+            await durability.RecordTerminalSnapshotAsync(
+                snapshot.SessionId,
+                snapshot,
+                cancellationToken);
+        }
+
+        DungeonService? dungeonService = scope.ServiceProvider.GetService<DungeonService>();
+
+        if (snapshot.Status == CombatSessionStatus.Victory
+            && snapshot.PlayerContributionEligible == false)
+        {
+            if (durability is not null)
+            {
+                await durability.CompleteParticipantAsync(
+                    snapshot.SessionId,
+                    characterId,
+                    cancellationToken);
+            }
+
+            if (dungeonService is not null)
+            {
+                await dungeonService.HandleCombatFinishedAsync(
+                    snapshot,
+                    cancellationToken);
+            }
+
+            return null;
+        }
+
         CharacterAbilityCooldownStore cooldownStore =
             scope.ServiceProvider.GetRequiredService<CharacterAbilityCooldownStore>();
         await cooldownStore.ReplaceAsync(
@@ -79,14 +111,22 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             var existingReward = await dbContext.CombatRewardGrants
                 .AsNoTracking()
                 .SingleOrDefaultAsync(
-                    grant => grant.CombatSessionId == snapshot.SessionId,
+                    grant => grant.CombatSessionId == snapshot.SessionId
+                        && grant.CharacterId == characterId,
                     cancellationToken);
             if (existingReward is not null)
             {
                 if (durability is not null)
                 {
-                    await durability.CompleteAsync(
+                    await durability.CompleteParticipantAsync(
                         snapshot.SessionId,
+                        characterId,
+                        cancellationToken);
+                }
+                if (dungeonService is not null)
+                {
+                    await dungeonService.HandleCombatFinishedAsync(
+                        snapshot,
                         cancellationToken);
                 }
                 return new CombatRewardApplicationResult(
@@ -175,8 +215,15 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         if (durability is not null)
         {
-            await durability.CompleteAsync(
+            await durability.CompleteParticipantAsync(
                 snapshot.SessionId,
+                characterId,
+                cancellationToken);
+        }
+        if (dungeonService is not null)
+        {
+            await dungeonService.HandleCombatFinishedAsync(
+                snapshot,
                 cancellationToken);
         }
         return reward;

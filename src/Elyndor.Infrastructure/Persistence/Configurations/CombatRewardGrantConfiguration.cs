@@ -23,7 +23,8 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
                     "ck_combat_reward_grants_sources_json",
                     "jsonb_typeof(\"RewardSourcesJson\") = 'array'");
             });
-        builder.HasKey(grant => grant.CombatSessionId).HasName("pk_combat_reward_grants");
+        builder.HasKey(grant => new { grant.CombatSessionId, grant.CharacterId })
+            .HasName("pk_combat_reward_grants");
         builder.Property(grant => grant.PrimaryMonsterId)
             .HasColumnName("MonsterId")
             .HasMaxLength(64)

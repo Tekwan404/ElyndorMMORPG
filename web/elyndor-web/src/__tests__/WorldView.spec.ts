@@ -136,6 +136,36 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Волк')
   })
+
+  it('keeps a rostered remote participant in the world until they reach the combat location', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot('STARTER_TOWN')
+    const combat = useCombatSessionStore()
+    const pendingCombat = combatSnapshot()
+    pendingCombat.participantRoster = [{
+      accountId: session.snapshot.accountId,
+      characterId: session.snapshot.character!.id,
+      actorId: pendingCombat.player.actorId,
+      status: 'Rostered',
+      rosteredAtUtc: '2026-09-01T12:00:00Z',
+      joinedAtUtc: null,
+      fledAtUtc: null,
+      diedAtUtc: null,
+    }]
+    combat.snapshot = pendingCombat
+    vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+    vi.spyOn(combat, 'resume').mockResolvedValue(true)
+    const attachCombat = vi.spyOn(combat, 'attachCombat').mockResolvedValue(true)
+
+    const wrapper = mount(WorldView)
+    await flushPromises()
+
+    expect(combat.isActive).toBe(false)
+    expect(wrapper.find('[data-party-combat-pending]').exists()).toBe(true)
+    await wrapper.get('[data-attach-party-combat]').trigger('click')
+
+    expect(attachCombat).toHaveBeenCalledWith(pendingCombat.sessionId)
+  })
 })
 
 function snapshot(

@@ -7,6 +7,9 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Content;
+using Elyndor.Core.Social;
+using Elyndor.Core.Parties;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +44,10 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<ActiveCombatSession> ActiveCombatSessions =>
         Set<ActiveCombatSession>();
+    public DbSet<CombatLootRoll> CombatLootRolls => Set<CombatLootRoll>();
+
+    public DbSet<CombatSharedLootResolution> CombatSharedLootResolutions =>
+        Set<CombatSharedLootResolution>();
 
     public DbSet<CombatConsumableUse> CombatConsumableUses =>
         Set<CombatConsumableUse>();
@@ -66,6 +73,24 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<ContentRelease> ContentReleases => Set<ContentRelease>();
 
     public DbSet<ContentAuditEntry> ContentAuditEntries => Set<ContentAuditEntry>();
+
+    public DbSet<FriendRequest> FriendRequests => Set<FriendRequest>();
+
+    public DbSet<Friendship> Friendships => Set<Friendship>();
+
+    public DbSet<Party> Parties => Set<Party>();
+
+    public DbSet<PartyMember> PartyMembers => Set<PartyMember>();
+
+    public DbSet<PartyInvite> PartyInvites => Set<PartyInvite>();
+
+    public DbSet<DungeonRun> DungeonRuns => Set<DungeonRun>();
+
+    public DbSet<DungeonRunMember> DungeonRunMembers => Set<DungeonRunMember>();
+
+    public DbSet<DungeonEncounter> DungeonEncounters => Set<DungeonEncounter>();
+
+    public DbSet<DungeonEncounterMember> DungeonEncounterMembers => Set<DungeonEncounterMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

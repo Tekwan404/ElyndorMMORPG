@@ -4,10 +4,14 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { gameArt } from '@/assets/gameArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
+import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { usePartyStore } from '@/game/party/partyStore'
 import { UIButton, UICard, UIToast } from '@/ui/components'
+
+const emit = defineEmits<{ 'open-party': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
@@ -15,22 +19,35 @@ const STARTER_TOWN_ID = 'STARTER_TOWN'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
+const party = usePartyStore()
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
+const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
+const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
 
 const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id)
+const isAncientMine = computed(() => currentLocationId.value === 'ANCIENT_MINE')
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
 )
+const canStartWorldCombat = computed(() =>
+  party.snapshot === null
+    || party.snapshot.leaderCharacterId === character.value?.id,
+)
+const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
+  contract.offerLocationId === currentLocationId.value
+  || contract.status === 'ACTIVE'
+    && currentLocationId.value === 'BROODMOTHER_LAIR',
+))
 const locationQuestLeads = computed(() => (session.questJournal?.quests ?? []).filter(quest =>
   quest.status === 'AVAILABLE'
   && quest.type !== 'CONTRACT'
@@ -46,8 +63,14 @@ const locationDescription = computed(() =>
   world.value?.currentLocation.description
   || 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.',
 )
+
+async function acceptQuest(questId: string): Promise<void> {
+  if (isTravelling.value || session.mutationPending || combat.isActive) return
+  await session.acceptQuest(questId)
+}
 const sceneBackground = computed(() => {
   if (currentLocationId.value === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (currentLocationId.value === 'ANCIENT_MINE') return gameArt.world.ancientRuins
   if (currentLocationId.value === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
   if (currentLocationId.value === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
   return gameArt.world.whisperingForest
@@ -88,13 +111,24 @@ const needsOutOfCombatRefresh = computed(() => {
     || (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
 })
 
-async function acceptQuest(questId: string): Promise<void> {
+async function acceptContract(contractId: string): Promise<void> {
   if (isTravelling.value || session.mutationPending || combat.isActive) return
-  await session.acceptQuest(questId)
+  await session.acceptContract(contractId)
+}
+
+function contractStatusLabel(status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLETED'): string {
+  if (status === 'COMPLETED') return 'ВЫПОЛНЕН'
+  if (status === 'ACTIVE') return 'ВЗЯТ'
+  if (status === 'AVAILABLE') return 'ДОСТУПЕН'
+  return 'ЗАКРЫТ'
 }
 
 async function explore(): Promise<void> {
-  if (!canExplore.value || combat.isActive || session.mutationPending || combat.pending) return
+  if (!canExplore.value
+    || !canStartWorldCombat.value
+    || combat.isActive
+    || session.mutationPending
+    || combat.pending) return
 
   lastCombatResult.value = null
   const encounter = await session.explore()
@@ -114,6 +148,14 @@ async function startTraining(): Promise<void> {
   }
 }
 
+function lootRemaining(endsAtUtc: string): number {
+  return Math.max(0, (Date.parse(endsAtUtc) - lootNow.value) / 1_000)
+}
+
+async function chooseLootRoll(lootRollId: string, choice: 'Need' | 'Greed' | 'Pass'): Promise<void> {
+  await combat.chooseLootRoll(lootRollId, choice)
+}
+
 async function restoreCombat(): Promise<void> {
   try {
     await combat.connect()
@@ -121,6 +163,11 @@ async function restoreCombat(): Promise<void> {
   } catch {
     // Мир остаётся доступным при временной ошибке realtime.
   }
+}
+
+async function attachToPartyCombat(): Promise<void> {
+  if (!combat.isAwaitingAttachment || !combat.snapshot || combat.pending) return
+  await combat.attachCombat(combat.snapshot.sessionId)
 }
 
 async function refreshOutOfCombatVitals(): Promise<void> {
@@ -163,8 +210,14 @@ watch(() => combat.snapshot?.status, (status) => {
 })
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
-onMounted(() => { void session.refreshQuestJournal() })
-onBeforeUnmount(() => syncVitalsRefreshTimer(false))
+onBeforeUnmount(() => {
+  syncVitalsRefreshTimer(false)
+  window.clearInterval(lootTimer)
+})
+onMounted(() => {
+  void party.refresh()
+  void session.refreshQuestJournal()
+})
 </script>
 
 <template>
@@ -185,10 +238,26 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       </div>
     </section>
 
+    <DungeonLocationCard v-if="isAncientMine" @open-party="emit('open-party')" />
+
     <div v-if="session.errorCode" class="world-error" role="alert">
       <strong>{{ worldErrorMessage }}</strong>
       <small>{{ session.errorCode }}</small>
     </div>
+
+    <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>
+      <div class="reward-card__heading">
+        <small>РЎРћР’РњР•РЎРўРќР«Р™ Р‘РћР™</small>
+        <strong>Группа уже сражается</strong>
+      </div>
+      <p>Доберись до локации боя и присоединись к текущему столкновению.</p>
+      <UIButton
+        :loading="combat.pending"
+        :disabled="isTravelling"
+        data-attach-party-combat
+        @click="attachToPartyCombat"
+      >Войти в бой</UIButton>
+    </UICard>
 
     <UICard v-if="lastCombatResult === 'Victory'" class="reward-card">
       <div class="reward-card__heading">
@@ -204,7 +273,29 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
         </ul>
       </div>
-      <UIButton v-if="canExplore" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+      <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+    </UICard>
+
+    <UICard v-if="combat.lootRolls.length" class="loot-roll-card">
+      <div class="reward-card__heading">
+        <small>ЦЕННАЯ ДОБЫЧА</small>
+        <strong>Выберите участие в розыгрыше</strong>
+      </div>
+      <article v-for="roll in combat.lootRolls" :key="roll.lootRollId" class="loot-roll-row">
+        <div>
+          <strong>{{ roll.name }} ×{{ roll.quantity }}</strong>
+          <small>{{ roll.rarity }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
+        </div>
+        <div class="loot-roll-actions">
+          <UIButton
+            :disabled="combat.pending || !roll.canNeed"
+            :title="roll.canNeed ? 'Приоритетный бросок' : 'Персонаж не может использовать этот предмет'"
+            @click="chooseLootRoll(roll.lootRollId, 'Need')"
+          >Нужно</UIButton>
+          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Greed')">Претендовать</UIButton>
+          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Pass')">Отказаться</UIButton>
+        </div>
+      </article>
     </UICard>
 
     <UIToast
@@ -240,7 +331,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <strong>Осмотреть {{ locationName }}</strong>
           <p>Найдите противника или событие. Результат выбирает сервер из контента текущей локации.</p>
         </div>
-        <UIButton data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
+        <UIButton v-if="canStartWorldCombat" data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
       </article>
     </section>
 
@@ -252,39 +343,26 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
         </div>
         <span>{{ locationQuestLeads.length }}</span>
       </header>
-
       <div class="story-list">
-        <article
-          v-for="quest in locationQuestLeads"
-          :key="quest.id"
-          class="story-card"
-          :data-world-quest-id="quest.id"
-          :data-world-quest-type="quest.type"
-        >
-          <div class="story-card__icon" aria-hidden="true">{{ quest.type === 'SIDE' ? '☷' : '✦' }}</div>
+        <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
+          <div class="story-card__icon" aria-hidden="true">✦</div>
           <div class="story-card__copy">
             <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
             <strong>{{ quest.displayName }}</strong>
-            <em v-if="quest.issuerName">{{ quest.issuerName }}<span v-if="quest.issuerRole"> · {{ quest.issuerRole }}</span></em>
             <p>{{ quest.description }}</p>
             <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
           </div>
           <UIButton
             data-accept-world-quest
             :disabled="isTravelling || session.mutationPending"
-            @click="acceptQuest(quest.id)"
-          >
+            @click="acceptQuest(quest.id)">
             {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
           </UIButton>
         </article>
       </div>
     </section>
 
-    <section
-      v-if="!isStarterTown && hasLocalGuildContracts"
-      class="field-guild"
-      aria-labelledby="field-guild-title"
-    >
+    <section v-if="!isStarterTown && hasLocalGuildContracts" class="field-guild" aria-labelledby="field-guild-title">
       <header class="section-heading">
         <div>
           <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
@@ -300,6 +378,54 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <p>Здесь регистрируют работу, связанную с угрозами текущего региона.</p>
         </div>
         <UIButton data-open-field-guild @click="guildOpen = true">Открыть журнал</UIButton>
+      </article>
+    </section>
+
+    <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
+      <header class="section-heading">
+        <div>
+          <small>КОНТРАКТЫ</small>
+          <strong id="contracts-title">Задания области</strong>
+        </div>
+        <span>{{ locationContracts.length }}</span>
+      </header>
+
+      <article
+        v-for="contract in locationContracts"
+        :key="contract.id"
+        class="contract-card"
+        :data-contract-id="contract.id"
+        :data-contract-status="contract.status"
+      >
+        <div class="contract-card__icon" aria-hidden="true">✦</div>
+        <div class="contract-card__copy">
+          <small>{{ contractStatusLabel(contract.status) }} · УР. {{ contract.requiredLevel }}</small>
+          <strong>{{ contract.displayName }}</strong>
+          <p>{{ contract.description }}</p>
+          <div class="contract-card__reward">
+            <span>Награда</span>
+            <b>+{{ contract.rewardXp }} опыта · +{{ contract.rewardGold }} золота</b>
+            <em>Открывает: {{ contract.unlockLocationId === 'BLIGHTED_GROVE' ? 'Осквернённая чаща' : contract.unlockLocationId }}</em>
+          </div>
+        </div>
+        <UIButton
+          v-if="contract.status === 'AVAILABLE'"
+          data-accept-contract
+          :loading="session.mutationPending"
+          :disabled="isTravelling || session.mutationPending"
+          @click="acceptContract(contract.id)"
+        >
+          Взять контракт
+        </UIButton>
+        <span v-else-if="contract.status === 'ACTIVE'" class="contract-card__status contract-card__status--active">
+          Убейте цель
+        </span>
+        <span v-else-if="contract.status === 'COMPLETED'" class="contract-card__status contract-card__status--done">
+          Выполнено
+        </span>
+        <span v-else class="contract-card__status">
+          Нужен {{ contract.requiredLevel }} уровень
+        </span>
       </article>
     </section>
 
@@ -351,15 +477,9 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           <div class="service-card__copy">
             <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
             <strong>Представительство Гильдии</strong>
-            <p>Регистрация официальных контрактов, охот и региональных угроз.</p>
+            <p>Регистрация официальных контрактов и региональных угроз.</p>
           </div>
-          <UIButton
-            data-open-adventurer-guild
-            :disabled="isTravelling"
-            @click="guildOpen = true"
-          >
-            {{ isTravelling ? 'В пути' : 'Войти' }}
-          </UIButton>
+          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
         </article>
 
         <article class="service-card service-card--rest" data-town-service="rest">
@@ -557,6 +677,42 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   padding-left: 1.2rem;
 }
 
+.loot-roll-card {
+  display: grid;
+  gap: var(--ui-space-3);
+  border-color: rgb(219 164 83 / 42%);
+  background: linear-gradient(135deg, rgb(72 48 21 / 72%), rgb(12 13 20 / 96%));
+}
+
+.loot-roll-card .reward-card__heading small {
+  color: #e4bc76;
+}
+
+.loot-roll-row {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.loot-roll-row > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.loot-roll-row small {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.loot-roll-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -603,8 +759,7 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 }
 
 .location-activities,
-.world-stories,
-.field-guild,
+.location-contracts,
 .town-services,
 .location-routes {
   overflow: hidden;
@@ -613,6 +768,92 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   background:
     linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
   box-shadow: var(--ui-shadow-inset);
+}
+
+.contract-card {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4);
+  background:
+    radial-gradient(circle at 8% 50%, rgb(146 136 255 / 10%), transparent 9rem),
+    linear-gradient(90deg, rgb(146 136 255 / 5%), transparent 70%);
+}
+
+.contract-card__icon {
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  place-items: center;
+  border: 1px solid rgb(146 136 255 / 26%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 14 / 82%);
+  color: #b8b2ff;
+  font-size: 1.2rem;
+}
+
+.contract-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.contract-card__copy small {
+  color: #aaa3ff;
+  font-size: .53rem;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+.contract-card__copy strong {
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-sm);
+}
+
+.contract-card__copy p {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: .66rem;
+  line-height: 1.4;
+}
+
+.contract-card__reward {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+  font-size: .58rem;
+}
+
+.contract-card__reward span,
+.contract-card__reward em {
+  color: var(--ui-color-text-muted);
+  font-style: normal;
+}
+
+.contract-card__reward b {
+  color: var(--ui-color-gold);
+}
+
+.contract-card__status {
+  padding: 6px 9px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.contract-card__status--active {
+  border-color: rgb(146 136 255 / 30%);
+  color: #c2bdff;
+}
+
+.contract-card__status--done {
+  border-color: rgb(79 185 150 / 30%);
+  color: #84d5bb;
 }
 
 .activity-card {
@@ -725,23 +966,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     linear-gradient(160deg, rgb(13 19 31 / 100%), rgb(5 8 14 / 100%));
 }
 
-.service-card--guild {
-  background:
-    linear-gradient(150deg, rgb(232 200 102 / 10%), transparent 58%),
-    linear-gradient(160deg, rgb(16 18 28 / 100%), rgb(5 8 14 / 100%));
-}
-
-.story-list { display:grid; gap:1px; background:rgb(255 255 255 / 6%); }
-.story-card { display:grid; grid-template-columns:3rem minmax(0,1fr) auto; align-items:center; gap:var(--ui-space-3); padding:var(--ui-space-3); background:linear-gradient(150deg,rgb(146 136 255 / 5%),transparent 58%),rgb(7 11 18); }
-.story-card__icon { display:grid; width:3rem; height:3rem; place-items:center; border:1px solid var(--ui-color-border-strong); border-radius:var(--ui-radius-md); color:#aaa3ff; font-size:1.15rem; }
-.story-card__copy { display:grid; min-width:0; gap:2px; }
-.story-card__copy small { color:#aaa3ff; font-size:.53rem; font-weight:800; letter-spacing:.07em; }
-.story-card__copy strong { font-family:var(--ui-font-display); }
-.story-card__copy em { color:var(--ui-color-gold); font-size:.61rem; font-style:normal; }
-.story-card__copy p { margin:2px 0; color:var(--ui-color-text-muted); font-size:.66rem; line-height:1.4; }
-.story-card__reward { color:#ddd3a5; font-size:.6rem; }
-
-
 .service-card--rest {
   grid-column: 1 / -1;
   grid-template-columns: 3.1rem minmax(0, 1fr) auto;
@@ -798,15 +1022,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
   .scene-encounter img {
     max-height: 9rem;
-  }
-
-  .story-card {
-    grid-template-columns: 2.8rem minmax(0, 1fr);
-  }
-
-  .story-card :deep(.ui-button) {
-    grid-column: 1 / -1;
-    width: 100%;
   }
 
   .activity-card {

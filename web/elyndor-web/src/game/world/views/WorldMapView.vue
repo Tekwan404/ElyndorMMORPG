@@ -53,6 +53,7 @@ const selectedIsReachable = computed(
 )
 function locationArt(locationId: string | null | undefined): string {
   if (locationId === 'STARTER_TOWN') return gameArt.world.starterTown
+  if (locationId === 'ANCIENT_MINE') return gameArt.world.ancientRuins
   if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
   if (locationId === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
   return gameArt.world.whisperingForest
@@ -120,6 +121,7 @@ function locationName(location: WorldLocation): string {
   if (location.id === 'STARTER_TOWN') return 'Стартовый город'
   if (location.id === 'WHISPERING_FOREST') return 'Шепчущий лес'
   if (location.id === 'DEEP_FOREST') return 'Глубокий лес'
+  if (location.id === 'ANCIENT_MINE') return 'Древняя шахта'
   if (location.id === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
   if (location.id === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
   return location.displayName
@@ -282,7 +284,7 @@ onMounted(() => void loadLocations())
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
-          <span class="map-node__marker">
+          <span class="map-node__marker" :data-location-kind="location.id === 'ANCIENT_MINE' ? 'dungeon' : 'normal'">
             <i />
           </span>
           <span class="map-node__label">
@@ -642,6 +644,23 @@ onMounted(() => void loadLocations())
   border-color: rgb(79 185 150 / 44%);
   opacity: 1;
   animation: map-pulse 2.1s ease-out infinite;
+}
+
+.map-node__marker[data-location-kind='dungeon'] {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-color: rgb(224 188 100 / 72%);
+  border-radius: 35%;
+  transform: rotate(45deg);
+}
+
+.map-node__marker[data-location-kind='dungeon'] i {
+  width: .62rem;
+  height: .62rem;
+  border-radius: 2px;
+  background: var(--ui-color-gold);
+  box-shadow: 0 0 10px rgb(224 188 100 / 68%);
+  transform: rotate(-45deg);
 }
 
 .map-node[data-state='locked'] {
