@@ -146,6 +146,11 @@ export interface Quest {
   rewardItems: QuestRewardItem[]
   prerequisiteQuestIds: string[]
   unlockLocationId: string | null
+  issuerName: string | null
+  issuerRole: string | null
+  regionName: string | null
+  contractNumber: string | null
+  threatLevel: string | null
 }
 
 export interface QuestJournalResponse {

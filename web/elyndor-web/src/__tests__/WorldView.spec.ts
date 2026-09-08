@@ -18,7 +18,11 @@ const WOLF_ENCOUNTER: WorldEncounter = {
 }
 
 describe('WorldView', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.spyOn(useGameSessionStore(), 'refreshQuestJournal').mockResolvedValue(null)
+    document.body.innerHTML = ''
+  })
 
   it('renders only the current location and leaves travel to the World map', () => {
     const store = useGameSessionStore()
@@ -28,9 +32,10 @@ describe('WorldView', () => {
     expect(wrapper.text()).toContain('Стартовый город')
     expect(wrapper.find('[data-travel]').exists()).toBe(false)
     expect(wrapper.find('.location-routes').exists()).toBe(false)
-    expect(wrapper.findAll('[data-town-service]')).toHaveLength(3)
+    expect(wrapper.findAll('[data-town-service]')).toHaveLength(4)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
+    expect(wrapper.get('[data-town-service="guild"]').text()).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
   })
 
   it('renders explore as a dedicated current-location activity outside the artwork', async () => {
@@ -64,36 +69,13 @@ describe('WorldView', () => {
     expect(wrapper.get('[role="alert"]').text()).toContain('world_encounter_unavailable')
   })
 
-  it('shows the Broodmother contract in the lair and accepts it explicitly', async () => {
+  it('surfaces available story from the current location instead of the journal', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot('WHISPERING_FOREST')
-    session.snapshot.character!.level = 14
-    session.snapshot.world!.currentLocation = {
-      id: 'BROODMOTHER_LAIR',
-      displayName: 'Логово Прародительницы',
-      dangerLevel: 'DANGEROUS',
-      recommendedLevel: 14,
-      minimumLevel: 14,
-      maximumLevel: 14,
-      requiredContractId: null,
-      artId: null,
-      description: 'Логово босса',
+    session.questJournal = {
+      quests: [worldQuest('QUEST_STORY', 'STORY', 'AVAILABLE', 'WHISPERING_FOREST')],
     }
-    session.snapshot.world!.contracts = [
-      {
-        id: 'CONTRACT_BROODMOTHER_GATE',
-        displayName: 'Контракт: Прародительница',
-        description: 'Уничтожьте Паучью Прародительницу.',
-        requiredLevel: 14,
-        targetMonsterId: 'SPIDER_BROODMOTHER_L14',
-        unlockLocationId: 'BLIGHTED_GROVE',
-        status: 'AVAILABLE',
-        offerLocationId: 'BROODMOTHER_LAIR',
-        rewardXp: 2000,
-        rewardGold: 150,
-      },
-    ]
-    const acceptContract = vi.spyOn(session, 'acceptContract').mockResolvedValue(undefined)
+    const acceptQuest = vi.spyOn(session, 'acceptQuest').mockResolvedValue(undefined)
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
     vi.spyOn(combat, 'resume').mockResolvedValue(true)
@@ -101,14 +83,33 @@ describe('WorldView', () => {
     const wrapper = mount(WorldView)
     await flushPromises()
 
-    expect(wrapper.get('[data-contract-id="CONTRACT_BROODMOTHER_GATE"]').text())
-      .toContain('2000 опыта')
-    expect(wrapper.get('[data-contract-id="CONTRACT_BROODMOTHER_GATE"]').text())
-      .toContain('150 золота')
-    await wrapper.get('[data-accept-contract]').trigger('click')
+    expect(wrapper.get('[data-world-quest-id="QUEST_STORY"]').text()).toContain('СЮЖЕТ')
+    await wrapper.get('[data-accept-world-quest]').trigger('click')
+    expect(acceptQuest).toHaveBeenCalledWith('QUEST_STORY')
+  })
+
+  it('opens the Adventurer Guild registrar and accepts official contracts there', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    session.snapshot.character!.level = 14
+    session.questJournal = {
+      quests: [worldQuest('CONTRACT_BROODMOTHER_GATE', 'CONTRACT', 'AVAILABLE', 'STARTER_TOWN')],
+    }
+    const acceptQuest = vi.spyOn(session, 'acceptQuest').mockResolvedValue(undefined)
+
+    const wrapper = mount(WorldView, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.get('[data-open-adventurer-guild]').trigger('click')
     await flushPromises()
 
-    expect(acceptContract).toHaveBeenCalledWith('CONTRACT_BROODMOTHER_GATE')
+    const board = document.body.querySelector('[data-adventurer-guild-board]')
+    expect(board?.textContent).toContain('КОНТРАКТ №BF-014')
+    expect(board?.textContent).toContain('Заказчик')
+    const acceptButton = document.body.querySelector('[data-guild-accept-contract]') as HTMLButtonElement
+    acceptButton.click()
+    await flushPromises()
+    expect(acceptQuest).toHaveBeenCalledWith('CONTRACT_BROODMOTHER_GATE')
+    wrapper.unmount()
   })
 
   it('starts the server-selected encounter immediately after Explore with no confirmation step', async () => {
@@ -266,6 +267,42 @@ function snapshot(
     contentVersion: '0.1.0',
     balanceVersion: '0.1.0',
     serverTimeUtc: '2026-08-30T00:00:00Z',
+  }
+}
+
+function worldQuest(
+  id: string,
+  type: 'STORY' | 'SIDE' | 'CONTRACT',
+  status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'READY_TO_CLAIM' | 'COMPLETED',
+  offerLocationId: string,
+) {
+  return {
+    id,
+    displayName: id === 'CONTRACT_BROODMOTHER_GATE' ? 'Контракт: Прародительница' : 'Следы в лесу',
+    description: 'Проверьте происходящее в регионе.',
+    type,
+    requiredLevel: 1,
+    offerLocationId,
+    status,
+    objectives: [{
+      id: 'KILL',
+      type: 'KillMonster',
+      targetId: 'FOREST_WOLF_L1',
+      currentCount: 0,
+      requiredCount: 1,
+      completed: false,
+      consumeOnClaim: false,
+    }],
+    rewardXp: 100,
+    rewardGold: 20,
+    rewardItems: [],
+    prerequisiteQuestIds: [],
+    unlockLocationId: type === 'CONTRACT' ? 'BLIGHTED_GROVE' : null,
+    issuerName: type === 'CONTRACT' ? 'Гильдия авантюристов' : 'Городской дозор',
+    issuerRole: type === 'CONTRACT' ? 'Регистратор' : 'Разведка',
+    regionName: type === 'CONTRACT' ? 'Логово Прародительницы' : 'Шепчущий лес',
+    contractNumber: type === 'CONTRACT' ? 'BF-014' : null,
+    threatLevel: type === 'CONTRACT' ? 'Высокая' : null,
   }
 }
 

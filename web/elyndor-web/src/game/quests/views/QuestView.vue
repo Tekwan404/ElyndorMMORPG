@@ -1,149 +1,101 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import type { Quest, QuestObjective, QuestStatus } from '@/api/contracts'
+import type { Quest, QuestObjective } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard } from '@/ui/components'
 
-type QuestTab = 'available' | 'active' | 'ready' | 'completed'
+type JournalTab = 'story' | 'errands' | 'contracts' | 'completed'
 
 const session = useGameSessionStore()
-const activeTab = ref<QuestTab>('available')
-
-const tabs: readonly { id: QuestTab; label: string; status: QuestStatus }[] = [
-  { id: 'available', label: 'Доступные', status: 'AVAILABLE' },
-  { id: 'active', label: 'Активные', status: 'ACTIVE' },
-  { id: 'ready', label: 'Готовы к сдаче', status: 'READY_TO_CLAIM' },
-  { id: 'completed', label: 'Выполненные', status: 'COMPLETED' },
+const activeTab = ref<JournalTab>('story')
+const tabs: readonly { id: JournalTab; label: string }[] = [
+  { id: 'story', label: 'Сюжет' },
+  { id: 'errands', label: 'Поручения' },
+  { id: 'contracts', label: 'Контракты' },
+  { id: 'completed', label: 'Завершено' },
 ]
 
 const quests = computed(() => session.questJournal?.quests ?? [])
-const currentStatus = computed(() => tabs.find(tab => tab.id === activeTab.value)!.status)
-const visibleQuests = computed(() =>
-  quests.value.filter(quest => quest.status === currentStatus.value),
-)
-const inProgressCount = computed(() =>
-  quests.value.filter(quest => quest.status === 'ACTIVE' || quest.status === 'READY_TO_CLAIM').length,
-)
+const trackedQuests = computed(() => quests.value.filter(quest =>
+  quest.status === 'ACTIVE' || quest.status === 'READY_TO_CLAIM',
+))
+const visibleQuests = computed(() => {
+  if (activeTab.value === 'completed') return quests.value.filter(quest => quest.status === 'COMPLETED')
+  const type = activeTab.value === 'story' ? 'STORY' : activeTab.value === 'errands' ? 'SIDE' : 'CONTRACT'
+  return trackedQuests.value.filter(quest => quest.type === type)
+})
+const inProgressCount = computed(() => trackedQuests.value.length)
 
 const targetNames: Readonly<Record<string, string>> = {
-  FOREST_WOLF_L1: 'Лесной волк',
-  FOREST_BOAR_L2: 'Лесной кабан',
-  GIANT_SPIDER_L3: 'Гигантский паук',
-  FOREST_WOLF_L4: 'Лесной волк',
-  ALPHA_WOLF_L5: 'Альфа-волк',
-  DEEP_WOLF_L6: 'Тёмный лесной волк',
-  CORRUPTED_BOAR_L7: 'Осквернённый кабан',
-  DEEP_SPIDER_L8: 'Глубинный паук',
-  GOBLIN_SCOUT_L9: 'Гоблин-разведчик',
-  DEEP_WOLF_L10: 'Матёрый лесной волк',
-  ALPHA_WOLF_L11: 'Старый альфа-волк',
-  SPIDER_BROODMOTHER_L14: 'Паучья Прародительница',
-  BANDIT_ROGUE_L15: 'Лесной разбойник',
-  BANDIT_ARCHER_L16: 'Разбойник-лучник',
-  CORRUPTED_BOAR_L17: 'Осквернённый вепрь',
-  BLIGHTED_SPIDER_L18: 'Осквернённый паук',
-  BANDIT_ROGUE_L19: 'Опытный лесной разбойник',
-  ALPHA_WOLF_L20: 'Осквернённый альфа-волк',
-  WOLF_HIDE: 'Шкура волка',
-  WOLF_FANG: 'Волчий клык',
-  BOAR_TUSK: 'Кабаний клык',
-  SPIDER_SILK: 'Паучий шёлк',
-  SPIDER_VENOM_SAC: 'Ядовитая железа паука',
+  FOREST_WOLF_L1: 'Лесной волк', FOREST_BOAR_L2: 'Лесной кабан', GIANT_SPIDER_L3: 'Гигантский паук',
+  FOREST_WOLF_L4: 'Лесной волк', ALPHA_WOLF_L5: 'Альфа-волк', DEEP_WOLF_L6: 'Тёмный лесной волк',
+  CORRUPTED_BOAR_L7: 'Осквернённый кабан', DEEP_SPIDER_L8: 'Глубинный паук', GOBLIN_SCOUT_L9: 'Гоблин-разведчик',
+  DEEP_WOLF_L10: 'Матёрый лесной волк', ALPHA_WOLF_L11: 'Старый альфа-волк', SPIDER_BROODMOTHER_L14: 'Паучья Прародительница',
+  BANDIT_ROGUE_L15: 'Лесной разбойник', BANDIT_ARCHER_L16: 'Разбойник-лучник', CORRUPTED_BOAR_L17: 'Осквернённый вепрь',
+  BLIGHTED_SPIDER_L18: 'Осквернённый паук', BANDIT_ROGUE_L19: 'Опытный лесной разбойник', ALPHA_WOLF_L20: 'Осквернённый альфа-волк',
+  WOLF_HIDE: 'Шкура волка', WOLF_FANG: 'Волчий клык', BOAR_TUSK: 'Кабаний клык',
+  SPIDER_SILK: 'Паучий шёлк', SPIDER_VENOM_SAC: 'Ядовитая железа паука',
 }
-
 const itemNames: Readonly<Record<string, string>> = {
-  SMALL_HEALING_POTION: 'Малое зелье лечения',
-  MINOR_ANTIDOTE: 'Малое противоядие',
-  MINOR_BATTLE_TONIC: 'Малый боевой тоник',
-  DEEP_FOREST_CHARM: 'Оберег Глубокого леса',
+  SMALL_HEALING_POTION: 'Малое зелье лечения', MINOR_ANTIDOTE: 'Малое противоядие',
+  MINOR_BATTLE_TONIC: 'Малый боевой тоник', DEEP_FOREST_CHARM: 'Оберег Глубокого леса',
   BLIGHTED_GROVE_RING: 'Кольцо Осквернённой чащи',
 }
-
 const locationNames: Readonly<Record<string, string>> = {
-  STARTER_TOWN: 'Стартовый город',
-  WHISPERING_FOREST: 'Шепчущий лес',
-  DEEP_FOREST: 'Глубокий лес',
-  BROODMOTHER_LAIR: 'Логово Прародительницы',
-  BLIGHTED_GROVE: 'Осквернённая чаща',
+  STARTER_TOWN: 'Стартовый город', WHISPERING_FOREST: 'Шепчущий лес', DEEP_FOREST: 'Глубокий лес',
+  BROODMOTHER_LAIR: 'Логово Прародительницы', BLIGHTED_GROVE: 'Осквернённая чаща',
 }
-
 const errorMessages: Readonly<Record<string, string>> = {
   quest_level_required: 'Нужен более высокий уровень.',
-  quest_invalid_location: 'Это задание можно принять только в указанной локации.',
-  quest_prerequisite_required: 'Сначала завершите предыдущую часть цепочки.',
-  quest_already_active: 'Задание уже принято.',
-  quest_already_completed: 'Задание уже выполнено.',
-  quest_not_ready: 'Цели задания ещё не выполнены.',
-  quest_items_protected: 'Не удалось забрать необходимые предметы из инвентаря.',
+  quest_invalid_location: 'Вернитесь к источнику задания, чтобы принять его.',
+  quest_prerequisite_required: 'Сначала завершите предыдущую историю или контракт.',
+  quest_already_active: 'Задание уже принято.', quest_already_completed: 'Задание уже выполнено.',
+  quest_not_ready: 'Цели задания ещё не выполнены.', quest_items_protected: 'Не удалось забрать необходимые предметы из инвентаря.',
   quest_claim_conflict: 'Награда уже обрабатывается. Обновите журнал.',
 }
-
 const questError = computed(() => {
   const code = session.errorCode
   return code?.startsWith('quest_') ? (errorMessages[code] ?? 'Не удалось выполнить действие с заданием.') : null
 })
 
-function count(status: QuestStatus): number {
-  return quests.value.filter(quest => quest.status === status).length
+function tabCount(tab: JournalTab): number {
+  if (tab === 'completed') return quests.value.filter(quest => quest.status === 'COMPLETED').length
+  const type = tab === 'story' ? 'STORY' : tab === 'errands' ? 'SIDE' : 'CONTRACT'
+  return trackedQuests.value.filter(quest => quest.type === type).length
 }
-
-function locationName(id: string): string {
-  return locationNames[id] ?? 'Неизвестная область'
-}
-
-function targetName(id: string): string {
-  return targetNames[id] ?? 'Неизвестная цель'
-}
-
+function locationName(id: string): string { return locationNames[id] ?? 'Неизвестная область' }
+function targetName(id: string): string { return targetNames[id] ?? 'Неизвестная цель' }
 function objectiveLabel(objective: QuestObjective): string {
-  return objective.type === 'CollectItem'
-    ? `Собрать: ${targetName(objective.targetId)}`
-    : `Победить: ${targetName(objective.targetId)}`
+  return objective.type === 'CollectItem' ? 'Собрать: ' + targetName(objective.targetId) : 'Победить: ' + targetName(objective.targetId)
 }
-
 function objectiveProgress(objective: QuestObjective): number {
   return Math.min(100, Math.round(objective.currentCount / objective.requiredCount * 100))
 }
-
 function questTypeLabel(quest: Quest): string {
   if (quest.type === 'CONTRACT') return 'Контракт'
-  if (quest.type === 'SIDE') return 'Побочное'
-  return 'Сюжетное'
+  if (quest.type === 'SIDE') return 'Поручение'
+  return 'Сюжет'
 }
-
-function statusLabel(status: QuestStatus): string {
-  if (status === 'AVAILABLE') return 'ДОСТУПНО'
-  if (status === 'ACTIVE') return 'В РАБОТЕ'
-  if (status === 'READY_TO_CLAIM') return 'МОЖНО СДАТЬ'
-  return 'ВЫПОЛНЕНО'
+function statusLabel(quest: Quest): string {
+  if (quest.status === 'READY_TO_CLAIM') return 'МОЖНО ЗАВЕРШИТЬ'
+  if (quest.status === 'ACTIVE') return 'В РАБОТЕ'
+  return 'ЗАВЕРШЕНО'
 }
-
-function emptyMessage(tab: QuestTab): string {
-  if (tab === 'available') return 'В этой локации сейчас нет доступных заданий.'
-  if (tab === 'active') return 'Примите доступное задание, чтобы начать цепочку.'
-  if (tab === 'ready') return 'Завершите цели активных заданий — они появятся здесь.'
-  return 'История выполненных заданий пока пуста.'
+function emptyMessage(tab: JournalTab): string {
+  if (tab === 'story') return 'Новая история начинается в мире — исследуйте локации и следите за происходящим.'
+  if (tab === 'errands') return 'Поручения предлагают жители, дозорные и полевые лагеря.'
+  if (tab === 'contracts') return 'Контракты регистрируются через Гильдию авантюристов.'
+  return 'История завершённых дел пока пуста.'
 }
-
-async function accept(questId: string): Promise<void> {
-  await session.acceptQuest(questId)
-}
-
-async function abandon(questId: string): Promise<void> {
-  await session.abandonQuest(questId)
-}
-
-async function claim(questId: string): Promise<void> {
-  await session.claimQuest(questId)
-}
+async function abandon(questId: string): Promise<void> { await session.abandonQuest(questId) }
+async function claim(questId: string): Promise<void> { await session.claimQuest(questId) }
 
 onMounted(async () => {
   await session.refreshQuestJournal()
-  if (count('AVAILABLE') === 0 && count('ACTIVE') > 0) activeTab.value = 'active'
-  if (count('AVAILABLE') === 0 && count('ACTIVE') === 0 && count('READY_TO_CLAIM') > 0) {
-    activeTab.value = 'ready'
-  }
+  const first = (['story', 'errands', 'contracts'] as const).find(tab => tabCount(tab) > 0)
+  if (first) activeTab.value = first
+  else if (tabCount('completed') > 0) activeTab.value = 'completed'
 })
 </script>
 
@@ -151,15 +103,20 @@ onMounted(async () => {
   <section class="quests" data-quest-view>
     <header class="quests__header">
       <div>
-        <small>ЖУРНАЛ ЗАДАНИЙ</small>
-        <h1>Квесты</h1>
-        <p>Цепочка приключений и контрактов героя.</p>
+        <small>ЖУРНАЛ ГЕРОЯ</small>
+        <h1>История приключений</h1>
+        <p>Здесь хранится то, чем герой уже занимается. Новые дела находятся в самом мире.</p>
       </div>
       <div class="quests__counter" aria-label="Заданий в работе">
         <strong>{{ inProgressCount }}</strong>
         <span>в работе</span>
       </div>
     </header>
+
+    <UICard class="quest-philosophy">
+      <strong>Задания — это причины отправиться в мир</strong>
+      <p>Сюжет и поручения появляются в локациях. Официальные контракты принимаются у представителей Гильдии авантюристов.</p>
+    </UICard>
 
     <nav class="quest-tabs" aria-label="Разделы журнала">
       <button
@@ -173,7 +130,7 @@ onMounted(async () => {
         @click="activeTab = tab.id"
       >
         <span>{{ tab.label }}</span>
-        <b>{{ count(tab.status) }}</b>
+        <b>{{ tabCount(tab.id) }}</b>
       </button>
     </nav>
 
@@ -194,13 +151,13 @@ onMounted(async () => {
         :data-quest-status="quest.status"
       >
         <div class="quest-card__topline">
-          <span class="quest-card__status">{{ statusLabel(quest.status) }}</span>
+          <span class="quest-card__status">{{ statusLabel(quest) }}</span>
           <span>{{ questTypeLabel(quest) }} · ур. {{ quest.requiredLevel }}</span>
         </div>
 
         <div>
           <h2>{{ quest.displayName }}</h2>
-          <p class="quest-card__location">{{ locationName(quest.offerLocationId) }}</p>
+          <p class="quest-card__location"><span v-if="quest.issuerName">{{ quest.issuerName }} · </span>{{ quest.regionName ?? locationName(quest.offerLocationId) }}</p>
         </div>
 
         <p class="quest-card__description">{{ quest.description }}</p>
@@ -239,15 +196,7 @@ onMounted(async () => {
 
         <footer class="quest-card__actions">
           <UIButton
-            v-if="quest.status === 'AVAILABLE'"
-            data-accept-quest
-            :disabled="session.mutationPending"
-            @click="accept(quest.id)"
-          >
-            Принять
-          </UIButton>
-          <UIButton
-            v-else-if="quest.status === 'ACTIVE'"
+            v-if="quest.status === 'ACTIVE'"
             data-abandon-quest
             variant="secondary"
             :disabled="session.mutationPending"
@@ -284,6 +233,8 @@ onMounted(async () => {
 .quests__counter{display:grid;min-width:3.8rem;justify-items:center;padding:.45rem .55rem;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:rgb(255 255 255 / 2%)}
 .quests__counter strong{font-family:var(--ui-font-display);font-size:var(--ui-font-size-lg);color:var(--ui-color-primary)}
 .quests__counter span{color:var(--ui-color-text-muted);font-size:.56rem;text-transform:uppercase}
+.quest-philosophy{border-color:color-mix(in srgb,var(--ui-color-primary) 26%,var(--ui-color-border));background:linear-gradient(110deg,rgb(146 136 255 / 8%),transparent 60%),var(--ui-gradient-panel)}
+.quest-philosophy strong{font-family:var(--ui-font-display)}.quest-philosophy p{margin:.3rem 0 0;color:var(--ui-color-text-muted);font-size:.7rem;line-height:1.45}
 .quest-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .quest-tabs__button{display:flex;min-height:38px;align-items:center;justify-content:space-between;gap:6px;padding:7px 9px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:rgb(255 255 255 / 2%);color:var(--ui-color-text-muted);font:inherit;font-size:.68rem;cursor:pointer}
 .quest-tabs__button b{display:grid;min-width:1.35rem;height:1.35rem;place-items:center;border-radius:var(--ui-radius-round);background:rgb(255 255 255 / 5%);font-size:.62rem}

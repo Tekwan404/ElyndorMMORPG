@@ -24,22 +24,30 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task LevelOneToTwentyContentFormsSingleValidatedChain()
+    public async Task LevelOneToTwentyContentInterleavesStoryErrandsAndContracts()
     {
         GameContentPackage content = await LoadContentAsync();
         IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(content);
 
         Assert.Equal(20, quests.Count);
-        Assert.Equal("QUEST_01_FIRST_HUNT", quests[0].Id);
-        Assert.Equal("CONTRACT_BROODMOTHER_GATE", quests.Single(q => q.RequiredLevel == 14).Id);
-        Assert.Equal("QUEST_20_BLIGHTED_ALPHA", quests[^1].Id);
+        Assert.Equal(8, quests.Count(quest => quest.Type == QuestType.Story));
+        Assert.Equal(7, quests.Count(quest => quest.Type == QuestType.Side));
+        Assert.Equal(5, quests.Count(quest => quest.Type == QuestType.Contract));
 
-        for (var index = 1; index < quests.Count; index++)
-        {
-            Assert.Contains(
-                quests[index - 1].Id,
-                quests[index].PrerequisiteQuestIds ?? []);
-        }
+        QuestDefinition wolfHides = quests.Single(quest => quest.Id == "QUEST_02_WOLF_HIDES");
+        QuestDefinition boarTrail = quests.Single(quest => quest.Id == "QUEST_03_BOAR_TRAIL");
+        Assert.Contains("QUEST_01_FIRST_HUNT", wolfHides.PrerequisiteQuestIds ?? []);
+        Assert.Contains("QUEST_01_FIRST_HUNT", boarTrail.PrerequisiteQuestIds ?? []);
+
+        QuestDefinition broodmother = quests.Single(quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
+        Assert.Equal(QuestType.Contract, broodmother.Type);
+        Assert.Equal("STARTER_TOWN", broodmother.OfferLocationId);
+        Assert.Equal("BF-014", broodmother.ContractNumber);
+        Assert.Equal("Высокая", broodmother.ThreatLevel);
+        Assert.Contains("QUEST_13_BROODMOTHER_TRACE", broodmother.PrerequisiteQuestIds ?? []);
+
+        QuestDefinition levelTwenty = quests.Single(quest => quest.Id == "QUEST_20_BLIGHTED_ALPHA");
+        Assert.Contains("QUEST_19_VETERAN_BANDITS", levelTwenty.PrerequisiteQuestIds ?? []);
     }
 
     [Fact]
@@ -205,7 +213,7 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(
             level: 14,
-            locationId: "BROODMOTHER_LAIR");
+            locationId: "STARTER_TOWN");
 
         await using GameDbContext context = postgres.CreateDbContext();
         (QuestService service, GameContentPackage content) =
@@ -218,33 +226,14 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
             "LOCKED",
             locked.Quests.Single(q => q.Id == "CONTRACT_BROODMOTHER_GATE").Status);
 
-        string[] prerequisites =
-        [
-            "QUEST_01_FIRST_HUNT",
-            "QUEST_02_WOLF_HIDES",
-            "QUEST_03_BOAR_TRAIL",
-            "QUEST_04_SILKEN_THREAT",
-            "QUEST_05_ALPHA_OF_WHISPERS",
-            "QUEST_06_DEEPER_TRACKS",
-            "QUEST_07_CORRUPTED_TUSKS",
-            "QUEST_08_VENOM_IN_DARK",
-            "QUEST_09_GOBLIN_SCOUTS",
-            "QUEST_10_PACK_PRESSURE",
-            "QUEST_11_OLD_ALPHA",
-            "QUEST_12_FANG_PROOF",
-            "QUEST_13_BROODMOTHER_TRACE"
-        ];
-        foreach (string prerequisite in prerequisites)
-        {
-            context.QuestRewardGrants.Add(new QuestRewardGrant(
-                characterId,
-                prerequisite,
-                Guid.CreateVersion7(),
-                0,
-                0,
-                "[]",
-                Now));
-        }
+        context.QuestRewardGrants.Add(new QuestRewardGrant(
+            characterId,
+            "QUEST_13_BROODMOTHER_TRACE",
+            Guid.CreateVersion7(),
+            0,
+            0,
+            "[]",
+            Now));
         await context.SaveChangesAsync();
 
         QuestJournalSnapshot available = await service.GetAsync(

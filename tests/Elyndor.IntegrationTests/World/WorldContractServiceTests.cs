@@ -40,7 +40,7 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
 
         CharacterLocation location = await context.CharacterLocations
             .SingleAsync(candidate => candidate.CharacterId == characterId);
-        location.Relocate("BROODMOTHER_LAIR", Now);
+        location.Relocate("STARTER_TOWN", Now);
         await context.SaveChangesAsync();
         await CompleteBroodmotherPrerequisiteAsync(context, characterId);
 
@@ -62,7 +62,7 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
     {
         (Guid accountId, _) = await CreateCharacterAsync(
             level: 14,
-            locationId: "BROODMOTHER_LAIR");
+            locationId: "STARTER_TOWN");
         await using GameDbContext context = postgres.CreateDbContext();
         await CompleteBroodmotherPrerequisiteAsync(
             context,
@@ -89,7 +89,7 @@ public sealed class WorldContractServiceTests(PostgresFixture postgres) : IAsync
     {
         (Guid accountId, _) = await CreateCharacterAsync(
             level: 14,
-            locationId: "BROODMOTHER_LAIR");
+            locationId: "STARTER_TOWN");
         await using GameDbContext context = postgres.CreateDbContext();
         WorldContractService service = await CreateServiceAsync(context);
 

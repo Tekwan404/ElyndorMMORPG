@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import CombatView from '@/game/combat/views/CombatView.vue'
+import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -17,6 +18,7 @@ const combat = useCombatSessionStore()
 const lastCombatResult = ref<CombatResult | null>(null)
 const lastEnemyName = ref<string | null>(null)
 const merchantOpen = ref(false)
+const guildOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
 
@@ -29,10 +31,15 @@ const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
 )
-const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
-  contract.offerLocationId === currentLocationId.value
-  || contract.status === 'ACTIVE'
-    && currentLocationId.value === 'BROODMOTHER_LAIR',
+const locationQuestLeads = computed(() => (session.questJournal?.quests ?? []).filter(quest =>
+  quest.status === 'AVAILABLE'
+  && quest.type !== 'CONTRACT'
+  && quest.offerLocationId === currentLocationId.value,
+))
+const hasLocalGuildContracts = computed(() => (session.questJournal?.quests ?? []).some(quest =>
+  quest.type === 'CONTRACT'
+  && quest.offerLocationId === currentLocationId.value
+  && quest.status !== 'COMPLETED',
 ))
 const locationName = computed(() => world.value?.currentLocation.displayName ?? 'Неизвестная область')
 const locationDescription = computed(() =>
@@ -81,16 +88,9 @@ const needsOutOfCombatRefresh = computed(() => {
     || (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
 })
 
-async function acceptContract(contractId: string): Promise<void> {
+async function acceptQuest(questId: string): Promise<void> {
   if (isTravelling.value || session.mutationPending || combat.isActive) return
-  await session.acceptContract(contractId)
-}
-
-function contractStatusLabel(status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLETED'): string {
-  if (status === 'COMPLETED') return 'ВЫПОЛНЕН'
-  if (status === 'ACTIVE') return 'ВЗЯТ'
-  if (status === 'AVAILABLE') return 'ДОСТУПЕН'
-  return 'ЗАКРЫТ'
+  await session.acceptQuest(questId)
 }
 
 async function explore(): Promise<void> {
@@ -140,12 +140,16 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
 }
 
 watch(isTravelling, travelling => {
-  if (travelling) merchantOpen.value = false
+  if (travelling) {
+    merchantOpen.value = false
+    guildOpen.value = false
+  }
 })
 
 watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
     merchantOpen.value = false
+    guildOpen.value = false
   }
   if (locationId) void restoreCombat()
 }, { immediate: true })
@@ -159,6 +163,7 @@ watch(() => combat.snapshot?.status, (status) => {
 })
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
+onMounted(() => { void session.refreshQuestJournal() })
 onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 </script>
 
@@ -239,51 +244,62 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
       </article>
     </section>
 
-    <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
+    <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
       <header class="section-heading">
         <div>
-          <small>КОНТРАКТЫ</small>
-          <strong id="contracts-title">Задания области</strong>
+          <small>ЛЮДИ И ИСТОРИИ</small>
+          <strong id="stories-title">Что происходит рядом</strong>
         </div>
-        <span>{{ locationContracts.length }}</span>
+        <span>{{ locationQuestLeads.length }}</span>
       </header>
 
-      <article
-        v-for="contract in locationContracts"
-        :key="contract.id"
-        class="contract-card"
-        :data-contract-id="contract.id"
-        :data-contract-status="contract.status"
-      >
-        <div class="contract-card__icon" aria-hidden="true">✦</div>
-        <div class="contract-card__copy">
-          <small>{{ contractStatusLabel(contract.status) }} · УР. {{ contract.requiredLevel }}</small>
-          <strong>{{ contract.displayName }}</strong>
-          <p>{{ contract.description }}</p>
-          <div class="contract-card__reward">
-            <span>Награда</span>
-            <b>+{{ contract.rewardXp }} опыта · +{{ contract.rewardGold }} золота</b>
-            <em>Открывает: {{ contract.unlockLocationId === 'BLIGHTED_GROVE' ? 'Осквернённая чаща' : contract.unlockLocationId }}</em>
-          </div>
-        </div>
-        <UIButton
-          v-if="contract.status === 'AVAILABLE'"
-          data-accept-contract
-          :loading="session.mutationPending"
-          :disabled="isTravelling || session.mutationPending"
-          @click="acceptContract(contract.id)"
+      <div class="story-list">
+        <article
+          v-for="quest in locationQuestLeads"
+          :key="quest.id"
+          class="story-card"
+          :data-world-quest-id="quest.id"
+          :data-world-quest-type="quest.type"
         >
-          Взять контракт
-        </UIButton>
-        <span v-else-if="contract.status === 'ACTIVE'" class="contract-card__status contract-card__status--active">
-          Убейте цель
-        </span>
-        <span v-else-if="contract.status === 'COMPLETED'" class="contract-card__status contract-card__status--done">
-          Выполнено
-        </span>
-        <span v-else class="contract-card__status">
-          Нужен {{ contract.requiredLevel }} уровень
-        </span>
+          <div class="story-card__icon" aria-hidden="true">{{ quest.type === 'SIDE' ? '☷' : '✦' }}</div>
+          <div class="story-card__copy">
+            <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
+            <strong>{{ quest.displayName }}</strong>
+            <em v-if="quest.issuerName">{{ quest.issuerName }}<span v-if="quest.issuerRole"> · {{ quest.issuerRole }}</span></em>
+            <p>{{ quest.description }}</p>
+            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
+          </div>
+          <UIButton
+            data-accept-world-quest
+            :disabled="isTravelling || session.mutationPending"
+            @click="acceptQuest(quest.id)"
+          >
+            {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
+          </UIButton>
+        </article>
+      </div>
+    </section>
+
+    <section
+      v-if="!isStarterTown && hasLocalGuildContracts"
+      class="field-guild"
+      aria-labelledby="field-guild-title"
+    >
+      <header class="section-heading">
+        <div>
+          <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
+          <strong id="field-guild-title">Экспедиционный пост</strong>
+        </div>
+        <span>КОНТРАКТЫ</span>
+      </header>
+      <article class="activity-card">
+        <div class="activity-card__icon" aria-hidden="true">⚔</div>
+        <div class="activity-card__copy">
+          <small>ПОЛЕВОЙ РЕГИСТРАТОР</small>
+          <strong>Журнал контрактов экспедиции</strong>
+          <p>Здесь регистрируют работу, связанную с угрозами текущего региона.</p>
+        </div>
+        <UIButton data-open-field-guild @click="guildOpen = true">Открыть журнал</UIButton>
       </article>
     </section>
 
@@ -330,6 +346,22 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
           </UIButton>
         </article>
 
+        <article class="service-card service-card--guild" data-town-service="guild">
+          <span class="service-card__icon" aria-hidden="true">⚔</span>
+          <div class="service-card__copy">
+            <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
+            <strong>Представительство Гильдии</strong>
+            <p>Регистрация официальных контрактов, охот и региональных угроз.</p>
+          </div>
+          <UIButton
+            data-open-adventurer-guild
+            :disabled="isTravelling"
+            @click="guildOpen = true"
+          >
+            {{ isTravelling ? 'В пути' : 'Войти' }}
+          </UIButton>
+        </article>
+
         <article class="service-card service-card--rest" data-town-service="rest">
           <span class="service-card__icon" aria-hidden="true">✦</span>
           <div class="service-card__copy">
@@ -343,6 +375,11 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     </section>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
+    <AdventurerGuildBoard
+      :open="guildOpen"
+      :location-id="currentLocationId ?? ''"
+      @close="guildOpen = false"
+    />
   </section>
 </template>
 
@@ -566,7 +603,8 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 }
 
 .location-activities,
-.location-contracts,
+.world-stories,
+.field-guild,
 .town-services,
 .location-routes {
   overflow: hidden;
@@ -575,92 +613,6 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
   background:
     linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
   box-shadow: var(--ui-shadow-inset);
-}
-
-.contract-card {
-  display: grid;
-  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-4);
-  background:
-    radial-gradient(circle at 8% 50%, rgb(146 136 255 / 10%), transparent 9rem),
-    linear-gradient(90deg, rgb(146 136 255 / 5%), transparent 70%);
-}
-
-.contract-card__icon {
-  display: grid;
-  width: 3.1rem;
-  height: 3.1rem;
-  place-items: center;
-  border: 1px solid rgb(146 136 255 / 26%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 82%);
-  color: #b8b2ff;
-  font-size: 1.2rem;
-}
-
-.contract-card__copy {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.contract-card__copy small {
-  color: #aaa3ff;
-  font-size: .53rem;
-  font-weight: 800;
-  letter-spacing: .07em;
-}
-
-.contract-card__copy strong {
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-sm);
-}
-
-.contract-card__copy p {
-  margin: 0;
-  color: var(--ui-color-text-muted);
-  font-size: .66rem;
-  line-height: 1.4;
-}
-
-.contract-card__reward {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin-top: 4px;
-  font-size: .58rem;
-}
-
-.contract-card__reward span,
-.contract-card__reward em {
-  color: var(--ui-color-text-muted);
-  font-style: normal;
-}
-
-.contract-card__reward b {
-  color: var(--ui-color-gold);
-}
-
-.contract-card__status {
-  padding: 6px 9px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-text-muted);
-  font-size: .58rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.contract-card__status--active {
-  border-color: rgb(146 136 255 / 30%);
-  color: #c2bdff;
-}
-
-.contract-card__status--done {
-  border-color: rgb(79 185 150 / 30%);
-  color: #84d5bb;
 }
 
 .activity-card {
@@ -773,6 +725,23 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
     linear-gradient(160deg, rgb(13 19 31 / 100%), rgb(5 8 14 / 100%));
 }
 
+.service-card--guild {
+  background:
+    linear-gradient(150deg, rgb(232 200 102 / 10%), transparent 58%),
+    linear-gradient(160deg, rgb(16 18 28 / 100%), rgb(5 8 14 / 100%));
+}
+
+.story-list { display:grid; gap:1px; background:rgb(255 255 255 / 6%); }
+.story-card { display:grid; grid-template-columns:3rem minmax(0,1fr) auto; align-items:center; gap:var(--ui-space-3); padding:var(--ui-space-3); background:linear-gradient(150deg,rgb(146 136 255 / 5%),transparent 58%),rgb(7 11 18); }
+.story-card__icon { display:grid; width:3rem; height:3rem; place-items:center; border:1px solid var(--ui-color-border-strong); border-radius:var(--ui-radius-md); color:#aaa3ff; font-size:1.15rem; }
+.story-card__copy { display:grid; min-width:0; gap:2px; }
+.story-card__copy small { color:#aaa3ff; font-size:.53rem; font-weight:800; letter-spacing:.07em; }
+.story-card__copy strong { font-family:var(--ui-font-display); }
+.story-card__copy em { color:var(--ui-color-gold); font-size:.61rem; font-style:normal; }
+.story-card__copy p { margin:2px 0; color:var(--ui-color-text-muted); font-size:.66rem; line-height:1.4; }
+.story-card__reward { color:#ddd3a5; font-size:.6rem; }
+
+
 .service-card--rest {
   grid-column: 1 / -1;
   grid-template-columns: 3.1rem minmax(0, 1fr) auto;
@@ -829,6 +798,15 @@ onBeforeUnmount(() => syncVitalsRefreshTimer(false))
 
   .scene-encounter img {
     max-height: 9rem;
+  }
+
+  .story-card {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+  }
+
+  .story-card :deep(.ui-button) {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .activity-card {

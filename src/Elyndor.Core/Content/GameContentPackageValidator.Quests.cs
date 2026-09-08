@@ -59,6 +59,27 @@ public static partial class GameContentPackageValidator
                     $"Quest '{quest.Id}' contains invalid presentation, level, location, or rewards."));
             }
 
+            if (quest.Type == QuestType.Contract
+                && (string.IsNullOrWhiteSpace(quest.IssuerName)
+                    || string.IsNullOrWhiteSpace(quest.RegionName)
+                    || string.IsNullOrWhiteSpace(quest.ContractNumber)
+                    || string.IsNullOrWhiteSpace(quest.ThreatLevel)))
+            {
+                errors.Add(new(
+                    "INVALID_CONTRACT_PRESENTATION",
+                    path,
+                    $"Contract '{quest.Id}' requires issuer, region, contract number, and threat level."));
+            }
+
+            if (quest.Type == QuestType.Side
+                && string.IsNullOrWhiteSpace(quest.IssuerName))
+            {
+                errors.Add(new(
+                    "INVALID_ERRAND_PRESENTATION",
+                    path,
+                    $"Errand '{quest.Id}' requires an issuer."));
+            }
+
             if (quest.Objectives.Count == 0)
             {
                 errors.Add(new(
