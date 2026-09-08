@@ -1,0 +1,1672 @@
+{
+  "contentVersion": "0.14.0",
+  "balanceVersion": "0.12.0",
+  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "items": [
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_CHEST",
+      "name": "Нагрудник Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 3,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 28
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_FEET",
+      "name": "Сапоги Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 1,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 12.5
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_HANDS",
+      "name": "Рукавицы Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 1,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 13.5
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_HEAD",
+      "name": "Шлем Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 2,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 18
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_LEGS",
+      "name": "Поножи Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 3,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 24.5
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_SHIELD",
+      "name": "Щит Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Щит прогрессии «Сталь Пограничника».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 1,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 21,
+      "blockChancePercent": 1.3,
+      "blockValueMin": 3,
+      "blockValueMax": 4
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
+      "name": "Наплечники Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 2,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 15.5
+    },
+    {
+      "id": "WARRIOR_COMMON_BORDER_STEEL_WEAPON",
+      "name": "Меч Пограничника",
+      "type": "Equipment",
+      "rarity": "Common",
+      "requiredLevel": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 2,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 1
+      },
+      "description": "Тематическое оружие прогрессии «Сталь Пограничника». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 2,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 1,
+          "max": 2,
+          "step": 1
+        }
+      },
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 7,
+      "weaponDamageMax": 12
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_CHEST",
+      "name": "Нагрудник Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 6,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 48
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_FEET",
+      "name": "Сапоги Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 3,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 21.5
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_HANDS",
+      "name": "Рукавицы Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 3,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 23
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_HEAD",
+      "name": "Шлем Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 4,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 30.5
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_LEGS",
+      "name": "Поножи Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 5,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 42
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_SHIELD",
+      "name": "Щит Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Щит прогрессии «Железный Дозор».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 36,
+      "blockChancePercent": 1.6,
+      "blockValueMin": 9,
+      "blockValueMax": 14
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_SHOULDERS",
+      "name": "Наплечники Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 3,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "armorCategory": "HEAVY",
+      "armorFlat": 26.5
+    },
+    {
+      "id": "WARRIOR_UNCOMMON_IRON_WATCH_WEAPON",
+      "name": "Клинок Железного Дозора",
+      "type": "Equipment",
+      "rarity": "Uncommon",
+      "requiredLevel": 6,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 5,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 2
+      },
+      "description": "Тематическое оружие прогрессии «Железный Дозор». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        },
+        "stamina": {
+          "min": 2,
+          "max": 3,
+          "step": 1
+        }
+      },
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 13,
+      "weaponDamageMax": 21
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_CHEST",
+      "name": "Нагрудник Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 10,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 73
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_FEET",
+      "name": "Сапоги Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 4,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 32.5
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_HANDS",
+      "name": "Рукавицы Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 5,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 5,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 35
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_HEAD",
+      "name": "Шлем Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 6,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 46.5
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_LEGS",
+      "name": "Поножи Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 9,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 9,
+          "max": 14,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 64
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_SHIELD",
+      "name": "Щит Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Щит прогрессии «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 4,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 55,
+      "blockChancePercent": 1.9,
+      "blockValueMin": 15,
+      "blockValueMax": 24
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
+      "name": "Наплечники Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 6,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 6,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 40.5
+    },
+    {
+      "id": "WARRIOR_RARE_GREY_FANG_WEAPON",
+      "name": "Клык Серого Волка",
+      "type": "Equipment",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 8,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 3
+      },
+      "description": "Тематическое оружие прогрессии «Клык Серого Волка». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 8,
+          "max": 13,
+          "step": 1
+        },
+        "stamina": {
+          "min": 3,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 22,
+      "weaponDamageMax": 34
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+      "name": "Нагрудник Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 15,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 15,
+          "max": 25,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 15,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 109
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+      "name": "Сапоги Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 7,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 7,
+          "max": 11,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 48
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+      "name": "Рукавицы Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 7,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 7,
+          "max": 12,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 52
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+      "name": "Шлем Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 10,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 10,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 69.5
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+      "name": "Поножи Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 13,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 13,
+          "max": 22,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 96
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+      "name": "Наплечники Багровой Ярости",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 8,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 5
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 8,
+          "max": 14,
+          "step": 1
+        },
+        "stamina": {
+          "min": 5,
+          "max": 8,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 61
+    },
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
+      "name": "Клинок Багровой Клятвы",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 12,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 4
+      },
+      "description": "Тематическое оружие прогрессии «Клятва Багровой Ярости». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 12,
+          "max": 20,
+          "step": 1
+        },
+        "stamina": {
+          "min": 4,
+          "max": 7,
+          "step": 1
+        }
+      },
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 34,
+      "weaponDamageMax": 52
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+      "name": "Нагрудник Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 23,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 14
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 23,
+          "max": 33,
+          "step": 1
+        },
+        "stamina": {
+          "min": 14,
+          "max": 20,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 157
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
+      "name": "Сапоги Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 10,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 10,
+          "max": 15,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 69
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+      "name": "Рукавицы Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 11,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 7
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 11,
+          "max": 16,
+          "step": 1
+        },
+        "stamina": {
+          "min": 7,
+          "max": 10,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 75
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+      "name": "Шлем Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 15,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 15,
+          "max": 21,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 100.5
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+      "name": "Поножи Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 20,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 12
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 20,
+          "max": 29,
+          "step": 1
+        },
+        "stamina": {
+          "min": 12,
+          "max": 18,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 138
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
+      "name": "Щит Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Щит прогрессии «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 9,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 117.5,
+      "blockChancePercent": 2.5,
+      "blockValueMin": 27,
+      "blockValueMax": 43
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "name": "Наплечники Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 13,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Наследие Первого Стража».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 13,
+          "max": 18,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 11,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 88
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
+      "name": "Клинок Первого Стража",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 18,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 6
+      },
+      "description": "Тематическое оружие прогрессии «Наследие Первого Стража». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 18,
+          "max": 26,
+          "step": 1
+        },
+        "stamina": {
+          "min": 6,
+          "max": 9,
+          "step": 1
+        }
+      },
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 49,
+      "weaponDamageMax": 76
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+      "name": "Нагрудник Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 31,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 19
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 31,
+          "max": 45,
+          "step": 1
+        },
+        "stamina": {
+          "min": 19,
+          "max": 28,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 217
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+      "name": "Сапоги Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 14,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 8
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 14,
+          "max": 20,
+          "step": 1
+        },
+        "stamina": {
+          "min": 8,
+          "max": 12,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 95.5
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+      "name": "Рукавицы Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 15,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 15,
+          "max": 22,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 104
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+      "name": "Шлем Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 20,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 12
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 20,
+          "max": 29,
+          "step": 1
+        },
+        "stamina": {
+          "min": 12,
+          "max": 18,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 139
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+      "name": "Поножи Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 27,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 17
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 27,
+          "max": 40,
+          "step": 1
+        },
+        "stamina": {
+          "min": 17,
+          "max": 25,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 191
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
+      "name": "Щит Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 12
+      },
+      "description": "Щит прогрессии «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "stamina": {
+          "min": 12,
+          "max": 18,
+          "step": 1
+        }
+      },
+      "offHandCategory": "SHIELD",
+      "armorFlat": 163,
+      "blockChancePercent": 2.9,
+      "blockValueMin": 34,
+      "blockValueMax": 55
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+      "name": "Наплечники Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 17,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 11
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 17,
+          "max": 25,
+          "step": 1
+        },
+        "stamina": {
+          "min": 11,
+          "max": 16,
+          "step": 1
+        }
+      },
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 121.5
+    },
+    {
+      "id": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
+      "name": "Крушитель Чёрного Бастиона",
+      "type": "Equipment",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 25,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 9
+      },
+      "description": "Тематическое оружие прогрессии «Доспехи Чёрного Бастиона». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 25,
+          "max": 36,
+          "step": 1
+        },
+        "stamina": {
+          "min": 9,
+          "max": 13,
+          "step": 1
+        }
+      },
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 68,
+      "weaponDamageMax": 102
+    }
+  ]
+}
