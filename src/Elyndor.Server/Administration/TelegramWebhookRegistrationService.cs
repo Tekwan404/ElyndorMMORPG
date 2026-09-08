@@ -10,6 +10,8 @@ public sealed class TelegramWebhookRegistrationService(
     IOptions<AuthenticationOptions> authenticationOptions,
     IOptions<TelegramAdminOptions> adminOptions)
 {
+    private static readonly string[] AllowedUpdates = ["message"];
+
     public async Task RegisterAsync(CancellationToken cancellationToken)
     {
         TelegramAdminOptions options = adminOptions.Value;
@@ -27,7 +29,7 @@ public sealed class TelegramWebhookRegistrationService(
             {
                 url = webhookUri!.AbsoluteUri,
                 secret_token = options.WebhookSecret,
-                allowed_updates = new[] { "message" },
+                allowed_updates = AllowedUpdates,
                 drop_pending_updates = true
             },
             cancellationToken);
