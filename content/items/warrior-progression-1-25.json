@@ -1667,6 +1667,42 @@
       "weaponCategory": "TWO_HAND_SWORD",
       "weaponDamageMin": 68,
       "weaponDamageMax": 102
+    },
+    {
+      "id": "UNIQUE_WARRIOR_BLACKHEART_L25",
+      "name": "Черносерд",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 38,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 20
+      },
+      "description": "Именное оружие 25 уровня. Unique не является отдельным сетовым тиром.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "primaryStatRanges": {
+        "strength": {
+          "min": 38,
+          "max": 52,
+          "step": 1
+        },
+        "stamina": {
+          "min": 20,
+          "max": 30,
+          "step": 1
+        }
+      },
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 96,
+      "weaponDamageMax": 128
     }
   ]
 }
