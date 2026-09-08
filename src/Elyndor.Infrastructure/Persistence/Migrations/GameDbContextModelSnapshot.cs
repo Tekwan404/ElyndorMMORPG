@@ -414,6 +414,94 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Quests.CharacterQuestState", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("AcceptedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ProgressJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset?>("ReadyAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("StateVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.HasKey("CharacterId", "QuestId")
+                        .HasName("pk_character_quest_states");
+
+                    b.HasIndex("CharacterId", "Status")
+                        .HasDatabaseName("ix_character_quest_states_character_status");
+
+                    b.ToTable("character_quest_states", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_character_quest_states_progress_json", "jsonb_typeof(\"ProgressJson\") = 'object'");
+
+                            t.HasCheckConstraint("ck_character_quest_states_status", "\"Status\" IN ('ACTIVE','READY_TO_CLAIM','COMPLETED')");
+
+                            t.HasCheckConstraint("ck_character_quest_states_version_positive", "\"StateVersion\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Quests.QuestRewardGrant", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ClaimMutationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("GoldEarned")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("GrantedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RewardItemsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("XpEarned")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId", "QuestId")
+                        .HasName("pk_quest_reward_grants");
+
+                    b.HasIndex("ClaimMutationId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_quest_reward_grants_claim_mutation_id");
+
+                    b.ToTable("quest_reward_grants", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_quest_reward_grants_gold_non_negative", "\"GoldEarned\" >= 0");
+
+                            t.HasCheckConstraint("ck_quest_reward_grants_items_json", "jsonb_typeof(\"RewardItemsJson\") = 'array'");
+
+                            t.HasCheckConstraint("ck_quest_reward_grants_xp_non_negative", "\"XpEarned\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.Talents.CharacterTalentState", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -975,6 +1063,26 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_ability_cooldowns_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Quests.CharacterQuestState", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_quest_states_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Quests.QuestRewardGrant", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_quest_reward_grants_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.World.CharacterContractAcceptance", b =>
