@@ -24,25 +24,20 @@ public sealed class TelegramAdminLongPollingWorker(
             return;
 
         string token = authenticationOptions.Value.Telegram.BotToken;
-        try
-        {
-            await DeleteWebhookAsync(token, stoppingToken);
-            TelegramPollingLogMessages.Started(logger);
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception exception)
-        {
-            TelegramPollingLogMessages.StartFailed(logger, exception);
-        }
-
+        bool webhookRemoved = false;
         long offset = 0;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                if (!webhookRemoved)
+                {
+                    await DeleteWebhookAsync(token, stoppingToken);
+                    webhookRemoved = true;
+                    TelegramPollingLogMessages.Started(logger);
+                }
+
                 TelegramGetUpdatesResponse response =
                     await GetUpdatesAsync(token, offset, stoppingToken);
                 if (!response.Ok)
@@ -120,12 +115,6 @@ internal static class TelegramPollingLogMessages
             new EventId(1111, nameof(PollingStarted)),
             "Telegram admin long polling started; webhook removed.");
 
-    private static readonly Action<ILogger, Exception?> PollingStartFailed =
-        LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(1112, nameof(PollingStartFailed)),
-            "Telegram admin long polling could not remove the webhook; polling will retry through getUpdates.");
-
     private static readonly Action<ILogger, Exception?> PollingFailed =
         LoggerMessage.Define(
             LogLevel.Warning,
@@ -134,9 +123,6 @@ internal static class TelegramPollingLogMessages
 
     public static void Started(ILogger logger) =>
         PollingStarted(logger, null);
-
-    public static void StartFailed(ILogger logger, Exception exception) =>
-        PollingStartFailed(logger, exception);
 
     public static void PollFailed(ILogger logger, Exception exception) =>
         PollingFailed(logger, exception);
