@@ -33,3 +33,8 @@ Thumbs.db
 
 # Aspire
 .aspire/
+
+# Generated build / publish artifacts
+/artifacts/
+# Generated artifacts
+/artifacts/

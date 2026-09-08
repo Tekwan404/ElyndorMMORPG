@@ -1,9 +1,0 @@
-{
-  "contentVersion": "0.9.1",
-  "balanceVersion": "0.9.1",
-  "publishedAtUtc": "2026-09-03T19:47:00+00:00",
-  "resourceScaling": {
-    "manaBase": 100,
-    "manaPerIntellect": 5
-  }
-}
