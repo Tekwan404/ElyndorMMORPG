@@ -54,6 +54,8 @@ public sealed class MerchantService(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private IGameRandomFactory CompatibilityRandomFactory { get; } = randomFactory;
+
     public MerchantService(
         GameDbContext dbContext,
         IContentSnapshotProvider contentProvider,
@@ -473,6 +475,7 @@ public sealed class MerchantService(
     {
         if (!definition.Stackable)
         {
+            _ = CompatibilityRandomFactory;
             for (var index = 0; index < quantity; index++)
             {
                 dbContext.CharacterItems.Add(
