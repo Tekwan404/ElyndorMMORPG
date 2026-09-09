@@ -39,6 +39,8 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
         builder.Property(item => item.ReforgeSlotKey).HasMaxLength(64);
         builder.Property(item => item.ReforgeCount).HasDefaultValue(0).IsRequired();
         builder.Property(item => item.EnhancementLevel).HasDefaultValue(0).IsRequired();
+        builder.Property(item => item.BindState).HasMaxLength(16).HasDefaultValue(ItemBindStates.Unbound).IsRequired();
+        builder.Property(item => item.TransactionLockId);
         builder.Property(item => item.SourceType).HasMaxLength(32);
         builder.Property(item => item.SourceOperationId);
         builder.Property(item => item.SourceEntryId).HasMaxLength(128);
@@ -62,5 +64,7 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
             .HasDatabaseName("ix_character_items_character_definition");
         builder.HasIndex(item => item.SourceOperationId)
             .HasDatabaseName("ix_character_items_source_operation");
+        builder.HasIndex(item => item.TransactionLockId)
+            .HasDatabaseName("ix_character_items_transaction_lock");
     }
 }
