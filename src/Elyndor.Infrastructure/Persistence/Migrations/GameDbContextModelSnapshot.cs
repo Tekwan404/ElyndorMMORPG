@@ -346,6 +346,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ItemInstanceSeed")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("GeneratedItemJson")
+                        .HasColumnType("jsonb");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -360,6 +363,13 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<string>("RollsJson")
                         .IsRequired()
                         .HasColumnType("jsonb");
+
+                    b.Property<string>("SourceQualityProfileId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("NORMAL");
 
                     b.Property<string>("State")
                         .IsRequired()
@@ -740,6 +750,17 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("AcquiredAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("ActualItemPower")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("BindState")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("UNBOUND");
+
                     b.Property<Guid>("CharacterId")
                         .HasColumnType("uuid");
 
@@ -748,7 +769,38 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(1);
 
+                    b.Property<int>("EnhancementLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("GeneratedDisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("GeneratedPrefixId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("GeneratedSuffixId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("GenerationSeedHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("GenerationVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<bool>("IsLocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPerfect")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -758,8 +810,36 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<int?>("ItemLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MaxTemplateItemPower")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("MinimumTemplateItemPower")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("PerfectOrigin")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<int>("ReforgeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("ReforgeSlotKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal?>("RollQuality")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("numeric(7,2)");
 
                     b.Property<decimal?>("RolledAgility")
                         .HasPrecision(18, 4)
@@ -777,8 +857,31 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
 
+                    b.Property<string>("SourceEntryId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("SourceOperationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourceType")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int?>("Stars")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("TransactionLockId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id")
                         .HasName("pk_character_items");
+
+                    b.HasIndex("SourceOperationId")
+                        .HasDatabaseName("ix_character_items_source_operation");
+
+                    b.HasIndex("TransactionLockId")
+                        .HasDatabaseName("ix_character_items_transaction_lock");
 
                     b.HasIndex("CharacterId", "ItemDefinitionId")
                         .HasDatabaseName("ix_character_items_character_definition");
@@ -786,6 +889,146 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("character_items", "game", t =>
                         {
                             t.HasCheckConstraint("ck_character_items_quantity_positive", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Items.ItemRolledAffix", b =>
+                {
+                    b.Property<Guid>("ItemInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SlotKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("AffixDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("AffixTier")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GenerationOrdinal")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsGuaranteed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsReforgeSlot")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MaxAtGeneration")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("MinAtGeneration")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("StatId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal>("StepAtGeneration")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("ItemInstanceId", "SlotKey")
+                        .HasName("pk_character_item_affixes");
+
+                    b.HasIndex("ItemInstanceId")
+                        .HasDatabaseName("ix_character_item_affixes_item_id");
+
+                    b.HasIndex("StatId")
+                        .HasDatabaseName("ix_character_item_affixes_stat_id");
+
+                    b.ToTable("character_item_affixes", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_character_item_affixes_range", "\"MaxAtGeneration\" >= \"MinAtGeneration\"");
+
+                            t.HasCheckConstraint("ck_character_item_affixes_step_positive", "\"StepAtGeneration\" > 0");
+
+                            t.HasCheckConstraint("ck_character_item_affixes_value_range", "\"Value\" >= \"MinAtGeneration\" AND \"Value\" <= \"MaxAtGeneration\"");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Items.ItemReforgeOperation", b =>
+                {
+                    b.Property<Guid>("OperationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CatalystQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CatalystItemId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CostGold")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentItemJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ItemInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MaterialItemId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("MaterialQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProposedItemJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("SlotKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("OperationId")
+                        .HasName("pk_item_reforge_operations");
+
+                    b.HasIndex("ItemInstanceId")
+                        .HasDatabaseName("ix_item_reforge_operations_item_id");
+
+                    b.HasIndex("CharacterId", "ItemInstanceId", "State")
+                        .HasDatabaseName("ix_item_reforge_operations_character_item_state");
+
+                    b.ToTable("item_reforge_operations", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_item_reforge_operations_catalyst_quantity", "\"CatalystQuantity\" >= 0");
+
+                            t.HasCheckConstraint("ck_item_reforge_operations_cost_gold", "\"CostGold\" >= 0");
+
+                            t.HasCheckConstraint("ck_item_reforge_operations_material_quantity", "\"MaterialQuantity\" >= 0");
                         });
                 });
 
@@ -803,6 +1046,13 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("DefinitionVersion")
                         .HasColumnType("integer");
+
+                    b.Property<string>("GeneratedItemJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("GenerationSeedHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("ItemDefinitionId")
                         .IsRequired()
@@ -830,6 +1080,17 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<decimal?>("RolledStrength")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("SourceEntryId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("SourceOperationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourceType")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
 
                     b.HasKey("Id")
                         .HasName("pk_pending_loot_items");
@@ -1487,6 +1748,16 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_character_items_characters_character_id");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Items.ItemRolledAffix", b =>
+                {
+                    b.HasOne("Elyndor.Core.Items.CharacterItem", null)
+                        .WithMany("Affixes")
+                        .HasForeignKey("ItemInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_item_affixes_character_items_item_id");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Items.PendingLootItem", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -1670,6 +1941,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_travel_operations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Items.CharacterItem", b =>
+                {
+                    b.Navigation("Affixes");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
