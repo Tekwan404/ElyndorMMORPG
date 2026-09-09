@@ -39,6 +39,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<ItemRolledAffix> CharacterItemAffixes => Set<ItemRolledAffix>();
 
+    public DbSet<ItemReforgeOperation> ItemReforgeOperations => Set<ItemReforgeOperation>();
+
     public DbSet<PendingLootItem> PendingLootItems => Set<PendingLootItem>();
 
     public DbSet<CharacterAbilityCooldown> CharacterAbilityCooldowns =>
