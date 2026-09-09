@@ -1,0 +1,289 @@
+{
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T04:55:00+00:00",
+  "itemization": {
+    "templateBasePower": 110,
+    "levelLinearCoefficient": 0.055,
+    "levelQuadraticCoefficient": 0.0035,
+    "slotMultipliers": {
+      "MAIN_HAND": 1.15,
+      "CHEST": 1,
+      "LEGS": 0.88,
+      "OFF_HAND": 0.7,
+      "HEAD": 0.64,
+      "SHOULDERS": 0.56,
+      "HANDS": 0.48,
+      "CLOAK": 0.45,
+      "FEET": 0.44,
+      "AMULET": 0.4,
+      "RING_1": 0.35,
+      "RING_2": 0.35
+    },
+    "rarityMultipliers": {
+      "COMMON": 1,
+      "UNCOMMON": 1.25,
+      "RARE": 1.55,
+      "EPIC": 1.9,
+      "LEGENDARY": 2.3,
+      "UNIQUE": 2.3
+    },
+    "statPowerWeights": {
+      "STRENGTH": 8,
+      "AGILITY": 10,
+      "INTELLECT": 9,
+      "STAMINA": 12,
+      "MAX_HP": 0.7,
+      "ATTACK_POWER": 4,
+      "SPELL_POWER": 4,
+      "CRITICAL_CHANCE": 35,
+      "CRITICAL_DAMAGE": 15,
+      "ACCURACY": 15,
+      "ATTACK_SPEED": 25,
+      "ARMOR": 0.8,
+      "MAGIC_RESISTANCE": 1.2,
+      "DODGE": 30,
+      "ARMOR_PENETRATION": 20,
+      "MAGIC_PENETRATION": 20,
+      "MAX_RESOURCE": 0.5,
+      "BLOCK_CHANCE": 25,
+      "BLOCK_VALUE": 1.5,
+      "WEAPON_DAMAGE": 5
+    },
+    "affixPools": [
+      {
+        "id": "WARRIOR_ARMOR",
+        "statIds": [
+          "STRENGTH",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ARMOR_PENETRATION",
+          "ACCURACY",
+          "MAX_HP"
+        ]
+      },
+      {
+        "id": "WARRIOR_WEAPON",
+        "statIds": [
+          "STRENGTH",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ARMOR_PENETRATION",
+          "ACCURACY",
+          "ATTACK_POWER"
+        ]
+      },
+      {
+        "id": "WARRIOR_SHIELD",
+        "statIds": [
+          "STAMINA",
+          "STRENGTH",
+          "BLOCK_CHANCE",
+          "BLOCK_VALUE",
+          "ARMOR",
+          "MAGIC_RESISTANCE"
+        ]
+      },
+      {
+        "id": "MAGE_ARMOR",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "MAGIC_PENETRATION",
+          "ACCURACY",
+          "MAX_RESOURCE",
+          "SPELL_POWER"
+        ]
+      },
+      {
+        "id": "MAGE_WEAPON",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "MAGIC_PENETRATION",
+          "ACCURACY",
+          "SPELL_POWER",
+          "MAX_RESOURCE"
+        ]
+      },
+      {
+        "id": "ARCHER_ARMOR",
+        "statIds": [
+          "AGILITY",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ARMOR_PENETRATION",
+          "ACCURACY",
+          "DODGE"
+        ]
+      },
+      {
+        "id": "ARCHER_WEAPON",
+        "statIds": [
+          "AGILITY",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ARMOR_PENETRATION",
+          "ACCURACY",
+          "ATTACK_POWER"
+        ]
+      },
+      {
+        "id": "ACCESSORY_GENERAL",
+        "statIds": [
+          "STRENGTH",
+          "AGILITY",
+          "INTELLECT",
+          "STAMINA",
+          "MAX_HP",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "DODGE",
+          "ARMOR_PENETRATION",
+          "MAGIC_PENETRATION",
+          "MAX_RESOURCE"
+        ]
+      }
+    ],
+    "affixCountProfiles": [
+      {
+        "id": "LEVEL_1_4",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 1
+      },
+      {
+        "id": "LEVEL_5_8",
+        "guaranteedCount": 1,
+        "minimumBonusCount": 0,
+        "maximumBonusCount": 1
+      },
+      {
+        "id": "LEVEL_9_12",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 0,
+        "maximumBonusCount": 1
+      },
+      {
+        "id": "LEVEL_13_16",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_17_20",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      }
+    ],
+    "qualityProfiles": [
+      {
+        "id": "NORMAL",
+        "biasExponent": 1.65
+      },
+      {
+        "id": "ELITE",
+        "biasExponent": 1.2
+      },
+      {
+        "id": "BOSS",
+        "biasExponent": 0.85
+      }
+    ],
+    "affixNames": [
+      {
+        "id": "PREFIX_STRENGTH",
+        "statId": "STRENGTH",
+        "kind": "PREFIX",
+        "low": "Крепкий",
+        "medium": "Могучий",
+        "high": "Титанический"
+      },
+      {
+        "id": "PREFIX_AGILITY",
+        "statId": "AGILITY",
+        "kind": "PREFIX",
+        "low": "Проворный",
+        "medium": "Ловкий",
+        "high": "Неуловимый"
+      },
+      {
+        "id": "PREFIX_INTELLECT",
+        "statId": "INTELLECT",
+        "kind": "PREFIX",
+        "low": "Учёный",
+        "medium": "Мудрый",
+        "high": "Архонский"
+      },
+      {
+        "id": "PREFIX_STAMINA",
+        "statId": "STAMINA",
+        "kind": "PREFIX",
+        "low": "Стойкий",
+        "medium": "Закалённый",
+        "high": "Несокрушимый"
+      },
+      {
+        "id": "SUFFIX_CRIT",
+        "statId": "CRITICAL_CHANCE",
+        "kind": "SUFFIX",
+        "low": "Сокола",
+        "medium": "Острого Сокола",
+        "high": "Небесного Сокола"
+      },
+      {
+        "id": "SUFFIX_DODGE",
+        "statId": "DODGE",
+        "kind": "SUFFIX",
+        "low": "Тени",
+        "medium": "Глубокой Тени",
+        "high": "Неуловимой Тени"
+      },
+      {
+        "id": "SUFFIX_SPEED",
+        "statId": "ATTACK_SPEED",
+        "kind": "SUFFIX",
+        "low": "Ветра",
+        "medium": "Быстрого Ветра",
+        "high": "Буревого Ветра"
+      },
+      {
+        "id": "SUFFIX_ARMOR_PEN",
+        "statId": "ARMOR_PENETRATION",
+        "kind": "SUFFIX",
+        "low": "Клыка",
+        "medium": "Пробоя",
+        "high": "Раскола"
+      },
+      {
+        "id": "SUFFIX_MAGIC_PEN",
+        "statId": "MAGIC_PENETRATION",
+        "kind": "SUFFIX",
+        "low": "Разлома",
+        "medium": "Глубокого Разлома",
+        "high": "Бездонного Разлома"
+      },
+      {
+        "id": "SUFFIX_ACCURACY",
+        "statId": "ACCURACY",
+        "kind": "SUFFIX",
+        "low": "Зоркости",
+        "medium": "Верного Взгляда",
+        "high": "Безошибочного Взгляда"
+      }
+    ],
+    "individualQualityDeviationPercent": 7,
+    "perfectSnapThreshold": 0.9995
+  }
+}
