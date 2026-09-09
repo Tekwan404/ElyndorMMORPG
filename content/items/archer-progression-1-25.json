@@ -34,7 +34,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 90,
+      "sellPriceGold": 22
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
@@ -66,7 +68,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 85,
+      "sellPriceGold": 21
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
@@ -98,7 +102,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 50,
+      "sellPriceGold": 12
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
@@ -130,7 +136,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 50,
+      "sellPriceGold": 12
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
@@ -162,7 +170,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 65,
+      "sellPriceGold": 16
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
@@ -194,7 +204,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 75,
+      "sellPriceGold": 18
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
@@ -226,7 +238,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 60,
+      "sellPriceGold": 15
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_BOW",
