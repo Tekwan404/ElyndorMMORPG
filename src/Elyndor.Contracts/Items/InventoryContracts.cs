@@ -26,6 +26,30 @@ public sealed record ConsumableActionResponse(
     string? EffectId,
     string? DispelCategory);
 
+public sealed record ItemAffixResponse(
+    string SlotKey,
+    string StatId,
+    decimal Value,
+    decimal Min,
+    decimal Max,
+    decimal Step,
+    int AffixTier,
+    bool IsGuaranteed,
+    bool IsReforgeSlot);
+
+public sealed record GeneratedItemSummaryResponse(
+    int ItemLevel,
+    decimal ItemPower,
+    decimal MaxItemPower,
+    decimal RollQuality,
+    int Stars,
+    bool IsPerfect,
+    string? PerfectOrigin,
+    string? GeneratedPrefixId,
+    string? GeneratedSuffixId,
+    string DisplayName,
+    IReadOnlyList<ItemAffixResponse> Affixes);
+
 public sealed record InventoryItemResponse(
     Guid Id,
     string DefinitionId,
@@ -54,11 +78,17 @@ public sealed record InventoryItemResponse(
     string? IconId = null,
     string? AppearanceProfileId = null,
     int? WeaponHandsRequired = null,
-    bool HasRandomStats = false);
+    bool HasRandomStats = false,
+    GeneratedItemSummaryResponse? GeneratedItem = null,
+    int ReforgeCount = 0,
+    string? ReforgeSlotKey = null,
+    bool TransactionLocked = false,
+    string BindState = "UNBOUND");
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
     InventoryItemResponse? Head,
+    InventoryItemResponse? Shoulders,
     InventoryItemResponse? Chest,
     InventoryItemResponse? Legs,
     InventoryItemResponse? Boots,
@@ -130,9 +160,36 @@ public sealed record PendingLootItemResponse(
     string Rarity,
     int Quantity,
     DateTimeOffset CreatedAtUtc,
-    ItemStatsResponse Stats);
+    ItemStatsResponse Stats,
+    GeneratedItemSummaryResponse? GeneratedItem = null);
 
 public sealed record PendingLootResponse(
     IReadOnlyList<PendingLootItemResponse> Items);
 
 public sealed record ClaimPendingLootRequest(Guid MutationId);
+
+public sealed record RollItemReforgeRequest(
+    Guid CharacterItemId,
+    string SlotKey,
+    Guid OperationId);
+
+public sealed record DecideItemReforgeRequest(
+    Guid OperationId,
+    bool AcceptProposed);
+
+public sealed record ItemReforgeCostResponse(
+    int Gold,
+    string MaterialItemId,
+    int MaterialQuantity,
+    string CatalystItemId,
+    int CatalystQuantity,
+    decimal CountMultiplier);
+
+public sealed record ItemReforgeResponse(
+    Guid OperationId,
+    string State,
+    Guid ItemInstanceId,
+    string SlotKey,
+    GeneratedItemSummaryResponse Current,
+    GeneratedItemSummaryResponse Proposed,
+    ItemReforgeCostResponse Cost);
