@@ -263,7 +263,7 @@ public static partial class GameContentPackageValidator
                     item.ArmorCategory is null
                     && (EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                         ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
-                EquipmentSlot.Head or EquipmentSlot.Chest or EquipmentSlot.Hands
+                EquipmentSlot.Head or EquipmentSlot.Shoulders or EquipmentSlot.Chest or EquipmentSlot.Hands
                     or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
                     && item.WeaponCategory is null
