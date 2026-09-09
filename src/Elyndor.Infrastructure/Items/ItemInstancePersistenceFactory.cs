@@ -97,6 +97,42 @@ public static class ItemInstancePersistenceFactory
             sourceEntryId);
     }
 
+    public static GeneratedItemInstance? ToGeneratedInstance(
+        CharacterItem item,
+        ItemDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(definition);
+        if (!item.IsProcedurallyGenerated
+            || !item.ItemLevel.HasValue
+            || !item.MinimumTemplateItemPower.HasValue
+            || !item.ActualItemPower.HasValue
+            || !item.MaxTemplateItemPower.HasValue
+            || !item.RollQuality.HasValue
+            || !item.Stars.HasValue)
+        {
+            return null;
+        }
+
+        return new GeneratedItemInstance(
+            item.ItemLevel.Value,
+            item.Affixes
+                .OrderBy(affix => affix.GenerationOrdinal)
+                .Select(affix => affix.ToGeneratedAffix())
+                .ToArray(),
+            item.MinimumTemplateItemPower.Value,
+            item.ActualItemPower.Value,
+            item.MaxTemplateItemPower.Value,
+            item.RollQuality.Value,
+            item.Stars.Value,
+            item.IsPerfect,
+            item.PerfectOrigin,
+            item.GeneratedPrefixId,
+            item.GeneratedSuffixId,
+            item.GeneratedDisplayName ?? definition.Name,
+            item.GenerationVersion);
+    }
+
     public static CharacterItem MaterializePending(
         PendingLootItem pending,
         ItemDefinition definition,
