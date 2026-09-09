@@ -39,10 +39,8 @@ describe('AppShell', () => {
       return true
     })
     const wrapper = mount(AppShell, { global: { stubs: { CombatView: { template: '<div data-global-combat />' } } } })
-    await wrapper.get('[data-nav="menu"]').trigger('click')
-    await wrapper.findAll('button').find(button => button.text() === 'Группа')!.trigger('click')
     await flushPromises()
-    await wrapper.findAll('button').find(button => button.text() === 'Начать бой')!.trigger('click')
+    await wrapper.get('[data-start-dungeon]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
     expect(wrapper.find('.navigation').exists()).toBe(false)
