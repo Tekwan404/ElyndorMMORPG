@@ -2,6 +2,12 @@ using Elyndor.Core.Content;
 
 namespace Elyndor.Core.Items;
 
+public static class ItemBindStates
+{
+    public const string Unbound = "UNBOUND";
+    public const string Bound = "BOUND";
+}
+
 public sealed class CharacterItem
 {
     private CharacterItem()
@@ -63,6 +69,8 @@ public sealed class CharacterItem
     public string? ReforgeSlotKey { get; private set; }
     public int ReforgeCount { get; private set; }
     public int EnhancementLevel { get; private set; }
+    public string BindState { get; private set; } = ItemBindStates.Unbound;
+    public Guid? TransactionLockId { get; private set; }
     public string? SourceType { get; private set; }
     public Guid? SourceOperationId { get; private set; }
     public string? SourceEntryId { get; private set; }
@@ -117,6 +125,7 @@ public sealed class CharacterItem
         GeneratedSuffixId = generated.GeneratedSuffixId;
         GeneratedDisplayName = generated.DisplayName;
         EnhancementLevel = 0;
+        BindState = ItemBindStates.Unbound;
         SourceType = sourceType;
         SourceOperationId = sourceOperationId;
         SourceEntryId = sourceEntryId;
@@ -126,6 +135,29 @@ public sealed class CharacterItem
     }
 
     public void SetLocked(bool isLocked) => IsLocked = isLocked;
+
+    public void AcquireTransactionLock(Guid operationId)
+    {
+        if (operationId == Guid.Empty)
+            throw new ArgumentException("Transaction lock identifier cannot be empty.", nameof(operationId));
+        if (TransactionLockId.HasValue && TransactionLockId.Value != operationId)
+            throw new InvalidOperationException("Item is already locked by another transaction.");
+        TransactionLockId = operationId;
+    }
+
+    public void ReleaseTransactionLock(Guid operationId)
+    {
+        if (operationId == Guid.Empty)
+            throw new ArgumentException("Transaction lock identifier cannot be empty.", nameof(operationId));
+        if (TransactionLockId.HasValue && TransactionLockId.Value != operationId)
+            throw new InvalidOperationException("Cannot release another transaction's item lock.");
+        TransactionLockId = null;
+    }
+
+    public void RecordReforgeAttempt()
+    {
+        ReforgeCount = checked(ReforgeCount + 1);
+    }
 
     public void SelectReforgeSlot(string slotKey)
     {
@@ -175,7 +207,6 @@ public sealed class CharacterItem
         GeneratedPrefixId = generatedPrefixId;
         GeneratedSuffixId = generatedSuffixId;
         GeneratedDisplayName = generatedDisplayName;
-        ReforgeCount++;
     }
 
     private void SetRolledPrimaryStats(PrimaryStats? stats)
