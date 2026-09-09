@@ -26,6 +26,50 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task OverleveledCharacterCanTeleportAndCreateAncientMineRun()
+    {
+        (Guid leaderAccountId, _, _) = await SeedPartyCharactersAsync();
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        StaticContentSnapshotProvider contentProvider = new(content);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        Character leader = await context.Characters
+            .SingleAsync(character => character.AccountId == leaderAccountId);
+        leader.SetLevel(25);
+        CharacterLocation location = await context.CharacterLocations
+            .SingleAsync(candidate => candidate.CharacterId == leader.Id);
+        location.Relocate("STARTER_TOWN", Now);
+        await context.SaveChangesAsync();
+
+        FixedTimeProvider time = new(Now);
+        PartyService partyService = new(context, time);
+        DungeonService dungeonService = new(context, partyService, contentProvider, time);
+
+        DungeonTeleportResult teleported = await dungeonService.TeleportToEntryAsync(
+            leaderAccountId,
+            "ANCIENT_MINE",
+            Guid.NewGuid(),
+            CancellationToken.None);
+        Assert.True(teleported.Succeeded, teleported.ErrorCode);
+        Assert.Equal("ANCIENT_MINE", teleported.LocationId);
+
+        Assert.True((await partyService.CreateAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            CancellationToken.None)).IsSuccess);
+
+        DungeonOperationResult created = await dungeonService.CreateAsync(
+            leaderAccountId,
+            "ANCIENT_MINE",
+            Guid.NewGuid(),
+            CancellationToken.None);
+        Assert.True(created.Succeeded, created.ErrorCode);
+        Assert.NotNull(created.Run);
+    }
+
+    [Fact]
     public async Task DisbandAbandonsActiveRunWithoutChangingEncounterRoster()
     {
         (Guid leader, _, _) = await SeedPartyCharactersAsync();
