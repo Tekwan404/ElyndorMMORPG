@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Elyndor.IntegrationTests.Combat;
@@ -44,20 +45,17 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
             "AutoArcher",
             "ARCHER");
 
-        Guid bowItemId = Guid.CreateVersion7();
         await using (GameDbContext equipmentContext = postgres.CreateDbContext())
         {
-            equipmentContext.CharacterItems.Add(new CharacterItem(
-                bowItemId,
-                character.Id,
-                "HUNTER_SHORTBOW",
-                1,
-                seededAtUtc));
-            equipmentContext.CharacterEquipment.Add(new CharacterEquipment(
-                character.Id,
-                EquipmentSlot.MainHand,
-                bowItemId));
-            await equipmentContext.SaveChangesAsync();
+            CharacterEquipment equipped = await equipmentContext.CharacterEquipment
+                .AsNoTracking()
+                .SingleAsync(item => item.CharacterId == character.Id
+                    && item.Slot == EquipmentSlot.MainHand);
+            CharacterItem starterBow = await equipmentContext.CharacterItems
+                .AsNoTracking()
+                .SingleAsync(item => item.Id == equipped.CharacterItemId);
+            Assert.Equal("HUNTER_SHORTBOW", starterBow.ItemDefinitionId);
+            Assert.True(starterBow.IsProcedurallyGenerated);
         }
 
         IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
@@ -121,6 +119,116 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
             await hub.InvokeAsync<CombatUpdateResponse>(
                 "LeaveCombat",
                 "archer-auto-cleanup");
+        }
+    }
+
+    [Fact]
+    public async Task LegacyArcherWithOrphanedMainHandIsRepairedOnceAndAutoAttacks()
+    {
+        Guid accountId = Guid.CreateVersion7();
+        const long telegramUserId = 9602;
+        DateTimeOffset seededAtUtc = DateTimeOffset.UtcNow;
+
+        await using (GameDbContext seedContext = postgres.CreateDbContext())
+        {
+            seedContext.Accounts.Add(new Account(accountId, telegramUserId, seededAtUtc));
+            await seedContext.SaveChangesAsync();
+        }
+
+        await using WebApplicationFactory<Program> factory = CreateFactory();
+        using HttpClient client = CreateAuthenticatedClient(
+            factory,
+            accountId,
+            telegramUserId);
+        CharacterResponse character = await CreateCharacterAsync(
+            client,
+            "LegacyArcher",
+            "ARCHER");
+
+        Guid orphanedItemId = Guid.CreateVersion7();
+        await using (GameDbContext legacyContext = postgres.CreateDbContext())
+        {
+            CharacterEquipment[] currentEquipment = await legacyContext.CharacterEquipment
+                .Where(item => item.CharacterId == character.Id)
+                .ToArrayAsync();
+            CharacterItem[] currentItems = await legacyContext.CharacterItems
+                .Where(item => item.CharacterId == character.Id)
+                .ToArrayAsync();
+            CharacterMutation[] existingMarkers = await legacyContext.CharacterMutations
+                .Where(item => item.CharacterId == character.Id
+                    && item.OperationType == "STARTING_EQUIPMENT_V1")
+                .ToArrayAsync();
+
+            legacyContext.CharacterEquipment.RemoveRange(currentEquipment);
+            legacyContext.CharacterItems.RemoveRange(currentItems);
+            legacyContext.CharacterMutations.RemoveRange(existingMarkers);
+            legacyContext.CharacterItems.Add(new CharacterItem(
+                orphanedItemId,
+                character.Id,
+                "LEGACY_REMOVED_ARCHER_BOW",
+                1,
+                seededAtUtc));
+            legacyContext.CharacterEquipment.Add(new CharacterEquipment(
+                character.Id,
+                EquipmentSlot.MainHand,
+                orphanedItemId));
+            await legacyContext.SaveChangesAsync();
+        }
+
+        IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
+        await using HubConnection hub = CreateHubConnection(factory, token);
+        await hub.StartAsync();
+
+        TaskCompletionSource<CombatUpdateResponse> autoAttackDamage =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        IDisposable subscription = hub.On<CombatUpdateResponse>(
+            "CombatUpdated",
+            update =>
+            {
+                if (update.Events.Any(combatEvent =>
+                    combatEvent.Type == "DamageDealt"
+                    && combatEvent.DefinitionId == "AUTO_ATTACK"
+                    && combatEvent.SourceActorId == character.Id
+                    && combatEvent.Amount > 0))
+                {
+                    autoAttackDamage.TrySetResult(update);
+                }
+            });
+
+        try
+        {
+            CombatUpdateResponse started = await hub.InvokeAsync<CombatUpdateResponse>(
+                "StartTraining");
+            Assert.True(started.Succeeded, started.ErrorCode);
+            Assert.True(started.Snapshot?.Player.AutoAttackEnabled);
+
+            CombatUpdateResponse tick = await autoAttackDamage.Task.WaitAsync(
+                TimeSpan.FromSeconds(6));
+            Assert.True(tick.Succeeded, tick.ErrorCode);
+
+            await using GameDbContext verify = postgres.CreateDbContext();
+            CharacterEquipment equipped = await verify.CharacterEquipment
+                .AsNoTracking()
+                .SingleAsync(item => item.CharacterId == character.Id
+                    && item.Slot == EquipmentSlot.MainHand);
+            CharacterItem repairedBow = await verify.CharacterItems
+                .AsNoTracking()
+                .SingleAsync(item => item.Id == equipped.CharacterItemId);
+
+            Assert.Equal("HUNTER_SHORTBOW", repairedBow.ItemDefinitionId);
+            Assert.NotEqual(orphanedItemId, repairedBow.Id);
+            Assert.Equal(
+                1,
+                await verify.CharacterMutations.CountAsync(item =>
+                    item.CharacterId == character.Id
+                    && item.OperationType == "STARTING_EQUIPMENT_V1"));
+        }
+        finally
+        {
+            subscription.Dispose();
+            await hub.InvokeAsync<CombatUpdateResponse>(
+                "LeaveCombat",
+                "legacy-archer-auto-cleanup");
         }
     }
 
