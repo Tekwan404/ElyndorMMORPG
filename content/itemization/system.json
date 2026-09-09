@@ -26,7 +26,7 @@
       "RARE": 1.55,
       "EPIC": 1.9,
       "LEGENDARY": 2.3,
-      "UNIQUE": 2.3
+      "UNIQUE": 2.55
     },
     "statPowerWeights": {
       "STRENGTH": 8,
@@ -179,6 +179,18 @@
           "DODGE",
           "ARMOR_PENETRATION"
         ]
+      },
+      {
+        "id": "RANGER_LEGACY",
+        "statIds": [
+          "STRENGTH",
+          "AGILITY",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ACCURACY",
+          "DODGE"
+        ]
       }
     ],
     "affixCountProfiles": [
@@ -300,7 +312,7 @@
         "kind": "PREFIX",
         "low": "Проворный",
         "medium": "Ловкий",
-        "high": "Неуловимый"
+        "high": "Стремительный"
       },
       {
         "id": "PREFIX_INTELLECT",
@@ -308,14 +320,14 @@
         "kind": "PREFIX",
         "low": "Учёный",
         "medium": "Мудрый",
-        "high": "Архонский"
+        "high": "Всеведущий"
       },
       {
         "id": "PREFIX_STAMINA",
         "statId": "STAMINA",
         "kind": "PREFIX",
-        "low": "Стойкий",
-        "medium": "Закалённый",
+        "low": "Выносливый",
+        "medium": "Стойкий",
         "high": "Несокрушимый"
       },
       {
@@ -365,6 +377,14 @@
         "low": "Зоркости",
         "medium": "Верного Взгляда",
         "high": "Безошибочного Взгляда"
+      },
+      {
+        "id": "SUFFIX_RESOURCE",
+        "statId": "MAX_RESOURCE",
+        "kind": "SUFFIX",
+        "low": "Потока",
+        "medium": "Источника",
+        "high": "Бесконечности"
       }
     ],
     "individualQualityDeviationPercent": 7,
