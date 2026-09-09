@@ -2,7 +2,7 @@ import { apiClient, ApiRequestError } from './apiClient'
 
 const storageKey = 'elyndor.pending-game-mutation.v1'
 
-export type ReplaySafeIdField = 'mutationId' | 'requestId'
+export type ReplaySafeIdField = 'mutationId' | 'requestId' | 'operationId'
 
 interface PendingGameMutation {
   key: string
@@ -107,7 +107,7 @@ function loadPendingMutation(): PendingGameMutation | null {
     if (
       typeof parsed.key !== 'string'
       || typeof parsed.path !== 'string'
-      || (parsed.idField !== 'mutationId' && parsed.idField !== 'requestId')
+      || (parsed.idField !== 'mutationId' && parsed.idField !== 'requestId' && parsed.idField !== 'operationId')
       || typeof parsed.intentFingerprint !== 'string'
       || typeof parsed.createdAtUtc !== 'string'
       || parsed.body === null
