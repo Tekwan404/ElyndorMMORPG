@@ -149,9 +149,17 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
         Guid orphanedItemId = Guid.CreateVersion7();
         await using (GameDbContext legacyContext = postgres.CreateDbContext())
         {
+            ItemRolledAffix[] currentAffixes = await legacyContext.CharacterItemAffixes
+                .Where(item => item.CharacterId == character.Id)
+                .ToArrayAsync();
             CharacterEquipment[] currentEquipment = await legacyContext.CharacterEquipment
                 .Where(item => item.CharacterId == character.Id)
                 .ToArrayAsync();
+
+            legacyContext.CharacterItemAffixes.RemoveRange(currentAffixes);
+            legacyContext.CharacterEquipment.RemoveRange(currentEquipment);
+            await legacyContext.SaveChangesAsync();
+
             CharacterItem[] currentItems = await legacyContext.CharacterItems
                 .Where(item => item.CharacterId == character.Id)
                 .ToArrayAsync();
@@ -160,9 +168,10 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
                     && item.OperationType == "STARTING_EQUIPMENT_V1")
                 .ToArrayAsync();
 
-            legacyContext.CharacterEquipment.RemoveRange(currentEquipment);
             legacyContext.CharacterItems.RemoveRange(currentItems);
             legacyContext.CharacterMutations.RemoveRange(existingMarkers);
+            await legacyContext.SaveChangesAsync();
+
             legacyContext.CharacterItems.Add(new CharacterItem(
                 orphanedItemId,
                 character.Id,
