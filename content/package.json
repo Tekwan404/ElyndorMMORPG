@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.13.5",
+  "contentVersion": "0.18.0",
   "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-07T15:15:00+00:00",
+  "publishedAtUtc": "2026-09-09T17:25:10+00:00",
   "definitions": [
     {
       "type": "RACE",

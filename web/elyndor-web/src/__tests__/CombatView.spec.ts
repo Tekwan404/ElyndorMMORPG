@@ -63,6 +63,25 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
+  it.each([
+    ['MAGE', 'mage-male-transparent.webp'],
+    ['ARCHER', 'archer-male-transparent.webp'],
+  ] as const)('renders the personal combat portrait for %s', (classId, expectedAsset) => {
+    const store = useCombatSessionStore()
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
+      serverTimeUtc: '2026-09-01T12:00:00Z',
+      contentVersion: '0.17.0',
+      balanceVersion: '0.14.0',
+      player: actor('Player', classId, classId, 140, 180, 35, 100, []),
+      enemy: actor('Monster', 'WOLF', 'Р’РѕР»Рє', 120, 180, 0, 0, [], 3, 'wolf'),
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('.player-figure img').attributes('src')).toContain(expectedAsset)
+  })
+
   it('renders multiple enemy targets and switches the selected target', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 180, 180, 0, 100, [])

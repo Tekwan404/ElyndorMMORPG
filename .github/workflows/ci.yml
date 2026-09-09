@@ -122,7 +122,7 @@ jobs:
 
       - name: Install Playwright Chromium
         working-directory: web/elyndor-web
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Start real E2E server
         env:

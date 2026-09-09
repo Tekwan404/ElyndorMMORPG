@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+    [string]$RepoRoot
 )
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -32,6 +36,19 @@ Test-ManifestOutputs $manifest.characterArt
 Test-ManifestOutputs $manifest.adminArt
 
 $playerAssetRoot = Join-Path $RepoRoot 'web\elyndor-web\src\assets'
+$itemAssetRoot = Join-Path $playerAssetRoot 'items'
+$setItemAssetRoot = Join-Path $itemAssetRoot 'sets'
+$itemFiles = @(Get-ChildItem -LiteralPath $itemAssetRoot -File -Recurse | Sort-Object FullName)
+foreach ($duplicate in @($itemFiles | Group-Object BaseName | Where-Object Count -gt 1)) {
+    $rootFiles = @($duplicate.Group | Where-Object { $_.DirectoryName -eq $itemAssetRoot })
+    $unsupportedFiles = @($duplicate.Group | Where-Object {
+            $_.DirectoryName -ne $itemAssetRoot -and $_.DirectoryName -ne $setItemAssetRoot
+        })
+    if ($rootFiles.Count -ne 1 -or $unsupportedFiles.Count -gt 0) {
+        throw "Item icon '$($duplicate.Name)' has an unsupported duplicate layout. Only one root-level asset and optional set crop are supported."
+    }
+}
+
 $playerAdminFiles = @(Get-ChildItem -LiteralPath $playerAssetRoot -File -Recurse | Where-Object { $_.FullName -match '[\\/]admin([\\/]|[-])' })
 if ($playerAdminFiles.Count -gt 0) {
     throw "Admin artwork leaked into player assets: $($playerAdminFiles.FullName -join ', ')"

@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref } from 'vue'
 
 import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapshot, InventoryItem } from '@/api/contracts'
 import { abilityArtUrl } from '@/assets/abilityArt'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
@@ -110,7 +111,13 @@ const combustion = computed(() =>
 )
 const isMage = computed(() => snapshot.value?.player.definitionId === 'MAGE')
 const playerArt = computed(() =>
-  snapshot.value?.player.definitionId === 'WARRIOR' ? gameArt.characters.warrior : null,
+  snapshot.value
+    ? resolveCharacterArt(
+        snapshot.value.player.definitionId,
+        session.snapshot?.character?.genderId ?? 'MALE',
+        'transparent',
+      )
+    : null,
 )
 const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
 const trainingElapsedSeconds = computed(() => {
