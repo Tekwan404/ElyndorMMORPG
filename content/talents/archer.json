@@ -43,6 +43,7 @@
       "nodes": [
         {
           "id": "M-1-1",
+          "iconId": "MARKSMAN_01",
           "branchId": "MARKSMAN",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -67,6 +68,7 @@
         },
         {
           "id": "M-1-2",
+          "iconId": "MARKSMAN_02",
           "branchId": "MARKSMAN",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -93,6 +95,7 @@
         },
         {
           "id": "M-1-3",
+          "iconId": "MARKSMAN_03",
           "branchId": "MARKSMAN",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -120,6 +123,7 @@
         },
         {
           "id": "M-1-4",
+          "iconId": "MARKSMAN_04",
           "branchId": "MARKSMAN",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -142,6 +146,7 @@
         },
         {
           "id": "M-2-1",
+          "iconId": "MARKSMAN_05",
           "branchId": "MARKSMAN",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -164,6 +169,7 @@
         },
         {
           "id": "M-2-2",
+          "iconId": "MARKSMAN_06",
           "branchId": "MARKSMAN",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -186,6 +192,7 @@
         },
         {
           "id": "M-2-3",
+          "iconId": "MARKSMAN_07",
           "branchId": "MARKSMAN",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -218,6 +225,7 @@
         },
         {
           "id": "M-2-4",
+          "iconId": "MARKSMAN_08",
           "branchId": "MARKSMAN",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -243,6 +251,7 @@
         },
         {
           "id": "M-3-1",
+          "iconId": "MARKSMAN_09",
           "branchId": "MARKSMAN",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -265,6 +274,7 @@
         },
         {
           "id": "M-3-2",
+          "iconId": "MARKSMAN_10",
           "branchId": "MARKSMAN",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -294,6 +304,7 @@
         },
         {
           "id": "M-3-3",
+          "iconId": "MARKSMAN_11",
           "branchId": "MARKSMAN",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -318,6 +329,7 @@
         },
         {
           "id": "M-3-4",
+          "iconId": "MARKSMAN_12",
           "branchId": "MARKSMAN",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -343,6 +355,7 @@
         },
         {
           "id": "M-4-1",
+          "iconId": "MARKSMAN_13",
           "branchId": "MARKSMAN",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -371,6 +384,7 @@
         },
         {
           "id": "M-4-2",
+          "iconId": "MARKSMAN_14",
           "branchId": "MARKSMAN",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -404,6 +418,7 @@
         },
         {
           "id": "M-4-3",
+          "iconId": "MARKSMAN_15",
           "branchId": "MARKSMAN",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -435,6 +450,7 @@
         },
         {
           "id": "M-4-4",
+          "iconId": "MARKSMAN_01",
           "branchId": "MARKSMAN",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -461,6 +477,7 @@
         },
         {
           "id": "M-5-1",
+          "iconId": "MARKSMAN_02",
           "branchId": "MARKSMAN",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -483,6 +500,7 @@
         },
         {
           "id": "M-5-2",
+          "iconId": "MARKSMAN_03",
           "branchId": "MARKSMAN",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -516,6 +534,7 @@
         },
         {
           "id": "M-5-3",
+          "iconId": "MARKSMAN_04",
           "branchId": "MARKSMAN",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -552,6 +571,7 @@
         },
         {
           "id": "M-5-4",
+          "iconId": "MARKSMAN_05",
           "branchId": "MARKSMAN",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -577,6 +597,7 @@
         },
         {
           "id": "M-6-1",
+          "iconId": "MARKSMAN_06",
           "branchId": "MARKSMAN",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -604,6 +625,7 @@
         },
         {
           "id": "M-6-2",
+          "iconId": "MARKSMAN_07",
           "branchId": "MARKSMAN",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -629,6 +651,7 @@
         },
         {
           "id": "M-6-3",
+          "iconId": "MARKSMAN_08",
           "branchId": "MARKSMAN",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -651,6 +674,7 @@
         },
         {
           "id": "M-6-4",
+          "iconId": "MARKSMAN_09",
           "branchId": "MARKSMAN",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -676,6 +700,7 @@
         },
         {
           "id": "M-7-1",
+          "iconId": "MARKSMAN_10",
           "branchId": "MARKSMAN",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -709,6 +734,7 @@
         },
         {
           "id": "M-7-2",
+          "iconId": "MARKSMAN_11",
           "branchId": "MARKSMAN",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -735,6 +761,7 @@
         },
         {
           "id": "M-7-3",
+          "iconId": "MARKSMAN_12",
           "branchId": "MARKSMAN",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -759,6 +786,7 @@
         },
         {
           "id": "M-7-4",
+          "iconId": "MARKSMAN_13",
           "branchId": "MARKSMAN",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -788,6 +816,7 @@
         },
         {
           "id": "M-8-1",
+          "iconId": "MARKSMAN_14",
           "branchId": "MARKSMAN",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -817,6 +846,7 @@
         },
         {
           "id": "M-8-2",
+          "iconId": "MARKSMAN_15",
           "branchId": "MARKSMAN",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -854,6 +884,7 @@
         },
         {
           "id": "M-8-3",
+          "iconId": "MARKSMAN_01",
           "branchId": "MARKSMAN",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -877,6 +908,7 @@
         },
         {
           "id": "M-9-1",
+          "iconId": "MARKSMAN_02",
           "branchId": "MARKSMAN",
           "tier": 9,
           "requiredSpentPoints": 40,
@@ -928,6 +960,7 @@
         },
         {
           "id": "B-1-1",
+          "iconId": "BEAST_MASTERY_01",
           "branchId": "BEAST_MASTERY",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -954,6 +987,7 @@
         },
         {
           "id": "B-1-2",
+          "iconId": "BEAST_MASTERY_02",
           "branchId": "BEAST_MASTERY",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -980,6 +1014,7 @@
         },
         {
           "id": "B-1-3",
+          "iconId": "BEAST_MASTERY_03",
           "branchId": "BEAST_MASTERY",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1013,6 +1048,7 @@
         },
         {
           "id": "B-1-4",
+          "iconId": "BEAST_MASTERY_04",
           "branchId": "BEAST_MASTERY",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1035,6 +1071,7 @@
         },
         {
           "id": "B-2-1",
+          "iconId": "BEAST_MASTERY_05",
           "branchId": "BEAST_MASTERY",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1057,6 +1094,7 @@
         },
         {
           "id": "B-2-2",
+          "iconId": "BEAST_MASTERY_06",
           "branchId": "BEAST_MASTERY",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1089,6 +1127,7 @@
         },
         {
           "id": "B-2-3",
+          "iconId": "BEAST_MASTERY_07",
           "branchId": "BEAST_MASTERY",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1113,6 +1152,7 @@
         },
         {
           "id": "B-2-4",
+          "iconId": "BEAST_MASTERY_08",
           "branchId": "BEAST_MASTERY",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1136,6 +1176,7 @@
         },
         {
           "id": "B-3-1",
+          "iconId": "BEAST_MASTERY_09",
           "branchId": "BEAST_MASTERY",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -1162,6 +1203,7 @@
         },
         {
           "id": "B-3-2",
+          "iconId": "BEAST_MASTERY_10",
           "branchId": "BEAST_MASTERY",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -1191,6 +1233,7 @@
         },
         {
           "id": "B-3-3",
+          "iconId": "BEAST_MASTERY_11",
           "branchId": "BEAST_MASTERY",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -1220,6 +1263,7 @@
         },
         {
           "id": "B-3-4",
+          "iconId": "BEAST_MASTERY_12",
           "branchId": "BEAST_MASTERY",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -1246,6 +1290,7 @@
         },
         {
           "id": "B-4-1",
+          "iconId": "BEAST_MASTERY_13",
           "branchId": "BEAST_MASTERY",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -1271,6 +1316,7 @@
         },
         {
           "id": "B-4-2",
+          "iconId": "BEAST_MASTERY_14",
           "branchId": "BEAST_MASTERY",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -1296,6 +1342,7 @@
         },
         {
           "id": "B-4-3",
+          "iconId": "BEAST_MASTERY_15",
           "branchId": "BEAST_MASTERY",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -1320,6 +1367,7 @@
         },
         {
           "id": "B-4-4",
+          "iconId": "BEAST_MASTERY_01",
           "branchId": "BEAST_MASTERY",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -1345,6 +1393,7 @@
         },
         {
           "id": "B-5-1",
+          "iconId": "BEAST_MASTERY_02",
           "branchId": "BEAST_MASTERY",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -1367,6 +1416,7 @@
         },
         {
           "id": "B-5-2",
+          "iconId": "BEAST_MASTERY_03",
           "branchId": "BEAST_MASTERY",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -1393,6 +1443,7 @@
         },
         {
           "id": "B-5-3",
+          "iconId": "BEAST_MASTERY_04",
           "branchId": "BEAST_MASTERY",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -1419,6 +1470,7 @@
         },
         {
           "id": "B-5-4",
+          "iconId": "BEAST_MASTERY_05",
           "branchId": "BEAST_MASTERY",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -1441,6 +1493,7 @@
         },
         {
           "id": "B-6-1",
+          "iconId": "BEAST_MASTERY_06",
           "branchId": "BEAST_MASTERY",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -1466,6 +1519,7 @@
         },
         {
           "id": "B-6-2",
+          "iconId": "BEAST_MASTERY_07",
           "branchId": "BEAST_MASTERY",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -1491,6 +1545,7 @@
         },
         {
           "id": "B-6-3",
+          "iconId": "BEAST_MASTERY_08",
           "branchId": "BEAST_MASTERY",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -1516,6 +1571,7 @@
         },
         {
           "id": "B-6-4",
+          "iconId": "BEAST_MASTERY_09",
           "branchId": "BEAST_MASTERY",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -1545,6 +1601,7 @@
         },
         {
           "id": "B-7-1",
+          "iconId": "BEAST_MASTERY_10",
           "branchId": "BEAST_MASTERY",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -1574,6 +1631,7 @@
         },
         {
           "id": "B-7-2",
+          "iconId": "BEAST_MASTERY_11",
           "branchId": "BEAST_MASTERY",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -1607,6 +1665,7 @@
         },
         {
           "id": "B-7-3",
+          "iconId": "BEAST_MASTERY_12",
           "branchId": "BEAST_MASTERY",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -1635,6 +1694,7 @@
         },
         {
           "id": "B-7-4",
+          "iconId": "BEAST_MASTERY_13",
           "branchId": "BEAST_MASTERY",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -1659,6 +1719,7 @@
         },
         {
           "id": "B-8-1",
+          "iconId": "BEAST_MASTERY_14",
           "branchId": "BEAST_MASTERY",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -1689,6 +1750,7 @@
         },
         {
           "id": "B-8-2",
+          "iconId": "BEAST_MASTERY_15",
           "branchId": "BEAST_MASTERY",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -1716,6 +1778,7 @@
         },
         {
           "id": "B-8-3",
+          "iconId": "BEAST_MASTERY_01",
           "branchId": "BEAST_MASTERY",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -1740,6 +1803,7 @@
         },
         {
           "id": "B-9-1",
+          "iconId": "BEAST_MASTERY_02",
           "branchId": "BEAST_MASTERY",
           "tier": 9,
           "requiredSpentPoints": 40,
@@ -1786,6 +1850,7 @@
         },
         {
           "id": "A-1-1",
+          "iconId": "ARCANE_ARCHER_01",
           "branchId": "ARCANE_ARCHER",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1832,6 +1897,7 @@
         },
         {
           "id": "A-1-2",
+          "iconId": "ARCANE_ARCHER_02",
           "branchId": "ARCANE_ARCHER",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1858,6 +1924,7 @@
         },
         {
           "id": "A-1-3",
+          "iconId": "ARCANE_ARCHER_03",
           "branchId": "ARCANE_ARCHER",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1882,6 +1949,7 @@
         },
         {
           "id": "A-1-4",
+          "iconId": "ARCANE_ARCHER_04",
           "branchId": "ARCANE_ARCHER",
           "tier": 1,
           "requiredSpentPoints": 0,
@@ -1906,6 +1974,7 @@
         },
         {
           "id": "A-2-1",
+          "iconId": "ARCANE_ARCHER_05",
           "branchId": "ARCANE_ARCHER",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1928,6 +1997,7 @@
         },
         {
           "id": "A-2-2",
+          "iconId": "ARCANE_ARCHER_06",
           "branchId": "ARCANE_ARCHER",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1960,6 +2030,7 @@
         },
         {
           "id": "A-2-3",
+          "iconId": "ARCANE_ARCHER_07",
           "branchId": "ARCANE_ARCHER",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -1984,6 +2055,7 @@
         },
         {
           "id": "A-2-4",
+          "iconId": "ARCANE_ARCHER_08",
           "branchId": "ARCANE_ARCHER",
           "tier": 2,
           "requiredSpentPoints": 5,
@@ -2008,6 +2080,7 @@
         },
         {
           "id": "A-3-1",
+          "iconId": "ARCANE_ARCHER_09",
           "branchId": "ARCANE_ARCHER",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -2030,6 +2103,7 @@
         },
         {
           "id": "A-3-2",
+          "iconId": "ARCANE_ARCHER_10",
           "branchId": "ARCANE_ARCHER",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -2059,6 +2133,7 @@
         },
         {
           "id": "A-3-3",
+          "iconId": "ARCANE_ARCHER_11",
           "branchId": "ARCANE_ARCHER",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -2085,6 +2160,7 @@
         },
         {
           "id": "A-3-4",
+          "iconId": "ARCANE_ARCHER_12",
           "branchId": "ARCANE_ARCHER",
           "tier": 3,
           "requiredSpentPoints": 10,
@@ -2110,6 +2186,7 @@
         },
         {
           "id": "A-4-1",
+          "iconId": "ARCANE_ARCHER_13",
           "branchId": "ARCANE_ARCHER",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -2132,6 +2209,7 @@
         },
         {
           "id": "A-4-2",
+          "iconId": "ARCANE_ARCHER_14",
           "branchId": "ARCANE_ARCHER",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -2163,6 +2241,7 @@
         },
         {
           "id": "A-4-3",
+          "iconId": "ARCANE_ARCHER_15",
           "branchId": "ARCANE_ARCHER",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -2188,6 +2267,7 @@
         },
         {
           "id": "A-4-4",
+          "iconId": "ARCANE_ARCHER_01",
           "branchId": "ARCANE_ARCHER",
           "tier": 4,
           "requiredSpentPoints": 15,
@@ -2212,6 +2292,7 @@
         },
         {
           "id": "A-5-1",
+          "iconId": "ARCANE_ARCHER_02",
           "branchId": "ARCANE_ARCHER",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -2234,6 +2315,7 @@
         },
         {
           "id": "A-5-2",
+          "iconId": "ARCANE_ARCHER_03",
           "branchId": "ARCANE_ARCHER",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -2258,6 +2340,7 @@
         },
         {
           "id": "A-5-3",
+          "iconId": "ARCANE_ARCHER_04",
           "branchId": "ARCANE_ARCHER",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -2284,6 +2367,7 @@
         },
         {
           "id": "A-5-4",
+          "iconId": "ARCANE_ARCHER_05",
           "branchId": "ARCANE_ARCHER",
           "tier": 5,
           "requiredSpentPoints": 20,
@@ -2309,6 +2393,7 @@
         },
         {
           "id": "A-6-1",
+          "iconId": "ARCANE_ARCHER_06",
           "branchId": "ARCANE_ARCHER",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -2340,6 +2425,7 @@
         },
         {
           "id": "A-6-2",
+          "iconId": "ARCANE_ARCHER_07",
           "branchId": "ARCANE_ARCHER",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -2366,6 +2452,7 @@
         },
         {
           "id": "A-6-3",
+          "iconId": "ARCANE_ARCHER_08",
           "branchId": "ARCANE_ARCHER",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -2391,6 +2478,7 @@
         },
         {
           "id": "A-6-4",
+          "iconId": "ARCANE_ARCHER_09",
           "branchId": "ARCANE_ARCHER",
           "tier": 6,
           "requiredSpentPoints": 25,
@@ -2413,6 +2501,7 @@
         },
         {
           "id": "A-7-1",
+          "iconId": "ARCANE_ARCHER_10",
           "branchId": "ARCANE_ARCHER",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -2454,6 +2543,7 @@
         },
         {
           "id": "A-7-2",
+          "iconId": "ARCANE_ARCHER_11",
           "branchId": "ARCANE_ARCHER",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -2479,6 +2569,7 @@
         },
         {
           "id": "A-7-3",
+          "iconId": "ARCANE_ARCHER_12",
           "branchId": "ARCANE_ARCHER",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -2506,6 +2597,7 @@
         },
         {
           "id": "A-7-4",
+          "iconId": "ARCANE_ARCHER_13",
           "branchId": "ARCANE_ARCHER",
           "tier": 7,
           "requiredSpentPoints": 30,
@@ -2532,6 +2624,7 @@
         },
         {
           "id": "A-8-1",
+          "iconId": "ARCANE_ARCHER_14",
           "branchId": "ARCANE_ARCHER",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -2564,6 +2657,7 @@
         },
         {
           "id": "A-8-2",
+          "iconId": "ARCANE_ARCHER_15",
           "branchId": "ARCANE_ARCHER",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -2594,6 +2688,7 @@
         },
         {
           "id": "A-8-3",
+          "iconId": "ARCANE_ARCHER_01",
           "branchId": "ARCANE_ARCHER",
           "tier": 8,
           "requiredSpentPoints": 35,
@@ -2621,6 +2716,7 @@
         },
         {
           "id": "A-9-1",
+          "iconId": "ARCANE_ARCHER_02",
           "branchId": "ARCANE_ARCHER",
           "tier": 9,
           "requiredSpentPoints": 40,

@@ -557,6 +557,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_CHEST",
+      "iconId": "warrior_rare_grey_fang_chest",
       "name": "Нагрудник Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -593,6 +594,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_FEET",
+      "iconId": "warrior_rare_grey_fang_feet",
       "name": "Сапоги Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -629,6 +631,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HANDS",
+      "iconId": "warrior_rare_grey_fang_hands",
       "name": "Рукавицы Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -665,6 +668,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HEAD",
+      "iconId": "warrior_rare_grey_fang_head",
       "name": "Шлем Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -701,6 +705,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_LEGS",
+      "iconId": "warrior_rare_grey_fang_legs",
       "name": "Поножи Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -737,6 +742,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHIELD",
+      "iconId": "warrior_rare_grey_fang_shield",
       "name": "Щит Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -775,6 +781,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
+      "iconId": "warrior_rare_grey_fang_shoulders",
       "name": "Наплечники Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -811,6 +818,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_WEAPON",
+      "iconId": "warrior_rare_grey_fang_weapon",
       "name": "Клык Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -847,6 +855,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+      "iconId": "warrior_epic_crimson_fury_chest",
       "name": "Нагрудник Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -884,6 +893,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+      "iconId": "warrior_epic_crimson_fury_feet",
       "name": "Сапоги Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -920,6 +930,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+      "iconId": "warrior_epic_crimson_fury_hands",
       "name": "Рукавицы Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -956,6 +967,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+      "iconId": "warrior_epic_crimson_fury_head",
       "name": "Шлем Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -992,6 +1004,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+      "iconId": "warrior_epic_crimson_fury_legs",
       "name": "Поножи Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1029,6 +1042,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+      "iconId": "warrior_epic_crimson_fury_shoulders",
       "name": "Наплечники Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1065,6 +1079,7 @@
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
+      "iconId": "warrior_epic_crimson_fury_weapon",
       "name": "Клинок Багровой Клятвы",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1101,6 +1116,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+      "iconId": "warrior_legendary_first_guard_chest",
       "name": "Нагрудник Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1138,6 +1154,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
+      "iconId": "warrior_legendary_first_guard_feet",
       "name": "Сапоги Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1175,6 +1192,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+      "iconId": "warrior_legendary_first_guard_hands",
       "name": "Рукавицы Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1212,6 +1230,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+      "iconId": "warrior_legendary_first_guard_head",
       "name": "Шлем Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1249,6 +1268,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+      "iconId": "warrior_legendary_first_guard_legs",
       "name": "Поножи Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1286,6 +1306,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
+      "iconId": "warrior_legendary_first_guard_shield",
       "name": "Щит Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1325,6 +1346,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "iconId": "warrior_legendary_first_guard_shoulders",
       "name": "Наплечники Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1362,6 +1384,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
+      "iconId": "warrior_legendary_first_guard_weapon",
       "name": "Клинок Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1399,6 +1422,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+      "iconId": "warrior_legendary_black_bastion_chest",
       "name": "Нагрудник Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1436,6 +1460,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+      "iconId": "warrior_legendary_black_bastion_feet",
       "name": "Сапоги Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1473,6 +1498,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+      "iconId": "warrior_legendary_black_bastion_hands",
       "name": "Рукавицы Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1510,6 +1536,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+      "iconId": "warrior_legendary_black_bastion_head",
       "name": "Шлем Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1547,6 +1574,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+      "iconId": "warrior_legendary_black_bastion_legs",
       "name": "Поножи Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1584,6 +1612,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
+      "iconId": "warrior_legendary_black_bastion_shield",
       "name": "Щит Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1623,6 +1652,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+      "iconId": "warrior_legendary_black_bastion_shoulders",
       "name": "Наплечники Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1660,6 +1690,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
+      "iconId": "warrior_legendary_black_bastion_weapon",
       "name": "Крушитель Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",

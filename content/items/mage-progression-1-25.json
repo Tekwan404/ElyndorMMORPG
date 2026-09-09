@@ -553,6 +553,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_CHEST",
+      "iconId": "mage_rare_three_elements_chest",
       "name": "Мантия Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -589,6 +590,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_FEET",
+      "iconId": "mage_rare_three_elements_feet",
       "name": "Сапоги Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -625,6 +627,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HANDS",
+      "iconId": "mage_rare_three_elements_hands",
       "name": "Перчатки Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -661,6 +664,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HEAD",
+      "iconId": "mage_rare_three_elements_head",
       "name": "Капюшон Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -697,6 +701,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_LEGS",
+      "iconId": "mage_rare_three_elements_legs",
       "name": "Поножи Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -733,6 +738,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+      "iconId": "mage_rare_three_elements_shoulders",
       "name": "Наплечники Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -769,6 +775,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_STAFF",
+      "iconId": "mage_rare_three_elements_staff",
       "name": "Посох Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -805,6 +812,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_WAND",
+      "iconId": "mage_rare_three_elements_wand",
       "name": "Жезл Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -841,6 +849,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+      "iconId": "mage_epic_shattered_star_chest",
       "name": "Мантия Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -878,6 +887,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_FEET",
+      "iconId": "mage_epic_shattered_star_feet",
       "name": "Сапоги Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -914,6 +924,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HANDS",
+      "iconId": "mage_epic_shattered_star_hands",
       "name": "Перчатки Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -950,6 +961,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HEAD",
+      "iconId": "mage_epic_shattered_star_head",
       "name": "Капюшон Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -986,6 +998,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_LEGS",
+      "iconId": "mage_epic_shattered_star_legs",
       "name": "Поножи Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1023,6 +1036,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+      "iconId": "mage_epic_shattered_star_shoulders",
       "name": "Наплечники Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1059,6 +1073,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_STAFF",
+      "iconId": "mage_epic_shattered_star_staff",
       "name": "Посох Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1095,6 +1110,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_WAND",
+      "iconId": "mage_epic_shattered_star_wand",
       "name": "Жезл Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -1131,6 +1147,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
+      "iconId": "mage_legendary_silent_archon_chest",
       "name": "Мантия Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1168,6 +1185,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
+      "iconId": "mage_legendary_silent_archon_feet",
       "name": "Сапоги Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1205,6 +1223,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
+      "iconId": "mage_legendary_silent_archon_hands",
       "name": "Перчатки Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1242,6 +1261,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
+      "iconId": "mage_legendary_silent_archon_head",
       "name": "Капюшон Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1279,6 +1299,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
+      "iconId": "mage_legendary_silent_archon_legs",
       "name": "Поножи Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1316,6 +1337,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
+      "iconId": "mage_legendary_silent_archon_shoulders",
       "name": "Наплечники Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1353,6 +1375,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
+      "iconId": "mage_legendary_silent_archon_staff",
       "name": "Посох Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1390,6 +1413,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
+      "iconId": "mage_legendary_silent_archon_wand",
       "name": "Жезл Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1427,6 +1451,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+      "iconId": "mage_legendary_eclipsed_oracle_chest",
       "name": "Мантия Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1464,6 +1489,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+      "iconId": "mage_legendary_eclipsed_oracle_feet",
       "name": "Сапоги Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1501,6 +1527,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+      "iconId": "mage_legendary_eclipsed_oracle_hands",
       "name": "Перчатки Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1538,6 +1565,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+      "iconId": "mage_legendary_eclipsed_oracle_head",
       "name": "Капюшон Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1575,6 +1603,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+      "iconId": "mage_legendary_eclipsed_oracle_legs",
       "name": "Поножи Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1612,6 +1641,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+      "iconId": "mage_legendary_eclipsed_oracle_shoulders",
       "name": "Наплечники Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1649,6 +1679,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
+      "iconId": "mage_legendary_eclipsed_oracle_staff",
       "name": "Посох Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -1686,6 +1717,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
+      "iconId": "mage_legendary_eclipsed_oracle_wand",
       "name": "Жезл Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",

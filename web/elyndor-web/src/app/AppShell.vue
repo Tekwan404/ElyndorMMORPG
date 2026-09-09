@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { gameArt } from '@/assets/gameArt'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
@@ -26,7 +27,9 @@ const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
 const portraitArt = computed(() =>
-  character.value?.classId === 'WARRIOR' ? gameArt.characters.warrior : null,
+  character.value
+    ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent')
+    : null,
 )
 function worldLocationName(locationId: string): string {
   if (locationId === 'STARTER_TOWN') return 'Стартовый город'

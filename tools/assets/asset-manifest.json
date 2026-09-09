@@ -1,0 +1,2330 @@
+{
+    "schemaVersion":  1,
+    "generatedAtUtc":  "2026-09-09T16:30:27.6509424Z",
+    "sourceDirectories":  [
+                              "pic/talant",
+                              "pic/item",
+                              "pic/PersonalArt"
+                          ],
+    "talentIcons":  [
+                        {
+                            "iconId":  "GUARDIAN_01",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-01.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_02",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-02.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_03",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-03.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_04",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-04.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_05",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-05.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_06",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-06.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_07",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-07.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_08",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-08.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_09",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-09.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_10",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-10.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_11",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-11.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_12",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-12.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_13",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-13.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_14",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-14.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_15",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-15.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_16",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  15,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-16.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_17",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  16,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-17.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_18",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  17,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-18.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_19",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  18,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-19.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_20",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  19,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-20.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_21",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  20,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-21.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_22",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  21,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-22.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_23",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  22,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-23.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_24",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  23,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-24.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_25",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  24,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-25.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_26",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  25,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-26.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_27",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  26,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-27.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_28",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  27,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-28.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_29",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  28,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-29.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_30",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  29,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-30.webp"
+                        },
+                        {
+                            "iconId":  "GUARDIAN_31",
+                            "branch":  "GUARDIAN",
+                            "source":  ".\\pic\\talant\\war1.png",
+                            "cell":  30,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\guardian\\guardian-31.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_01",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-01.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_02",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-02.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_03",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-03.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_04",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-04.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_05",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-05.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_06",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-06.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_07",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-07.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_08",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-08.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_09",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-09.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_10",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-10.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_11",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-11.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_12",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-12.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_13",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-13.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_14",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-14.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_15",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-15.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_16",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  15,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-16.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_17",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  16,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-17.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_18",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  17,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-18.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_19",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  18,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-19.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_20",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  19,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-20.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_21",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  20,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-21.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_22",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  21,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-22.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_23",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  22,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-23.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_24",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  23,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-24.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_25",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  24,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-25.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_26",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  25,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-26.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_27",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  26,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-27.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_28",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  27,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-28.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_29",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  28,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-29.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_30",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  29,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-30.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_31",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  30,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-31.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_32",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  31,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-32.webp"
+                        },
+                        {
+                            "iconId":  "WARLORD_33",
+                            "branch":  "WARLORD",
+                            "source":  ".\\pic\\talant\\war3.png",
+                            "cell":  32,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\warlord\\warlord-33.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_01",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-01.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_02",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-02.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_03",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-03.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_04",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-04.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_05",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-05.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_06",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-06.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_07",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-07.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_08",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-08.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_09",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-09.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_10",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-10.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_11",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-11.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_12",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-12.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_13",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-13.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_14",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-14.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_15",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-15.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_16",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  15,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-16.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_17",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  16,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-17.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_18",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  17,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-18.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_19",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  18,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-19.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_20",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  19,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-20.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_21",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  20,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-21.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_22",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  21,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-22.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_23",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  22,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-23.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_24",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  23,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-24.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_25",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  24,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-25.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_26",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  25,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-26.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_27",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  26,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-27.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_28",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  27,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-28.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_29",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  28,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-29.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_30",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  29,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-30.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_31",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  30,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-31.webp"
+                        },
+                        {
+                            "iconId":  "FIRE_32",
+                            "branch":  "FIRE",
+                            "source":  ".\\pic\\talant\\mage1.png",
+                            "cell":  31,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\fire\\fire-32.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_01",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-01.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_02",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-02.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_03",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-03.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_04",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-04.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_05",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-05.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_06",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-06.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_07",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-07.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_08",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-08.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_09",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-09.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_10",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-10.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_11",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-11.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_12",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-12.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_13",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-13.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_14",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-14.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_15",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-15.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_16",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  15,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-16.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_17",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  16,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-17.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_18",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  17,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-18.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_19",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  18,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-19.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_20",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  19,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-20.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_21",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  20,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-21.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_22",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  21,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-22.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_23",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  22,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-23.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_24",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  23,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-24.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_25",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  24,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-25.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_26",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  25,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-26.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_27",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  26,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-27.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_28",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  27,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-28.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_29",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  28,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-29.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_30",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  29,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-30.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_31",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  30,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-31.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_32",
+                            "branch":  "ARCANE",
+                            "source":  ".\\pic\\talant\\mage2.png",
+                            "cell":  31,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane\\arcane-32.webp"
+                        },
+                        {
+                            "iconId":  "FROST_01",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-01.webp"
+                        },
+                        {
+                            "iconId":  "FROST_02",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-02.webp"
+                        },
+                        {
+                            "iconId":  "FROST_03",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-03.webp"
+                        },
+                        {
+                            "iconId":  "FROST_04",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-04.webp"
+                        },
+                        {
+                            "iconId":  "FROST_05",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-05.webp"
+                        },
+                        {
+                            "iconId":  "FROST_06",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-06.webp"
+                        },
+                        {
+                            "iconId":  "FROST_07",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-07.webp"
+                        },
+                        {
+                            "iconId":  "FROST_08",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-08.webp"
+                        },
+                        {
+                            "iconId":  "FROST_09",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-09.webp"
+                        },
+                        {
+                            "iconId":  "FROST_10",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-10.webp"
+                        },
+                        {
+                            "iconId":  "FROST_11",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-11.webp"
+                        },
+                        {
+                            "iconId":  "FROST_12",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-12.webp"
+                        },
+                        {
+                            "iconId":  "FROST_13",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-13.webp"
+                        },
+                        {
+                            "iconId":  "FROST_14",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-14.webp"
+                        },
+                        {
+                            "iconId":  "FROST_15",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-15.webp"
+                        },
+                        {
+                            "iconId":  "FROST_16",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  15,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-16.webp"
+                        },
+                        {
+                            "iconId":  "FROST_17",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  16,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-17.webp"
+                        },
+                        {
+                            "iconId":  "FROST_18",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  17,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-18.webp"
+                        },
+                        {
+                            "iconId":  "FROST_19",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  18,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-19.webp"
+                        },
+                        {
+                            "iconId":  "FROST_20",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  19,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-20.webp"
+                        },
+                        {
+                            "iconId":  "FROST_21",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  20,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-21.webp"
+                        },
+                        {
+                            "iconId":  "FROST_22",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  21,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-22.webp"
+                        },
+                        {
+                            "iconId":  "FROST_23",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  22,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-23.webp"
+                        },
+                        {
+                            "iconId":  "FROST_24",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  23,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-24.webp"
+                        },
+                        {
+                            "iconId":  "FROST_25",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  24,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-25.webp"
+                        },
+                        {
+                            "iconId":  "FROST_26",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  25,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-26.webp"
+                        },
+                        {
+                            "iconId":  "FROST_27",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  26,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-27.webp"
+                        },
+                        {
+                            "iconId":  "FROST_28",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  27,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-28.webp"
+                        },
+                        {
+                            "iconId":  "FROST_29",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  28,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-29.webp"
+                        },
+                        {
+                            "iconId":  "FROST_30",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  29,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-30.webp"
+                        },
+                        {
+                            "iconId":  "FROST_31",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  30,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-31.webp"
+                        },
+                        {
+                            "iconId":  "FROST_32",
+                            "branch":  "FROST",
+                            "source":  ".\\pic\\talant\\mage3.png",
+                            "cell":  31,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\frost\\frost-32.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_01",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-01.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_02",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-02.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_03",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-03.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_04",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-04.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_05",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-05.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_06",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-06.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_07",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-07.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_08",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-08.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_09",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-09.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_10",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-10.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_11",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-11.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_12",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-12.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_13",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-13.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_14",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-14.webp"
+                        },
+                        {
+                            "iconId":  "MARKSMAN_15",
+                            "branch":  "MARKSMAN",
+                            "source":  ".\\pic\\talant\\arc1.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\marksman\\marksman-15.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_01",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-01.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_02",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-02.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_03",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-03.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_04",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-04.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_05",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-05.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_06",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-06.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_07",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-07.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_08",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-08.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_09",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-09.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_10",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-10.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_11",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-11.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_12",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-12.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_13",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-13.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_14",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-14.webp"
+                        },
+                        {
+                            "iconId":  "BEAST_MASTERY_15",
+                            "branch":  "BEAST_MASTERY",
+                            "source":  ".\\pic\\talant\\arc2.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\beast-mastery\\beast-mastery-15.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_01",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  0,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-01.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_02",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  1,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-02.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_03",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  2,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-03.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_04",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  3,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-04.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_05",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  4,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-05.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_06",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  5,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-06.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_07",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  6,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-07.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_08",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  7,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-08.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_09",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  8,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-09.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_10",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  9,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-10.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_11",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  10,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-11.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_12",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  11,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-12.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_13",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  12,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-13.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_14",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  13,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-14.webp"
+                        },
+                        {
+                            "iconId":  "ARCANE_ARCHER_15",
+                            "branch":  "ARCANE_ARCHER",
+                            "source":  ".\\pic\\talant\\arc3.png",
+                            "cell":  14,
+                            "output":  ".\\web\\elyndor-web\\src\\assets\\game\\talents\\arcane-archer\\arcane-archer-15.webp"
+                        }
+                    ],
+    "itemSheetIcons":  [
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  2,
+                               "iconId":  "warrior_rare_grey_fang_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  5,
+                               "iconId":  "warrior_rare_grey_fang_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  3,
+                               "iconId":  "warrior_rare_grey_fang_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  0,
+                               "iconId":  "warrior_rare_grey_fang_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_head.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  4,
+                               "iconId":  "warrior_rare_grey_fang_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_SHIELD",
+                               "slot":  "Shield",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  7,
+                               "iconId":  "warrior_rare_grey_fang_shield",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_shield.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  1,
+                               "iconId":  "warrior_rare_grey_fang_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_GREY_FANG",
+                               "itemId":  "WARRIOR_RARE_GREY_FANG_WEAPON",
+                               "slot":  "Weapon",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "cell":  6,
+                               "iconId":  "warrior_rare_grey_fang_weapon",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_weapon.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  2,
+                               "iconId":  "warrior_epic_crimson_fury_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  5,
+                               "iconId":  "warrior_epic_crimson_fury_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  3,
+                               "iconId":  "warrior_epic_crimson_fury_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  0,
+                               "iconId":  "warrior_epic_crimson_fury_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_head.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  4,
+                               "iconId":  "warrior_epic_crimson_fury_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  1,
+                               "iconId":  "warrior_epic_crimson_fury_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_CRIMSON_FURY",
+                               "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
+                               "slot":  "Weapon",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "cell":  6,
+                               "iconId":  "warrior_epic_crimson_fury_weapon",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_weapon.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  2,
+                               "iconId":  "warrior_legendary_first_guard_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  5,
+                               "iconId":  "warrior_legendary_first_guard_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  3,
+                               "iconId":  "warrior_legendary_first_guard_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  0,
+                               "iconId":  "warrior_legendary_first_guard_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_head.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  4,
+                               "iconId":  "warrior_legendary_first_guard_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
+                               "slot":  "Shield",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  7,
+                               "iconId":  "warrior_legendary_first_guard_shield",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_shield.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  1,
+                               "iconId":  "warrior_legendary_first_guard_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_FIRST_GUARD",
+                               "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
+                               "slot":  "Weapon",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "cell":  6,
+                               "iconId":  "warrior_legendary_first_guard_weapon",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_weapon.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  2,
+                               "iconId":  "warrior_legendary_black_bastion_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  5,
+                               "iconId":  "warrior_legendary_black_bastion_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  3,
+                               "iconId":  "warrior_legendary_black_bastion_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  0,
+                               "iconId":  "warrior_legendary_black_bastion_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_head.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  4,
+                               "iconId":  "warrior_legendary_black_bastion_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
+                               "slot":  "Shield",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  7,
+                               "iconId":  "warrior_legendary_black_bastion_shield",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_shield.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  1,
+                               "iconId":  "warrior_legendary_black_bastion_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_WARRIOR_BLACK_BASTION",
+                               "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
+                               "slot":  "Weapon",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "cell":  6,
+                               "iconId":  "warrior_legendary_black_bastion_weapon",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_weapon.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  2,
+                               "iconId":  "mage_rare_three_elements_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  5,
+                               "iconId":  "mage_rare_three_elements_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  3,
+                               "iconId":  "mage_rare_three_elements_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  0,
+                               "iconId":  "mage_rare_three_elements_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_head.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  4,
+                               "iconId":  "mage_rare_three_elements_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  1,
+                               "iconId":  "mage_rare_three_elements_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_STAFF",
+                               "slot":  "Staff",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  6,
+                               "iconId":  "mage_rare_three_elements_staff",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_staff.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_WAND",
+                               "slot":  "Wand",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  7,
+                               "iconId":  "mage_rare_three_elements_wand",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_wand.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_THREE_ELEMENTS",
+                               "itemId":  "MAGE_RARE_THREE_ELEMENTS_FOCUS",
+                               "slot":  "Focus",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "cell":  8,
+                               "iconId":  "mage_rare_three_elements_focus",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_focus.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  2,
+                               "iconId":  "mage_epic_shattered_star_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  5,
+                               "iconId":  "mage_epic_shattered_star_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  3,
+                               "iconId":  "mage_epic_shattered_star_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  0,
+                               "iconId":  "mage_epic_shattered_star_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_head.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  4,
+                               "iconId":  "mage_epic_shattered_star_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  1,
+                               "iconId":  "mage_epic_shattered_star_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_STAFF",
+                               "slot":  "Staff",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  6,
+                               "iconId":  "mage_epic_shattered_star_staff",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_staff.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_WAND",
+                               "slot":  "Wand",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  7,
+                               "iconId":  "mage_epic_shattered_star_wand",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_wand.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SHATTERED_STAR",
+                               "itemId":  "MAGE_EPIC_SHATTERED_STAR_FOCUS",
+                               "slot":  "Focus",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  8,
+                               "iconId":  "mage_epic_shattered_star_focus",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_focus.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  2,
+                               "iconId":  "mage_legendary_silent_archon_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  5,
+                               "iconId":  "mage_legendary_silent_archon_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  3,
+                               "iconId":  "mage_legendary_silent_archon_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  0,
+                               "iconId":  "mage_legendary_silent_archon_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_head.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  4,
+                               "iconId":  "mage_legendary_silent_archon_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  1,
+                               "iconId":  "mage_legendary_silent_archon_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
+                               "slot":  "Staff",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  6,
+                               "iconId":  "mage_legendary_silent_archon_staff",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_staff.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
+                               "slot":  "Wand",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  7,
+                               "iconId":  "mage_legendary_silent_archon_wand",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_wand.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_SILENT_ARCHON",
+                               "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_FOCUS",
+                               "slot":  "Focus",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "cell":  8,
+                               "iconId":  "mage_legendary_silent_archon_focus",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_focus.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+                               "slot":  "Chest",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  2,
+                               "iconId":  "mage_legendary_eclipsed_oracle_chest",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_chest.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+                               "slot":  "Feet",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  5,
+                               "iconId":  "mage_legendary_eclipsed_oracle_feet",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_feet.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+                               "slot":  "Hands",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  3,
+                               "iconId":  "mage_legendary_eclipsed_oracle_hands",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_hands.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+                               "slot":  "Head",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  0,
+                               "iconId":  "mage_legendary_eclipsed_oracle_head",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_head.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+                               "slot":  "Legs",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  4,
+                               "iconId":  "mage_legendary_eclipsed_oracle_legs",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_legs.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+                               "slot":  "Shoulders",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  1,
+                               "iconId":  "mage_legendary_eclipsed_oracle_shoulders",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_shoulders.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
+                               "slot":  "Staff",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  6,
+                               "iconId":  "mage_legendary_eclipsed_oracle_staff",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_staff.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
+                               "slot":  "Wand",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  7,
+                               "iconId":  "mage_legendary_eclipsed_oracle_wand",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_wand.webp"
+                           },
+                           {
+                               "setId":  "SET_MAGE_ECLIPSED_ORACLE",
+                               "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS",
+                               "slot":  "Focus",
+                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "cell":  8,
+                               "iconId":  "mage_legendary_eclipsed_oracle_focus",
+                               "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_focus.webp"
+                           }
+                       ],
+    "copiedItemIcons":  [
+                            {
+                                "iconId":  "acc_common_2_amulet",
+                                "source":  ".\\pic\\item\\acc_common_2_amulet.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_common_2_amulet.webp"
+                            },
+                            {
+                                "iconId":  "acc_common_2_cloak",
+                                "source":  ".\\pic\\item\\acc_common_2_cloak.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_common_2_cloak.webp"
+                            },
+                            {
+                                "iconId":  "acc_common_2_ring",
+                                "source":  ".\\pic\\item\\acc_common_2_ring.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_common_2_ring.webp"
+                            },
+                            {
+                                "iconId":  "acc_uncommon_6_amulet",
+                                "source":  ".\\pic\\item\\acc_uncommon_6_amulet.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_uncommon_6_amulet.webp"
+                            },
+                            {
+                                "iconId":  "acc_uncommon_6_cloak",
+                                "source":  ".\\pic\\item\\acc_uncommon_6_cloak.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_uncommon_6_cloak.webp"
+                            },
+                            {
+                                "iconId":  "acc_uncommon_6_ring",
+                                "source":  ".\\pic\\item\\acc_uncommon_6_ring.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_uncommon_6_ring.webp"
+                            },
+                            {
+                                "iconId":  "ranger_fang_charm",
+                                "source":  ".\\pic\\item\\ranger_fang_charm.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\ranger_fang_charm.webp"
+                            },
+                            {
+                                "iconId":  "wolf_fang_blade",
+                                "source":  ".\\pic\\item\\wolf_fang_blade.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\wolf_fang_blade.webp"
+                            },
+                            {
+                                "iconId":  "archer_common_whisper_tracker_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_common_whisper_tracker_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_common_whisper_tracker_quiver.webp"
+                            },
+                            {
+                                "iconId":  "archer_epic_moonleaf_shadow_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_epic_moonleaf_shadow_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_epic_moonleaf_shadow_quiver.webp"
+                            },
+                            {
+                                "iconId":  "archer_legendary_black_constellation_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_legendary_black_constellation_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_legendary_black_constellation_quiver.webp"
+                            },
+                            {
+                                "iconId":  "archer_legendary_star_hunter_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_legendary_star_hunter_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_legendary_star_hunter_quiver.webp"
+                            },
+                            {
+                                "iconId":  "archer_rare_thorn_trail_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_rare_thorn_trail_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_rare_thorn_trail_quiver.webp"
+                            },
+                            {
+                                "iconId":  "archer_uncommon_grey_trail_quiver",
+                                "source":  ".\\pic\\item\\archer\\archer_uncommon_grey_trail_quiver.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\archer_uncommon_grey_trail_quiver.webp"
+                            },
+                            {
+                                "iconId":  "mage_common_blue_candle_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_common_blue_candle_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_common_blue_candle_focus.webp"
+                            },
+                            {
+                                "iconId":  "mage_epic_shattered_star_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_epic_shattered_star_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_epic_shattered_star_focus.webp"
+                            },
+                            {
+                                "iconId":  "mage_legendary_eclipsed_oracle_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_legendary_eclipsed_oracle_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_legendary_eclipsed_oracle_focus.webp"
+                            },
+                            {
+                                "iconId":  "mage_legendary_silent_archon_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_legendary_silent_archon_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_legendary_silent_archon_focus.webp"
+                            },
+                            {
+                                "iconId":  "mage_rare_three_elements_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_rare_three_elements_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_rare_three_elements_focus.webp"
+                            },
+                            {
+                                "iconId":  "mage_uncommon_forgotten_runes_focus",
+                                "source":  ".\\pic\\item\\mage\\mage_uncommon_forgotten_runes_focus.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_uncommon_forgotten_runes_focus.webp"
+                            }
+                        ],
+    "characterArt":  [
+                         {
+                             "name":  "archer-female-transparent.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_44 (5).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-female-transparent.webp"
+                         },
+                         {
+                             "name":  "archer-male-transparent.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_46 (1).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-male-transparent.webp"
+                         },
+                         {
+                             "name":  "archer-male-scene.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_46 (2).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-male-scene.webp"
+                         },
+                         {
+                             "name":  "mage-female-transparent.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_57 (1).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-female-transparent.webp"
+                         },
+                         {
+                             "name":  "mage-female-scene.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_57 (2).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-female-scene.webp"
+                         },
+                         {
+                             "name":  "mage-male-transparent.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_04 (1).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-male-transparent.webp"
+                         },
+                         {
+                             "name":  "mage-male-scene.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_04 (2).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-male-scene.webp"
+                         },
+                         {
+                             "name":  "warrior-male-transparent.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_12 (1).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-male-transparent.webp"
+                         },
+                         {
+                             "name":  "warrior-male-scene.png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_12 (2).png",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-male-scene.webp"
+                         },
+                         {
+                             "name":  "archer-female-scene.png",
+                             "source":  ".\\pic\\PersonalArt\\Р В Р’В Р В Р’В°Р В Р’В·Р В РўвЂР В Р вЂ Р В РЎвЂўР В Р’ВµР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™Р РЋР вЂљР В Р’ВµР РЋРІР‚С™ Р РЋР РЉР В Р’В»Р РЋР Р‰Р РЋРІР‚С›Р В РЎвЂР В РІвЂћвЂ“Р РЋР С“Р В РЎвЂќР В РЎвЂўР В РІвЂћвЂ“ Р В Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„–.png",
+                             "cell":  1,
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-female-scene.webp"
+                         }
+                     ],
+    "adminArt":  [
+                     {
+                         "originalName":  "character-human-Female-warrior FOR ADMIN.png.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-01.webp"
+                     },
+                     {
+                         "originalName":  "character-human-male-warrior FOR ADMIN1.png.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-02.webp"
+                     },
+                     {
+                         "originalName":  "character-human-male-warrior FOR ADMIN2.png.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-03.webp"
+                     },
+                     {
+                         "originalName":  "Elyndor_Female_Warrior_Splash_Art.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-04.webp"
+                     },
+                     {
+                         "originalName":  "Р В РІР‚ВР РЋР вЂљР В РЎвЂўР В Р вЂ¦Р РЋР РЏ Р В РЎвЂ Р В Р’В°Р В Р’В»Р В Р’В°Р РЋР РЏ Р В Р вЂ¦Р В Р’В°Р В РЎвЂќР В РЎвЂР В РўвЂР В РЎвЂќР В Р’В° Р РЋР вЂљР РЋРІР‚в„–Р РЋРІР‚В Р В Р’В°Р РЋР вЂљР РЋР РЏ.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-05.webp"
+                     },
+                     {
+                         "originalName":  "Р В РІР‚в„ўР В РЎвЂўР В РЎвЂР РЋРІР‚С™Р В Р’ВµР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р В Р’В° Р В Р вЂ  Р В РўвЂР В Р вЂ Р РЋРЎвЂњР РЋРІР‚В¦ Р В РЎВР В РЎвЂР РЋР вЂљР В Р’В°Р РЋРІР‚В¦.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-06.webp"
+                     },
+                     {
+                         "originalName":  "Р В Р’В­Р В Р’В»Р РЋР Р‰Р РЋРІР‚С›Р В РЎвЂР В РІвЂћвЂ“Р В РЎвЂќР В Р’В°-Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂўР В РЎвЂ”Р РЋРІР‚в„–Р РЋРІР‚С™ Р РЋР С“ Р В Р’В»Р РЋРЎвЂњР В РЎвЂќР В РЎвЂўР В РЎВ.png",
+                         "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-07.webp"
+                     }
+                 ],
+    "talentAbilityArt":  {
+                             "RALLY_CRY":  "WARLORD_21",
+                             "GHOST_VOLLEY":  "ARCANE_ARCHER_09",
+                             "SNIPER_FOCUS":  "MARKSMAN_02",
+                             "AIMED_SHOT":  "MARKSMAN_09",
+                             "MAGE_ARCANE_SPARK":  "ARCANE_01",
+                             "VICTORY_FLAG":  "WARLORD_17",
+                             "HEAVY_ARROW":  "MARKSMAN_08",
+                             "ARCANE_ARROW":  "ARCANE_ARCHER_01",
+                             "ICE_FRACTURE":  "FROST_13",
+                             "MANA_OVERLOAD":  "ARCANE_17",
+                             "HUNTER_MARK":  "MARKSMAN_05",
+                             "ICE_LANCE":  "FROST_09",
+                             "ARCANE_BURST":  "ARCANE_09",
+                             "MAGE_FIREBALL":  "FIRE_01",
+                             "WHIRLWIND":  "BERSERKER_BLOOD_BLADES",
+                             "ARCANE_FLOW":  "ARCANE_ARCHER_02",
+                             "SPELL_BREAK":  "ARCANE_ARCHER_09",
+                             "ARCANE_CASCADE":  "ARCANE_21",
+                             "BEAST_SURGE":  "BEAST_MASTERY_02",
+                             "ARCANE_SEAL":  "ARCANE_24",
+                             "MAGE_ICE_SHARD":  "FROST_01",
+                             "COMBUSTION":  "FIRE_17",
+                             "PHANTOM_ARROW":  "ARCANE_ARCHER_05",
+                             "FROST_SEAL":  "FROST_21",
+                             "BERSERK":  "BERSERKER_WAR_MASK",
+                             "ENDURANCE_CRY":  "WARLORD_09",
+                             "RETURN_TO_OWNER":  "BEAST_MASTERY_05",
+                             "ENCHANTED_SHOT":  "ARCANE_ARCHER_13",
+                             "CRY_OF_VENGEANCE":  "WARLORD_14",
+                             "BATTLE_STANDARD":  "WARLORD_25",
+                             "WILD_STRIKE":  "BERSERKER_RAGE_SLASH",
+                             "FIRE_WAVE":  "FIRE_13",
+                             "COMMAND_ATTACK":  "BEAST_MASTERY_05",
+                             "BASTION":  "GUARDIAN_17",
+                             "FLAME_FLASH":  "FIRE_09",
+                             "HEART_OF_WINTER":  "FROST_17",
+                             "WAR_BANNER":  "WARLORD_11",
+                             "BATTLE_CRY":  "WARLORD_05",
+                             "PIERCING_ARROW":  "MARKSMAN_06"
+                         },
+    "limitations":  [
+                        "Archer talent sheets contain 15 source cells per branch; node icons reuse those cells cyclically for nodes 16-32.",
+                        "No archer set sheets were present in pic/item/set, so archer armor and bow definitions without standalone source art keep the existing glyph fallback.",
+                        "Female warrior player art was not present outside pic/PersonalArt/admin; the player bundle falls back to the male warrior art for that combination.",
+                        "No war2.png source sheet was present; the root talant PNG set remains the existing Berserker art registry."
+                    ],
+    "fallbackItemIcons":  [
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_helm_rare.webp",
+                                  "iconId":  "dungeon_mines_warrior_helm_rare",
+                                  "source":  "warrior_rare_grey_fang_head"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_gauntlets_epic.webp",
+                                  "iconId":  "dungeon_mines_warrior_gauntlets_epic",
+                                  "source":  "warrior_epic_crimson_fury_hands"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_legendary_shield.webp",
+                                  "iconId":  "dungeon_mines_warrior_legendary_shield",
+                                  "source":  "warrior_legendary_black_bastion_shield"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_hood_rare.webp",
+                                  "iconId":  "dungeon_mines_mage_hood_rare",
+                                  "source":  "mage_rare_three_elements_head"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_boots_epic.webp",
+                                  "iconId":  "dungeon_mines_mage_boots_epic",
+                                  "source":  "mage_epic_shattered_star_feet"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_legendary_staff.webp",
+                                  "iconId":  "dungeon_mines_mage_legendary_staff",
+                                  "source":  "mage_legendary_silent_archon_staff"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legs_rare.webp",
+                                  "iconId":  "dungeon_mines_archer_legs_rare",
+                                  "source":  "ranger_fang_charm"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_gloves_epic.webp",
+                                  "iconId":  "dungeon_mines_archer_gloves_epic",
+                                  "source":  "ranger_fang_charm"
+                              },
+                              {
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legendary_bow.webp",
+                                  "iconId":  "dungeon_mines_archer_legendary_bow",
+                                  "source":  "ranger_fang_charm"
+                              }
+                          ]
+}
