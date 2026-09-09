@@ -273,6 +273,8 @@ public sealed class MerchantService(
                     return MerchantErrorCodes.ItemNotOwned;
                 if (preview.IsLocked)
                     return MerchantErrorCodes.ItemLocked;
+                if (preview.TransactionLockId.HasValue)
+                    return MerchantErrorCodes.TransactionLocked;
                 if (await dbContext.CharacterEquipment
                     .AsNoTracking()
                     .AnyAsync(
@@ -321,6 +323,8 @@ public sealed class MerchantService(
                 }
                 if (item.IsLocked)
                     return MerchantErrorCodes.ItemLocked;
+                if (item.TransactionLockId.HasValue)
+                    return MerchantErrorCodes.TransactionLocked;
                 if (quantity > item.Quantity)
                     return MerchantErrorCodes.InvalidQuantity;
 
