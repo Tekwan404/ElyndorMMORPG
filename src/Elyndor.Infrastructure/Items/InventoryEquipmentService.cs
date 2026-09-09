@@ -35,6 +35,7 @@ public static class InventoryErrorCodes
     public const string Conflict = "inventory_conflict";
     public const string InventoryFull = "inventory_full";
     public const string TransactionLocked = "inventory_item_transaction_locked";
+    public const string UniqueEquippedConflict = "inventory_unique_equipped_conflict";
 }
 
 public sealed record InventoryItemSnapshot(
@@ -329,6 +330,28 @@ public sealed class InventoryEquipmentService(
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.TwoHandedConflict);
+                }
+
+                if (!string.IsNullOrWhiteSpace(definition.UniqueEquippedGroup))
+                {
+                    string[] equippedDefinitionIds = await (
+                            from equipment in dbContext.CharacterEquipment.AsNoTracking()
+                            join equippedItem in dbContext.CharacterItems.AsNoTracking()
+                                on equipment.CharacterItemId equals equippedItem.Id
+                            where equipment.CharacterId == character.Id
+                                && equippedItem.Id != item.Id
+                            select equippedItem.ItemDefinitionId)
+                        .ToArrayAsync(cancellationToken);
+                    bool uniqueConflict = equippedDefinitionIds.Any(definitionId =>
+                        string.Equals(
+                            FindItem(definitionId)?.UniqueEquippedGroup,
+                            definition.UniqueEquippedGroup,
+                            StringComparison.Ordinal));
+                    if (uniqueConflict)
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.UniqueEquippedConflict);
+                    }
                 }
 
                 if (!await CanApplyEquipmentProjectionAsync(
