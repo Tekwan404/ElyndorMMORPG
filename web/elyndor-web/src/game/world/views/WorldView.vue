@@ -32,8 +32,10 @@ const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
-const currentLocationId = computed(() => world.value?.currentLocation.id)
-const isAncientMine = computed(() => currentLocationId.value === 'ANCIENT_MINE')
+const currentLocationId = computed(() => world.value?.currentLocation.id ?? '')
+const isDungeonLocation = computed(() =>
+  currentLocationId.value === 'ANCIENT_MINE' || currentLocationId.value === 'ECLIPSED_CITADEL',
+)
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
@@ -225,7 +227,11 @@ onMounted(() => {
       </div>
     </section>
 
-    <DungeonLocationCard v-if="isAncientMine" @open-party="emit('open-party')" />
+    <DungeonLocationCard
+      v-if="isDungeonLocation && currentLocationId"
+      :dungeon-id="currentLocationId"
+      @open-party="emit('open-party')"
+    />
 
     <div v-if="session.errorCode" class="world-error" role="alert">
       <strong>{{ worldErrorMessage }}</strong>

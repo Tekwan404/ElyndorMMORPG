@@ -130,7 +130,7 @@ public sealed class DungeonService(
             .SingleOrDefaultAsync(cancellationToken);
         if (character is null)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
-        if (character.Level < definition.MinimumLevel || character.Level > definition.MaximumLevel)
+        if (character.Level < definition.MinimumLevel)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.LevelRequired);
 
         DateTimeOffset now = timeProvider.GetUtcNow();
@@ -237,6 +237,8 @@ public sealed class DungeonService(
         if (existing is not null)
         {
             await CommitAsync(transaction, cancellationToken);
+            if (!string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);
             return new DungeonOperationResult(true, null, ToView(existing, definition));
         }
 
@@ -649,7 +651,7 @@ public sealed class DungeonService(
             .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
         if (location is null || !string.Equals(location.LocationId, definition.EntryLocationId, StringComparison.Ordinal))
             return DungeonErrorCodes.InvalidLocation;
-        if (character.Level < definition.MinimumLevel || character.Level > definition.MaximumLevel)
+        if (character.Level < definition.MinimumLevel)
             return DungeonErrorCodes.LevelRequired;
         CharacterVitals? vitals = await dbContext.CharacterVitals
             .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);

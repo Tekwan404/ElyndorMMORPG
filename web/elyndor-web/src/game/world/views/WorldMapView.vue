@@ -25,6 +25,10 @@ const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
+const ancientMinePreview = computed(() =>
+  dungeon.previews.find(item => item.id === 'ANCIENT_MINE') ?? null,
+)
+const ancientMineMinimumLevel = computed(() => ancientMinePreview.value?.minimumLevel ?? 14)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
@@ -45,6 +49,9 @@ const selectedLocation = computed(() =>
   visibleLocations.value.find(location => location.id === selectedLocationId.value)
   ?? world.value?.currentLocation
   ?? null,
+)
+const selectedIsDungeon = computed(() =>
+  selectedLocation.value?.id === 'ANCIENT_MINE' || selectedLocation.value?.id === 'ECLIPSED_CITADEL',
 )
 const selectedIsCurrent = computed(
   () => selectedLocation.value?.id === currentLocationId.value,
@@ -79,20 +86,28 @@ const routeLines = computed(() => {
   )
   if (currentIndex < 0) return []
 
-  const current = nodePosition(currentIndex, visibleLocations.value.length)
+  const currentLocation = visibleLocations.value[currentIndex]!
+  const current = nodePosition(
+    currentIndex,
+    visibleLocations.value.length,
+    currentLocation.id,
+  )
   return visibleLocations.value
     .map((location, index) => ({
       location,
-      target: nodePosition(index, visibleLocations.value.length),
+      target: nodePosition(index, visibleLocations.value.length, location.id),
     }))
     .filter(entry => reachableLocationIds.value.has(entry.location.id))
-    .map(entry => ({
-      id: entry.location.id,
-      x1: current.x,
-      y1: current.y,
-      x2: entry.target.x,
-      y2: entry.target.y,
-    }))
+    .map(entry => {
+      const midpointX = (current.x + entry.target.x) / 2
+      return {
+        id: entry.location.id,
+        path: [
+          `M ${current.x} ${current.y}`,
+          `C ${midpointX} ${current.y}, ${midpointX} ${entry.target.y}, ${entry.target.x} ${entry.target.y}`,
+        ].join(' '),
+      }
+    })
 })
 
 async function loadLocations(): Promise<void> {
@@ -121,7 +136,7 @@ async function travel(): Promise<void> {
 }
 
 async function enterAncientMine(): Promise<void> {
-  if (characterLevel.value < 15 || isTravelling.value) return
+  if (characterLevel.value < ancientMineMinimumLevel.value || isTravelling.value) return
   if (await dungeon.teleport('ANCIENT_MINE')) {
     await session.refreshSnapshot()
     emit('open-location')
@@ -171,19 +186,35 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
   return 'locked'
 }
 
-function nodePosition(index: number, total: number): { x: number; y: number } {
-  if (total <= 1) return { x: 50, y: 52 }
+const worldMapAnchors: Record<string, { x: number; y: number }> = {
+  STARTER_TOWN: { x: 16, y: 71 },
+  WHISPERING_FOREST: { x: 31, y: 58 },
+  DEEP_FOREST: { x: 47, y: 43 },
+  ANCIENT_MINE: { x: 55, y: 22 },
+  BROODMOTHER_LAIR: { x: 64, y: 56 },
+  BLIGHTED_GROVE: { x: 78, y: 38 },
+  ECLIPSED_CITADEL: { x: 87, y: 19 },
+}
+
+function nodePosition(
+  index: number,
+  total: number,
+  locationId?: string,
+): { x: number; y: number } {
+  const anchored = locationId ? worldMapAnchors[locationId] : undefined
+  if (anchored) return anchored
+  if (total <= 1) return { x: 50, y: 48 }
 
   const safeTotal = Math.max(total - 1, 1)
   const progress = index / safeTotal
-  const x = 14 + progress * 72
-  const wave = [62, 38, 64, 34, 56, 44]
-  const y = wave[index % wave.length] ?? 50
-  return { x, y }
+  return {
+    x: 14 + progress * 72,
+    y: index % 2 === 0 ? 56 : 38,
+  }
 }
 
-function nodeStyle(index: number): Record<string, string> {
-  const position = nodePosition(index, visibleLocations.value.length)
+function nodeStyle(index: number, locationId: string): Record<string, string> {
+  const position = nodePosition(index, visibleLocations.value.length, locationId)
   return {
     left: `${position.x}%`,
     top: `${position.y}%`,
@@ -194,7 +225,9 @@ watch(currentLocationId, locationId => {
   if (locationId) selectedLocationId.value = locationId
 }, { immediate: true })
 
-onMounted(() => void loadLocations())
+onMounted(() => {
+  void Promise.all([loadLocations(), dungeon.refresh()])
+})
 </script>
 
 <template>
@@ -251,14 +284,6 @@ onMounted(() => void loadLocations())
     />
 
     <template v-else>
-      <UICard data-dungeon-map-entry>
-        <h2>Древняя шахта</h2>
-        <p>Подземелье · ур. 15+ · 1–5 игроков</p>
-        <p>Телепорт ко входу доступен с 15 уровня. Пять столкновений, финальный босс — Прародительница Глубин.</p>
-        <p v-if="dungeon.errorCode" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
-        <UIButton v-if="currentLocationId === 'ANCIENT_MINE'" @click="emit('open-location')">Открыть подземелье</UIButton>
-        <UIButton v-else :disabled="characterLevel < 15 || isTravelling" :loading="dungeon.teleporting" @click="enterAncientMine">Ко входу в подземелье</UIButton>
-      </UICard>
       <section
         class="map-canvas"
         :style="{ '--map-art': `url(${mapArt})` }"
@@ -277,13 +302,10 @@ onMounted(() => void loadLocations())
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          <line
+          <path
             v-for="route in routeLines"
             :key="route.id"
-            :x1="route.x1"
-            :y1="route.y1"
-            :x2="route.x2"
-            :y2="route.y2"
+            :d="route.path"
           />
         </svg>
 
@@ -296,14 +318,14 @@ onMounted(() => void loadLocations())
           }"
           :data-state="locationState(location)"
           :data-location-id="location.id"
-          :style="nodeStyle(index)"
+          :style="nodeStyle(index, location.id)"
           type="button"
           :aria-pressed="selectedLocation?.id === location.id"
           :aria-label="`${locationName(location)}, ${levelRangeLabel(location)}`"
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
-          <span class="map-node__marker" :data-location-kind="location.id === 'ANCIENT_MINE' ? 'dungeon' : 'normal'">
+          <span class="map-node__marker" :data-location-kind="location.id === 'ANCIENT_MINE' || location.id === 'ECLIPSED_CITADEL' ? 'dungeon' : 'normal'">
             <i />
           </span>
           <span class="map-node__label">
@@ -312,28 +334,61 @@ onMounted(() => void loadLocations())
           </span>
         </button>
 
-        <div v-if="selectedLocation" class="map-selection" data-map-selection>
-          <div>
-            <small>ВЫБРАНО</small>
+        <div
+          v-if="selectedLocation"
+          class="map-selection"
+          :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
+          data-map-selection
+          data-map-preview
+        >
+          <div
+            class="map-selection__art"
+            :style="{ backgroundImage: `url(${selectedArt})` }"
+            aria-hidden="true"
+          />
+          <div class="map-selection__copy">
+            <div class="map-selection__eyebrow">
+              <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
+              <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
+            </div>
             <strong>{{ locationName(selectedLocation) }}</strong>
-            <span>{{ levelRangeLabel(selectedLocation) }}</span>
+            <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
+            <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
+              {{ lockReason(selectedLocation) }}
+            </em>
+            <em v-if="selectedLocation.id === 'ANCIENT_MINE' && dungeon.errorCode" class="map-selection__lock" role="alert">
+              {{ socialErrorMessage(dungeon.errorCode) }}
+            </em>
           </div>
-          <UIButton
-            v-if="selectedIsCurrent"
-            data-map-open-location
-            @click="emit('open-location')"
-          >
-            Открыть
-          </UIButton>
-          <UIButton
-            v-else
-            data-map-travel-inline
-            :disabled="isTravelling || !selectedIsReachable"
-            :loading="session.mutationPending"
-            @click="travel"
-          >
-            {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Закрыто' }}
-          </UIButton>
+          <div class="map-selection__actions">
+            <UIButton
+              v-if="selectedIsCurrent"
+              data-map-open-location
+              data-open-location
+              @click="emit('open-location')"
+            >
+              {{ selectedIsDungeon ? 'Открыть вход' : 'Открыть локацию' }}
+            </UIButton>
+            <UIButton
+              v-else-if="selectedLocation.id === 'ANCIENT_MINE'"
+              data-dungeon-map-entry
+              :disabled="characterLevel < ancientMineMinimumLevel || isTravelling"
+              :loading="dungeon.teleporting"
+              @click="enterAncientMine"
+            >
+              {{ characterLevel < ancientMineMinimumLevel ? `Нужен ${ancientMineMinimumLevel} ур.` : 'Ко входу' }}
+            </UIButton>
+            <UIButton
+              v-else
+              data-map-travel
+              data-map-travel-inline
+              :disabled="isTravelling || !selectedIsReachable"
+              :loading="session.mutationPending"
+              @click="travel"
+            >
+              {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
+            </UIButton>
+          </div>
         </div>
 
         <div class="map-legend" aria-label="Легенда карты">
@@ -352,57 +407,6 @@ onMounted(() => void loadLocations())
         <span>Открывает: {{ locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName ?? activeContract?.unlockLocationId }}</span>
       </UICard>
 
-      <UICard v-if="selectedLocation" class="location-preview" data-map-preview>
-        <div
-          class="location-preview__art"
-          :style="{ backgroundImage: `url(${selectedArt})` }"
-          aria-hidden="true"
-        >
-          <div />
-        </div>
-
-        <div class="location-preview__body">
-          <div class="location-preview__eyebrow">
-            <span :data-danger="selectedLocation.dangerLevel">{{ selectedDangerLabel }}</span>
-            <span>{{ levelRangeLabel(selectedLocation) }}</span>
-          </div>
-
-          <div>
-            <small>ВЫБРАННАЯ ТОЧКА</small>
-            <h2>{{ locationName(selectedLocation) }}</h2>
-          </div>
-
-          <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
-          <p v-if="lockReason(selectedLocation)" class="location-preview__lock">
-            {{ lockReason(selectedLocation) }}
-          </p>
-          <p v-else-if="selectedIsCurrent">
-            Герой находится здесь. Откройте экран локации, чтобы увидеть активности и противников.
-          </p>
-          <p v-else-if="selectedIsReachable">
-            Маршрут открыт. Переход будет подтверждён сервером.
-          </p>
-
-          <div class="location-preview__actions">
-            <UIButton
-              v-if="selectedIsCurrent"
-              data-open-location
-              @click="emit('open-location')"
-            >
-              Открыть локацию
-            </UIButton>
-            <UIButton
-              v-else
-              data-map-travel
-              :disabled="isTravelling || !selectedIsReachable"
-              :loading="session.mutationPending"
-              @click="travel"
-            >
-              {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
-            </UIButton>
-          </div>
-        </div>
-      </UICard>
     </template>
   </section>
 </template>
@@ -429,8 +433,7 @@ onMounted(() => void loadLocations())
   gap: var(--ui-space-1);
 }
 
-.world-map__header small,
-.location-preview__body small {
+.world-map__header small {
   color: #aaa3ff;
   font-size: .62rem;
   font-weight: 700;
@@ -438,9 +441,7 @@ onMounted(() => void loadLocations())
 }
 
 .world-map__header h1,
-.world-map__header p,
-.location-preview h2,
-.location-preview p {
+.world-map__header p {
   margin: 0;
 }
 
@@ -449,8 +450,7 @@ onMounted(() => void loadLocations())
   font-size: clamp(1.55rem, 7vw, 2rem);
 }
 
-.world-map__header p,
-.location-preview p {
+.world-map__header p {
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-sm);
   line-height: 1.5;
@@ -488,7 +488,7 @@ onMounted(() => void loadLocations())
   --map-art: none;
 
   position: relative;
-  min-height: 25rem;
+  min-height: clamp(32rem, 72dvh, 42rem);
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
@@ -564,12 +564,14 @@ onMounted(() => void loadLocations())
   pointer-events: none;
 }
 
-.map-routes line {
-  stroke: rgb(184 177 255 / 55%);
-  stroke-width: .45;
-  stroke-dasharray: 2 1.4;
+.map-routes path {
+  fill: none;
+  stroke: rgb(202 185 137 / 58%);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 10 7;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 3px rgb(146 136 255 / 45%));
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 90%));
 }
 
 .map-node {
@@ -695,48 +697,100 @@ onMounted(() => void loadLocations())
 .map-selection {
   position: absolute;
   right: var(--ui-space-3);
-  bottom: 4.6rem;
+  bottom: 4.4rem;
   left: var(--ui-space-3);
   z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ui-space-2);
-  padding: 8px 9px;
-  border: 1px solid rgb(184 177 255 / 30%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 86%);
-  backdrop-filter: blur(10px);
+  display: grid;
+  grid-template-columns: 5.3rem minmax(0, 1fr);
+  gap: var(--ui-space-3);
+  overflow: hidden;
+  border: 1px solid rgb(184 177 255 / 32%);
+  border-radius: calc(var(--ui-radius-lg) + 1px);
+  background: rgb(5 8 14 / 90%);
+  box-shadow: 0 1rem 2.4rem rgb(0 0 0 / 34%);
+  backdrop-filter: blur(14px);
   pointer-events: none;
 }
 
-.map-selection button {
-  pointer-events: auto;
+.map-selection[data-kind='dungeon'] {
+  border-color: rgb(224 188 100 / 48%);
+  background:
+    linear-gradient(110deg, rgb(91 66 27 / 22%), transparent 52%),
+    rgb(5 8 14 / 92%);
 }
 
-.map-selection > div {
+.map-selection__art {
+  min-height: 8.3rem;
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset -1.8rem 0 2.4rem rgb(5 8 14 / 76%);
+}
+
+.map-selection__copy {
   display: grid;
   min-width: 0;
-  gap: 1px;
+  align-content: center;
+  gap: 5px;
+  padding: var(--ui-space-3) var(--ui-space-3) var(--ui-space-3) 0;
+}
+
+.map-selection__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .map-selection small {
   color: #aaa3ff;
-  font-size: .48rem;
+  font-size: .5rem;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
+}
+
+.map-selection[data-kind='dungeon'] small {
+  color: var(--ui-color-gold);
+}
+
+.map-selection__eyebrow span {
+  color: var(--ui-color-text-muted);
+  font-size: .52rem;
 }
 
 .map-selection strong {
   overflow: hidden;
-  font-size: .65rem;
+  font-family: var(--ui-font-display);
+  font-size: .95rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.map-selection span {
+.map-selection p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
   color: var(--ui-color-text-muted);
-  font-size: .52rem;
+  font-size: .61rem;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.map-selection__lock {
+  color: #e1bd78;
+  font-size: .57rem;
+  font-style: normal;
+}
+
+.map-selection__actions {
+  grid-column: 1 / -1;
+  display: grid;
+  padding: 0 var(--ui-space-3) var(--ui-space-3);
+  pointer-events: auto;
+}
+
+.map-selection__actions :deep(.ui-button) {
+  width: 100%;
 }
 
 .contract-card {
@@ -774,10 +828,6 @@ onMounted(() => void loadLocations())
   flex: 0 0 auto;
   color: var(--ui-color-text-secondary);
   font-size: .58rem;
-}
-
-.location-preview__lock {
-  color: #e1bd78 !important;
 }
 
 .map-legend {
@@ -818,75 +868,6 @@ onMounted(() => void loadLocations())
   background: #aaa3ff;
 }
 
-.location-preview {
-  display: grid;
-  grid-template-columns: minmax(7.5rem, 10rem) minmax(0, 1fr);
-  gap: var(--ui-space-3);
-  padding: 0;
-  overflow: hidden;
-}
-
-.location-preview__art {
-  position: relative;
-  min-height: 11rem;
-  background-position: center;
-  background-size: cover;
-}
-
-.location-preview__art > div {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 35%, var(--ui-color-surface-1) 100%);
-}
-
-.location-preview__body {
-  display: grid;
-  align-content: center;
-  gap: var(--ui-space-2);
-  padding: var(--ui-space-3) var(--ui-space-3) var(--ui-space-3) 0;
-}
-
-.location-preview__body h2 {
-  margin-top: 2px;
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-xl);
-}
-
-.location-preview__eyebrow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ui-space-1);
-}
-
-.location-preview__eyebrow span {
-  padding: 3px 6px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-text-muted);
-  font-size: .56rem;
-  text-transform: uppercase;
-}
-
-.location-preview__eyebrow span[data-danger='SAFE'] {
-  border-color: rgb(79 185 150 / 35%);
-  color: #84d5bb;
-}
-
-.location-preview__eyebrow span[data-danger='ADVENTURE'] {
-  border-color: rgb(208 164 88 / 38%);
-  color: #e1bd78;
-}
-
-.location-preview__eyebrow span[data-danger='DANGEROUS'] {
-  border-color: rgb(216 95 114 / 42%);
-  color: #ef8fa0;
-}
-
-.location-preview__actions {
-  display: flex;
-  gap: var(--ui-space-2);
-}
-
 @keyframes map-pulse {
   from {
     opacity: .65;
@@ -921,27 +902,12 @@ onMounted(() => void loadLocations())
   }
 
   .map-canvas {
-    min-height: 23rem;
+    min-height: 34rem;
   }
 
   .map-node__label {
     max-width: 6.6rem;
   }
 
-  .location-preview {
-    grid-template-columns: 1fr;
-  }
-
-  .location-preview__art {
-    min-height: 8rem;
-  }
-
-  .location-preview__art > div {
-    background: linear-gradient(180deg, transparent 20%, var(--ui-color-surface-1) 100%);
-  }
-
-  .location-preview__body {
-    padding: 0 var(--ui-space-3) var(--ui-space-3);
-  }
 }
 </style>
