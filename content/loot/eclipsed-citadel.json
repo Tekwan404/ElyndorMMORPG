@@ -1,0 +1,313 @@
+{
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
+  "lootTables": [
+    {
+      "id": "ECLIPSED_CITADEL_E1_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_CLOAK",
+          "dropChance": 0.045,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_E2_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "SMALL_HEALING_POTION",
+          "dropChance": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_AMULET",
+          "dropChance": 0.045,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_E3_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "MINOR_ANTIDOTE",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+          "dropChance": 0.055,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_RING",
+          "dropChance": 0.045,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_E4_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "dropChance": 0.25,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_QUIVER",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_BOSS_LOOT",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "MINOR_BATTLE_TONIC",
+          "dropChance": 0.65,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_QUIVER",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_CLOAK",
+          "dropChance": 0.06,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_AMULET",
+          "dropChance": 0.06,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_23_RING",
+          "dropChance": 0.06,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
+          "dropChance": 0.0075,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+          "dropChance": 0.0075,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+          "dropChance": 0.0075,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    }
+  ]
+}
