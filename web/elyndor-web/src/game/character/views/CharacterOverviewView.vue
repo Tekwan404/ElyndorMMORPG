@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 
 import type { EquipmentSlot, InventoryItem, KnownAbility } from '@/api/contracts'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { itemArtUrl } from '@/assets/itemArt'
 import {
@@ -26,6 +27,12 @@ const selectedItem = ref<InventoryItem | null>(null)
 const selectedEquipmentSlot = ref<EquipmentSlot | null>(null)
 const equipmentActionError = ref<string | null>(null)
 const selectedAbility = ref<KnownAbility | null>(null)
+const characterArt = computed(() => {
+  const currentCharacter = character.value
+  return currentCharacter
+    ? resolveCharacterArt(currentCharacter.classId, currentCharacter.genderId, 'transparent')
+    : null
+})
 
 type PaperdollSide = 'left' | 'right'
 
@@ -164,11 +171,13 @@ function itemStats(item: InventoryItem): string[] {
 }
 
 function abilityArt(ability: KnownAbility): string | null {
+  const talentArt = resolveAbilityArt(ability.id)
+  if (talentArt) return talentArt
   if (ability.id === 'STRIKE') return gameArt.warriorAbilities.strike
   if (ability.id === 'SHIELD_BASH') return gameArt.warriorAbilities.shieldBash
   if (ability.id === 'PROVOKE') return gameArt.warriorAbilities.provoke
   if (ability.id === 'BASTION') return gameArt.warriorAbilities.bastion
-  return resolveAbilityArt(ability.id)
+  return null
 }
 
 function abilityInitials(ability: KnownAbility): string {
@@ -218,7 +227,7 @@ function abilityInitials(ability: KnownAbility): string {
         <div class="paperdoll__figure">
           <div class="hero-figure">
             <span class="hero-figure__sigil" aria-hidden="true">◆</span>
-            <img v-if="character.classId === 'WARRIOR'" :src="gameArt.characters.warrior" alt="Воин" />
+            <img v-if="characterArt" :src="characterArt" :alt="classLabel(character.classId)" />
             <div v-else class="hero-figure__fallback" role="img" :aria-label="classLabel(character.classId)">
               <span>{{ character.name.slice(0, 1).toUpperCase() }}</span>
               <small>{{ classLabel(character.classId) }}</small>

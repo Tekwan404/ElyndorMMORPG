@@ -5,6 +5,7 @@
   "items": [
     {
       "id": "ACC_COMMON_2_CLOAK",
+      "iconId": "acc_common_2_cloak",
       "name": "Плащ — Пыльная дорога",
       "type": "Equipment",
       "rarity": "Common",
@@ -30,6 +31,7 @@
     },
     {
       "id": "ACC_COMMON_2_AMULET",
+      "iconId": "acc_common_2_amulet",
       "name": "Амулет — Пыльная дорога",
       "type": "Equipment",
       "rarity": "Common",
@@ -55,6 +57,7 @@
     },
     {
       "id": "ACC_COMMON_2_RING",
+      "iconId": "acc_common_2_ring",
       "name": "Кольцо — Пыльная дорога",
       "type": "Equipment",
       "rarity": "Common",
@@ -80,6 +83,7 @@
     },
     {
       "id": "ACC_UNCOMMON_6_CLOAK",
+      "iconId": "acc_uncommon_6_cloak",
       "name": "Плащ — Старый тракт",
       "type": "Equipment",
       "rarity": "Uncommon",
@@ -105,6 +109,7 @@
     },
     {
       "id": "ACC_UNCOMMON_6_AMULET",
+      "iconId": "acc_uncommon_6_amulet",
       "name": "Амулет — Старый тракт",
       "type": "Equipment",
       "rarity": "Uncommon",
@@ -130,6 +135,7 @@
     },
     {
       "id": "ACC_UNCOMMON_6_RING",
+      "iconId": "acc_uncommon_6_ring",
       "name": "Кольцо — Старый тракт",
       "type": "Equipment",
       "rarity": "Uncommon",

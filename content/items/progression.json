@@ -260,6 +260,7 @@
     },
     {
       "id": "RANGER_FANG_CHARM",
+      "iconId": "ranger_fang_charm",
       "name": "Амулет Следопыта",
       "type": "Equipment",
       "rarity": "Uncommon",
@@ -314,6 +315,7 @@
     },
     {
       "id": "WOLF_FANG_BLADE",
+      "iconId": "wolf_fang_blade",
       "name": "Клинок Волчьего Клыка",
       "type": "Equipment",
       "rarity": "Uncommon",

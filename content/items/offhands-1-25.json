@@ -5,6 +5,7 @@
   "items": [
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_FOCUS",
+      "iconId": "mage_common_blue_candle_focus",
       "name": "Фокус Синей Свечи",
       "type": "Equipment",
       "rarity": "Common",
@@ -40,6 +41,7 @@
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FOCUS",
+      "iconId": "mage_uncommon_forgotten_runes_focus",
       "name": "Фокус Забытого Ученика",
       "type": "Equipment",
       "rarity": "Uncommon",
@@ -73,6 +75,7 @@
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_FOCUS",
+      "iconId": "mage_rare_three_elements_focus",
       "name": "Фокус Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
@@ -107,6 +110,7 @@
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_FOCUS",
+      "iconId": "mage_epic_shattered_star_focus",
       "name": "Фокус Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
@@ -141,6 +145,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_FOCUS",
+      "iconId": "mage_legendary_silent_archon_focus",
       "name": "Фокус Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -176,6 +181,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS",
+      "iconId": "mage_legendary_eclipsed_oracle_focus",
       "name": "Фокус Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -211,6 +217,7 @@
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_QUIVER",
+      "iconId": "archer_common_whisper_tracker_quiver",
       "name": "Колчан Шепчущего Леса",
       "type": "Equipment",
       "rarity": "Common",
@@ -246,6 +253,7 @@
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_QUIVER",
+      "iconId": "archer_uncommon_grey_trail_quiver",
       "name": "Колчан Серой Тропы",
       "type": "Equipment",
       "rarity": "Uncommon",
@@ -279,6 +287,7 @@
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_QUIVER",
+      "iconId": "archer_rare_thorn_trail_quiver",
       "name": "Колчан Тернового Следа",
       "type": "Equipment",
       "rarity": "Rare",
@@ -313,6 +322,7 @@
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_QUIVER",
+      "iconId": "archer_epic_moonleaf_shadow_quiver",
       "name": "Колчан Лунного Листа",
       "type": "Equipment",
       "rarity": "Epic",
@@ -347,6 +357,7 @@
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_QUIVER",
+      "iconId": "archer_legendary_star_hunter_quiver",
       "name": "Колчан Звёздного Зверобоя",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -382,6 +393,7 @@
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_QUIVER",
+      "iconId": "archer_legendary_black_constellation_quiver",
       "name": "Колчан Чёрного Созвездия",
       "type": "Equipment",
       "rarity": "Legendary",
