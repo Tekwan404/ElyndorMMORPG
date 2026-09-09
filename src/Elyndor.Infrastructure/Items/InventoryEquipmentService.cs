@@ -45,7 +45,11 @@ public sealed record InventoryItemSnapshot(
     EquipmentSlot? EquippedSlot,
     bool IsLocked,
     PrimaryStats? RolledPrimaryStats = null,
-    GeneratedItemInstance? GeneratedItem = null)
+    GeneratedItemInstance? GeneratedItem = null,
+    int ReforgeCount = 0,
+    string? ReforgeSlotKey = null,
+    bool TransactionLocked = false,
+    string BindState = ItemBindStates.Unbound)
 {
     public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
 }
@@ -59,7 +63,8 @@ public sealed record PendingLootItemSnapshot(
     ItemDefinition Definition,
     int Quantity,
     DateTimeOffset CreatedAtUtc,
-    PrimaryStats? RolledPrimaryStats);
+    PrimaryStats? RolledPrimaryStats,
+    GeneratedItemInstance? GeneratedItem = null);
 
 public sealed record InventoryOperationResult(
     bool IsSuccess,
@@ -161,12 +166,23 @@ public sealed class InventoryEquipmentService(
                     $"Pending loot item '{item.ItemDefinitionId}' is missing from content.");
             }
 
+            GeneratedItemInstance? generated = string.IsNullOrWhiteSpace(item.GeneratedItemJson)
+                ? null
+                : System.Text.Json.JsonSerializer.Deserialize<GeneratedItemInstance>(
+                    item.GeneratedItemJson);
+            ItemDefinition effective = generated is null
+                ? definition
+                : ItemInstanceGenerator.ApplyGeneratedAffixes(
+                    definition,
+                    generated.Affixes,
+                    generated.DisplayName);
             return new PendingLootItemSnapshot(
                 item.Id,
-                definition,
+                effective,
                 item.Quantity,
                 item.CreatedAtUtc,
-                item.RolledPrimaryStats);
+                item.RolledPrimaryStats,
+                generated);
         }).ToArray();
     }
 
