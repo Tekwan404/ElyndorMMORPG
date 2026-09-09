@@ -242,11 +242,22 @@ onMounted(() => {
   margin-inline: auto;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
-  border-inline: 1px solid var(--ui-color-border);
+  border-inline: 1px solid var(--ui-color-frame);
   background:
-    radial-gradient(circle at 50% -4rem, rgb(146 136 255 / 10%), transparent 22rem),
+    radial-gradient(circle at 50% -4rem, rgb(209 170 98 / 9%), transparent 22rem),
     rgb(5 7 13 / 98%);
   color: var(--ui-color-text-primary);
+}
+
+.game-shell::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 1.2%) 0 1px, transparent 1px 5px),
+    linear-gradient(90deg, transparent, rgb(205 177 113 / 2%), transparent);
+  content: '';
+  pointer-events: none;
 }
 
 .hud {
@@ -260,11 +271,17 @@ onMounted(() => {
     calc(var(--ui-space-3) + var(--ui-safe-area-right))
     7px
     calc(var(--ui-space-3) + var(--ui-safe-area-left));
-  border-bottom: 1px solid rgb(255 255 255 / 7%);
+  border-bottom: 1px solid rgb(205 177 113 / 24%);
   background:
-    radial-gradient(circle at 18% 22%, rgb(146 136 255 / 11%), transparent 11rem),
-    linear-gradient(180deg, rgb(15 21 34 / 99%), rgb(8 12 20 / 97%));
+    radial-gradient(circle at 18% 22%, rgb(209 170 98 / 8%), transparent 11rem),
+    linear-gradient(180deg, rgb(20 25 31 / 99%), rgb(8 12 17 / 97%));
   box-shadow: 0 10px 26px rgb(0 0 0 / 20%);
+}
+
+.content,
+.navigation {
+  position: relative;
+  z-index: 1;
 }
 
 .hud::after {
@@ -273,7 +290,7 @@ onMounted(() => {
   bottom: -1px;
   left: 13%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(146 136 255 / 34%), transparent);
+  background: linear-gradient(90deg, transparent, rgb(209 170 98 / 54%), transparent);
   content: '';
   pointer-events: none;
 }
@@ -293,14 +310,14 @@ onMounted(() => {
   place-items: center;
   overflow: hidden;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 45%, var(--ui-color-border));
-  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 58%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
   background:
-    radial-gradient(circle at 50% 25%, rgb(146 136 255 / 17%), transparent 58%),
+    radial-gradient(circle at 50% 25%, rgb(209 170 98 / 16%), transparent 58%),
     rgb(7 10 17 / 95%);
   box-shadow:
     inset 0 0 0 2px rgb(255 255 255 / 3%),
-    0 0 14px rgb(99 87 211 / 12%);
+    0 0 14px rgb(209 170 98 / 12%);
   color: #dedbff;
   font: 700 1rem var(--ui-font-display);
 }
@@ -327,7 +344,7 @@ onMounted(() => {
 
 .hud__brand {
   margin-bottom: 1px;
-  color: #9991ec;
+  color: var(--ui-color-gold);
   font-size: .46rem;
   font-weight: 800;
   letter-spacing: .17em;
@@ -350,8 +367,13 @@ onMounted(() => {
 
 .hud__code {
   margin-top: 2px;
-  color: #aaa5e8;
-  font-size: .5rem;
+  width: fit-content;
+  padding: 1px 4px;
+  border: 1px solid rgb(209 170 98 / 22%);
+  border-radius: 3px;
+  color: #d7bd7e;
+  font-size: .52rem;
+  font-weight: 700;
   letter-spacing: .08em;
 }
 
@@ -501,10 +523,10 @@ onMounted(() => {
     calc(4px + var(--ui-safe-area-right))
     calc(4px + var(--ui-safe-area-bottom))
     calc(4px + var(--ui-safe-area-left));
-  border-top: 1px solid rgb(255 255 255 / 8%);
+  border-top: 1px solid rgb(205 177 113 / 28%);
   background:
-    radial-gradient(circle at 50% 0, rgb(146 136 255 / 9%), transparent 7rem),
-    linear-gradient(180deg, rgb(12 17 28 / 98%), rgb(5 8 14 / 100%));
+    radial-gradient(circle at 50% 0, rgb(209 170 98 / 10%), transparent 7rem),
+    linear-gradient(180deg, rgb(19 22 26 / 99%), rgb(5 8 12 / 100%));
   box-shadow: 0 -12px 30px rgb(0 0 0 / 28%);
 }
 
@@ -547,27 +569,27 @@ onMounted(() => {
 }
 
 .navigation__item--active {
-  background: linear-gradient(180deg, rgb(146 136 255 / 10%), transparent 76%);
-  color: #d5d1ff;
+  background: linear-gradient(180deg, rgb(209 170 98 / 11%), transparent 76%);
+  color: #f0d28e;
 }
 
 .navigation__item--active::after {
-  background: var(--ui-color-primary);
-  box-shadow: 0 0 9px rgb(146 136 255 / 55%);
+  background: var(--ui-color-gold);
+  box-shadow: 0 0 9px rgb(209 170 98 / 55%);
 }
 
 .navigation__item--primary .navigation__icon-wrap {
   width: 38px;
   height: 38px;
   margin-top: -13px;
-  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 55%, var(--ui-color-border));
-  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 65%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
   background:
-    radial-gradient(circle at 45% 25%, rgb(146 136 255 / 18%), transparent 55%),
+    radial-gradient(circle at 45% 25%, rgb(209 170 98 / 18%), transparent 55%),
     linear-gradient(180deg, rgb(28 31 55 / 100%), rgb(8 12 21 / 100%));
   box-shadow:
     0 -6px 16px rgb(0 0 0 / 28%),
-    0 0 14px rgb(146 136 255 / 15%);
+    0 0 14px rgb(209 170 98 / 15%);
 }
 
 .navigation__item:active:not(:disabled) {
@@ -595,7 +617,7 @@ onMounted(() => {
 }
 
 .navigation__item--active .navigation__icon {
-  filter: saturate(1.15) brightness(1.1) drop-shadow(0 0 .38rem rgb(112 100 245 / 52%));
+  filter: saturate(1.15) brightness(1.1) drop-shadow(0 0 .38rem rgb(209 170 98 / 52%));
   transform: translateY(-1px);
 }
 

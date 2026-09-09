@@ -1726,4 +1726,149 @@ onUnmounted(() => window.clearInterval(timer))
     display: none;
   }
 }
+
+/* Combat is a focused scene: the battlefield leads, the action dock follows. */
+.combat-screen {
+  gap: 6px;
+  padding-top: 6px;
+  background:
+    radial-gradient(circle at 50% 18%, rgb(115 74 94 / 13%), transparent 19rem),
+    linear-gradient(180deg, #08090e, #04060a);
+}
+
+.combat-hud__actor {
+  border-radius: var(--ui-radius-sm);
+  background: rgb(8 12 17 / 88%);
+}
+
+.combat-hud__actor--player {
+  border-color: rgb(182 161 236 / 34%);
+}
+
+.combat-hud__actor--enemy {
+  border-color: rgb(216 95 114 / 42%);
+}
+
+.combat-targets button {
+  border-radius: var(--ui-radius-sm);
+  background: rgb(8 11 16 / 88%);
+}
+
+.battlefield {
+  min-height: 21rem;
+  border-color: rgb(205 177 113 / 38%);
+  border-radius: var(--ui-radius-md);
+  box-shadow:
+    inset 0 0 42px rgb(0 0 0 / 48%),
+    0 16px 34px rgb(0 0 0 / 34%);
+}
+
+.battlefield::after {
+  position: absolute;
+  right: 7%;
+  bottom: 10%;
+  left: 7%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(205 177 113 / 34%), transparent);
+  content: '';
+}
+
+.enemy-figure {
+  top: 3.2rem;
+  height: 13rem;
+}
+
+.player-figure {
+  bottom: -1.1rem;
+  width: 8.2rem;
+  height: 10.5rem;
+  opacity: .88;
+}
+
+.combat-feedback {
+  bottom: 4.5rem;
+  border: 1px solid rgb(205 177 113 / 24%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(5 8 13 / 84%);
+}
+
+.combat-actions {
+  position: sticky;
+  bottom: 6px;
+  z-index: 5;
+  gap: 6px;
+  padding: 7px;
+  border-color: rgb(205 177 113 / 32%);
+  border-radius: var(--ui-radius-md);
+  background:
+    linear-gradient(180deg, rgb(22 25 30 / 97%), rgb(7 10 15 / 98%));
+  box-shadow: 0 -8px 24px rgb(0 0 0 / 32%), inset 0 1px 0 rgb(255 255 255 / 5%);
+  backdrop-filter: blur(10px);
+}
+
+.ability-row {
+  gap: 3px;
+}
+
+.ability-slot {
+  min-height: 66px;
+  border-color: rgb(205 177 113 / 19%);
+  border-radius: var(--ui-radius-sm);
+  background: linear-gradient(180deg, rgb(35 38 42 / 80%), rgb(5 8 12 / 92%));
+}
+
+.ability-slot[data-state='ready'] {
+  border-color: rgb(182 161 236 / 48%);
+}
+
+.ability-slot__icon {
+  border-radius: var(--ui-radius-sm);
+}
+
+.utility-action {
+  min-height: 40px;
+  border-radius: var(--ui-radius-sm);
+  background: rgb(5 8 12 / 78%);
+}
+
+.loot-roll {
+  border-radius: var(--ui-radius-sm);
+  background: linear-gradient(135deg, rgb(62 43 22 / 88%), rgb(10 12 17 / 97%));
+}
+
+.combat-log {
+  border: 0;
+  border-top: 1px solid rgb(205 177 113 / 18%);
+  border-radius: 0;
+  background: transparent;
+}
+
+.combat-log__toggle {
+  min-height: 36px;
+  padding-inline: 2px;
+}
+
+.combat-log ol {
+  padding-inline: 2px;
+}
+
+@media (max-width: 390px) {
+  .battlefield {
+    min-height: 19rem;
+  }
+
+  .enemy-figure {
+    height: 11.5rem;
+  }
+
+  .ability-slot {
+    min-height: 60px;
+  }
+}
+
+@media (max-width: 340px) {
+  .battlefield {
+    min-height: 18rem;
+  }
+}
 </style>

@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue'
 
 import type { Quest } from '@/api/contracts'
+import { gameArt } from '@/assets/gameArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 
@@ -24,6 +25,15 @@ const boardSubtitle = computed(() =>
     ? 'Регистратор публикует официальные контракты для доступных регионов.'
     : 'Полевой регистратор принимает и выдаёт контракты текущей экспедиции.',
 )
+const featuredNpc = computed(() => isCentralPost.value
+  ? { name: 'Селия', role: 'Регистратор', art: gameArt.npc.registrar }
+  : { name: 'Гаррет', role: 'Полевой охотник', art: gameArt.npc.huntMaster })
+const guildNpcs = [
+  { name: 'Селия', role: 'Регистратор', detail: 'Контракты', art: gameArt.npc.registrar, active: true },
+  { name: 'Гаррет', role: 'Мастер охоты', detail: 'Цели и угрозы', art: gameArt.npc.huntMaster, active: false },
+  { name: 'Бран', role: 'Квартирмейстер', detail: 'Снабжение', art: gameArt.npc.quartermaster, active: false },
+  { name: 'Эллира', role: 'Картограф', detail: 'Новые регионы', art: gameArt.npc.cartographer, active: false },
+]
 
 const contracts = computed(() => {
   const quests = session.questJournal?.quests ?? []
@@ -85,13 +95,32 @@ async function claim(quest: Quest): Promise<void> {
   <UIModal :open="open" title="Гильдия авантюристов" @close="emit('close')">
     <section class="guild-board" data-adventurer-guild-board>
       <header class="guild-board__header">
-        <div class="guild-board__seal" aria-hidden="true">⚔</div>
+        <div class="guild-board__portrait">
+          <img :src="featuredNpc.art" :alt="featuredNpc.name" />
+        </div>
         <div>
           <small>{{ isCentralPost ? 'ГОРОДСКОЕ ПРЕДСТАВИТЕЛЬСТВО' : 'ПОЛЕВОЕ ПРЕДСТАВИТЕЛЬСТВО' }}</small>
           <h2>{{ boardTitle }}</h2>
-          <p>{{ boardSubtitle }}</p>
+          <p>{{ featuredNpc.name }} · {{ featuredNpc.role }}. {{ boardSubtitle }}</p>
         </div>
       </header>
+
+      <section class="guild-board__people" aria-label="Представители гильдии">
+        <article
+          v-for="npc in guildNpcs"
+          :key="npc.name"
+          class="guild-npc"
+          :class="{ 'guild-npc--active': npc.active }"
+          :aria-label="`${npc.name}, ${npc.role}`"
+        >
+          <img :src="npc.art" :alt="npc.name" loading="lazy" />
+          <div>
+            <strong>{{ npc.name }}</strong>
+            <small>{{ npc.role }}</small>
+            <span>{{ npc.detail }}</span>
+          </div>
+        </article>
+      </section>
 
       <section class="registrar">
         <div>
@@ -186,10 +215,19 @@ async function claim(quest: Quest): Promise<void> {
 <style scoped>
 .guild-board{display:grid;gap:var(--ui-space-3)}
 .guild-board__header{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:var(--ui-space-3);align-items:center;padding:var(--ui-space-3);border:1px solid rgb(232 200 102 / 18%);border-radius:var(--ui-radius-md);background:linear-gradient(135deg,rgb(232 200 102 / 8%),transparent 58%),var(--ui-color-surface-1)}
-.guild-board__seal{display:grid;width:3.4rem;height:3.4rem;place-items:center;border:1px solid rgb(232 200 102 / 28%);border-radius:50%;background:rgb(232 200 102 / 6%);color:var(--ui-color-gold);font-size:1.25rem}
+.guild-board__portrait{display:grid;width:3.4rem;height:3.4rem;place-items:center;overflow:hidden;border:1px solid rgb(232 200 102 / 46%);border-radius:var(--ui-radius-md);background:rgb(5 8 13 / 88%)}
+.guild-board__portrait img{width:145%;height:145%;object-fit:cover;object-position:50% 18%;transform:translateY(8%)}
 .guild-board__header small,.registrar small,.guild-contract small{color:var(--ui-color-gold);font-size:.56rem;font-weight:800;letter-spacing:.08em}
 .guild-board__header h2{margin:.15rem 0 0;font-family:var(--ui-font-display);font-size:var(--ui-font-size-xl)}
 .guild-board__header p,.registrar p,.guild-board__empty p{margin:.3rem 0 0;color:var(--ui-color-text-muted);font-size:.68rem;line-height:1.45}
+.guild-board__people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.guild-npc{display:grid;grid-template-columns:2.35rem minmax(0,1fr);align-items:center;gap:7px;min-width:0;padding:6px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-sm);background:rgb(8 12 18 / 90%);opacity:.68}
+.guild-npc--active{border-color:rgb(232 200 102 / 42%);background:linear-gradient(90deg,rgb(232 200 102 / 10%),rgb(8 12 18 / 92%));opacity:1}
+.guild-npc img{width:2.35rem;height:2.35rem;overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-sm);object-fit:cover;object-position:50% 16%}
+.guild-npc div{display:grid;min-width:0;gap:1px}
+.guild-npc strong{overflow:hidden;font-family:var(--ui-font-display);font-size:.65rem;text-overflow:ellipsis;white-space:nowrap}
+.guild-npc small,.guild-npc span{overflow:hidden;color:var(--ui-color-text-muted);font-size:.49rem;text-overflow:ellipsis;white-space:nowrap}
+.guild-npc span{color:var(--ui-color-gold-muted)}
 .registrar{display:flex;align-items:center;justify-content:space-between;gap:var(--ui-space-3);padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-1)}
 .registrar>div{display:grid;gap:2px}.registrar>span{flex:0 0 auto;color:var(--ui-color-text-muted);font-size:.62rem}
 .contract-list{display:grid;gap:var(--ui-space-2)}

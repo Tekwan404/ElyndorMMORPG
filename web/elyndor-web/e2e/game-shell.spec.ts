@@ -28,13 +28,33 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Войти в мир' }).click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
 
+  await page.getByRole('button', { name: 'Меню' }).click()
+  await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
+  await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
+  await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
+
+  await page.getByRole('button', { name: 'Локация' }).click()
+  await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
+  await expect(page.getByText('Городские сервисы')).toBeVisible()
+  await expect(page.getByText('Представительство Гильдии')).toBeVisible()
+  await page.screenshot({ path: '../../output/playwright/session-2a-city.png', fullPage: true })
+
   await page.getByRole('button', { name: 'Торговать' }).click()
   const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
   await expect(merchantDialog).toBeVisible()
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
+  await expect(merchantDialog.getByPlaceholder('Найти припасы')).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
+
+  await page.getByRole('button', { name: 'Войти' }).click()
+  const guildDialog = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
+  await expect(guildDialog).toBeVisible()
+  await expect(guildDialog.getByText('Селия', { exact: true })).toBeVisible()
+  await expect(guildDialog.getByText('Гаррет', { exact: true })).toBeVisible()
+  await guildDialog.getByRole('button', { name: 'Close' }).click()
+  await expect(guildDialog).toBeHidden()
 
   await page.getByRole('button', { name: 'Мир' }).click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()

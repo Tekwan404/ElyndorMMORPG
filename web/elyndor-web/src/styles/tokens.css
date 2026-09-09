@@ -1,17 +1,17 @@
 :root {
   color-scheme: dark;
 
-  /* Arcane Minimal semantic colors */
+  /* Dark-fantasy game language: ink, steel and worn gold instead of dashboard surfaces. */
   --ui-color-background: var(--tg-theme-bg-color, #05070d);
-  --ui-color-surface-1: #0a0f19;
-  --ui-color-surface-2: #101725;
-  --ui-color-surface-3: #172033;
+  --ui-color-surface-1: #0b1018;
+  --ui-color-surface-2: #111925;
+  --ui-color-surface-3: #1a2532;
   --ui-color-overlay: rgb(3 5 10 / 82%);
-  --ui-color-border: rgb(148 163 196 / 16%);
-  --ui-color-border-strong: rgb(159 176 216 / 34%);
-  --ui-color-primary: #9288ff;
-  --ui-color-primary-hover: #a198ff;
-  --ui-color-primary-active: #7b72dd;
+  --ui-color-border: rgb(181 159 112 / 17%);
+  --ui-color-border-strong: rgb(205 177 113 / 38%);
+  --ui-color-primary: #b6a1ec;
+  --ui-color-primary-hover: #d1bdf5;
+  --ui-color-primary-active: #917cc8;
   --ui-color-secondary: #4ab8cf;
   --ui-color-danger: #d85f72;
   --ui-color-warning: #d0a458;
@@ -22,9 +22,10 @@
   --ui-color-text-inverse: #080a12;
   --ui-color-disabled: #596275;
   --ui-color-focus: #b8b2ff;
-  --ui-color-gold: #c9a760;
-  --ui-color-gold-muted: #9a8050;
-  --ui-color-surface-glass: rgb(12 18 30 / 88%);
+  --ui-color-gold: #d1aa62;
+  --ui-color-gold-muted: #8c7043;
+  --ui-color-frame: #493b2a;
+  --ui-color-surface-glass: rgb(12 17 24 / 91%);
 
   /* Resource colors */
   --ui-color-hp: #b84152;
@@ -64,9 +65,9 @@
   --ui-space-7: 2rem;
   --ui-space-8: 2.5rem;
   --ui-radius-xs: 2px;
-  --ui-radius-sm: 6px;
-  --ui-radius-md: 10px;
-  --ui-radius-lg: 16px;
+  --ui-radius-sm: 4px;
+  --ui-radius-md: 7px;
+  --ui-radius-lg: 11px;
   --ui-radius-round: 999px;
   --ui-touch-target: 44px;
   --ui-control-height-sm: 44px;
@@ -101,10 +102,10 @@
   --ui-shadow-modal: 0 24px 70px rgb(0 0 0 / 48%);
   --ui-shadow-elevated: 0 10px 28px rgb(0 0 0 / 32%);
   --ui-shadow-inset: inset 0 1px 0 rgb(255 255 255 / 4%);
-  --ui-gradient-panel: linear-gradient(180deg, rgb(20 29 46 / 92%), rgb(10 15 25 / 96%));
-  --ui-gradient-primary: linear-gradient(135deg, #9a91ff, #7770de);
-  --ui-gradient-world: radial-gradient(circle at 50% -10%, rgb(87 75 180 / 18%), transparent 42%);
-  --ui-glow-selected: 0 0 0 1px rgb(146 136 255 / 58%), 0 0 20px rgb(146 136 255 / 18%);
+  --ui-gradient-panel: linear-gradient(180deg, rgb(23 29 37 / 96%), rgb(9 13 19 / 98%));
+  --ui-gradient-primary: linear-gradient(135deg, #c5afee, #8c77c6);
+  --ui-gradient-world: radial-gradient(circle at 50% -10%, rgb(86 65 128 / 18%), transparent 42%);
+  --ui-glow-selected: 0 0 0 1px rgb(209 170 98 / 58%), 0 0 20px rgb(209 170 98 / 16%);
   --ui-glow-danger: 0 0 13px rgb(216 95 114 / 25%);
   --ui-glow-magic: 0 0 22px rgb(146 136 255 / 18%);
   --ui-transition-fast: 120ms ease;

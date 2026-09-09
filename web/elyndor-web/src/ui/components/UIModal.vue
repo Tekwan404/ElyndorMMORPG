@@ -44,16 +44,18 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   display: grid;
   align-items: end;
   padding: var(--ui-space-3) var(--ui-space-3) calc(var(--ui-space-3) + var(--ui-safe-area-bottom));
-  background: var(--ui-color-overlay);
+  background: rgb(2 4 8 / 78%);
+  backdrop-filter: blur(4px);
 }
 .ui-modal__dialog {
   width: min(100%, var(--ui-content-width));
   max-height: calc(var(--ui-viewport-height) - var(--ui-space-7));
   margin-inline: auto;
   overflow: auto;
-  border: 1px solid var(--ui-color-border-strong);
+  border: 1px solid rgb(205 177 113 / 42%);
   border-radius: var(--ui-radius-lg);
-  background: var(--ui-color-surface-1);
+  background:
+    linear-gradient(180deg, rgb(20 25 31 / 98%), rgb(6 9 14 / 99%));
   box-shadow: var(--ui-shadow-modal);
 }
 .ui-modal__header {
@@ -62,7 +64,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   justify-content: space-between;
   gap: var(--ui-space-3);
   padding: var(--ui-space-4);
-  border-bottom: 1px solid var(--ui-color-border);
+  border-bottom: 1px solid rgb(205 177 113 / 24%);
+  background: linear-gradient(90deg, rgb(205 177 113 / 8%), transparent 60%);
 }
 .ui-modal__header h2 {
   margin: 0;
@@ -72,10 +75,10 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 .ui-modal__close {
   width: var(--ui-touch-target);
   height: var(--ui-touch-target);
-  border: 1px solid var(--ui-color-border);
+  border: 1px solid rgb(205 177 113 / 32%);
   border-radius: var(--ui-radius-md);
   background: transparent;
-  color: var(--ui-color-text-secondary);
+  color: #e1c584;
   font: inherit;
   font-size: var(--ui-font-size-xl);
   cursor: pointer;

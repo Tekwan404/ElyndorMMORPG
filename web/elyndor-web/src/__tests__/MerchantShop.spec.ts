@@ -66,6 +66,25 @@ describe('MerchantShop', () => {
 
     expect(sell).toHaveBeenCalledWith('MARCUS_SUPPLIES', 'OPEN_HIDE', 1)
   })
+
+  it('filters the storefront without changing the selected offer contract', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([])
+    vi.spyOn(session, 'getMerchant').mockResolvedValue(merchantSnapshot())
+
+    const wrapper = mount(MerchantShop, {
+      props: { open: false },
+      global: { stubs: { Teleport: true } },
+    })
+
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+    await wrapper.get('input[type="search"]').setValue('тоник')
+
+    expect(wrapper.find('[data-merchant-offer="FIELD_TONIC"]').exists()).toBe(true)
+    expect(wrapper.find('[data-merchant-offer="SMALL_HEALING_POTION"]').exists()).toBe(false)
+    expect(wrapper.get('[data-merchant-detail]').text()).toContain('Походный тоник')
+  })
 })
 
 function merchantSnapshot(): MerchantSnapshot {

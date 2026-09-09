@@ -427,8 +427,10 @@ onMounted(() => {
           <small>ГОРОДСКИЕ СЕРВИСЫ</small>
           <strong>Стартовый город</strong>
         </div>
-        <span data-safe>БЕЗОПАСНО</span>
+        <span data-safe>4 МЕСТА</span>
       </header>
+
+      <p class="town-services__hint">Город — твой хаб: выбери представителя, чтобы открыть его услугу.</p>
 
       <div class="service-grid">
         <article class="service-card service-card--training" data-town-service="training">
@@ -465,21 +467,21 @@ onMounted(() => {
         </article>
 
         <article class="service-card service-card--guild" data-town-service="guild">
-          <span class="service-card__icon" aria-hidden="true">⚔</span>
+          <img class="service-card__portrait" :src="gameArt.npc.registrar" alt="Регистратор гильдии" />
           <div class="service-card__copy">
             <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
             <strong>Представительство Гильдии</strong>
-            <p>Регистрация официальных контрактов и региональных угроз.</p>
+            <p>Селия выдаёт контракты и отмечает новые угрозы.</p>
           </div>
           <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
         </article>
 
         <article class="service-card service-card--rest" data-town-service="rest">
-          <span class="service-card__icon" aria-hidden="true">✦</span>
+          <img class="service-card__portrait" :src="gameArt.npc.innkeeper" alt="Хозяйка постоялого двора" />
           <div class="service-card__copy">
-            <small>ОТДЫХ</small>
-            <strong>Городская площадь</strong>
-            <p>Безопасная зона постепенно восстанавливает здоровье героя.</p>
+            <small>ПОСТОЯЛЫЙ ДВОР</small>
+            <strong>Отдых на площади</strong>
+            <p>Безопасная зона восстанавливает здоровье героя.</p>
           </div>
           <span class="service-card__status">Активно</span>
         </article>
@@ -506,6 +508,7 @@ onMounted(() => {
 
 .scene {
   position: relative;
+  order: -2;
   min-height: 23rem;
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
@@ -987,6 +990,66 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.town-services__hint {
+  margin: 0;
+  padding: 8px 4px 2px;
+  color: var(--ui-color-text-muted);
+  font-size: .63rem;
+}
+
+.town-services {
+  order: -1;
+}
+
+/* Sections read as one location hub; individual controls carry the hierarchy. */
+.location-activities,
+.location-contracts,
+.town-services,
+.location-routes {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.section-heading {
+  padding-inline: 2px;
+  background: transparent;
+}
+
+.service-grid {
+  gap: 6px;
+  background: transparent;
+}
+
+.service-card {
+  min-height: 10.5rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(150deg, rgb(26 32 39 / 96%), rgb(7 11 16 / 99%));
+}
+
+.service-card--training {
+  border-color: rgb(182 161 236 / 30%);
+}
+
+.service-card--merchant,
+.service-card--guild {
+  border-color: rgb(205 177 113 / 32%);
+}
+
+.service-card--rest {
+  border-color: rgb(79 185 150 / 28%);
+}
+
+.service-card__portrait {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-color: rgb(205 177 113 / 42%);
+  border-radius: var(--ui-radius-sm);
+}
+
 @media (max-width: 520px) {
   .world {
     padding: var(--ui-space-3);
@@ -1033,15 +1096,15 @@ onMounted(() => {
   }
 
   .service-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .service-card,
   .service-card--rest {
     grid-column: auto;
-    grid-template-columns: 3rem minmax(0, 1fr);
-    min-height: auto;
-    align-items: center;
+    grid-template-columns: 1fr;
+    min-height: 10.5rem;
+    align-items: start;
     gap: var(--ui-space-3);
     padding: var(--ui-space-3);
   }
@@ -1055,6 +1118,12 @@ onMounted(() => {
   .service-card__status {
     box-sizing: border-box;
     text-align: center;
+  }
+
+  .service-card__portrait,
+  .service-card__icon {
+    width: 2.65rem;
+    height: 2.65rem;
   }
 
 }

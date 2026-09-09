@@ -16,6 +16,9 @@ const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
 const activeTab = ref<'buy' | 'sell'>('buy')
 const selectedOfferId = ref<string | null>(null)
+const searchQuery = ref('')
+const activeFilter = ref<'all' | MerchantItem['type']>('all')
+const merchantFilters = ['all', 'Equipment', 'Consumable', 'Material'] as const
 
 const sellableItems = computed(() => session.snapshot?.character?.inventory.items
   .filter((item) =>
@@ -29,15 +32,27 @@ const protectedItemsCount = computed(() => session.snapshot?.character?.inventor
     && item.isLocked
     && item.sellPriceGold > 0,
   ).length ?? 0)
+const visibleOffers = computed(() => {
+  const query = searchQuery.value.trim().toLocaleLowerCase()
+  return merchant.value?.items.filter(item => {
+    const matchesType = activeFilter.value === 'all' || item.type === activeFilter.value
+    const matchesQuery = !query
+      || item.name.toLocaleLowerCase().includes(query)
+      || item.description.toLocaleLowerCase().includes(query)
+    return matchesType && matchesQuery
+  }) ?? []
+})
 const selectedOffer = computed(() =>
-  merchant.value?.items.find(item => item.definitionId === selectedOfferId.value)
-    ?? merchant.value?.items[0]
+  visibleOffers.value.find(item => item.definitionId === selectedOfferId.value)
+    ?? visibleOffers.value[0]
     ?? null,
 )
 
 watch(() => props.open, (open) => {
   if (open) {
     activeTab.value = 'buy'
+    searchQuery.value = ''
+    activeFilter.value = 'all'
     void loadMerchant()
   }
 })
@@ -59,6 +74,13 @@ async function loadMerchant(): Promise<void> {
 
 function selectOffer(item: MerchantItem): void {
   selectedOfferId.value = item.definitionId
+}
+
+function filterLabel(filter: 'all' | MerchantItem['type']): string {
+  if (filter === 'Equipment') return 'Экипировка'
+  if (filter === 'Consumable') return 'Расходники'
+  if (filter === 'Material') return 'Материалы'
+  return 'Все'
 }
 
 function itemArt(item: MerchantItem): string | undefined {
@@ -159,13 +181,30 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <small>ВИТРИНА</small>
             <strong>Припасы для следующего похода</strong>
           </div>
-          <span>{{ merchant?.items.length ?? 0 }} поз.</span>
+          <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }} поз.</span>
         </header>
 
-        <div v-if="merchant?.items.length" class="merchant-buy">
+        <div class="merchant-filter" aria-label="Фильтр витрины">
+          <label class="merchant-filter__search">
+            <span class="sr-only">Поиск товара</span>
+            <span aria-hidden="true">⌕</span>
+            <input v-model="searchQuery" type="search" placeholder="Найти припасы" />
+          </label>
+          <div class="merchant-filter__chips" role="group" aria-label="Категория товара">
+            <button
+              v-for="filter in merchantFilters"
+              :key="filter"
+              type="button"
+              :class="{ active: activeFilter === filter }"
+              @click="activeFilter = filter"
+            >{{ filterLabel(filter) }}</button>
+          </div>
+        </div>
+
+        <div v-if="visibleOffers.length" class="merchant-buy">
           <div class="merchant-shelf" aria-label="Товары торговца">
             <button
-              v-for="item in merchant.items"
+              v-for="item in visibleOffers"
               :key="item.definitionId"
               type="button"
               class="offer-card"
@@ -225,6 +264,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
         <p v-if="loading" class="muted">Маркус раскладывает товар…</p>
         <p v-else-if="merchant && merchant.items.length === 0" class="muted">На витрине пока ничего нет.</p>
+        <p v-else-if="merchant && visibleOffers.length === 0" class="muted">По этому фильтру товаров нет.</p>
       </section>
 
       <section v-else class="merchant-panel merchant-panel--sell">
@@ -462,6 +502,72 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   font-size: .6rem;
 }
 
+.merchant-filter {
+  display: grid;
+  gap: 7px;
+  padding: 9px var(--ui-space-4);
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+  background: rgb(4 7 12 / 56%);
+}
+
+.merchant-filter__search {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(12 17 24 / 94%);
+  color: var(--ui-color-gold);
+}
+
+.merchant-filter__search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  font-size: .7rem;
+}
+
+.merchant-filter__search input::placeholder {
+  color: var(--ui-color-text-muted);
+}
+
+.merchant-filter__chips {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.merchant-filter__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.merchant-filter__chips button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: transparent;
+  color: var(--ui-color-text-muted);
+  font: inherit;
+  font-size: .55rem;
+  white-space: nowrap;
+}
+
+.merchant-filter__chips button.active {
+  border-color: rgb(209 170 98 / 58%);
+  background: rgb(209 170 98 / 12%);
+  color: #f0d28e;
+}
+
 .merchant-buy {
   display: grid;
   grid-template-columns: minmax(8.5rem, .8fr) minmax(0, 1.2fr);
@@ -472,10 +578,21 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   display: grid;
   align-content: start;
   gap: 1px;
-  max-height: 23rem;
+  max-height: 19rem;
   overflow-y: auto;
   border-right: 1px solid rgb(255 255 255 / 6%);
   background: rgb(3 6 11 / 42%);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .offer-card {

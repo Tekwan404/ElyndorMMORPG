@@ -36,6 +36,21 @@ body {
   color: var(--ui-color-text-primary);
 }
 
+/* Keep the game scrollable, while preventing accidental double-tap zoom on controls. */
+.content,
+.navigation,
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+.content {
+  touch-action: pan-y;
+}
+
 body::before {
   position: fixed;
   z-index: -1;

@@ -21,6 +21,10 @@ import blacksmith from './npc/blacksmith.webp'
 import alchemist from './npc/alchemist.webp'
 import innkeeper from './npc/innkeeper.webp'
 import elder from './npc/starter-town-elder.webp'
+import registrar from './npc/registrar.webp'
+import quartermaster from './npc/quartermaster.webp'
+import huntMaster from './npc/hunt-master.webp'
+import cartographer from './npc/cartographer.webp'
 
 export const gameArt = {
   world: {
@@ -47,6 +51,10 @@ export const gameArt = {
     alchemist,
     innkeeper,
     elder,
+    registrar,
+    quartermaster,
+    huntMaster,
+    cartographer,
   },
   characters: { warrior },
   navigation: {
