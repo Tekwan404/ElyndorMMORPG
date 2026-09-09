@@ -138,6 +138,7 @@ function slotsMatch(item: InventoryItem, requestedSlot: EquipmentSlot): boolean 
   const itemSlot = canonicalSlot(item.slot)
   const target = canonicalSlot(requestedSlot)
   if (target === 'OffHand' && itemSlot === 'MainHand' && isOneHandWeapon(item)) return true
+  if ((itemSlot === 'Ring1' || itemSlot === 'Ring2') && (target === 'Ring1' || target === 'Ring2')) return true
   return itemSlot === target
 }
 

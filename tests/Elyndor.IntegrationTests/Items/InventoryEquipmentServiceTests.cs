@@ -936,6 +936,132 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task SameRingTemplateCanFillBothCanonicalRingSlots()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "WARRIOR",
+            level: 25);
+        Guid firstRingId = await AddItemAsync(characterId, "ACC_COMMON_2_RING", 1);
+        Guid secondRingId = await AddItemAsync(characterId, "ACC_COMMON_2_RING", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            firstRingId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EquipAsync(
+            accountId,
+            secondRingId,
+            EquipmentSlot.Ring2,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verify.CharacterEquipment
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId
+                && (item.Slot == EquipmentSlot.Ring1 || item.Slot == EquipmentSlot.Ring2))
+            .OrderBy(item => item.Slot)
+            .ToArrayAsync();
+
+        Assert.Equal(2, equipped.Length);
+        Assert.Equal(firstRingId, Assert.Single(equipped, item => item.Slot == EquipmentSlot.Ring1).CharacterItemId);
+        Assert.Equal(secondRingId, Assert.Single(equipped, item => item.Slot == EquipmentSlot.Ring2).CharacterItemId);
+    }
+
+    [Fact]
+    public async Task ArcherBowPreservesCompatibleQuiverOffHand()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "ARCHER",
+            level: 25);
+        Guid bowId = await AddItemAsync(characterId, "ARCHER_COMMON_WHISPER_TRACKER_BOW", 1);
+        Guid quiverId = await AddItemAsync(characterId, "ARCHER_COMMON_WHISPER_TRACKER_QUIVER", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            quiverId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EquipAsync(
+            accountId,
+            bowId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment mainHand = await verify.CharacterEquipment
+            .AsNoTracking()
+            .SingleAsync(item => item.CharacterId == characterId
+                && item.Slot == EquipmentSlot.MainHand);
+        CharacterEquipment offHand = await verify.CharacterEquipment
+            .AsNoTracking()
+            .SingleAsync(item => item.CharacterId == characterId
+                && item.Slot == EquipmentSlot.OffHand);
+
+        Assert.Equal(bowId, mainHand.CharacterItemId);
+        Assert.Equal(quiverId, offHand.CharacterItemId);
+    }
+
+    [Fact]
+    public async Task MageFocusWorksWithWandAndIsDisplacedByTwoHandedStaff()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "MAGE",
+            level: 25);
+        Guid wandId = await AddItemAsync(characterId, "MAGE_COMMON_BLUE_CANDLE_WAND", 1);
+        Guid staffId = await AddItemAsync(characterId, "MAGE_COMMON_BLUE_CANDLE_STAFF", 1);
+        Guid focusId = await AddItemAsync(characterId, "MAGE_COMMON_BLUE_CANDLE_FOCUS", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            focusId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EquipAsync(
+            accountId,
+            wandId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+
+        await using (GameDbContext verifyWand = postgres.CreateDbContext())
+        {
+            Assert.Contains(await verifyWand.CharacterEquipment
+                .AsNoTracking()
+                .Where(item => item.CharacterId == characterId)
+                .ToArrayAsync(), item => item.Slot == EquipmentSlot.OffHand
+                    && item.CharacterItemId == focusId);
+        }
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            staffId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+
+        await using GameDbContext verifyStaff = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verifyStaff.CharacterEquipment
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .ToArrayAsync();
+        Assert.Contains(equipped, item => item.Slot == EquipmentSlot.MainHand
+            && item.CharacterItemId == staffId);
+        Assert.DoesNotContain(equipped, item => item.Slot == EquipmentSlot.OffHand);
+    }
+
+    [Fact]
     public async Task MissingItemDefinitionIsExposedAsSafeLegacyPlaceholder()
     {
         (Guid accountId, Guid characterId) =

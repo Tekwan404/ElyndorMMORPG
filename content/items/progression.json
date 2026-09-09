@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T06:50:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -122,7 +122,7 @@
       "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
       "stats": {
-        "strength": 2,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
         "stamina": 0
@@ -132,13 +132,15 @@
       "weaponBaseAttackIntervalSeconds": 2.4,
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RANGER_SILK_HOOD",
@@ -152,20 +154,22 @@
       "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
         "stamina": 0
       },
       "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 4,
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RANGER_HIDE_VEST",
@@ -181,18 +185,20 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 8,
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RANGER_TRAIL_LEGGINGS",
@@ -206,25 +212,22 @@
       "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
-        "agility": 1,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 6,
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RANGER_TRAIL_BOOTS",
@@ -234,24 +237,26 @@
       "requiredLevel": 1,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Boots",
+      "slot": "Feet",
       "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
         "stamina": 0
       },
       "description": "Тихие кожаные ботинки, удобные для преследования добычи. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 4,
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RANGER_FANG_CHARM",
@@ -261,27 +266,24 @@
       "requiredLevel": 1,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Accessory",
+      "slot": "Amulet",
       "stats": {
-        "strength": 1,
-        "agility": 1,
+        "strength": 0,
+        "agility": 0,
         "intellect": 0,
         "stamina": 0
       },
       "description": "Амулет из волчьего клыка — знак удачливого охотника. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "agility": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ACCESSORY_GENERAL",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "SMALL_HEALING_POTION",
@@ -321,7 +323,7 @@
       "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
       "stats": {
-        "strength": 2,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
         "stamina": 0
@@ -331,13 +333,15 @@
       "weaponBaseAttackIntervalSeconds": 2.4,
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "BOAR_HIDE_VEST",
@@ -353,18 +357,20 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 8,
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "SPIDER_SILK_HOOD",
@@ -378,20 +384,22 @@
       "armorCategory": "LEATHER",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
         "stamina": 0
       },
       "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
       "armorFlat": 4,
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 1,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "RANGER_LEGACY",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "RECRUIT_IRON_SWORD",

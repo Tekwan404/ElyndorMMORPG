@@ -77,7 +77,7 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal("STARTER_TOWN", initialWorld?.World?.CurrentLocation.Id);
         WorldLocationResponse[]? locations =
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
-        Assert.Equal(6, locations?.Length);
+        Assert.Equal(7, locations?.Length);
 
         HttpResponseMessage invalidTravel = await client.PostAsJsonAsync(
             "/api/v1/world/travel",

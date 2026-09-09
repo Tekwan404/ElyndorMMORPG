@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T05:05:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "items": [
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_CHEST",
@@ -33,7 +33,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 85,
+      "sellPriceGold": 21
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_FEET",
@@ -65,7 +67,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 50,
+      "sellPriceGold": 12
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_HANDS",
@@ -97,7 +101,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 50,
+      "sellPriceGold": 12
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_HEAD",
@@ -129,7 +135,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 65,
+      "sellPriceGold": 16
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_LEGS",
@@ -161,7 +169,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 75,
+      "sellPriceGold": 18
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
@@ -193,7 +203,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 60,
+      "sellPriceGold": 15
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_STAFF",
@@ -226,7 +238,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 90,
+      "sellPriceGold": 22
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_WAND",
@@ -259,7 +273,9 @@
       "affixCountProfileId": "LEVEL_1_4",
       "guaranteedAffixStatIds": [],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 90,
+      "sellPriceGold": 22
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_CHEST",
@@ -1421,29 +1437,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 33,
-        "stamina": 17
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 33,
-          "max": 47,
-          "step": 1
-        },
-        "stamina": {
-          "min": 17,
-          "max": 25,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
-      "armorFlat": 102
+      "armorFlat": 102,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
@@ -1457,29 +1474,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 15,
-        "stamina": 7
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 15,
-          "max": 21,
-          "step": 1
-        },
-        "stamina": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
-      "armorFlat": 45
+      "armorFlat": 45,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
@@ -1493,29 +1511,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 16,
-        "stamina": 8
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 16,
-          "max": 23,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
-      "armorFlat": 49
+      "armorFlat": 49,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
@@ -1529,29 +1548,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 21,
-        "stamina": 11
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 21,
-          "max": 30,
-          "step": 1
-        },
-        "stamina": {
-          "min": 11,
-          "max": 16,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
-      "armorFlat": 65
+      "armorFlat": 65,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
@@ -1565,64 +1585,67 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 29,
-        "stamina": 15
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 29,
-          "max": 41,
-          "step": 1
-        },
-        "stamina": {
-          "min": 15,
-          "max": 22,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
-      "armorFlat": 89.5
+      "armorFlat": 89.5,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
-      "name": "Плащ Затмённого Оракула",
+      "name": "Наплечники Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 23,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 18,
-        "stamina": 10
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 18,
-          "max": 26,
-          "step": 1
-        },
-        "stamina": {
-          "min": 10,
-          "max": 14,
-          "step": 1
-        }
-      },
-      "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "armorFlat": 57
+      "armorCategory": "CLOTH",
+      "armorFlat": 57,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
@@ -1636,29 +1659,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 26,
-        "stamina": 6
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Одеяния Затмённого Оракула».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 26,
-          "max": 38,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 68,
-      "weaponDamageMax": 102
+      "weaponDamageMax": 102,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
@@ -1672,7 +1696,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 18,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Затмённого Оракула».",
@@ -1680,16 +1704,22 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 18,
-          "max": 26,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 48,
-      "weaponDamageMax": 73
+      "weaponDamageMax": 73,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "CRITICAL_CHANCE",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
@@ -1703,29 +1733,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 40,
-        "stamina": 18
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Именной посох 25 уровня. Unique не является отдельным сетовым тиром.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 40,
-          "max": 54,
-          "step": 1
-        },
-        "stamina": {
-          "min": 18,
-          "max": 27,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 88,
-      "weaponDamageMax": 118
+      "weaponDamageMax": 118,
+      "itemLevelMin": 25,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_25_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     }
   ]
 }

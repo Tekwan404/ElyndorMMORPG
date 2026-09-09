@@ -21,8 +21,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.16.0", package.ContentVersion);
-        Assert.Equal("0.13.0", package.BalanceVersion);
+        Assert.Equal("0.17.0", package.ContentVersion);
+        Assert.Equal("0.14.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -144,14 +144,56 @@ public sealed class GameContentPackageLoaderTests
             .SelectMany(table => table.Entries)
             .Select(entry => entry.ItemId)
             .ToHashSet(StringComparer.Ordinal);
-        ItemDefinition[] currentProgressionItems = package.Items!
-            .Where(item => item.RequiredLevel is 2 or 6 or 10 or 14 or 18)
-            .Where(item => item.Id.StartsWith("WARRIOR_", StringComparison.Ordinal)
-                || item.Id.StartsWith("MAGE_", StringComparison.Ordinal)
-                || item.Id.StartsWith("ARCHER_", StringComparison.Ordinal))
+        ItemDefinition[] proceduralEquipment = package.Items!
+            .Where(item => item.Type == ItemType.Equipment)
+            .ToArray();
+        Assert.NotEmpty(proceduralEquipment);
+        Assert.All(proceduralEquipment, item =>
+        {
+            Assert.Null(item.PrimaryStatRanges);
+            Assert.True(ProceduralItemPolicy.IsEnabled(item), item.Id);
+        });
+
+        ItemDefinition[] currentProgressionItems = proceduralEquipment
+            .Where(item => item.RequiredLevel >= 2)
             .ToArray();
         Assert.NotEmpty(currentProgressionItems);
         Assert.All(currentProgressionItems, item => Assert.Contains(item.Id, obtainableItemIds));
+
+        DungeonDefinition eclipsedCitadel = Assert.Single(
+            package.Dungeons!,
+            dungeon => dungeon.Id == "ECLIPSED_CITADEL");
+        Assert.Equal(25, eclipsedCitadel.MinimumLevel);
+        Assert.Equal(25, eclipsedCitadel.MaximumLevel);
+        Assert.Equal(5, eclipsedCitadel.Encounters.Count);
+        Assert.Equal("ECLIPSED_CITADEL_ARCHON_L25", eclipsedCitadel.Encounters[^1].MonsterId);
+
+        MerchantDefinition marcus = Assert.Single(
+            package.Merchants!,
+            merchant => merchant.Id == "MARCUS_SUPPLIES");
+        ItemDefinition[] marcusEquipment = package.Items!
+            .Where(item => marcus.ItemIds.Contains(item.Id)
+                && item.Type == ItemType.Equipment)
+            .ToArray();
+        Assert.NotEmpty(marcusEquipment);
+        Assert.All(marcusEquipment, item =>
+        {
+            Assert.Equal(ItemRarity.Common, item.Rarity);
+            Assert.Equal(2, item.RequiredLevel);
+            Assert.True(item.BuyPriceGold > 0);
+        });
+        Assert.DoesNotContain(
+            package.Items!,
+            item => marcus.ItemIds.Contains(item.Id)
+                && item.Type == ItemType.Equipment
+                && item.Rarity is ItemRarity.Rare or ItemRarity.Epic or ItemRarity.Legendary or ItemRarity.Unique);
+
+        LootTableDefinition citadelBossLoot = Assert.Single(
+            package.LootTables!,
+            table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
+        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
+        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
     }
 
     [Fact]

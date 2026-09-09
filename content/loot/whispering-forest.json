@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.15.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:26:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "lootTables": [
     {
       "id": "WHISPERING_FOREST_WOLF",
@@ -81,6 +81,18 @@
         },
         {
           "itemId": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_COMMON_2_CLOAK",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_COMMON_BLUE_CANDLE_FOCUS",
           "dropChance": 0.035,
           "minQuantity": 1,
           "maxQuantity": 1
@@ -168,6 +180,18 @@
           "dropChance": 0.035,
           "minQuantity": 1,
           "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_COMMON_2_RING",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_COMMON_WHISPER_TRACKER_QUIVER",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -243,6 +267,12 @@
         },
         {
           "itemId": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.035,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_COMMON_2_AMULET",
           "dropChance": 0.035,
           "minQuantity": 1,
           "maxQuantity": 1
@@ -558,6 +588,66 @@
           "dropChance": 0.003,
           "minQuantity": 1,
           "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FOCUS",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_UNCOMMON_GREY_TRAIL_QUIVER",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_UNCOMMON_6_CLOAK",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_UNCOMMON_6_AMULET",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_UNCOMMON_6_RING",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_RARE_THREE_ELEMENTS_FOCUS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_RARE_THORN_TRAIL_QUIVER",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_RARE_10_CLOAK",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_RARE_10_AMULET",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_RARE_10_RING",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -717,6 +807,36 @@
         },
         {
           "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_EPIC_SHATTERED_STAR_FOCUS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_QUIVER",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_EPIC_14_CLOAK",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_EPIC_14_AMULET",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_EPIC_14_RING",
           "dropChance": 0.025,
           "minQuantity": 1,
           "maxQuantity": 1
@@ -885,6 +1005,36 @@
         },
         {
           "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MAGE_LEGENDARY_SILENT_ARCHON_FOCUS",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ARCHER_LEGENDARY_STAR_HUNTER_QUIVER",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_18_CLOAK",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_18_AMULET",
+          "dropChance": 0.004,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ACC_LEGENDARY_18_RING",
           "dropChance": 0.004,
           "minQuantity": 1,
           "maxQuantity": 1

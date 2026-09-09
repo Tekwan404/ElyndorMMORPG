@@ -1,0 +1,45 @@
+{
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
+  "dungeons": [
+    {
+      "id": "ECLIPSED_CITADEL",
+      "displayName": "Цитадель Затмения",
+      "description": "Эндгейм-подземелье 25 уровня. Четыре элитных стража и Архонт Погасшей Звезды охраняют легендарные комплекты Чёрного Бастиона, Затмённого Оракула и Чёрного Созвездия.",
+      "minimumLevel": 25,
+      "maximumLevel": 25,
+      "entryLocationId": "ECLIPSED_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "CITADEL_WARDEN_1",
+          "monsterId": "ECLIPSED_CITADEL_SENTINEL_L25",
+          "checkpointId": "OUTER_SEAL"
+        },
+        {
+          "id": "CITADEL_WARDEN_2",
+          "monsterId": "ECLIPSED_CITADEL_GOLEM_L25",
+          "checkpointId": "BLACK_HALL"
+        },
+        {
+          "id": "CITADEL_WARDEN_3",
+          "monsterId": "ECLIPSED_CITADEL_WEAVER_L25",
+          "checkpointId": "STAR_VAULT"
+        },
+        {
+          "id": "CITADEL_WARDEN_4",
+          "monsterId": "ECLIPSED_CITADEL_EXECUTIONER_L25",
+          "checkpointId": "ECLIPSE_GATE"
+        },
+        {
+          "id": "CITADEL_BOSS",
+          "monsterId": "ECLIPSED_CITADEL_ARCHON_L25",
+          "checkpointId": "DEAD_STAR_THRONE",
+          "isBoss": true
+        }
+      ]
+    }
+  ]
+}
