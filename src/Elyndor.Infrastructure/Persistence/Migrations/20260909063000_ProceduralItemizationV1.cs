@@ -1,9 +1,13 @@
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Elyndor.Infrastructure.Persistence.Migrations;
 
+[DbContext(typeof(GameDbContext))]
+[Migration("20260909063000_ProceduralItemizationV1")]
 public partial class ProceduralItemizationV1 : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
