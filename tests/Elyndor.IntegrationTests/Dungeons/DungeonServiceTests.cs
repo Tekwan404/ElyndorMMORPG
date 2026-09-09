@@ -70,6 +70,53 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task CreatingDifferentDungeonDoesNotReturnExistingRunFromAnotherDungeon()
+    {
+        (Guid leaderAccountId, _, _) = await SeedPartyCharactersAsync();
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        StaticContentSnapshotProvider contentProvider = new(content);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        Character leader = await context.Characters
+            .SingleAsync(character => character.AccountId == leaderAccountId);
+        leader.SetLevel(25);
+        await context.SaveChangesAsync();
+
+        FixedTimeProvider time = new(Now);
+        PartyService partyService = new(context, time);
+        DungeonService dungeonService = new(context, partyService, contentProvider, time);
+
+        Assert.True((await partyService.CreateAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            CancellationToken.None)).IsSuccess);
+
+        DungeonOperationResult mine = await dungeonService.CreateAsync(
+            leaderAccountId,
+            "ANCIENT_MINE",
+            Guid.NewGuid(),
+            CancellationToken.None);
+        Assert.True(mine.Succeeded, mine.ErrorCode);
+
+        CharacterLocation location = await context.CharacterLocations
+            .SingleAsync(candidate => candidate.CharacterId == leader.Id);
+        location.Relocate("ECLIPSED_CITADEL", Now);
+        await context.SaveChangesAsync();
+
+        DungeonOperationResult citadel = await dungeonService.CreateAsync(
+            leaderAccountId,
+            "ECLIPSED_CITADEL",
+            Guid.NewGuid(),
+            CancellationToken.None);
+
+        Assert.False(citadel.Succeeded);
+        Assert.Equal(DungeonErrorCodes.RunAlreadyActive, citadel.ErrorCode);
+        Assert.Null(citadel.Run);
+    }
+
+    [Fact]
     public async Task DisbandAbandonsActiveRunWithoutChangingEncounterRoster()
     {
         (Guid leader, _, _) = await SeedPartyCharactersAsync();
