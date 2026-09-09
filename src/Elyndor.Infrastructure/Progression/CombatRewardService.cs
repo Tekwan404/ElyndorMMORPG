@@ -28,6 +28,13 @@ public sealed record CombatRewardApplicationResult(
     IReadOnlyList<string>? CompletedContractIds = null,
     IReadOnlyList<CombatLootRollResult>? LootRolls = null);
 
+public sealed record CombatLootAffixResult(
+    string StatId,
+    decimal Value,
+    decimal Min,
+    decimal Max,
+    bool IsGuaranteed);
+
 public sealed record CombatLootRollResult(
     Guid LootRollId,
     string ItemId,
@@ -36,7 +43,14 @@ public sealed record CombatLootRollResult(
     int Quantity,
     DateTimeOffset EndsAtUtc,
     IReadOnlyList<Guid> EligibleCharacterIds,
-    bool CanNeed);
+    bool CanNeed,
+    int? ItemLevel = null,
+    decimal? ItemPower = null,
+    decimal? MaxItemPower = null,
+    decimal? RollQuality = null,
+    int? Stars = null,
+    bool IsPerfect = false,
+    IReadOnlyList<CombatLootAffixResult>? Affixes = null);
 
 public sealed record CombatRewardItemResult(
     string ItemId,
@@ -235,6 +249,7 @@ public sealed class CombatRewardService(
                 roll.SourceQualityProfileId,
                 now,
                 CanNeed(item, character, derivedForLoot),
+                contentSnapshot,
                 cancellationToken);
             pendingLootRolls.Add(groupRoll);
         }
@@ -285,6 +300,7 @@ public sealed class CombatRewardService(
         string sourceQualityProfileId,
         DateTimeOffset now,
         bool canNeed,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
         await AcquireLootRollLockAsync(
@@ -305,6 +321,13 @@ public sealed class CombatRewardService(
             .Select(encounter => (Guid?)encounter.RunId)
             .SingleOrDefaultAsync(cancellationToken)
             ?? snapshot.SessionId;
+        Guid itemInstanceSeed = Guid.NewGuid();
+        ItemGenerationKey generationKey = ItemGenerationKey.Create(itemInstanceSeed);
+        GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
+            item,
+            contentSnapshot.Package.Itemization,
+            sourceQualityProfileId,
+            generationKey);
         CombatLootRoll created = new(
             Guid.NewGuid(),
             dungeonRunId,
@@ -312,10 +335,11 @@ public sealed class CombatRewardService(
             item.Id,
             item.Rarity,
             quantity,
-            Guid.NewGuid(),
+            itemInstanceSeed,
             now.AddSeconds(25),
             JsonSerializer.Serialize(eligibleCharacterIds),
-            sourceQualityProfileId);
+            sourceQualityProfileId,
+            generated is null ? null : JsonSerializer.Serialize(generated));
         dbContext.CombatLootRolls.Add(created);
         return ToLootRollResult(created, item, canNeed);
     }
@@ -441,15 +465,30 @@ public sealed class CombatRewardService(
         bool canNeed)
     {
         Guid[] eligible = JsonSerializer.Deserialize<Guid[]>(roll.EligibleCharacterIdsJson) ?? [];
+        GeneratedItemInstance? generated = string.IsNullOrWhiteSpace(roll.GeneratedItemJson)
+            ? null
+            : JsonSerializer.Deserialize<GeneratedItemInstance>(roll.GeneratedItemJson);
         return new CombatLootRollResult(
             roll.LootRollId,
             item.Id,
-            item.Name,
+            generated?.DisplayName ?? item.Name,
             item.Rarity,
             roll.Quantity,
             roll.EndsAtUtc,
             eligible,
-            canNeed);
+            canNeed,
+            generated?.ItemLevel,
+            generated?.ActualItemPower,
+            generated?.MaxTemplateItemPower,
+            generated?.RollQuality,
+            generated?.Stars,
+            generated?.IsPerfect ?? false,
+            generated?.Affixes.Select(affix => new CombatLootAffixResult(
+                affix.StatId,
+                affix.Value,
+                affix.MinAtGeneration,
+                affix.MaxAtGeneration,
+                affix.IsGuaranteed)).ToArray());
     }
 
     private static bool CanNeed(
