@@ -133,6 +133,29 @@ describe('CombatView', () => {
     expect(row.text()).not.toContain('ВЫ')
     expect(wrapper.get('[data-autoattack-toggle]').text()).toContain('Выключена')
   })
+  it('renders a live AA cast bar from authoritative autoattack timing', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'ARCHER', 'Archer', 120, 120, 100, 100, [])
+    const enemy = actor('Monster', 'WOLF', 'Волк', 180, 180, 0, 0, [], 3, 'wolf')
+    player.autoAttackEnabled = true
+    player.autoAttackIntervalSeconds = 2
+    player.nextAutoAttackAtUtc = new Date(Date.now() + 1_000).toISOString()
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 3, status: 'Active',
+      serverTimeUtc: new Date().toISOString(),
+      contentVersion: '0.17.0',
+      balanceVersion: '0.14.0',
+      player, enemy,
+    }
+
+    const wrapper = mount(CombatView)
+    const bar = wrapper.get('[data-autoattack-cast]')
+
+    expect(bar.text()).toContain('AA · Автоатака')
+    expect(bar.text()).not.toContain('OFF')
+    expect(bar.get('i > span').attributes('style')).toContain('width:')
+  })
+
   it('renders authoritative player and enemy cast bars', () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'MAGE', 'Mage', 100, 120, 80, 100, [
