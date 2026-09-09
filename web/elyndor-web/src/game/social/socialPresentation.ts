@@ -16,6 +16,7 @@ const messages: Record<string, string> = {
   dungeon_member_not_in_party: 'Для этого действия нужно состоять в группе забега.',
   dungeon_member_not_in_run: 'Сначала войдите в забег.',
   dungeon_run_not_found: 'Забег больше недоступен.',
+  dungeon_run_already_active: 'У группы уже есть активный забег в другом подземелье. Сначала завершите или покиньте его.',
   friend_request_pending: 'Заявка уже отправлена.',
   friend_request_already_decided: 'Эта заявка уже обработана. Обновите список друзей.',
   friend_request_not_found: 'Заявка больше не существует.',
