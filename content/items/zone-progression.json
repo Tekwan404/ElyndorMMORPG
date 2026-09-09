@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.11.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-06T19:40:00+00:00",
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T06:50:00+00:00",
   "items": [
     {
       "id": "DEEP_FOREST_CHARM",
@@ -13,40 +13,27 @@
       "maxStack": 1,
       "slot": "Amulet",
       "stats": {
-        "strength": 1,
-        "agility": 1,
-        "intellect": 1,
-        "stamina": 4
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Редкий оберег, пропитанный сырой силой Глубокого леса.",
       "version": 1,
-      "maxHpFlat": 30,
-      "criticalChancePercent": 1.5,
       "buyPriceGold": 0,
       "sellPriceGold": 45,
       "iconId": "item-warrior-amulet",
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "agility": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "intellect": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 8,
+      "itemLevelMax": 8,
+      "randomAffixPoolId": "ACCESSORY_GENERAL",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "BROODMOTHER_FANG_CHARM",
@@ -58,42 +45,28 @@
       "maxStack": 1,
       "slot": "Amulet",
       "stats": {
-        "strength": 2,
-        "agility": 2,
-        "intellect": 2,
-        "stamina": 6
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Трофей за победу над Прародительницей. Сильный универсальный предмет для перехода в следующую зону.",
       "version": 1,
-      "maxHpFlat": 65,
-      "criticalChancePercent": 2.5,
-      "attackPowerFlat": 8,
-      "spellPowerFlat": 8,
       "buyPriceGold": 0,
       "sellPriceGold": 120,
       "iconId": "item-warrior-amulet",
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "intellect": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "randomAffixPoolId": "ACCESSORY_GENERAL",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "BLIGHTED_GROVE_RING",
@@ -105,42 +78,28 @@
       "maxStack": 1,
       "slot": "Ring1",
       "stats": {
-        "strength": 2,
-        "agility": 2,
-        "intellect": 2,
-        "stamina": 5
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Редкое кольцо из земель за логовом Прародительницы.",
       "version": 1,
-      "maxHpFlat": 45,
-      "attackPowerFlat": 7,
-      "spellPowerFlat": 7,
-      "criticalChancePercent": 2,
       "buyPriceGold": 0,
       "sellPriceGold": 85,
       "iconId": "item-warrior-ring",
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "intellect": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      }
+      "itemLevelMin": 15,
+      "itemLevelMax": 15,
+      "randomAffixPoolId": "ACCESSORY_GENERAL",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     }
   ]
 }
