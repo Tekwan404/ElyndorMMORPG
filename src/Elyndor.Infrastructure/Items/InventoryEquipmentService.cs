@@ -43,7 +43,8 @@ public sealed record InventoryItemSnapshot(
     DateTimeOffset AcquiredAtUtc,
     EquipmentSlot? EquippedSlot,
     bool IsLocked,
-    PrimaryStats? RolledPrimaryStats = null)
+    PrimaryStats? RolledPrimaryStats = null,
+    GeneratedItemInstance? GeneratedItem = null)
 {
     public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
 }
