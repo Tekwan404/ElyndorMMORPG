@@ -168,6 +168,26 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal(5, eclipsedCitadel.Encounters.Count);
         Assert.Equal("ECLIPSED_CITADEL_ARCHON_L25", eclipsedCitadel.Encounters[^1].MonsterId);
 
+        MerchantDefinition marcus = Assert.Single(
+            package.Merchants!,
+            merchant => merchant.Id == "MARCUS_SUPPLIES");
+        ItemDefinition[] marcusEquipment = package.Items!
+            .Where(item => marcus.ItemIds.Contains(item.Id)
+                && item.Type == ItemType.Equipment)
+            .ToArray();
+        Assert.NotEmpty(marcusEquipment);
+        Assert.All(marcusEquipment, item =>
+        {
+            Assert.Equal(ItemRarity.Common, item.Rarity);
+            Assert.Equal(2, item.RequiredLevel);
+            Assert.True(item.BuyPriceGold > 0);
+        });
+        Assert.DoesNotContain(
+            package.Items!,
+            item => marcus.ItemIds.Contains(item.Id)
+                && item.Type == ItemType.Equipment
+                && item.Rarity is ItemRarity.Rare or ItemRarity.Epic or ItemRarity.Legendary or ItemRarity.Unique);
+
         LootTableDefinition citadelBossLoot = Assert.Single(
             package.LootTables!,
             table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
