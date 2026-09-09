@@ -250,7 +250,7 @@ public static class ItemInstanceGenerator
         ItemizationDefinition itemization,
         int itemLevel)
     {
-        string slot = CanonicalSlot(template.Slot).ToString().ToUpperInvariant();
+        string slot = SlotBudgetId(CanonicalSlot(template.Slot));
         string rarity = template.Rarity.ToString().ToUpperInvariant();
         if (!itemization.SlotMultipliers.TryGetValue(slot, out decimal slotMultiplier))
             throw new InvalidOperationException($"No itemization slot multiplier for '{slot}'.");
@@ -487,6 +487,16 @@ public static class ItemInstanceGenerator
             : Clamp01(
                 (affix.Value - affix.MinAtGeneration)
                 / (affix.MaxAtGeneration - affix.MinAtGeneration));
+
+    private static string SlotBudgetId(EquipmentSlot slot) =>
+        slot switch
+        {
+            EquipmentSlot.MainHand => "MAIN_HAND",
+            EquipmentSlot.OffHand => "OFF_HAND",
+            EquipmentSlot.Ring1 => "RING_1",
+            EquipmentSlot.Ring2 => "RING_2",
+            _ => slot.ToString().ToUpperInvariant()
+        };
 
     private static EquipmentSlot CanonicalSlot(EquipmentSlot? slot) =>
         slot switch
