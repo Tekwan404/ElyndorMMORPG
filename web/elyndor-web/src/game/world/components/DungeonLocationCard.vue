@@ -41,7 +41,7 @@ const canStart = computed(() => Boolean(
     && currentEncounter.value.state !== 'Active',
 ))
 const minimumLevel = computed(() => preview.value?.minimumLevel ?? 1)
-const encounterCount = computed(() => preview.value?.encounters.length ?? current.value?.encounterCount ?? 0)
+const encounterCount = computed(() => preview.value?.encounters?.length ?? current.value?.encounterCount ?? 0)
 const dungeonArt = computed(() => gameArt.world.ancientRuins)
 const stateLabel = computed(() => {
   if (!current.value) return 'ГОТОВО К ЗАПУСКУ'
