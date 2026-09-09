@@ -9,6 +9,30 @@ import { useGameSessionStore } from '@/stores/gameSession'
 describe('HeroView contextual equipment flow', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('enables and opens the talents tab for Archer', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([], 'ARCHER')
+
+    const wrapper = mount(HeroView, {
+      global: {
+        stubs: {
+          CharacterOverviewView: true,
+          CharacterStatsView: true,
+          InventoryView: true,
+          TalentTreeView: { template: '<div data-archer-talent-tree />' },
+        },
+      },
+    })
+
+    const talentsTab = wrapper.get('[data-hero-tab="talents"]')
+    expect(talentsTab.attributes('disabled')).toBeUndefined()
+
+    await talentsTab.trigger('click')
+
+    expect(talentsTab.attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-archer-talent-tree]').exists()).toBe(true)
+  })
+
   it('opens empty equipment slots into inventory filtered for that slot', async () => {
     const session = useGameSessionStore()
     const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')
@@ -76,7 +100,7 @@ function equipment(id: string, name: string, slot: InventoryItem['slot']): Inven
   }
 }
 
-function snapshot(items: InventoryItem[]): BootstrapSnapshot {
+function snapshot(items: InventoryItem[], classId = 'WARRIOR'): BootstrapSnapshot {
   return {
     accountId: crypto.randomUUID(),
     character: {
@@ -84,7 +108,7 @@ function snapshot(items: InventoryItem[]): BootstrapSnapshot {
       name: 'Arthas',
       raceId: 'HUMAN',
       genderId: 'MALE',
-      classId: 'WARRIOR',
+      classId,
       level: 10,
       experience: 340,
       xpToNextLevel: 1000,
