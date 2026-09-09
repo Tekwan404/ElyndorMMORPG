@@ -86,7 +86,9 @@ public sealed record CombatActorSnapshot(
     IReadOnlyList<CombatAbilitySnapshot> Abilities,
     IReadOnlyList<CombatEffectSnapshot> Effects,
     CombatCastSnapshot? ActiveCast = null,
-    IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null);
+    IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
+    double? AutoAttackIntervalSeconds = null,
+    DateTimeOffset? NextAutoAttackAtUtc = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
