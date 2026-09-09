@@ -692,14 +692,11 @@ public sealed class InventoryEquipmentService(
                     break;
                 }
 
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
-                    characterId,
-                    definition.Id,
-                    1,
-                    timeProvider.GetUtcNow(),
-                    definition.Version,
-                    pendingItem.RolledPrimaryStats));
+                dbContext.CharacterItems.Add(
+                    ItemInstancePersistenceFactory.MaterializePending(
+                        pendingItem,
+                        definition,
+                        timeProvider.GetUtcNow()));
                 dbContext.PendingLootItems.Remove(pendingItem);
                 await dbContext.SaveChangesAsync(cancellationToken);
                 continue;
