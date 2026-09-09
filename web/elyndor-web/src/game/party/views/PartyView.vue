@@ -17,6 +17,10 @@ const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 0)
+const ancientMinePreview = computed(() =>
+  dungeon.previews.find(preview => preview.id === 'ANCIENT_MINE') ?? null,
+)
+const dungeonMinimumLevel = computed(() => ancientMinePreview.value?.minimumLevel ?? 14)
 const isAtDungeon = computed(() => currentLocationId.value === 'ANCIENT_MINE')
 const currentRunMember = computed(() => dungeon.current?.members.find(
   member => member.characterId === currentCharacterId.value,
@@ -29,11 +33,13 @@ onMounted(() => {
 })
 
 async function createDungeon(dungeonId: string): Promise<void> {
+  if (!party.snapshot) await party.create()
+  if (!party.snapshot || party.snapshot.leaderCharacterId !== currentCharacterId.value) return
   await dungeon.create(dungeonId)
 }
 
 async function teleportToDungeon(): Promise<void> {
-  if (isAtDungeon.value || characterLevel.value < 15) return
+  if (isAtDungeon.value || characterLevel.value < dungeonMinimumLevel.value) return
   if (await dungeon.teleport('ANCIENT_MINE')) await session.refreshSnapshot()
 }
 
@@ -122,11 +128,11 @@ async function startDungeon(): Promise<void> {
       <UIButton
         v-if="!isAtDungeon"
         data-dungeon-teleport
-        :disabled="characterLevel < 15"
+        :disabled="characterLevel < dungeonMinimumLevel"
         :loading="dungeon.teleporting"
         @click="teleportToDungeon"
       >Телепортироваться в подземелье</UIButton>
-      <small v-if="characterLevel < 15" class="empty-state">Доступно с 15 уровня.</small>
+      <small v-if="characterLevel < dungeonMinimumLevel" class="empty-state">Доступно с {{ dungeonMinimumLevel }} уровня.</small>
       <small v-else-if="isAtDungeon" class="dungeon-location-state">Вы уже на входе в подземелье.</small>
       <template v-if="dungeon.current">
         <p v-if="dungeon.current.state === 'Completed'">Подземелье пройдено!</p>
@@ -170,13 +176,13 @@ async function startDungeon(): Promise<void> {
         </small>
       </template>
       <template v-else>
-        <p class="empty-state">Подземелье · ур. 15+ · 1–5 игроков. Враги 15–16 уровня; финальный босс — Прародительница Глубин.</p>
+        <p class="empty-state">Подземелье · ур. {{ dungeonMinimumLevel }}+ · 1–5 игроков. Враги 15–16 уровня; финальный босс — Прародительница Глубин.</p>
         <UIButton
           v-for="preview in dungeon.previews"
           :key="preview.id"
-          :disabled="!isLeader"
+          :disabled="Boolean(party.snapshot) && !isLeader"
           @click="createDungeon(preview.id)"
-        >Создать забег</UIButton>
+        >{{ party.snapshot ? 'Создать забег' : 'Создать группу и забег' }}</UIButton>
       </template>
     </UIPanel>
   </div>
