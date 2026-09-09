@@ -495,7 +495,8 @@ public sealed class MerchantService(
                         definition.Id,
                         index,
                         timeProvider.GetUtcNow(),
-                        contentSnapshot.Package));
+                        contentSnapshot.Package,
+                        legacyRandom: CompatibilityRandomFactory.Create()));
             }
             return;
         }
