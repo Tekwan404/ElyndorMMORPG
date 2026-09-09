@@ -100,7 +100,10 @@ function equipment(id: string, name: string, slot: InventoryItem['slot']): Inven
   }
 }
 
-function snapshot(items: InventoryItem[], classId = 'WARRIOR'): BootstrapSnapshot {
+function snapshot(
+  items: InventoryItem[],
+  classId: BootstrapSnapshot['character']['classId'] = 'WARRIOR',
+): BootstrapSnapshot {
   return {
     accountId: crypto.randomUUID(),
     character: {
