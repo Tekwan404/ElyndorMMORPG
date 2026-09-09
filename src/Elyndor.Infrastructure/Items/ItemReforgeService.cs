@@ -469,10 +469,13 @@ public sealed class ItemReforgeService(
 
     private static ItemReforgeOperationResult ToResult(ItemReforgeOperation operation)
     {
-        GeneratedItemInstance? current =
+        GeneratedItemInstance? original =
             JsonSerializer.Deserialize<GeneratedItemInstance>(operation.CurrentItemJson);
         GeneratedItemInstance? proposed =
             JsonSerializer.Deserialize<GeneratedItemInstance>(operation.ProposedItemJson);
+        GeneratedItemInstance? current = operation.State == ItemReforgeOperationState.Accepted
+            ? proposed
+            : original;
         return new ItemReforgeOperationResult(
             true,
             null,
