@@ -1447,7 +1447,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  2,
                                "iconId":  "warrior_rare_grey_fang_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_chest.webp"
@@ -1456,7 +1456,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  5,
                                "iconId":  "warrior_rare_grey_fang_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_feet.webp"
@@ -1465,7 +1465,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  3,
                                "iconId":  "warrior_rare_grey_fang_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_hands.webp"
@@ -1474,7 +1474,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  0,
                                "iconId":  "warrior_rare_grey_fang_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_head.webp"
@@ -1483,7 +1483,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  4,
                                "iconId":  "warrior_rare_grey_fang_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_legs.webp"
@@ -1492,7 +1492,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_SHIELD",
                                "slot":  "Shield",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  7,
                                "iconId":  "warrior_rare_grey_fang_shield",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_shield.webp"
@@ -1501,7 +1501,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  1,
                                "iconId":  "warrior_rare_grey_fang_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_shoulders.webp"
@@ -1510,7 +1510,7 @@
                                "setId":  "SET_WARRIOR_GREY_FANG",
                                "itemId":  "WARRIOR_RARE_GREY_FANG_WEAPON",
                                "slot":  "Weapon",
-                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋРІР‚в„–Р В РЎвЂќ Р В Р Р‹Р В Р’ВµР РЋР вЂљР В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚в„ўР В РЎвЂўР В Р’В»Р В РЎвЂќР В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Rare Set — Клык Серого Волка.png",
                                "cell":  6,
                                "iconId":  "warrior_rare_grey_fang_weapon",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_rare_grey_fang_weapon.webp"
@@ -1519,7 +1519,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  2,
                                "iconId":  "warrior_epic_crimson_fury_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_chest.webp"
@@ -1528,7 +1528,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  5,
                                "iconId":  "warrior_epic_crimson_fury_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_feet.webp"
@@ -1537,7 +1537,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  3,
                                "iconId":  "warrior_epic_crimson_fury_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_hands.webp"
@@ -1546,7 +1546,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  0,
                                "iconId":  "warrior_epic_crimson_fury_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_head.webp"
@@ -1555,7 +1555,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  4,
                                "iconId":  "warrior_epic_crimson_fury_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_legs.webp"
@@ -1564,7 +1564,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  1,
                                "iconId":  "warrior_epic_crimson_fury_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_shoulders.webp"
@@ -1573,7 +1573,7 @@
                                "setId":  "SET_WARRIOR_CRIMSON_FURY",
                                "itemId":  "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
                                "slot":  "Weapon",
-                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set Р Р†Р вЂљРІР‚Сњ Р В РЎв„ўР В Р’В»Р РЋР РЏР РЋРІР‚С™Р В Р вЂ Р В Р’В° Р В РІР‚ВР В Р’В°Р В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂЎР РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Epic Set — Клятва Багровой Ярости.png",
                                "cell":  6,
                                "iconId":  "warrior_epic_crimson_fury_weapon",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_epic_crimson_fury_weapon.webp"
@@ -1582,7 +1582,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  2,
                                "iconId":  "warrior_legendary_first_guard_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_chest.webp"
@@ -1591,7 +1591,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  5,
                                "iconId":  "warrior_legendary_first_guard_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_feet.webp"
@@ -1600,7 +1600,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  3,
                                "iconId":  "warrior_legendary_first_guard_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_hands.webp"
@@ -1609,7 +1609,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  0,
                                "iconId":  "warrior_legendary_first_guard_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_head.webp"
@@ -1618,7 +1618,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  4,
                                "iconId":  "warrior_legendary_first_guard_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_legs.webp"
@@ -1627,7 +1627,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
                                "slot":  "Shield",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  7,
                                "iconId":  "warrior_legendary_first_guard_shield",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_shield.webp"
@@ -1636,7 +1636,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  1,
                                "iconId":  "warrior_legendary_first_guard_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_shoulders.webp"
@@ -1645,7 +1645,7 @@
                                "setId":  "SET_WARRIOR_FIRST_GUARD",
                                "itemId":  "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
                                "slot":  "Weapon",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set Р Р†Р вЂљРІР‚Сњ Р В РЎСљР В Р’В°Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂР В Р’Вµ Р В РЎСџР В Р’ВµР РЋР вЂљР В Р вЂ Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В Р Р‹Р РЋРІР‚С™Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary Set — Наследие Первого Стража.png",
                                "cell":  6,
                                "iconId":  "warrior_legendary_first_guard_weapon",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_first_guard_weapon.webp"
@@ -1654,7 +1654,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  2,
                                "iconId":  "warrior_legendary_black_bastion_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_chest.webp"
@@ -1663,7 +1663,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  5,
                                "iconId":  "warrior_legendary_black_bastion_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_feet.webp"
@@ -1672,7 +1672,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  3,
                                "iconId":  "warrior_legendary_black_bastion_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_hands.webp"
@@ -1681,7 +1681,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  0,
                                "iconId":  "warrior_legendary_black_bastion_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_head.webp"
@@ -1690,7 +1690,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  4,
                                "iconId":  "warrior_legendary_black_bastion_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_legs.webp"
@@ -1699,7 +1699,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
                                "slot":  "Shield",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  7,
                                "iconId":  "warrior_legendary_black_bastion_shield",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_shield.webp"
@@ -1708,7 +1708,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  1,
                                "iconId":  "warrior_legendary_black_bastion_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_shoulders.webp"
@@ -1717,7 +1717,7 @@
                                "setId":  "SET_WARRIOR_BLACK_BASTION",
                                "itemId":  "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
                                "slot":  "Weapon",
-                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set Р Р†Р вЂљРІР‚Сњ Р В РІР‚СњР В РЎвЂўР РЋР С“Р В РЎвЂ”Р В Р’ВµР РЋРІР‚В¦Р В РЎвЂ Р В Р’В§Р РЋРІР‚ВР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РІР‚ВР В Р’В°Р РЋР С“Р РЋРІР‚С™Р В РЎвЂР В РЎвЂўР В Р вЂ¦Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\warrior\\Legendary II Set — Доспехи Чёрного Бастиона.png",
                                "cell":  6,
                                "iconId":  "warrior_legendary_black_bastion_weapon",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\warrior_legendary_black_bastion_weapon.webp"
@@ -1726,7 +1726,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  2,
                                "iconId":  "mage_rare_three_elements_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_chest.webp"
@@ -1735,7 +1735,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  5,
                                "iconId":  "mage_rare_three_elements_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_feet.webp"
@@ -1744,7 +1744,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  3,
                                "iconId":  "mage_rare_three_elements_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_hands.webp"
@@ -1753,7 +1753,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  0,
                                "iconId":  "mage_rare_three_elements_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_head.webp"
@@ -1762,7 +1762,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  4,
                                "iconId":  "mage_rare_three_elements_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_legs.webp"
@@ -1771,7 +1771,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  1,
                                "iconId":  "mage_rare_three_elements_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_shoulders.webp"
@@ -1780,7 +1780,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_STAFF",
                                "slot":  "Staff",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  6,
                                "iconId":  "mage_rare_three_elements_staff",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_staff.webp"
@@ -1789,7 +1789,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_WAND",
                                "slot":  "Wand",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  7,
                                "iconId":  "mage_rare_three_elements_wand",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_wand.webp"
@@ -1798,7 +1798,7 @@
                                "setId":  "SET_MAGE_THREE_ELEMENTS",
                                "itemId":  "MAGE_RARE_THREE_ELEMENTS_FOCUS",
                                "slot":  "Focus",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В Р Р‹Р В Р’ВµР РЋРІР‚С™ Р В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В Р’ВµР РЋРІР‚С›Р В Р’В°Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Сет артефактов элементального мага.png",
                                "cell":  8,
                                "iconId":  "mage_rare_three_elements_focus",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_rare_three_elements_focus.webp"
@@ -1807,7 +1807,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  2,
                                "iconId":  "mage_epic_shattered_star_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_chest.webp"
@@ -1816,7 +1816,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  5,
                                "iconId":  "mage_epic_shattered_star_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_feet.webp"
@@ -1825,7 +1825,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  3,
                                "iconId":  "mage_epic_shattered_star_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_hands.webp"
@@ -1834,7 +1834,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  0,
                                "iconId":  "mage_epic_shattered_star_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_head.webp"
@@ -1843,7 +1843,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  4,
                                "iconId":  "mage_epic_shattered_star_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_legs.webp"
@@ -1852,7 +1852,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  1,
                                "iconId":  "mage_epic_shattered_star_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_shoulders.webp"
@@ -1861,7 +1861,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_STAFF",
                                "slot":  "Staff",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  6,
                                "iconId":  "mage_epic_shattered_star_staff",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_staff.webp"
@@ -1870,7 +1870,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_WAND",
                                "slot":  "Wand",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  7,
                                "iconId":  "mage_epic_shattered_star_wand",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_wand.webp"
@@ -1879,7 +1879,7 @@
                                "setId":  "SET_MAGE_SHATTERED_STAR",
                                "itemId":  "MAGE_EPIC_SHATTERED_STAR_FOCUS",
                                "slot":  "Focus",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎвЂ™Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂўР В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В»_ Р В РўвЂР В Р’ВµР В Р вЂ Р РЋР РЏР РЋРІР‚С™Р РЋР Р‰ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Астрономический арсенал_ девять реликвий.png",
                                "cell":  8,
                                "iconId":  "mage_epic_shattered_star_focus",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_epic_shattered_star_focus.webp"
@@ -1888,7 +1888,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  2,
                                "iconId":  "mage_legendary_silent_archon_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_chest.webp"
@@ -1897,7 +1897,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  5,
                                "iconId":  "mage_legendary_silent_archon_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_feet.webp"
@@ -1906,7 +1906,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  3,
                                "iconId":  "mage_legendary_silent_archon_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_hands.webp"
@@ -1915,7 +1915,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  0,
                                "iconId":  "mage_legendary_silent_archon_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_head.webp"
@@ -1924,7 +1924,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  4,
                                "iconId":  "mage_legendary_silent_archon_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_legs.webp"
@@ -1933,7 +1933,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  1,
                                "iconId":  "mage_legendary_silent_archon_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_shoulders.webp"
@@ -1942,7 +1942,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
                                "slot":  "Staff",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  6,
                                "iconId":  "mage_legendary_silent_archon_staff",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_staff.webp"
@@ -1951,7 +1951,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
                                "slot":  "Wand",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  7,
                                "iconId":  "mage_legendary_silent_archon_wand",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_wand.webp"
@@ -1960,7 +1960,7 @@
                                "setId":  "SET_MAGE_SILENT_ARCHON",
                                "itemId":  "MAGE_LEGENDARY_SILENT_ARCHON_FOCUS",
                                "slot":  "Focus",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В Р’В°Р РЋР вЂљР РЋРІР‚В¦Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал архонта.png",
                                "cell":  8,
                                "iconId":  "mage_legendary_silent_archon_focus",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_silent_archon_focus.webp"
@@ -1969,7 +1969,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
                                "slot":  "Chest",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  2,
                                "iconId":  "mage_legendary_eclipsed_oracle_chest",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_chest.webp"
@@ -1978,7 +1978,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
                                "slot":  "Feet",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  5,
                                "iconId":  "mage_legendary_eclipsed_oracle_feet",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_feet.webp"
@@ -1987,7 +1987,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
                                "slot":  "Hands",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  3,
                                "iconId":  "mage_legendary_eclipsed_oracle_hands",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_hands.webp"
@@ -1996,7 +1996,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
                                "slot":  "Head",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  0,
                                "iconId":  "mage_legendary_eclipsed_oracle_head",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_head.webp"
@@ -2005,7 +2005,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
                                "slot":  "Legs",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  4,
                                "iconId":  "mage_legendary_eclipsed_oracle_legs",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_legs.webp"
@@ -2014,7 +2014,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
                                "slot":  "Shoulders",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  1,
                                "iconId":  "mage_legendary_eclipsed_oracle_shoulders",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_shoulders.webp"
@@ -2023,7 +2023,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
                                "slot":  "Staff",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  6,
                                "iconId":  "mage_legendary_eclipsed_oracle_staff",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_staff.webp"
@@ -2032,7 +2032,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND",
                                "slot":  "Wand",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  7,
                                "iconId":  "mage_legendary_eclipsed_oracle_wand",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_wand.webp"
@@ -2041,7 +2041,7 @@
                                "setId":  "SET_MAGE_ECLIPSED_ORACLE",
                                "itemId":  "MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS",
                                "slot":  "Focus",
-                               "source":  ".\\pic\\item\\set\\mage\\Р В РЎв„ўР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР вЂљР РЋР С“Р В Р’ВµР В Р вЂ¦Р В Р’В°Р В Р’В» Р В РЎВР В Р’В°Р В РЎвЂ“Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦ Р РЋР вЂљР В Р’ВµР В Р’В»Р В РЎвЂР В РЎвЂќР В Р вЂ Р В РЎвЂР В РІвЂћвЂ“.png",
+                               "source":  ".\\pic\\item\\set\\mage\\Космический арсенал магических реликвий.png",
                                "cell":  8,
                                "iconId":  "mage_legendary_eclipsed_oracle_focus",
                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\sets\\mage_legendary_eclipsed_oracle_focus.webp"
@@ -2077,16 +2077,6 @@
                                 "iconId":  "acc_uncommon_6_ring",
                                 "source":  ".\\pic\\item\\acc_uncommon_6_ring.png",
                                 "output":  ".\\web\\elyndor-web\\src\\assets\\items\\acc_uncommon_6_ring.webp"
-                            },
-                            {
-                                "iconId":  "ranger_fang_charm",
-                                "source":  ".\\pic\\item\\ranger_fang_charm.png",
-                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\ranger_fang_charm.webp"
-                            },
-                            {
-                                "iconId":  "wolf_fang_blade",
-                                "source":  ".\\pic\\item\\wolf_fang_blade.png",
-                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\wolf_fang_blade.webp"
                             },
                             {
                                 "iconId":  "archer_common_whisper_tracker_quiver",
@@ -2147,72 +2137,139 @@
                                 "iconId":  "mage_uncommon_forgotten_runes_focus",
                                 "source":  ".\\pic\\item\\mage\\mage_uncommon_forgotten_runes_focus.png",
                                 "output":  ".\\web\\elyndor-web\\src\\assets\\items\\mage_uncommon_forgotten_runes_focus.webp"
+                            },
+                            {
+                                "iconId":  "ranger_fang_charm",
+                                "source":  ".\\pic\\item\\ranger_fang_charm.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\ranger_fang_charm.webp"
+                            },
+                            {
+                                "iconId":  "wolf_fang_blade",
+                                "source":  ".\\pic\\item\\wolf_fang_blade.png",
+                                "output":  ".\\web\\elyndor-web\\src\\assets\\items\\wolf_fang_blade.webp"
                             }
                         ],
+    "fallbackItemIcons":  [
+                              {
+                                  "iconId":  "dungeon_mines_warrior_helm_rare",
+                                  "source":  "warrior_rare_grey_fang_head",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_helm_rare.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_warrior_gauntlets_epic",
+                                  "source":  "warrior_epic_crimson_fury_hands",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_gauntlets_epic.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_warrior_legendary_shield",
+                                  "source":  "warrior_legendary_black_bastion_shield",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_legendary_shield.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_mage_hood_rare",
+                                  "source":  "mage_rare_three_elements_head",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_hood_rare.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_mage_boots_epic",
+                                  "source":  "mage_epic_shattered_star_feet",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_boots_epic.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_mage_legendary_staff",
+                                  "source":  "mage_legendary_silent_archon_staff",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_legendary_staff.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_archer_legs_rare",
+                                  "source":  "ranger_fang_charm",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legs_rare.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_archer_gloves_epic",
+                                  "source":  "ranger_fang_charm",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_gloves_epic.webp"
+                              },
+                              {
+                                  "iconId":  "dungeon_mines_archer_legendary_bow",
+                                  "source":  "ranger_fang_charm",
+                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legendary_bow.webp"
+                              }
+                          ],
     "characterArt":  [
                          {
                              "name":  "archer-female-transparent.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_44 (5).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_01_44 (5).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-female-transparent.webp"
                          },
                          {
                              "name":  "archer-male-transparent.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_46 (1).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_01_46 (1).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-male-transparent.webp"
                          },
                          {
                              "name":  "archer-male-scene.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_46 (2).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_01_46 (2).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-male-scene.webp"
                          },
                          {
                              "name":  "mage-female-transparent.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_57 (1).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_01_57 (1).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-female-transparent.webp"
                          },
                          {
                              "name":  "mage-female-scene.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_01_57 (2).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_01_57 (2).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-female-scene.webp"
                          },
                          {
                              "name":  "mage-male-transparent.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_04 (1).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_02_04 (1).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-male-transparent.webp"
                          },
                          {
                              "name":  "mage-male-scene.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_04 (2).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_02_04 (2).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\mage-male-scene.webp"
                          },
                          {
                              "name":  "warrior-male-transparent.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_12 (1).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_02_12 (1).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-male-transparent.webp"
                          },
                          {
                              "name":  "warrior-male-scene.png",
-                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 Р РЋР С“Р В Р’ВµР В Р вЂ¦Р РЋРІР‚С™. 2026 Р В РЎвЂ“., 19_02_12 (2).png",
+                             "source":  ".\\pic\\PersonalArt\\ChatGPT Image 8 сент. 2026 г., 19_02_12 (2).png",
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-male-scene.webp"
                          },
                          {
                              "name":  "archer-female-scene.png",
-                             "source":  ".\\pic\\PersonalArt\\Р В Р’В Р В Р’В°Р В Р’В·Р В РўвЂР В Р вЂ Р В РЎвЂўР В Р’ВµР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™Р РЋР вЂљР В Р’ВµР РЋРІР‚С™ Р РЋР РЉР В Р’В»Р РЋР Р‰Р РЋРІР‚С›Р В РЎвЂР В РІвЂћвЂ“Р РЋР С“Р В РЎвЂќР В РЎвЂўР В РІвЂћвЂ“ Р В Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„–.png",
+                             "source":  ".\\pic\\PersonalArt\\Раздвоенный портрет эльфийской лучницы.png",
                              "cell":  1,
                              "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\archer-female-scene.webp"
+                         },
+                         {
+                             "name":  "warrior-female-transparent.webp",
+                             "source":  "generated/player-art",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-female-transparent.webp"
+                         },
+                         {
+                             "name":  "warrior-female-scene.webp",
+                             "source":  "generated/player-art",
+                             "output":  ".\\web\\elyndor-web\\src\\assets\\characters\\personal\\warrior-female-scene.webp"
                          }
                      ],
     "adminArt":  [
                      {
-                         "originalName":  "character-human-Female-warrior FOR ADMIN.png.png",
+                         "originalName":  "character-human-Female-warrior FOR ADMIN.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-01.webp"
                      },
                      {
-                         "originalName":  "character-human-male-warrior FOR ADMIN1.png.png",
+                         "originalName":  "character-human-Female-warrior FOR ADMIN.png.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-02.webp"
                      },
                      {
-                         "originalName":  "character-human-male-warrior FOR ADMIN2.png.png",
+                         "originalName":  "character-human-Female-warrior FOR ADMINn.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-03.webp"
                      },
                      {
@@ -2220,15 +2277,15 @@
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-04.webp"
                      },
                      {
-                         "originalName":  "Р В РІР‚ВР РЋР вЂљР В РЎвЂўР В Р вЂ¦Р РЋР РЏ Р В РЎвЂ Р В Р’В°Р В Р’В»Р В Р’В°Р РЋР РЏ Р В Р вЂ¦Р В Р’В°Р В РЎвЂќР В РЎвЂР В РўвЂР В РЎвЂќР В Р’В° Р РЋР вЂљР РЋРІР‚в„–Р РЋРІР‚В Р В Р’В°Р РЋР вЂљР РЋР РЏ.png",
+                         "originalName":  "Броня и алая накидка рыцаря.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-05.webp"
                      },
                      {
-                         "originalName":  "Р В РІР‚в„ўР В РЎвЂўР В РЎвЂР РЋРІР‚С™Р В Р’ВµР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р В Р’В° Р В Р вЂ  Р В РўвЂР В Р вЂ Р РЋРЎвЂњР РЋРІР‚В¦ Р В РЎВР В РЎвЂР РЋР вЂљР В Р’В°Р РЋРІР‚В¦.png",
+                         "originalName":  "Воительница в двух мирах.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-06.webp"
                      },
                      {
-                         "originalName":  "Р В Р’В­Р В Р’В»Р РЋР Р‰Р РЋРІР‚С›Р В РЎвЂР В РІвЂћвЂ“Р В РЎвЂќР В Р’В°-Р РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В РЎвЂўР В РЎвЂ”Р РЋРІР‚в„–Р РЋРІР‚С™ Р РЋР С“ Р В Р’В»Р РЋРЎвЂњР В РЎвЂќР В РЎвЂўР В РЎВ.png",
+                         "originalName":  "Эльфийка-следопыт с луком.png",
                          "output":  ".\\web\\elyndor-admin\\src\\assets\\admin\\admin-07.webp"
                      }
                  ],
@@ -2275,55 +2332,8 @@
                          },
     "limitations":  [
                         "Archer talent sheets contain 15 source cells per branch; node icons reuse those cells cyclically for nodes 16-32.",
+                        "No war2.png source sheet was present; the root talant PNG set remains the existing Berserker art registry.",
                         "No archer set sheets were present in pic/item/set, so archer armor and bow definitions without standalone source art keep the existing glyph fallback.",
-                        "Female warrior player art was not present outside pic/PersonalArt/admin; the player bundle falls back to the male warrior art for that combination.",
-                        "No war2.png source sheet was present; the root talant PNG set remains the existing Berserker art registry."
-                    ],
-    "fallbackItemIcons":  [
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_helm_rare.webp",
-                                  "iconId":  "dungeon_mines_warrior_helm_rare",
-                                  "source":  "warrior_rare_grey_fang_head"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_gauntlets_epic.webp",
-                                  "iconId":  "dungeon_mines_warrior_gauntlets_epic",
-                                  "source":  "warrior_epic_crimson_fury_hands"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_warrior_legendary_shield.webp",
-                                  "iconId":  "dungeon_mines_warrior_legendary_shield",
-                                  "source":  "warrior_legendary_black_bastion_shield"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_hood_rare.webp",
-                                  "iconId":  "dungeon_mines_mage_hood_rare",
-                                  "source":  "mage_rare_three_elements_head"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_boots_epic.webp",
-                                  "iconId":  "dungeon_mines_mage_boots_epic",
-                                  "source":  "mage_epic_shattered_star_feet"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_mage_legendary_staff.webp",
-                                  "iconId":  "dungeon_mines_mage_legendary_staff",
-                                  "source":  "mage_legendary_silent_archon_staff"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legs_rare.webp",
-                                  "iconId":  "dungeon_mines_archer_legs_rare",
-                                  "source":  "ranger_fang_charm"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_gloves_epic.webp",
-                                  "iconId":  "dungeon_mines_archer_gloves_epic",
-                                  "source":  "ranger_fang_charm"
-                              },
-                              {
-                                  "output":  ".\\web\\elyndor-web\\src\\assets\\items\\dungeon_mines_archer_legendary_bow.webp",
-                                  "iconId":  "dungeon_mines_archer_legendary_bow",
-                                  "source":  "ranger_fang_charm"
-                              }
-                          ]
+                        "Female warrior player art is bundled as generated player art; admin-only source artwork remains restricted to admin assets."
+                    ]
 }
