@@ -7,6 +7,8 @@ const messages: Record<string, string> = {
   party_not_found: 'Группа больше не существует.',
   dungeon_party_required: 'Создайте группу перед входом в подземелье.',
   dungeon_not_leader: 'Забег запускает лидер группы.',
+  dungeon_level_required: 'Уровень героя ниже минимального уровня этого подземелья.',
+  dungeon_travel_in_progress: 'Сначала завершите текущий переход.',
   dungeon_invalid_location: 'Всем участникам нужно переместиться ко входу в подземелье.',
   dungeon_member_cannot_enter: 'Участник не готов к входу: проверьте уровень, здоровье и текущую активность.',
   dungeon_encounter_active: 'Сначала завершите текущий бой.',
