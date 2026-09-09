@@ -493,6 +493,8 @@ public static class ItemInstanceGenerator
         decimal blockChance = template.BlockChancePercent;
         decimal blockMin = template.BlockValueMin;
         decimal blockMax = template.BlockValueMax;
+        decimal? weaponDamageMin = template.WeaponDamageMin;
+        decimal? weaponDamageMax = template.WeaponDamageMax;
 
         foreach (GeneratedItemAffix affix in affixes)
         {
@@ -520,6 +522,13 @@ public static class ItemInstanceGenerator
                     blockMin += affix.Value;
                     blockMax += affix.Value;
                     break;
+                case ItemStatIds.WeaponDamage:
+                    if (weaponDamageMin.HasValue && weaponDamageMax.HasValue)
+                    {
+                        weaponDamageMin += affix.Value;
+                        weaponDamageMax += affix.Value;
+                    }
+                    break;
             }
         }
 
@@ -542,7 +551,9 @@ public static class ItemInstanceGenerator
             MaxResourceFlat = maxResource,
             BlockChancePercent = blockChance,
             BlockValueMin = blockMin,
-            BlockValueMax = blockMax
+            BlockValueMax = blockMax,
+            WeaponDamageMin = weaponDamageMin,
+            WeaponDamageMax = weaponDamageMax
         };
     }
 
