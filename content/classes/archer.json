@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.13.0",
-  "balanceVersion": "0.11.0",
-  "publishedAtUtc": "2026-09-07T06:45:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "classProfiles": [
     {
       "id": "ARCHER",
@@ -28,7 +28,9 @@
       "prototypeIdentity": "Bow-based ranged fighter with a permanent companion. Talent loadouts shift power between precision, physical pet coordination, and magical arrows with a spirit companion.",
       "startingAbilityIds": [],
       "abilityUnlocks": [],
-      "allowedOffHandCategories": [],
+      "allowedOffHandCategories": [
+        "QUIVER"
+      ],
       "allowUnarmed": false,
       "combatAutoAttack": {
         "interval": "00:00:02.4000000",
