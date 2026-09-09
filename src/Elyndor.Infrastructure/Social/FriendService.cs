@@ -25,7 +25,9 @@ public sealed record PlayerSearchResult(
     int Level,
     string ClassId,
     string PublicCode,
-    string? TelegramUsername);
+    string? TelegramUsername,
+    string Relationship,
+    Guid? PendingRequestId);
 
 public sealed record FriendRequestView(
     Guid Id,
@@ -93,7 +95,7 @@ public sealed class FriendService(
 
         string upper = trimmed.ToUpperInvariant();
         string lower = trimmed.ToLowerInvariant();
-        return await (
+        PlayerSearchResult[] results = await (
             from character in dbContext.Characters.AsNoTracking()
             join account in dbContext.Accounts.AsNoTracking()
                 on character.AccountId equals account.Id
@@ -113,9 +115,59 @@ public sealed class FriendService(
                 character.PublicCode,
                 account.TelegramUsername == null
                     ? null
-                    : "@" + account.TelegramUsername.TrimStart('@')))
+                    : "@" + account.TelegramUsername.TrimStart('@'),
+                "NONE",
+                null))
             .Take(20)
             .ToArrayAsync(cancellationToken);
+
+        if (results.Length == 0)
+            return results;
+
+        Guid[] candidateIds = results.Select(result => result.CharacterId).ToArray();
+        Friendship[] friendships = await dbContext.Friendships
+            .AsNoTracking()
+            .Where(friendship =>
+                (friendship.CharacterAId == current.Id
+                    && candidateIds.Contains(friendship.CharacterBId))
+                || (friendship.CharacterBId == current.Id
+                    && candidateIds.Contains(friendship.CharacterAId)))
+            .ToArrayAsync(cancellationToken);
+        HashSet<Guid> friendIds = friendships
+            .Select(friendship => friendship.CharacterAId == current.Id
+                ? friendship.CharacterBId
+                : friendship.CharacterAId)
+            .ToHashSet();
+
+        FriendRequest[] pendingRequests = await dbContext.FriendRequests
+            .AsNoTracking()
+            .Where(request => request.Status == FriendRequestStatus.Pending
+                && ((request.RequesterCharacterId == current.Id
+                        && candidateIds.Contains(request.TargetCharacterId))
+                    || (request.TargetCharacterId == current.Id
+                        && candidateIds.Contains(request.RequesterCharacterId))))
+            .ToArrayAsync(cancellationToken);
+        Dictionary<Guid, FriendRequest> pendingByCharacter = pendingRequests.ToDictionary(
+            request => request.RequesterCharacterId == current.Id
+                ? request.TargetCharacterId
+                : request.RequesterCharacterId);
+
+        return results.Select(result =>
+        {
+            if (friendIds.Contains(result.CharacterId))
+                return result with { Relationship = "FRIEND" };
+
+            if (!pendingByCharacter.TryGetValue(result.CharacterId, out FriendRequest? pending))
+                return result;
+
+            return result with
+            {
+                Relationship = pending.RequesterCharacterId == current.Id
+                    ? "OUTGOING_REQUEST"
+                    : "INCOMING_REQUEST",
+                PendingRequestId = pending.Id
+            };
+        }).ToArray();
     }
 
     public async Task<FriendSnapshot?> GetSnapshotAsync(
@@ -267,6 +319,66 @@ public sealed class FriendService(
         CancellationToken cancellationToken) =>
         DecideRequestAsync(accountId, requestId, accept: false, cancellationToken);
 
+    public Task<FriendMutationResult> CancelRequestAsync(
+        Guid accountId,
+        Guid requestId,
+        CancellationToken cancellationToken) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            () => CancelRequestCoreAsync(accountId, requestId, cancellationToken));
+
+    private async Task<FriendMutationResult> CancelRequestCoreAsync(
+        Guid accountId,
+        Guid requestId,
+        CancellationToken cancellationToken)
+    {
+        dbContext.ChangeTracker.Clear();
+        if (accountId == Guid.Empty || requestId == Guid.Empty)
+            return FriendMutationResult.Failure(FriendErrorCodes.InvalidRequest);
+
+        Character? requester = await GetCharacterAsync(accountId, cancellationToken);
+        if (requester is null)
+            return FriendMutationResult.Failure(FriendErrorCodes.CharacterNotFound);
+
+        await using IDbContextTransaction transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        FriendRequest? probe = await dbContext.FriendRequests
+            .AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == requestId, cancellationToken);
+        if (probe is null || probe.RequesterCharacterId != requester.Id)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return FriendMutationResult.Failure(FriendErrorCodes.RequestNotFound);
+        }
+
+        await AcquirePairLockAsync(probe.PairKey, cancellationToken);
+        dbContext.ChangeTracker.Clear();
+        requester = await GetCharacterAsync(accountId, cancellationToken);
+        FriendRequest? request = await dbContext.FriendRequests
+            .SingleOrDefaultAsync(candidate => candidate.Id == requestId, cancellationToken);
+        if (requester is null || request is null || request.RequesterCharacterId != requester.Id)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return FriendMutationResult.Failure(FriendErrorCodes.RequestNotFound);
+        }
+
+        if (request.Status == FriendRequestStatus.Cancelled)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return FriendMutationResult.Success(request);
+        }
+
+        if (request.Status != FriendRequestStatus.Pending)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return FriendMutationResult.Failure(FriendErrorCodes.RequestAlreadyDecided);
+        }
+
+        request.Cancel(requester.Id, timeProvider.GetUtcNow());
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return FriendMutationResult.Success(request);
+    }
+
     public Task<FriendMutationResult> RemoveFriendAsync(
         Guid accountId,
         Guid friendCharacterId,
@@ -280,9 +392,14 @@ public sealed class FriendService(
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
+        if (accountId == Guid.Empty || friendCharacterId == Guid.Empty)
+            return FriendMutationResult.Failure(FriendErrorCodes.InvalidRequest);
+
         Character? current = await GetCharacterAsync(accountId, cancellationToken);
         if (current is null)
             return FriendMutationResult.Failure(FriendErrorCodes.CharacterNotFound);
+        if (current.Id == friendCharacterId)
+            return FriendMutationResult.Failure(FriendErrorCodes.Self);
 
         string pairKey = Friendship.GetPairKey(current.Id, friendCharacterId);
         await using IDbContextTransaction transaction =
@@ -293,8 +410,13 @@ public sealed class FriendService(
             .SingleOrDefaultAsync(candidate => candidate.PairKey == pairKey, cancellationToken);
         if (friendship is null)
         {
+            bool targetExists = await dbContext.Characters
+                .AsNoTracking()
+                .AnyAsync(character => character.Id == friendCharacterId, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return FriendMutationResult.Failure(FriendErrorCodes.CharacterNotFound);
+            return targetExists
+                ? FriendMutationResult.Success()
+                : FriendMutationResult.Failure(FriendErrorCodes.CharacterNotFound);
         }
 
         dbContext.Friendships.Remove(friendship);
@@ -348,8 +470,13 @@ public sealed class FriendService(
 
         if (request.Status != FriendRequestStatus.Pending)
         {
+            bool sameDecision = accept
+                ? request.Status == FriendRequestStatus.Accepted
+                : request.Status == FriendRequestStatus.Declined;
             await transaction.CommitAsync(cancellationToken);
-            return FriendMutationResult.Failure(FriendErrorCodes.RequestAlreadyDecided);
+            return sameDecision
+                ? FriendMutationResult.Success(request)
+                : FriendMutationResult.Failure(FriendErrorCodes.RequestAlreadyDecided);
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
