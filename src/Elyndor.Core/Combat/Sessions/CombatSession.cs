@@ -2365,6 +2365,22 @@ public sealed partial class CombatSession
         IReadOnlySet<string> knownAbilityIds = definition.Kind == CombatActorKind.Player
             ? GetPlayerKnownAbilityIds(CurrentTimeUtc)
             : definition.KnownAbilityIds;
+        double? autoAttackIntervalSeconds = null;
+        DateTimeOffset? nextAutoAttackAtUtc = null;
+        if (definition.Kind == CombatActorKind.Player && autoAttackEnabled)
+        {
+            DateTimeOffset? mainHandAt = _nextPlayerMainHandAutoAttackAtUtc;
+            DateTimeOffset? offHandAt = _nextPlayerOffHandAutoAttackAtUtc;
+            bool useOffHand = offHandAt.HasValue
+                && (!mainHandAt.HasValue || offHandAt.Value < mainHandAt.Value);
+            AutoAttackProfile timingProfile = useOffHand
+                ? definition.OffHandAutoAttack ?? definition.AutoAttack
+                : definition.AutoAttack;
+            nextAutoAttackAtUtc = useOffHand ? offHandAt : mainHandAt;
+            autoAttackIntervalSeconds =
+                EffectivePlayerAutoAttackInterval(timingProfile, CurrentTimeUtc).TotalSeconds;
+        }
+
         CombatAbilitySnapshot[] abilities = knownAbilityIds
             .Where(_abilities.ContainsKey)
             .Select(id => definition.Kind == CombatActorKind.Player
@@ -2418,7 +2434,9 @@ public sealed partial class CombatSession
                 ? new Dictionary<string, DateTimeOffset>(
                     _consumableCooldowns,
                     StringComparer.Ordinal)
-                : null);
+                : null,
+            autoAttackIntervalSeconds,
+            nextAutoAttackAtUtc);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()
