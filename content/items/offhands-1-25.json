@@ -12,10 +12,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Синей Свечи».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 1,
       "itemLevelMax": 4,
@@ -23,9 +30,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "OFFHAND_LEVEL_1_4",
-      "guaranteedAffixStatIds": ["INTELLECT"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 75,
+      "sellPriceGold": 18
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FOCUS",
@@ -36,10 +47,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Руны Забытого Ученика».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 5,
       "itemLevelMax": 8,
@@ -47,7 +65,9 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "LEVEL_5_8",
-      "guaranteedAffixStatIds": ["INTELLECT"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1"
     },
@@ -60,10 +80,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 9,
       "itemLevelMax": 12,
@@ -71,7 +98,10 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "LEVEL_9_12",
-      "guaranteedAffixStatIds": ["INTELLECT", "STAMINA"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": null
     },
@@ -84,10 +114,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 13,
       "itemLevelMax": 16,
@@ -95,7 +132,10 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "LEVEL_13_16",
-      "guaranteedAffixStatIds": ["INTELLECT", "STAMINA"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": null
     },
@@ -108,10 +148,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 17,
       "itemLevelMax": 20,
@@ -119,7 +166,11 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "LEVEL_17_20",
-      "guaranteedAffixStatIds": ["INTELLECT", "STAMINA", "SPELL_POWER"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "SPELL_POWER"
+      ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null
     },
@@ -132,10 +183,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Затмённого Оракула».",
       "version": 1,
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 22,
       "itemLevelMax": 25,
@@ -143,7 +201,11 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_FOCUS",
       "affixCountProfileId": "LEVEL_21_25",
-      "guaranteedAffixStatIds": ["INTELLECT", "STAMINA", "SPELL_POWER"],
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "SPELL_POWER"
+      ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null
     },
@@ -156,10 +218,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Следопыт Шепчущего Леса».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 1,
       "itemLevelMax": 4,
@@ -167,9 +236,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "OFFHAND_LEVEL_1_4",
-      "guaranteedAffixStatIds": ["AGILITY"],
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
       "extraAffixBudgetCap": 0,
-      "prefixSuffixPolicyId": "WORLD_V1"
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "buyPriceGold": 75,
+      "sellPriceGold": 18
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_QUIVER",
@@ -180,10 +253,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Серая Тропа».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 5,
       "itemLevelMax": 8,
@@ -191,7 +271,9 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "LEVEL_5_8",
-      "guaranteedAffixStatIds": ["AGILITY"],
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1"
     },
@@ -204,10 +286,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 9,
       "itemLevelMax": 12,
@@ -215,7 +304,10 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "LEVEL_9_12",
-      "guaranteedAffixStatIds": ["AGILITY", "STAMINA"],
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": null
     },
@@ -228,10 +320,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 13,
       "itemLevelMax": 16,
@@ -239,7 +338,10 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "LEVEL_13_16",
-      "guaranteedAffixStatIds": ["AGILITY", "STAMINA"],
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": null
     },
@@ -252,10 +354,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 17,
       "itemLevelMax": 20,
@@ -263,7 +372,11 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "LEVEL_17_20",
-      "guaranteedAffixStatIds": ["AGILITY", "STAMINA", "ATTACK_POWER"],
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "ATTACK_POWER"
+      ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null
     },
@@ -276,10 +389,17 @@
       "stackable": false,
       "maxStack": 1,
       "slot": "OffHand",
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Экипировка второй руки: колчан прогрессии «Охота Чёрного Созвездия».",
       "version": 1,
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 22,
       "itemLevelMax": 25,
@@ -287,7 +407,11 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_QUIVER",
       "affixCountProfileId": "LEVEL_21_25",
-      "guaranteedAffixStatIds": ["AGILITY", "STAMINA", "ATTACK_POWER"],
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "ATTACK_POWER"
+      ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null
     }
