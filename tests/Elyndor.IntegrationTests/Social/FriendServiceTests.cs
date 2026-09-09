@@ -75,7 +75,19 @@ public sealed class FriendServiceTests(PostgresFixture postgres) : IAsyncLifetim
                 targetAccountId,
                 requestId,
                 CancellationToken.None);
+            FriendMutationResult replay = await service.AcceptRequestAsync(
+                targetAccountId,
+                requestId,
+                CancellationToken.None);
+            FriendMutationResult oppositeReplay = await service.DeclineRequestAsync(
+                targetAccountId,
+                requestId,
+                CancellationToken.None);
+
             Assert.True(accepted.IsSuccess);
+            Assert.True(replay.IsSuccess);
+            Assert.False(oppositeReplay.IsSuccess);
+            Assert.Equal(FriendErrorCodes.RequestAlreadyDecided, oppositeReplay.ErrorCode);
         }
 
         await using GameDbContext verificationContext = postgres.CreateDbContext();
@@ -86,6 +98,162 @@ public sealed class FriendServiceTests(PostgresFixture postgres) : IAsyncLifetim
                 requesterAccountId,
                 CancellationToken.None))!;
         Assert.Equal(targetCharacterId, Assert.Single(snapshot.Friends).CharacterId);
+    }
+
+    [Fact]
+    public async Task SearchExposesOutgoingIncomingAndFriendRelationshipStates()
+    {
+        (Guid requesterAccountId, Guid targetAccountId, Guid targetCharacterId) =
+            await SeedPairAsync();
+        Guid requesterCharacterId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        Guid requestId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
+        await using (GameDbContext senderContext = postgres.CreateDbContext())
+        {
+            FriendService service = new(senderContext, new FixedTimeProvider(Now));
+            Assert.True((await service.SendRequestAsync(
+                requesterAccountId,
+                targetCharacterId,
+                requestId,
+                CancellationToken.None)).IsSuccess);
+        }
+
+        await using (GameDbContext outgoingContext = postgres.CreateDbContext())
+        {
+            PlayerSearchResult outgoing = Assert.Single(await new FriendService(
+                outgoingContext,
+                new FixedTimeProvider(Now)).SearchAsync(
+                    requesterAccountId,
+                    "Mage",
+                    CancellationToken.None));
+            Assert.Equal("OUTGOING_REQUEST", outgoing.Relationship);
+            Assert.Equal(requestId, outgoing.PendingRequestId);
+        }
+
+        await using (GameDbContext incomingContext = postgres.CreateDbContext())
+        {
+            PlayerSearchResult incoming = Assert.Single(await new FriendService(
+                incomingContext,
+                new FixedTimeProvider(Now)).SearchAsync(
+                    targetAccountId,
+                    "Warrior",
+                    CancellationToken.None));
+            Assert.Equal(requesterCharacterId, incoming.CharacterId);
+            Assert.Equal("INCOMING_REQUEST", incoming.Relationship);
+            Assert.Equal(requestId, incoming.PendingRequestId);
+
+            Assert.True((await new FriendService(
+                incomingContext,
+                new FixedTimeProvider(Now.AddMinutes(1))).AcceptRequestAsync(
+                    targetAccountId,
+                    requestId,
+                    CancellationToken.None)).IsSuccess);
+        }
+
+        await using GameDbContext friendContext = postgres.CreateDbContext();
+        PlayerSearchResult friend = Assert.Single(await new FriendService(
+            friendContext,
+            new FixedTimeProvider(Now)).SearchAsync(
+                requesterAccountId,
+                "Mage",
+                CancellationToken.None));
+        Assert.Equal("FRIEND", friend.Relationship);
+        Assert.Null(friend.PendingRequestId);
+    }
+
+    [Fact]
+    public async Task OutgoingRequestCanBeCancelledReplaySafelyAndSentAgain()
+    {
+        (Guid requesterAccountId, _, Guid targetCharacterId) = await SeedPairAsync();
+        Guid requestId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            FriendService service = new(context, new FixedTimeProvider(Now));
+            Assert.True((await service.SendRequestAsync(
+                requesterAccountId,
+                targetCharacterId,
+                requestId,
+                CancellationToken.None)).IsSuccess);
+
+            FriendMutationResult cancelled = await service.CancelRequestAsync(
+                requesterAccountId,
+                requestId,
+                CancellationToken.None);
+            FriendMutationResult replay = await service.CancelRequestAsync(
+                requesterAccountId,
+                requestId,
+                CancellationToken.None);
+
+            Assert.True(cancelled.IsSuccess);
+            Assert.True(replay.IsSuccess);
+        }
+
+        await using (GameDbContext resendContext = postgres.CreateDbContext())
+        {
+            FriendMutationResult resent = await new FriendService(
+                resendContext,
+                new FixedTimeProvider(Now.AddMinutes(1))).SendRequestAsync(
+                    requesterAccountId,
+                    targetCharacterId,
+                    Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                    CancellationToken.None);
+            Assert.True(resent.IsSuccess);
+        }
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            1,
+            await verify.FriendRequests.CountAsync(request =>
+                request.Status == Elyndor.Core.Social.FriendRequestStatus.Pending));
+        Assert.Equal(
+            1,
+            await verify.FriendRequests.CountAsync(request =>
+                request.Status == Elyndor.Core.Social.FriendRequestStatus.Cancelled));
+    }
+
+    [Fact]
+    public async Task RemovingFriendIsReplaySafe()
+    {
+        (Guid requesterAccountId, Guid targetAccountId, Guid targetCharacterId) =
+            await SeedPairAsync();
+        Guid requestId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            FriendService service = new(setup, new FixedTimeProvider(Now));
+            Assert.True((await service.SendRequestAsync(
+                requesterAccountId,
+                targetCharacterId,
+                requestId,
+                CancellationToken.None)).IsSuccess);
+        }
+
+        await using (GameDbContext acceptContext = postgres.CreateDbContext())
+        {
+            Assert.True((await new FriendService(
+                acceptContext,
+                new FixedTimeProvider(Now.AddMinutes(1))).AcceptRequestAsync(
+                    targetAccountId,
+                    requestId,
+                    CancellationToken.None)).IsSuccess);
+        }
+
+        await using (GameDbContext removeContext = postgres.CreateDbContext())
+        {
+            FriendService service = new(removeContext, new FixedTimeProvider(Now.AddMinutes(2)));
+            Assert.True((await service.RemoveFriendAsync(
+                requesterAccountId,
+                targetCharacterId,
+                CancellationToken.None)).IsSuccess);
+            Assert.True((await service.RemoveFriendAsync(
+                requesterAccountId,
+                targetCharacterId,
+                CancellationToken.None)).IsSuccess);
+        }
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.Friendships.ToArrayAsync());
     }
 
     [Fact]

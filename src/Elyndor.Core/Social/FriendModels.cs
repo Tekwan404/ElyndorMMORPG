@@ -4,7 +4,8 @@ public enum FriendRequestStatus
 {
     Pending,
     Accepted,
-    Declined
+    Declined,
+    Cancelled
 }
 
 public sealed class FriendRequest
@@ -73,6 +74,20 @@ public sealed class FriendRequest
     {
         EnsurePendingTarget(actorCharacterId, decidedAtUtc);
         Status = FriendRequestStatus.Declined;
+        DecidedAtUtc = decidedAtUtc;
+        DecidedByCharacterId = actorCharacterId;
+    }
+
+    public void Cancel(Guid actorCharacterId, DateTimeOffset decidedAtUtc)
+    {
+        if (Status != FriendRequestStatus.Pending)
+            throw new InvalidOperationException("Only pending friend requests can be cancelled.");
+        if (actorCharacterId != RequesterCharacterId)
+            throw new UnauthorizedAccessException("Only the requester can cancel a friend request.");
+        if (decidedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Friend request timestamps must be UTC.", nameof(decidedAtUtc));
+
+        Status = FriendRequestStatus.Cancelled;
         DecidedAtUtc = decidedAtUtc;
         DecidedByCharacterId = actorCharacterId;
     }

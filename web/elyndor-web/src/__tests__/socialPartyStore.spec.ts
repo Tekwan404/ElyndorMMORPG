@@ -47,6 +47,47 @@ describe('social and party mutation errors', () => {
     expect(store.outgoingRequests[0]?.targetCharacterId).toBe('character-2')
   })
 
+  it('cancels an outgoing friend request through the authoritative endpoint and refreshes', async () => {
+    const snapshot = { friends: [], incomingRequests: [], outgoingRequests: [] }
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(snapshot)
+    const store = useSocialStore()
+
+    await store.cancelRequest('request-1')
+
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      '/api/v1/friends/requests/request-1/cancel',
+      { method: 'POST' },
+    )
+    expect(store.snapshot).toEqual(snapshot)
+    expect(store.mutationPending).toBe(false)
+  })
+
+  it('does not start a second friend mutation while one is already pending', async () => {
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const request = vi.spyOn(apiClient, 'request')
+      .mockImplementationOnce(async () => {
+        await pending
+      })
+      .mockResolvedValue({ friends: [], incomingRequests: [], outgoingRequests: [] })
+    const store = useSocialStore()
+
+    const first = store.sendRequest('character-2')
+    await Promise.resolve()
+    await store.sendRequest('character-3')
+
+    expect(request).toHaveBeenCalledTimes(1)
+
+    release()
+    await first
+    expect(store.mutationPending).toBe(false)
+  })
+
   it('removes a friend through the authoritative endpoint and refreshes', async () => {
     const snapshot = { friends: [], incomingRequests: [], outgoingRequests: [] }
     const request = vi.spyOn(apiClient, 'request')

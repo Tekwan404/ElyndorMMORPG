@@ -19,6 +19,7 @@ public static class SocialEndpoints
         group.MapPost("/friends/requests", SendRequestAsync);
         group.MapPost("/friends/requests/{requestId:guid}/accept", AcceptRequestAsync);
         group.MapPost("/friends/requests/{requestId:guid}/decline", DeclineRequestAsync);
+        group.MapPost("/friends/requests/{requestId:guid}/cancel", CancelRequestAsync);
         group.MapDelete("/friends/{friendCharacterId:guid}", RemoveFriendAsync);
         return endpoints;
     }
@@ -99,6 +100,20 @@ public static class SocialEndpoints
                 requestId,
                 cancellationToken));
 
+    private static Task<IResult> CancelRequestAsync(
+        Guid requestId,
+        ClaimsPrincipal user,
+        FriendService friendService,
+        HttpContext httpContext,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(
+            user,
+            httpContext,
+            () => friendService.CancelRequestAsync(
+                GetAccountId(user),
+                requestId,
+                cancellationToken));
+
     private static Task<IResult> RemoveFriendAsync(
         Guid friendCharacterId,
         ClaimsPrincipal user,
@@ -139,7 +154,15 @@ public static class SocialEndpoints
     }
 
     private static PlayerSearchResponse ToResponse(PlayerSearchResult result) =>
-        new(result.CharacterId, result.Name, result.Level, result.ClassId, result.PublicCode, result.TelegramUsername);
+        new(
+            result.CharacterId,
+            result.Name,
+            result.Level,
+            result.ClassId,
+            result.PublicCode,
+            result.TelegramUsername,
+            result.Relationship,
+            result.PendingRequestId);
 
     private static FriendsSnapshotResponse ToResponse(FriendSnapshot snapshot) =>
         new(

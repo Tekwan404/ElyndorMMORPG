@@ -33,6 +33,16 @@ async function addFriend(characterId: string): Promise<void> {
   await search()
 }
 
+async function cancelRequest(requestId: string): Promise<void> {
+  await social.cancelRequest(requestId)
+  await search()
+}
+
+async function decideSearchRequest(requestId: string, accept: boolean): Promise<void> {
+  await social.decideRequestById(requestId, accept)
+  await search()
+}
+
 async function inviteToParty(characterId: string): Promise<void> {
   if (inviting.value || !canInvite(characterId)) return
   inviting.value = characterId
@@ -71,12 +81,38 @@ onMounted(() => {
             <strong>{{ player.name }}</strong>
             <small>ур. {{ player.level }} · {{ classLabel(player.classId) }} · {{ player.publicCode }}</small>
           </div>
-          <UIButton variant="secondary" @click="addFriend(player.characterId)">Добавить</UIButton>
-          <UIButton
-            v-if="canInvite(player.characterId)"
-            data-party-invite
-            @click="inviteToParty(player.characterId)"
-          >В группу</UIButton>
+          <div class="actions">
+            <UIButton
+              v-if="player.relationship === 'NONE'"
+              variant="secondary"
+              :disabled="social.mutationPending"
+              @click="addFriend(player.characterId)"
+            >Добавить</UIButton>
+            <span v-else-if="player.relationship === 'FRIEND'" class="relationship-state">Уже в друзьях</span>
+            <UIButton
+              v-else-if="player.relationship === 'OUTGOING_REQUEST' && player.pendingRequestId"
+              variant="secondary"
+              :disabled="social.mutationPending"
+              @click="cancelRequest(player.pendingRequestId)"
+            >Отменить заявку</UIButton>
+            <template v-else-if="player.relationship === 'INCOMING_REQUEST' && player.pendingRequestId">
+              <UIButton
+                :disabled="social.mutationPending"
+                @click="decideSearchRequest(player.pendingRequestId, true)"
+              >Принять</UIButton>
+              <UIButton
+                variant="secondary"
+                :disabled="social.mutationPending"
+                @click="decideSearchRequest(player.pendingRequestId, false)"
+              >Отклонить</UIButton>
+            </template>
+            <UIButton
+              v-if="canInvite(player.characterId)"
+              data-party-invite
+              :disabled="inviting !== null"
+              @click="inviteToParty(player.characterId)"
+            >В группу</UIButton>
+          </div>
         </article>
       </div>
     </UIPanel>
@@ -85,8 +121,8 @@ onMounted(() => {
       <article v-for="request in social.incomingRequests" :key="request.id" class="player-row">
         <small>Заявка от {{ request.requesterName ?? 'героя' }}</small>
         <div class="actions">
-          <UIButton @click="social.decideRequest(request, true)">Принять</UIButton>
-          <UIButton variant="secondary" @click="social.decideRequest(request, false)">Отклонить</UIButton>
+          <UIButton :disabled="social.mutationPending" @click="social.decideRequest(request, true)">Принять</UIButton>
+          <UIButton variant="secondary" :disabled="social.mutationPending" @click="social.decideRequest(request, false)">Отклонить</UIButton>
         </div>
       </article>
     </UIPanel>
@@ -94,6 +130,11 @@ onMounted(() => {
     <UIPanel v-if="social.outgoingRequests.length" title="Исходящие заявки">
       <article v-for="request in social.outgoingRequests" :key="request.id" class="player-row">
         <small>Заявка: {{ request.targetName ?? 'герой' }}</small>
+        <UIButton
+          variant="secondary"
+          :disabled="social.mutationPending"
+          @click="social.cancelRequest(request.id)"
+        >Отменить</UIButton>
       </article>
     </UIPanel>
 
@@ -108,12 +149,15 @@ onMounted(() => {
           <strong>{{ friend.name }}</strong>
           <small>ур. {{ friend.level }} · {{ classLabel(friend.classId) }}</small>
         </div>
-        <UIButton v-if="canInvite(friend.characterId)" data-party-invite :disabled="inviting !== null" @click="inviteToParty(friend.characterId)">В группу</UIButton>
-        <UIButton
-          variant="secondary"
-          data-remove-friend
-          @click="social.removeFriend(friend.characterId)"
-        >Удалить</UIButton>
+        <div class="actions">
+          <UIButton v-if="canInvite(friend.characterId)" data-party-invite :disabled="inviting !== null" @click="inviteToParty(friend.characterId)">В группу</UIButton>
+          <UIButton
+            variant="secondary"
+            data-remove-friend
+            :disabled="social.mutationPending"
+            @click="social.removeFriend(friend.characterId)"
+          >Удалить</UIButton>
+        </div>
       </article>
     </UIPanel>
   </div>
@@ -133,5 +177,6 @@ input { min-width: 0; flex: 1; border: 1px solid var(--ui-color-border); border-
 .player-row div:first-child { display: grid; min-width: 0; gap: 3px; }
 .player-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }
 .error-state { color: var(--ui-color-danger, #ff8d8d); font-size: .72rem; }
-.actions { display: flex; gap: 6px; }
+.actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.relationship-state { color: var(--ui-color-success, #86d7a8); font-size: .66rem; font-weight: 700; }
 </style>
