@@ -52,6 +52,32 @@ public sealed class ItemReforgeService(
     IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
+    public async Task<ItemReforgeOperationResult?> GetPendingAsync(
+        Guid accountId,
+        Guid? itemInstanceId,
+        CancellationToken cancellationToken)
+    {
+        Guid? characterId = await dbContext.Characters
+            .AsNoTracking()
+            .Where(character => character.AccountId == accountId)
+            .Select(character => (Guid?)character.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (!characterId.HasValue)
+            return null;
+
+        IQueryable<ItemReforgeOperation> query = dbContext.ItemReforgeOperations
+            .AsNoTracking()
+            .Where(operation => operation.CharacterId == characterId.Value
+                && operation.State == ItemReforgeOperationState.Pending);
+        if (itemInstanceId.HasValue)
+            query = query.Where(operation => operation.ItemInstanceId == itemInstanceId.Value);
+
+        ItemReforgeOperation? operation = await query
+            .OrderByDescending(candidate => candidate.CreatedAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+        return operation is null ? null : ToResult(operation);
+    }
+
     public Task<ItemReforgeOperationResult> RollAsync(
         Guid accountId,
         Guid itemInstanceId,
