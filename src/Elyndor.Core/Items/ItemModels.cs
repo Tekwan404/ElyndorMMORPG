@@ -40,6 +40,7 @@ public enum EquipmentSlot
     MainHand,
     OffHand,
     Head,
+    Shoulders,
     Chest,
     Hands,
     Legs,
@@ -82,6 +83,8 @@ public static class EquipmentCategoryIds
     public const string Heavy = "HEAVY";
 
     public const string Shield = "SHIELD";
+    public const string Focus = "FOCUS";
+    public const string Quiver = "QUIVER";
 
     // Legacy identifiers remain as constants only so old tooling can produce a clear
     // validation error instead of failing to compile. They are not valid categories.
@@ -109,7 +112,9 @@ public static class EquipmentCategoryIds
 
     private static readonly HashSet<string> OffHandCategories = new(StringComparer.Ordinal)
     {
-        Shield
+        Shield,
+        Focus,
+        Quiver
     };
 
     public static bool IsWeapon(string? category) =>
@@ -171,7 +176,17 @@ public sealed record ItemDefinition(
     string? OffHandCategory = null,
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0);
+    decimal BlockValueMax = 0,
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null,
+    IReadOnlyList<string>? GuaranteedAffixStatIds = null,
+    string? RandomAffixPoolId = null,
+    string? AffixCountProfileId = null,
+    decimal ExtraAffixBudgetCap = 0,
+    string? PrefixSuffixPolicyId = null,
+    string? UniqueEquippedGroup = null,
+    string? TradePolicyId = null,
+    int GenerationVersion = 1);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
