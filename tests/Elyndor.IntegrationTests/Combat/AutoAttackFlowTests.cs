@@ -153,8 +153,12 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
         Guid orphanedItemId = Guid.CreateVersion7();
         await using (GameDbContext legacyContext = postgres.CreateDbContext())
         {
-            ItemRolledAffix[] currentAffixes = await legacyContext.CharacterItemAffixes
+            Guid[] currentItemIds = await legacyContext.CharacterItems
                 .Where(item => item.CharacterId == character.Id)
+                .Select(item => item.Id)
+                .ToArrayAsync();
+            ItemRolledAffix[] currentAffixes = await legacyContext.CharacterItemAffixes
+                .Where(item => currentItemIds.Contains(item.ItemInstanceId))
                 .ToArrayAsync();
             CharacterEquipment[] currentEquipment = await legacyContext.CharacterEquipment
                 .Where(item => item.CharacterId == character.Id)
