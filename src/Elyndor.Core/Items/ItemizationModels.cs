@@ -64,6 +64,17 @@ public sealed record ItemAffixNameDefinition(
     string Medium,
     string High);
 
+public sealed record ItemReforgeCostProfileDefinition(
+    string Id,
+    string MaterialItemId,
+    string CatalystItemId,
+    string CatalystMinimumRarity,
+    IReadOnlyDictionary<string, int> BaseGoldByRarity,
+    IReadOnlyDictionary<string, int> MaterialQuantityByRarity,
+    IReadOnlyDictionary<string, int> CatalystQuantityByRarity,
+    IReadOnlyList<decimal> ReforgeCountMultipliers,
+    decimal OverflowGrowthMultiplier);
+
 public sealed record ItemizationDefinition(
     decimal TemplateBasePower,
     decimal LevelLinearCoefficient,
@@ -76,7 +87,8 @@ public sealed record ItemizationDefinition(
     IReadOnlyList<ItemQualityProfileDefinition> QualityProfiles,
     IReadOnlyList<ItemAffixNameDefinition> AffixNames,
     decimal IndividualQualityDeviationPercent = 7,
-    decimal PerfectSnapThreshold = 0.9995m);
+    decimal PerfectSnapThreshold = 0.9995m,
+    ItemReforgeCostProfileDefinition? ReforgeCosts = null);
 
 public sealed record GeneratedItemAffix(
     string SlotKey,
@@ -316,6 +328,147 @@ public static class ItemInstanceGenerator
             * slotMultiplier
             * rarityMultiplier
             * (1m + template.ExtraAffixBudgetCap);
+    }
+
+    public static GeneratedItemInstance Recalculate(
+        ItemDefinition template,
+        ItemizationDefinition itemization,
+        int itemLevel,
+        IReadOnlyList<GeneratedItemAffix> affixes,
+        string? perfectOrigin = null)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(itemization);
+        ArgumentNullException.ThrowIfNull(affixes);
+
+        decimal maxTemplatePower = CalculateTemplateMaxPower(template, itemization, itemLevel);
+        decimal structuralPower = CalculateStructuralPower(template, itemization);
+        if (maxTemplatePower <= structuralPower)
+            maxTemplatePower = structuralPower + 1;
+
+        ItemAffixCountProfileDefinition countProfile = FindCountProfile(template, itemization);
+        int maxAffixCount = checked(countProfile.GuaranteedCount + countProfile.MaximumBonusCount);
+        decimal affixBudget = maxTemplatePower - structuralPower;
+        decimal maxPowerPerAffix = affixBudget / maxAffixCount;
+        decimal minimumTemplatePower = structuralPower
+            + (countProfile.GuaranteedCount * maxPowerPerAffix * MinimumAffixQuality);
+
+        decimal actualPower = structuralPower;
+        foreach (GeneratedItemAffix affix in affixes)
+        {
+            if (!itemization.StatPowerWeights.TryGetValue(affix.StatId, out decimal weight) || weight <= 0)
+                throw new InvalidOperationException($"Item stat '{affix.StatId}' has no positive power weight.");
+            actualPower += affix.Value * weight;
+        }
+
+        actualPower = decimal.Min(actualPower, maxTemplatePower);
+        decimal denominator = maxTemplatePower - minimumTemplatePower;
+        decimal realizedPotential = denominator <= 0
+            ? 1m
+            : Clamp01((actualPower - minimumTemplatePower) / denominator);
+        decimal rollQuality = decimal.Round(realizedPotential * 100m, 2, MidpointRounding.AwayFromZero);
+        int stars = StarsFor(realizedPotential);
+        bool isPerfect = affixes.Count == maxAffixCount
+            && affixes.All(affix => affix.Value == affix.MaxAtGeneration)
+            && decimal.Abs(actualPower - maxTemplatePower) <= 0.01m;
+
+        (string? prefixId, string? suffixId, string displayName) =
+            ResolveGeneratedName(template, itemization, affixes);
+        return new GeneratedItemInstance(
+            itemLevel,
+            affixes,
+            decimal.Round(minimumTemplatePower, 2, MidpointRounding.AwayFromZero),
+            decimal.Round(actualPower, 2, MidpointRounding.AwayFromZero),
+            decimal.Round(maxTemplatePower, 2, MidpointRounding.AwayFromZero),
+            rollQuality,
+            stars,
+            isPerfect,
+            isPerfect ? perfectOrigin : null,
+            prefixId,
+            suffixId,
+            displayName,
+            template.GenerationVersion);
+    }
+
+    public static GeneratedItemAffix RollReforgeAffix(
+        ItemDefinition template,
+        ItemizationDefinition itemization,
+        IReadOnlyList<GeneratedItemAffix> currentAffixes,
+        string slotKey,
+        string qualityProfileId,
+        IGameRandom random)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(itemization);
+        ArgumentNullException.ThrowIfNull(currentAffixes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(slotKey);
+        ArgumentException.ThrowIfNullOrWhiteSpace(qualityProfileId);
+        ArgumentNullException.ThrowIfNull(random);
+
+        GeneratedItemAffix selected = currentAffixes.SingleOrDefault(affix =>
+            string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException("Selected Reforge affix slot does not exist.");
+        if (selected.IsGuaranteed)
+            throw new InvalidOperationException("Guaranteed affix slots are immutable in Itemization V1.");
+
+        ItemAffixPoolDefinition pool = FindPool(template, itemization);
+        HashSet<string> occupied = currentAffixes
+            .Where(affix => !string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
+            .Select(affix => affix.StatId)
+            .ToHashSet(StringComparer.Ordinal);
+        string[] candidates = pool.StatIds
+            .Where(statId => !occupied.Contains(statId))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (candidates.Length == 0)
+            throw new InvalidOperationException("Reforge pool has no legal affix candidate.");
+
+        string statId = candidates[RollIndex(candidates.Length, random)];
+        if (!itemization.StatPowerWeights.TryGetValue(selected.StatId, out decimal previousWeight)
+            || previousWeight <= 0
+            || !itemization.StatPowerWeights.TryGetValue(statId, out decimal newWeight)
+            || newWeight <= 0)
+        {
+            throw new InvalidOperationException("Reforge affix uses an invalid power weight.");
+        }
+
+        ItemQualityProfileDefinition qualityProfile = itemization.QualityProfiles
+            .SingleOrDefault(profile => string.Equals(profile.Id, qualityProfileId, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"Unknown item quality profile '{qualityProfileId}'.");
+        decimal slotPowerEnvelope = selected.MaxAtGeneration * previousWeight;
+        decimal step = StepFor(statId);
+        decimal maximumValue = FloorToStep(slotPowerEnvelope / newWeight, step);
+        if (maximumValue <= 0)
+            maximumValue = step;
+        decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
+        if (minimumValue <= 0)
+            minimumValue = step;
+        if (minimumValue > maximumValue)
+            minimumValue = maximumValue;
+
+        decimal seedQuality = RollQuality(
+            random,
+            qualityProfile.BiasExponent,
+            itemization.PerfectSnapThreshold);
+        decimal deviationUnit = (random.NextUnit() * 2m) - 1m;
+        decimal individualQuality = Clamp01(
+            seedQuality + (deviationUnit * itemization.IndividualQualityDeviationPercent / 100m));
+        if (individualQuality >= itemization.PerfectSnapThreshold)
+            individualQuality = 1m;
+        decimal value = RollValue(minimumValue, maximumValue, step, individualQuality);
+
+        return new GeneratedItemAffix(
+            selected.SlotKey,
+            statId,
+            statId,
+            value,
+            minimumValue,
+            maximumValue,
+            step,
+            selected.AffixTier,
+            false,
+            true,
+            selected.GenerationOrdinal);
     }
 
     public static ItemDefinition ApplyGeneratedAffixes(
