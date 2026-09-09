@@ -518,7 +518,7 @@ public static class ItemInstanceGenerator
 
     private static int RollIndex(int count, IGameRandom random)
     {
-        if (count <= 0) throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
         int index = (int)decimal.Floor(random.NextUnit() * count);
         return Math.Min(index, count - 1);
     }
