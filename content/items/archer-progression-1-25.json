@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T20:58:00+00:00",
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T05:05:00+00:00",
   "items": [
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_BOW",
@@ -14,30 +14,27 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Лук прогрессии «Следопыт Шепчущего Леса».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 2,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 1,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 7,
-      "weaponDamageMax": 12
+      "weaponDamageMax": 12,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
@@ -50,29 +47,26 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 3,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 3,
-          "max": 7,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 19.5
+      "armorFlat": 19.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
@@ -85,29 +79,26 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 1,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 9
+      "armorFlat": 9,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
@@ -120,29 +111,26 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 1,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 9.5
+      "armorFlat": 9.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
@@ -155,29 +143,26 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 12.5
+      "armorFlat": 12.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
@@ -190,63 +175,58 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 3,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 17
+      "armorFlat": 17,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
-      "name": "Плащ Шепчущего Леса",
+      "name": "Наплечники Шепчущего Леса",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 2,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
-      "armorFlat": 10.5
+      "armorFlat": 10.5,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_BOW",
@@ -259,30 +239,29 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 6,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Лук прогрессии «Серая Тропа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 13,
-      "weaponDamageMax": 21
+      "weaponDamageMax": 21,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_CHEST",
@@ -295,29 +274,28 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 7,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 32.5
+      "armorFlat": 32.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_FEET",
@@ -330,29 +308,28 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 3,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 14.5
+      "armorFlat": 14.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_HANDS",
@@ -365,29 +342,28 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 3,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 15.5
+      "armorFlat": 15.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_HEAD",
@@ -400,29 +376,28 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 4,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 21
+      "armorFlat": 21,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_LEGS",
@@ -435,63 +410,62 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 6,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 28.5
+      "armorFlat": 28.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS",
-      "name": "Плащ Серой Тропы",
+      "name": "Наплечники Серой Тропы",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 4,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
-      "armorFlat": 18
+      "armorFlat": 18,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "AGILITY"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_BOW",
@@ -504,30 +478,30 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 9,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Лук прогрессии «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 9,
-          "max": 14,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 22,
-      "weaponDamageMax": 34
+      "weaponDamageMax": 34,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_CHEST",
@@ -540,30 +514,30 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 11,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 11,
-          "max": 18,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
-      "armorFlat": 49
+      "armorFlat": 49,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_FEET",
@@ -576,30 +550,30 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 5,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
-      "armorFlat": 21.5
+      "armorFlat": 21.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HANDS",
@@ -612,30 +586,30 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 5,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
-      "armorFlat": 23.5
+      "armorFlat": 23.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HEAD",
@@ -648,30 +622,30 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 7,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 7,
-          "max": 12,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
-      "armorFlat": 31
+      "armorFlat": 31,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_LEGS",
@@ -684,65 +658,66 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 10,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 5
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 10,
-          "max": 16,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
-      "armorFlat": 43
+      "armorFlat": 43,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
-      "name": "Плащ Тернового Следа",
+      "name": "Наплечники Тернового Следа",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 6,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_THORN_TRAIL",
-      "armorFlat": 27.5
+      "armorFlat": 27.5,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_BOW",
@@ -755,30 +730,30 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 13,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Лук прогрессии «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 13,
-          "max": 21,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 34,
-      "weaponDamageMax": 52
+      "weaponDamageMax": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
@@ -791,30 +766,31 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 16,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 9
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 16,
-          "max": 26,
-          "step": 1
-        },
-        "stamina": {
-          "min": 9,
-          "max": 14,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
-      "armorFlat": 73.5
+      "armorFlat": 73.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
@@ -827,30 +803,30 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 7,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
-      "armorFlat": 32.5
+      "armorFlat": 32.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
@@ -863,30 +839,30 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 8,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
-      "armorFlat": 35
+      "armorFlat": 35,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
@@ -899,30 +875,30 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 10,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 10,
-          "max": 17,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
-      "armorFlat": 47
+      "armorFlat": 47,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
@@ -935,65 +911,67 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 14,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 8
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 14,
-          "max": 23,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
-      "armorFlat": 64.5
+      "armorFlat": 64.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
-      "name": "Плащ Лунного Листа",
+      "name": "Наплечники Лунного Листа",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 9,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 5
+        "stamina": 0
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 9,
-          "max": 15,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
-      "armorFlat": 41
+      "armorFlat": 41,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_BOW",
@@ -1006,30 +984,31 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 19,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 5
+        "stamina": 0
       },
       "description": "Лук прогрессии «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 19,
-          "max": 28,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 7,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 49,
-      "weaponDamageMax": 76
+      "weaponDamageMax": 76,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_CHEST",
@@ -1042,30 +1021,31 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 24,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 13
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 24,
-          "max": 35,
-          "step": 1
-        },
-        "stamina": {
-          "min": 13,
-          "max": 19,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
-      "armorFlat": 104
+      "armorFlat": 104,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
@@ -1078,30 +1058,31 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 11,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 11,
-          "max": 15,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
-      "armorFlat": 46
+      "armorFlat": 46,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
@@ -1114,30 +1095,31 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 12,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 12,
-          "max": 17,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
-      "armorFlat": 50
+      "armorFlat": 50,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
@@ -1150,30 +1132,31 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 15,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 8
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 15,
-          "max": 22,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
-      "armorFlat": 66.5
+      "armorFlat": 66.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
@@ -1186,65 +1169,68 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 21,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 11
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 21,
-          "max": 31,
-          "step": 1
-        },
-        "stamina": {
-          "min": 11,
-          "max": 17,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
-      "armorFlat": 91.5
+      "armorFlat": 91.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
-      "name": "Плащ Звёздного Зверобоя",
+      "name": "Наплечники Звёздного Зверобоя",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 13,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 7
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 13,
-          "max": 20,
-          "step": 1
-        },
-        "stamina": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        }
-      },
       "setId": "SET_ARCHER_STAR_HUNTER",
-      "armorFlat": 58
+      "armorFlat": 58,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
