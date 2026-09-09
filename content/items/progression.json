@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.11.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-06T19:46:00+00:00",
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T06:50:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -127,9 +127,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Лёгкий клинок лесного следопыта. Базовый интервал автоатаки — 2,4 сек.",
+      "description": "Лёгкий клинок лесного следопыта. Базовый интервал автоатаки — 2,4 сек. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "weaponBaseAttackIntervalSeconds": 2.4,
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
@@ -157,9 +156,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость.",
+      "description": "Мягкий капюшон из паучьего шёлка. Повышает Ловкость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
@@ -185,9 +183,8 @@
         "intellect": 0,
         "stamina": 2
       },
-      "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость.",
+      "description": "Прочная куртка из кабаньей шкуры. Повышает Выносливость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 8,
       "primaryStatRanges": {
         "stamina": {
@@ -213,9 +210,8 @@
         "intellect": 0,
         "stamina": 1
       },
-      "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость.",
+      "description": "Гибкие штаны для долгих переходов по лесу. Повышают Ловкость и Выносливость. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 6,
       "primaryStatRanges": {
         "agility": {
@@ -246,9 +242,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Тихие кожаные ботинки, удобные для преследования добычи.",
+      "description": "Тихие кожаные ботинки, удобные для преследования добычи. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
@@ -273,9 +268,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Амулет из волчьего клыка — знак удачливого охотника.",
+      "description": "Амулет из волчьего клыка — знак удачливого охотника. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "primaryStatRanges": {
         "strength": {
           "min": 1,
@@ -332,9 +326,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Ранняя версия клинка Следопыта. Сохранена для совместимости с уже полученными предметами. Базовый интервал автоатаки — 2,4 сек.",
+      "description": "Ранняя версия клинка Следопыта. Сохранена для совместимости с уже полученными предметами. Базовый интервал автоатаки — 2,4 сек. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "weaponBaseAttackIntervalSeconds": 2.4,
       "weaponDamageMin": 7,
       "weaponDamageMax": 11,
@@ -362,9 +355,8 @@
         "intellect": 0,
         "stamina": 2
       },
-      "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "description": "Ранняя версия куртки Следопыта. Сохранена для совместимости с уже полученными предметами. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 8,
       "primaryStatRanges": {
         "stamina": {
@@ -390,9 +382,8 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами.",
+      "description": "Ранняя версия капюшона Следопыта. Сохранена для совместимости с уже полученными предметами. Старый тестовый предмет сохранён для совместимости; бонус комплекта Следопыта отключён.",
       "version": 1,
-      "setId": "RANGER_SET",
       "armorFlat": 4,
       "primaryStatRanges": {
         "agility": {
@@ -416,17 +407,10 @@
         "WARRIOR"
       ],
       "stats": {
-        "strength": 1,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
         "stamina": 0
-      },
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
       },
       "weaponDamageMin": 5,
       "weaponDamageMax": 8,
@@ -434,7 +418,16 @@
       "description": "Простой надёжный меч для начинающего воина.",
       "version": 1,
       "buyPriceGold": 35,
-      "iconId": "item-warrior-sword"
+      "iconId": "item-warrior-sword",
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "RECRUIT_WOODEN_SHIELD",
@@ -453,14 +446,7 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
-      },
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
+        "stamina": 0
       },
       "armorFlat": 6,
       "blockChancePercent": 15,
@@ -469,7 +455,16 @@
       "description": "Учебный щит воина. Даёт броню и шанс заблокировать часть физического урона.",
       "version": 1,
       "buyPriceGold": 30,
-      "iconId": "item-warrior-shield"
+      "iconId": "item-warrior-shield",
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "RECRUIT_HEAVY_CHEST",
@@ -488,20 +483,22 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
-      },
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
+        "stamina": 0
       },
       "armorFlat": 12,
       "description": "Простая тяжёлая кираса для начинающего воина.",
       "version": 1,
       "buyPriceGold": 40,
-      "iconId": "item-warrior-chestplate"
+      "iconId": "item-warrior-chestplate",
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "HUNTER_SHORTBOW",
@@ -518,23 +515,25 @@
       ],
       "stats": {
         "strength": 0,
-        "agility": 1,
+        "agility": 0,
         "intellect": 0,
         "stamina": 0
-      },
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
       },
       "weaponDamageMin": 6,
       "weaponDamageMax": 9,
       "weaponBaseAttackIntervalSeconds": 2.2,
       "description": "Лёгкий стартовый лук охотника.",
       "version": 1,
-      "buyPriceGold": 35
+      "buyPriceGold": 35,
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "HUNTER_LEATHER_VEST",
@@ -551,26 +550,23 @@
       ],
       "stats": {
         "strength": 0,
-        "agility": 1,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 1
-      },
-      "primaryStatRanges": {
-        "agility": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
+        "stamina": 0
       },
       "armorFlat": 7,
       "description": "Лёгкая кожаная защита, не мешающая стрельбе.",
       "version": 1,
-      "buyPriceGold": 35
+      "buyPriceGold": 35,
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "APPRENTICE_STAFF",
@@ -588,22 +584,24 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 1,
+        "intellect": 0,
         "stamina": 0
-      },
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
       },
       "weaponDamageMin": 5,
       "weaponDamageMax": 8,
       "weaponBaseAttackIntervalSeconds": 2.6,
       "description": "Простой двуручный посох начинающего мага.",
       "version": 1,
-      "buyPriceGold": 35
+      "buyPriceGold": 35,
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "APPRENTICE_WAND",
@@ -621,22 +619,24 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 1,
+        "intellect": 0,
         "stamina": 0
-      },
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
       },
       "weaponDamageMin": 3,
       "weaponDamageMax": 5,
       "weaponBaseAttackIntervalSeconds": 1.9,
       "description": "Быстрый одноручный жезл для ученика магии.",
       "version": 1,
-      "buyPriceGold": 30
+      "buyPriceGold": 30,
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "APPRENTICE_CLOTH_ROBE",
@@ -654,25 +654,22 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 1,
-        "stamina": 1
-      },
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
+        "intellect": 0,
+        "stamina": 0
       },
       "armorFlat": 4,
       "description": "Простая тканевая мантия ученика мага.",
       "version": 1,
-      "buyPriceGold": 30
+      "buyPriceGold": 30,
+      "itemLevelMin": 1,
+      "itemLevelMax": 1,
+      "guaranteedAffixStatIds": [],
+      "affixCountProfileId": "LEVEL_1_4",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1
     },
     {
       "id": "SMALL_MANA_POTION",
