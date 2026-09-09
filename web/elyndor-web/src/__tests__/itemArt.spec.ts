@@ -9,4 +9,8 @@ describe('item art', () => {
     expect(url).toBeDefined()
     expect(url).not.toContain('/sets/')
   })
+
+  it('keeps legacy nested warrior artwork available', () => {
+    expect(itemArtUrl('item-warrior-sword')).toMatch(/item-warrior-sword\.png$/)
+  })
 })

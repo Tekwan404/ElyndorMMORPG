@@ -63,7 +63,10 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
 
-  it.each(['MAGE', 'ARCHER'])('renders the personal combat portrait for %s', (classId) => {
+  it.each([
+    ['MAGE', 'mage-male-transparent.webp'],
+    ['ARCHER', 'archer-male-transparent.webp'],
+  ] as const)('renders the personal combat portrait for %s', (classId, expectedAsset) => {
     const store = useCombatSessionStore()
     store.snapshot = {
       sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
@@ -76,7 +79,7 @@ describe('CombatView', () => {
 
     const wrapper = mount(CombatView)
 
-    expect(wrapper.get('.player-figure img').attributes('src')).toBeTruthy()
+    expect(wrapper.get('.player-figure img').attributes('src')).toContain(expectedAsset)
   })
 
   it('renders multiple enemy targets and switches the selected target', async () => {

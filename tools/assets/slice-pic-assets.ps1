@@ -465,7 +465,6 @@ foreach ($source in Get-ChildItem -LiteralPath (Join-Path $personalSourceRoot 'a
 
 $manifest = [ordered]@{
     schemaVersion = 1
-    generatedAtUtc = [DateTime]::UtcNow.ToString('O')
     sourceDirectories = @('pic/talant', 'pic/item', 'pic/PersonalArt')
     talentIcons = $talentManifest
     itemSheetIcons = $setManifest

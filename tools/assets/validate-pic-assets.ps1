@@ -40,9 +40,12 @@ $itemAssetRoot = Join-Path $playerAssetRoot 'items'
 $setItemAssetRoot = Join-Path $itemAssetRoot 'sets'
 $itemFiles = @(Get-ChildItem -LiteralPath $itemAssetRoot -File -Recurse | Sort-Object FullName)
 foreach ($duplicate in @($itemFiles | Group-Object BaseName | Where-Object Count -gt 1)) {
-    $rootFiles = @($duplicate.Group | Where-Object { $_.FullName -notlike ($setItemAssetRoot + '\*') })
-    if ($rootFiles.Count -ne 1) {
-        throw "Item icon '$($duplicate.Name)' has an unsupported duplicate layout. Root-level item assets must be the explicit priority source."
+    $rootFiles = @($duplicate.Group | Where-Object { $_.DirectoryName -eq $itemAssetRoot })
+    $unsupportedFiles = @($duplicate.Group | Where-Object {
+            $_.DirectoryName -ne $itemAssetRoot -and $_.DirectoryName -ne $setItemAssetRoot
+        })
+    if ($rootFiles.Count -ne 1 -or $unsupportedFiles.Count -gt 0) {
+        throw "Item icon '$($duplicate.Name)' has an unsupported duplicate layout. Only one root-level asset and optional set crop are supported."
     }
 }
 
