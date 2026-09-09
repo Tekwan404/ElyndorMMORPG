@@ -1,20 +1,48 @@
 {
-  "contentVersion": "0.10.2",
-  "balanceVersion": "0.8.1",
-  "publishedAtUtc": "2026-09-06T18:35:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "merchants": [
     {
       "id": "MARCUS_SUPPLIES",
       "name": "Торговец Маркус",
       "locationId": "STARTER_TOWN",
-      "description": "Маркус снабжает начинающих искателей приключений лечебными, ресурсными и утилитарными расходниками.",
+      "description": "Маркус снабжает искателей расходниками и гарантированным Common-снаряжением 2 уровня. Более редкая экипировка добывается в мире и подземельях.",
       "itemIds": [
         "SMALL_HEALING_POTION",
         "SMALL_MANA_POTION",
         "SMALL_FOCUS_POTION",
         "SMALL_RAGE_POTION",
         "MINOR_BATTLE_TONIC",
-        "MINOR_ANTIDOTE"
+        "MINOR_ANTIDOTE",
+        "WARRIOR_COMMON_BORDER_STEEL_CHEST",
+        "WARRIOR_COMMON_BORDER_STEEL_FEET",
+        "WARRIOR_COMMON_BORDER_STEEL_HANDS",
+        "WARRIOR_COMMON_BORDER_STEEL_HEAD",
+        "WARRIOR_COMMON_BORDER_STEEL_LEGS",
+        "WARRIOR_COMMON_BORDER_STEEL_SHIELD",
+        "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
+        "WARRIOR_COMMON_BORDER_STEEL_WEAPON",
+        "MAGE_COMMON_BLUE_CANDLE_CHEST",
+        "MAGE_COMMON_BLUE_CANDLE_FEET",
+        "MAGE_COMMON_BLUE_CANDLE_HANDS",
+        "MAGE_COMMON_BLUE_CANDLE_HEAD",
+        "MAGE_COMMON_BLUE_CANDLE_LEGS",
+        "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
+        "MAGE_COMMON_BLUE_CANDLE_STAFF",
+        "MAGE_COMMON_BLUE_CANDLE_WAND",
+        "ARCHER_COMMON_WHISPER_TRACKER_BOW",
+        "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
+        "ARCHER_COMMON_WHISPER_TRACKER_FEET",
+        "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
+        "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+        "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+        "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
+        "MAGE_COMMON_BLUE_CANDLE_FOCUS",
+        "ARCHER_COMMON_WHISPER_TRACKER_QUIVER",
+        "ACC_COMMON_2_CLOAK",
+        "ACC_COMMON_2_AMULET",
+        "ACC_COMMON_2_RING"
       ]
     }
   ]
