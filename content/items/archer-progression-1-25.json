@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T05:05:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "items": [
     {
       "id": "ARCHER_COMMON_WHISPER_TRACKER_BOW",
@@ -1243,30 +1243,31 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 26,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Лук прогрессии «Охота Чёрного Созвездия».",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 26,
-          "max": 38,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 68,
-      "weaponDamageMax": 102
+      "weaponDamageMax": 102,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
@@ -1279,30 +1280,31 @@
       "slot": "Chest",
       "stats": {
         "strength": 0,
-        "agility": 33,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 18
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 33,
-          "max": 47,
-          "step": 1
-        },
-        "stamina": {
-          "min": 18,
-          "max": 26,
-          "step": 1
-        }
-      },
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
-      "armorFlat": 145
+      "armorFlat": 145,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
@@ -1315,30 +1317,31 @@
       "slot": "Feet",
       "stats": {
         "strength": 0,
-        "agility": 15,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 8
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "primaryStatRanges": {
-        "agility": {
-          "min": 15,
-          "max": 21,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 11,
-          "step": 1
-        }
-      },
       "armorCategory": "LEATHER",
-      "armorFlat": 64
+      "armorFlat": 64,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
@@ -1351,30 +1354,31 @@
       "slot": "Hands",
       "stats": {
         "strength": 0,
-        "agility": 16,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 9
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 16,
-          "max": 23,
-          "step": 1
-        },
-        "stamina": {
-          "min": 9,
-          "max": 12,
-          "step": 1
-        }
-      },
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
-      "armorFlat": 70
+      "armorFlat": 70,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
@@ -1387,30 +1391,31 @@
       "slot": "Head",
       "stats": {
         "strength": 0,
-        "agility": 21,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 12
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 21,
-          "max": 30,
-          "step": 1
-        },
-        "stamina": {
-          "min": 12,
-          "max": 17,
-          "step": 1
-        }
-      },
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
-      "armorFlat": 93
+      "armorFlat": 93,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
@@ -1423,65 +1428,68 @@
       "slot": "Legs",
       "stats": {
         "strength": 0,
-        "agility": 29,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 16
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 29,
-          "max": 41,
-          "step": 1
-        },
-        "stamina": {
-          "min": 16,
-          "max": 23,
-          "step": 1
-        }
-      },
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
-      "armorFlat": 127.5
+      "armorFlat": 127.5,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
-      "name": "Плащ Чёрного Созвездия",
+      "name": "Наплечники Чёрного Созвездия",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 23,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
-        "agility": 18,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 10
+        "stamina": 0
       },
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 18,
-          "max": 26,
-          "step": 1
-        },
-        "stamina": {
-          "min": 10,
-          "max": 15,
-          "step": 1
-        }
-      },
-      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "armorFlat": 81
+      "armorCategory": "LEATHER",
+      "armorFlat": 81,
+      "itemLevelMin": 22,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
@@ -1494,30 +1502,31 @@
       "slot": "MainHand",
       "stats": {
         "strength": 0,
-        "agility": 40,
+        "agility": 0,
         "intellect": 0,
-        "stamina": 19
+        "stamina": 0
       },
       "description": "Именной лук 25 уровня. Unique не является отдельным сетовым тиром.",
       "version": 1,
       "allowedClassIds": [
         "ARCHER"
       ],
-      "primaryStatRanges": {
-        "agility": {
-          "min": 40,
-          "max": 54,
-          "step": 1
-        },
-        "stamina": {
-          "min": 19,
-          "max": 28,
-          "step": 1
-        }
-      },
       "weaponCategory": "BOW",
       "weaponDamageMin": 92,
-      "weaponDamageMax": 124
+      "weaponDamageMax": 124,
+      "itemLevelMin": 25,
+      "itemLevelMax": 25,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_25_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     }
   ]
 }
