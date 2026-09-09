@@ -1,6 +1,7 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
