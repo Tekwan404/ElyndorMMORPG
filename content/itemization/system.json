@@ -205,6 +205,10 @@
       {
         "id": "BOSS",
         "biasExponent": 0.85
+      },
+      {
+        "id": "REFORGE",
+        "biasExponent": 1.7
       }
     ],
     "affixNames": [
@@ -290,6 +294,44 @@
       }
     ],
     "individualQualityDeviationPercent": 7,
-    "perfectSnapThreshold": 0.9995
+    "perfectSnapThreshold": 0.9995,
+    "reforgeCosts": {
+      "id": "REFORGE_V1",
+      "materialItemId": "SPIDER_SILK",
+      "catalystItemId": "SPIDER_VENOM_SAC",
+      "catalystMinimumRarity": "EPIC",
+      "baseGoldByRarity": {
+        "COMMON": 25,
+        "UNCOMMON": 40,
+        "RARE": 70,
+        "EPIC": 120,
+        "LEGENDARY": 200,
+        "UNIQUE": 250
+      },
+      "materialQuantityByRarity": {
+        "COMMON": 1,
+        "UNCOMMON": 1,
+        "RARE": 2,
+        "EPIC": 3,
+        "LEGENDARY": 4,
+        "UNIQUE": 5
+      },
+      "catalystQuantityByRarity": {
+        "COMMON": 0,
+        "UNCOMMON": 0,
+        "RARE": 0,
+        "EPIC": 1,
+        "LEGENDARY": 2,
+        "UNIQUE": 2
+      },
+      "reforgeCountMultipliers": [
+        1,
+        1.5,
+        2.2,
+        3.2,
+        4.5
+      ],
+      "overflowGrowthMultiplier": 1.35
+    }
   }
 }
