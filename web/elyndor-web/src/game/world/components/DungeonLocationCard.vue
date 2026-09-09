@@ -16,6 +16,7 @@ const combat = useCombatSessionStore()
 const session = useGameSessionStore()
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const preview = computed(() => dungeon.previews.find(item => item.id === 'ANCIENT_MINE') ?? null)
+const minimumLevel = computed(() => preview.value?.minimumLevel ?? 14)
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
 const currentMember = computed(() => dungeon.current?.members.find(member => member.characterId === currentCharacterId.value))
 const needsEntry = computed(() => currentMember.value?.state !== 'Active')
@@ -36,7 +37,10 @@ onMounted(() => {
 })
 
 async function createRun(): Promise<void> {
-  if (preview.value) await dungeon.create(preview.value.id)
+  if (!preview.value) return
+  if (!party.snapshot) await party.create()
+  if (!party.snapshot || party.snapshot.leaderCharacterId !== currentCharacterId.value) return
+  await dungeon.create(preview.value.id)
 }
 
 async function enterRun(): Promise<void> {
@@ -65,12 +69,12 @@ async function exitRun(): Promise<void> {
         <small>ПОДЗЕМЕЛЬЕ · ГРУППОВАЯ АКТИВНОСТЬ</small>
         <h2>Древняя шахта</h2>
       </div>
-      <span class="dungeon-badge">15+</span>
+      <span class="dungeon-badge">{{ minimumLevel }}+</span>
     </header>
 
     <p>Пять столкновений под глубоким лесом. Лидер запускает бой, остальные участники входят в текущий забег из этой локации.</p>
     <div class="dungeon-location-card__requirements">
-      <span>Уровень 15+ · враги 15–16</span>
+      <span>Уровень {{ minimumLevel }}+ · враги 15–16</span>
       <span>Группа 1–5</span>
       <span>5 столкновений</span>
     </div>
@@ -102,9 +106,9 @@ async function exitRun(): Promise<void> {
     </template>
 
     <template v-else>
-      <p v-if="!party.snapshot" class="dungeon-hint">Создайте группу или примите приглашение перед входом в подземелье.</p>
+      <p v-if="!party.snapshot" class="dungeon-hint">Можно идти одному или собрать группу до пяти игроков.</p>
       <p v-else-if="!isLeader" class="dungeon-hint">Забег создаёт только лидер группы.</p>
-      <UIButton v-if="!party.snapshot" variant="secondary" @click="party.create">Создать группу</UIButton>
+      <UIButton v-if="!party.snapshot" data-create-dungeon @click="createRun">Начать одиночный забег</UIButton>
       <UIButton v-else-if="isLeader" data-create-dungeon @click="createRun">Создать забег</UIButton>
     </template>
   </UICard>
