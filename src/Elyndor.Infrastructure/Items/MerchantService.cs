@@ -162,7 +162,13 @@ public sealed class MerchantService(
                         cancellationToken);
                 if (affected == 0) return MerchantErrorCodes.NotEnoughGold;
 
-                await AddItemAsync(character.Id, definition, quantity, cancellationToken);
+                await AddItemAsync(
+                    character.Id,
+                    definition,
+                    quantity,
+                    mutationId,
+                    contentSnapshot,
+                    cancellationToken);
                 return null;
             },
             cancellationToken);
@@ -461,21 +467,25 @@ public sealed class MerchantService(
         Guid characterId,
         ItemDefinition definition,
         int quantity,
+        Guid sourceOperationId,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
         if (!definition.Stackable)
         {
             for (var index = 0; index < quantity; index++)
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
-                    characterId,
-                    definition.Id,
-                    1,
-                    timeProvider.GetUtcNow(),
-                    definition.Version,
-                    definition.Type == ItemType.Equipment
-                        ? ItemInstanceStatRoller.Resolve(definition, randomFactory.Create())
-                        : null));
+            {
+                dbContext.CharacterItems.Add(
+                    ItemInstancePersistenceFactory.CreateCharacterItem(
+                        characterId,
+                        definition,
+                        sourceOperationId,
+                        "MERCHANT",
+                        definition.Id,
+                        index,
+                        timeProvider.GetUtcNow(),
+                        contentSnapshot.Package));
+            }
             return;
         }
 
