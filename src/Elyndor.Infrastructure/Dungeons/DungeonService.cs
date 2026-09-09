@@ -237,6 +237,8 @@ public sealed class DungeonService(
         if (existing is not null)
         {
             await CommitAsync(transaction, cancellationToken);
+            if (!string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);
             return new DungeonOperationResult(true, null, ToView(existing, definition));
         }
 
