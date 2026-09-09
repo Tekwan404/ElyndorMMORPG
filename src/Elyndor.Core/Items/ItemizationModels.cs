@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Content;
 
@@ -103,6 +105,54 @@ public sealed record GeneratedItemInstance(
     string? GeneratedSuffixId,
     string DisplayName,
     int GenerationVersion);
+
+public sealed record ItemGenerationKey(int Seed, string AuditHash)
+{
+    public static ItemGenerationKey Create(Guid sourceOperationId, string templateId, int ordinal)
+    {
+        if (sourceOperationId == Guid.Empty)
+            throw new ArgumentException("Source operation identifier cannot be empty.", nameof(sourceOperationId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
+
+        byte[] hash = SHA256.HashData(
+            Encoding.UTF8.GetBytes($"{sourceOperationId:N}|{templateId}|{ordinal}"));
+        int seed = BitConverter.ToInt32(hash, 0);
+        return new ItemGenerationKey(seed, Convert.ToHexString(hash));
+    }
+
+    public static ItemGenerationKey Create(Guid seed)
+    {
+        if (seed == Guid.Empty)
+            throw new ArgumentException("Generation seed cannot be empty.", nameof(seed));
+        byte[] hash = SHA256.HashData(seed.ToByteArray());
+        return new ItemGenerationKey(BitConverter.ToInt32(hash, 0), Convert.ToHexString(hash));
+    }
+}
+
+public static class ProceduralItemPolicy
+{
+    public static bool IsEnabled(ItemDefinition item) =>
+        item.Type == ItemType.Equipment
+        && item.Slot is not null
+        && !string.IsNullOrWhiteSpace(item.RandomAffixPoolId)
+        && !string.IsNullOrWhiteSpace(item.AffixCountProfileId);
+
+    public static GeneratedItemInstance? Generate(
+        ItemDefinition item,
+        ItemizationDefinition? itemization,
+        string qualityProfileId,
+        ItemGenerationKey key,
+        string perfectOrigin = "DROP") =>
+        IsEnabled(item)
+            ? ItemInstanceGenerator.Generate(
+                item,
+                itemization ?? throw new InvalidOperationException("Procedural itemization content is missing."),
+                qualityProfileId,
+                new SeededGameRandom(key.Seed),
+                perfectOrigin)
+            : null;
+}
 
 public static class ItemInstanceGenerator
 {
