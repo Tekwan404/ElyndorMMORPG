@@ -709,6 +709,7 @@ onMounted(() => {
   background: rgb(5 8 14 / 90%);
   box-shadow: 0 1rem 2.4rem rgb(0 0 0 / 34%);
   backdrop-filter: blur(14px);
+  pointer-events: none;
 }
 
 .map-selection[data-kind='dungeon'] {
@@ -785,6 +786,7 @@ onMounted(() => {
   grid-column: 1 / -1;
   display: grid;
   padding: 0 var(--ui-space-3) var(--ui-space-3);
+  pointer-events: auto;
 }
 
 .map-selection__actions :deep(.ui-button) {
