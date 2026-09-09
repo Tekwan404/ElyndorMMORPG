@@ -459,6 +459,7 @@ public static class InventoryEndpoints
                     or MerchantErrorCodes.MutationConflict
                     or MerchantErrorCodes.ItemLocked
                     or MerchantErrorCodes.ItemEquipped
+                    or MerchantErrorCodes.TransactionLocked
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
