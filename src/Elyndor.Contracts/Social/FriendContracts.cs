@@ -6,7 +6,9 @@ public sealed record PlayerSearchResponse(
     int Level,
     string ClassId,
     string PublicCode,
-    string? TelegramUsername);
+    string? TelegramUsername,
+    string Relationship,
+    Guid? PendingRequestId);
 
 public sealed record FriendProfileResponse(
     Guid CharacterId,
