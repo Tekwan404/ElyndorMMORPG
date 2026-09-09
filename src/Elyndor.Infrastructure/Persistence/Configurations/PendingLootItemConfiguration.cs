@@ -24,6 +24,11 @@ public sealed class PendingLootItemConfiguration : IEntityTypeConfiguration<Pend
         builder.Property(item => item.RolledAgility).HasPrecision(18, 4);
         builder.Property(item => item.RolledIntellect).HasPrecision(18, 4);
         builder.Property(item => item.RolledStamina).HasPrecision(18, 4);
+        builder.Property(item => item.GeneratedItemJson).HasColumnType("jsonb");
+        builder.Property(item => item.GenerationSeedHash).HasMaxLength(64);
+        builder.Property(item => item.SourceType).HasMaxLength(32);
+        builder.Property(item => item.SourceOperationId);
+        builder.Property(item => item.SourceEntryId).HasMaxLength(128);
         builder.Ignore(item => item.RolledPrimaryStats);
 
         builder.HasOne<Character>()
