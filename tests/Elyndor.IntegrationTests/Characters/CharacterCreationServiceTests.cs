@@ -92,6 +92,35 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
             result => result.ErrorCode == CharacterCreationErrorCodes.AlreadyExists);
     }
 
+    [Theory]
+    [InlineData("WARRIOR", "RECRUIT_IRON_SWORD")]
+    [InlineData("ARCHER", "HUNTER_SHORTBOW")]
+    [InlineData("MAGE", "APPRENTICE_STAFF")]
+    public async Task CreationGrantsAndEquipsStartingWeapon(
+        string classId,
+        string expectedItemId)
+    {
+        Guid accountId = await CreateAccountAsync(525 + classId.Length);
+
+        CharacterCreationResult result = await CreateAsync(
+            accountId,
+            CreateCommand(
+                Guid.CreateVersion7(),
+                $"Start{classId[..3]}",
+                classId: classId));
+
+        Assert.True(result.IsSuccess, result.ErrorCode);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterItem item = await context.CharacterItems.AsNoTracking().SingleAsync();
+        CharacterEquipment equipment = await context.CharacterEquipment.AsNoTracking().SingleAsync();
+
+        Assert.Equal(expectedItemId, item.ItemDefinitionId);
+        Assert.Equal(result.Character!.Id, item.CharacterId);
+        Assert.Equal(EquipmentSlot.MainHand, equipment.Slot);
+        Assert.Equal(item.Id, equipment.CharacterItemId);
+    }
+
     [Fact]
     public async Task MageStartsWithIntellectScaledMana()
     {
@@ -167,8 +196,9 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
         string classId = "WARRIOR") =>
         new(requestId, name, raceId, genderId, classId);
 
-    private static GameContentPackage CreateContentPackage() =>
-        PhaseTwoTestContent.Create(
+    private static GameContentPackage CreateContentPackage()
+    {
+        GameContentPackage content = PhaseTwoTestContent.Create(
             Now,
             [
                 new GameContentDefinition("RACE", "HUMAN", []),
@@ -179,10 +209,59 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
                 new GameContentDefinition("CLASS", "ARCHER", []),
                 new GameContentDefinition("CLASS", "MAGE", [])
             ],
-            []) with
+            []);
+
+        return content with
         {
-            ResourceScaling = new ResourceScalingProfile(100, 5)
+            ResourceScaling = new ResourceScalingProfile(100, 5),
+            ClassProfiles = content.ClassProfiles!.Select(profile => profile with
+            {
+                StartingEquipmentItemIds = profile.Id switch
+                {
+                    "WARRIOR" => ["RECRUIT_IRON_SWORD"],
+                    "ARCHER" => ["HUNTER_SHORTBOW"],
+                    "MAGE" => ["APPRENTICE_STAFF"],
+                    _ => []
+                }
+            }).ToArray(),
+            Items =
+            [
+                StarterWeapon(
+                    "RECRUIT_IRON_SWORD",
+                    "WARRIOR",
+                    EquipmentCategoryIds.OneHandSword),
+                StarterWeapon(
+                    "HUNTER_SHORTBOW",
+                    "ARCHER",
+                    EquipmentCategoryIds.Bow),
+                StarterWeapon(
+                    "APPRENTICE_STAFF",
+                    "MAGE",
+                    EquipmentCategoryIds.Staff)
+            ]
         };
+    }
+
+    private static ItemDefinition StarterWeapon(
+        string id,
+        string classId,
+        string weaponCategory) =>
+        new(
+            id,
+            id,
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(0, 0, 0, 0),
+            "Starter weapon",
+            WeaponBaseAttackIntervalSeconds: 2,
+            WeaponCategory: weaponCategory,
+            AllowedClassIds: [classId],
+            WeaponDamageMin: 5,
+            WeaponDamageMax: 8);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
