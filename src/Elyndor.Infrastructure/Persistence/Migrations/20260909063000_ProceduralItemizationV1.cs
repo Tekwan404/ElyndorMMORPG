@@ -334,7 +334,7 @@ public partial class ProceduralItemizationV1 : Migration
             name: "ix_item_reforge_operations_character_item_state",
             schema: "game",
             table: "item_reforge_operations",
-            columns: new[] { "CharacterId", "ItemInstanceId", "State" });
+            columns: ReforgeOperationStateIndexColumns);
 
         migrationBuilder.CreateIndex(
             name: "ix_item_reforge_operations_item_id",
@@ -394,4 +394,11 @@ public partial class ProceduralItemizationV1 : Migration
         migrationBuilder.DropColumn(name: "GeneratedItemJson", schema: "game", table: "combat_loot_rolls");
         migrationBuilder.DropColumn(name: "SourceQualityProfileId", schema: "game", table: "combat_loot_rolls");
     }
+
+    private static readonly string[] ReforgeOperationStateIndexColumns =
+    [
+        "CharacterId",
+        "ItemInstanceId",
+        "State"
+    ];
 }
