@@ -7,6 +7,7 @@ describe('character art registry', () => {
     expect(resolveCharacterArt('MAGE', 'FEMALE')).toMatch(/mage-female-transparent\.webp$/)
     expect(resolveCharacterArt('ARCHER', 'MALE', 'scene')).toMatch(/archer-male-scene\.webp$/)
     expect(resolveCharacterArt('ARCHER', 'FEMALE', 'scene')).toMatch(/archer-female-scene\.webp$/)
-    expect(resolveCharacterArt('WARRIOR', 'FEMALE')).toMatch(/warrior-male-transparent\.webp$/)
+    expect(resolveCharacterArt('WARRIOR', 'FEMALE')).toMatch(/warrior-female-transparent\.webp$/)
+    expect(resolveCharacterArt('WARRIOR', 'FEMALE', 'scene')).toMatch(/warrior-female-scene\.webp$/)
   })
 })

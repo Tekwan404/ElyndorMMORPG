@@ -50,7 +50,8 @@ function Save-CroppedPng(
     [string]$outputPath,
     [int]$columns,
     [int]$rows,
-    [int]$cellIndex
+    [int]$cellIndex,
+    [int]$inset = 0
 ) {
     Ensure-Directory (Split-Path -Parent $outputPath)
     $source = $null
@@ -66,13 +67,36 @@ function Save-CroppedPng(
             throw "Cell index $cellIndex is outside ${columns}x${rows} grid for $sourcePath"
         }
 
-        $bitmap = [System.Drawing.Bitmap]::new($cellWidth, $cellHeight, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        if ($inset -lt 0 -or ($inset * 2) -ge $cellWidth -or ($inset * 2) -ge $cellHeight) {
+            throw "Inset $inset is too large for ${columns}x${rows} cell in $sourcePath"
+        }
+
+        $sourceY = [int]($row * $cellHeight)
+        $sourceHeight = $cellHeight
+        if ($columns -eq 6 -and $rows -eq 6 -and $source.Width -eq 1254 -and $source.Height -eq 1254) {
+            # The supplied talent sheets are contact sheets, not six equal-height rows.
+            # Their artwork rows are offset by the export process, so equal grid math
+            # leaks the next row into the bottom of icons in the middle of the sheet.
+            $rowStarts = @(14, 211, 407, 601, 793, 991)
+            $rowEnds = @(192, 390, 584, 776, 974, 1188)
+            $sourceY = $rowStarts[$row]
+            $sourceHeight = $rowEnds[$row] - $sourceY
+        }
+
+        $croppedWidth = $cellWidth - ($inset * 2)
+        $croppedHeight = $sourceHeight - ($inset * 2)
+        if ($croppedHeight -le 0) {
+            throw "Inset $inset is too large for source row $row in $sourcePath"
+        }
+
+        # Keep the generated icon square even when the source contact sheet row is not.
+        $bitmap = [System.Drawing.Bitmap]::new($croppedWidth, $croppedWidth, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
         $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
         $graphics.Clear([System.Drawing.Color]::Transparent)
-        $sourceX = [int]($column * $cellWidth)
-        $sourceY = [int]($row * $cellHeight)
-        $sourceRectangle = [System.Drawing.Rectangle]::new($sourceX, $sourceY, $cellWidth, $cellHeight)
-        $destinationRectangle = [System.Drawing.Rectangle]::new(0, 0, $cellWidth, $cellHeight)
+        $sourceX = [int]($column * $cellWidth) + $inset
+        $sourceY += $inset
+        $sourceRectangle = [System.Drawing.Rectangle]::new($sourceX, $sourceY, $croppedWidth, $croppedHeight)
+        $destinationRectangle = [System.Drawing.Rectangle]::new(0, 0, $croppedWidth, $croppedWidth)
         $graphics.DrawImage($source, $destinationRectangle, $sourceRectangle, [System.Drawing.GraphicsUnit]::Pixel)
         $bitmap.Save($outputPath, [System.Drawing.Imaging.ImageFormat]::Png)
     }
@@ -250,7 +274,7 @@ foreach ($grid in $talentGrids) {
         $number = ($index + 1).ToString('00')
         $iconName = "$($branchFolder)-$number.png"
         $outputPath = Join-Path $outputFolder $iconName
-        Save-CroppedPng $grid.Source $outputPath $grid.Columns $grid.Rows $index
+        Save-CroppedPng $grid.Source $outputPath $grid.Columns $grid.Rows $index 8
         $talentManifest.Add([ordered]@{
                 iconId = "$( $grid.Branch )_$number"
                 branch = $grid.Branch
@@ -437,13 +461,23 @@ $characterManifest = [System.Collections.Generic.List[object]]::new()
 foreach ($mapping in $personalMappings) {
     $sourcePath = Find-SourceFile $personalSourceRoot $mapping.Pattern
     $outputPath = Join-Path $personalOutputRoot $mapping.Name
-    Copy-Asset $sourcePath $outputPath
+    if ($mapping.Name -eq 'archer-female-transparent.png') {
+        & (Join-Path $PSScriptRoot 'remove-checkerboard.ps1') -SourcePath $sourcePath -OutputPath $outputPath
+        if (-not $?) { throw "Could not remove checkerboard background from $sourcePath" }
+    } else {
+        Copy-Asset $sourcePath $outputPath
+    }
     $characterManifest.Add([ordered]@{ name = $mapping.Name; source = (Resolve-Path -LiteralPath $sourcePath -Relative); output = (Resolve-Path -LiteralPath $outputPath -Relative) })
 }
 
 $splitSources = @(Get-ChildItem -LiteralPath $personalSourceRoot -File |
     Where-Object { $_.Name -like 'Раздвоенный*' } |
     Sort-Object FullName)
+if ($splitSources.Count -eq 0) {
+    $splitSources = @(Get-ChildItem -LiteralPath $personalSourceRoot -File |
+        Where-Object { $_.Name -match '\u0420\u0430\u0437\u0434\u0432\u043e\u0435\u043d\u043d\u044b\u0439' } |
+        Sort-Object FullName)
+}
 if ($splitSources.Count -ne 1) {
     throw "Expected exactly one split personal character artwork in $personalSourceRoot, found $($splitSources.Count)"
 }
@@ -451,6 +485,20 @@ $splitSource = $splitSources[0].FullName
 $splitOutput = Join-Path $personalOutputRoot 'archer-female-scene.png'
 Save-CroppedPng $splitSource $splitOutput 2 1 1
 $characterManifest.Add([ordered]@{ name = 'archer-female-scene.png'; source = (Resolve-Path -LiteralPath $splitSource -Relative); cell = 1; output = (Resolve-Path -LiteralPath $splitOutput -Relative) })
+
+foreach ($generatedAsset in @(
+        @{ Name = 'warrior-female-transparent.webp'; Source = 'generated/player-art' },
+        @{ Name = 'warrior-female-scene.webp'; Source = 'generated/player-art' }
+    )) {
+    $generatedPath = Join-Path $personalOutputRoot $generatedAsset.Name
+    if (Test-Path -LiteralPath $generatedPath) {
+        $characterManifest.Add([ordered]@{
+                name = $generatedAsset.Name
+                source = $generatedAsset.Source
+                output = (Resolve-Path -LiteralPath $generatedPath -Relative)
+            })
+    }
+}
 
 Ensure-Directory $adminAssetRoot
 $adminManifest = [System.Collections.Generic.List[object]]::new()
@@ -477,7 +525,7 @@ $manifest = [ordered]@{
         'Archer talent sheets contain 15 source cells per branch; node icons reuse those cells cyclically for nodes 16-32.',
         'No war2.png source sheet was present; the root talant PNG set remains the existing Berserker art registry.',
         'No archer set sheets were present in pic/item/set, so archer armor and bow definitions without standalone source art keep the existing glyph fallback.',
-        'Female warrior player art was not present outside pic/PersonalArt/admin; the player bundle falls back to the male warrior art for that combination.'
+        'Female warrior player art is bundled as generated player art; admin-only source artwork remains restricted to admin assets.'
     )
 }
 Ensure-Directory (Split-Path -Parent $manifestPath)
