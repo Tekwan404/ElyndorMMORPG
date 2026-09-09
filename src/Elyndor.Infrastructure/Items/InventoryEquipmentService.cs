@@ -34,6 +34,7 @@ public static class InventoryErrorCodes
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
     public const string InventoryFull = "inventory_full";
+    public const string TransactionLocked = "inventory_item_transaction_locked";
 }
 
 public sealed record InventoryItemSnapshot(
@@ -214,6 +215,8 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
                 if (item.CharacterId != character.Id)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
+                if (item.TransactionLockId.HasValue)
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.TransactionLocked);
 
                 ItemDefinition? definition = FindItem(item.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Equipment)
@@ -546,6 +549,9 @@ public sealed class InventoryEquipmentService(
                 if (item.CharacterId != character.Id)
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.ItemNotOwned);
+                if (item.TransactionLockId.HasValue)
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.TransactionLocked);
 
                 item.SetLocked(isLocked);
                 return null;
@@ -587,7 +593,8 @@ public sealed class InventoryEquipmentService(
                 CharacterItem? item = await dbContext.CharacterItems
                     .Where(candidate => candidate.CharacterId == character.Id
                         && candidate.ItemDefinitionId == itemDefinitionId
-                        && candidate.Quantity > 0)
+                        && candidate.Quantity > 0
+                        && candidate.TransactionLockId == null)
                     .OrderBy(candidate => candidate.AcquiredAtUtc)
                     .FirstOrDefaultAsync(cancellationToken);
                 if (item is null)
