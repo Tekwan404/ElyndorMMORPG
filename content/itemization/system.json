@@ -181,6 +181,12 @@
         "maximumBonusCount": 2
       },
       {
+        "id": "LEVEL_13_16_3G",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
         "id": "LEVEL_17_20",
         "guaranteedCount": 3,
         "minimumBonusCount": 1,
