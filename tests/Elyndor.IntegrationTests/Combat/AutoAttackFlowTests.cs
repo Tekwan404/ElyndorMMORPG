@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
+using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
