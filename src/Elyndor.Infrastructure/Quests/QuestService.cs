@@ -95,6 +95,8 @@ public sealed class QuestService(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private IGameRandomFactory CompatibilityRandomFactory { get; } = randomFactory;
+
     public async Task<QuestJournalSnapshot> GetAsync(
         Guid accountId,
         CancellationToken cancellationToken)
@@ -646,6 +648,7 @@ public sealed class QuestService(
         GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        _ = CompatibilityRandomFactory;
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
                 reward.ItemId,
                 out ItemDefinition? definition))
