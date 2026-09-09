@@ -82,6 +82,10 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
             "archer-auto-start");
         Assert.True(restarted.Succeeded, restarted.ErrorCode);
         Assert.True(restarted.Snapshot?.Player.AutoAttackEnabled);
+        Assert.NotNull(restarted.Snapshot?.Player.AutoAttackIntervalSeconds);
+        Assert.True(restarted.Snapshot!.Player.AutoAttackIntervalSeconds > 0);
+        Assert.NotNull(restarted.Snapshot.Player.NextAutoAttackAtUtc);
+        Assert.True(restarted.Snapshot.Player.NextAutoAttackAtUtc > restarted.Snapshot.ServerTimeUtc);
         Assert.Contains(
             restarted.Events,
             combatEvent => combatEvent.Type == "DamageDealt"
