@@ -235,34 +235,65 @@ public sealed class CombatLootRollService(
             characterId,
             contentSnapshot,
             cancellationToken);
+        ItemGenerationKey key = ItemGenerationKey.Create(roll.ItemInstanceSeed);
+        GeneratedItemInstance? generated = string.IsNullOrWhiteSpace(roll.GeneratedItemJson)
+            ? ProceduralItemPolicy.Generate(
+                item,
+                contentSnapshot.Package.Itemization,
+                roll.SourceQualityProfileId,
+                key)
+            : JsonSerializer.Deserialize<GeneratedItemInstance>(roll.GeneratedItemJson);
+        if (generated is not null && string.IsNullOrWhiteSpace(roll.GeneratedItemJson))
+        {
+            roll.SetGeneratedItemJson(JsonSerializer.Serialize(generated));
+        }
+
         for (var index = 0; index < roll.Quantity; index++)
         {
-            PrimaryStats? stats = item.Type == ItemType.Equipment
-                ? ItemInstanceStatRoller.Resolve(item, randomFactory.Create())
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            PrimaryStats? legacyStats = generated is null && item.Type == ItemType.Equipment
+                ? ItemInstanceStatRoller.Resolve(
+                    item,
+                    new SeededGameRandom(key.Seed))
                 : null;
             if (freeSlots > 0)
             {
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
+                CharacterItem characterItem = new(
+                    Guid.CreateVersion7(),
                     characterId,
                     item.Id,
                     1,
-                    timeProvider.GetUtcNow(),
+                    now,
                     item.Version,
-                    stats));
+                    legacyStats);
+                if (generated is not null)
+                {
+                    characterItem.ApplyGeneratedInstance(
+                        generated,
+                        key.AuditHash,
+                        "GROUP_LOOT",
+                        roll.LootRollId,
+                        item.Id);
+                }
+                dbContext.CharacterItems.Add(characterItem);
                 freeSlots--;
             }
             else
             {
                 dbContext.PendingLootItems.Add(new PendingLootItem(
-                    Guid.NewGuid(),
+                    Guid.CreateVersion7(),
                     characterId,
                     roll.LootRollId,
                     item.Id,
                     1,
                     item.Version,
-                    timeProvider.GetUtcNow(),
-                    stats));
+                    now,
+                    legacyStats,
+                    generated is null ? null : JsonSerializer.Serialize(generated),
+                    generated is null ? null : key.AuditHash,
+                    "GROUP_LOOT",
+                    roll.LootRollId,
+                    item.Id));
             }
         }
     }

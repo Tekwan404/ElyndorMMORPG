@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T05:05:00+00:00",
   "items": [
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_CHEST",
@@ -15,28 +15,25 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 3,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 3,
-          "max": 7,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 13.5
+      "armorFlat": 13.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_FEET",
@@ -50,7 +47,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 1,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
@@ -58,20 +55,17 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 0,
-          "max": 1,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 5.5
+      "armorFlat": 5.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_HANDS",
@@ -85,7 +79,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 1,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
@@ -93,20 +87,17 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 0,
-          "max": 1,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 6.5
+      "armorFlat": 6.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_HEAD",
@@ -120,28 +111,25 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 2,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 8.5
+      "armorFlat": 8.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_LEGS",
@@ -155,62 +143,57 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 3,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 12
+      "armorFlat": 12,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
-      "name": "Плащ Синей Свечи",
+      "name": "Наплечники Синей Свечи",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 2,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
-      "armorFlat": 8
+      "armorFlat": 8,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_STAFF",
@@ -224,7 +207,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 2,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Одеяния Синей Свечи».",
@@ -232,21 +215,18 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 2,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 0,
-          "max": 1,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 7,
-      "weaponDamageMax": 12
+      "weaponDamageMax": 12,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_COMMON_BLUE_CANDLE_WAND",
@@ -260,7 +240,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 2,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Синей Свечи».",
@@ -268,16 +248,18 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 5,
-      "weaponDamageMax": 8
+      "weaponDamageMax": 8,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_CHEST",
@@ -291,28 +273,27 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 7,
-        "stamina": 3
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 22.5
+      "armorFlat": 22.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_FEET",
@@ -326,28 +307,27 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 3,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 9.5
+      "armorFlat": 9.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HANDS",
@@ -361,28 +341,27 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 3,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 10.5
+      "armorFlat": 10.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_HEAD",
@@ -396,28 +375,27 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 4,
-        "stamina": 2
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 14.5
+      "armorFlat": 14.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_LEGS",
@@ -431,62 +409,61 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 6,
-        "stamina": 3
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "armorCategory": "CLOTH",
-      "armorFlat": 20
+      "armorFlat": 20,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_SHOULDERS",
-      "name": "Плащ Забытого Ученика",
+      "name": "Наплечники Забытого Ученика",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 4,
-        "stamina": 2
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
-      "armorFlat": 13
+      "armorFlat": 13,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_STAFF",
@@ -500,29 +477,28 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 6,
-        "stamina": 1
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Руны Забытого Ученика».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 13,
-      "weaponDamageMax": 21
+      "weaponDamageMax": 21,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_UNCOMMON_FORGOTTEN_RUNES_WAND",
@@ -536,7 +512,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 4,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Руны Забытого Ученика».",
@@ -544,16 +520,20 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 9,
-      "weaponDamageMax": 15
+      "weaponDamageMax": 15,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_CHEST",
@@ -567,29 +547,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 11,
-        "stamina": 5
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 11,
-          "max": 18,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
-      "armorFlat": 34
+      "armorFlat": 34,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_FEET",
@@ -603,29 +583,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 5,
-        "stamina": 2
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
-      "armorFlat": 14.5
+      "armorFlat": 14.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HANDS",
@@ -639,29 +619,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 5,
-        "stamina": 2
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
-      "armorFlat": 16
+      "armorFlat": 16,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HEAD",
@@ -675,29 +655,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 7,
-        "stamina": 3
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 7,
-          "max": 12,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
-      "armorFlat": 22
+      "armorFlat": 22,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_LEGS",
@@ -711,64 +691,65 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 10,
-        "stamina": 4
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 10,
-          "max": 16,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
-      "armorFlat": 30
+      "armorFlat": 30,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
-      "name": "Плащ Трёх Стихий",
+      "name": "Наплечники Трёх Стихий",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 6,
-        "stamina": 3
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_THREE_ELEMENTS",
-      "armorFlat": 19.5
+      "armorFlat": 19.5,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_STAFF",
@@ -782,29 +763,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 9,
-        "stamina": 2
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Сердце Трёх Стихий».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 9,
-          "max": 14,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 22,
-      "weaponDamageMax": 34
+      "weaponDamageMax": 34,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_WAND",
@@ -818,7 +799,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 6,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Сердце Трёх Стихий».",
@@ -826,16 +807,21 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 15,
-      "weaponDamageMax": 24
+      "weaponDamageMax": 24,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_CHEST",
@@ -849,29 +835,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 16,
-        "stamina": 8
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 16,
-          "max": 26,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 13,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
-      "armorFlat": 51.5
+      "armorFlat": 51.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_FEET",
@@ -885,29 +872,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 7,
-        "stamina": 4
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
-      "armorFlat": 22.5
+      "armorFlat": 22.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HANDS",
@@ -921,29 +908,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 8,
-        "stamina": 4
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
-      "armorFlat": 25
+      "armorFlat": 25,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HEAD",
@@ -957,29 +944,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 10,
-        "stamina": 5
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 10,
-          "max": 17,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
-      "armorFlat": 33
+      "armorFlat": 33,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_LEGS",
@@ -993,64 +980,66 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 14,
-        "stamina": 7
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 14,
-          "max": 23,
-          "step": 1
-        },
-        "stamina": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
-      "armorFlat": 45
+      "armorFlat": 45,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
-      "name": "Плащ Расколотой Звезды",
+      "name": "Наплечники Расколотой Звезды",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 9,
-        "stamina": 4
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 9,
-          "max": 15,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SHATTERED_STAR",
-      "armorFlat": 29
+      "armorFlat": 29,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_STAFF",
@@ -1064,29 +1053,29 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 13,
-        "stamina": 3
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Одеяния Расколотой Звезды».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 13,
-          "max": 21,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 34,
-      "weaponDamageMax": 52
+      "weaponDamageMax": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_WAND",
@@ -1100,7 +1089,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 9,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Расколотой Звезды».",
@@ -1108,16 +1097,21 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 9,
-          "max": 14,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 24,
-      "weaponDamageMax": 37
+      "weaponDamageMax": 37,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
@@ -1131,29 +1125,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 24,
-        "stamina": 12
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 24,
-          "max": 35,
-          "step": 1
-        },
-        "stamina": {
-          "min": 12,
-          "max": 18,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
-      "armorFlat": 73
+      "armorFlat": 73,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
@@ -1167,29 +1162,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 11,
-        "stamina": 5
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 11,
-          "max": 15,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
-      "armorFlat": 32.5
+      "armorFlat": 32.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
@@ -1203,29 +1199,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 12,
-        "stamina": 6
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 12,
-          "max": 17,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
-      "armorFlat": 35
+      "armorFlat": 35,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
@@ -1239,29 +1236,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 15,
-        "stamina": 8
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 15,
-          "max": 22,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 12,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
-      "armorFlat": 46.5
+      "armorFlat": 46.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
@@ -1275,64 +1273,67 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 21,
-        "stamina": 11
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 21,
-          "max": 31,
-          "step": 1
-        },
-        "stamina": {
-          "min": 11,
-          "max": 16,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
-      "armorFlat": 64
+      "armorFlat": 64,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
-      "name": "Плащ Безмолвного Архонта",
+      "name": "Наплечники Безмолвного Архонта",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 13,
-        "stamina": 7
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 13,
-          "max": 20,
-          "step": 1
-        },
-        "stamina": {
-          "min": 7,
-          "max": 10,
-          "step": 1
-        }
-      },
       "setId": "SET_MAGE_SILENT_ARCHON",
-      "armorFlat": 40.5
+      "armorFlat": 40.5,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
@@ -1346,29 +1347,30 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 19,
-        "stamina": 4
+        "intellect": 0,
+        "stamina": 0
       },
       "description": "Двуручный посох прогрессии «Регалии Безмолвного Архонта».",
       "version": 1,
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 19,
-          "max": 28,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "weaponCategory": "STAFF",
       "weaponDamageMin": 49,
-      "weaponDamageMax": 76
+      "weaponDamageMax": 76,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_WAND",
@@ -1382,7 +1384,7 @@
       "stats": {
         "strength": 0,
         "agility": 0,
-        "intellect": 13,
+        "intellect": 0,
         "stamina": 0
       },
       "description": "Одноручный магический жезл прогрессии «Регалии Безмолвного Архонта».",
@@ -1390,16 +1392,22 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "primaryStatRanges": {
-        "intellect": {
-          "min": 13,
-          "max": 19,
-          "step": 1
-        }
-      },
       "weaponCategory": "WAND",
       "weaponDamageMin": 35,
-      "weaponDamageMax": 54
+      "weaponDamageMax": 54,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",

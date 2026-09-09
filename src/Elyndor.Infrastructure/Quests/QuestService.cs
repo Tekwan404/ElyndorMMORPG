@@ -95,6 +95,8 @@ public sealed class QuestService(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private IGameRandomFactory CompatibilityRandomFactory { get; } = randomFactory;
+
     public async Task<QuestJournalSnapshot> GetAsync(
         Guid accountId,
         CancellationToken cancellationToken)
@@ -646,6 +648,7 @@ public sealed class QuestService(
         GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        _ = CompatibilityRandomFactory;
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
                 reward.ItemId,
                 out ItemDefinition? definition))
@@ -683,24 +686,35 @@ public sealed class QuestService(
             characterId,
             contentSnapshot,
             cancellationToken);
+        int ordinal = 0;
         while (remaining > 0 && freeSlots > 0)
         {
             int quantity = definition.Stackable
                 ? Math.Min(definition.MaxStack, remaining)
                 : 1;
-            PrimaryStats? rolled = definition.Type == ItemType.Equipment
-                ? ItemInstanceStatRoller.Resolve(
-                    definition,
-                    randomFactory.Create())
-                : null;
-            dbContext.CharacterItems.Add(new CharacterItem(
-                Guid.NewGuid(),
-                characterId,
-                definition.Id,
-                quantity,
-                acquiredAtUtc,
-                definition.Version,
-                rolled));
+            if (definition.Stackable)
+            {
+                dbContext.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    definition.Id,
+                    quantity,
+                    acquiredAtUtc,
+                    definition.Version));
+            }
+            else
+            {
+                dbContext.CharacterItems.Add(
+                    ItemInstancePersistenceFactory.CreateCharacterItem(
+                        characterId,
+                        definition,
+                        rewardResolutionId,
+                        "QUEST",
+                        reward.ItemId,
+                        ordinal++,
+                        acquiredAtUtc,
+                        contentSnapshot.Package));
+            }
             remaining -= quantity;
             freeSlots--;
         }
@@ -710,20 +724,30 @@ public sealed class QuestService(
             int quantity = definition.Stackable
                 ? Math.Min(definition.MaxStack, remaining)
                 : 1;
-            PrimaryStats? rolled = definition.Type == ItemType.Equipment
-                ? ItemInstanceStatRoller.Resolve(
-                    definition,
-                    randomFactory.Create())
-                : null;
-            dbContext.PendingLootItems.Add(new PendingLootItem(
-                Guid.NewGuid(),
-                characterId,
-                rewardResolutionId,
-                definition.Id,
-                quantity,
-                definition.Version,
-                acquiredAtUtc,
-                rolled));
+            if (definition.Stackable)
+            {
+                dbContext.PendingLootItems.Add(new PendingLootItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    rewardResolutionId,
+                    definition.Id,
+                    quantity,
+                    definition.Version,
+                    acquiredAtUtc));
+            }
+            else
+            {
+                dbContext.PendingLootItems.Add(
+                    ItemInstancePersistenceFactory.CreatePendingLootItem(
+                        characterId,
+                        definition,
+                        rewardResolutionId,
+                        "QUEST",
+                        reward.ItemId,
+                        ordinal++,
+                        acquiredAtUtc,
+                        contentSnapshot.Package));
+            }
             remaining -= quantity;
         }
     }

@@ -30,6 +30,7 @@ public static class MerchantErrorCodes
     public const string NotEnoughGold = "merchant_not_enough_gold";
     public const string Conflict = "merchant_conflict";
     public const string InventoryFull = "merchant_inventory_full";
+    public const string TransactionLocked = "merchant_item_transaction_locked";
 }
 
 public sealed record MerchantCatalogItem(ItemDefinition Definition, int SellPriceGold);
@@ -54,6 +55,8 @@ public sealed class MerchantService(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider)
 {
+    private IGameRandomFactory CompatibilityRandomFactory { get; } = randomFactory;
+
     public MerchantService(
         GameDbContext dbContext,
         IContentSnapshotProvider contentProvider,
@@ -162,7 +165,13 @@ public sealed class MerchantService(
                         cancellationToken);
                 if (affected == 0) return MerchantErrorCodes.NotEnoughGold;
 
-                await AddItemAsync(character.Id, definition, quantity, cancellationToken);
+                await AddItemAsync(
+                    character.Id,
+                    definition,
+                    quantity,
+                    mutationId,
+                    contentSnapshot,
+                    cancellationToken);
                 return null;
             },
             cancellationToken);
@@ -195,6 +204,8 @@ public sealed class MerchantService(
                     return MerchantErrorCodes.ItemNotOwned;
                 if (preview.IsLocked)
                     return MerchantErrorCodes.ItemLocked;
+                if (preview.TransactionLockId.HasValue)
+                    return MerchantErrorCodes.TransactionLocked;
 
                 ItemDefinition? definition = FindItem(preview.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Material)
@@ -221,6 +232,7 @@ public sealed class MerchantService(
                 if (!string.Equals(item.ItemDefinitionId, definition.Id, StringComparison.Ordinal))
                     return MerchantErrorCodes.Conflict;
                 if (item.IsLocked) return MerchantErrorCodes.ItemLocked;
+                if (item.TransactionLockId.HasValue) return MerchantErrorCodes.TransactionLocked;
                 if (quantity > item.Quantity) return MerchantErrorCodes.InvalidQuantity;
 
                 item.RemoveQuantity(quantity);
@@ -261,6 +273,8 @@ public sealed class MerchantService(
                     return MerchantErrorCodes.ItemNotOwned;
                 if (preview.IsLocked)
                     return MerchantErrorCodes.ItemLocked;
+                if (preview.TransactionLockId.HasValue)
+                    return MerchantErrorCodes.TransactionLocked;
                 if (await dbContext.CharacterEquipment
                     .AsNoTracking()
                     .AnyAsync(
@@ -309,6 +323,8 @@ public sealed class MerchantService(
                 }
                 if (item.IsLocked)
                     return MerchantErrorCodes.ItemLocked;
+                if (item.TransactionLockId.HasValue)
+                    return MerchantErrorCodes.TransactionLocked;
                 if (quantity > item.Quantity)
                     return MerchantErrorCodes.InvalidQuantity;
 
@@ -461,21 +477,27 @@ public sealed class MerchantService(
         Guid characterId,
         ItemDefinition definition,
         int quantity,
+        Guid sourceOperationId,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
         if (!definition.Stackable)
         {
+            _ = CompatibilityRandomFactory;
             for (var index = 0; index < quantity; index++)
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
-                    characterId,
-                    definition.Id,
-                    1,
-                    timeProvider.GetUtcNow(),
-                    definition.Version,
-                    definition.Type == ItemType.Equipment
-                        ? ItemInstanceStatRoller.Resolve(definition, randomFactory.Create())
-                        : null));
+            {
+                dbContext.CharacterItems.Add(
+                    ItemInstancePersistenceFactory.CreateCharacterItem(
+                        characterId,
+                        definition,
+                        sourceOperationId,
+                        "MERCHANT",
+                        definition.Id,
+                        index,
+                        timeProvider.GetUtcNow(),
+                        contentSnapshot.Package,
+                        legacyRandom: CompatibilityRandomFactory.Create()));
+            }
             return;
         }
 

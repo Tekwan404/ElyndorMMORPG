@@ -34,7 +34,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
     IReadOnlyList<DungeonDefinition>? Dungeons = null,
     InventoryProfileDefinition? InventoryProfile = null,
-    IReadOnlyList<QuestDefinition>? Quests = null);
+    IReadOnlyList<QuestDefinition>? Quests = null,
+    ItemizationDefinition? Itemization = null);
 
 public sealed record GameContentDefinition(
     string Type,

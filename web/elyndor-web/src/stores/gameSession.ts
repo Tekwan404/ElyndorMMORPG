@@ -13,6 +13,7 @@ import type {
   CreateCharacterRequest,
   EquipmentSlot,
   MerchantSnapshot,
+  ItemReforgeResponse,
   QuestClaimResponse,
   QuestJournalResponse,
   WorldEncounter,
@@ -244,6 +245,78 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function getPendingReforge(
+    characterItemId?: string,
+  ): Promise<ItemReforgeResponse | null> {
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const query = characterItemId
+        ? `?characterItemId=${encodeURIComponent(characterItemId)}`
+        : ''
+      const response = await apiClient.request<ItemReforgeResponse | null>(
+        `/api/v1/inventory/reforge/pending${query}`,
+      )
+      return response ?? null
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.status === 204) return null
+      handleError(error)
+      return null
+    }
+  }
+
+  async function rollReforge(
+    characterItemId: string,
+    slotKey: string,
+  ): Promise<ItemReforgeResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await runReplaySafeGameMutation<ItemReforgeResponse>({
+        key: `inventory:reforge:${characterItemId}:${slotKey}`,
+        path: '/api/v1/inventory/reforge/roll',
+        idField: 'operationId',
+        intent: { characterItemId, slotKey },
+      })
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function decideReforge(
+    operationId: string,
+    acceptProposed: boolean,
+  ): Promise<ItemReforgeResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await apiClient.request<ItemReforgeResponse>(
+        '/api/v1/inventory/reforge/decide',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operationId, acceptProposed }),
+        },
+      )
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
   }
@@ -401,6 +474,9 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     unequip,
     useConsumable,
     setItemLock,
+    getPendingReforge,
+    rollReforge,
+    decideReforge,
     getMerchant,
     buyMerchantItem,
     sellMerchantItem,

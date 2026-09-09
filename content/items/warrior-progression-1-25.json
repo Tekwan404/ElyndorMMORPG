@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "contentVersion": "0.16.0",
+  "balanceVersion": "0.13.0",
+  "publishedAtUtc": "2026-09-09T05:05:00+00:00",
   "items": [
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_CHEST",
@@ -13,30 +13,27 @@
       "maxStack": 1,
       "slot": "Chest",
       "stats": {
-        "strength": 3,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 28
+      "armorFlat": 28,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_FEET",
@@ -48,30 +45,27 @@
       "maxStack": 1,
       "slot": "Feet",
       "stats": {
-        "strength": 1,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 12.5
+      "armorFlat": 12.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_HANDS",
@@ -83,30 +77,27 @@
       "maxStack": 1,
       "slot": "Hands",
       "stats": {
-        "strength": 1,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 13.5
+      "armorFlat": 13.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_HEAD",
@@ -118,30 +109,27 @@
       "maxStack": 1,
       "slot": "Head",
       "stats": {
-        "strength": 2,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 18
+      "armorFlat": 18,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_LEGS",
@@ -153,30 +141,27 @@
       "maxStack": 1,
       "slot": "Legs",
       "stats": {
-        "strength": 3,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 24.5
+      "armorFlat": 24.5,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_SHIELD",
@@ -191,59 +176,59 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Щит прогрессии «Сталь Пограничника».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 1,
-          "max": 3,
-          "step": 1
-        }
-      },
       "offHandCategory": "SHIELD",
       "armorFlat": 21,
       "blockChancePercent": 1.3,
       "blockValueMin": 3,
-      "blockValueMax": 4
+      "blockValueMax": 4,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
-      "name": "Плащ Пограничника",
+      "name": "Наплечники Пограничника",
       "type": "Equipment",
       "rarity": "Common",
       "requiredLevel": 2,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
-        "strength": 2,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
-      "armorFlat": 15.5
+      "armorFlat": 15.5,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_COMMON_BORDER_STEEL_WEAPON",
@@ -255,31 +240,28 @@
       "maxStack": 1,
       "slot": "MainHand",
       "stats": {
-        "strength": 2,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 1
+        "stamina": 0
       },
       "description": "Тематическое оружие прогрессии «Сталь Пограничника». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 2,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 1,
-          "max": 2,
-          "step": 1
-        }
-      },
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 7,
-      "weaponDamageMax": 12
+      "weaponDamageMax": 12,
+      "itemLevelMin": 2,
+      "itemLevelMax": 2,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_1_4",
+      "guaranteedAffixStatIds": [],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_CHEST",
@@ -291,30 +273,29 @@
       "maxStack": 1,
       "slot": "Chest",
       "stats": {
-        "strength": 6,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 48
+      "armorFlat": 48,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_FEET",
@@ -326,30 +307,29 @@
       "maxStack": 1,
       "slot": "Feet",
       "stats": {
-        "strength": 3,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 21.5
+      "armorFlat": 21.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_HANDS",
@@ -361,30 +341,29 @@
       "maxStack": 1,
       "slot": "Hands",
       "stats": {
-        "strength": 3,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 23
+      "armorFlat": 23,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_HEAD",
@@ -396,30 +375,29 @@
       "maxStack": 1,
       "slot": "Head",
       "stats": {
-        "strength": 4,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 30.5
+      "armorFlat": 30.5,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_LEGS",
@@ -431,30 +409,29 @@
       "maxStack": 1,
       "slot": "Legs",
       "stats": {
-        "strength": 5,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "armorCategory": "HEAVY",
-      "armorFlat": 42
+      "armorFlat": 42,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_SHIELD",
@@ -469,59 +446,63 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Щит прогрессии «Железный Дозор».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "offHandCategory": "SHIELD",
       "armorFlat": 36,
       "blockChancePercent": 1.6,
       "blockValueMin": 9,
-      "blockValueMax": 14
+      "blockValueMax": 14,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_SHOULDERS",
-      "name": "Плащ Железного Дозора",
+      "name": "Наплечники Железного Дозора",
       "type": "Equipment",
       "rarity": "Uncommon",
       "requiredLevel": 6,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
-        "strength": 3,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 4,
-          "step": 1
-        }
-      },
-      "armorFlat": 26.5
+      "armorFlat": 26.5,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_UNCOMMON_IRON_WATCH_WEAPON",
@@ -533,31 +514,30 @@
       "maxStack": 1,
       "slot": "MainHand",
       "stats": {
-        "strength": 5,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 2
+        "stamina": 0
       },
       "description": "Тематическое оружие прогрессии «Железный Дозор». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        },
-        "stamina": {
-          "min": 2,
-          "max": 3,
-          "step": 1
-        }
-      },
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 13,
-      "weaponDamageMax": 21
+      "weaponDamageMax": 21,
+      "itemLevelMin": 6,
+      "itemLevelMax": 6,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_5_8",
+      "guaranteedAffixStatIds": [
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_CHEST",
@@ -569,31 +549,31 @@
       "maxStack": 1,
       "slot": "Chest",
       "stats": {
-        "strength": 10,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 10,
-          "max": 16,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
-      "armorFlat": 73
+      "armorFlat": 73,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_FEET",
@@ -605,31 +585,31 @@
       "maxStack": 1,
       "slot": "Feet",
       "stats": {
-        "strength": 4,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
-      "armorFlat": 32.5
+      "armorFlat": 32.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HANDS",
@@ -641,31 +621,31 @@
       "maxStack": 1,
       "slot": "Hands",
       "stats": {
-        "strength": 5,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 5,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
-      "armorFlat": 35
+      "armorFlat": 35,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HEAD",
@@ -677,31 +657,31 @@
       "maxStack": 1,
       "slot": "Head",
       "stats": {
-        "strength": 6,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
-      "armorFlat": 46.5
+      "armorFlat": 46.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_LEGS",
@@ -713,31 +693,31 @@
       "maxStack": 1,
       "slot": "Legs",
       "stats": {
-        "strength": 9,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 5
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 9,
-          "max": 14,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
-      "armorFlat": 64
+      "armorFlat": 64,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHIELD",
@@ -752,60 +732,66 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Щит прогрессии «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 4,
-          "max": 6,
-          "step": 1
-        }
-      },
       "offHandCategory": "SHIELD",
       "armorFlat": 55,
       "blockChancePercent": 1.9,
       "blockValueMin": 15,
-      "blockValueMax": 24
+      "blockValueMax": 24,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
-      "name": "Плащ Серого Волка",
+      "name": "Наплечники Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
       "requiredLevel": 10,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
-        "strength": 6,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 6,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_GREY_FANG",
-      "armorFlat": 40.5
+      "armorFlat": 40.5,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_WEAPON",
@@ -817,31 +803,31 @@
       "maxStack": 1,
       "slot": "MainHand",
       "stats": {
-        "strength": 8,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 3
+        "stamina": 0
       },
       "description": "Тематическое оружие прогрессии «Клык Серого Волка». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 8,
-          "max": 13,
-          "step": 1
-        },
-        "stamina": {
-          "min": 3,
-          "max": 4,
-          "step": 1
-        }
-      },
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 22,
-      "weaponDamageMax": 34
+      "weaponDamageMax": 34,
+      "itemLevelMin": 10,
+      "itemLevelMax": 10,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
@@ -853,31 +839,32 @@
       "maxStack": 1,
       "slot": "Chest",
       "stats": {
-        "strength": 15,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 9
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 15,
-          "max": 25,
-          "step": 1
-        },
-        "stamina": {
-          "min": 9,
-          "max": 15,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
-      "armorFlat": 109
+      "armorFlat": 109,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
@@ -889,31 +876,31 @@
       "maxStack": 1,
       "slot": "Feet",
       "stats": {
-        "strength": 7,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 7,
-          "max": 11,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
-      "armorFlat": 48
+      "armorFlat": 48,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
@@ -925,31 +912,31 @@
       "maxStack": 1,
       "slot": "Hands",
       "stats": {
-        "strength": 7,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 7,
-          "max": 12,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
-      "armorFlat": 52
+      "armorFlat": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
@@ -961,31 +948,31 @@
       "maxStack": 1,
       "slot": "Head",
       "stats": {
-        "strength": 10,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 10,
-          "max": 16,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 10,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
-      "armorFlat": 69.5
+      "armorFlat": 69.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
@@ -997,66 +984,68 @@
       "maxStack": 1,
       "slot": "Legs",
       "stats": {
-        "strength": 13,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 8
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 13,
-          "max": 22,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 13,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
-      "armorFlat": 96
+      "armorFlat": 96,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
-      "name": "Плащ Багровой Ярости",
+      "name": "Наплечники Багровой Ярости",
       "type": "Equipment",
       "rarity": "Epic",
       "requiredLevel": 14,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
-        "strength": 8,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 5
+        "stamina": 0
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 8,
-          "max": 14,
-          "step": 1
-        },
-        "stamina": {
-          "min": 5,
-          "max": 8,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_CRIMSON_FURY",
-      "armorFlat": 61
+      "armorFlat": 61,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
@@ -1068,31 +1057,31 @@
       "maxStack": 1,
       "slot": "MainHand",
       "stats": {
-        "strength": 12,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 4
+        "stamina": 0
       },
       "description": "Тематическое оружие прогрессии «Клятва Багровой Ярости». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 12,
-          "max": 20,
-          "step": 1
-        },
-        "stamina": {
-          "min": 4,
-          "max": 7,
-          "step": 1
-        }
-      },
       "weaponCategory": "TWO_HAND_SWORD",
       "weaponDamageMin": 34,
-      "weaponDamageMax": 52
+      "weaponDamageMax": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
@@ -1104,31 +1093,32 @@
       "maxStack": 1,
       "slot": "Chest",
       "stats": {
-        "strength": 23,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 14
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 23,
-          "max": 33,
-          "step": 1
-        },
-        "stamina": {
-          "min": 14,
-          "max": 20,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
-      "armorFlat": 157
+      "armorFlat": 157,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
@@ -1140,31 +1130,32 @@
       "maxStack": 1,
       "slot": "Feet",
       "stats": {
-        "strength": 10,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 10,
-          "max": 15,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
-      "armorFlat": 69
+      "armorFlat": 69,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
@@ -1176,31 +1167,32 @@
       "maxStack": 1,
       "slot": "Hands",
       "stats": {
-        "strength": 11,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 7
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 11,
-          "max": 16,
-          "step": 1
-        },
-        "stamina": {
-          "min": 7,
-          "max": 10,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
-      "armorFlat": 75
+      "armorFlat": 75,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
@@ -1212,31 +1204,32 @@
       "maxStack": 1,
       "slot": "Head",
       "stats": {
-        "strength": 15,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 9
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 15,
-          "max": 21,
-          "step": 1
-        },
-        "stamina": {
-          "min": 9,
-          "max": 13,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
-      "armorFlat": 100.5
+      "armorFlat": 100.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
@@ -1248,31 +1241,32 @@
       "maxStack": 1,
       "slot": "Legs",
       "stats": {
-        "strength": 20,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 12
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 20,
-          "max": 29,
-          "step": 1
-        },
-        "stamina": {
-          "min": 12,
-          "max": 18,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
-      "armorFlat": 138
+      "armorFlat": 138,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
@@ -1287,60 +1281,68 @@
         "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 9
+        "stamina": 0
       },
       "description": "Щит прогрессии «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "stamina": {
-          "min": 9,
-          "max": 13,
-          "step": 1
-        }
-      },
       "offHandCategory": "SHIELD",
       "armorFlat": 117.5,
       "blockChancePercent": 2.5,
       "blockValueMin": 27,
-      "blockValueMax": 43
+      "blockValueMax": 43,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "BLOCK_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
-      "name": "Плащ Первого Стража",
+      "name": "Наплечники Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
       "requiredLevel": 18,
       "stackable": false,
       "maxStack": 1,
-      "slot": "Cloak",
+      "slot": "Shoulders",
       "stats": {
-        "strength": 13,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 8
+        "stamina": 0
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 13,
-          "max": 18,
-          "step": 1
-        },
-        "stamina": {
-          "min": 8,
-          "max": 11,
-          "step": 1
-        }
-      },
       "setId": "SET_WARRIOR_FIRST_GUARD",
-      "armorFlat": 88
+      "armorFlat": 88,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
@@ -1352,31 +1354,32 @@
       "maxStack": 1,
       "slot": "MainHand",
       "stats": {
-        "strength": 18,
+        "strength": 0,
         "agility": 0,
         "intellect": 0,
-        "stamina": 6
+        "stamina": 0
       },
       "description": "Тематическое оружие прогрессии «Наследие Первого Стража». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "primaryStatRanges": {
-        "strength": {
-          "min": 18,
-          "max": 26,
-          "step": 1
-        },
-        "stamina": {
-          "min": 6,
-          "max": 9,
-          "step": 1
-        }
-      },
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 49,
-      "weaponDamageMax": 76
+      "weaponDamageMax": 76,
+      "itemLevelMin": 18,
+      "itemLevelMax": 18,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": "WORLD_V1"
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",

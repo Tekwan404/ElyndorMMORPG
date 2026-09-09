@@ -34,6 +34,8 @@ public static class InventoryErrorCodes
     public const string MutationConflict = "inventory_mutation_conflict";
     public const string Conflict = "inventory_conflict";
     public const string InventoryFull = "inventory_full";
+    public const string TransactionLocked = "inventory_item_transaction_locked";
+    public const string UniqueEquippedConflict = "inventory_unique_equipped_conflict";
 }
 
 public sealed record InventoryItemSnapshot(
@@ -43,7 +45,12 @@ public sealed record InventoryItemSnapshot(
     DateTimeOffset AcquiredAtUtc,
     EquipmentSlot? EquippedSlot,
     bool IsLocked,
-    PrimaryStats? RolledPrimaryStats = null)
+    PrimaryStats? RolledPrimaryStats = null,
+    GeneratedItemInstance? GeneratedItem = null,
+    int ReforgeCount = 0,
+    string? ReforgeSlotKey = null,
+    bool TransactionLocked = false,
+    string BindState = ItemBindStates.Unbound)
 {
     public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
 }
@@ -57,7 +64,8 @@ public sealed record PendingLootItemSnapshot(
     ItemDefinition Definition,
     int Quantity,
     DateTimeOffset CreatedAtUtc,
-    PrimaryStats? RolledPrimaryStats);
+    PrimaryStats? RolledPrimaryStats,
+    GeneratedItemInstance? GeneratedItem = null);
 
 public sealed record InventoryOperationResult(
     bool IsSuccess,
@@ -159,12 +167,23 @@ public sealed class InventoryEquipmentService(
                     $"Pending loot item '{item.ItemDefinitionId}' is missing from content.");
             }
 
+            GeneratedItemInstance? generated = string.IsNullOrWhiteSpace(item.GeneratedItemJson)
+                ? null
+                : System.Text.Json.JsonSerializer.Deserialize<GeneratedItemInstance>(
+                    item.GeneratedItemJson);
+            ItemDefinition effective = generated is null
+                ? definition
+                : ItemInstanceGenerator.ApplyGeneratedAffixes(
+                    definition,
+                    generated.Affixes,
+                    generated.DisplayName);
             return new PendingLootItemSnapshot(
                 item.Id,
-                definition,
+                effective,
                 item.Quantity,
                 item.CreatedAtUtc,
-                item.RolledPrimaryStats);
+                item.RolledPrimaryStats,
+                generated);
         }).ToArray();
     }
 
@@ -213,6 +232,8 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
                 if (item.CharacterId != character.Id)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
+                if (item.TransactionLockId.HasValue)
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.TransactionLocked);
 
                 ItemDefinition? definition = FindItem(item.ItemDefinitionId);
                 if (definition is null || definition.Type != ItemType.Equipment)
@@ -309,6 +330,28 @@ public sealed class InventoryEquipmentService(
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.TwoHandedConflict);
+                }
+
+                if (!string.IsNullOrWhiteSpace(definition.UniqueEquippedGroup))
+                {
+                    string[] equippedDefinitionIds = await (
+                            from equipment in dbContext.CharacterEquipment.AsNoTracking()
+                            join equippedItem in dbContext.CharacterItems.AsNoTracking()
+                                on equipment.CharacterItemId equals equippedItem.Id
+                            where equipment.CharacterId == character.Id
+                                && equippedItem.Id != item.Id
+                            select equippedItem.ItemDefinitionId)
+                        .ToArrayAsync(cancellationToken);
+                    bool uniqueConflict = equippedDefinitionIds.Any(definitionId =>
+                        string.Equals(
+                            FindItem(definitionId)?.UniqueEquippedGroup,
+                            definition.UniqueEquippedGroup,
+                            StringComparison.Ordinal));
+                    if (uniqueConflict)
+                    {
+                        return InventoryOperationResult.Failure(
+                            InventoryErrorCodes.UniqueEquippedConflict);
+                    }
                 }
 
                 if (!await CanApplyEquipmentProjectionAsync(
@@ -545,6 +588,9 @@ public sealed class InventoryEquipmentService(
                 if (item.CharacterId != character.Id)
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.ItemNotOwned);
+                if (item.TransactionLockId.HasValue)
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.TransactionLocked);
 
                 item.SetLocked(isLocked);
                 return null;
@@ -586,7 +632,8 @@ public sealed class InventoryEquipmentService(
                 CharacterItem? item = await dbContext.CharacterItems
                     .Where(candidate => candidate.CharacterId == character.Id
                         && candidate.ItemDefinitionId == itemDefinitionId
-                        && candidate.Quantity > 0)
+                        && candidate.Quantity > 0
+                        && candidate.TransactionLockId == null)
                     .OrderBy(candidate => candidate.AcquiredAtUtc)
                     .FirstOrDefaultAsync(cancellationToken);
                 if (item is null)
@@ -691,14 +738,11 @@ public sealed class InventoryEquipmentService(
                     break;
                 }
 
-                dbContext.CharacterItems.Add(new CharacterItem(
-                    Guid.NewGuid(),
-                    characterId,
-                    definition.Id,
-                    1,
-                    timeProvider.GetUtcNow(),
-                    definition.Version,
-                    pendingItem.RolledPrimaryStats));
+                dbContext.CharacterItems.Add(
+                    ItemInstancePersistenceFactory.MaterializePending(
+                        pendingItem,
+                        definition,
+                        timeProvider.GetUtcNow()));
                 dbContext.PendingLootItems.Remove(pendingItem);
                 await dbContext.SaveChangesAsync(cancellationToken);
                 continue;

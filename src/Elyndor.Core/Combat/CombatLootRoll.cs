@@ -27,7 +27,9 @@ public sealed class CombatLootRoll
         int quantity,
         Guid itemInstanceSeed,
         DateTimeOffset endsAtUtc,
-        string eligibleCharacterIdsJson)
+        string eligibleCharacterIdsJson,
+        string sourceQualityProfileId = "NORMAL",
+        string? generatedItemJson = null)
     {
         if (lootRollId == Guid.Empty || dungeonRunId == Guid.Empty || combatSessionId == Guid.Empty)
             throw new ArgumentException("Loot roll identifiers cannot be empty.");
@@ -38,6 +40,7 @@ public sealed class CombatLootRoll
         if (endsAtUtc.Offset != TimeSpan.Zero)
             throw new ArgumentException("Loot roll timestamps must be UTC.", nameof(endsAtUtc));
         ArgumentException.ThrowIfNullOrWhiteSpace(eligibleCharacterIdsJson);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceQualityProfileId);
 
         LootRollId = lootRollId;
         DungeonRunId = dungeonRunId;
@@ -48,6 +51,8 @@ public sealed class CombatLootRoll
         ItemInstanceSeed = itemInstanceSeed;
         EndsAtUtc = endsAtUtc;
         EligibleCharacterIdsJson = eligibleCharacterIdsJson;
+        SourceQualityProfileId = sourceQualityProfileId;
+        GeneratedItemJson = generatedItemJson;
         ChoicesJson = "{}";
         RollsJson = "{}";
         State = CombatLootRollState.Open;
@@ -61,12 +66,21 @@ public sealed class CombatLootRoll
     public int Quantity { get; private set; }
     public Guid ItemInstanceSeed { get; private set; }
     public string EligibleCharacterIdsJson { get; private set; }
+    public string SourceQualityProfileId { get; private set; } = "NORMAL";
+    public string? GeneratedItemJson { get; private set; }
     public string ChoicesJson { get; private set; }
     public string RollsJson { get; private set; }
     public DateTimeOffset EndsAtUtc { get; private set; }
     public CombatLootRollState State { get; private set; }
     public Guid? WinnerCharacterId { get; private set; }
     public DateTimeOffset? ResolvedAtUtc { get; private set; }
+
+    public void SetGeneratedItemJson(string generatedItemJson)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(generatedItemJson);
+        if (GeneratedItemJson is null)
+            GeneratedItemJson = generatedItemJson;
+    }
 
     public void Resolve(
         Guid? winnerCharacterId,

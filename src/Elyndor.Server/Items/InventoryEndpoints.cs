@@ -21,6 +21,9 @@ public static class InventoryEndpoints
         group.MapPost("/unequip", UnequipAsync);
         group.MapPost("/use-consumable", UseConsumableAsync);
         group.MapPost("/set-lock", SetItemLockAsync);
+        group.MapGet("/reforge/pending", GetPendingReforgeAsync);
+        group.MapPost("/reforge/roll", RollReforgeAsync);
+        group.MapPost("/reforge/decide", DecideReforgeAsync);
         group.MapGet("/pending-loot", GetPendingLootAsync);
         group.MapPost("/pending-loot/claim", ClaimPendingLootAsync);
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
@@ -129,6 +132,81 @@ public static class InventoryEndpoints
                         timeProvider.GetUtcNow(),
                         cancellationToken),
                     context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> GetPendingReforgeAsync(
+        Guid? characterItemId,
+        ClaimsPrincipal user,
+        ItemReforgeService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        ItemReforgeOperationResult? result = await service.GetPendingAsync(
+            accountId,
+            characterItemId,
+            cancellationToken);
+        return result is null
+            ? Results.NoContent()
+            : Results.Ok(ToReforgeResponse(result));
+    }
+
+    private static async Task<IResult> RollReforgeAsync(
+        RollItemReforgeRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemReforgeService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                ItemReforgeOperationResult result = await service.RollAsync(
+                    accountId,
+                    request.CharacterItemId,
+                    request.SlotKey,
+                    request.OperationId,
+                    cancellationToken);
+                return result.Succeeded
+                    ? Results.Ok(ToReforgeResponse(result))
+                    : ReforgeProblem(result.ErrorCode!, context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> DecideReforgeAsync(
+        DecideItemReforgeRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemReforgeService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                ItemReforgeOperationResult result = await service.DecideAsync(
+                    accountId,
+                    request.OperationId,
+                    request.AcceptProposed,
+                    cancellationToken);
+                return result.Succeeded
+                    ? Results.Ok(ToReforgeResponse(result))
+                    : ReforgeProblem(result.ErrorCode!, context);
             },
             () => InCombatProblem(context),
             cancellationToken);
@@ -298,6 +376,7 @@ public static class InventoryEndpoints
             new EquipmentSlotsResponse(
                 GetEquipped(snapshot, EquipmentSlot.Weapon),
                 GetEquipped(snapshot, EquipmentSlot.Head),
+                GetEquipped(snapshot, EquipmentSlot.Shoulders),
                 GetEquipped(snapshot, EquipmentSlot.Chest),
                 GetEquipped(snapshot, EquipmentSlot.Legs),
                 GetEquipped(snapshot, EquipmentSlot.Boots),
@@ -354,6 +433,24 @@ public static class InventoryEndpoints
                 ["correlationId"] = context.TraceIdentifier
             });
 
+    private static IResult ReforgeProblem(string errorCode, HttpContext context) =>
+        Results.Problem(
+            statusCode: errorCode is ItemReforgeErrorCodes.ItemNotFound
+                    or ItemReforgeErrorCodes.ProposalNotFound
+                    or ItemReforgeErrorCodes.CharacterNotFound
+                ? StatusCodes.Status404NotFound
+                : errorCode is ItemReforgeErrorCodes.ItemTransactionLocked
+                    or ItemReforgeErrorCodes.OperationConflict
+                    or ItemReforgeErrorCodes.ProposalNotPending
+                    or ItemReforgeErrorCodes.ItemEquipped
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status422UnprocessableEntity,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = errorCode,
+                ["correlationId"] = context.TraceIdentifier
+            });
+
     private static IResult MerchantProblem(string errorCode, HttpContext context) =>
         Results.Problem(
             statusCode: errorCode is MerchantErrorCodes.CharacterNotFound or MerchantErrorCodes.MerchantNotFound
@@ -362,6 +459,7 @@ public static class InventoryEndpoints
                     or MerchantErrorCodes.MutationConflict
                     or MerchantErrorCodes.ItemLocked
                     or MerchantErrorCodes.ItemEquipped
+                    or MerchantErrorCodes.TransactionLocked
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
@@ -406,7 +504,8 @@ public static class InventoryEndpoints
                 item.Definition.ArmorPenetrationPercent,
                 item.Definition.MagicPenetrationPercent,
                 item.Definition.AttackSpeedPercent,
-                item.Definition.MaxResourceFlat));
+                item.Definition.MaxResourceFlat),
+            ToGeneratedItemResponse(item.GeneratedItem));
     }
 
     internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item) =>
@@ -457,7 +556,69 @@ public static class InventoryEndpoints
             item.Definition.WeaponCategory is null
                 ? null
                 : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1,
-            item.Definition.PrimaryStatRanges is not null);
+            item.Definition.PrimaryStatRanges is not null || item.GeneratedItem is not null,
+            ToGeneratedItemResponse(item.GeneratedItem),
+            item.ReforgeCount,
+            item.ReforgeSlotKey,
+            item.TransactionLocked,
+            item.BindState);
+
+    private static GeneratedItemSummaryResponse? ToGeneratedItemResponse(
+        GeneratedItemInstance? generated) =>
+        generated is null
+            ? null
+            : new GeneratedItemSummaryResponse(
+                generated.ItemLevel,
+                generated.ActualItemPower,
+                generated.MaxTemplateItemPower,
+                generated.RollQuality,
+                generated.Stars,
+                generated.IsPerfect,
+                generated.PerfectOrigin,
+                generated.GeneratedPrefixId,
+                generated.GeneratedSuffixId,
+                generated.DisplayName,
+                generated.Affixes
+                    .OrderBy(affix => affix.GenerationOrdinal)
+                    .Select(affix => new ItemAffixResponse(
+                        affix.SlotKey,
+                        affix.StatId,
+                        affix.Value,
+                        affix.MinAtGeneration,
+                        affix.MaxAtGeneration,
+                        affix.StepAtGeneration,
+                        affix.AffixTier,
+                        affix.IsGuaranteed,
+                        affix.IsReforgeSlot))
+                    .ToArray());
+
+    private static ItemReforgeResponse ToReforgeResponse(
+        ItemReforgeOperationResult result)
+    {
+        ItemReforgeOperation operation = result.Operation
+            ?? throw new InvalidOperationException("Successful Reforge result requires an operation.");
+        GeneratedItemInstance current = result.Current
+            ?? throw new InvalidOperationException("Successful Reforge result requires current item state.");
+        GeneratedItemInstance proposed = result.Proposed
+            ?? throw new InvalidOperationException("Successful Reforge result requires proposed item state.");
+        ItemReforgeCost cost = result.Cost
+            ?? throw new InvalidOperationException("Successful Reforge result requires cost.");
+
+        return new ItemReforgeResponse(
+            operation.OperationId,
+            operation.State.ToString(),
+            operation.ItemInstanceId,
+            operation.SlotKey,
+            ToGeneratedItemResponse(current)!,
+            ToGeneratedItemResponse(proposed)!,
+            new ItemReforgeCostResponse(
+                cost.Gold,
+                cost.MaterialItemId,
+                cost.MaterialQuantity,
+                cost.CatalystItemId,
+                cost.CatalystQuantity,
+                cost.CountMultiplier));
+    }
 
     private static ConsumableActionResponse[] ToConsumableActions(
         ItemDefinition definition) =>

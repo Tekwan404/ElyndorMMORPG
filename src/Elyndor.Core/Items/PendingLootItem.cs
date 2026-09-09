@@ -17,7 +17,12 @@ public sealed class PendingLootItem
         int quantity,
         int definitionVersion,
         DateTimeOffset createdAtUtc,
-        PrimaryStats? rolledPrimaryStats = null)
+        PrimaryStats? rolledPrimaryStats = null,
+        string? generatedItemJson = null,
+        string? generationSeedHash = null,
+        string? sourceType = null,
+        Guid? sourceOperationId = null,
+        string? sourceEntryId = null)
     {
         if (id == Guid.Empty
             || characterId == Guid.Empty
@@ -38,6 +43,11 @@ public sealed class PendingLootItem
         Quantity = quantity;
         DefinitionVersion = definitionVersion;
         CreatedAtUtc = createdAtUtc;
+        GeneratedItemJson = generatedItemJson;
+        GenerationSeedHash = generationSeedHash;
+        SourceType = sourceType;
+        SourceOperationId = sourceOperationId;
+        SourceEntryId = sourceEntryId;
         SetRolledPrimaryStats(rolledPrimaryStats);
     }
 
@@ -52,6 +62,11 @@ public sealed class PendingLootItem
     public decimal? RolledAgility { get; private set; }
     public decimal? RolledIntellect { get; private set; }
     public decimal? RolledStamina { get; private set; }
+    public string? GeneratedItemJson { get; private set; }
+    public string? GenerationSeedHash { get; private set; }
+    public string? SourceType { get; private set; }
+    public Guid? SourceOperationId { get; private set; }
+    public string? SourceEntryId { get; private set; }
 
     public PrimaryStats? RolledPrimaryStats =>
         RolledStrength.HasValue

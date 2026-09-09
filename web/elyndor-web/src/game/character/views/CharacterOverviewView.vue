@@ -42,6 +42,7 @@ const equipment = computed<PaperdollSlot[]>(() => {
   const equipped = character.value?.inventory.equipped
   return [
     { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: '◈', side: 'left' },
+    { id: 'shoulders', inventorySlot: 'Shoulders', label: 'Наплечники', item: equipped?.shoulders ?? null, glyph: '◉', side: 'left' },
     { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: '◒', side: 'left' },
     {
       id: 'mainHand',
@@ -141,6 +142,7 @@ function itemGlyph(item: InventoryItem | null, fallback: string): string {
   if (item.slot === 'Weapon' || item.slot === 'MainHand') return '⚔'
   if (item.slot === 'OffHand') return '🛡'
   if (item.slot === 'Head') return '◈'
+  if (item.slot === 'Shoulders') return '◉'
   if (item.slot === 'Chest') return '⬟'
   if (item.slot === 'Hands') return '◫'
   if (item.slot === 'Legs') return '▥'

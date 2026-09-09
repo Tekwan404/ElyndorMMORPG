@@ -342,7 +342,7 @@ export interface ItemStats {
 }
 
 export type EquipmentSlot =
-  | 'MainHand' | 'OffHand' | 'Head' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
+  | 'MainHand' | 'OffHand' | 'Head' | 'Shoulders' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
   | 'Cloak' | 'Amulet' | 'Ring1' | 'Ring2'
   | 'Weapon' | 'Boots' | 'Accessory'
 export type ItemType = 'Equipment' | 'Material' | 'Consumable'
@@ -354,6 +354,32 @@ export interface ConsumableAction {
   resourceType: string | null
   effectId: string | null
   dispelCategory: string | null
+}
+
+export interface ItemAffix {
+  slotKey: string
+  statId: string
+  value: number
+  min: number
+  max: number
+  step: number
+  affixTier: number
+  isGuaranteed: boolean
+  isReforgeSlot: boolean
+}
+
+export interface GeneratedItemSummary {
+  itemLevel: number
+  itemPower: number
+  maxItemPower: number
+  rollQuality: number
+  stars: number
+  isPerfect: boolean
+  perfectOrigin: string | null
+  generatedPrefixId: string | null
+  generatedSuffixId: string | null
+  displayName: string
+  affixes: ItemAffix[]
 }
 
 export interface InventoryItem {
@@ -385,6 +411,11 @@ export interface InventoryItem {
   appearanceProfileId: string | null
   weaponHandsRequired?: number | null
   hasRandomStats?: boolean
+  generatedItem?: GeneratedItemSummary | null
+  reforgeCount?: number
+  reforgeSlotKey?: string | null
+  transactionLocked?: boolean
+  bindState?: 'UNBOUND' | 'BOUND' | string
 }
 
 export interface InventorySnapshot {
@@ -392,6 +423,7 @@ export interface InventorySnapshot {
   equipped: {
     weapon: InventoryItem | null
     head: InventoryItem | null
+    shoulders?: InventoryItem | null
     chest: InventoryItem | null
     legs: InventoryItem | null
     boots: InventoryItem | null
@@ -405,6 +437,25 @@ export interface InventorySnapshot {
     ring1?: InventoryItem | null
     ring2?: InventoryItem | null
   }
+}
+
+export interface ItemReforgeCost {
+  gold: number
+  materialItemId: string
+  materialQuantity: number
+  catalystItemId: string
+  catalystQuantity: number
+  countMultiplier: number
+}
+
+export interface ItemReforgeResponse {
+  operationId: string
+  state: 'Pending' | 'Accepted' | 'Kept'
+  itemInstanceId: string
+  slotKey: string
+  current: GeneratedItemSummary
+  proposed: GeneratedItemSummary
+  cost: ItemReforgeCost
 }
 
 export interface MerchantItem {
