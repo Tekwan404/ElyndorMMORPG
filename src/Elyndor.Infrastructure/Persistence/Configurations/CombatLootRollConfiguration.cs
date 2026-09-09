@@ -16,6 +16,8 @@ public sealed class CombatLootRollConfiguration : IEntityTypeConfiguration<Comba
         builder.HasKey(roll => roll.LootRollId).HasName("pk_combat_loot_rolls");
         builder.Property(roll => roll.ItemDefinitionId).HasMaxLength(64).IsRequired();
         builder.Property(roll => roll.EligibleCharacterIdsJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(roll => roll.SourceQualityProfileId).HasMaxLength(16).HasDefaultValue("NORMAL").IsRequired();
+        builder.Property(roll => roll.GeneratedItemJson).HasColumnType("jsonb");
         builder.Property(roll => roll.ChoicesJson).HasColumnType("jsonb").IsRequired();
         builder.Property(roll => roll.RollsJson).HasColumnType("jsonb").IsRequired();
         builder.Property(roll => roll.Rarity).HasConversion<string>().HasMaxLength(16).IsRequired();
