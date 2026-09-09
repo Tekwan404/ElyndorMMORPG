@@ -106,11 +106,11 @@
         "DEEP_FOREST"
       ],
       "encounters": [],
-      "minimumLevel": 15,
-      "maximumLevel": 60,
+      "minimumLevel": 14,
+      "maximumLevel": 16,
       "requiredContractId": null,
       "artId": "ancient-ruins",
-      "description": "Вход в инстанс Древней шахты. Сюда группа возвращается после путешествия и начинает забег.",
+      "description": "Вход в Древнюю шахту — первое подземелье 14–16 уровня с редкими, эпическими и очень редкими легендарными трофеями.",
       "travelDurationSeconds": 0
     },
     {
