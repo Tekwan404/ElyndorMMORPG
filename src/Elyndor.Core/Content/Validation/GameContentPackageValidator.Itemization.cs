@@ -123,6 +123,41 @@ public static partial class GameContentPackageValidator
             }
         }
 
+        if (itemization.ReforgeCosts is { } reforge)
+        {
+            string[] rarityIds = ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY", "UNIQUE"];
+            ItemDefinition? material = (package.Items ?? []).FirstOrDefault(item =>
+                string.Equals(item.Id, reforge.MaterialItemId, StringComparison.Ordinal));
+            ItemDefinition? catalyst = (package.Items ?? []).FirstOrDefault(item =>
+                string.Equals(item.Id, reforge.CatalystItemId, StringComparison.Ordinal));
+            bool invalidCosts =
+                !IsCanonicalIdentifier(reforge.Id)
+                || material is null
+                || material.Type != ItemType.Material
+                || catalyst is null
+                || catalyst.Type != ItemType.Material
+                || reforge.ReforgeCountMultipliers.Count == 0
+                || reforge.ReforgeCountMultipliers.Any(multiplier => multiplier <= 0)
+                || reforge.OverflowGrowthMultiplier < 1
+                || !qualityIds.Contains("REFORGE")
+                || reforge.CatalystMinimumRarity is not ("EPIC" or "LEGENDARY" or "UNIQUE")
+                || rarityIds.Any(rarity =>
+                    !reforge.BaseGoldByRarity.TryGetValue(rarity, out int gold)
+                    || gold < 0
+                    || !reforge.MaterialQuantityByRarity.TryGetValue(rarity, out int materialQuantity)
+                    || materialQuantity < 0
+                    || !reforge.CatalystQuantityByRarity.TryGetValue(rarity, out int catalystQuantity)
+                    || catalystQuantity < 0);
+
+            if (invalidCosts)
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_REFORGE_COST_PROFILE",
+                    "itemization.reforgeCosts",
+                    "Reforge costs require valid material/catalyst items, positive growth and complete rarity tables."));
+            }
+        }
+
         HashSet<string> nameIds = new(StringComparer.Ordinal);
         for (var index = 0; index < itemization.AffixNames.Count; index++)
         {
