@@ -22,6 +22,13 @@ public sealed class SystemGameRandomFactory : IGameRandomFactory
     }
 }
 
+public sealed class SeededGameRandom(int seed) : IGameRandom
+{
+    private readonly Random random = new(seed);
+
+    public decimal NextUnit() => (decimal)random.NextDouble();
+}
+
 public sealed class SequenceGameRandom(params decimal[] values) : IGameRandom
 {
     private int _index;
