@@ -27,6 +27,9 @@
       ],
       "prototypeIdentity": "Bow-based ranged fighter with a permanent companion. Talent loadouts shift power between precision, physical pet coordination, and magical arrows with a spirit companion.",
       "startingAbilityIds": [],
+      "startingEquipmentItemIds": [
+        "HUNTER_SHORTBOW"
+      ],
       "abilityUnlocks": [],
       "allowedOffHandCategories": [
         "QUIVER"
