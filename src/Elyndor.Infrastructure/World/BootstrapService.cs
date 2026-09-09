@@ -459,96 +459,101 @@ public sealed class BootstrapService(
             return false;
         }
 
-        await using IDbContextTransaction transaction =
-            await dbContext.Database.BeginTransactionAsync(cancellationToken);
-        _ = await dbContext.Characters
-            .FromSqlInterpolated(
-                $"SELECT * FROM game.characters WHERE \"Id\" = {character.Id} FOR UPDATE")
-            .AsNoTracking()
-            .SingleAsync(cancellationToken);
-
-        if (await dbContext.CharacterMutations
-            .AsNoTracking()
-            .AnyAsync(
-                mutation => mutation.CharacterId == character.Id
-                    && mutation.MutationId == StartingEquipmentRepairMutationId,
-                cancellationToken))
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            await transaction.CommitAsync(cancellationToken);
-            return false;
-        }
+            await using IDbContextTransaction transaction =
+                await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-        EquipmentSlot[] mainHandSlots = [EquipmentSlot.MainHand, EquipmentSlot.Weapon];
-        CharacterEquipment[] mainHandRows = await dbContext.CharacterEquipment
-            .Where(equipment => equipment.CharacterId == character.Id
-                && mainHandSlots.Contains(equipment.Slot))
-            .ToArrayAsync(cancellationToken);
-        Guid[] equippedItemIds = mainHandRows
-            .Select(equipment => equipment.CharacterItemId)
-            .Distinct()
-            .ToArray();
-        CharacterItem[] equippedItems = await dbContext.CharacterItems
-            .AsNoTracking()
-            .Where(item => equippedItemIds.Contains(item.Id))
-            .ToArrayAsync(cancellationToken);
+            _ = await dbContext.Characters
+                .FromSqlInterpolated(
+                    $"SELECT * FROM game.characters WHERE \"Id\" = {character.Id} FOR UPDATE")
+                .AsNoTracking()
+                .SingleAsync(cancellationToken);
 
-        bool hasValidMainHand = equippedItems.Any(item =>
-            contentSnapshot.Indexes.ItemsById.TryGetValue(
-                item.ItemDefinitionId,
-                out ItemDefinition? definition)
-            && definition.Type == ItemType.Equipment
-            && definition.WeaponCategory is not null
-            && classProfile.AllowedWeaponCategories.Contains(
-                definition.WeaponCategory,
-                StringComparer.Ordinal)
-            && (definition.AllowedClassIds is null
-                || definition.AllowedClassIds.Contains(
-                    character.ClassId,
-                    StringComparer.Ordinal)));
-
-        bool granted = false;
-        if (!hasValidMainHand)
-        {
-            ItemDefinition? starterWeapon = classProfile.StartingEquipmentItemIds
-                .Select(itemId =>
-                    contentSnapshot.Indexes.ItemsById.GetValueOrDefault(itemId))
-                .FirstOrDefault(definition =>
-                    definition?.Type == ItemType.Equipment
-                    && definition.Slot is EquipmentSlot.MainHand or EquipmentSlot.Weapon
-                    && definition.WeaponCategory is not null);
-
-            if (starterWeapon is not null)
+            if (await dbContext.CharacterMutations
+                .AsNoTracking()
+                .AnyAsync(
+                    mutation => mutation.CharacterId == character.Id
+                        && mutation.MutationId == StartingEquipmentRepairMutationId,
+                    cancellationToken))
             {
-                dbContext.CharacterEquipment.RemoveRange(mainHandRows);
-
-                CharacterItem starterItem =
-                    ItemInstancePersistenceFactory.CreateCharacterItem(
-                        character.Id,
-                        starterWeapon,
-                        character.Id,
-                        "STARTING_EQUIPMENT_REPAIR",
-                        $"STARTING_EQUIPMENT_REPAIR:{starterWeapon.Id}",
-                        0,
-                        now,
-                        contentSnapshot.Package);
-                dbContext.CharacterItems.Add(starterItem);
-                dbContext.CharacterEquipment.Add(new CharacterEquipment(
-                    character.Id,
-                    EquipmentSlot.MainHand,
-                    starterItem.Id));
-                granted = true;
+                await transaction.CommitAsync(cancellationToken);
+                return false;
             }
-        }
 
-        dbContext.CharacterMutations.Add(new CharacterMutation(
-            character.Id,
-            StartingEquipmentRepairMutationId,
-            StartingEquipmentRepairOperation,
-            StartingEquipmentRepairFingerprint,
-            now));
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return granted;
+            EquipmentSlot[] mainHandSlots = [EquipmentSlot.MainHand, EquipmentSlot.Weapon];
+            CharacterEquipment[] mainHandRows = await dbContext.CharacterEquipment
+                .Where(equipment => equipment.CharacterId == character.Id
+                    && mainHandSlots.Contains(equipment.Slot))
+                .ToArrayAsync(cancellationToken);
+            Guid[] equippedItemIds = mainHandRows
+                .Select(equipment => equipment.CharacterItemId)
+                .Distinct()
+                .ToArray();
+            CharacterItem[] equippedItems = await dbContext.CharacterItems
+                .AsNoTracking()
+                .Where(item => equippedItemIds.Contains(item.Id))
+                .ToArrayAsync(cancellationToken);
+
+            bool hasValidMainHand = equippedItems.Any(item =>
+                contentSnapshot.Indexes.ItemsById.TryGetValue(
+                    item.ItemDefinitionId,
+                    out ItemDefinition? definition)
+                && definition.Type == ItemType.Equipment
+                && definition.WeaponCategory is not null
+                && classProfile.AllowedWeaponCategories.Contains(
+                    definition.WeaponCategory,
+                    StringComparer.Ordinal)
+                && (definition.AllowedClassIds is null
+                    || definition.AllowedClassIds.Contains(
+                        character.ClassId,
+                        StringComparer.Ordinal)));
+
+            bool granted = false;
+            if (!hasValidMainHand)
+            {
+                ItemDefinition? starterWeapon = classProfile.StartingEquipmentItemIds
+                    .Select(itemId =>
+                        contentSnapshot.Indexes.ItemsById.GetValueOrDefault(itemId))
+                    .FirstOrDefault(definition =>
+                        definition?.Type == ItemType.Equipment
+                        && definition.Slot is EquipmentSlot.MainHand or EquipmentSlot.Weapon
+                        && definition.WeaponCategory is not null);
+
+                if (starterWeapon is not null)
+                {
+                    dbContext.CharacterEquipment.RemoveRange(mainHandRows);
+
+                    CharacterItem starterItem =
+                        ItemInstancePersistenceFactory.CreateCharacterItem(
+                            character.Id,
+                            starterWeapon,
+                            character.Id,
+                            "STARTING_EQUIPMENT_REPAIR",
+                            $"STARTING_EQUIPMENT_REPAIR:{starterWeapon.Id}",
+                            0,
+                            now,
+                            contentSnapshot.Package);
+                    dbContext.CharacterItems.Add(starterItem);
+                    dbContext.CharacterEquipment.Add(new CharacterEquipment(
+                        character.Id,
+                        EquipmentSlot.MainHand,
+                        starterItem.Id));
+                    granted = true;
+                }
+            }
+
+            dbContext.CharacterMutations.Add(new CharacterMutation(
+                character.Id,
+                StartingEquipmentRepairMutationId,
+                StartingEquipmentRepairOperation,
+                StartingEquipmentRepairFingerprint,
+                now));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return granted;
+        });
     }
 
     private void LogRepair(Guid characterId, string repair)
