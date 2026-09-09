@@ -29,9 +29,6 @@ const ancientMinePreview = computed(() =>
   dungeon.previews.find(item => item.id === 'ANCIENT_MINE') ?? null,
 )
 const ancientMineMinimumLevel = computed(() => ancientMinePreview.value?.minimumLevel ?? 14)
-const selectedIsDungeon = computed(() =>
-  selectedLocation.value?.id === 'ANCIENT_MINE' || selectedLocation.value?.id === 'ECLIPSED_CITADEL',
-)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
@@ -52,6 +49,9 @@ const selectedLocation = computed(() =>
   visibleLocations.value.find(location => location.id === selectedLocationId.value)
   ?? world.value?.currentLocation
   ?? null,
+)
+const selectedIsDungeon = computed(() =>
+  selectedLocation.value?.id === 'ANCIENT_MINE' || selectedLocation.value?.id === 'ECLIPSED_CITADEL',
 )
 const selectedIsCurrent = computed(
   () => selectedLocation.value?.id === currentLocationId.value,
