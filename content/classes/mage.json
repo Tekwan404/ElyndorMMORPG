@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.10.0",
-  "balanceVersion": "0.8.0",
-  "publishedAtUtc": "2026-09-06T08:45:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "classProfiles": [
     {
       "id": "MAGE",
@@ -35,7 +35,9 @@
         "attackPowerCoefficient": 0.35,
         "resourceOnHit": 0
       },
-      "allowedOffHandCategories": [],
+      "allowedOffHandCategories": [
+        "FOCUS"
+      ],
       "allowUnarmed": false
     }
   ]
