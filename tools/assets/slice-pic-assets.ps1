@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+    [string]$RepoRoot
 )
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -29,11 +33,16 @@ function Write-Utf8NoBom([string]$path, [string]$content) {
 }
 
 function Find-SourceFile([string]$root, [string]$pattern) {
-    $file = Get-ChildItem -LiteralPath $root -File -Recurse | Where-Object { $_.Name -like $pattern } | Select-Object -First 1
-    if ($null -eq $file) {
+    $files = @(Get-ChildItem -LiteralPath $root -File -Recurse |
+        Where-Object { $_.Name -like $pattern } |
+        Sort-Object FullName)
+    if ($files.Count -eq 0) {
         throw "Asset source not found: $root/$pattern"
     }
-    return $file.FullName
+    if ($files.Count -gt 1) {
+        throw "Asset source pattern is ambiguous: $root/$pattern ($($files.FullName -join ', '))"
+    }
+    return $files[0].FullName
 }
 
 function Save-CroppedPng(
@@ -207,9 +216,14 @@ function Get-SetSlot([object]$item) {
 }
 
 function Get-FirstSourceByPattern([string]$root, [string]$pattern) {
-    $file = Get-ChildItem -LiteralPath $root -File -Recurse | Where-Object { $_.BaseName -like $pattern } | Select-Object -First 1
-    if ($null -eq $file) { return $null }
-    return $file.FullName
+    $files = @(Get-ChildItem -LiteralPath $root -File -Recurse |
+        Where-Object { $_.BaseName -like $pattern } |
+        Sort-Object FullName)
+    if ($files.Count -eq 0) { return $null }
+    if ($files.Count -gt 1) {
+        throw "Item asset pattern is ambiguous: $root/$pattern ($($files.FullName -join ', '))"
+    }
+    return $files[0].FullName
 }
 
 if (-not (Test-Path -LiteralPath $picRoot)) {
@@ -250,7 +264,9 @@ foreach ($grid in $talentGrids) {
 $itemOutputRoot = Join-Path $playerAssetRoot 'items'
 Ensure-Directory $itemOutputRoot
 $copiedItemAssets = [System.Collections.Generic.List[object]]::new()
-foreach ($source in Get-ChildItem -LiteralPath $itemSourceRoot -File -Recurse | Where-Object { $_.FullName -notlike ((Join-Path $itemSourceRoot 'set') + '\*') }) {
+foreach ($source in Get-ChildItem -LiteralPath $itemSourceRoot -File -Recurse |
+    Where-Object { $_.FullName -notlike ((Join-Path $itemSourceRoot 'set') + '\*') } |
+    Sort-Object FullName) {
     $outputPath = Join-Path $itemOutputRoot $source.Name
     Copy-Asset $source.FullName $outputPath
     $copiedItemAssets.Add([ordered]@{
@@ -262,7 +278,7 @@ foreach ($source in Get-ChildItem -LiteralPath $itemSourceRoot -File -Recurse | 
 
 $warriorSetRoot = Join-Path $itemSourceRoot 'set\warrior'
 $mageSetRoot = Join-Path $itemSourceRoot 'set\mage'
-$mageSetSheets = @(Get-ChildItem -LiteralPath $mageSetRoot -Filter '*.png' -File | Sort-Object Name)
+$mageSetSheets = @(Get-ChildItem -LiteralPath $mageSetRoot -Filter '*.png' -File | Sort-Object FullName)
 if ($mageSetSheets.Count -lt 5) {
     throw "Expected five mage set sheets under $mageSetRoot, found $($mageSetSheets.Count)"
 }
@@ -278,7 +294,7 @@ $setDefinitions = [ordered]@{
     SET_MAGE_ECLIPSED_ORACLE = @{ Source = $mageSetSheets[3].FullName; Columns = 3; Rows = 3; Slots = @('Head', 'Shoulders', 'Chest', 'Hands', 'Legs', 'Feet', 'Staff', 'Wand', 'Focus') }
 }
 
-$allItemFiles = Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'content\items') -Filter '*.json' -File
+$allItemFiles = Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'content\items') -Filter '*.json' -File | Sort-Object FullName
 $allItems = [System.Collections.Generic.List[object]]::new()
 foreach ($itemFile in $allItemFiles) {
     $document = Get-JsonDocument $itemFile.FullName
@@ -425,11 +441,13 @@ foreach ($mapping in $personalMappings) {
     $characterManifest.Add([ordered]@{ name = $mapping.Name; source = (Resolve-Path -LiteralPath $sourcePath -Relative); output = (Resolve-Path -LiteralPath $outputPath -Relative) })
 }
 
-$splitSource = Get-ChildItem -LiteralPath $personalSourceRoot -File | Where-Object { $_.Name -notlike 'ChatGPT*' } | Select-Object -First 1
-if ($null -eq $splitSource) {
-    throw "Split personal character artwork was not found in $personalSourceRoot"
+$splitSources = @(Get-ChildItem -LiteralPath $personalSourceRoot -File |
+    Where-Object { $_.Name -like 'Раздвоенный*' } |
+    Sort-Object FullName)
+if ($splitSources.Count -ne 1) {
+    throw "Expected exactly one split personal character artwork in $personalSourceRoot, found $($splitSources.Count)"
 }
-$splitSource = $splitSource.FullName
+$splitSource = $splitSources[0].FullName
 $splitOutput = Join-Path $personalOutputRoot 'archer-female-scene.png'
 Save-CroppedPng $splitSource $splitOutput 2 1 1
 $characterManifest.Add([ordered]@{ name = 'archer-female-scene.png'; source = (Resolve-Path -LiteralPath $splitSource -Relative); cell = 1; output = (Resolve-Path -LiteralPath $splitOutput -Relative) })
@@ -437,7 +455,7 @@ $characterManifest.Add([ordered]@{ name = 'archer-female-scene.png'; source = (R
 Ensure-Directory $adminAssetRoot
 $adminManifest = [System.Collections.Generic.List[object]]::new()
 $adminIndex = 1
-foreach ($source in Get-ChildItem -LiteralPath (Join-Path $personalSourceRoot 'admin') -File) {
+foreach ($source in Get-ChildItem -LiteralPath (Join-Path $personalSourceRoot 'admin') -File | Sort-Object FullName) {
     $name = "admin-{0:00}{1}" -f $adminIndex, $source.Extension.ToLowerInvariant()
     $outputPath = Join-Path $adminAssetRoot $name
     Copy-Asset $source.FullName $outputPath

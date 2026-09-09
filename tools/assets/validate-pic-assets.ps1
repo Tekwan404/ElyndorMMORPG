@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+    [string]$RepoRoot
 )
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -32,6 +36,16 @@ Test-ManifestOutputs $manifest.characterArt
 Test-ManifestOutputs $manifest.adminArt
 
 $playerAssetRoot = Join-Path $RepoRoot 'web\elyndor-web\src\assets'
+$itemAssetRoot = Join-Path $playerAssetRoot 'items'
+$setItemAssetRoot = Join-Path $itemAssetRoot 'sets'
+$itemFiles = @(Get-ChildItem -LiteralPath $itemAssetRoot -File -Recurse | Sort-Object FullName)
+foreach ($duplicate in @($itemFiles | Group-Object BaseName | Where-Object Count -gt 1)) {
+    $rootFiles = @($duplicate.Group | Where-Object { $_.FullName -notlike ($setItemAssetRoot + '\*') })
+    if ($rootFiles.Count -ne 1) {
+        throw "Item icon '$($duplicate.Name)' has an unsupported duplicate layout. Root-level item assets must be the explicit priority source."
+    }
+}
+
 $playerAdminFiles = @(Get-ChildItem -LiteralPath $playerAssetRoot -File -Recurse | Where-Object { $_.FullName -match '[\\/]admin([\\/]|[-])' })
 if ($playerAdminFiles.Count -gt 0) {
     throw "Admin artwork leaked into player assets: $($playerAdminFiles.FullName -join ', ')"

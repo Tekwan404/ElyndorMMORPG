@@ -1,19 +1,23 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path,
+    [string]$RepoRoot,
     [ValidateRange(1, 100)]
     [int]$Quality = 85
 )
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 function Convert-DirectoryToWebp([string]$directory) {
-    $files = @(Get-ChildItem -LiteralPath $directory -Filter '*.png' -File)
+    $files = @(Get-ChildItem -LiteralPath $directory -Filter '*.png' -File | Sort-Object FullName)
     if ($files.Count -eq 0) { return 0 }
 
     $inputPaths = @($files | ForEach-Object { $_.FullName })
-    & npx --yes sharp-cli -i $inputPaths -o $directory -f webp -q $Quality | Out-Null
+    & npx --yes sharp-cli@6.1.0 -i $inputPaths -o $directory -f webp -q $Quality | Out-Null
     if ($LASTEXITCODE -ne 0) {
         throw "sharp-cli failed for $directory with exit code $LASTEXITCODE"
     }
@@ -33,7 +37,9 @@ function Convert-DirectoryToWebp([string]$directory) {
 $playerAssetRoot = Join-Path $RepoRoot 'web\elyndor-web\src\assets'
 $adminAssetRoot = Join-Path $RepoRoot 'web\elyndor-admin\src\assets\admin'
 $directories = @(
-    @(Get-ChildItem -LiteralPath (Join-Path $playerAssetRoot 'game\talents') -Directory | ForEach-Object { $_.FullName })
+    @(Get-ChildItem -LiteralPath (Join-Path $playerAssetRoot 'game\talents') -Directory |
+        Sort-Object FullName |
+        ForEach-Object { $_.FullName })
     (Join-Path $playerAssetRoot 'items')
     (Join-Path $playerAssetRoot 'items\sets')
     (Join-Path $playerAssetRoot 'characters\personal')
