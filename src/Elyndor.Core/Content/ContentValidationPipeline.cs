@@ -100,8 +100,11 @@ public sealed class TalentValidator : IContentValidationStage
 
 public sealed class ItemValidator : IContentValidationStage
 {
-    public void Validate(ContentValidationContext context) =>
+    public void Validate(ContentValidationContext context)
+    {
         GameContentPackageValidator.ValidateProgressionItemsAndLoot(context.Package, context.Errors);
+        GameContentPackageValidator.ValidateItemization(context.Package, context.Errors);
+    }
 }
 
 public sealed class MerchantValidator : IContentValidationStage
