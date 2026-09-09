@@ -37,6 +37,45 @@ public sealed class ItemInstanceStatRollerTests
     }
 
     [Fact]
+    public void GeneratedWeaponDamageAffixChangesEffectiveWeaponDamageRange()
+    {
+        ItemDefinition definition = new(
+            "TEST_PROCEDURAL_BOW",
+            "Procedural Bow",
+            ItemType.Equipment,
+            ItemRarity.Rare,
+            10,
+            false,
+            1,
+            EquipmentSlot.MainHand,
+            new PrimaryStats(0, 0, 0, 0),
+            "Procedural weapon.",
+            WeaponCategory: EquipmentCategoryIds.Bow,
+            WeaponDamageMin: 20,
+            WeaponDamageMax: 30);
+
+        ItemDefinition effective = ItemInstanceGenerator.ApplyGeneratedAffixes(
+            definition,
+            [
+                new GeneratedItemAffix(
+                    "BONUS_0",
+                    "WEAPON_DAMAGE",
+                    ItemStatIds.WeaponDamage,
+                    5,
+                    1,
+                    10,
+                    1,
+                    1,
+                    false,
+                    false,
+                    0)
+            ]);
+
+        Assert.Equal(25, effective.WeaponDamageMin);
+        Assert.Equal(35, effective.WeaponDamageMax);
+    }
+
+    [Fact]
     public void ResolveKeepsLegacyStaticStatsWhenNoRangesExist()
     {
         ItemDefinition definition = new(

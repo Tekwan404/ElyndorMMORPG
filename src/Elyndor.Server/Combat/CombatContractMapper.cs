@@ -150,7 +150,9 @@ internal static class CombatContractMapper
                     actor.ActiveCast.AbilityId,
                     actor.ActiveCast.StartedAtUtc,
                     actor.ActiveCast.ResolvesAtUtc),
-            actor.ConsumableCooldowns);
+            actor.ConsumableCooldowns,
+            actor.AutoAttackIntervalSeconds,
+            actor.NextAutoAttackAtUtc);
     }
 
     private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(

@@ -625,6 +625,8 @@ export interface CombatActorSnapshot {
   resource: number
   maxResource: number
   autoAttackEnabled: boolean
+  autoAttackIntervalSeconds?: number | null
+  nextAutoAttackAtUtc?: string | null
   cooldowns: Record<string, string>
   knownAbilityIds: string[]
   abilities: CombatAbility[]

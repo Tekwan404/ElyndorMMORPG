@@ -30,6 +30,9 @@
       ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
       "startingAbilityIds": [],
+      "startingEquipmentItemIds": [
+        "RECRUIT_IRON_SWORD"
+      ],
       "abilityUnlocks": [],
       "combatAutoAttack": {
         "interval": "00:00:02",

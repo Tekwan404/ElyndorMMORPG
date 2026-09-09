@@ -204,6 +204,19 @@ function castProgress(cast: CombatCastSnapshot | null): number {
   return Math.min(100, Math.max(0, ((now.value - started) / duration) * 100))
 }
 
+const autoAttackRemaining = computed(() => {
+  const player = snapshot.value?.player
+  if (!player?.autoAttackEnabled || !player.nextAutoAttackAtUtc) return 0
+  return Math.max(0, (Date.parse(player.nextAutoAttackAtUtc) - now.value) / 1_000)
+})
+
+const autoAttackProgress = computed(() => {
+  const player = snapshot.value?.player
+  const interval = player?.autoAttackIntervalSeconds ?? 0
+  if (!player?.autoAttackEnabled || interval <= 0 || !player.nextAutoAttackAtUtc) return 0
+  return Math.min(100, Math.max(0, (1 - autoAttackRemaining.value / interval) * 100))
+})
+
 function abilityName(id: string | null | undefined): string {
   if (!id) return ''
   const ability = abilityById.value.get(id)
@@ -575,6 +588,23 @@ onUnmounted(() => window.clearInterval(timer))
             <small>{{ castRemaining(playerCast).toFixed(1) }}с</small>
           </div>
           <i><span :style="{ width: `${castProgress(playerCast)}%` }" /></i>
+        </div>
+
+        <div
+          class="cast-bar cast-bar--autoattack"
+          :class="{ inactive: !snapshot.player.autoAttackEnabled }"
+          data-autoattack-cast
+        >
+          <div>
+            <strong>AA · Автоатака</strong>
+            <small v-if="snapshot.player.autoAttackEnabled">
+              {{ playerCast ? 'ПАУЗА' : `${autoAttackRemaining.toFixed(1)}с` }}
+            </small>
+            <small v-else>OFF</small>
+          </div>
+          <i>
+            <span :style="{ width: `${autoAttackProgress}%` }" />
+          </i>
         </div>
 
         <div class="ability-row" aria-label="Боевые способности">
@@ -1114,6 +1144,35 @@ onUnmounted(() => window.clearInterval(timer))
 
 .cast-bar--player > i > span {
   background: linear-gradient(90deg, #655bc6, #aba3ff);
+}
+
+.cast-bar--autoattack {
+  padding: 6px 8px;
+  border: 1px solid rgb(79 185 150 / 28%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(10 24 22 / 54%);
+}
+
+.cast-bar--autoattack > div strong {
+  color: #9be2c9;
+}
+
+.cast-bar--autoattack > i > span {
+  background: linear-gradient(90deg, #3d8f76, #84d5bb);
+}
+
+.cast-bar--autoattack.inactive {
+  border-color: var(--ui-color-border);
+  background: rgb(4 7 12 / 52%);
+  opacity: .58;
+}
+
+.cast-bar--autoattack.inactive > div strong {
+  color: var(--ui-color-text-muted);
+}
+
+.cast-bar--autoattack.inactive > i > span {
+  width: 0 !important;
 }
 
 .combat-feedback {

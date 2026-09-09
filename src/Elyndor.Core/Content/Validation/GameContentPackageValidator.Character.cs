@@ -138,6 +138,36 @@ public static partial class GameContentPackageValidator
                         $"Class profile '{profile.Id}' contains invalid equipment categories."));
                 }
 
+                IReadOnlyList<string> startingEquipmentItemIds =
+                    profile.StartingEquipmentItemIds ?? [];
+                if (startingEquipmentItemIds.Distinct(StringComparer.Ordinal).Count()
+                    != startingEquipmentItemIds.Count)
+                {
+                    errors.Add(new ContentValidationError(
+                        "DUPLICATE_STARTING_EQUIPMENT",
+                        path,
+                        $"Class profile '{profile.Id}' contains duplicate starting equipment ids."));
+                }
+
+                foreach (string itemId in startingEquipmentItemIds)
+                {
+                    ItemDefinition? item = package.Items?.SingleOrDefault(candidate =>
+                        string.Equals(candidate.Id, itemId, StringComparison.Ordinal));
+                    bool validStartingItem = item is not null
+                        && item.Type == ItemType.Equipment
+                        && item.Slot is not null
+                        && item.RequiredLevel <= 1
+                        && (item.AllowedClassIds is null
+                            || item.AllowedClassIds.Contains(profile.Id, StringComparer.Ordinal));
+                    if (!validStartingItem)
+                    {
+                        errors.Add(new ContentValidationError(
+                            "INVALID_STARTING_EQUIPMENT",
+                            path,
+                            $"Class profile '{profile.Id}' starting item '{itemId}' is missing or not valid level-1 equipment for that class."));
+                    }
+                }
+
                 if (profile.CombatAutoAttack is { } autoAttack
                     && (autoAttack.Interval <= TimeSpan.Zero
                         || autoAttack.BaseDamage < 0

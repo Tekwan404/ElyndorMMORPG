@@ -1,8 +1,10 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -88,9 +90,10 @@ public sealed class CharacterCreationService(
             return CharacterCreationResult.Failure(name.ErrorCode!);
         }
 
-        if (!HasDefinition("RACE", command.RaceId)
-            || !HasDefinition("GENDER", command.GenderId)
-            || !HasDefinition("CLASS", command.ClassId))
+        GameContentSnapshot contentSnapshot = _contentProvider.GetCurrent();
+        if (!HasDefinition(contentSnapshot, "RACE", command.RaceId)
+            || !HasDefinition(contentSnapshot, "GENDER", command.GenderId)
+            || !HasDefinition(contentSnapshot, "CLASS", command.ClassId))
         {
             return CharacterCreationResult.Failure(
                 CharacterCreationErrorCodes.InvalidRoster);
@@ -108,6 +111,7 @@ public sealed class CharacterCreationService(
                         command,
                         name,
                         _timeProvider.GetUtcNow(),
+                        contentSnapshot,
                         cancellationToken);
                 }
                 catch (DbUpdateException exception) when (attempt < 4
@@ -137,6 +141,7 @@ public sealed class CharacterCreationService(
         CreateCharacterCommand command,
         CharacterNameValidationResult name,
         DateTimeOffset now,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
         _dbContext.ChangeTracker.Clear();
@@ -173,24 +178,58 @@ public sealed class CharacterCreationService(
             command.ClassId,
             now);
         CharacterLocation location = new(character.Id, WorldLocationIds.StarterTown, 1, now);
-        CharacterDerivedState derived = await _derivedStateService.ResolveAsync(
-            character.Id,
-            command.ClassId,
-            character.Level,
-            cancellationToken);
-        CharacterVitals vitals = new(
-            character.Id,
-            derived.Stats.MaxHp,
-            derived.EffectiveResourceProfile.StartValue,
-            now,
-            now);
         _dbContext.Characters.Add(character);
         _dbContext.CharacterLocations.Add(location);
-        _dbContext.CharacterVitals.Add(vitals);
+
+        ClassProfile classProfile = contentSnapshot.Indexes.ClassesById[command.ClassId];
+        int startingOrdinal = 0;
+        foreach (string itemId in classProfile.StartingEquipmentItemIds ?? [])
+        {
+            if (!contentSnapshot.Indexes.ItemsById.TryGetValue(itemId, out ItemDefinition? definition)
+                || definition.Type != ItemType.Equipment
+                || definition.Slot is null)
+            {
+                throw new InvalidOperationException(
+                    $"Class '{command.ClassId}' starting equipment '{itemId}' is invalid.");
+            }
+
+            CharacterItem item = ItemInstancePersistenceFactory.CreateCharacterItem(
+                character.Id,
+                definition,
+                command.RequestId,
+                "CHARACTER_CREATION",
+                $"STARTING_EQUIPMENT:{command.ClassId}:{itemId}",
+                startingOrdinal++,
+                now,
+                contentSnapshot.Package);
+            _dbContext.CharacterItems.Add(item);
+            _dbContext.CharacterEquipment.Add(new CharacterEquipment(
+                character.Id,
+                definition.Slot.Value,
+                item.Id));
+        }
 
         try
         {
+            // Persist identity + starting equipment first so the authoritative derived-state
+            // calculation includes generated starter affixes in max HP/resource.
             await _dbContext.SaveChangesAsync(cancellationToken);
+
+            CharacterDerivedState derived = await _derivedStateService.ResolveAsync(
+                character.Id,
+                command.ClassId,
+                character.Level,
+                contentSnapshot,
+                cancellationToken);
+            CharacterVitals vitals = new(
+                character.Id,
+                derived.Stats.MaxHp,
+                derived.EffectiveResourceProfile.StartValue,
+                now,
+                now);
+            _dbContext.CharacterVitals.Add(vitals);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             await transaction.CommitAsync(cancellationToken);
             return CharacterCreationResult.Success(character);
         }
@@ -236,8 +275,11 @@ public sealed class CharacterCreationService(
         return CharacterCreationResult.Failure(CharacterCreationErrorCodes.NameTaken);
     }
 
-    private bool HasDefinition(string type, string id) =>
-        _contentProvider.GetCurrent().Indexes.DefinitionsByKey.ContainsKey(
+    private static bool HasDefinition(
+        GameContentSnapshot contentSnapshot,
+        string type,
+        string id) =>
+        contentSnapshot.Indexes.DefinitionsByKey.ContainsKey(
             new GameContentDefinitionKey(type, id));
 
     private static bool Matches(

@@ -67,7 +67,8 @@ public sealed record ClassProfile(
     IReadOnlyList<string>? AllowedOffHandCategories = null,
     bool AllowUnarmed = false,
     IReadOnlyList<CompanionProfileDefinition>? CompanionProfiles = null,
-    string? StartingCompanionProfileId = null);
+    string? StartingCompanionProfileId = null,
+    IReadOnlyList<string>? StartingEquipmentItemIds = null);
 
 public sealed record CompanionProfileDefinition(
     string Id,
