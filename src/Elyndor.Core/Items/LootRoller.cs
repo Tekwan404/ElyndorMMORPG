@@ -2,7 +2,10 @@ using Elyndor.Core.Combat.Randomness;
 
 namespace Elyndor.Core.Items;
 
-public sealed record LootRoll(string ItemId, int Quantity);
+public sealed record LootRoll(
+    string ItemId,
+    int Quantity,
+    string SourceQualityProfileId = "NORMAL");
 
 public static class LootRoller
 {
