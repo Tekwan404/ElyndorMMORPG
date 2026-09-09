@@ -8,6 +8,7 @@ export const useSocialStore = defineStore('social', () => {
   const snapshot = ref<FriendsSnapshot | null>(null)
   const searchResults = ref<PlayerSearchResult[]>([])
   const loading = ref(false)
+  const mutationPending = ref(false)
   const errorCode = ref<string | null>(null)
   const friends = computed(() => snapshot.value?.friends ?? [])
   const incomingRequests = computed(() => snapshot.value?.incomingRequests ?? [])
@@ -40,12 +41,16 @@ export const useSocialStore = defineStore('social', () => {
   }
 
   async function runMutation(action: () => Promise<void>, fallbackErrorCode: string): Promise<void> {
+    if (mutationPending.value) return
+    mutationPending.value = true
     errorCode.value = null
     try {
       await action()
       await refresh()
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : fallbackErrorCode
+    } finally {
+      mutationPending.value = false
     }
   }
 
@@ -59,12 +64,24 @@ export const useSocialStore = defineStore('social', () => {
     }, 'friend_request_failed')
   }
 
-  async function decideRequest(request: FriendRequest, accept: boolean): Promise<void> {
+  async function decideRequestById(requestId: string, accept: boolean): Promise<void> {
     await runMutation(async () => {
-      await apiClient.request(`/api/v1/friends/requests/${request.id}/${accept ? 'accept' : 'decline'}`, {
+      await apiClient.request(`/api/v1/friends/requests/${requestId}/${accept ? 'accept' : 'decline'}`, {
         method: 'POST',
       })
     }, 'friend_request_decision_failed')
+  }
+
+  async function decideRequest(request: FriendRequest, accept: boolean): Promise<void> {
+    await decideRequestById(request.id, accept)
+  }
+
+  async function cancelRequest(requestId: string): Promise<void> {
+    await runMutation(async () => {
+      await apiClient.request(`/api/v1/friends/requests/${requestId}/cancel`, {
+        method: 'POST',
+      })
+    }, 'friend_request_cancel_failed')
   }
 
   async function removeFriend(friendCharacterId: string): Promise<void> {
@@ -77,6 +94,7 @@ export const useSocialStore = defineStore('social', () => {
     snapshot,
     searchResults,
     loading,
+    mutationPending,
     errorCode,
     friends,
     incomingRequests,
@@ -85,6 +103,8 @@ export const useSocialStore = defineStore('social', () => {
     search,
     sendRequest,
     decideRequest,
+    decideRequestById,
+    cancelRequest,
     removeFriend,
   }
 })

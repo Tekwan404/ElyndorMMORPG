@@ -88,7 +88,20 @@ export interface ApiProblem {
   status?: number
 }
 
+export type FriendRelationship = 'NONE' | 'FRIEND' | 'INCOMING_REQUEST' | 'OUTGOING_REQUEST'
+
 export interface PlayerSearchResult {
+  characterId: string
+  name: string
+  level: number
+  classId: string
+  publicCode: string
+  telegramUsername: string | null
+  relationship: FriendRelationship
+  pendingRequestId: string | null
+}
+
+export interface FriendProfile {
   characterId: string
   name: string
   level: number
@@ -97,15 +110,13 @@ export interface PlayerSearchResult {
   telegramUsername: string | null
 }
 
-export type FriendProfile = PlayerSearchResult
-
 export interface FriendRequest {
   requesterName?: string | null
   targetName?: string | null
   id: string
   requesterCharacterId: string
   targetCharacterId: string
-  status: 'Pending' | 'Accepted' | 'Declined'
+  status: 'Pending' | 'Accepted' | 'Declined' | 'Cancelled'
   createdAtUtc: string
 }
 
