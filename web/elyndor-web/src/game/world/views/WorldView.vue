@@ -32,7 +32,7 @@ const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
-const currentLocationId = computed(() => world.value?.currentLocation.id)
+const currentLocationId = computed(() => world.value?.currentLocation.id ?? '')
 const isDungeonLocation = computed(() =>
   currentLocationId.value === 'ANCIENT_MINE' || currentLocationId.value === 'ECLIPSED_CITADEL',
 )
