@@ -619,9 +619,9 @@ public sealed class CombatRewardService(
         };
 
     private static string QualityProfileFor(MonsterDefinition monster) =>
-        monster.Rank.Equals("Boss", StringComparison.OrdinalIgnoreCase)
+        monster.Rank == MonsterRank.Boss
             ? "BOSS"
-            : monster.Rank.Equals("Elite", StringComparison.OrdinalIgnoreCase)
+            : monster.Rank == MonsterRank.Elite
                 ? "ELITE"
                 : "NORMAL";
 
