@@ -21,6 +21,32 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task ArcherTalentTreeLoadsAndCreatesAuthoritativeState()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync("ARCHER");
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TalentService service = new(context, content, new FixedTimeProvider(Now));
+
+        TalentOperationResult result = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.ErrorCode);
+        Assert.Equal("ARCHER", result.Snapshot!.Tree.ClassId);
+        Assert.Equal("ARCHER_TREE", result.Snapshot.Tree.Id);
+        Assert.NotEmpty(result.Snapshot.Tree.Branches);
+        Assert.NotEmpty(result.Snapshot.Tree.Nodes);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterTalentState persisted = await verify.CharacterTalentStates
+            .AsNoTracking()
+            .SingleAsync(state => state.CharacterId == characterId);
+        Assert.Equal("ARCHER_TREE", persisted.TalentTreeId);
+    }
+
+    [Fact]
     public async Task OldExactMutationReplaysAfterLaterTalentChangesAndPayloadReuseIsRejected()
     {
         GameContentPackage content = await LoadContentAsync();
@@ -182,7 +208,8 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
         Assert.Equal(1, persisted.GetRanks(TalentLoadoutIds.Loadout1)[talent.Id]);
     }
 
-    private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync()
+    private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
+        string classId = "WARRIOR")
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -201,7 +228,7 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
             $"TALENT{characterId:N}"[..16],
             "HUMAN",
             "MALE",
-            "WARRIOR",
+            classId,
             Now);
         character.SetLevel(60);
 
