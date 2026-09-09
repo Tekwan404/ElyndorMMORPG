@@ -14,7 +14,11 @@ const messages: Record<string, string> = {
   dungeon_member_not_in_party: 'Для этого действия нужно состоять в группе забега.',
   dungeon_member_not_in_run: 'Сначала войдите в забег.',
   dungeon_run_not_found: 'Забег больше недоступен.',
-  friend_request_already_pending: 'Заявка уже отправлена.',
+  friend_request_pending: 'Заявка уже отправлена.',
+  friend_request_already_decided: 'Эта заявка уже обработана. Обновите список друзей.',
+  friend_request_not_found: 'Заявка больше не существует.',
+  friend_self: 'Нельзя добавить самого себя в друзья.',
+  friend_request_cancel_failed: 'Не удалось отменить заявку. Обновите список и попробуйте ещё раз.',
   friend_already_friends: 'Этот персонаж уже в друзьях.',
   network_unavailable: 'Нет связи с сервером. Попробуйте ещё раз.',
 }
