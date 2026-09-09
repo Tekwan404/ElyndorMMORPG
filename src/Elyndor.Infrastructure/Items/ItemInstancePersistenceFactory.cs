@@ -16,7 +16,8 @@ public static class ItemInstancePersistenceFactory
         DateTimeOffset acquiredAtUtc,
         GameContentPackage content,
         string qualityProfileId = "NORMAL",
-        Guid? itemId = null)
+        Guid? itemId = null,
+        Elyndor.Core.Combat.Randomness.IGameRandom? legacyRandom = null)
     {
         ItemGenerationKey key = ItemGenerationKey.Create(
             sourceOperationId,
@@ -31,7 +32,7 @@ public static class ItemInstancePersistenceFactory
             && definition.Type == ItemType.Equipment
             ? ItemInstanceStatRoller.Resolve(
                 definition,
-                new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
+                legacyRandom ?? new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
 
         CharacterItem item = new(
