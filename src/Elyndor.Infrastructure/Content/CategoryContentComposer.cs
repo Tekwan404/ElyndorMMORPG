@@ -23,6 +23,7 @@ internal static class CategoryContentComposer
         "classes",
         "effects",
         "items",
+        "itemization",
         "loot",
         "merchants",
         "monsters",
@@ -230,7 +231,8 @@ internal static class CategoryContentComposer
             Quests = ContentCompositionRules.MergeOptionalByKey(
                 package.Quests,
                 fragment.Quests,
-                item => item.Id)
+                item => item.Id),
+            Itemization = fragment.Itemization ?? package.Itemization
         };
     }
 
@@ -256,7 +258,8 @@ internal static class CategoryContentComposer
         ResourceScalingProfile? ResourceScaling = null,
         IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
-        IReadOnlyList<QuestDefinition>? Quests = null);
+        IReadOnlyList<QuestDefinition>? Quests = null,
+        ItemizationDefinition? Itemization = null);
 
     private sealed record LocationEncounterFragment(
         string ContentVersion,
