@@ -291,8 +291,12 @@ public sealed class InventoryEquipmentService(
 
                 bool isOffHandOneHandWeapon = canonicalSlot == EquipmentSlot.OffHand
                     && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory);
+                bool isAlternateRingSlot =
+                    definitionSlot is EquipmentSlot.Ring1 or EquipmentSlot.Ring2
+                    && canonicalSlot is EquipmentSlot.Ring1 or EquipmentSlot.Ring2;
                 if (canonicalSlot != definitionSlot
-                    && !(definitionSlot == EquipmentSlot.MainHand && isOffHandOneHandWeapon))
+                    && !(definitionSlot == EquipmentSlot.MainHand && isOffHandOneHandWeapon)
+                    && !isAlternateRingSlot)
                 {
                     return InventoryOperationResult.Failure(
                         canonicalSlot == EquipmentSlot.OffHand
@@ -326,7 +330,12 @@ public sealed class InventoryEquipmentService(
                 }
 
                 if (canonicalSlot == EquipmentSlot.OffHand
-                    && await HasTwoHandedMainHandAsync(character.Id, cancellationToken))
+                    && await HasTwoHandedMainHandAsync(character.Id, cancellationToken)
+                    && !(string.Equals(
+                            definition.OffHandCategory,
+                            EquipmentCategoryIds.Quiver,
+                            StringComparison.Ordinal)
+                        && await HasBowMainHandAsync(character.Id, cancellationToken)))
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.TwoHandedConflict);
@@ -411,13 +420,34 @@ public sealed class InventoryEquipmentService(
                 if (canonicalSlot == EquipmentSlot.MainHand
                     && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory))
                 {
-                    CharacterEquipment[] offHand = await dbContext.CharacterEquipment
-                        .Where(candidate => candidate.CharacterId == character.Id
-                            && candidate.Slot == EquipmentSlot.OffHand)
+                    var offHandEntries = await (
+                            from equipment in dbContext.CharacterEquipment
+                            join equippedItem in dbContext.CharacterItems
+                                on equipment.CharacterItemId equals equippedItem.Id
+                            where equipment.CharacterId == character.Id
+                                && equipment.Slot == EquipmentSlot.OffHand
+                            select new
+                            {
+                                Equipment = equipment,
+                                equippedItem.ItemDefinitionId
+                            })
                         .ToArrayAsync(cancellationToken);
-                    if (offHand.Length > 0)
+
+                    CharacterEquipment[] displaced = offHandEntries
+                        .Where(entry =>
+                            !string.Equals(
+                                definition.WeaponCategory,
+                                EquipmentCategoryIds.Bow,
+                                StringComparison.Ordinal)
+                            || !string.Equals(
+                                FindItem(entry.ItemDefinitionId)?.OffHandCategory,
+                                EquipmentCategoryIds.Quiver,
+                                StringComparison.Ordinal))
+                        .Select(entry => entry.Equipment)
+                        .ToArray();
+                    if (displaced.Length > 0)
                     {
-                        dbContext.CharacterEquipment.RemoveRange(offHand);
+                        dbContext.CharacterEquipment.RemoveRange(displaced);
                     }
                 }
 
@@ -678,6 +708,33 @@ public sealed class InventoryEquipmentService(
 
         HashSet<Guid> projectedEquippedItemIds =
             current.Select(equipment => equipment.CharacterItemId).ToHashSet();
+        HashSet<Guid> compatibleQuiverItemIds = [];
+        if (targetSlot == EquipmentSlot.MainHand
+            && string.Equals(
+                definition.WeaponCategory,
+                EquipmentCategoryIds.Bow,
+                StringComparison.Ordinal))
+        {
+            Guid[] offHandItemIds = current
+                .Where(equipment => equipment.Slot == EquipmentSlot.OffHand)
+                .Select(equipment => equipment.CharacterItemId)
+                .ToArray();
+            if (offHandItemIds.Length > 0)
+            {
+                var offHandDefinitions = await dbContext.CharacterItems
+                    .AsNoTracking()
+                    .Where(item => offHandItemIds.Contains(item.Id))
+                    .Select(item => new { item.Id, item.ItemDefinitionId })
+                    .ToArrayAsync(cancellationToken);
+                compatibleQuiverItemIds = offHandDefinitions
+                    .Where(item => string.Equals(
+                        FindItem(item.ItemDefinitionId)?.OffHandCategory,
+                        EquipmentCategoryIds.Quiver,
+                        StringComparison.Ordinal))
+                    .Select(item => item.Id)
+                    .ToHashSet();
+            }
+        }
 
         foreach (CharacterEquipment equipment in current)
         {
@@ -686,7 +743,8 @@ public sealed class InventoryEquipmentService(
             bool displacedByTwoHandedMain =
                 targetSlot == EquipmentSlot.MainHand
                 && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory)
-                && equipment.Slot == EquipmentSlot.OffHand;
+                && equipment.Slot == EquipmentSlot.OffHand
+                && !compatibleQuiverItemIds.Contains(equipment.CharacterItemId);
             bool isMovingItem = equipment.CharacterItemId == itemId;
 
             if (occupiesTarget || displacedByTwoHandedMain || isMovingItem)
@@ -823,6 +881,30 @@ public sealed class InventoryEquipmentService(
         Guid characterId,
         CancellationToken cancellationToken)
     {
+        ItemDefinition? definition = await GetMainHandDefinitionAsync(
+            characterId,
+            cancellationToken);
+        return definition is not null
+            && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory);
+    }
+
+    private async Task<bool> HasBowMainHandAsync(
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
+        ItemDefinition? definition = await GetMainHandDefinitionAsync(
+            characterId,
+            cancellationToken);
+        return string.Equals(
+            definition?.WeaponCategory,
+            EquipmentCategoryIds.Bow,
+            StringComparison.Ordinal);
+    }
+
+    private async Task<ItemDefinition?> GetMainHandDefinitionAsync(
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
         EquipmentSlot[] mainHandSlots = EquivalentEquipmentSlots(EquipmentSlot.MainHand);
         string? definitionId = await (
                 from equipment in dbContext.CharacterEquipment.AsNoTracking()
@@ -833,9 +915,7 @@ public sealed class InventoryEquipmentService(
                 select item.ItemDefinitionId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return definitionId is not null
-            && FindItem(definitionId) is { } definition
-            && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory);
+        return definitionId is null ? null : FindItem(definitionId);
     }
 
     private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
