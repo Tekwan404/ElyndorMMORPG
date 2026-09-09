@@ -1,14 +1,14 @@
 {
-  "contentVersion": "0.15.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:22:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "dungeons": [
     {
       "id": "ANCIENT_MINE",
       "displayName": "Древняя шахта",
-      "description": "Заброшенная шахта под глубоким лесом. Пять последовательных столкновений для группы 1–5 игроков, включая усиленную Прародительницу Глубин.",
-      "minimumLevel": 15,
-      "maximumLevel": 60,
+      "description": "Древняя шахта для группы 1–5 игроков 14–16 уровня. Пять последовательных столкновений, редкие и эпические предметы по пути и очень редкие легендарные трофеи с Прародительницы Глубин.",
+      "minimumLevel": 14,
+      "maximumLevel": 16,
       "entryLocationId": "ANCIENT_MINE",
       "minimumPartySize": 1,
       "maximumPartySize": 5,
