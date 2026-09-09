@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T04:55:00+00:00",
+  "contentVersion": "0.17.0",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "itemization": {
     "templateBasePower": 110,
     "levelLinearCoefficient": 0.055,
@@ -153,6 +153,32 @@
           "MAGIC_PENETRATION",
           "MAX_RESOURCE"
         ]
+      },
+      {
+        "id": "MAGE_FOCUS",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "MAGIC_PENETRATION",
+          "ACCURACY",
+          "MAX_RESOURCE"
+        ]
+      },
+      {
+        "id": "ARCHER_QUIVER",
+        "statIds": [
+          "AGILITY",
+          "STAMINA",
+          "ATTACK_POWER",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "ACCURACY",
+          "DODGE",
+          "ARMOR_PENETRATION"
+        ]
       }
     ],
     "affixCountProfiles": [
@@ -190,6 +216,54 @@
         "id": "LEVEL_17_20",
         "guaranteedCount": 3,
         "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "OFFHAND_LEVEL_1_4",
+        "guaranteedCount": 1,
+        "minimumBonusCount": 0,
+        "maximumBonusCount": 0
+      },
+      {
+        "id": "ACCESSORY_LEVEL_1_4",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 1
+      },
+      {
+        "id": "ACCESSORY_LEVEL_5_8",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "ACCESSORY_LEVEL_9_12",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 3
+      },
+      {
+        "id": "ACCESSORY_LEVEL_13_16",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 3,
+        "maximumBonusCount": 4
+      },
+      {
+        "id": "ACCESSORY_LEVEL_17_25",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 4,
+        "maximumBonusCount": 5
+      },
+      {
+        "id": "LEVEL_21_25",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_25_UNIQUE",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 2,
         "maximumBonusCount": 2
       }
     ],
