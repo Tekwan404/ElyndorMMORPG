@@ -150,7 +150,6 @@ async function travel(): Promise<void> {
   await session.travel(location.id)
   if (!session.errorCode) {
     selectedLocationId.value = location.id
-    emit('open-location')
   }
 }
 
@@ -159,7 +158,6 @@ async function enterSelectedDungeon(): Promise<void> {
   if (!dungeonId || characterLevel.value < selectedDungeonMinimumLevel.value || isTravelling.value) return
   if (await dungeon.teleport(dungeonId)) {
     await session.refreshSnapshot()
-    emit('open-location')
   }
 }
 
