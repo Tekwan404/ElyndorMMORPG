@@ -9,7 +9,17 @@ public sealed class AfkFarmSessionConfiguration : IEntityTypeConfiguration<AfkFa
 {
     public void Configure(EntityTypeBuilder<AfkFarmSession> builder)
     {
-        builder.ToTable("afk_farm_sessions");
+        builder.ToTable(
+            "afk_farm_sessions",
+            table =>
+            {
+                table.HasCheckConstraint(
+                    "ck_afk_farm_sessions_positive_duration",
+                    "\"EndsAtUtc\" > \"StartedAtUtc\"");
+                table.HasCheckConstraint(
+                    "ck_afk_farm_sessions_processing_window",
+                    "\"LastProcessedAtUtc\" >= \"StartedAtUtc\" AND \"LastProcessedAtUtc\" <= \"EndsAtUtc\"");
+            });
         builder.HasKey(session => session.Id)
             .HasName("pk_afk_farm_sessions");
 
