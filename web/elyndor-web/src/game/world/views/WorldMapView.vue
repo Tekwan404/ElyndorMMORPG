@@ -478,7 +478,7 @@ onMounted(() => {
 
 .world-map__meta span {
   color: var(--ui-color-text-muted);
-  font-size: .5rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -488,7 +488,7 @@ onMounted(() => {
   max-width: 9rem;
   overflow: hidden;
   color: #d6d2ff;
-  font-size: .63rem;
+  font-size: var(--ui-font-size-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -775,7 +775,7 @@ onMounted(() => {
   margin: 0;
   overflow: hidden;
   color: var(--ui-color-text-muted);
-  font-size: .61rem;
+  font-size: var(--ui-font-size-xs);
   line-height: 1.4;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -824,14 +824,14 @@ onMounted(() => {
 .contract-card p {
   margin: 0;
   color: var(--ui-color-text-muted);
-  font-size: .68rem;
+  font-size: var(--ui-font-size-xs);
   line-height: 1.4;
 }
 
 .contract-card > span {
   flex: 0 0 auto;
   color: var(--ui-color-text-secondary);
-  font-size: .58rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .map-legend {

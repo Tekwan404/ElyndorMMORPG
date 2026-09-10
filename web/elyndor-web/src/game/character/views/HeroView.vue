@@ -7,8 +7,9 @@ import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
 import TalentTreeView from '@/game/talents/views/TalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { UIButton } from '@/ui/components'
 
-type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
+type HeroTab = 'character' | 'stats' | 'talents'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
@@ -16,7 +17,6 @@ const requestedSlot = ref<EquipmentSlot | null>(null)
 const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER'].includes(session.snapshot?.character?.classId ?? ''))
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
-  { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
@@ -28,12 +28,15 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
 function selectTab(tab: (typeof tabs)[number]): void {
   if (!isAvailable(tab)) return
   activeTab.value = tab.id
-  if (tab.id === 'inventory') requestedSlot.value = null
+  requestedSlot.value = null
 }
 
 function openSlotInventory(slot: EquipmentSlot): void {
   requestedSlot.value = slot
-  activeTab.value = 'inventory'
+}
+
+function closeSlotInventory(): void {
+  requestedSlot.value = null
 }
 </script>
 
@@ -53,9 +56,14 @@ function openSlotInventory(slot: EquipmentSlot): void {
         {{ tab.label }}
       </button>
     </nav>
-    <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
+    <template v-if="requestedSlot">
+      <div class="hero-contextual-inventory">
+        <UIButton variant="ghost" data-close-slot-inventory @click="closeSlotInventory">Вернуться к снаряжению</UIButton>
+        <InventoryView :slot-filter="requestedSlot" />
+      </div>
+    </template>
+    <CharacterOverviewView v-else-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
-    <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
     <CharacterStatsView v-else />
   </section>
 </template>
@@ -63,6 +71,11 @@ function openSlotInventory(slot: EquipmentSlot): void {
 <style scoped>
 .hero-view {
   min-height: 100%;
+}
+
+.hero-contextual-inventory {
+  display: grid;
+  gap: var(--ui-space-2);
 }
 
 .hero-tabs {
@@ -88,7 +101,7 @@ function openSlotInventory(slot: EquipmentSlot): void {
 .hero-tabs button {
   position: relative;
   min-width: max-content;
-  min-height: 36px;
+  min-height: var(--ui-touch-target);
   padding: 6px var(--ui-space-2);
   border: 1px solid transparent;
   border-radius: var(--ui-radius-md);

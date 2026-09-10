@@ -533,7 +533,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   grid-template-columns: 1.5rem minmax(0, 1fr);
   align-items: center;
   gap: 5px;
-  min-height: 36px;
+  min-height: var(--ui-touch-target);
   padding: 0 9px;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-sm);
@@ -569,14 +569,14 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 .merchant-filter__chips button {
   flex: 0 0 auto;
-  min-height: 28px;
+  min-height: var(--ui-touch-target);
   padding: 4px 8px;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
   background: transparent;
   color: var(--ui-color-text-muted);
   font: inherit;
-  font-size: .55rem;
+  font-size: var(--ui-font-size-xs);
   white-space: nowrap;
 }
 
