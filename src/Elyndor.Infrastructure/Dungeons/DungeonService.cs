@@ -194,38 +194,64 @@ public sealed class DungeonService(
         if (definition is null)
             return DungeonOperationResult.Failure(DungeonErrorCodes.DungeonNotFound);
 
-        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
-        if (party is null)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
-
         Character? character = await GetCharacterAsync(accountId, cancellationToken);
         if (character is null)
             return DungeonOperationResult.Failure(DungeonErrorCodes.CharacterNotFound);
-        if (party.LeaderCharacterId != character.Id)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
-        if (party.Members.Count < definition.MinimumPartySize
-            || party.Members.Count > Math.Min(definition.MaximumPartySize, CombatParticipantRoster.DefaultMaximumParticipants))
-            return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
 
-        string? validationError = await ValidateMembersAsync(
-            party,
-            definition,
-            cancellationToken);
-        if (validationError is not null)
-            return DungeonOperationResult.Failure(validationError);
+        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+        bool solo = party is null;
+        if (!solo)
+        {
+            if (party!.LeaderCharacterId != character.Id)
+                return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
+            if (party.Members.Count < definition.MinimumPartySize
+                || party.Members.Count > Math.Min(definition.MaximumPartySize, CombatParticipantRoster.DefaultMaximumParticipants))
+                return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
 
-        Guid lockedPartyId = party.PartyId;
+            string? partyValidationError = await ValidateMembersAsync(
+                party,
+                definition,
+                cancellationToken);
+            if (partyValidationError is not null)
+                return DungeonOperationResult.Failure(partyValidationError);
+        }
+        else
+        {
+            string? soloValidationError = await ValidateMemberAsync(character, definition, cancellationToken);
+            if (soloValidationError is not null)
+                return DungeonOperationResult.Failure(soloValidationError);
+        }
+
+        Guid ownerId = solo ? character.Id : party!.PartyId;
+        string lockKey = solo
+            ? $"dungeon-solo:{character.Id:N}"
+            : $"party-membership:{ownerId:N}";
         await using IDbContextTransaction? transaction =
-            await BeginAdvisoryLockAsync($"party-membership:{lockedPartyId:N}", cancellationToken);
+            await BeginAdvisoryLockAsync(lockKey, cancellationToken);
         dbContext.ChangeTracker.Clear();
-        party = await partyService.GetAsync(accountId, cancellationToken);
-        if (party is null || party.PartyId != lockedPartyId)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
-        if (party.LeaderCharacterId != character.Id)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
-        validationError = await ValidateMembersAsync(party, definition, cancellationToken);
-        if (validationError is not null)
-            return DungeonOperationResult.Failure(validationError);
+
+        character = await GetCharacterAsync(accountId, cancellationToken);
+        if (character is null)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.CharacterNotFound);
+
+        if (!solo)
+        {
+            party = await partyService.GetAsync(accountId, cancellationToken);
+            if (party is null || party.PartyId != ownerId)
+                return DungeonOperationResult.Failure(DungeonErrorCodes.PartyRequired);
+            if (party.LeaderCharacterId != character.Id)
+                return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
+            string? validationError = await ValidateMembersAsync(party, definition, cancellationToken);
+            if (validationError is not null)
+                return DungeonOperationResult.Failure(validationError);
+        }
+        else
+        {
+            string? validationError = await ValidateMemberAsync(character, definition, cancellationToken);
+            if (validationError is not null)
+                return DungeonOperationResult.Failure(validationError);
+        }
+
         DungeonRun? existingByRequest = await LoadRunByRequestAsync(creationRequestId, cancellationToken);
         if (existingByRequest is not null)
         {
@@ -233,7 +259,7 @@ public sealed class DungeonService(
             return new DungeonOperationResult(true, null, ToView(existingByRequest, definition));
         }
 
-        DungeonRun? existing = await LoadActiveRunAsync(party.PartyId, cancellationToken);
+        DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);
         if (existing is not null)
         {
             await CommitAsync(transaction, cancellationToken);
@@ -246,11 +272,18 @@ public sealed class DungeonService(
         DungeonRun run = DungeonRun.Create(
             Guid.CreateVersion7(),
             creationRequestId,
-            party.PartyId,
+            ownerId,
             definition.Id,
             now);
-        foreach (PartyMemberView member in party.Members)
-            run.AddMember(member.CharacterId, now);
+        if (solo)
+        {
+            run.AddMember(character.Id, now);
+        }
+        else
+        {
+            foreach (PartyMemberView member in party!.Members)
+                run.AddMember(member.CharacterId, now);
+        }
 
         DungeonEncounterDefinition first = definition.Encounters[0];
         run.Encounters.Add(DungeonEncounter.Create(
@@ -272,14 +305,13 @@ public sealed class DungeonService(
         Character? character = await GetCharacterAsync(accountId, cancellationToken);
         if (character is null)
             return null;
-        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
-        if (party is null)
-            return null;
         DungeonRun? run = await dbContext.DungeonRuns
             .Include(candidate => candidate.Members)
             .Include(candidate => candidate.Encounters)
                 .ThenInclude(encounter => encounter.Members)
-            .Where(candidate => candidate.PartyId == party.PartyId)
+            .Where(candidate => candidate.Members.Any(member =>
+                member.CharacterId == character.Id
+                && member.State == DungeonRunMemberState.Active))
             .OrderByDescending(candidate => candidate.State == DungeonRunState.Active)
             .ThenByDescending(candidate => candidate.CreatedAtUtc)
             .FirstOrDefaultAsync(cancellationToken);
@@ -314,12 +346,23 @@ public sealed class DungeonService(
         if (run.State != DungeonRunState.Active)
             return DungeonOperationResult.Failure(DungeonErrorCodes.EncounterNotReady);
 
-        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
         Character? character = await GetCharacterAsync(accountId, cancellationToken);
-        if (party is null || character is null || party.PartyId != run.PartyId)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInParty);
-        if (!party.Members.Any(member => member.CharacterId == character.Id))
-            return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInParty);
+        if (character is null)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        bool solo = IsSoloRun(run, character.Id);
+        if (!solo)
+        {
+            PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+            if (party is null || party.PartyId != run.PartyId
+                || !party.Members.Any(member => member.CharacterId == character.Id))
+            {
+                return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInParty);
+            }
+        }
+        else if (!run.Members.Any(member => member.CharacterId == character.Id))
+        {
+            return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInRun);
+        }
 
         string? validationError = await ValidateMemberAsync(character, definition, cancellationToken);
         if (validationError is not null)
@@ -360,11 +403,17 @@ public sealed class DungeonService(
             return DungeonOperationResult.Failure(DungeonErrorCodes.DungeonNotFound);
 
         Character? leader = await GetCharacterAsync(accountId, cancellationToken);
-        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
-        if (leader is null || party is null || party.PartyId != run.PartyId)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInParty);
-        if (party.LeaderCharacterId != leader.Id)
-            return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
+        if (leader is null)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        bool solo = IsSoloRun(run, leader.Id);
+        if (!solo)
+        {
+            PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+            if (party is null || party.PartyId != run.PartyId)
+                return DungeonOperationResult.Failure(DungeonErrorCodes.MemberNotInParty);
+            if (party.LeaderCharacterId != leader.Id)
+                return DungeonOperationResult.Failure(DungeonErrorCodes.NotLeader);
+        }
         if (run.State != DungeonRunState.Active)
             return DungeonOperationResult.Failure(DungeonErrorCodes.EncounterNotReady);
         if (!run.Members.Any(member => member.CharacterId == leader.Id
@@ -442,11 +491,18 @@ public sealed class DungeonService(
             return (null, DungeonErrorCodes.DungeonNotFound);
 
         Character? leader = await GetCharacterAsync(accountId, cancellationToken);
-        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
-        if (leader is null || party is null || party.PartyId != run.PartyId)
-            return (null, DungeonErrorCodes.MemberNotInParty);
-        if (party.LeaderCharacterId != leader.Id)
-            return (null, DungeonErrorCodes.NotLeader);
+        if (leader is null)
+            return (null, DungeonErrorCodes.CharacterNotFound);
+        bool solo = IsSoloRun(run, leader.Id);
+        PartySnapshot? party = null;
+        if (!solo)
+        {
+            party = await partyService.GetAsync(accountId, cancellationToken);
+            if (party is null || party.PartyId != run.PartyId)
+                return (null, DungeonErrorCodes.MemberNotInParty);
+            if (party.LeaderCharacterId != leader.Id)
+                return (null, DungeonErrorCodes.NotLeader);
+        }
         if (run.State != DungeonRunState.Active)
             return (null, DungeonErrorCodes.EncounterNotReady);
         if (!run.Members.Any(member => member.CharacterId == leader.Id
@@ -472,23 +528,23 @@ public sealed class DungeonService(
             run.Encounters.Add(encounter);
         }
 
-        HashSet<Guid> currentPartyMemberIds = party.Members
-            .Select(member => member.CharacterId)
-            .ToHashSet();
+        HashSet<Guid> currentMemberIds = solo
+            ? [leader.Id]
+            : party!.Members.Select(member => member.CharacterId).ToHashSet();
         foreach (DungeonRunMember member in run.Members
                      .Where(member => member.State == DungeonRunMemberState.Active
-                         && !currentPartyMemberIds.Contains(member.CharacterId)))
+                         && !currentMemberIds.Contains(member.CharacterId)))
         {
             member.MarkLeft();
         }
         Guid[] runMemberIds = run.Members
             .Where(member => member.State == DungeonRunMemberState.Active
-                && currentPartyMemberIds.Contains(member.CharacterId))
+                && currentMemberIds.Contains(member.CharacterId))
             .Select(member => member.CharacterId)
             .Distinct()
             .ToArray();
         if (runMemberIds.Length == 0)
-            return (null, DungeonErrorCodes.MemberNotInParty);
+            return (null, solo ? DungeonErrorCodes.MemberNotInRun : DungeonErrorCodes.MemberNotInParty);
 
         DateTimeOffset now = timeProvider.GetUtcNow();
         Dictionary<Guid, Character> characters = await dbContext.Characters
@@ -497,7 +553,8 @@ public sealed class DungeonService(
         List<PartyCombatMember> participantList = [];
         foreach (Guid characterId in runMemberIds)
         {
-            Character member = characters.GetValueOrDefault(characterId)!;
+            if (!characters.TryGetValue(characterId, out Character? member))
+                continue;
             string? error = await ValidateMemberAsync(member, definition, cancellationToken);
             if (error is not null)
                 continue;
@@ -664,6 +721,11 @@ public sealed class DungeonService(
         return null;
     }
 
+    private static bool IsSoloRun(DungeonRun run, Guid characterId) =>
+        run.PartyId == characterId
+        && run.Members.Count == 1
+        && run.Members.Any(member => member.CharacterId == characterId);
+
     private async Task<DungeonRun?> LoadRunAsync(Guid runId, CancellationToken cancellationToken) =>
         await dbContext.DungeonRuns
             .Include(run => run.Members)
@@ -671,12 +733,12 @@ public sealed class DungeonService(
                 .ThenInclude(encounter => encounter.Members)
             .SingleOrDefaultAsync(run => run.Id == runId, cancellationToken);
 
-    private async Task<DungeonRun?> LoadActiveRunAsync(Guid partyId, CancellationToken cancellationToken) =>
+    private async Task<DungeonRun?> LoadActiveRunAsync(Guid ownerId, CancellationToken cancellationToken) =>
         await dbContext.DungeonRuns
             .Include(run => run.Members)
             .Include(run => run.Encounters)
                 .ThenInclude(encounter => encounter.Members)
-            .SingleOrDefaultAsync(run => run.PartyId == partyId && run.State == DungeonRunState.Active, cancellationToken);
+            .SingleOrDefaultAsync(run => run.PartyId == ownerId && run.State == DungeonRunState.Active, cancellationToken);
 
     private async Task<DungeonRun?> LoadRunByRequestAsync(
         Guid creationRequestId,

@@ -17,7 +17,8 @@ public sealed class CombatHub(
     CombatApplicationService combat,
     CombatLootRollService lootRolls,
     IContentSnapshotProvider contentProvider,
-    CombatCommandRateLimiter commandRateLimiter) : Hub
+    CombatCommandRateLimiter commandRateLimiter,
+    CombatSessionRegistry registry) : Hub
 {
     public async Task<CombatUpdateResponse> StartCombat(string encounterId)
     {
@@ -62,9 +63,29 @@ public sealed class CombatHub(
     public Task<CombatUpdateResponse> UseAbility(
         Guid sessionId,
         string abilityId,
-        string commandId) => ToResponseAsync(
-            combat.UseAbilityAsync(
-                GetCommandAccountId(), sessionId, commandId, abilityId, Context.ConnectionAborted));
+        string commandId)
+    {
+        Guid accountId = GetCommandAccountId();
+        return ToResponseAsync(registry.ExecuteParticipantAsync(
+            accountId,
+            (session, characterId, _, now) =>
+            {
+                if (session.SessionId != sessionId)
+                {
+                    return new CombatCommandResult(
+                        false,
+                        CombatErrorCodes.NotFound,
+                        session.Snapshot(characterId),
+                        []);
+                }
+
+                return session.HandleAbilityInterruptingAutoAttack(
+                    characterId,
+                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    now);
+            },
+            Context.ConnectionAborted));
+    }
 
     public Task<CombatUpdateResponse> UseConsumable(
         Guid sessionId,

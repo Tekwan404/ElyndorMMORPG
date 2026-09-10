@@ -106,7 +106,7 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('current')
   })
 
-  it('travels only to a server-provided outgoing transition', async () => {
+  it('travels only to a server-provided outgoing transition without opening the location tab', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
     const session = useGameSessionStore()
@@ -120,7 +120,7 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-map-travel]').attributes('disabled')).toBeUndefined()
     await wrapper.get('[data-map-travel]').trigger('click')
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
-    expect(wrapper.emitted('open-location')).toEqual([[]])
+    expect(wrapper.emitted('open-location')).toBeUndefined()
 
     await wrapper.get('[data-location-id="DEEP_FOREST"]').trigger('click')
     expect(wrapper.get('[data-map-travel]').attributes('disabled')).toBeDefined()

@@ -8,12 +8,14 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
 using Elyndor.Core.Quests;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Elyndor.Infrastructure.World;
 
@@ -107,7 +109,9 @@ public sealed class BootstrapService(
     IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
     TimeProvider timeProvider,
-    ILogger<BootstrapService>? logger = null)
+    ILogger<BootstrapService>? logger = null,
+    ICombatActivityReader? combatActivity = null,
+    IOptions<OutOfCombatRecoveryOptions>? recoveryOptions = null)
 {
     public BootstrapService(
         GameDbContext dbContext,
@@ -120,11 +124,12 @@ public sealed class BootstrapService(
             new StaticContentSnapshotProvider(contentPackage),
             derivedStateService,
             timeProvider,
+            null,
+            null,
             null)
     {
     }
 
-    private const decimal StarterTownHpRegenPerSecond = 5m;
     private const string StartingEquipmentRepairOperation = "STARTING_EQUIPMENT_V1";
     private static readonly Guid StartingEquipmentRepairMutationId =
         Guid.Parse("8f6d78d5-8f60-4a0b-9c9f-2e36bca1d501");
@@ -294,7 +299,10 @@ public sealed class BootstrapService(
             contextElapsed);
         decimal currentHp = decimal.Clamp(vitals.CurrentHp, 0, stats.MaxHp);
 
-        if (string.Equals(current.Id, WorldLocationIds.StarterTown, StringComparison.Ordinal)
+        bool isInCombat = combatActivity?.HasActiveCombat(accountId) == true;
+        if (!isInCombat
+            && activeTravel is null
+            && currentHp > 0
             && currentHp < stats.MaxHp)
         {
             DateTimeOffset recoveryFrom = vitals.CheckpointedAtUtc > location.UpdatedAtUtc
@@ -303,10 +311,18 @@ public sealed class BootstrapService(
             TimeSpan recoveryElapsed = now - recoveryFrom;
             if (recoveryElapsed > TimeSpan.Zero)
             {
+                OutOfCombatRecoveryOptions recovery = recoveryOptions?.Value ?? new();
+                decimal percentPerSecond = string.Equals(
+                    current.Id,
+                    WorldLocationIds.StarterTown,
+                    StringComparison.Ordinal)
+                        ? recovery.TownHpPercentPerSecond
+                        : recovery.FieldHpPercentPerSecond;
                 decimal elapsedSeconds = Math.Max(0m, (decimal)recoveryElapsed.TotalSeconds);
+                decimal hpPerSecond = stats.MaxHp * percentPerSecond / 100m;
                 currentHp = Math.Min(
                     stats.MaxHp,
-                    currentHp + (elapsedSeconds * StarterTownHpRegenPerSecond));
+                    currentHp + (elapsedSeconds * hpPerSecond));
             }
         }
 
