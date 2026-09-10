@@ -167,46 +167,11 @@ public sealed class ItemSalvageServiceTests(PostgresFixture postgres) : IAsyncLi
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        ItemDefinition stone = Material("REFORGE_STONE", "Reforge Stone");
-        ItemDefinition scrap = Material("FORGE_SCRAP", "Forge Scrap");
-        ItemSalvageProfileDefinition profile = new(
-            "SALVAGE_V1",
-            stone.Id,
-            scrap.Id,
-            new Dictionary<string, int>
-            {
-                ["COMMON"] = 1, ["UNCOMMON"] = 2, ["RARE"] = 3,
-                ["EPIC"] = 5, ["LEGENDARY"] = 8, ["UNIQUE"] = 10,
-            },
-            new Dictionary<string, int>
-            {
-                ["COMMON"] = 2, ["UNCOMMON"] = 3, ["RARE"] = 5,
-                ["EPIC"] = 8, ["LEGENDARY"] = 12, ["UNIQUE"] = 16,
-            },
-            5,
-            1,
-            2,
-            2,
-            "RARE");
-        content = content with
-        {
-            Items = content.Items!.Concat([stone, scrap]).ToArray(),
-            Itemization = content.Itemization! with { Salvage = profile },
-        };
+        Assert.NotNull(content.Itemization?.Salvage);
+        Assert.Contains(content.Items!, item => item.Id == "REFORGE_STONE");
+        Assert.Contains(content.Items!, item => item.Id == "FORGE_SCRAP");
         return new ItemSalvageService(context, content, new FixedTimeProvider(Now));
     }
-
-    private static ItemDefinition Material(string id, string name) => new(
-        id,
-        name,
-        ItemType.Material,
-        ItemRarity.Common,
-        1,
-        true,
-        99,
-        null,
-        new PrimaryStats(0, 0, 0, 0),
-        $"{name} material.");
 
     private static Task<int> QuantityAsync(GameDbContext context, Guid characterId, string definitionId) =>
         context.CharacterItems
