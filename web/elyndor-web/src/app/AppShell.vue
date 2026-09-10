@@ -22,6 +22,7 @@ type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu'
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
 const activeView = ref<ShellView>('location')
+const contentElement = ref<HTMLElement | null>(null)
 const openGuildOnLocation = ref(false)
 const menuSection = ref<MenuSection>('profile')
 const character = computed(() => session.snapshot?.character)
@@ -93,23 +94,33 @@ function selectView(item: (typeof navigation)[number]) {
   if (item.id === 'world') return openWorld()
   if (item.id === 'location') return openLocation()
 
-  activeView.value = item.id
+  showView(item.id)
   if (item.id === 'menu') menuSection.value = 'profile'
 }
 
+function showView(view: ShellView): void {
+  activeView.value = view
+  const content = contentElement.value
+  if (content) content.scrollTop = 0
+}
+
 function openWorld(): void {
-  activeView.value = 'world'
+  showView('world')
   openGuildOnLocation.value = false
 }
 
 function openLocation(openGuild = false): void {
-  activeView.value = 'location'
+  showView('location')
   openGuildOnLocation.value = openGuild
 }
 
 function openMenu(section: MenuSection): void {
   menuSection.value = section
-  activeView.value = 'menu'
+  showView('menu')
+}
+
+function openHero(): void {
+  showView('hero')
 }
 
 watch(() => session.state, async state => {
@@ -142,12 +153,12 @@ onMounted(() => {
       aria-label="Состояние героя"
     >
       <div class="hud__main">
-        <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="activeView = 'hero'">
+        <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="openHero">
           <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
           <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
         </button>
 
-        <button class="hud__identity" type="button" @click="activeView = 'hero'">
+        <button class="hud__identity" type="button" @click="openHero">
           <small class="hud__brand">ELYNDOR</small>
           <b>{{ character.name }}</b>
           <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
@@ -187,7 +198,7 @@ onMounted(() => {
       </div>
     </section>
 
-    <main class="content">
+    <main ref="contentElement" class="content">
       <UILoadingState
         v-if="['idle', 'authenticating', 'reauthenticating', 'loading'].includes(session.state)"
         state="loading"
@@ -216,12 +227,13 @@ onMounted(() => {
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
       <QuestView
         v-else-if="session.state === 'world' && activeView === 'quests'"
-        @open-world="openLocation()"
+        @open-world="openWorld()"
         @open-guild="openLocation(true)"
       />
       <MenuView
         v-else-if="session.state === 'world' && activeView === 'menu'"
         :initial-section="menuSection"
+        @open-world="openWorld()"
       />
     </main>
 

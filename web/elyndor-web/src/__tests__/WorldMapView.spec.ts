@@ -65,7 +65,7 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-id="DEEP_FOREST"]').attributes('data-state')).toBe('locked')
   })
 
-  it('keeps the destination brief below the map instead of hiding routes', async () => {
+  it('keeps the selected destination action inside the map surface', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
     const session = useGameSessionStore()
@@ -73,12 +73,12 @@ describe('WorldMapView', () => {
     const wrapper = mount(WorldMapView)
     await flushPromises()
 
-    const selection = wrapper.get('[data-map-selection]')
-    expect(selection.element.parentElement?.classList.contains('map-canvas')).toBe(false)
-    expect(selection.text()).toContain('Осмотреть локацию')
-
     await wrapper.get('[data-location-id="WHISPERING_FOREST"]').trigger('click')
-    expect(wrapper.get('[data-map-travel]').text()).toContain('Начать переход')
+    const map = wrapper.get('.map-canvas')
+    const selection = map.get('[data-map-selection]')
+
+    expect(selection.text()).toContain('Шепчущий лес')
+    expect(selection.get('[data-map-travel]').text()).toContain('Начать переход')
   })
 
   it('keeps map node order stable when the current location changes', async () => {

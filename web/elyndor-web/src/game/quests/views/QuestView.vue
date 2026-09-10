@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
-import { locationPresentation } from '@/game/world/locationPresentation'
+import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -88,7 +88,9 @@ function emptyMessage(tab: JournalTab): string {
   if (tab === 'contracts') return 'Контракты регистрируются через Гильдию авантюристов.'
   return 'История завершённых дел пока пуста.'
 }
-const canOpenGuild = computed(() => session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN')
+const canOpenGuild = computed(() =>
+  locationKind(session.snapshot?.world?.currentLocation.id) === 'city',
+)
 async function abandon(questId: string): Promise<void> { await session.abandonQuest(questId) }
 async function claim(questId: string): Promise<void> { await session.claimQuest(questId) }
 

@@ -8,6 +8,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal, UIPanel } from '@/ui/components'
 
 const props = withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
+const emit = defineEmits<{ 'open-world': [] }>()
 
 const party = usePartyStore()
 const session = useGameSessionStore()
@@ -67,7 +68,10 @@ async function confirmPendingAction(): Promise<void> {
         <small>СОВМЕСТНЫЙ ПУТЬ</small>
         <h1>Группа</h1>
       </div>
-      <span>{{ party.snapshot?.members.length ?? 0 }} / 5</span>
+      <div class="party-view__header-actions">
+        <UIButton data-party-open-dungeons variant="secondary" @click="emit('open-world')">Подземелья</UIButton>
+        <span>{{ party.snapshot?.members.length ?? 0 }} / 5</span>
+      </div>
     </header>
 
     <p v-if="party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(party.errorCode) }}</p>
@@ -115,10 +119,12 @@ async function confirmPendingAction(): Promise<void> {
 <style scoped>
 .party-view { display: grid; gap: 12px; padding: 14px; }
 .party-view--embedded { padding: 0; }
-.party-view__header { display: flex; align-items: end; justify-content: space-between; }
+.party-view__header { display: flex; align-items: end; justify-content: space-between; gap: 10px; }
 .party-view__header small { color: var(--ui-color-primary); font-size: .55rem; letter-spacing: .14em; }
 h1 { margin: 2px 0 0; font-family: var(--ui-font-display); font-size: 1.35rem; }
-.party-view__header > span { color: var(--ui-color-text-muted); font-size: .68rem; }
+.party-view__header-actions { display: flex; align-items: center; gap: 8px; }
+.party-view__header-actions > span { color: var(--ui-color-text-muted); font-size: .68rem; white-space: nowrap; }
+.party-view__header-actions :deep(.ui-button) { min-height: 2.15rem; padding-inline: .62rem; font-size: .65rem; }
 .member-row, .invite-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgb(255 255 255 / 7%); }
 .member-row div, .invite-row div:first-child { display: grid; gap: 3px; }
 .member-row small, .invite-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }

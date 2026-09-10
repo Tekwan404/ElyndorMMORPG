@@ -4,10 +4,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Quest, QuestStatus } from '@/api/contracts'
 import QuestView from '@/game/quests/views/QuestView.vue'
+import * as worldPresentation from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 describe('QuestView', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.restoreAllMocks()
+  })
 
   it('tracks story errands contracts and completed history instead of available work', async () => {
     const session = useGameSessionStore()
@@ -61,6 +65,23 @@ describe('QuestView', () => {
     await wrapper.get('[data-quest-tab="contracts"]').trigger('click')
     await wrapper.get('[data-claim-quest]').trigger('click')
     expect(claim).toHaveBeenCalledWith('QUEST_READY')
+  })
+
+  it('opens the guild from the contracts journal in any city location', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = {
+      world: { currentLocation: { id: 'SECOND_CITY' } },
+    } as never
+    session.questJournal = { quests: [] }
+    vi.spyOn(session, 'refreshQuestJournal').mockResolvedValue(session.questJournal)
+    vi.spyOn(worldPresentation, 'locationKind').mockReturnValue('city')
+
+    const wrapper = mount(QuestView)
+    await flushPromises()
+    await wrapper.get('[data-quest-tab="contracts"]').trigger('click')
+    await wrapper.get('[data-quest-open-guild]').trigger('click')
+
+    expect(wrapper.emitted('open-guild')).toEqual([[]])
   })
 })
 
