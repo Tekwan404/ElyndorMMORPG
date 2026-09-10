@@ -79,10 +79,10 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
         Assert.Equal(7, locations?.Length);
 
-        HttpResponseMessage invalidTravel = await client.PostAsJsonAsync(
+        HttpResponseMessage levelGatedTravel = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
             new TravelRequest(Guid.CreateVersion7(), "DEEP_FOREST"));
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, invalidTravel.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, levelGatedTravel.StatusCode);
 
         HttpResponseMessage travelResponse = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
