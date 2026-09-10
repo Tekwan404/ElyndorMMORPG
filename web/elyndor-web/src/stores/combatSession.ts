@@ -49,6 +49,8 @@ const emptyTrainingStats = (): TrainingStats => ({
   criticalHits: 0,
   maxHit: 0,
 })
+const requiresLootRollDecision = (roll: CombatLootRoll): boolean =>
+  roll.eligibleCharacterIds.length > 1
 
 export const useCombatSessionStore = defineStore('combatSession', () => {
   const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
@@ -301,7 +303,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   async function refreshLootRolls(): Promise<void> {
     if (connection?.state !== HubConnectionState.Connected) return
     try {
-      lootRolls.value = await connection.invoke<CombatLootRoll[]>('GetLootRolls')
+      const openRolls = await connection.invoke<CombatLootRoll[]>('GetLootRolls')
+      lootRolls.value = openRolls.filter(requiresLootRollDecision)
       if (lootRolls.value.length === 0) stopLootRefresh()
       else ensureLootRefresh()
     } catch (error) {
@@ -404,8 +407,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   function mergeLootRolls(incoming: CombatLootRoll[]): void {
     const byId = new Map(lootRolls.value.map((roll) => [roll.lootRollId, roll]))
-    for (const roll of incoming) byId.set(roll.lootRollId, roll)
-    lootRolls.value = [...byId.values()]
+    for (const roll of incoming.filter(requiresLootRollDecision)) byId.set(roll.lootRollId, roll)
+    lootRolls.value = [...byId.values()].filter(requiresLootRollDecision)
     if (lootRolls.value.length > 0) ensureLootRefresh()
   }
 
