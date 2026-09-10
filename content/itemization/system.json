@@ -403,8 +403,8 @@
     },
     "reforgeCosts": {
       "id": "REFORGE_V1",
-      "materialItemId": "SPIDER_SILK",
-      "catalystItemId": "SPIDER_VENOM_SAC",
+      "materialItemId": "REFORGE_STONE",
+      "catalystItemId": "REFORGE_STONE",
       "catalystMinimumRarity": "EPIC",
       "baseGoldByRarity": {
         "COMMON": 25,
@@ -426,9 +426,9 @@
         "COMMON": 0,
         "UNCOMMON": 0,
         "RARE": 0,
-        "EPIC": 1,
-        "LEGENDARY": 2,
-        "UNIQUE": 2
+        "EPIC": 0,
+        "LEGENDARY": 0,
+        "UNIQUE": 0
       },
       "reforgeCountMultipliers": [
         1,
