@@ -47,7 +47,7 @@ describe('AppShell', () => {
     await flushPromises()
     expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
     expect(wrapper.find('.navigation').exists()).toBe(false)
-    expect(wrapper.find('.hud--combat').exists()).toBe(true)
+    expect(wrapper.find('.hud').exists()).toBe(false)
     wrapper.unmount()
   })
 
