@@ -7,6 +7,7 @@ import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
+import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -37,9 +38,9 @@ const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
 const battlefieldArt = computed(() => {
   const locationId = session.snapshot?.world?.currentLocation.id
-  if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
-  if (locationId === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
-  return gameArt.world.combatWhispering
+  return locationKind(locationId) === 'city'
+    ? gameArt.world.combatWhispering
+    : locationPresentation(locationId).art
 })
 
 type LogSide = 'player' | 'enemy' | 'system'
@@ -1930,7 +1931,7 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .utility-action {
-  min-height: 40px;
+  min-height: var(--ui-touch-target);
   border-radius: var(--ui-radius-sm);
   background: rgb(5 8 12 / 78%);
 }
@@ -1948,7 +1949,7 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .combat-log__toggle {
-  min-height: 36px;
+  min-height: var(--ui-touch-target);
   padding-inline: 2px;
 }
 
@@ -2284,5 +2285,47 @@ onUnmounted(() => window.clearInterval(timer))
 
 .training-stats small {
   font-size: var(--ui-font-size-xs);
+}
+
+/* Actionable combat information stays readable at Telegram's smallest viewport. */
+.combat-hud__identity small,
+.combat-targets button > span:first-child,
+.combat-targets button small,
+.effect-strip > span,
+.effect-strip > span b,
+.effect-strip > span small,
+.effect-strip__empty,
+.combat-feedback,
+.training-stats small,
+.training-stats strong,
+.loot-roll__heading small,
+.loot-roll__heading strong,
+.loot-roll__heading time,
+.loot-roll__actions button strong,
+.loot-roll__actions button small,
+.combat-log__toggle b,
+.combat-log__toggle small,
+.combat-log li .actor,
+.combat-log li strong,
+.combat-log li small,
+.error,
+.combat-party-roster__header small,
+.combat-party-roster__header > span,
+.combat-party-roster__identity strong,
+.combat-party-roster__identity small,
+.combat-party-roster__vitals,
+.utility-action strong,
+.utility-action small,
+.cast-bar strong,
+.cast-bar small,
+.pyro-state,
+.autoattack-state,
+.ability-slot > small,
+.ability-slot__proc {
+  font-size: var(--ui-font-size-xs);
+}
+
+.combat-targets button > span:first-child {
+  font-weight: 800;
 }
 </style>

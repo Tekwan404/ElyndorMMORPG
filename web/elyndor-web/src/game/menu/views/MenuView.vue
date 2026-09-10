@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
@@ -80,6 +81,13 @@ async function copyPublicCode(): Promise<void> {
         <span><strong>Группа</strong><small>Состав и поход</small></span>
         <b aria-hidden="true">›</b>
       </button>
+      <RouterLink v-if="session.isAdmin" class="menu-tile menu-tile--admin" to="/admin">
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-admin', glyph: 'shield', category: 'utility' }" />
+        </span>
+        <span><strong>Админка</strong><small>Служебные инструменты</small></span>
+        <b aria-hidden="true">›</b>
+      </RouterLink>
     </nav>
 
     <section v-if="activeSection === 'profile'" class="menu-note">

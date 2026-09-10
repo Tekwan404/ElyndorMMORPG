@@ -168,15 +168,15 @@ onMounted(() => {
 .social-view__header { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
 .social-view__header small { color: var(--ui-color-primary); font-size: .55rem; letter-spacing: .14em; }
 h1 { margin: 2px 0 0; font-family: var(--ui-font-display); font-size: 1.35rem; }
-.social-view__header > span, .online-state { color: var(--ui-color-text-muted); font-size: .65rem; }
+.social-view__header > span, .online-state { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .search-form { display: flex; gap: 8px; }
 input { min-width: 0; flex: 1; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 20%); color: inherit; padding: 9px; font: inherit; }
 .result-list { display: grid; gap: 6px; margin-top: 10px; }
 .player-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgb(255 255 255 / 7%); }
 .player-row:last-child { border-bottom: 0; }
 .player-row div:first-child { display: grid; min-width: 0; gap: 3px; }
-.player-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }
+.player-row small, .empty-state { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .error-state { color: var(--ui-color-danger, #ff8d8d); font-size: .72rem; }
 .actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
-.relationship-state { color: var(--ui-color-success, #86d7a8); font-size: .66rem; font-weight: 700; }
+.relationship-state { color: var(--ui-color-success, #86d7a8); font-size: var(--ui-font-size-xs); font-weight: 700; }
 </style>

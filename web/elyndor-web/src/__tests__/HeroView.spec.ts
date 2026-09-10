@@ -44,7 +44,8 @@ describe('HeroView contextual equipment flow', () => {
     await wrapper.get('[data-equipment-slot="head"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-hero-tab="inventory"]').exists()).toBe(false)
+    expect(wrapper.find('[data-close-slot-inventory]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Выберите: шлем')
     expect(wrapper.find('[data-item-id="TEST_HELMET"]').exists()).toBe(true)
     expect(wrapper.find('[data-item-id="TEST_CHEST"]').exists()).toBe(false)

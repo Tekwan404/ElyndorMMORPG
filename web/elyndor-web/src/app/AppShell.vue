@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
 
 import { gameArt } from '@/assets/gameArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
@@ -162,7 +161,6 @@ onMounted(() => {
           <div class="server-state" :data-state="session.state" aria-live="polite">
             <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
           </div>
-          <RouterLink v-if="session.isAdmin && !combat.isActive" class="admin-link" to="/admin">Админка</RouterLink>
         </div>
       </div>
 
@@ -431,12 +429,6 @@ onMounted(() => {
 .server-state[data-state='offline'] i,
 .server-state[data-state='error'] i {
   background: var(--ui-color-danger);
-}
-
-.admin-link {
-  color: #a9a2f4;
-  font-size: var(--ui-font-size-xs);
-  text-decoration: none;
 }
 
 .hud__bars {
