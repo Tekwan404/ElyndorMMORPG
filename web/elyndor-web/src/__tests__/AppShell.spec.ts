@@ -43,7 +43,9 @@ describe('AppShell', () => {
     await wrapper.get('[data-start-dungeon]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
-    expect(wrapper.find('.navigation').exists()).toBe(false)
+    expect(wrapper.find('.navigation').exists()).toBe(true)
+    expect(wrapper.get('[data-nav="world"]').text()).toContain('Бой')
+    expect(wrapper.find('.hud--combat').exists()).toBe(true)
     wrapper.unmount()
   })
 
@@ -85,9 +87,9 @@ describe('AppShell', () => {
     expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
     expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('main').text()).toContain('Стартовый город')
-    expect(wrapper.find('[data-nav="combat"]').exists()).toBe(false)
     expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
-    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(true)
     expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeUndefined()
     expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
     expect(wrapper.find('.game-shell__header').exists()).toBe(false)
@@ -96,6 +98,10 @@ describe('AppShell', () => {
     await wrapper.get('[data-nav="world"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Стартовый город')
+
+    await wrapper.get('[data-open-world-map]').trigger('click')
+    await flushPromises()
     expect(wrapper.get('main').text()).toContain('Карта мира')
 
     await wrapper.get('[data-nav="hero"]').trigger('click')

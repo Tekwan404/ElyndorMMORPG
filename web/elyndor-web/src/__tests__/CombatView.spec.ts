@@ -153,7 +153,7 @@ describe('CombatView', () => {
     expect(wrapper.get('[data-combat-party-roster]').text()).toContain('Слаженный отряд')
     expect(wrapper.findAll('.combat-party-roster__member')).toHaveLength(2)
     expect(wrapper.get('.combat-party-roster__member--self').text()).toContain('Воин')
-    expect(wrapper.findAll('.party-formation__unit')).toHaveLength(2)
+    expect(wrapper.find('.party-formation').exists()).toBe(false)
   })
 
   it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {

@@ -41,6 +41,8 @@ export const gameArt = {
     STARTER_TOWN: starterTown,
     WHISPERING_FOREST: whisperingForest,
     DEEP_FOREST: whisperingForest,
+    ANCIENT_MINE: ancientRuins,
+    ECLIPSED_CITADEL: ancientRuins,
     BROODMOTHER_LAIR: ancientRuins,
     BLIGHTED_GROVE: caravanRoad,
   },

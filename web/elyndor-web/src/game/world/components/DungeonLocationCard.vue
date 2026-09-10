@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
-import { gameArt } from '@/assets/gameArt'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -10,12 +10,13 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton } from '@/ui/components'
 
 const props = defineProps<{ dungeonId: string }>()
-const emit = defineEmits<{ 'open-party': [] }>()
+const emit = defineEmits<{ 'open-party': []; 'open-map': [] }>()
 
 const party = usePartyStore()
 const dungeon = useDungeonStore()
 const combat = useCombatSessionStore()
 const session = useGameSessionStore()
+const hasLoaded = ref(false)
 
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const preview = computed(() =>
@@ -42,7 +43,15 @@ const canStart = computed(() => Boolean(
 ))
 const minimumLevel = computed(() => preview.value?.minimumLevel ?? 1)
 const encounterCount = computed(() => preview.value?.encounters?.length ?? current.value?.encounterCount ?? 0)
-const dungeonArt = computed(() => gameArt.world.ancientRuins)
+const dungeonArt = computed(() => locationPresentation(
+  props.dungeonId,
+  preview.value?.displayName,
+).art)
+const cardState = computed<'loading' | 'error' | 'ready'>(() => {
+  if (!hasLoaded.value || dungeon.loading) return 'loading'
+  if (dungeon.errorCode || !preview.value) return 'error'
+  return 'ready'
+})
 const stateLabel = computed(() => {
   if (!current.value) return 'ГОТОВО К ЗАПУСКУ'
   if (current.value.state === 'Completed') return 'ПРОЙДЕНО'
@@ -52,8 +61,17 @@ const stateLabel = computed(() => {
   return 'ЗАБЕГ АКТИВЕН'
 })
 
+async function refreshCard(): Promise<void> {
+  hasLoaded.value = false
+  try {
+    await Promise.all([party.refresh(), dungeon.refresh()])
+  } finally {
+    hasLoaded.value = true
+  }
+}
+
 onMounted(() => {
-  void Promise.all([party.refresh(), dungeon.refresh()])
+  void refreshCard()
 })
 
 async function createRun(): Promise<void> {
@@ -84,12 +102,29 @@ async function exitRun(): Promise<void> {
 
 <template>
   <section
-    v-if="preview"
     class="dungeon-expedition"
+    :class="{ 'dungeon-expedition--state': cardState !== 'ready' }"
     :style="{ '--dungeon-art': `url(${dungeonArt})` }"
     data-dungeon-location-card
-    :data-dungeon-id="preview.id"
+    :data-dungeon-id="dungeonId"
   >
+    <div v-if="cardState !== 'ready'" class="dungeon-expedition__state" role="status">
+      <template v-if="cardState === 'loading'">
+        <strong>Загружаем подземелье</strong>
+        <p>Проверяем доступ и текущий забег.</p>
+      </template>
+      <template v-else>
+        <strong>Подземелье временно недоступно</strong>
+        <p>Не удалось получить описание этой локации. Можно повторить запрос или открыть карту мира.</p>
+        <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
+        <div class="dungeon-actions">
+          <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard">Повторить</UIButton>
+          <UIButton variant="ghost" @click="emit('open-map')">Карта мира</UIButton>
+        </div>
+      </template>
+    </div>
+
+    <template v-else-if="preview">
     <div class="dungeon-expedition__backdrop" />
     <div class="dungeon-expedition__content">
       <header class="dungeon-expedition__header">
@@ -127,7 +162,11 @@ async function exitRun(): Promise<void> {
             <span>{{ stateLabel }}</span>
           </div>
 
-          <div class="dungeon-progress" aria-label="Прогресс подземелья">
+          <div
+            class="dungeon-progress"
+            :style="{ '--encounter-columns': Math.min(Math.max(encounterCount, 1), 5) }"
+            aria-label="Прогресс подземелья"
+          >
             <div
               v-for="encounter in current.encounters"
               :key="encounter.encounterId"
@@ -174,6 +213,7 @@ async function exitRun(): Promise<void> {
             @click="exitRun"
           >Покинуть забег</UIButton>
           <UIButton variant="secondary" @click="emit('open-party')">Состав группы</UIButton>
+          <UIButton variant="ghost" @click="emit('open-map')">Карта мира</UIButton>
         </div>
       </template>
 
@@ -204,6 +244,7 @@ async function exitRun(): Promise<void> {
         </div>
       </template>
     </div>
+    </template>
   </section>
 </template>
 
@@ -212,7 +253,7 @@ async function exitRun(): Promise<void> {
   --dungeon-art: none;
 
   position: relative;
-  min-height: 24rem;
+  min-height: 21rem;
   overflow: hidden;
   border: 1px solid rgb(207 170 90 / 42%);
   border-radius: calc(var(--ui-radius-lg) + 3px);
@@ -235,7 +276,7 @@ async function exitRun(): Promise<void> {
   position: relative;
   z-index: 1;
   display: grid;
-  min-height: 24rem;
+  min-height: 21rem;
   align-content: end;
   gap: var(--ui-space-3);
   padding: clamp(1rem, 4vw, 1.5rem);
@@ -345,7 +386,7 @@ async function exitRun(): Promise<void> {
 
 .dungeon-progress {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--encounter-columns, 1), minmax(0, 1fr));
   gap: 5px;
 }
 
@@ -402,16 +443,39 @@ async function exitRun(): Promise<void> {
   color: var(--ui-color-danger, #ff8d8d) !important;
 }
 
+.dungeon-expedition--state {
+  display: grid;
+  min-height: 15rem;
+  place-items: center;
+}
+
+.dungeon-expedition__state {
+  display: grid;
+  max-width: 28rem;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-5);
+  text-align: center;
+}
+
+.dungeon-expedition__state strong {
+  font-family: var(--ui-font-display);
+  font-size: 1.25rem;
+}
+
+.dungeon-expedition__state p {
+  color: var(--ui-color-text-muted);
+}
+
 @media (max-width: 520px) {
   .dungeon-expedition {
-    min-height: 28rem;
+    min-height: 21rem;
     background:
       linear-gradient(180deg, rgb(4 6 10 / 24%) 0 25%, rgb(4 6 10 / 94%) 66%),
       var(--dungeon-art) center top / cover;
   }
 
   .dungeon-expedition__content {
-    min-height: 28rem;
+    min-height: 21rem;
   }
 
   .dungeon-expedition__header {
