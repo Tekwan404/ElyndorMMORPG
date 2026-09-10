@@ -194,6 +194,12 @@ public sealed record ItemReforgeResponse(
     GeneratedItemSummaryResponse Proposed,
     ItemReforgeCostResponse Cost);
 
+public sealed record ItemReforgePreviewResponse(
+    Guid ItemInstanceId,
+    string SlotKey,
+    GeneratedItemSummaryResponse Current,
+    ItemReforgeCostResponse Cost);
+
 public sealed record ItemSalvageRewardResponse(
     string ReforgeStoneItemId,
     int ReforgeStoneQuantity,

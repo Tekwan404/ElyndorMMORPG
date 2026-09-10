@@ -24,6 +24,7 @@ public static class InventoryEndpoints
         group.MapGet("/salvage/preview/{characterItemId:guid}", GetSalvagePreviewAsync);
         group.MapPost("/salvage", SalvageAsync);
         group.MapGet("/reforge/pending", GetPendingReforgeAsync);
+        group.MapGet("/reforge/preview/{characterItemId:guid}", GetReforgePreviewAsync);
         group.MapPost("/reforge/roll", RollReforgeAsync);
         group.MapPost("/reforge/decide", DecideReforgeAsync);
         group.MapGet("/pending-loot", GetPendingLootAsync);
@@ -155,6 +156,25 @@ public static class InventoryEndpoints
         return result is null
             ? Results.NoContent()
             : Results.Ok(ToReforgeResponse(result));
+    }
+
+    private static async Task<IResult> GetReforgePreviewAsync(
+        Guid characterItemId,
+        string slotKey,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemReforgeService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        ItemReforgePreviewResult result = await service.GetPreviewAsync(accountId, characterItemId, slotKey, cancellationToken);
+        return result.Succeeded
+            ? Results.Ok(new ItemReforgePreviewResponse(
+                characterItemId,
+                slotKey,
+                ToGeneratedItemResponse(result.Current!)!,
+                ToReforgeCostResponse(result.Cost!)))
+            : ReforgeProblem(result.ErrorCode!, context);
     }
 
     private static async Task<IResult> RollReforgeAsync(
@@ -486,6 +506,7 @@ public static class InventoryEndpoints
                     or ItemReforgeErrorCodes.CharacterNotFound
                 ? StatusCodes.Status404NotFound
                 : errorCode is ItemReforgeErrorCodes.ItemTransactionLocked
+                    or ItemReforgeErrorCodes.ItemLocked
                     or ItemReforgeErrorCodes.OperationConflict
                     or ItemReforgeErrorCodes.ProposalNotPending
                     or ItemReforgeErrorCodes.ItemEquipped
@@ -682,6 +703,9 @@ public static class InventoryEndpoints
                 cost.CatalystQuantity,
                 cost.CountMultiplier));
     }
+
+    private static ItemReforgeCostResponse ToReforgeCostResponse(ItemReforgeCost cost) =>
+        new(cost.Gold, cost.MaterialItemId, cost.MaterialQuantity, cost.CatalystItemId, cost.CatalystQuantity, cost.CountMultiplier);
 
     private static ItemSalvageRewardResponse ToSalvageRewardResponse(ItemSalvageYield reward) => new(
         reward.ReforgeStoneItemId,
