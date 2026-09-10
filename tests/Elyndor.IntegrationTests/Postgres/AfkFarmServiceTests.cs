@@ -2,8 +2,10 @@ using Elyndor.Core.Afk;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Parties;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Afk;
 using Elyndor.Infrastructure.Characters;
@@ -31,7 +33,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
         Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
-        AfkFarmService service = CreateService(dbContext, CreateContent(minimumLevel: 1));
+        AfkFarmService service = CreateService(dbContext, CreateContent());
 
         AfkFarmMutationResult first = await service.StartAsync(
             accountId,
@@ -60,6 +62,24 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task InvalidLocationIsRejected()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(dbContext, CreateContent());
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            "UNKNOWN_LOCATION",
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.InvalidLocation, result.ErrorCode);
+    }
+
+    [Fact]
     public async Task LockedLocationIsRejected()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
@@ -79,6 +99,80 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task RequiredContractLocationIsRejectedUntilUnlocked()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(
+            dbContext,
+            CreateContent(requiredContractId: "AFK_UNLOCK_CONTRACT"));
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.LockedLocation, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task LocationCanExplicitlyDisableAfk()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(dbContext, CreateContent(allowAfk: false));
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.NotAllowed, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task BossOnlyLocationIsNotEligibleForAfk()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(dbContext, CreateContent(monsterRank: MonsterRank.Boss));
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.NoEligibleEncounters, result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task DeadCharacterIsRejected()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId, currentHp: 0);
+        AfkFarmService service = CreateService(dbContext, CreateContent());
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.CharacterDead, result.ErrorCode);
+    }
+
+    [Fact]
     public async Task DurableCombatConflictIsRejected()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
@@ -91,7 +185,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             "0.1.0",
             "0.1.0"));
         await dbContext.SaveChangesAsync();
-        AfkFarmService service = CreateService(dbContext, CreateContent(minimumLevel: 1));
+        AfkFarmService service = CreateService(dbContext, CreateContent());
 
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
@@ -118,7 +212,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             Now,
             Now.AddMinutes(5)));
         await dbContext.SaveChangesAsync();
-        AfkFarmService service = CreateService(dbContext, CreateContent(minimumLevel: 1));
+        AfkFarmService service = CreateService(dbContext, CreateContent());
 
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
@@ -132,11 +226,41 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task ActiveDungeonConflictIsRejected()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        Guid characterId = await dbContext.Characters.Select(character => character.Id).SingleAsync();
+        Party party = Party.Create(Guid.CreateVersion7(), Guid.CreateVersion7(), characterId, Now);
+        DungeonRun run = DungeonRun.Create(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            party.Id,
+            "AFK_TEST_DUNGEON",
+            Now);
+        run.AddMember(characterId, Now);
+        dbContext.Parties.Add(party);
+        dbContext.DungeonRuns.Add(run);
+        await dbContext.SaveChangesAsync();
+        AfkFarmService service = CreateService(dbContext, CreateContent());
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.InDungeon, result.ErrorCode);
+    }
+
+    [Fact]
     public async Task StopIsIdempotent()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
         Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
-        AfkFarmService service = CreateService(dbContext, CreateContent(minimumLevel: 1));
+        AfkFarmService service = CreateService(dbContext, CreateContent());
         AfkFarmMutationResult started = await service.StartAsync(
             accountId,
             ForestId,
@@ -164,7 +288,11 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         return new AfkFarmService(dbContext, provider, derived, guard, new FixedTimeProvider());
     }
 
-    private static GameContentPackage CreateContent(int minimumLevel)
+    private static GameContentPackage CreateContent(
+        int minimumLevel = 1,
+        bool allowAfk = true,
+        string? requiredContractId = null,
+        MonsterRank monsterRank = MonsterRank.Normal)
     {
         LocationDefinition location = new(
             ForestId,
@@ -175,11 +303,12 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             [new LocationEncounterDefinition(WolfId, 1m)],
             MinimumLevel: minimumLevel,
             MaximumLevel: 60,
-            AllowAfk: true);
+            RequiredContractId: requiredContractId,
+            AllowAfk: allowAfk);
         MonsterDefinition wolf = new(
             WolfId,
             "Wolf",
-            MonsterRank.Normal,
+            monsterRank,
             1,
             50,
             new CombatStats(1, 90, 0, 5, 1.5m, 5, 0, 0, 0, 5, 0),
@@ -195,7 +324,10 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         };
     }
 
-    private static async Task<Guid> SeedCharacterAsync(GameDbContext dbContext, string locationId)
+    private static async Task<Guid> SeedCharacterAsync(
+        GameDbContext dbContext,
+        string locationId,
+        decimal currentHp = 100)
     {
         Guid accountId = Guid.CreateVersion7();
         Character character = new(
@@ -210,7 +342,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             Now);
         dbContext.Accounts.Add(new Account(accountId, 99112233, Now));
         dbContext.Characters.Add(character);
-        dbContext.CharacterVitals.Add(new CharacterVitals(character.Id, 100, 0, Now, Now));
+        dbContext.CharacterVitals.Add(new CharacterVitals(character.Id, currentHp, 0, Now, Now));
         dbContext.CharacterLocations.Add(new CharacterLocation(character.Id, locationId, 1, Now));
         await dbContext.SaveChangesAsync();
         return accountId;
