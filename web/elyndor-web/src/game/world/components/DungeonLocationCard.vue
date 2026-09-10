@@ -26,6 +26,8 @@ const current = computed(() =>
   dungeon.current?.dungeonId === props.dungeonId ? dungeon.current : null,
 )
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
+const isRunLeader = computed(() => isLeader.value
+  || current.value?.partyId === currentCharacterId.value)
 const currentMember = computed(() => current.value?.members.find(
   member => member.characterId === currentCharacterId.value,
 ))
@@ -35,7 +37,7 @@ const currentEncounter = computed(() => current.value?.encounters.find(
 ))
 const canStart = computed(() => Boolean(
   current.value
-    && isLeader.value
+    && isRunLeader.value
     && currentMember.value?.state === 'Active'
     && current.value.state === 'Active'
     && currentEncounter.value
@@ -76,8 +78,7 @@ onMounted(() => {
 
 async function createRun(): Promise<void> {
   if (!preview.value) return
-  if (!party.snapshot) await party.create()
-  if (!party.snapshot || party.snapshot.leaderCharacterId !== currentCharacterId.value) return
+  if (party.snapshot && party.snapshot.leaderCharacterId !== currentCharacterId.value) return
   await dungeon.create(preview.value.id)
 }
 
@@ -92,7 +93,7 @@ async function startEncounter(): Promise<void> {
 }
 
 async function restartEncounter(): Promise<void> {
-  if (current.value && isLeader.value) await dungeon.restart(current.value.runId)
+  if (current.value && isRunLeader.value) await dungeon.restart(current.value.runId)
 }
 
 async function exitRun(): Promise<void> {
@@ -180,7 +181,7 @@ async function exitRun(): Promise<void> {
 
         <p v-if="current.state === 'Completed'" class="dungeon-hint">Подземелье пройдено. Можно начать новый забег.</p>
         <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">Предыдущий забег завершён. Он не смешивается с другими подземельями.</p>
-        <p v-else-if="!isLeader" class="dungeon-hint">Следующее столкновение запускает лидер группы.</p>
+        <p v-else-if="!isRunLeader" class="dungeon-hint">Следующее столкновение запускает лидер группы.</p>
 
         <div class="dungeon-actions">
           <UIButton
@@ -189,7 +190,7 @@ async function exitRun(): Promise<void> {
             @click="enterRun"
           >Войти в забег</UIButton>
           <UIButton
-            v-if="current.state !== 'Active' && isLeader"
+            v-if="current.state !== 'Active' && isRunLeader"
             data-create-dungeon
             @click="createRun"
           >Новый забег</UIButton>
@@ -200,7 +201,7 @@ async function exitRun(): Promise<void> {
             @click="startEncounter"
           >Начать столкновение</UIButton>
           <UIButton
-            v-if="isLeader && current.encounters.some(encounter => encounter.state === 'Wiped')"
+            v-if="isRunLeader && current.encounters.some(encounter => encounter.state === 'Wiped')"
             variant="secondary"
             data-dungeon-restart
             @click="restartEncounter"
@@ -223,7 +224,7 @@ async function exitRun(): Promise<void> {
             <p>
               {{ party.snapshot
                 ? 'Лидер создаёт инстанс для текущего состава.'
-                : 'Для одиночного входа группа из одного игрока создастся автоматически.' }}
+                : 'Одиночный забег запускается напрямую — создавать группу не нужно.' }}
             </p>
           </div>
           <div class="dungeon-actions">
