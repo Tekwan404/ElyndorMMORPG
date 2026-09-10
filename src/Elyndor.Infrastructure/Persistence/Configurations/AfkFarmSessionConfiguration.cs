@@ -49,8 +49,8 @@ public sealed class AfkFarmSessionConfiguration : IEntityTypeConfiguration<AfkFa
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_afk_farm_sessions_characters_character_id");
 
-        builder.HasIndex(session => session.CharacterId)
-            .HasDatabaseName("ix_afk_farm_sessions_character_id");
+        builder.HasIndex(session => new { session.CharacterId, session.CreatedAtUtc })
+            .HasDatabaseName("ix_afk_farm_sessions_character_created_at_utc");
         builder.HasIndex(session => new { session.Status, session.EndsAtUtc })
             .HasDatabaseName("ix_afk_farm_sessions_status_ends_at_utc");
         builder.HasIndex(session => session.CharacterId)
