@@ -2,7 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Dungeons;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
+using Elyndor.Infrastructure.Parties;
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Dungeons;
 
@@ -67,6 +71,9 @@ public static class DungeonEndpoints
         TeleportToDungeonRequest request,
         ClaimsPrincipal user,
         DungeonService service,
+        PartyService partyService,
+        GameDbContext dbContext,
+        ICombatActivityReader combatActivity,
         CharacterOperationGuard operationGuard,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -74,10 +81,14 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToTeleportResult(await service.TeleportToEntryAsync(
+            async () => ToTeleportResult(await TeleportPartyToEntryAsync(
                 accountId,
                 request.DungeonId,
                 request.RequestId,
+                service,
+                partyService,
+                dbContext,
+                combatActivity,
                 cancellationToken)),
             () => Results.Problem(
                 statusCode: StatusCodes.Status409Conflict,
@@ -87,6 +98,75 @@ public static class DungeonEndpoints
                     ["correlationId"] = httpContext.TraceIdentifier
                 }),
             cancellationToken);
+    }
+
+    private static async Task<DungeonTeleportResult> TeleportPartyToEntryAsync(
+        Guid accountId,
+        string dungeonId,
+        Guid requestId,
+        DungeonService service,
+        PartyService partyService,
+        GameDbContext dbContext,
+        ICombatActivityReader combatActivity,
+        CancellationToken cancellationToken)
+    {
+        var definition = service.GetDefinition(dungeonId);
+        if (definition is null)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.DungeonNotFound);
+
+        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+        if (party is null)
+            return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);
+
+        Guid[] memberIds = party.Members
+            .Select(member => member.CharacterId)
+            .Distinct()
+            .ToArray();
+        var members = await dbContext.Characters
+            .AsNoTracking()
+            .Where(character => memberIds.Contains(character.Id))
+            .Select(character => new { character.Id, character.AccountId, character.Level })
+            .ToArrayAsync(cancellationToken);
+        var caller = members.SingleOrDefault(member => member.AccountId == accountId);
+        if (caller is null || party.LeaderCharacterId != caller.Id)
+            return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);
+
+        if (members.Length != memberIds.Length)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        if (members.Any(member => member.Level < definition.MinimumLevel))
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.LevelRequired);
+        if (members.Any(member => combatActivity.HasActiveCombat(member.AccountId)))
+            return DungeonTeleportResult.Failure(CharacterOperationErrorCodes.InCombat);
+
+        Guid[] activeTravelMemberIds = await dbContext.CharacterTravelStates
+            .AsNoTracking()
+            .Where(travel => memberIds.Contains(travel.CharacterId))
+            .Select(travel => travel.CharacterId)
+            .ToArrayAsync(cancellationToken);
+        if (activeTravelMemberIds.Length != 0)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.TravelInProgress);
+
+        int healthyMemberCount = await dbContext.CharacterVitals
+            .AsNoTracking()
+            .CountAsync(vitals => memberIds.Contains(vitals.CharacterId) && vitals.CurrentHp > 0, cancellationToken);
+        if (healthyMemberCount != memberIds.Length)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.MemberCannotEnter);
+
+        DungeonTeleportResult? callerResult = null;
+        foreach (var member in members.OrderBy(member => member.Id == caller.Id ? 1 : 0))
+        {
+            DungeonTeleportResult result = await service.TeleportToEntryAsync(
+                member.AccountId,
+                dungeonId,
+                requestId,
+                cancellationToken);
+            if (!result.Succeeded)
+                return result;
+            if (member.Id == caller.Id)
+                callerResult = result;
+        }
+
+        return callerResult ?? DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
     }
 
     private static async Task<IResult> EnterAsync(
