@@ -1,4 +1,5 @@
 using Elyndor.Infrastructure.Administration;
+using Elyndor.Infrastructure.Afk;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Persistence;
@@ -51,6 +52,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<FriendService>();
         builder.Services.AddScoped<PartyService>();
         builder.Services.AddScoped<DungeonService>();
+        builder.Services.AddScoped<AfkFarmService>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();
