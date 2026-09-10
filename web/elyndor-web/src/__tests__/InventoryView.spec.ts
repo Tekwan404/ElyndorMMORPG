@@ -352,6 +352,41 @@ describe('InventoryView', () => {
     expect(setItemLock).toHaveBeenCalledWith('WOLF_FANG', false)
     expect(document.body.textContent).toContain('Защитить')
   })
+
+  it('shows the server salvage preview before confirming equipment dismantling', async () => {
+    const store = useGameSessionStore()
+    const sword = equipment('SALVAGE_SWORD', 'Salvage sword', 'Rare', 1, 3)
+    store.snapshot = snapshot([sword], currentWeapon())
+    const getPreview = vi.spyOn(store, 'getSalvagePreview').mockResolvedValue({
+      characterItemId: 'SALVAGE_SWORD',
+      requiresConfirmation: true,
+      reward: {
+        reforgeStoneItemId: 'REFORGE_STONE',
+        reforgeStoneQuantity: 3,
+        materialItemId: 'FORGE_SCRAP',
+        materialQuantity: 5,
+      },
+    })
+    const salvage = vi.spyOn(store, 'salvageItem').mockResolvedValue({
+      reforgeStoneItemId: 'REFORGE_STONE',
+      reforgeStoneQuantity: 3,
+      materialItemId: 'FORGE_SCRAP',
+      materialQuantity: 5,
+    })
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="SALVAGE_SWORD"]').trigger('click')
+    await flushPromises()
+    document.querySelector<HTMLButtonElement>('[data-item-salvage-action]')?.click()
+    await flushPromises()
+
+    expect(getPreview).toHaveBeenCalledWith('SALVAGE_SWORD')
+    expect(document.querySelector('[data-confirm-item-salvage]')).not.toBeNull()
+    document.querySelector<HTMLButtonElement>('[data-confirm-item-salvage]')?.click()
+    await flushPromises()
+
+    expect(salvage).toHaveBeenCalledWith('SALVAGE_SWORD', true)
+  })
 })
 
 function itemIds(wrapper: ReturnType<typeof mount>): string[] {

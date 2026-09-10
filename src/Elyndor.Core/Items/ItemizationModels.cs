@@ -75,6 +75,24 @@ public sealed record ItemReforgeCostProfileDefinition(
     IReadOnlyList<decimal> ReforgeCountMultipliers,
     decimal OverflowGrowthMultiplier);
 
+public sealed record ItemSalvageProfileDefinition(
+    string Id,
+    string ReforgeStoneItemId,
+    string MaterialItemId,
+    IReadOnlyDictionary<string, int> ReforgeStoneQuantityByRarity,
+    IReadOnlyDictionary<string, int> MaterialQuantityByRarity,
+    int ItemLevelStep,
+    int ReforgeStonesPerLevelStep,
+    int MaterialsPerLevelStep,
+    int StarsPerBonusStone,
+    string HighValueConfirmationRarity);
+
+public sealed record ItemSalvageYield(
+    string ReforgeStoneItemId,
+    int ReforgeStoneQuantity,
+    string MaterialItemId,
+    int MaterialQuantity);
+
 public sealed record ItemizationDefinition(
     decimal TemplateBasePower,
     decimal LevelLinearCoefficient,
@@ -88,7 +106,48 @@ public sealed record ItemizationDefinition(
     IReadOnlyList<ItemAffixNameDefinition> AffixNames,
     decimal IndividualQualityDeviationPercent = 7,
     decimal PerfectSnapThreshold = 0.9995m,
-    ItemReforgeCostProfileDefinition? ReforgeCosts = null);
+    ItemReforgeCostProfileDefinition? ReforgeCosts = null,
+    ItemSalvageProfileDefinition? Salvage = null);
+
+public static class ItemSalvageYieldCalculator
+{
+    public static ItemSalvageYield Calculate(
+        ItemDefinition item,
+        int? itemLevel,
+        int? stars,
+        ItemSalvageProfileDefinition profile)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(profile);
+        if (item.Type != ItemType.Equipment)
+            throw new InvalidOperationException("Only equipment can be salvaged.");
+        if (profile.ItemLevelStep <= 0 || profile.StarsPerBonusStone <= 0)
+            throw new InvalidOperationException("Salvage profile steps must be positive.");
+        if (profile.ReforgeStonesPerLevelStep < 0 || profile.MaterialsPerLevelStep < 0)
+            throw new InvalidOperationException("Salvage profile bonuses cannot be negative.");
+
+        int effectiveLevel = itemLevel ?? item.RequiredLevel;
+        if (effectiveLevel < 1)
+            throw new InvalidOperationException("Salvaged equipment must have a positive item level.");
+        if (stars is < 1 or > 5)
+            throw new InvalidOperationException("Generated equipment stars must be in the range 1 through 5.");
+
+        string rarity = item.Rarity.ToString().ToUpperInvariant();
+        if (!profile.ReforgeStoneQuantityByRarity.TryGetValue(rarity, out int baseStones)
+            || !profile.MaterialQuantityByRarity.TryGetValue(rarity, out int baseMaterials))
+        {
+            throw new InvalidOperationException($"Salvage profile '{profile.Id}' is missing rarity '{rarity}'.");
+        }
+
+        int levelSteps = Math.Max(0, (effectiveLevel - 1) / profile.ItemLevelStep);
+        int starBonus = stars.GetValueOrDefault() / profile.StarsPerBonusStone;
+        return new ItemSalvageYield(
+            profile.ReforgeStoneItemId,
+            checked(baseStones + (levelSteps * profile.ReforgeStonesPerLevelStep) + starBonus),
+            profile.MaterialItemId,
+            checked(baseMaterials + (levelSteps * profile.MaterialsPerLevelStep)));
+    }
+}
 
 public sealed record GeneratedItemAffix(
     string SlotKey,

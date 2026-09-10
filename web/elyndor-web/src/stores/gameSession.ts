@@ -14,6 +14,8 @@ import type {
   EquipmentSlot,
   MerchantSnapshot,
   ItemReforgeResponse,
+  ItemSalvagePreview,
+  ItemSalvageReward,
   QuestClaimResponse,
   QuestJournalResponse,
   WorldEncounter,
@@ -245,6 +247,44 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function getSalvagePreview(characterItemId: string): Promise<ItemSalvagePreview | null> {
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      return await apiClient.request<ItemSalvagePreview>(
+        `/api/v1/inventory/salvage/preview/${encodeURIComponent(characterItemId)}`,
+      )
+    } catch (error) {
+      handleError(error)
+      return null
+    }
+  }
+
+  async function salvageItem(
+    characterItemId: string,
+    confirmedHighValue: boolean,
+  ): Promise<ItemSalvageReward | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await runReplaySafeGameMutation<{ reward: ItemSalvageReward }>({
+        key: `inventory:salvage:${characterItemId}:${confirmedHighValue}`,
+        path: '/api/v1/inventory/salvage',
+        idField: 'mutationId',
+        intent: { characterItemId, confirmedHighValue },
+      })
+      await refreshSnapshot()
+      return result.reward
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function getPendingReforge(
     characterItemId?: string,
   ): Promise<ItemReforgeResponse | null> {
@@ -474,6 +514,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     unequip,
     useConsumable,
     setItemLock,
+    getSalvagePreview,
+    salvageItem,
     getPendingReforge,
     rollReforge,
     decideReforge,

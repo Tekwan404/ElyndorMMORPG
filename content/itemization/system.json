@@ -389,6 +389,18 @@
     ],
     "individualQualityDeviationPercent": 7,
     "perfectSnapThreshold": 0.9995,
+    "salvage": {
+      "id": "SALVAGE_V1",
+      "reforgeStoneItemId": "REFORGE_STONE",
+      "materialItemId": "FORGE_SCRAP",
+      "reforgeStoneQuantityByRarity": { "COMMON": 1, "UNCOMMON": 2, "RARE": 3, "EPIC": 5, "LEGENDARY": 8, "UNIQUE": 10 },
+      "materialQuantityByRarity": { "COMMON": 2, "UNCOMMON": 3, "RARE": 5, "EPIC": 8, "LEGENDARY": 12, "UNIQUE": 16 },
+      "itemLevelStep": 5,
+      "reforgeStonesPerLevelStep": 1,
+      "materialsPerLevelStep": 2,
+      "starsPerBonusStone": 2,
+      "highValueConfirmationRarity": "RARE"
+    },
     "reforgeCosts": {
       "id": "REFORGE_V1",
       "materialItemId": "SPIDER_SILK",

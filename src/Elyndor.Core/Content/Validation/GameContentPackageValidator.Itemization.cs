@@ -158,6 +158,35 @@ public static partial class GameContentPackageValidator
             }
         }
 
+        if (itemization.Salvage is { } salvage)
+        {
+            string[] rarityIds = ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY", "UNIQUE"];
+            ItemDefinition? stone = (package.Items ?? []).FirstOrDefault(item =>
+                string.Equals(item.Id, salvage.ReforgeStoneItemId, StringComparison.Ordinal));
+            ItemDefinition? material = (package.Items ?? []).FirstOrDefault(item =>
+                string.Equals(item.Id, salvage.MaterialItemId, StringComparison.Ordinal));
+            bool invalidSalvage = !IsCanonicalIdentifier(salvage.Id)
+                || stone?.Type != ItemType.Material
+                || material?.Type != ItemType.Material
+                || salvage.ItemLevelStep <= 0
+                || salvage.ReforgeStonesPerLevelStep < 0
+                || salvage.MaterialsPerLevelStep < 0
+                || salvage.StarsPerBonusStone <= 0
+                || salvage.HighValueConfirmationRarity is not ("RARE" or "EPIC" or "LEGENDARY" or "UNIQUE")
+                || rarityIds.Any(rarity =>
+                    !salvage.ReforgeStoneQuantityByRarity.TryGetValue(rarity, out int stones)
+                    || stones <= 0
+                    || !salvage.MaterialQuantityByRarity.TryGetValue(rarity, out int materials)
+                    || materials < 0);
+            if (invalidSalvage)
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_SALVAGE_PROFILE",
+                    "itemization.salvage",
+                    "Salvage requires material rewards, valid progression values, and complete rarity tables."));
+            }
+        }
+
         HashSet<string> nameIds = new(StringComparer.Ordinal);
         for (var index = 0; index < itemization.AffixNames.Count; index++)
         {
