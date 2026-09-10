@@ -3,8 +3,11 @@ import { computed, ref, watch } from 'vue'
 
 import type { Quest } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{
   open: boolean
@@ -102,6 +105,10 @@ function contractTitle(quest: Quest): string {
     : quest.displayName
 }
 
+function contractRegionLabel(quest: Quest): string {
+  return quest.regionName ?? locationPresentation(quest.offerLocationId).label
+}
+
 function statusLabel(quest: Quest): string {
   if (quest.status === 'READY_TO_CLAIM') return 'ГОТОВ К СДАЧЕ'
   if (quest.status === 'ACTIVE') return 'ПРИНЯТ'
@@ -110,12 +117,12 @@ function statusLabel(quest: Quest): string {
   return 'НЕДОСТУПЕН'
 }
 
-function contractGlyph(quest: Quest): string {
-  if (quest.status === 'READY_TO_CLAIM') return '✦'
-  if (quest.status === 'ACTIVE') return '⚔'
-  if (quest.status === 'AVAILABLE') return '◇'
-  if (quest.status === 'LOCKED') return '◌'
-  return '✓'
+function contractGlyph(quest: Quest): GlyphName {
+  if (quest.status === 'READY_TO_CLAIM') return 'star'
+  if (quest.status === 'ACTIVE') return 'sword'
+  if (quest.status === 'AVAILABLE') return 'scroll'
+  if (quest.status === 'LOCKED') return 'lock'
+  return 'holy'
 }
 
 function lockedReason(quest: Quest): string {
@@ -221,7 +228,9 @@ async function claim(quest: Quest): Promise<void> {
             :aria-pressed="selectedContract?.id === contract.id"
             @click="selectedContractId = contract.id"
           >
-            <span class="contract-tab__seal" aria-hidden="true">{{ contractGlyph(contract) }}</span>
+            <span class="contract-tab__seal" aria-hidden="true">
+              <IconGenerator :config="{ id: `guild-contract-${contract.id}`, glyph: contractGlyph(contract), category: 'utility' }" />
+            </span>
             <span class="contract-tab__copy">
               <small>№{{ contract.contractNumber ?? contract.id }}</small>
               <strong>{{ contractTitle(contract) }}</strong>
@@ -261,7 +270,7 @@ async function claim(quest: Quest): Promise<void> {
             </div>
             <div>
               <dt>Регион</dt>
-              <dd>{{ selectedContract.regionName ?? selectedContract.offerLocationId }}</dd>
+              <dd>{{ contractRegionLabel(selectedContract) }}</dd>
             </div>
             <div>
               <dt>Угроза</dt>
@@ -478,14 +487,14 @@ async function claim(quest: Quest): Promise<void> {
 
 .contract-filter {
   flex: 0 0 auto;
-  min-height: 28px;
+  min-height: var(--ui-touch-target);
   padding: 4px 9px;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
   background: rgb(12 16 24 / 86%);
   color: var(--ui-color-text-muted);
   font: inherit;
-  font-size: .58rem;
+  font-size: var(--ui-font-size-xs);
   cursor: pointer;
 }
 

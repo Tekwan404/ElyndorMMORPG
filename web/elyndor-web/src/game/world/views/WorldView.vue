@@ -10,7 +10,9 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { usePartyStore } from '@/game/party/partyStore'
 import { UIButton, UICard, UIToast } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
+const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
 const emit = defineEmits<{ 'open-party': []; 'open-map': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
@@ -201,6 +203,9 @@ watch(() => combat.snapshot?.status, (status) => {
 }, { immediate: true })
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
+watch(() => props.openGuild, open => {
+  if (open && isStarterTown.value && !isTravelling.value) guildOpen.value = true
+})
 onBeforeUnmount(() => {
   syncVitalsRefreshTimer(false)
   window.clearInterval(lootTimer)
@@ -208,6 +213,7 @@ onBeforeUnmount(() => {
 onMounted(() => {
   void party.refresh()
   void session.refreshQuestJournal()
+  if (props.openGuild && isStarterTown.value && !isTravelling.value) guildOpen.value = true
 })
 </script>
 
@@ -273,7 +279,8 @@ onMounted(() => {
       <div v-if="combat.reward" class="reward-card__summary">
         <strong>+{{ combat.reward.xpEarned }} опыта · +{{ combat.reward.goldEarned }} золота</strong>
         <p v-if="combat.reward.completedContractIds?.includes('CONTRACT_BROODMOTHER_GATE')" class="contract-completed">
-          ✦ Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
+          <IconGenerator :config="{ id: 'contract-completed', glyph: 'star', category: 'utility' }" />
+          Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
         </p>
         <ul v-if="combat.reward.items.length">
           <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
@@ -327,7 +334,9 @@ onMounted(() => {
       </header>
       <div class="story-list">
         <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
-          <div class="story-card__icon" aria-hidden="true">✦</div>
+          <div class="story-card__icon" aria-hidden="true">
+            <IconGenerator :config="{ id: `story-${quest.id}`, glyph: 'scroll', category: 'utility' }" />
+          </div>
           <div class="story-card__copy">
             <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
             <strong>{{ quest.displayName }}</strong>
@@ -353,7 +362,9 @@ onMounted(() => {
         <span>КОНТРАКТЫ</span>
       </header>
       <article class="activity-card">
-        <div class="activity-card__icon" aria-hidden="true">⚔</div>
+        <div class="activity-card__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'field-guild', glyph: 'sword', category: 'utility' }" />
+        </div>
         <div class="activity-card__copy">
           <small>ПОЛЕВОЙ РЕГИСТРАТОР</small>
           <strong>Журнал контрактов экспедиции</strong>
@@ -379,7 +390,9 @@ onMounted(() => {
         :data-contract-id="contract.id"
         :data-contract-status="contract.status"
       >
-        <div class="contract-card__icon" aria-hidden="true">✦</div>
+        <div class="contract-card__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: `contract-${contract.id}`, glyph: 'star', category: 'utility' }" />
+        </div>
         <div class="contract-card__copy">
           <small>{{ contractStatusLabel(contract.status) }} · УР. {{ contract.requiredLevel }}</small>
           <strong>{{ contract.displayName }}</strong>
@@ -387,7 +400,7 @@ onMounted(() => {
           <div class="contract-card__reward">
             <span>Награда</span>
             <b>+{{ contract.rewardXp }} опыта · +{{ contract.rewardGold }} золота</b>
-            <em>Открывает: {{ contract.unlockLocationId === 'BLIGHTED_GROVE' ? 'Осквернённая чаща' : contract.unlockLocationId }}</em>
+            <em>Открывает: {{ displayLocationName(contract.unlockLocationId) }}</em>
           </div>
         </div>
         <UIButton

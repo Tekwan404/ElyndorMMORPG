@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
 import type { WorldLocation } from '@/api/contracts'
+import { gameArt } from '@/assets/gameArt'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
@@ -70,12 +71,16 @@ function locationArt(locationId: string | null | undefined): string {
   ).art
 }
 
-const mapArt = computed(() => locationArt(currentLocationId.value))
+const mapArt = computed(() => gameArt.world.worldAtlas)
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
 const activeContract = computed(() =>
   contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
 )
 const selectedDangerLabel = computed(() => {
+  if (selectedLocation.value) {
+    const presentation = locationPresentation(selectedLocation.value.id)
+    if (presentation.kind === 'dungeon') return presentation.dangerLabel
+  }
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return 'Безопасная зона'
   if (danger === 'DANGEROUS') return 'Высокий риск'
@@ -147,6 +152,10 @@ async function enterSelectedDungeon(): Promise<void> {
 
 function locationName(location: WorldLocation): string {
   return locationLabel(location)
+}
+
+function displayLocationName(locationId: string | null | undefined, fallback?: string | null): string {
+  return locationPresentation(locationId, fallback).label
 }
 
 function levelRangeLabel(location: WorldLocation): string {
@@ -239,9 +248,10 @@ onMounted(() => {
         <strong>
           {{
             isTravelling
-              ? locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName
-                ?? activeTravel?.targetLocationId
-                ?? 'Переход'
+              ? displayLocationName(
+                activeTravel?.targetLocationId,
+                locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName,
+              )
               : world.currentLocation
                 ? locationName(world.currentLocation)
                 : '—'
@@ -258,8 +268,10 @@ onMounted(() => {
     >
       Переход к
       {{
-        locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName
-          ?? activeTravel.targetLocationId
+        displayLocationName(
+          activeTravel?.targetLocationId,
+          locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName,
+        )
       }}
       выполняется сервером. После прибытия карта обновится автоматически.
     </UIToast>
@@ -401,7 +413,7 @@ onMounted(() => {
           <strong>{{ activeContract.displayName }}</strong>
           <p>{{ activeContract.description }}</p>
         </div>
-        <span>Открывает: {{ locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName ?? activeContract?.unlockLocationId }}</span>
+        <span>Открывает: {{ displayLocationName(activeContract.unlockLocationId, locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName) }}</span>
       </UICard>
 
     </template>
@@ -542,7 +554,7 @@ onMounted(() => {
 
 .map-canvas__caption small {
   color: #aaa3ff;
-  font-size: .48rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 800;
   letter-spacing: .1em;
 }
@@ -575,7 +587,8 @@ onMounted(() => {
   position: absolute;
   z-index: 2;
   display: grid;
-  min-width: 0;
+  min-width: var(--ui-touch-target);
+  min-height: var(--ui-touch-target);
   place-items: center;
   gap: 3px;
   padding: 0;
@@ -636,7 +649,7 @@ onMounted(() => {
 
 .map-node__label small {
   color: var(--ui-color-text-muted);
-  font-size: .55rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .map-node[data-state='reachable'] .map-node__marker {
@@ -735,7 +748,7 @@ onMounted(() => {
 
 .map-selection small {
   color: #aaa3ff;
-  font-size: .5rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 800;
   letter-spacing: .1em;
 }
@@ -746,7 +759,7 @@ onMounted(() => {
 
 .map-selection__eyebrow span {
   color: var(--ui-color-text-muted);
-  font-size: .52rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .map-selection strong {
@@ -770,7 +783,7 @@ onMounted(() => {
 
 .map-selection__lock {
   color: #e1bd78;
-  font-size: .57rem;
+  font-size: var(--ui-font-size-xs);
   font-style: normal;
 }
 
@@ -834,7 +847,7 @@ onMounted(() => {
   border-radius: var(--ui-radius-md);
   background: rgb(5 8 14 / 68%);
   color: var(--ui-color-text-muted);
-  font-size: .57rem;
+  font-size: var(--ui-font-size-xs);
   backdrop-filter: blur(8px);
 }
 

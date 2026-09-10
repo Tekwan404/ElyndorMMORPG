@@ -24,6 +24,9 @@ export type GlyphName =
   | 'skull'
   | 'star'
   | 'lock'
+  | 'refresh'
+  | 'close'
+  | 'chevronLeft'
 
 export type IconCategory =
   'weapon' | 'equipment' | 'consumable' | 'resource' | 'skill' | 'effect' | 'utility'

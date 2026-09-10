@@ -27,6 +27,7 @@ const session = useGameSessionStore()
 const combat = useCombatSessionStore()
 const activeView = ref<ShellView>('world')
 const worldMode = ref<'location' | 'map'>('location')
+const openGuildOnWorld = ref(false)
 const menuSection = ref<MenuSection>('profile')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
@@ -96,14 +97,15 @@ const navigation: readonly {
 function selectView(item: (typeof navigation)[number]) {
   if (item.enabled && (!combat.isActive || item.id === 'world')) {
     activeView.value = item.id
-    if (item.id === 'world') worldMode.value = 'location'
+    if (item.id === 'world') openWorld('location')
     if (item.id === 'menu') menuSection.value = 'profile'
   }
 }
 
-function openWorld(mode: 'location' | 'map' = 'location'): void {
+function openWorld(mode: 'location' | 'map' = 'location', openGuild = false): void {
   activeView.value = 'world'
   worldMode.value = mode
+  openGuildOnWorld.value = openGuild
 }
 
 function openMenu(section: MenuSection): void {
@@ -210,12 +212,17 @@ onMounted(() => {
       />
       <WorldView
         v-else-if="session.state === 'world' && activeView === 'world'"
+        :open-guild="openGuildOnWorld"
         @open-map="openWorld('map')"
         @open-party="openMenu('party')"
       />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
       <InventoryView v-else-if="session.state === 'world' && activeView === 'inventory'" />
-      <QuestView v-else-if="session.state === 'world' && activeView === 'quests'" />
+      <QuestView
+        v-else-if="session.state === 'world' && activeView === 'quests'"
+        @open-world="openWorld('location')"
+        @open-guild="openWorld('location', true)"
+      />
       <MenuView
         v-else-if="session.state === 'world' && activeView === 'menu'"
         :initial-section="menuSection"
@@ -360,7 +367,7 @@ onMounted(() => {
 .hud__brand {
   margin-bottom: 1px;
   color: var(--ui-color-gold);
-  font-size: .46rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 800;
   letter-spacing: .17em;
 }
@@ -377,7 +384,7 @@ onMounted(() => {
 .hud__identity > span {
   margin-top: 2px;
   color: var(--ui-color-text-muted);
-  font-size: .57rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .hud__meta {
@@ -396,7 +403,7 @@ onMounted(() => {
   border-radius: var(--ui-radius-round);
   background: rgb(232 200 102 / 5%);
   color: var(--ui-color-gold);
-  font-size: .64rem;
+  font-size: var(--ui-font-size-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -405,7 +412,7 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   color: var(--ui-color-text-muted);
-  font-size: .49rem;
+  font-size: var(--ui-font-size-xs);
   white-space: nowrap;
 }
 
@@ -428,7 +435,7 @@ onMounted(() => {
 
 .admin-link {
   color: #a9a2f4;
-  font-size: .46rem;
+  font-size: var(--ui-font-size-xs);
   text-decoration: none;
 }
 
@@ -456,7 +463,7 @@ onMounted(() => {
   background: transparent;
   color: var(--ui-color-text-muted);
   font: inherit;
-  font-size: .52rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .hud__context > button img {
@@ -494,7 +501,7 @@ onMounted(() => {
   z-index: 1;
   display: block;
   color: rgb(242 244 255 / 80%);
-  font-size: .44rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 700;
   line-height: 6px;
   text-align: center;
@@ -635,7 +642,7 @@ onMounted(() => {
 .navigation small {
   overflow: hidden;
   max-width: 100%;
-  font-size: .54rem;
+  font-size: var(--ui-font-size-xs);
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;

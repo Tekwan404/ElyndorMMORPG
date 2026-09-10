@@ -214,8 +214,8 @@ describe('CombatView', () => {
     const wrapper = mount(CombatView)
     const bar = wrapper.get('[data-autoattack-cast]')
 
-    expect(bar.text()).toContain('AA · Автоатака')
-    expect(bar.text()).not.toContain('OFF')
+    expect(bar.text()).toContain('Автоатака')
+    expect(bar.text()).not.toContain('ВЫКЛ')
     expect(bar.get('i > span').attributes('style')).toContain('width:')
   })
 
