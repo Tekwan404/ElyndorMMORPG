@@ -18,6 +18,16 @@ public sealed class TelegramServerErrorReporter(
     private static readonly ConcurrentDictionary<string, DateTimeOffset> LastSentByFingerprint =
         new(StringComparer.Ordinal);
     private static readonly TimeSpan DuplicateWindow = TimeSpan.FromMinutes(1);
+    private static readonly Action<ILogger, string, Exception?> CharacterLookupFailed =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(2301, nameof(CharacterLookupFailed)),
+            "Failed to resolve character while preparing Telegram server error alert for {TraceId}.");
+    private static readonly Action<ILogger, long, string, Exception?> AlertSendFailed =
+        LoggerMessage.Define<long, string>(
+            LogLevel.Warning,
+            new EventId(2302, nameof(AlertSendFailed)),
+            "Failed to send Telegram server error alert to administrator {TelegramUserId} for {TraceId}.");
 
     public async Task ReportAsync(
         HttpContext context,
@@ -56,10 +66,7 @@ public sealed class TelegramServerErrorReporter(
             }
             catch (Exception lookupException)
             {
-                logger.LogWarning(
-                    lookupException,
-                    "Failed to resolve character while preparing Telegram server error alert for {TraceId}.",
-                    context.TraceIdentifier);
+                CharacterLookupFailed(logger, context.TraceIdentifier, lookupException);
             }
         }
 
@@ -72,11 +79,7 @@ public sealed class TelegramServerErrorReporter(
             }
             catch (Exception sendException)
             {
-                logger.LogWarning(
-                    sendException,
-                    "Failed to send Telegram server error alert to administrator {TelegramUserId} for {TraceId}.",
-                    chatId,
-                    context.TraceIdentifier);
+                AlertSendFailed(logger, chatId, context.TraceIdentifier, sendException);
             }
         }
     }
