@@ -1,4 +1,5 @@
 using Elyndor.Core.Administration;
+using Elyndor.Core.Afk;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Core.World;
@@ -30,6 +31,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<TravelOperation> TravelOperations => Set<TravelOperation>();
 
     public DbSet<CharacterTravelState> CharacterTravelStates => Set<CharacterTravelState>();
+
+    public DbSet<AfkFarmSession> AfkFarmSessions => Set<AfkFarmSession>();
 
     public DbSet<AdminCommandAudit> AdminCommandAudits => Set<AdminCommandAudit>();
 
