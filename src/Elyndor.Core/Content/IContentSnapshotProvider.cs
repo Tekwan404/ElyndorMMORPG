@@ -4,11 +4,11 @@ namespace Elyndor.Core.Content;
 
 public sealed class GameContentSnapshot
 {
-    private GameContentSnapshot(GameContentPackage package)
+    private GameContentSnapshot(GameContentPackage package, bool directTravel)
     {
         Package = package ?? throw new ArgumentNullException(nameof(package));
         Indexes = GameContentIndexes.For(package);
-        WorldMap = new WorldMap(package.Locations);
+        WorldMap = new WorldMap(package.Locations, directTravel);
     }
 
     public GameContentPackage Package { get; }
@@ -19,7 +19,10 @@ public sealed class GameContentSnapshot
     public string BalanceVersion => Package.BalanceVersion;
     public DateTimeOffset PublishedAtUtc => Package.PublishedAtUtc;
 
-    public static GameContentSnapshot Create(GameContentPackage package) => new(package);
+    public static GameContentSnapshot Create(
+        GameContentPackage package,
+        bool directTravel = false) =>
+        new(package, directTravel);
 }
 
 public interface IContentSnapshotProvider
