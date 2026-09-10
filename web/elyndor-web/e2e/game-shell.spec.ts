@@ -33,15 +33,12 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
-  await page.getByRole('button', { name: 'Городские сервисы' }).click()
-  const servicesDialog = page.getByRole('dialog', { name: 'Городские сервисы' })
-  await expect(servicesDialog).toBeVisible()
-  await expect(servicesDialog.getByText('Представительство Гильдии')).toBeVisible()
+  await expect(page.getByText('Представительство Гильдии')).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-city.png', fullPage: true })
 
-  await servicesDialog.getByRole('button', { name: 'Торговать' }).click()
+  await page.getByRole('button', { name: 'Торговать' }).click()
   const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
   await expect(merchantDialog).toBeVisible()
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
@@ -49,8 +46,6 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(merchantDialog.getByPlaceholder('Найти припасы')).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
-
-  await page.locator('[data-open-town-services]').click()
 
   await page.getByRole('button', { name: 'Войти' }).click()
   const guildDialog = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
@@ -62,7 +57,6 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(guildDialog).toBeHidden()
 
   await page.locator('[data-nav="world"]').click()
-  await page.locator('[data-open-world-map]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
   const mapSelection = page.locator('[data-map-selection]')
   await expect(mapSelection).toContainText('Осмотреть локацию')
@@ -71,16 +65,14 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
   await page.locator('[data-map-travel]').click()
-  await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   await expect(page.locator('[data-location-travel]')).toHaveCount(0)
 
   await page.locator('[data-nav="world"]').click()
-  await page.locator('[data-open-world-map]').click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()
   await expect(page.getByText('Требуется 6 уровень.')).toBeVisible()
   await expect(page.locator('[data-map-travel]')).toBeDisabled()
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
@@ -96,14 +88,14 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Герой' }).click()
   await expect(page.getByRole('heading', { name: 'Снаряжение' })).toBeVisible()
   await expect(page.locator('[data-hero-name]')).toHaveText(heroName)
-  await page.locator('[data-nav="inventory"]').click()
-  await expect(page.getByRole('heading', { name: 'Рюкзак' })).toBeVisible()
-  await expect(page.getByText('Рюкзак пуст')).toBeVisible()
+  await page.locator('[data-hero-tab="inventory"]').click()
+  await expect(page.getByRole('heading', { name: 'Инвентарь' })).toBeVisible()
+  await expect(page.getByText('Инвентарь пуст')).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)

@@ -9,7 +9,10 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 import { usePartyStore } from '@/game/party/partyStore'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 
-vi.mock('@/telegram/telegramWebApp', () => ({ initializeTelegramWebApp: vi.fn<() => void>() }))
+vi.mock('@/telegram/telegramWebApp', () => ({
+  getTelegramInitData: vi.fn<() => string | null>(() => null),
+  initializeTelegramWebApp: vi.fn<() => void>(),
+}))
 
 describe('AppShell', () => {
   it('shows combat above the menu when a shared encounter becomes active', async () => {
@@ -43,8 +46,7 @@ describe('AppShell', () => {
     await wrapper.get('[data-start-dungeon]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
-    expect(wrapper.find('.navigation').exists()).toBe(true)
-    expect(wrapper.get('[data-nav="world"]').text()).toContain('Бой')
+    expect(wrapper.find('.navigation').exists()).toBe(false)
     expect(wrapper.find('.hud--combat').exists()).toBe(true)
     wrapper.unmount()
   })
@@ -54,7 +56,7 @@ describe('AppShell', () => {
     vi.restoreAllMocks()
   })
 
-  it('presents authoritative vitals and switches between map, location and hero views', async () => {
+  it('keeps World, Location and Hero as separate canonical navigation destinations', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue([
       {
         id: 'STARTER_TOWN',
@@ -88,9 +90,9 @@ describe('AppShell', () => {
     expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('main').text()).toContain('Стартовый город')
     expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
-    expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(true)
-    expect(wrapper.get('[data-nav="world"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(false)
+    expect(wrapper.get('[data-nav="location"]').attributes('disabled')).toBeUndefined()
     expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
     expect(wrapper.find('.game-shell__header').exists()).toBe(false)
     expect(wrapper.get('.hud').text()).toContain('ELYNDOR')
@@ -98,11 +100,13 @@ describe('AppShell', () => {
     await wrapper.get('[data-nav="world"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.get('main').text()).toContain('Стартовый город')
-
-    await wrapper.get('[data-open-world-map]').trigger('click')
-    await flushPromises()
     expect(wrapper.get('main').text()).toContain('Карта мира')
+
+    await wrapper.get('[data-nav="location"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Стартовый город')
+    expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Развитие героя')

@@ -120,6 +120,7 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-map-travel]').attributes('disabled')).toBeUndefined()
     await wrapper.get('[data-map-travel]').trigger('click')
     expect(travel).toHaveBeenCalledWith('WHISPERING_FOREST')
+    expect(wrapper.emitted('open-location')).toEqual([[]])
 
     await wrapper.get('[data-location-id="DEEP_FOREST"]').trigger('click')
     expect(wrapper.get('[data-map-travel]').attributes('disabled')).toBeDefined()

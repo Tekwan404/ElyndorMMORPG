@@ -25,7 +25,7 @@ describe('WorldView', () => {
     document.body.innerHTML = ''
   })
 
-  it('renders only the current location and leaves travel to the World map', async () => {
+  it('renders city services directly in the current location and leaves travel to the World map', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
     const wrapper = mount(WorldView)
@@ -33,12 +33,11 @@ describe('WorldView', () => {
     expect(wrapper.text()).toContain('Стартовый город')
     expect(wrapper.find('[data-travel]').exists()).toBe(false)
     expect(wrapper.find('.location-routes').exists()).toBe(false)
-    expect(wrapper.find('[data-open-town-services]').exists()).toBe(true)
-    await wrapper.get('[data-open-town-services]').trigger('click')
-    expect(document.body.querySelectorAll('[data-town-service]')).toHaveLength(4)
-    expect(document.body.querySelector('[data-town-service="training"]')?.textContent).toContain('Манекен')
-    expect(document.body.querySelector('[data-town-service="merchant"]')?.textContent).toContain('Маркус')
-    expect(document.body.querySelector('[data-town-service="guild"]')?.textContent).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
+    expect(wrapper.find('[data-open-town-services]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-town-service]')).toHaveLength(4)
+    expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
+    expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
+    expect(wrapper.get('[data-town-service="guild"]').text()).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
   })
 
   it('keeps the primary explore action attached to the current-location artwork', async () => {
@@ -54,6 +53,7 @@ describe('WorldView', () => {
     expect(wrapper.find('.scene [data-explore]').exists()).toBe(true)
     expect(wrapper.find('.location-activities').exists()).toBe(false)
     expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
+    expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
   it('disables exploration while a world mutation is pending and shows the server error', async () => {
@@ -86,9 +86,8 @@ describe('WorldView', () => {
     const wrapper = mount(WorldView)
     await flushPromises()
 
-    await wrapper.get('[data-open-location-details]').trigger('click')
-    expect(document.body.querySelector('[data-world-quest-id="QUEST_STORY"]')?.textContent).toContain('СЮЖЕТ')
-    document.body.querySelector<HTMLButtonElement>('[data-accept-world-quest]')?.click()
+    expect(wrapper.get('[data-world-quest-id="QUEST_STORY"]').text()).toContain('СЮЖЕТ')
+    await wrapper.get('[data-accept-world-quest]').trigger('click')
     await flushPromises()
     expect(acceptQuest).toHaveBeenCalledWith('QUEST_STORY')
   })
@@ -104,9 +103,7 @@ describe('WorldView', () => {
 
     const wrapper = mount(WorldView, { attachTo: document.body })
     await flushPromises()
-    await wrapper.get('[data-open-town-services]').trigger('click')
-    await flushPromises()
-    document.body.querySelector<HTMLButtonElement>('[data-open-adventurer-guild]')?.click()
+    await wrapper.get('[data-open-adventurer-guild]').trigger('click')
     await flushPromises()
 
     const board = document.body.querySelector('[data-adventurer-guild-board]')

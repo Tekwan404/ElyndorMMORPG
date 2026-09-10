@@ -9,11 +9,11 @@ import { locationKind, locationLabel, locationPresentation } from '@/game/world/
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { usePartyStore } from '@/game/party/partyStore'
-import { UIButton, UICard, UIModal, UIToast } from '@/ui/components'
+import { UIButton, UICard, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
-const emit = defineEmits<{ 'open-party': []; 'open-map': [] }>()
+const emit = defineEmits<{ 'open-party': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
@@ -25,8 +25,6 @@ const lastEnemyName = ref<string | null>(null)
 const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
-const locationDetailsOpen = ref(false)
-const townServicesOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let vitalsRefreshPending = false
 const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
@@ -183,8 +181,6 @@ watch(isTravelling, travelling => {
   if (travelling) {
     merchantOpen.value = false
     guildOpen.value = false
-    locationDetailsOpen.value = false
-    townServicesOpen.value = false
   }
 })
 
@@ -192,8 +188,6 @@ watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
     merchantOpen.value = false
     guildOpen.value = false
-    locationDetailsOpen.value = false
-    townServicesOpen.value = false
   }
 }, { immediate: true })
 
@@ -233,17 +227,13 @@ onMounted(() => {
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
         </div>
-        <div class="scene__actions" aria-label="Действия в мире">
+        <div v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat" class="scene__actions" aria-label="Действия локации">
           <UIButton
-            v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat"
             data-explore
             :loading="session.mutationPending"
             @click="explore"
           >
             Исследовать
-          </UIButton>
-          <UIButton data-open-world-map variant="secondary" @click="emit('open-map')">
-            Карта мира
           </UIButton>
         </div>
       </div>
@@ -253,7 +243,6 @@ onMounted(() => {
       v-if="isDungeonLocation && currentLocationId"
       :dungeon-id="currentLocationId"
       @open-party="emit('open-party')"
-      @open-map="emit('open-map')"
     />
 
     <div v-if="session.errorCode" class="world-error" role="alert">
@@ -327,58 +316,37 @@ onMounted(() => {
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
-    <section
-      v-if="locationQuestLeads.length || locationContracts.length || (!isCityLocation && hasLocalGuildContracts) || isCityLocation"
-      class="world-secondary-actions"
-      aria-label="Дополнительные действия локации"
-    >
-      <UIButton
-        v-if="locationQuestLeads.length || locationContracts.length || (!isCityLocation && hasLocalGuildContracts)"
-        variant="secondary"
-        data-open-location-details
-        @click="locationDetailsOpen = true"
-      >
-        Дела в локации<span v-if="locationQuestLeads.length + locationContracts.length"> · {{ locationQuestLeads.length + locationContracts.length }}</span>
-      </UIButton>
-      <UIButton
-        v-if="isCityLocation"
-        variant="secondary"
-        data-open-town-services
-        @click="townServicesOpen = true"
-      >Городские сервисы</UIButton>
+    <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
+      <header class="section-heading">
+        <div>
+          <small>ЛЮДИ И ИСТОРИИ</small>
+          <strong id="stories-title">Что происходит рядом</strong>
+        </div>
+        <span>{{ locationQuestLeads.length }}</span>
+      </header>
+      <div class="story-list">
+        <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
+          <div class="story-card__icon" aria-hidden="true">
+            <IconGenerator :config="{ id: `story-${quest.id}`, glyph: 'scroll', category: 'utility' }" />
+          </div>
+          <div class="story-card__copy">
+            <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
+            <strong>{{ quest.displayName }}</strong>
+            <p>{{ quest.description }}</p>
+            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
+          </div>
+          <UIButton
+            data-accept-world-quest
+            :disabled="isTravelling || session.mutationPending"
+            @click="acceptQuest(quest.id)"
+          >
+            {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
+          </UIButton>
+        </article>
+      </div>
     </section>
 
-    <UIModal :open="locationDetailsOpen" title="Дела в локации" @close="locationDetailsOpen = false">
-      <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
-        <header class="section-heading">
-          <div>
-            <small>ЛЮДИ И ИСТОРИИ</small>
-            <strong id="stories-title">Что происходит рядом</strong>
-          </div>
-          <span>{{ locationQuestLeads.length }}</span>
-        </header>
-        <div class="story-list">
-          <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
-            <div class="story-card__icon" aria-hidden="true">
-              <IconGenerator :config="{ id: `story-${quest.id}`, glyph: 'scroll', category: 'utility' }" />
-            </div>
-            <div class="story-card__copy">
-              <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
-              <strong>{{ quest.displayName }}</strong>
-              <p>{{ quest.description }}</p>
-              <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
-            </div>
-            <UIButton
-              data-accept-world-quest
-              :disabled="isTravelling || session.mutationPending"
-              @click="acceptQuest(quest.id)">
-              {{ quest.type === 'SIDE' ? 'Принять поручение' : 'Продолжить историю' }}
-            </UIButton>
-          </article>
-        </div>
-      </section>
-
-      <section v-if="!isCityLocation && hasLocalGuildContracts" class="field-guild" aria-labelledby="field-guild-title">
+    <section v-if="!isCityLocation && hasLocalGuildContracts" class="field-guild" aria-labelledby="field-guild-title">
         <header class="section-heading">
           <div>
             <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
@@ -395,11 +363,11 @@ onMounted(() => {
             <strong>Журнал контрактов экспедиции</strong>
             <p>Здесь регистрируют работу, связанную с угрозами текущего региона.</p>
           </div>
-          <UIButton data-open-field-guild @click="locationDetailsOpen = false; guildOpen = true">Открыть журнал</UIButton>
+          <UIButton data-open-field-guild @click="guildOpen = true">Открыть журнал</UIButton>
         </article>
-      </section>
+    </section>
 
-      <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
+    <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
         <header class="section-heading">
           <div>
             <small>КОНТРАКТЫ</small>
@@ -447,20 +415,17 @@ onMounted(() => {
             Нужен {{ contract.requiredLevel }} уровень
           </span>
         </article>
-      </section>
-    </UIModal>
-
-    <UIModal v-if="isCityLocation" :open="townServicesOpen" title="Городские сервисы" @close="townServicesOpen = false">
-    <section class="town-services">
+    </section>
+    <section v-if="isCityLocation" class="town-services" aria-labelledby="town-services-title">
       <header class="section-heading">
         <div>
-          <small>ГОРОДСКИЕ СЕРВИСЫ</small>
-          <strong>Стартовый город</strong>
+          <small>В ГОРОДЕ</small>
+          <strong id="town-services-title">Городские сервисы</strong>
         </div>
         <span data-safe>4 МЕСТА</span>
       </header>
 
-      <p class="town-services__hint">Город — твой хаб: выбери представителя, чтобы открыть его услугу.</p>
+      <p class="town-services__hint">Выберите представителя, чтобы открыть его услугу.</p>
 
       <div class="service-grid">
         <article class="service-card service-card--training" data-town-service="training">
@@ -490,7 +455,7 @@ onMounted(() => {
           <UIButton
             data-open-merchant
             :disabled="isTravelling"
-            @click="townServicesOpen = false; merchantOpen = true"
+            @click="merchantOpen = true"
           >
             {{ isTravelling ? 'В пути' : 'Торговать' }}
           </UIButton>
@@ -503,7 +468,7 @@ onMounted(() => {
             <strong>Представительство Гильдии</strong>
             <p>Селия выдаёт контракты и отмечает новые угрозы.</p>
           </div>
-          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="townServicesOpen = false; guildOpen = true">Войти</UIButton>
+          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
         </article>
 
         <article class="service-card service-card--rest" data-town-service="rest">
@@ -517,7 +482,6 @@ onMounted(() => {
         </article>
       </div>
     </section>
-    </UIModal>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
     <AdventurerGuildBoard
@@ -532,19 +496,10 @@ onMounted(() => {
 .world {
   display: grid;
   width: min(100%, var(--ui-content-width));
+  min-height: 100%;
   margin-inline: auto;
   gap: var(--ui-space-3);
   padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-7);
-}
-
-.world-secondary-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: var(--ui-space-2);
-}
-
-.world-secondary-actions :deep(.ui-button) {
-  width: 100%;
 }
 
 .world-stories,
@@ -556,7 +511,9 @@ onMounted(() => {
 }
 
 .world-stories + .field-guild,
-.field-guild + .location-contracts {
+.field-guild + .location-contracts,
+.world-stories + .town-services,
+.location-contracts + .town-services {
   padding-top: var(--ui-space-3);
   border-top: 1px solid var(--ui-color-border);
 }
@@ -1106,10 +1063,6 @@ onMounted(() => {
   padding: 8px 4px 2px;
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-xs);
-}
-
-.town-services {
-  order: -1;
 }
 
 /* Sections read as one location hub; individual controls carry the hierarchy. */

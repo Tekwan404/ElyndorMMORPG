@@ -6,7 +6,7 @@ import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import HeroView from '@/game/character/views/HeroView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
-describe('HeroView contextual equipment flow', () => {
+describe('HeroView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
   it('enables and opens the talents tab for Archer', async () => {
@@ -33,7 +33,7 @@ describe('HeroView contextual equipment flow', () => {
     expect(wrapper.find('[data-archer-talent-tree]').exists()).toBe(true)
   })
 
-  it('opens empty equipment slots into inventory filtered for that slot', async () => {
+  it('opens empty equipment slots in the Hero inventory tab filtered for that slot', async () => {
     const session = useGameSessionStore()
     const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')
     const chest = equipment('TEST_CHEST', 'Кираса стража', 'Chest')
@@ -44,11 +44,16 @@ describe('HeroView contextual equipment flow', () => {
     await wrapper.get('[data-equipment-slot="head"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.find('[data-hero-tab="inventory"]').exists()).toBe(false)
-    expect(wrapper.find('[data-close-slot-inventory]').exists()).toBe(true)
+    expect(wrapper.find('[data-hero-tab="inventory"]').exists()).toBe(true)
+    expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-close-slot-inventory]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Выберите: шлем')
     expect(wrapper.find('[data-item-id="TEST_HELMET"]').exists()).toBe(true)
     expect(wrapper.find('[data-item-id="TEST_CHEST"]').exists()).toBe(false)
+
+    await wrapper.get('[data-hero-tab="character"]').trigger('click')
+    expect(wrapper.get('[data-hero-tab="character"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-equipment-slot="head"]').exists()).toBe(true)
   })
 })
 
