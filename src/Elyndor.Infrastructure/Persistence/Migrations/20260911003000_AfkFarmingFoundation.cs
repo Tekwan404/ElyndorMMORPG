@@ -1,10 +1,14 @@
 using System;
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Elyndor.Infrastructure.Persistence.Migrations;
 
+[DbContext(typeof(GameDbContext))]
+[Migration("20260911003000_AfkFarmingFoundation")]
 public partial class AfkFarmingFoundation : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
