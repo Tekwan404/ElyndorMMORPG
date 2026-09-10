@@ -1,0 +1,88 @@
+name: apply-gameplay-bugpack
+
+on:
+  push:
+    branches:
+      - fix/gameplay-ux-bugpack-20260910
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/gameplay-ux-bugpack-20260910
+
+      - name: Apply verified gameplay fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected exactly one match, found {count}")
+              p.write_text(text.replace(old, new, 1))
+
+          # World travel updates the world state but must not force-open the Location tab.
+          replace_once(
+              "web/elyndor-web/src/game/world/views/WorldMapView.vue",
+              """  await session.travel(location.id)\n  if (!session.errorCode) {\n    selectedLocationId.value = location.id\n    emit('open-location')\n  }\n""",
+              """  await session.travel(location.id)\n  if (!session.errorCode) {\n    selectedLocationId.value = location.id\n  }\n""",
+          )
+
+          # Inventory: do not render equip actions when the current character cannot equip the item.
+          replace_once(
+              "web/elyndor-web/src/game/character/views/InventoryView.vue",
+              """        <template v-if=\"selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)\">""",
+              """        <template v-if=\"selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem) && canEquipNow(selectedItem)\">""",
+          )
+          replace_once(
+              "web/elyndor-web/src/game/character/views/InventoryView.vue",
+              """          v-else-if=\"selectedItem?.type === 'Equipment'\"\n          :loading=\"session.mutationPending\"""",
+              """          v-else-if=\"selectedItem?.type === 'Equipment' && canEquipNow(selectedItem)\"\n          :loading=\"session.mutationPending\"""",
+          )
+          replace_once(
+              "web/elyndor-web/src/game/character/views/InventoryView.vue",
+              """        <p\n          v-if=\"selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)\"""",
+              """        <p\n          v-if=\"selectedItem.type === 'Equipment' && !canEquipNow(selectedItem)\"\n          class=\"item-detail__hint\"\n          data-equip-restriction\n        >\n          Этот предмет нельзя надеть текущим персонажем. Проверьте требуемый уровень, класс и тип экипировки.\n        </p>\n        <p\n          v-if=\"selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)\"""",
+          )
+
+          # Auto attack: a successful ability invalidates the old AA wind-up. The next AA starts
+          # from a full interval after the ability resolves (or immediately after an instant ability).
+          replace_once(
+              "src/Elyndor.Core/Combat/Sessions/CombatSession.cs",
+              """        if (!execution.Succeeded)\n            return Result(false, MapAbilityError(execution.ErrorCode), before);\n\n        ApplyKernelEvents(""",
+              """        if (!execution.Succeeded)\n            return Result(false, MapAbilityError(execution.ErrorCode), before);\n\n        if (_playerAutoAttackEnabled)\n        {\n            DateTimeOffset autoAttackRestartAtUtc =\n                _playerRuntime.ActiveCast?.ResolvesAtUtc ?? now;\n            _nextPlayerMainHandAutoAttackAtUtc =\n                autoAttackRestartAtUtc\n                + EffectivePlayerAutoAttackInterval(_player.AutoAttack, autoAttackRestartAtUtc);\n            _nextPlayerOffHandAutoAttackAtUtc = _player.OffHandAutoAttack is not null\n                ? autoAttackRestartAtUtc\n                    + EffectivePlayerAutoAttackInterval(_player.OffHandAutoAttack, autoAttackRestartAtUtc)\n                : null;\n        }\n\n        ApplyKernelEvents(""",
+          )
+          replace_once(
+              "src/Elyndor.Core/Combat/Sessions/CombatSession.cs",
+              """        if (isOffHand)\n            _nextPlayerOffHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;\n        else\n            _nextPlayerMainHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;\n""",
+              """        DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;\n        DateTimeOffset nextFullCycleAtUtc =\n            restartAtUtc + EffectivePlayerAutoAttackInterval(profile, restartAtUtc);\n        if (isOffHand)\n            _nextPlayerOffHandAutoAttackAtUtc = nextFullCycleAtUtc;\n        else\n            _nextPlayerMainHandAutoAttackAtUtc = nextFullCycleAtUtc;\n""",
+          )
+
+          # Shared valuable loot only needs Need/Greed when at least two players are eligible.
+          replace_once(
+              "src/Elyndor.Infrastructure/Progression/CombatRewardService.cs",
+              """        foreach (LootRoll roll in sharedValuableLoot)\n        {\n            if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))\n                throw new InvalidOperationException($\"Item '{roll.ItemId}' is missing from game content.\");\n\n            derivedForLoot ??= await derivedStateService.ResolveAsync(""",
+              """        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);\n        foreach (LootRoll roll in sharedValuableLoot)\n        {\n            if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))\n                throw new InvalidOperationException($\"Item '{roll.ItemId}' is missing from game content.\");\n\n            if (eligibleCharacterIds.Length <= 1)\n            {\n                if (eligibleCharacterIds.Length == 1 && eligibleCharacterIds[0] == character.Id)\n                {\n                    await AddItemAsync(\n                        character.Id,\n                        snapshot.SessionId,\n                        roll,\n                        now,\n                        contentSnapshot,\n                        cancellationToken);\n                    personalLoot.Add(roll);\n                }\n                continue;\n            }\n\n            derivedForLoot ??= await derivedStateService.ResolveAsync(""",
+          )
+
+          PY
+
+      - name: Commit patchset and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name "elyndor-fix-bot"
+          git config user.email "elyndor-fix-bot@users.noreply.github.com"
+          git rm .github/workflows/_apply_gameplay_bugpack.yml
+          git add src web
+          git commit -m "fix: correct combat loot travel and equip behavior"
+          git push origin HEAD:fix/gameplay-ux-bugpack-20260910
