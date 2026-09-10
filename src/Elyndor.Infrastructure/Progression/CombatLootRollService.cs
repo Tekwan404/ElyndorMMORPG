@@ -50,6 +50,7 @@ public sealed class CombatLootRollService(
             .ToArrayAsync(cancellationToken);
         CombatLootRoll[] eligibleRolls = openRolls
             .Where(roll => IsEligible(roll, character.Id))
+            .Where(roll => ReadEligibleCharacterIds(roll).Length > 1)
             .ToArray();
         if (eligibleRolls.Length == 0)
             return [];
@@ -103,6 +104,29 @@ public sealed class CombatLootRollService(
         if (roll.State != CombatLootRollState.Open)
             return new(true, null, null, roll.WinnerCharacterId);
 
+        Guid[] eligibleCharacterIds = ReadEligibleCharacterIds(roll);
+        if (eligibleCharacterIds.Length == 1)
+        {
+            if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
+                    roll.ItemDefinitionId,
+                    out ItemDefinition? soloItem))
+            {
+                return new(false, "loot_item_not_found", roll, null);
+            }
+
+            Guid winner = eligibleCharacterIds[0];
+            roll.Resolve(winner, "{}", "{}", timeProvider.GetUtcNow());
+            await GrantWinnerAsync(
+                winner,
+                roll,
+                soloItem,
+                contentSnapshot,
+                cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return new(true, null, null, winner);
+        }
+
         if (timeProvider.GetUtcNow() >= roll.EndsAtUtc)
             choice = LootChoice.Pass;
 
@@ -126,27 +150,26 @@ public sealed class CombatLootRollService(
 
         Dictionary<Guid, LootChoice> choices = ReadChoices(roll.ChoicesJson);
         choices[character.Id] = choice;
-        Guid[] eligibleCharacterIds = ReadEligibleCharacterIds(roll);
         bool shouldResolve = timeProvider.GetUtcNow() >= roll.EndsAtUtc
             || eligibleCharacterIds.All(choices.ContainsKey);
-        Guid? winner = null;
+        Guid? resolvedWinner = null;
         if (shouldResolve)
         {
             foreach (Guid eligibleCharacterId in eligibleCharacterIds)
                 choices.TryAdd(eligibleCharacterId, LootChoice.Pass);
             LootRollResolution resolution = LootRollRules.Resolve(choices, randomFactory.Create());
-            winner = resolution.WinnerCharacterId;
+            resolvedWinner = resolution.WinnerCharacterId;
             roll.Resolve(
-                winner,
+                resolvedWinner,
                 JsonSerializer.Serialize(choices),
                 JsonSerializer.Serialize(resolution.Entries.ToDictionary(
                     entry => entry.CharacterId,
                     entry => entry.Roll)),
                 timeProvider.GetUtcNow());
-            if (winner.HasValue)
+            if (resolvedWinner.HasValue)
             {
                 await GrantWinnerAsync(
-                    winner.Value,
+                    resolvedWinner.Value,
                     roll,
                     item,
                     contentSnapshot,
@@ -160,7 +183,7 @@ public sealed class CombatLootRollService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new(true, null, roll, winner, canNeed);
+        return new(true, null, roll, resolvedWinner, canNeed);
     }
 
     public Task ResolveExpiredAsync(CancellationToken cancellationToken) =>
@@ -171,29 +194,45 @@ public sealed class CombatLootRollService(
     {
         DateTimeOffset now = timeProvider.GetUtcNow();
         const string openState = nameof(CombatLootRollState.Open);
-        CombatLootRoll[] expired;
+        CombatLootRoll[] openRolls;
         await using (Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction =
             await dbContext.Database.BeginTransactionAsync(cancellationToken))
         {
-            expired = await dbContext.CombatLootRolls
-                .FromSqlInterpolated($"SELECT * FROM game.combat_loot_rolls WHERE \"State\" = {openState} AND \"EndsAtUtc\" <= {now} FOR UPDATE")
+            openRolls = await dbContext.CombatLootRolls
+                .FromSqlInterpolated($"SELECT * FROM game.combat_loot_rolls WHERE \"State\" = {openState} FOR UPDATE")
                 .ToArrayAsync(cancellationToken);
-            if (expired.Length == 0)
+            CombatLootRoll[] automaticRolls = openRolls
+                .Where(roll => ReadEligibleCharacterIds(roll).Length <= 1 || roll.EndsAtUtc <= now)
+                .ToArray();
+            if (automaticRolls.Length == 0)
             {
                 await transaction.CommitAsync(cancellationToken);
                 return;
             }
 
             GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
-            foreach (CombatLootRoll roll in expired)
+            foreach (CombatLootRoll roll in automaticRolls)
             {
                 if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
                         roll.ItemDefinitionId,
                         out ItemDefinition? item))
                     continue;
 
-                Dictionary<Guid, LootChoice> choices = ReadChoices(roll.ChoicesJson);
                 Guid[] eligibleCharacterIds = ReadEligibleCharacterIds(roll);
+                if (eligibleCharacterIds.Length == 1)
+                {
+                    Guid winner = eligibleCharacterIds[0];
+                    roll.Resolve(winner, "{}", "{}", now);
+                    await GrantWinnerAsync(
+                        winner,
+                        roll,
+                        item,
+                        contentSnapshot,
+                        cancellationToken);
+                    continue;
+                }
+
+                Dictionary<Guid, LootChoice> choices = ReadChoices(roll.ChoicesJson);
                 foreach (Guid eligibleCharacterId in eligibleCharacterIds)
                     choices.TryAdd(eligibleCharacterId, LootChoice.Pass);
 
@@ -250,7 +289,7 @@ public sealed class CombatLootRollService(
 
         for (var index = 0; index < roll.Quantity; index++)
         {
-            DateTimeOffset now = timeProvider.GetUtcNow();
+            DateTimeOffset acquiredAt = timeProvider.GetUtcNow();
             PrimaryStats? legacyStats = generated is null && item.Type == ItemType.Equipment
                 ? ItemInstanceStatRoller.Resolve(
                     item,
@@ -263,7 +302,7 @@ public sealed class CombatLootRollService(
                     characterId,
                     item.Id,
                     1,
-                    now,
+                    acquiredAt,
                     item.Version,
                     legacyStats);
                 if (generated is not null)
@@ -287,7 +326,7 @@ public sealed class CombatLootRollService(
                     item.Id,
                     1,
                     item.Version,
-                    now,
+                    acquiredAt,
                     legacyStats,
                     generated is null ? null : JsonSerializer.Serialize(generated),
                     generated is null ? null : key.AuditHash,
