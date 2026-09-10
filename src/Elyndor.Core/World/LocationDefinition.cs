@@ -16,4 +16,5 @@ public sealed record LocationDefinition(
     string? RequiredContractId = null,
     string? ArtId = null,
     string Description = "",
-    decimal TravelDurationSeconds = 0);
+    decimal TravelDurationSeconds = 0,
+    bool AllowAfk = true);
