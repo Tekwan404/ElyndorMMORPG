@@ -637,6 +637,13 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
         <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
         <p
+          v-if="selectedItem.type === 'Equipment' && !canEquipNow(selectedItem)"
+          class="item-detail__hint"
+          data-equip-restriction
+        >
+          Этот предмет нельзя надеть текущим персонажем. Проверьте требуемый уровень, класс и тип экипировки.
+        </p>
+        <p
           v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
           class="item-detail__error"
           role="alert"
@@ -645,7 +652,7 @@ async function toggleSelectedLock(): Promise<void> {
         </p>
       </article>
       <template #actions>
-        <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)">
+        <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem) && canEquipNow(selectedItem)">
           <UIButton
             v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
             data-equip-target="MainHand"
@@ -666,7 +673,7 @@ async function toggleSelectedLock(): Promise<void> {
           </UIButton>
         </template>
         <UIButton
-          v-else-if="selectedItem?.type === 'Equipment'"
+          v-else-if="selectedItem?.type === 'Equipment' && canEquipNow(selectedItem)"
           :loading="session.mutationPending"
           :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
           @click="equipSelected()"

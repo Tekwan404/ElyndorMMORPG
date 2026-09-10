@@ -150,7 +150,6 @@ async function travel(): Promise<void> {
   await session.travel(location.id)
   if (!session.errorCode) {
     selectedLocationId.value = location.id
-    emit('open-location')
   }
 }
 

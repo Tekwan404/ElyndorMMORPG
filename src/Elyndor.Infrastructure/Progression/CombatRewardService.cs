@@ -231,10 +231,27 @@ public sealed class CombatRewardService(
             personalLoot.Add(roll);
         }
 
+        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
         foreach (LootRoll roll in sharedValuableLoot)
         {
             if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))
                 throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
+
+            if (eligibleCharacterIds.Length <= 1)
+            {
+                if (eligibleCharacterIds.Length == 1 && eligibleCharacterIds[0] == character.Id)
+                {
+                    await AddItemAsync(
+                        character.Id,
+                        snapshot.SessionId,
+                        roll,
+                        now,
+                        contentSnapshot,
+                        cancellationToken);
+                    personalLoot.Add(roll);
+                }
+                continue;
+            }
 
             derivedForLoot ??= await derivedStateService.ResolveAsync(
                 character.Id,

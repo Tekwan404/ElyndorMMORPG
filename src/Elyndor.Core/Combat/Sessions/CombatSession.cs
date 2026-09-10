@@ -833,6 +833,19 @@ public sealed partial class CombatSession
         if (!execution.Succeeded)
             return Result(false, MapAbilityError(execution.ErrorCode), before);
 
+        if (_playerAutoAttackEnabled)
+        {
+            DateTimeOffset autoAttackRestartAtUtc =
+                _playerRuntime.ActiveCast?.ResolvesAtUtc ?? now;
+            _nextPlayerMainHandAutoAttackAtUtc =
+                autoAttackRestartAtUtc
+                + EffectivePlayerAutoAttackInterval(_player.AutoAttack, autoAttackRestartAtUtc);
+            _nextPlayerOffHandAutoAttackAtUtc = _player.OffHandAutoAttack is not null
+                ? autoAttackRestartAtUtc
+                    + EffectivePlayerAutoAttackInterval(_player.OffHandAutoAttack, autoAttackRestartAtUtc)
+                : null;
+        }
+
         ApplyKernelEvents(
             execution.Events,
             _player.Actor.ActorId,
@@ -1285,10 +1298,13 @@ public sealed partial class CombatSession
             return;
         }
 
+        DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+        DateTimeOffset nextFullCycleAtUtc =
+            restartAtUtc + EffectivePlayerAutoAttackInterval(profile, restartAtUtc);
         if (isOffHand)
-            _nextPlayerOffHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+            _nextPlayerOffHandAutoAttackAtUtc = nextFullCycleAtUtc;
         else
-            _nextPlayerMainHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+            _nextPlayerMainHandAutoAttackAtUtc = nextFullCycleAtUtc;
     }
 
     private void ResolveSummon(DateTimeOffset now)
