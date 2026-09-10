@@ -5,6 +5,8 @@ import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
 
 const props = defineProps<{
@@ -21,6 +23,7 @@ const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
 const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
+const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
@@ -56,6 +59,11 @@ const visibleCells = computed(() => {
   return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
 })
 const usedSlots = computed(() => bagItems.value.length)
+const activeFilterCount = computed(() => [
+  rarityFilter.value !== 'all',
+  equipableOnly.value,
+  sortMode.value !== 'default',
+].filter(Boolean).length)
 const comparisonItem = computed(() =>
   selectedItem.value?.type === 'Equipment'
     ? equippedItemForSlot(selectedItem.value)
@@ -325,18 +333,31 @@ function itemArt(item: InventoryItem): string | undefined {
   return itemArtUrl(item.iconId)
 }
 
-function itemGlyph(item: InventoryItem): string {
-  if (item.type === 'Material') return '◆'
-  if (item.type === 'Consumable') return '✚'
-  if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return '⚔'
-  if (item.slot === 'Head') return '◈'
-  if (item.slot === 'Chest') return '⬟'
-  if (item.slot === 'Legs') return '▥'
-  if (item.slot === 'Boots' || item.slot === 'Feet') return '⌁'
-  if (item.slot === 'Hands') return '◫'
-  if (item.slot === 'Cloak') return '◒'
-  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return '✧'
-  return '✦'
+function itemGlyph(item: InventoryItem): GlyphName {
+  if (item.type === 'Material') return 'ore'
+  if (item.type === 'Consumable') return 'potion'
+  if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return 'sword'
+  if (item.slot === 'Head') return 'helmet'
+  if (item.slot === 'Chest' || item.slot === 'Legs' || item.slot === 'Hands') return 'armor'
+  if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
+  if (item.slot === 'Cloak') return 'scroll'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
+  return 'star'
+}
+
+function itemIconConfig(item: InventoryItem, idPrefix: string): IconConfig {
+  return {
+    id: `${idPrefix}-${item.id}`,
+    glyph: itemGlyph(item),
+    category: item.type === 'Equipment' ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource',
+    rarity: item.rarity.toLowerCase() as IconConfig['rarity'],
+  }
+}
+
+function resetFilters(): void {
+  rarityFilter.value = 'all'
+  equipableOnly.value = false
+  sortMode.value = 'default'
 }
 
 function inventoryActionError(code: string | null): string | null {
@@ -419,8 +440,8 @@ async function toggleSelectedLock(): Promise<void> {
     </header>
 
     <section v-if="inventory" class="inventory-tools" aria-label="Фильтры инвентаря">
-      <div v-if="!isContextualSlotMode" class="filter-row">
-        <small>Тип</small>
+      <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
+        <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
           <button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">Все</button>
           <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
@@ -428,44 +449,62 @@ async function toggleSelectedLock(): Promise<void> {
           <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
         </div>
       </div>
-      <div v-if="!isContextualSlotMode" class="filter-row">
-        <small>Доступность</small>
-        <div class="filter-chips">
-          <button
-            type="button"
-            data-inventory-equipable-filter
-            :class="{ active: equipableOnly }"
-            @click="equipableOnly = !equipableOnly"
-          >
-            Можно надеть
-          </button>
-        </div>
-      </div>
-      <div class="filter-row filter-row--rarity">
-        <small>Редкость</small>
-        <div class="filter-chips filter-chips--scroll">
-          <button type="button" :class="{ active: rarityFilter === 'all' }" @click="rarityFilter = 'all'">Любая</button>
-          <button type="button" :class="{ active: rarityFilter === 'Common' }" @click="rarityFilter = 'Common'">Обычная</button>
-          <button type="button" :class="{ active: rarityFilter === 'Uncommon' }" @click="rarityFilter = 'Uncommon'">Необычная</button>
-          <button type="button" :class="{ active: rarityFilter === 'Rare' }" @click="rarityFilter = 'Rare'">Редкая</button>
-          <button type="button" :class="{ active: rarityFilter === 'Epic' }" @click="rarityFilter = 'Epic'">Эпическая</button>
-          <button type="button" :class="{ active: rarityFilter === 'Legendary' }" @click="rarityFilter = 'Legendary'">Легендарная</button>
-          <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
-        </div>
-      </div>
-      <div class="filter-row filter-row--sort">
-        <small>Порядок</small>
-        <label class="sort-select">
-          <span class="sr-only">Сортировка предметов</span>
-          <select v-model="sortMode" data-inventory-sort>
-            <option value="default">Как получено</option>
-            <option value="rarity">По редкости</option>
-            <option value="level">По уровню</option>
-            <option value="name">По названию</option>
-          </select>
-        </label>
-      </div>
+      <UIButton
+        v-if="!isContextualSlotMode"
+        variant="secondary"
+        data-open-inventory-filters
+        @click="filtersOpen = true"
+      >
+        Фильтры<span v-if="activeFilterCount"> · {{ activeFilterCount }}</span>
+      </UIButton>
+      <span v-else class="inventory-tools__context">Фильтр слота: {{ slotLabel(contextualSlot) }}</span>
     </section>
+
+    <UIModal :open="filtersOpen" title="Фильтры рюкзака" @close="filtersOpen = false">
+      <section class="inventory-filter-sheet" aria-label="Дополнительные фильтры">
+        <div class="filter-row">
+          <small>Доступность</small>
+          <div class="filter-chips">
+            <button
+              type="button"
+              data-inventory-equipable-filter
+              :class="{ active: equipableOnly }"
+              @click="equipableOnly = !equipableOnly"
+            >
+              Можно надеть
+            </button>
+          </div>
+        </div>
+        <div class="filter-row filter-row--rarity">
+          <small>Редкость</small>
+          <div class="filter-chips filter-chips--scroll">
+            <button type="button" :class="{ active: rarityFilter === 'all' }" @click="rarityFilter = 'all'">Любая</button>
+            <button type="button" :class="{ active: rarityFilter === 'Common' }" @click="rarityFilter = 'Common'">Обычная</button>
+            <button type="button" :class="{ active: rarityFilter === 'Uncommon' }" @click="rarityFilter = 'Uncommon'">Необычная</button>
+            <button type="button" :class="{ active: rarityFilter === 'Rare' }" @click="rarityFilter = 'Rare'">Редкая</button>
+            <button type="button" :class="{ active: rarityFilter === 'Epic' }" @click="rarityFilter = 'Epic'">Эпическая</button>
+            <button type="button" :class="{ active: rarityFilter === 'Legendary' }" @click="rarityFilter = 'Legendary'">Легендарная</button>
+            <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
+          </div>
+        </div>
+        <div class="filter-row filter-row--sort">
+          <small>Порядок</small>
+          <label class="sort-select">
+            <span class="sr-only">Сортировка предметов</span>
+            <select v-model="sortMode" data-inventory-sort>
+              <option value="default">Как получено</option>
+              <option value="rarity">По редкости</option>
+              <option value="level">По уровню</option>
+              <option value="name">По названию</option>
+            </select>
+          </label>
+        </div>
+      </section>
+      <template #actions>
+        <UIButton variant="ghost" data-reset-inventory-filters @click="resetFilters">Сбросить</UIButton>
+        <UIButton data-apply-inventory-filters @click="filtersOpen = false">Готово</UIButton>
+      </template>
+    </UIModal>
 
     <section v-if="inventory" class="bag-surface">
       <header class="bag-surface__header">
@@ -497,10 +536,12 @@ async function toggleSelectedLock(): Promise<void> {
         >
           <template v-if="item">
             <span v-if="newItemIds.has(item.id)" class="bag-cell__new">НОВОЕ</span>
-            <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">◆</span>
+            <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
+              <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
+            </span>
             <span class="bag-cell__icon">
               <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-              <template v-else>{{ itemGlyph(item) }}</template>
+              <IconGenerator v-else :config="itemIconConfig(item, 'item')" />
             </span>
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
@@ -527,17 +568,17 @@ async function toggleSelectedLock(): Promise<void> {
         <div class="item-detail__identity">
           <span class="item-detail__icon" :data-rarity="selectedItem.rarity">
             <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" decoding="async" />
-            <template v-else>{{ itemGlyph(selectedItem) }}</template>
+            <IconGenerator v-else :config="itemIconConfig(selectedItem, 'item-detail')" />
           </span>
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
             <strong>Количество: {{ selectedItem.quantity }}</strong>
-            <span v-if="selectedItem.isLocked" class="item-detail__locked">◆ ЗАЩИЩЕНО</span>
+            <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
           </div>
         </div>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
-          ✦ Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
+          Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
         </p>
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
@@ -733,7 +774,7 @@ async function toggleSelectedLock(): Promise<void> {
 }
 
 .filter-chips button {
-  min-height: 2rem;
+  min-height: var(--ui-touch-target);
   flex: 0 0 auto;
   padding: 0 var(--ui-space-3);
   border: 1px solid var(--ui-color-border);
@@ -758,7 +799,7 @@ async function toggleSelectedLock(): Promise<void> {
 
 .sort-select select {
   width: min(100%, 15rem);
-  min-height: 2rem;
+  min-height: var(--ui-touch-target);
   padding: 0 var(--ui-space-3);
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
@@ -1090,6 +1131,47 @@ async function toggleSelectedLock(): Promise<void> {
   border-color: rgb(232 200 102 / 26%);
   background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2));
   color: #d8c77e;
+}
+
+.inventory-tools__primary {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.inventory-tools__primary > small,
+.inventory-tools__context {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+  font-weight: 700;
+}
+
+.inventory-tools > :deep(.ui-button) {
+  width: 100%;
+}
+
+.inventory-filter-sheet {
+  display: grid;
+  gap: var(--ui-space-4);
+}
+
+.inventory-filter-sheet .filter-row {
+  grid-template-columns: 5rem minmax(0, 1fr);
+}
+
+.bag-cell__icon :deep(.icon-generator),
+.item-detail__icon :deep(.icon-generator) {
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bag-cell__lock :deep(.icon-generator) {
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ui-color-gold);
 }
 
 @media (min-width: 520px) {

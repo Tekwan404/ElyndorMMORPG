@@ -13,6 +13,7 @@ import worldNavigation from './navigation/world.png'
 import starterTown from './world/starter-town.png'
 import whisperingForest from './world/whispering-forest.png'
 import ancientRuins from './world/ancient-ruins.png'
+import worldAtlas from './world/world-atlas.svg'
 import caravanRoad from './world/caravan-road.png'
 import combatWhispering from './world/combat-whispering.png'
 import marcus from './npc/marcus.webp'
@@ -36,6 +37,7 @@ export const gameArt = {
     ancientRuins,
     caravanRoad,
     combatWhispering,
+    worldAtlas,
   },
   locations: {
     STARTER_TOWN: starterTown,

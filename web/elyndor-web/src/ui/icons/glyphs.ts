@@ -59,4 +59,7 @@ export const GLYPHS: Record<GlyphName, GlyphDefinition> = {
   },
   star: { paths: ['m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z'] },
   lock: { paths: ['M6 10h12v11H6Z', 'M9 10V7a3 3 0 0 1 6 0v3', 'M12 14v3'] },
+  refresh: { paths: ['M20 11a8 8 0 0 0-14.8-4L3 10', 'M3 5v5h5', 'M4 13a8 8 0 0 0 14.8 4L21 14', 'M21 19v-5h-5'] },
+  close: { paths: ['m6 6 12 12', 'm18 6-12 12'] },
+  chevronLeft: { paths: ['m15 5-7 7 7 7'] },
 }

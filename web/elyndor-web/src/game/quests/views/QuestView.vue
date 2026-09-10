@@ -2,10 +2,14 @@
 import { computed, onMounted, ref } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 type JournalTab = 'story' | 'errands' | 'contracts' | 'completed'
+
+const emit = defineEmits<{ 'open-world': []; 'open-guild': [] }>()
 
 const session = useGameSessionStore()
 const activeTab = ref<JournalTab>('story')
@@ -42,10 +46,6 @@ const itemNames: Readonly<Record<string, string>> = {
   MINOR_BATTLE_TONIC: 'Малый боевой тоник', DEEP_FOREST_CHARM: 'Оберег Глубокого леса',
   BLIGHTED_GROVE_RING: 'Кольцо Осквернённой чащи',
 }
-const locationNames: Readonly<Record<string, string>> = {
-  STARTER_TOWN: 'Стартовый город', WHISPERING_FOREST: 'Шепчущий лес', DEEP_FOREST: 'Глубокий лес',
-  BROODMOTHER_LAIR: 'Логово Прародительницы', BLIGHTED_GROVE: 'Осквернённая чаща',
-}
 const errorMessages: Readonly<Record<string, string>> = {
   quest_level_required: 'Нужен более высокий уровень.',
   quest_invalid_location: 'Вернитесь к источнику задания, чтобы принять его.',
@@ -64,7 +64,7 @@ function tabCount(tab: JournalTab): number {
   const type = tab === 'story' ? 'STORY' : tab === 'errands' ? 'SIDE' : 'CONTRACT'
   return trackedQuests.value.filter(quest => quest.type === type).length
 }
-function locationName(id: string): string { return locationNames[id] ?? 'Неизвестная область' }
+function locationName(id: string): string { return locationPresentation(id).label }
 function targetName(id: string): string { return targetNames[id] ?? 'Неизвестная цель' }
 function objectiveLabel(objective: QuestObjective): string {
   return objective.type === 'CollectItem' ? 'Собрать: ' + targetName(objective.targetId) : 'Победить: ' + targetName(objective.targetId)
@@ -88,6 +88,7 @@ function emptyMessage(tab: JournalTab): string {
   if (tab === 'contracts') return 'Контракты регистрируются через Гильдию авантюристов.'
   return 'История завершённых дел пока пуста.'
 }
+const canOpenGuild = computed(() => session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN')
 async function abandon(questId: string): Promise<void> { await session.abandonQuest(questId) }
 async function claim(questId: string): Promise<void> { await session.claimQuest(questId) }
 
@@ -113,7 +114,7 @@ onMounted(async () => {
       </div>
     </header>
 
-    <UICard class="quest-philosophy">
+    <UICard v-if="session.questJournal === null || quests.length === 0" class="quest-philosophy">
       <strong>Задания — это причины отправиться в мир</strong>
       <p>Сюжет и поручения появляются в локациях. Официальные контракты принимаются у представителей Гильдии авантюристов.</p>
     </UICard>
@@ -212,7 +213,10 @@ onMounted(async () => {
           >
             Получить награду
           </UIButton>
-          <span v-else class="quest-card__completed-mark">✓ Задание завершено</span>
+          <span v-else class="quest-card__completed-mark">
+            <IconGenerator :config="{ id: `quest-completed-${quest.id}`, glyph: 'holy', category: 'utility' }" />
+            Задание завершено
+          </span>
         </footer>
       </UICard>
     </div>
@@ -220,6 +224,14 @@ onMounted(async () => {
     <UICard v-else class="quests__empty">
       <strong>Здесь пока пусто</strong>
       <p>{{ emptyMessage(activeTab) }}</p>
+      <div class="quests__empty-actions">
+        <UIButton data-quest-open-world variant="secondary" @click="emit('open-world')">Вернуться в мир</UIButton>
+        <UIButton
+          v-if="activeTab === 'contracts' && canOpenGuild"
+          data-quest-open-guild
+          @click="emit('open-guild')"
+        >Открыть гильдию</UIButton>
+      </div>
     </UICard>
   </section>
 </template>
@@ -255,5 +267,10 @@ onMounted(async () => {
 .quest-card__actions{display:flex;justify-content:flex-end}.quest-card__completed-mark{color:var(--ui-color-success);font-size:.72rem;font-weight:700}.quest-card--completed{opacity:.74}
 .quests__empty{text-align:center}.quests__empty p{margin-bottom:0;color:var(--ui-color-text-muted)}
 .quests__error{margin:0;padding:9px 11px;border:1px solid color-mix(in srgb,var(--ui-color-danger) 36%,transparent);border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-color-danger) 8%,transparent);color:var(--ui-color-danger);font-size:.72rem}
-@media (min-width:460px){.quest-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.quest-tabs__button{display:grid;justify-items:center;justify-content:stretch;text-align:center}}
+.quest-tabs{display:flex;overflow-x:auto;gap:6px;padding-bottom:2px;scrollbar-width:none}
+.quest-tabs::-webkit-scrollbar{display:none}
+.quest-tabs__button{min-width:max-content;min-height:var(--ui-touch-target);padding:7px 12px;font-size:var(--ui-font-size-xs)}
+.quest-tabs__button b{font-size:var(--ui-font-size-xs)}
+.quest-philosophy p{font-size:var(--ui-font-size-sm)}
+.quests__empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--ui-space-2);margin-top:var(--ui-space-3)}
 </style>

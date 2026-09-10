@@ -7,6 +7,8 @@ import { itemArtUrl } from '@/assets/itemArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
@@ -87,10 +89,16 @@ function itemArt(item: MerchantItem): string | undefined {
   return itemArtUrl(item.iconId)
 }
 
-function itemGlyph(item: MerchantItem): string {
-  if (item.type === 'Consumable') return '✚'
-  if (item.type === 'Equipment') return '⚔'
-  return '◆'
+function itemGlyph(item: MerchantItem): GlyphName {
+  if (item.type === 'Consumable') return 'potion'
+  if (item.type === 'Equipment') return 'sword'
+  return 'ore'
+}
+
+function itemCategory(type: MerchantItem['type']): 'equipment' | 'consumable' | 'resource' {
+  if (type === 'Consumable') return 'consumable'
+  if (type === 'Equipment') return 'equipment'
+  return 'resource'
 }
 
 function itemTypeLabel(item: MerchantItem): string {
@@ -117,10 +125,10 @@ function inventoryItemArt(item: InventoryItem): string | undefined {
   return itemArtUrl(item.iconId)
 }
 
-function inventoryItemGlyph(item: InventoryItem): string {
-  if (item.type === 'Equipment') return '⚔'
-  if (item.type === 'Consumable') return '✚'
-  return '◆'
+function inventoryItemGlyph(item: InventoryItem): GlyphName {
+  if (item.type === 'Equipment') return 'sword'
+  if (item.type === 'Consumable') return 'potion'
+  return 'ore'
 }
 
 function inventoryItemTypeLabel(item: InventoryItem): string {
@@ -216,7 +224,10 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             >
               <span class="offer-card__icon">
                 <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-                <template v-else>{{ itemGlyph(item) }}</template>
+                <IconGenerator
+                  v-else
+                  :config="{ id: `merchant-${item.definitionId}`, glyph: itemGlyph(item), category: itemCategory(item.type) }"
+                />
               </span>
               <span class="offer-card__copy">
                 <small>{{ rarityLabel(item) }}</small>
@@ -230,7 +241,10 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <div class="merchant-detail__identity">
               <span class="merchant-detail__icon" :data-rarity="selectedOffer.rarity">
                 <img v-if="itemArt(selectedOffer)" :src="itemArt(selectedOffer)" :alt="selectedOffer.name" decoding="async" />
-                <template v-else>{{ itemGlyph(selectedOffer) }}</template>
+                <IconGenerator
+                  v-else
+                  :config="{ id: `merchant-detail-${selectedOffer.definitionId}`, glyph: itemGlyph(selectedOffer), category: itemCategory(selectedOffer.type) }"
+                />
               </span>
               <div>
                 <small>{{ rarityLabel(selectedOffer) }} · {{ itemTypeLabel(selectedOffer) }}</small>
@@ -277,14 +291,18 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         </header>
 
         <p v-if="protectedItemsCount > 0" class="protected-hint">
-          ◆ Защищённые предметы скрыты из продажи: {{ protectedItemsCount }}
+          <IconGenerator :config="{ id: 'merchant-locked-items', glyph: 'lock', category: 'utility', state: 'locked' }" />
+          Защищённые предметы скрыты из продажи: {{ protectedItemsCount }}
         </p>
 
         <div v-if="sellableItems.length" class="sell-list">
           <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
             <span class="sell-card__icon" :data-rarity="item.rarity">
               <img v-if="inventoryItemArt(item)" :src="inventoryItemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-              <template v-else>{{ inventoryItemGlyph(item) }}</template>
+              <IconGenerator
+                v-else
+                :config="{ id: `merchant-inventory-${item.id}`, glyph: inventoryItemGlyph(item), category: item.type === 'Equipment' ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource' }"
+              />
             </span>
             <div class="sell-card__copy">
               <small>{{ inventoryItemTypeLabel(item) }}</small>

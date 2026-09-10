@@ -16,6 +16,8 @@ import {
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal, UIPanel } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName, Rarity } from '@/ui/icons/icon.types'
 
 const emit = defineEmits<{
   'select-empty-slot': [slot: EquipmentSlot]
@@ -41,46 +43,46 @@ interface PaperdollSlot {
   inventorySlot: EquipmentSlot
   label: string
   item: InventoryItem | null
-  glyph: string
+  glyph: GlyphName
   side: PaperdollSide
 }
 
 const equipment = computed<PaperdollSlot[]>(() => {
   const equipped = character.value?.inventory.equipped
   return [
-    { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: '◈', side: 'left' },
-    { id: 'shoulders', inventorySlot: 'Shoulders', label: 'Наплечники', item: equipped?.shoulders ?? null, glyph: '◉', side: 'left' },
-    { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: '◒', side: 'left' },
+    { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: 'helmet', side: 'left' },
+    { id: 'shoulders', inventorySlot: 'Shoulders', label: 'Наплечники', item: equipped?.shoulders ?? null, glyph: 'armor', side: 'left' },
+    { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: 'scroll', side: 'left' },
     {
       id: 'mainHand',
       inventorySlot: 'MainHand',
       label: 'Основная рука',
       item: equipped?.mainHand ?? equipped?.weapon ?? null,
-      glyph: '⚔',
+      glyph: 'sword',
       side: 'left',
     },
-    { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: '◫', side: 'left' },
-    { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: '✧', side: 'left' },
-    { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: '⬟', side: 'right' },
+    { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: 'armor', side: 'left' },
+    { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: 'ring', side: 'left' },
+    { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: 'armor', side: 'right' },
     {
       id: 'amulet',
       inventorySlot: 'Amulet',
       label: 'Амулет',
       item: equipped?.amulet ?? equipped?.accessory ?? null,
-      glyph: '✦',
+      glyph: 'star',
       side: 'right',
     },
-    { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: '🛡', side: 'right' },
-    { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: '▥', side: 'right' },
+    { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: 'shield', side: 'right' },
+    { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: 'armor', side: 'right' },
     {
       id: 'feet',
       inventorySlot: 'Feet',
       label: 'Обувь',
       item: equipped?.feet ?? equipped?.boots ?? null,
-      glyph: '⌁',
+      glyph: 'boots',
       side: 'right',
     },
-    { id: 'ring2', inventorySlot: 'Ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: '✧', side: 'right' },
+    { id: 'ring2', inventorySlot: 'Ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: 'ring', side: 'right' },
   ]
 })
 const leftEquipment = computed(() => equipment.value.filter(slot => slot.side === 'left'))
@@ -144,19 +146,20 @@ const totalAttacksPerSecond = computed(() =>
   (mainHandTiming.value?.aps ?? 0) + (offHandTiming.value?.aps ?? 0),
 )
 
-function itemGlyph(item: InventoryItem | null, fallback: string): string {
+function itemGlyph(item: InventoryItem | null, fallback: GlyphName): GlyphName {
   if (!item) return fallback
-  if (item.slot === 'Weapon' || item.slot === 'MainHand') return '⚔'
-  if (item.slot === 'OffHand') return '🛡'
-  if (item.slot === 'Head') return '◈'
-  if (item.slot === 'Shoulders') return '◉'
-  if (item.slot === 'Chest') return '⬟'
-  if (item.slot === 'Hands') return '◫'
-  if (item.slot === 'Legs') return '▥'
-  if (item.slot === 'Boots' || item.slot === 'Feet') return '⌁'
-  if (item.slot === 'Cloak') return '◒'
-  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return '✧'
-  return '✦'
+  if (item.slot === 'Weapon' || item.slot === 'MainHand') return 'sword'
+  if (item.slot === 'OffHand') return 'shield'
+  if (item.slot === 'Head') return 'helmet'
+  if (item.slot === 'Shoulders' || item.slot === 'Chest' || item.slot === 'Hands' || item.slot === 'Legs') return 'armor'
+  if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
+  if (item.slot === 'Cloak') return 'scroll'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
+  return 'star'
+}
+
+function itemRarity(item: InventoryItem | null): Rarity | undefined {
+  return item?.rarity.toLowerCase() as Rarity | undefined
 }
 
 function itemStats(item: InventoryItem): string[] {
@@ -193,7 +196,6 @@ function abilityInitials(ability: KnownAbility): string {
           <p class="eyebrow">Герой</p>
           <h1>Снаряжение</h1>
           <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }}</p>
-          <small class="public-code">ELY ID · {{ character.publicCode ?? '—' }}</small>
         </div>
         <div class="paperdoll__meta">
           <strong>Уровень {{ character.level }}</strong>
@@ -218,7 +220,10 @@ function abilityInitials(ability: KnownAbility): string {
           >
             <span class="equipment-slot__icon">
               <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
-              <template v-else>{{ itemGlyph(slot.item, slot.glyph) }}</template>
+              <IconGenerator
+                v-else
+                :config="{ id: `paperdoll-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+              />
             </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
@@ -226,7 +231,7 @@ function abilityInitials(ability: KnownAbility): string {
 
         <div class="paperdoll__figure">
           <div class="hero-figure">
-            <span class="hero-figure__sigil" aria-hidden="true">◆</span>
+            <IconGenerator class="hero-figure__sigil" :config="{ id: 'character-hero-sigil', glyph: 'star', category: 'utility' }" />
             <img v-if="characterArt" :src="characterArt" :alt="classLabel(character.classId)" />
             <div v-else class="hero-figure__fallback" role="img" :aria-label="classLabel(character.classId)">
               <span>{{ character.name.slice(0, 1).toUpperCase() }}</span>
@@ -255,7 +260,10 @@ function abilityInitials(ability: KnownAbility): string {
           >
             <span class="equipment-slot__icon">
               <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
-              <template v-else>{{ itemGlyph(slot.item, slot.glyph) }}</template>
+              <IconGenerator
+                v-else
+                :config="{ id: `paperdoll-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+              />
             </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
           </button>
@@ -421,12 +429,6 @@ function abilityInitials(ability: KnownAbility): string {
   margin-top: 3px;
   color: var(--ui-color-text-secondary);
   font-size: var(--ui-font-size-xs);
-}
-
-.public-code {
-  color: var(--ui-color-primary);
-  font-size: .62rem;
-  letter-spacing: .08em;
 }
 
 .eyebrow {

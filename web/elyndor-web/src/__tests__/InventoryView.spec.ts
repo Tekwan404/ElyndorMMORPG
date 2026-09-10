@@ -25,7 +25,13 @@ describe('InventoryView', () => {
 
     expect(itemIds(wrapper)).toEqual(['COMMON_BLADE', 'EPIC_BLADE'])
 
-    await wrapper.get('[data-inventory-sort]').setValue('rarity')
+    await wrapper.get('[data-open-inventory-filters]').trigger('click')
+    const sort = document.querySelector<HTMLSelectElement>('[data-inventory-sort]')
+    expect(sort).not.toBeNull()
+    sort!.value = 'rarity'
+    sort!.dispatchEvent(new Event('change', { bubbles: true }))
+    document.querySelector<HTMLButtonElement>('[data-apply-inventory-filters]')?.click()
+    await flushPromises()
     expect(itemIds(wrapper)).toEqual(['EPIC_BLADE', 'COMMON_BLADE'])
     expect(store.snapshot.character?.inventory.items.map(item => item.id)).toEqual([
       'COMMON_BLADE',
@@ -67,7 +73,9 @@ describe('InventoryView', () => {
     store.snapshot = snapshot([wearable, tooHigh, wrongArmor, potion], currentWeapon())
 
     const wrapper = mount(InventoryView)
-    await wrapper.get('[data-inventory-equipable-filter]').trigger('click')
+    await wrapper.get('[data-open-inventory-filters]').trigger('click')
+    document.querySelector<HTMLButtonElement>('[data-inventory-equipable-filter]')?.click()
+    document.querySelector<HTMLButtonElement>('[data-apply-inventory-filters]')?.click()
     await flushPromises()
 
     expect(wrapper.find('[data-item-id="WEARABLE_HELM"]').exists()).toBe(true)
@@ -240,8 +248,8 @@ describe('InventoryView', () => {
     await wrapper.get('[data-item-id="WOLF_FANG"]').trigger('click')
     await flushPromises()
 
-    expect(document.body.textContent).toContain('ЗАЩИЩЕНО')
-    expect(document.body.textContent).toContain('защищён от продажи')
+    expect(document.body.textContent).toContain('Предмет защищён')
+    expect(document.body.textContent).toContain('Предмет защищён от продажи')
 
     const action = document.body.querySelector<HTMLButtonElement>('[data-item-lock-action]')
     expect(action?.textContent).toContain('Снять защиту')

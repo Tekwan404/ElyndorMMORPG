@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Карта пограничных земель">
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2630"/>
+      <stop offset=".52" stop-color="#101d25"/>
+      <stop offset="1" stop-color="#071118"/>
+    </linearGradient>
+    <radialGradient id="mist" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#8eb2b0" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#0a141b" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="contours" width="180" height="130" patternUnits="userSpaceOnUse">
+      <path d="M-20 90c55-52 112-51 220-8M-28 112c57-42 121-39 236 4M-14 135c66-34 136-28 220 9" fill="none" stroke="#9d9870" stroke-opacity=".12" stroke-width="3"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#ground)"/>
+  <path d="M0 0h1600v1000H0z" fill="url(#mist)"/>
+  <path d="M0 0 270 40l120 140-90 160 170 90-80 180 115 150-180 240H0Z" fill="#20342d" opacity=".88"/>
+  <path d="m270 40 260 5 155 145-45 185-155 30-90-165-125-40Z" fill="#263b34" opacity=".88"/>
+  <path d="m685 190 180-145 230 30 100 180-80 180-170 45-195-75Z" fill="#344037" opacity=".8"/>
+  <path d="m1015 75 315-75h270v420l-205 25-115-185-185-5Z" fill="#2d3b37" opacity=".82"/>
+  <path d="m625 410 180-55 160 90 5 220-175 140-215-75-50-170Z" fill="#263a34" opacity=".9"/>
+  <path d="m970 440 210-150 180 15 150 195-45 270-240 150-215-130Z" fill="#3a3831" opacity=".82"/>
+  <path d="M0 590 210 480l235 105-45 210-190 205H0Z" fill="#1c302c" opacity=".9"/>
+  <path d="m420 735 250-90 190 110-70 245H325Z" fill="#1a2b2a" opacity=".94"/>
+  <path d="m805 710 190-25 200 130-50 185H755Z" fill="#2a3130" opacity=".86"/>
+  <path d="M1310 520 1600 420v580h-390l80-180Z" fill="#252f2d" opacity=".92"/>
+  <path d="M0 0h1600v1000H0Z" fill="url(#contours)"/>
+  <g fill="none" stroke="#6b8590" stroke-opacity=".5" stroke-width="13">
+    <path d="M50 110c260 130 335 145 470 120 180-34 205 170 375 192 190 25 245-160 430-115 140 34 180 111 230 128"/>
+    <path d="M30 750c230-96 325-31 450 30 165 80 255-45 380-70 200-39 302 125 700 65"/>
+  </g>
+  <g fill="#8d9d8a" opacity=".65">
+    <path d="m370 155 70-105 58 117-74-37Z"/><path d="m455 180 80-130 72 132-95-37Z"/>
+    <path d="m860 205 76-125 70 134-94-39Z"/><path d="m955 230 82-150 75 160-100-42Z"/>
+    <path d="m1110 655 72-130 70 145-95-41Z"/><path d="m1205 690 90-145 76 153-100-38Z"/>
+  </g>
+  <g fill="#17251f" opacity=".9">
+    <path d="m80 260 30-84 30 84 35-93 30 93 35-78 25 78Z"/>
+    <path d="m120 360 30-86 32 86 38-98 27 98 35-83 24 83Z"/>
+    <path d="m520 530 30-86 30 86 36-100 30 100 35-82 24 82Z"/>
+    <path d="m1330 780 30-88 30 88 40-104 28 104 36-82 24 82Z"/>
+  </g>
+  <g opacity=".35" fill="#b7d8d1" filter="url(#glow)">
+    <circle cx="310" cy="720" r="34"/><circle cx="760" cy="330" r="28"/><circle cx="1220" cy="410" r="32"/><circle cx="1420" cy="800" r="24"/>
+  </g>
+  <g fill="#d5b875" stroke="#352918" stroke-width="8">
+    <path d="m220 720 28-48 28 48-28 48Z"/><path d="m790 330 28-48 28 48-28 48Z"/>
+    <path d="m1220 410 28-48 28 48-28 48Z"/><path d="m1430 800 28-48 28 48-28 48Z"/>
+  </g>
+  <g fill="none" stroke="#d9c284" stroke-opacity=".3" stroke-width="4" stroke-dasharray="10 18">
+    <path d="M210 720c170-180 360-210 580-390 180-148 250 45 430 80 150 29 220 150 220 390"/>
+  </g>
+</svg>

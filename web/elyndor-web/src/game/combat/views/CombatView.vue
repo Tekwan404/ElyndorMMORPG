@@ -9,6 +9,8 @@ import { monsterArtUrl } from '@/assets/monsterArt'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName } from '@/ui/icons/icon.types'
 import { UIButton, UIHealthBar } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
@@ -244,6 +246,14 @@ function abilityIcon(ability: CombatAbility): string | undefined {
   return resolveAbilityArt(ability.id) ?? abilityArtUrl(ability.iconId)
 }
 
+function abilityGlyph(ability: CombatAbility): GlyphName {
+  if (ability.id.includes('FIRE') || ability.id.includes('FLAME') || ability.id === 'COMBUSTION') return 'fire'
+  if (ability.id.includes('ICE') || ability.id.includes('FROST')) return 'ice'
+  if (ability.id.includes('SHIELD') || ability.id.includes('BASTION')) return 'shield'
+  if (ability.id.includes('BOW') || ability.id.includes('ARROW')) return 'bow'
+  return 'sword'
+}
+
 function effectLabel(effect: CombatEffectSnapshot): string {
   return abilityName(effect.id)
 }
@@ -354,11 +364,11 @@ function consumableCanAffect(item: InventoryItem): boolean {
   })
 }
 
-function consumableGlyph(item: InventoryItem): string {
-  if (item.consumableActions.some((action) => action.type === 'RestoreHp')) return '✚'
-  if (item.consumableActions.some((action) => action.type === 'RestoreResource')) return '◈'
-  if (item.consumableActions.some((action) => action.type === 'RemoveEffect')) return '⊘'
-  return '✦'
+function consumableGlyph(item: InventoryItem): GlyphName {
+  if (item.consumableActions.some((action) => action.type === 'RestoreHp')) return 'potion'
+  if (item.consumableActions.some((action) => action.type === 'RestoreResource')) return 'star'
+  if (item.consumableActions.some((action) => action.type === 'RemoveEffect')) return 'shadow'
+  return 'scroll'
 }
 
 async function useConsumable(item: InventoryItem): Promise<void> {
@@ -391,13 +401,13 @@ function combatParticipantStatus(actorId: string): string {
   return 'В бою'
 }
 
-function combatParticipantGlyph(actorId: string): string {
+function combatParticipantGlyph(actorId: string): GlyphName {
   const status = snapshot.value?.participantRoster?.find((participant) => participant.actorId === actorId)?.status
-  if (status === 'Fled') return '↗'
-  if (status === 'Dead') return '×'
-  if (status === 'Completed') return '✓'
-  if (status === 'Rostered') return '…'
-  return '◆'
+  if (status === 'Fled') return 'shadow'
+  if (status === 'Dead') return 'skull'
+  if (status === 'Completed') return 'holy'
+  if (status === 'Rostered') return 'scroll'
+  return 'star'
 }
 
 function combatPlayerRole(player: { definitionId: string }): string {
@@ -410,6 +420,11 @@ function combatPlayerRole(player: { definitionId: string }): string {
 function combatPlayerHealthRatio(player: { hp: number; maxHp: number }): number {
   if (player.maxHp <= 0) return 0
   return Math.min(100, Math.max(0, (player.hp / player.maxHp) * 100))
+}
+
+function combatEnemyHealthRatio(enemy: { hp: number; maxHp: number }): number {
+  if (enemy.maxHp <= 0) return 0
+  return Math.min(100, Math.max(0, (enemy.hp / enemy.maxHp) * 100))
 }
 
 async function attachCombat(): Promise<void> {
@@ -504,7 +519,7 @@ onUnmounted(() => window.clearInterval(timer))
               </span>
             </span>
             <b class="combat-party-roster__state" aria-hidden="true">
-              {{ combatParticipantGlyph(player.actorId) }}
+              <IconGenerator :config="{ id: `combat-player-state-${player.actorId}`, glyph: combatParticipantGlyph(player.actorId), category: 'utility' }" />
             </b>
           </article>
         </div>
@@ -538,7 +553,13 @@ onUnmounted(() => window.clearInterval(timer))
           @click="selectCombatTarget(enemy.actorId)"
         >
           <span>{{ enemy.name }}</span>
-          <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }}</small>
+          <div class="combat-targets__vitals">
+            <i aria-hidden="true"><b :style="{ width: `${combatEnemyHealthRatio(enemy)}%` }" /></i>
+            <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(combatEnemyHealthRatio(enemy)) }}%</small>
+          </div>
+          <span class="combat-targets__portrait" aria-hidden="true">
+            <IconGenerator :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
+          </span>
         </button>
       </nav>
 
@@ -580,7 +601,8 @@ onUnmounted(() => window.clearInterval(timer))
             role="img"
             aria-label="Тренировочный манекен"
           >
-            <span>✦</span><b>ЦЕЛЬ</b>
+            <IconGenerator :config="{ id: 'training-dummy-target', glyph: 'star', category: 'utility' }" />
+            <b>ЦЕЛЬ</b>
           </div>
           <div
             v-else
@@ -588,7 +610,7 @@ onUnmounted(() => window.clearInterval(timer))
             role="img"
             :aria-label="enemyPresentation.name"
           >
-            ⚔
+            <IconGenerator :config="{ id: 'enemy-placeholder', glyph: 'skull', category: 'utility' }" />
           </div>
         </div>
 
@@ -636,17 +658,16 @@ onUnmounted(() => window.clearInterval(timer))
             class="autoattack-state"
             :class="{ active: snapshot.player.autoAttackEnabled }"
           >
-            {{ snapshot.player.autoAttackEnabled ? 'AUTO · ON' : 'AUTO · OFF' }}
+            {{ snapshot.player.autoAttackEnabled ? 'Автоатака · ВКЛ' : 'Автоатака · ВЫКЛ' }}
           </span>
         </div>
 
         <div v-if="isMage" class="pyro-state" aria-label="Состояние пироманта">
-          <span>Fireball Crit <b>{{ fireballStreak }}/3</b></span>
           <span v-if="heatLimit" class="hot">
-            ПРЕДЕЛ ЖАРА · {{ effectRemaining(heatLimit.expiresAtUtc).toFixed(1) }}с
+            Предел жара · {{ effectRemaining(heatLimit.expiresAtUtc).toFixed(1) }}с
           </span>
           <span v-if="combustion" class="hot">
-            ВОЗГОРАНИЕ · {{ effectRemaining(combustion.expiresAtUtc).toFixed(1) }}с
+            Возгорание · {{ effectRemaining(combustion.expiresAtUtc).toFixed(1) }}с
           </span>
         </div>
 
@@ -664,11 +685,11 @@ onUnmounted(() => window.clearInterval(timer))
           data-autoattack-cast
         >
           <div>
-            <strong>AA · Автоатака</strong>
+            <strong>Автоатака</strong>
             <small v-if="snapshot.player.autoAttackEnabled">
               {{ playerCast ? 'ПАУЗА' : `${autoAttackRemaining.toFixed(1)}с` }}
             </small>
-            <small v-else>OFF</small>
+            <small v-else>ВЫКЛ</small>
           </div>
           <i>
             <span :style="{ width: `${autoAttackProgress}%` }" />
@@ -690,9 +711,21 @@ onUnmounted(() => window.clearInterval(timer))
           >
             <span class="ability-slot__icon">
               <img v-if="ability && abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
-              <b v-else-if="ability">{{ ability.displayName.slice(0, 2) }}</b>
+              <IconGenerator
+                v-else-if="ability"
+                :config="{ id: `ability-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
+              />
               <i v-else />
             </span>
+            <span
+              v-if="ability?.id === 'MAGE_FIREBALL'"
+              class="ability-slot__markers"
+              :aria-label="`Криты Огненного шара: ${fireballStreak} из 3`"
+            >
+              <i v-for="marker in 3" :key="marker" :data-filled="marker <= fireballStreak" />
+            </span>
+            <span v-if="ability?.id === 'FIRE_COMET' && heatLimit" class="ability-slot__proc" aria-label="Предел жара активен">ЖАР</span>
+            <span v-if="ability?.id === 'COMBUSTION' && combustion" class="ability-slot__proc" aria-label="Возгорание активно">АКТ.</span>
             <small v-if="ability">{{ ability.displayName }}</small>
             <b v-if="ability && cooldownRemaining(ability.id) > 0" class="ability-slot__cooldown">
               {{ Math.ceil(cooldownRemaining(ability.id)) }}
@@ -720,7 +753,9 @@ onUnmounted(() => window.clearInterval(timer))
             :disabled="combat.pending || consumableCooldownRemaining(item) > 0 || !consumableCanAffect(item)"
             @click="useConsumable(item)"
           >
-            <span>{{ consumableGlyph(item) }}</span>
+            <span class="utility-action__icon">
+              <IconGenerator :config="{ id: `consumable-${item.definitionId}`, glyph: consumableGlyph(item), category: 'consumable' }" />
+            </span>
             <div>
               <strong>{{ item.name }}</strong>
               <small v-if="consumableCooldownRemaining(item) > 0">
@@ -740,7 +775,9 @@ onUnmounted(() => window.clearInterval(timer))
             :disabled="combat.pending"
             @click="combat.toggleAutoAttack"
           >
-            <span>⚔</span>
+            <span class="utility-action__icon">
+              <IconGenerator :config="{ id: 'combat-auto-attack', glyph: 'sword', category: 'utility' }" />
+            </span>
             <div>
               <strong>Автоатака</strong>
               <small>{{ snapshot.player.autoAttackEnabled ? 'Включена' : 'Выключена' }}</small>
@@ -754,7 +791,9 @@ onUnmounted(() => window.clearInterval(timer))
             :disabled="combat.pending"
             @click="resetTrainingCombat"
           >
-            <span>↻</span>
+            <span class="utility-action__icon">
+              <IconGenerator :config="{ id: 'combat-training-reset', glyph: 'refresh', category: 'utility' }" />
+            </span>
             <div><strong>Сброс</strong><small>Тренировка</small></div>
           </button>
 
@@ -766,7 +805,9 @@ onUnmounted(() => window.clearInterval(timer))
             :disabled="combat.pending"
             @click="fleeCombat"
           >
-            <span>↗</span>
+            <span class="utility-action__icon">
+              <IconGenerator :config="{ id: 'combat-flee', glyph: 'boots', category: 'utility' }" />
+            </span>
             <div>
               <strong>Сбежать</strong>
               <small>Остаться в локации</small>
@@ -781,7 +822,9 @@ onUnmounted(() => window.clearInterval(timer))
             :disabled="combat.pending"
             @click="leaveCombat"
           >
-            <span>×</span>
+            <span class="utility-action__icon">
+              <IconGenerator :config="{ id: 'combat-leave', glyph: 'close', category: 'utility' }" />
+            </span>
             <div>
               <strong>{{ isTraining ? 'Завершить' : 'Покинуть бой' }}</strong>
               <small>{{ isTraining ? 'Тренировку' : 'Выход' }}</small>
@@ -2088,5 +2131,158 @@ onUnmounted(() => window.clearInterval(timer))
   .combat-party-roster__member {
     flex: 0 0 min(12rem, 78vw);
   }
+}
+
+/* Combat controls stay readable and tappable on Telegram-sized screens. */
+.combat-targets button {
+  min-height: var(--ui-touch-target);
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 7px;
+  padding: 5px 7px;
+}
+
+.combat-targets button > span:first-child {
+  grid-column: 2;
+  font-size: var(--ui-font-size-xs);
+}
+
+.combat-targets__vitals {
+  display: grid;
+  grid-column: 2;
+  gap: 2px;
+}
+
+.combat-targets__vitals i {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 9%);
+}
+
+.combat-targets__vitals i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a44e62, #e38d98);
+}
+
+.combat-targets__vitals small {
+  font-size: var(--ui-font-size-xs);
+}
+
+.combat-targets__portrait {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  place-items: center;
+}
+
+.combat-targets__portrait :deep(.icon-generator) {
+  border-color: rgb(216 95 114 / 35%);
+  color: #efa1ae;
+}
+
+.combat-join button,
+.combat-log__toggle,
+.utility-action {
+  min-height: var(--ui-touch-target);
+}
+
+.combat-join,
+.combat-join strong,
+.combat-party-roster__identity strong,
+.combat-party-roster__identity small,
+.combat-party-roster__vitals,
+.utility-action strong,
+.utility-action small,
+.combat-log__toggle small,
+.combat-log li,
+.combat-log li strong,
+.combat-log li small,
+.cast-bar strong,
+.cast-bar small,
+.pyro-state,
+.autoattack-state,
+.ability-slot > small {
+  font-size: var(--ui-font-size-xs);
+}
+
+.combat-party-roster__header strong {
+  font-size: var(--ui-font-size-sm);
+}
+
+.ability-slot {
+  min-height: var(--ui-control-height-md);
+}
+
+.ability-slot > small {
+  line-height: 1.15;
+}
+
+.ability-slot__icon {
+  position: relative;
+}
+
+.ability-slot__markers {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  padding: 2px 3px;
+  border: 1px solid rgb(240 139 99 / 42%);
+  border-radius: var(--ui-radius-round);
+  background: rgb(18 8 7 / 90%);
+  transform: translate(-50%, -50%);
+}
+
+.ability-slot__markers i {
+  width: 5px;
+  height: 5px;
+  border: 1px solid #f08b63;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.ability-slot__markers i[data-filled='true'] {
+  background: #f08b63;
+  box-shadow: 0 0 5px rgb(240 139 99 / 70%);
+}
+
+.ability-slot__proc {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 2;
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: rgb(240 139 99 / 86%);
+  color: #170b08;
+  font-size: .55rem;
+  font-weight: 900;
+}
+
+.utility-action__icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+}
+
+.utility-action__icon :deep(.icon-generator) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.training-stats small {
+  font-size: var(--ui-font-size-xs);
 }
 </style>

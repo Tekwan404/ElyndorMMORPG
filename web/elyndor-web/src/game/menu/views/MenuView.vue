@@ -6,6 +6,7 @@ import { classLabel } from '@/game/character/characterPresentation'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
 export type MenuSection = 'profile' | 'friends' | 'party'
@@ -66,12 +67,16 @@ async function copyPublicCode(): Promise<void> {
 
     <nav v-if="activeSection === 'profile'" class="menu-grid" aria-label="Игровые системы">
       <button class="menu-tile menu-tile--gold" type="button" @click="activeSection = 'friends'">
-        <span class="menu-tile__icon" aria-hidden="true">♧</span>
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-friends', glyph: 'scroll', category: 'utility' }" />
+        </span>
         <span><strong>Друзья</strong><small>Поиск и заявки</small></span>
         <b aria-hidden="true">›</b>
       </button>
       <button class="menu-tile menu-tile--violet" type="button" @click="activeSection = 'party'">
-        <span class="menu-tile__icon" aria-hidden="true">⚔</span>
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-party', glyph: 'sword', category: 'utility' }" />
+        </span>
         <span><strong>Группа</strong><small>Состав и поход</small></span>
         <b aria-hidden="true">›</b>
       </button>
@@ -83,9 +88,12 @@ async function copyPublicCode(): Promise<void> {
     </section>
 
     <section v-else class="menu-subsection">
-      <button class="menu-back" type="button" @click="activeSection = 'profile'">‹ Все системы</button>
+      <button class="menu-back" type="button" @click="activeSection = 'profile'">
+        <IconGenerator :config="{ id: 'menu-back', glyph: 'chevronLeft', category: 'utility' }" />
+        Все системы
+      </button>
       <FriendsView v-if="activeSection === 'friends'" />
-      <PartyView v-else />
+      <PartyView v-else embedded />
     </section>
   </section>
 </template>
@@ -203,9 +211,9 @@ async function copyPublicCode(): Promise<void> {
 }
 
 .menu-profile__code :deep(.ui-button) {
-  min-height: 28px;
-  padding: 3px 6px;
-  font-size: .56rem;
+  min-height: var(--ui-touch-target);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  font-size: var(--ui-font-size-xs);
 }
 
 .menu-grid {
@@ -264,6 +272,12 @@ async function copyPublicCode(): Promise<void> {
   font-size: 1.15rem;
 }
 
+.menu-tile__icon :deep(.icon-generator) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .menu-tile--violet .menu-tile__icon {
   border-color: rgb(182 161 236 / 34%);
   color: var(--ui-color-primary);
@@ -285,7 +299,7 @@ async function copyPublicCode(): Promise<void> {
 
 .menu-tile small {
   color: var(--ui-color-text-muted);
-  font-size: .56rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 .menu-tile > b {
@@ -317,7 +331,7 @@ async function copyPublicCode(): Promise<void> {
 
 .menu-note p {
   margin: 0;
-  font-size: .62rem;
+  font-size: var(--ui-font-size-xs);
   line-height: 1.45;
 }
 
@@ -327,13 +341,17 @@ async function copyPublicCode(): Promise<void> {
 }
 
 .menu-back {
+  display: inline-flex;
+  min-height: var(--ui-touch-target);
+  align-items: center;
   justify-self: start;
-  padding: 2px 0;
+  gap: var(--ui-space-2);
+  padding: 0 var(--ui-space-2);
   border: 0;
   background: transparent;
   color: var(--ui-color-gold);
   font: inherit;
-  font-size: .68rem;
+  font-size: var(--ui-font-size-xs);
 }
 
 @media (max-width: 380px) {
