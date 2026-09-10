@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
 import type { WorldLocation } from '@/api/contracts'
@@ -18,6 +18,7 @@ const session = useGameSessionStore()
 const dungeon = useDungeonStore()
 const locations = ref<WorldLocation[]>([])
 const selectedLocationId = ref<string | null>(null)
+const selectedLocationElement = ref<HTMLElement | null>(null)
 const loading = ref(true)
 const catalogError = ref(false)
 
@@ -131,6 +132,15 @@ async function loadLocations(): Promise<void> {
 
 function selectLocation(locationId: string): void {
   selectedLocationId.value = locationId
+  void nextTick(() => {
+    const selection = selectedLocationElement.value
+    if (!selection || typeof selection.scrollIntoView !== 'function') return
+    selection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  })
 }
 
 async function travel(): Promise<void> {
@@ -195,13 +205,13 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
 }
 
 const worldMapAnchors: Record<string, { x: number; y: number }> = {
-  STARTER_TOWN: { x: 16, y: 71 },
-  WHISPERING_FOREST: { x: 31, y: 58 },
-  DEEP_FOREST: { x: 47, y: 43 },
-  ANCIENT_MINE: { x: 55, y: 22 },
-  BROODMOTHER_LAIR: { x: 64, y: 56 },
-  BLIGHTED_GROVE: { x: 78, y: 38 },
-  ECLIPSED_CITADEL: { x: 87, y: 19 },
+  STARTER_TOWN: { x: 16, y: 58 },
+  WHISPERING_FOREST: { x: 31, y: 44 },
+  DEEP_FOREST: { x: 47, y: 29 },
+  ANCIENT_MINE: { x: 55, y: 17 },
+  BROODMOTHER_LAIR: { x: 64, y: 48 },
+  BLIGHTED_GROVE: { x: 78, y: 32 },
+  ECLIPSED_CITADEL: { x: 87, y: 16 },
 }
 
 function nodePosition(
@@ -345,68 +355,69 @@ onMounted(() => {
           </span>
         </button>
 
+        <section
+          v-if="selectedLocation"
+          ref="selectedLocationElement"
+          class="map-selection"
+          :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
+          data-map-selection
+          data-map-preview
+          aria-label="Выбранная локация"
+        >
+          <div
+            class="map-selection__art"
+            :style="{ backgroundImage: `url(${selectedArt})` }"
+            aria-hidden="true"
+          />
+          <div class="map-selection__copy">
+            <div class="map-selection__eyebrow">
+              <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
+              <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
+            </div>
+            <strong>{{ locationName(selectedLocation) }}</strong>
+            <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
+            <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
+              {{ lockReason(selectedLocation) }}
+            </em>
+            <em v-if="selectedIsDungeon && dungeon.errorCode" class="map-selection__lock" role="alert">
+              {{ socialErrorMessage(dungeon.errorCode) }}
+            </em>
+          </div>
+          <div class="map-selection__actions">
+            <UIButton
+              v-if="selectedIsCurrent"
+              data-map-open-location
+              data-open-location
+              @click="emit('open-location')"
+            >
+              {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
+            </UIButton>
+            <UIButton
+              v-else-if="selectedIsDungeon"
+              data-dungeon-map-entry
+              :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling || !selectedDungeonPreview"
+              :loading="dungeon.teleporting"
+              @click="enterSelectedDungeon"
+            >
+              {{ characterLevel < selectedDungeonMinimumLevel ? `Нужен ${selectedDungeonMinimumLevel} ур.` : 'Телепорт ко входу' }}
+            </UIButton>
+            <UIButton
+              v-else
+              data-map-travel
+              data-map-travel-inline
+              :disabled="isTravelling || !selectedIsReachable"
+              :loading="session.mutationPending"
+              @click="travel"
+            >
+              {{ isTravelling ? 'Переход выполняется' : selectedIsReachable ? 'Начать переход' : 'Маршрут закрыт' }}
+            </UIButton>
+          </div>
+        </section>
+
         <div class="map-legend" aria-label="Легенда карты">
           <span><i data-state="current" /> Вы здесь</span>
           <span><i data-state="reachable" /> Доступно</span>
           <span><i data-state="locked" /> Нет прямого пути</span>
-        </div>
-      </section>
-
-      <section
-        v-if="selectedLocation"
-        class="map-selection"
-        :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
-        data-map-selection
-        data-map-preview
-        aria-label="Выбранная локация"
-      >
-        <div
-          class="map-selection__art"
-          :style="{ backgroundImage: `url(${selectedArt})` }"
-          aria-hidden="true"
-        />
-        <div class="map-selection__copy">
-          <div class="map-selection__eyebrow">
-            <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
-            <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
-          </div>
-          <strong>{{ locationName(selectedLocation) }}</strong>
-          <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
-          <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
-            {{ lockReason(selectedLocation) }}
-          </em>
-          <em v-if="selectedIsDungeon && dungeon.errorCode" class="map-selection__lock" role="alert">
-            {{ socialErrorMessage(dungeon.errorCode) }}
-          </em>
-        </div>
-        <div class="map-selection__actions">
-          <UIButton
-            v-if="selectedIsCurrent"
-            data-map-open-location
-            data-open-location
-            @click="emit('open-location')"
-          >
-            {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
-          </UIButton>
-          <UIButton
-            v-else-if="selectedIsDungeon"
-            data-dungeon-map-entry
-            :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling || !selectedDungeonPreview"
-            :loading="dungeon.teleporting"
-            @click="enterSelectedDungeon"
-          >
-            {{ characterLevel < selectedDungeonMinimumLevel ? `Нужен ${selectedDungeonMinimumLevel} ур.` : 'Телепорт ко входу' }}
-          </UIButton>
-          <UIButton
-            v-else
-            data-map-travel
-            data-map-travel-inline
-            :disabled="isTravelling || !selectedIsReachable"
-            :loading="session.mutationPending"
-            @click="travel"
-          >
-            {{ isTravelling ? 'Переход выполняется' : selectedIsReachable ? 'Начать переход' : 'Маршрут закрыт' }}
-          </UIButton>
         </div>
       </section>
 
@@ -708,11 +719,15 @@ onMounted(() => {
 }
 
 .map-selection {
+  position: absolute;
+  z-index: 3;
+  right: var(--ui-space-3);
+  bottom: var(--ui-space-3);
+  left: var(--ui-space-3);
   display: grid;
-  grid-template-columns: 5.3rem minmax(0, 1fr);
-  gap: var(--ui-space-3);
+  grid-template-columns: 4.7rem minmax(0, 1fr);
+  gap: var(--ui-space-2);
   overflow: hidden;
-  margin-top: calc(var(--ui-space-2) * -1);
   border: 1px solid rgb(184 177 255 / 32%);
   border-radius: calc(var(--ui-radius-lg) + 1px);
   background: rgb(5 8 14 / 90%);
@@ -728,7 +743,7 @@ onMounted(() => {
 }
 
 .map-selection__art {
-  min-height: 8.3rem;
+  min-height: 5.6rem;
   background-position: center;
   background-size: cover;
   box-shadow: inset -1.8rem 0 2.4rem rgb(5 8 14 / 76%);
@@ -737,9 +752,9 @@ onMounted(() => {
 .map-selection__copy {
   display: grid;
   min-width: 0;
-  align-content: center;
-  gap: 5px;
-  padding: var(--ui-space-3) var(--ui-space-3) var(--ui-space-3) 0;
+  align-content: start;
+  gap: 3px;
+  padding: var(--ui-space-2) var(--ui-space-2) var(--ui-space-2) 0;
 }
 
 .map-selection__eyebrow {
@@ -793,7 +808,7 @@ onMounted(() => {
 .map-selection__actions {
   grid-column: 1 / -1;
   display: grid;
-  padding: 0 var(--ui-space-3) var(--ui-space-3);
+  padding: 0 var(--ui-space-2) var(--ui-space-2);
 }
 
 .map-selection__actions :deep(.ui-button) {
@@ -839,11 +854,11 @@ onMounted(() => {
 
 .map-legend {
   position: absolute;
+  top: var(--ui-space-3);
   right: var(--ui-space-3);
-  bottom: var(--ui-space-3);
-  left: var(--ui-space-3);
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--ui-space-2);
   padding: var(--ui-space-2);
   border: 1px solid rgb(255 255 255 / 7%);
@@ -909,11 +924,34 @@ onMounted(() => {
   }
 
   .map-canvas {
-    min-height: 29rem;
+    min-height: 30rem;
   }
 
   .map-node__label {
     max-width: 6.6rem;
+  }
+
+  .map-selection {
+    right: var(--ui-space-2);
+    bottom: var(--ui-space-2);
+    left: var(--ui-space-2);
+    grid-template-columns: 4.15rem minmax(0, 1fr);
+  }
+
+  .map-selection__art {
+    min-height: 5.25rem;
+  }
+
+  .map-selection__copy {
+    padding-top: 7px;
+  }
+
+  .map-selection p {
+    -webkit-line-clamp: 1;
+  }
+
+  .map-legend {
+    display: none;
   }
 
 }

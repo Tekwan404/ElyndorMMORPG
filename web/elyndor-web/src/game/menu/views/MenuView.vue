@@ -13,6 +13,7 @@ import { UIButton } from '@/ui/components'
 export type MenuSection = 'profile' | 'friends' | 'party'
 
 const props = defineProps<{ initialSection: MenuSection }>()
+const emit = defineEmits<{ 'open-world': [] }>()
 const session = useGameSessionStore()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
@@ -101,7 +102,7 @@ async function copyPublicCode(): Promise<void> {
         Все системы
       </button>
       <FriendsView v-if="activeSection === 'friends'" />
-      <PartyView v-else embedded />
+      <PartyView v-else embedded @open-world="emit('open-world')" />
     </section>
   </section>
 </template>

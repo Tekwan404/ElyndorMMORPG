@@ -165,6 +165,61 @@ describe('AppShell', () => {
       .toContain('2000 опыта')
   })
 
+  it('opens the map when an empty journal sends the player back into the world', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    vi.spyOn(store, 'refreshQuestJournal').mockResolvedValue({ quests: [] })
+    store.state = 'world'
+    store.snapshot = worldSnapshot()
+    store.questJournal = { quests: [] }
+
+    const wrapper = mount(AppShell)
+    await wrapper.get('[data-nav="quests"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-quest-open-world]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Карта мира')
+  })
+
+  it('opens the map from the party dungeon entry', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    store.state = 'world'
+    store.snapshot = worldSnapshot()
+    const party = usePartyStore()
+    vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = mount(AppShell)
+    await wrapper.get('[data-nav="menu"]').trigger('click')
+    await wrapper.get('.menu-tile--violet').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-party-open-dungeons]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('main').text()).toContain('Карта мира')
+  })
+
+  it('resets the content scroll when switching to another main screen', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    store.state = 'world'
+    store.snapshot = worldSnapshot()
+
+    const wrapper = mount(AppShell)
+    const content = wrapper.get('.content').element
+    content.scrollTop = 180
+
+    await wrapper.get('[data-nav="world"]').trigger('click')
+
+    expect(content.scrollTop).toBe(0)
+  })
+
   it('explains a failed connection and offers an explicit retry', async () => {
     const store = useGameSessionStore()
     vi.spyOn(store, 'start').mockResolvedValue(undefined)

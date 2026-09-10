@@ -33,6 +33,11 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
+  await page.locator('.menu-tile--violet').click()
+  await expect(page.getByRole('heading', { name: 'Группа' })).toBeVisible()
+  await page.locator('[data-party-open-dungeons]').click()
+  await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+
   await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
   await expect(page.getByText('Городские сервисы')).toBeVisible()
@@ -59,12 +64,31 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 
   await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await expect.poll(() => page.locator('.content').evaluate((content) => content.scrollTop)).toBe(0)
   const mapSelection = page.locator('[data-map-selection]')
   await expect(mapSelection).toContainText('Осмотреть локацию')
-  expect(await mapSelection.evaluate((element) => element.parentElement?.classList.contains('map-canvas'))).toBe(false)
+  await expect(mapSelection.locator('[data-map-open-location]')).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-3-ui-world-map.png', fullPage: true })
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
+  await expect.poll(async () => {
+    const travelButton = await page.locator('[data-map-travel]').boundingBox()
+    const navigationBox = await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .boundingBox()
+    return travelButton !== null
+      && navigationBox !== null
+      && travelButton.y >= 0
+      && travelButton.y + travelButton.height <= navigationBox.y
+  }).toBe(true)
+  const mapCanvas = await page.locator('.map-canvas').boundingBox()
+  const travelButton = await page.locator('[data-map-travel]').boundingBox()
+  expect(mapCanvas).not.toBeNull()
+  expect(travelButton).not.toBeNull()
+  expect((travelButton?.y ?? 0) + (travelButton?.height ?? 0)).toBeLessThanOrEqual(
+    (mapCanvas?.y ?? 0) + (mapCanvas?.height ?? 0),
+  )
+  await page.screenshot({ path: '../../output/playwright/session-3b-map-selection.png', fullPage: true })
   await page.locator('[data-map-travel]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   await expect(page.locator('[data-location-travel]')).toHaveCount(0)
@@ -109,6 +133,26 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   )
   await page.screenshot({
     path: '../../output/playwright/session-2a-world-320.png',
+    fullPage: true,
+  })
+  await page.locator('[data-nav="world"]').click()
+  await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await page.locator('[data-location-id="STARTER_TOWN"]').click()
+  await expect.poll(async () => {
+    const travelButton = await page.locator('[data-map-travel]').boundingBox()
+    const navigationBox = await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .boundingBox()
+    return travelButton !== null
+      && navigationBox !== null
+      && travelButton.y >= 0
+      && travelButton.y + travelButton.height <= navigationBox.y
+  }).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+    false,
+  )
+  await page.screenshot({
+    path: '../../output/playwright/session-3c-map-selection-320.png',
     fullPage: true,
   })
   expect(browserErrors).toEqual([])

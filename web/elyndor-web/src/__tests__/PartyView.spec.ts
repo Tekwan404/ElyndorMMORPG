@@ -12,7 +12,7 @@ const CHARACTER_ID = 'character-1'
 describe('PartyView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('keeps the party menu focused on party management instead of dungeon controls', async () => {
+  it('keeps party management focused while exposing one map entry to dungeons', async () => {
     const session = useGameSessionStore()
     session.snapshot = {
       accountId: 'account-1',
@@ -41,8 +41,9 @@ describe('PartyView', () => {
     expect(wrapper.text()).toContain('Группа')
     expect(wrapper.text()).toContain('Tekwan')
     expect(wrapper.find('[data-party-disband]').exists()).toBe(true)
+    await wrapper.get('[data-party-open-dungeons]').trigger('click')
+    expect(wrapper.emitted('open-world')).toEqual([[]])
     expect(wrapper.find('[data-dungeon-teleport]').exists()).toBe(false)
     expect(wrapper.find('[data-create-dungeon]').exists()).toBe(false)
-    expect(wrapper.text()).not.toContain('Древняя шахта')
   })
 })
