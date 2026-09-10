@@ -52,13 +52,19 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   const guildDialog = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
   await expect(guildDialog).toBeVisible()
   await expect(guildDialog.getByText('Селия', { exact: true })).toBeVisible()
-  await expect(guildDialog.getByText('Гаррет', { exact: true })).toBeVisible()
+  await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toBeVisible()
+  await page.screenshot({ path: '../../output/playwright/session-3-ui-guild.png', fullPage: true })
   await guildDialog.getByRole('button', { name: 'Close' }).click()
   await expect(guildDialog).toBeHidden()
 
   await page.getByRole('button', { name: 'Мир' }).click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  const mapSelection = page.locator('[data-map-selection]')
+  await expect(mapSelection).toContainText('Осмотреть локацию')
+  expect(await mapSelection.evaluate((element) => element.parentElement?.classList.contains('map-canvas'))).toBe(false)
+  await page.screenshot({ path: '../../output/playwright/session-3-ui-world-map.png', fullPage: true })
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
+  await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
   await page.locator('[data-map-travel]').click()
   await page.getByRole('button', { name: 'Локация' }).click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
@@ -169,6 +175,54 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
   })
   await page.route('**/api/v1/bootstrap', (route) =>
     route.fulfill({ json: snapshot(hasCharacter, locationId) }),
+  )
+  await page.route('**/api/v1/quests/', (route) =>
+    route.fulfill({
+      json: {
+        quests: [
+          {
+            id: 'CONTRACT_FOREST_PATROL',
+            displayName: 'Контракт: Патруль у древних руин',
+            description: 'Проверьте старую дорогу и зачистите угрозу у западных ворот леса.',
+            type: 'CONTRACT',
+            requiredLevel: 1,
+            offerLocationId: 'STARTER_TOWN',
+            status: 'AVAILABLE',
+            objectives: [],
+            rewardXp: 40,
+            rewardGold: 25,
+            rewardItems: [],
+            prerequisiteQuestIds: [],
+            unlockLocationId: null,
+            issuerName: 'Селия',
+            issuerRole: 'Регистратор',
+            regionName: 'Шепчущий лес',
+            contractNumber: 'WF-001',
+            threatLevel: 'Низкая',
+          },
+          {
+            id: 'CONTRACT_ACTIVE_SCOUT',
+            displayName: 'Контракт: Следопытская вылазка',
+            description: 'Соберите сведения о тропах, ведущих к глубокой чаще.',
+            type: 'CONTRACT',
+            requiredLevel: 3,
+            offerLocationId: 'STARTER_TOWN',
+            status: 'ACTIVE',
+            objectives: [],
+            rewardXp: 65,
+            rewardGold: 40,
+            rewardItems: [],
+            prerequisiteQuestIds: [],
+            unlockLocationId: 'DEEP_FOREST',
+            issuerName: 'Гаррет',
+            issuerRole: 'Мастер охоты',
+            regionName: 'Глубокий лес',
+            contractNumber: 'DF-003',
+            threatLevel: 'Средняя',
+          },
+        ],
+      },
+    }),
   )
   await page.route('**/api/v1/world/locations', (route) =>
     route.fulfill({ json: Object.values(locations) }),

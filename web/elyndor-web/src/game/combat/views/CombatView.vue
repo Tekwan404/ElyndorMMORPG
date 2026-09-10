@@ -382,6 +382,36 @@ async function fleeCombat(): Promise<void> {
   await combat.flee()
 }
 
+function combatParticipantStatus(actorId: string): string {
+  const status = snapshot.value?.participantRoster?.find((participant) => participant.actorId === actorId)?.status
+  if (status === 'Fled') return 'Сбежал'
+  if (status === 'Dead') return 'Пал'
+  if (status === 'Completed') return 'Завершил'
+  if (status === 'Rostered') return 'В пути'
+  return 'В бою'
+}
+
+function combatParticipantGlyph(actorId: string): string {
+  const status = snapshot.value?.participantRoster?.find((participant) => participant.actorId === actorId)?.status
+  if (status === 'Fled') return '↗'
+  if (status === 'Dead') return '×'
+  if (status === 'Completed') return '✓'
+  if (status === 'Rostered') return '…'
+  return '◆'
+}
+
+function combatPlayerRole(player: { definitionId: string }): string {
+  if (player.definitionId === 'WARRIOR') return 'Страж'
+  if (player.definitionId === 'MAGE') return 'Маг'
+  if (player.definitionId === 'ARCHER') return 'Следопыт'
+  return player.definitionId
+}
+
+function combatPlayerHealthRatio(player: { hp: number; maxHp: number }): number {
+  if (player.maxHp <= 0) return 0
+  return Math.min(100, Math.max(0, (player.hp / player.maxHp) * 100))
+}
+
 async function attachCombat(): Promise<void> {
   if (!snapshot.value || isParticipantActive.value) return
   await combat.attachCombat(snapshot.value.sessionId)
@@ -399,7 +429,11 @@ onUnmounted(() => window.clearInterval(timer))
 </script>
 
 <template>
-  <section class="combat-screen">
+  <section
+    class="combat-screen"
+    :class="{ 'combat-screen--party': combatPlayers.length > 1 }"
+    :data-party-size="combatPlayers.length > 1 ? combatPlayers.length : undefined"
+  >
     <template v-if="snapshot && enemyPresentation">
       <header class="combat-hud">
         <section class="combat-hud__actor combat-hud__actor--player" aria-label="Состояние игрока">
@@ -439,15 +473,41 @@ onUnmounted(() => window.clearInterval(timer))
         aria-label="Состав группы в бою"
         data-combat-party-roster
       >
-        <article
-          v-for="player in combatPlayers"
-          :key="player.actorId"
-          class="combat-party-roster__member"
-          :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
-        >
-          <strong>{{ player.name }}</strong>
-          <small>{{ Math.ceil(player.hp) }} / {{ Math.ceil(player.maxHp) }}</small>
-        </article>
+        <header class="combat-party-roster__header">
+          <div>
+            <small>СОЮЗНИКИ В БОЮ</small>
+            <strong>Слаженный отряд · {{ combatPlayers.length }}</strong>
+          </div>
+          <span>Общий фронт</span>
+        </header>
+        <div class="combat-party-roster__grid">
+          <article
+            v-for="player in combatPlayers"
+            :key="player.actorId"
+            class="combat-party-roster__member"
+            :class="{ 'combat-party-roster__member--self': player.actorId === snapshot.player.actorId }"
+            :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
+          >
+            <span class="combat-party-roster__crest" aria-hidden="true">
+              {{ player.name.slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="combat-party-roster__body">
+              <span class="combat-party-roster__identity">
+                <strong>{{ player.name }}</strong>
+                <small>{{ combatPlayerRole(player) }}</small>
+              </span>
+              <span class="combat-party-roster__bar" aria-hidden="true">
+                <i :style="{ width: `${combatPlayerHealthRatio(player)}%` }" />
+              </span>
+              <span class="combat-party-roster__vitals">
+                {{ Math.ceil(player.hp) }} / {{ Math.ceil(player.maxHp) }} · {{ combatParticipantStatus(player.actorId) }}
+              </span>
+            </span>
+            <b class="combat-party-roster__state" aria-hidden="true">
+              {{ combatParticipantGlyph(player.actorId) }}
+            </b>
+          </article>
+        </div>
       </section>
 
       <section
@@ -546,6 +606,18 @@ onUnmounted(() => window.clearInterval(timer))
           <div v-else class="player-figure__fallback">
             {{ snapshot.player.definitionId.slice(0, 1) }}
           </div>
+        </div>
+
+        <div v-if="combatPlayers.length > 1" class="party-formation" aria-hidden="true">
+          <span
+            v-for="player in combatPlayers"
+            :key="player.actorId"
+            class="party-formation__unit"
+            :class="{ 'party-formation__unit--self': player.actorId === snapshot.player.actorId }"
+          >
+            <b>{{ player.name.slice(0, 1).toUpperCase() }}</b>
+            <small>{{ combatPlayerRole(player) }}</small>
+          </span>
         </div>
       </section>
 
@@ -1869,6 +1941,214 @@ onUnmounted(() => window.clearInterval(timer))
 @media (max-width: 340px) {
   .battlefield {
     min-height: 18rem;
+  }
+}
+
+.combat-party-roster {
+  display: grid;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgb(205 177 113 / 28%);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(110deg, rgb(28 28 35 / 96%), rgb(8 11 17 / 96%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+.combat-party-roster__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px;
+  padding-inline: 2px;
+}
+
+.combat-party-roster__header > div {
+  display: grid;
+  gap: 1px;
+}
+
+.combat-party-roster__header small {
+  color: var(--ui-color-gold);
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+.combat-party-roster__header strong {
+  font-family: var(--ui-font-display);
+  font-size: .7rem;
+}
+
+.combat-party-roster__header > span {
+  color: var(--ui-color-text-muted);
+  font-size: .5rem;
+}
+
+.combat-party-roster__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.combat-party-roster__member {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(5 8 13 / 82%);
+}
+
+.combat-party-roster__member--self {
+  border-color: rgb(170 163 255 / 42%);
+  background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%));
+}
+
+.combat-party-roster__member[data-status='Fled'],
+.combat-party-roster__member[data-status='Dead'] {
+  opacity: .58;
+}
+
+.combat-party-roster__crest {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgb(205 177 113 / 42%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(205 177 113 / 20%), rgb(9 12 18 / 96%) 68%);
+  color: #ecd797;
+  font-family: var(--ui-font-display);
+  font-size: .8rem;
+}
+
+.combat-party-roster__member--self .combat-party-roster__crest {
+  border-color: rgb(170 163 255 / 56%);
+  color: #d6d2ff;
+}
+
+.combat-party-roster__body {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.combat-party-roster__identity {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px;
+  min-width: 0;
+}
+
+.combat-party-roster__identity strong {
+  overflow: hidden;
+  font-size: .62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-party-roster__identity small,
+.combat-party-roster__vitals {
+  color: var(--ui-color-text-muted);
+  font-size: .46rem;
+  white-space: nowrap;
+}
+
+.combat-party-roster__bar {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 8%);
+}
+
+.combat-party-roster__bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7acda8, #d4cf8b);
+  transition: width .25s ease;
+}
+
+.combat-party-roster__member[data-status='Fled'] .combat-party-roster__bar i,
+.combat-party-roster__member[data-status='Dead'] .combat-party-roster__bar i {
+  background: #a76b78;
+}
+
+.combat-party-roster__state {
+  color: #d4cf8b;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.combat-screen--party .battlefield {
+  min-height: 22.5rem;
+}
+
+.combat-screen--party .player-figure {
+  left: 3%;
+}
+
+.party-formation {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 29%;
+  z-index: 1;
+  display: flex;
+  align-items: end;
+  gap: 5px;
+  padding: 4px 5px;
+  border: 1px solid rgb(205 177 113 / 20%);
+  border-radius: var(--ui-radius-round);
+  background: rgb(5 8 13 / 74%);
+  box-shadow: 0 5px 14px rgb(0 0 0 / 25%);
+}
+
+.party-formation__unit {
+  display: grid;
+  min-width: 2.35rem;
+  justify-items: center;
+  gap: 1px;
+  color: var(--ui-color-text-muted);
+}
+
+.party-formation__unit b {
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  place-items: center;
+  border: 1px solid rgb(205 177 113 / 34%);
+  border-radius: 50%;
+  background: rgb(13 18 27 / 92%);
+  color: #dbc989;
+  font-size: .62rem;
+}
+
+.party-formation__unit small {
+  font-size: .42rem;
+  text-transform: uppercase;
+}
+
+.party-formation__unit--self b {
+  border-color: rgb(170 163 255 / 58%);
+  color: #d6d2ff;
+}
+
+@media (max-width: 520px) {
+  .combat-party-roster__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-screen--party .battlefield {
+    min-height: 21rem;
+  }
+
+  .party-formation {
+    left: 36%;
   }
 }
 </style>

@@ -112,6 +112,50 @@ describe('CombatView', () => {
     expect(selectTarget).toHaveBeenCalledWith(alpha.actorId)
   })
 
+  it('presents a two-player encounter as a compact shared front', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Воин', 160, 180, 40, 100, [])
+    const ally = actor('Player', 'MAGE', 'Маг', 70, 120, 60, 100, [])
+    const enemy = actor('Monster', 'WOLF', 'Волк', 180, 180, 0, 0, [], 3, 'wolf')
+    store.snapshot = {
+      sessionId: crypto.randomUUID(),
+      sequence: 4,
+      status: 'Active',
+      serverTimeUtc: '2026-09-06T16:00:00Z',
+      contentVersion: '0.10.1',
+      balanceVersion: '0.8.0',
+      player,
+      enemy,
+      players: [player, ally],
+      participantRoster: [
+        {
+          accountId: crypto.randomUUID(),
+          characterId: crypto.randomUUID(),
+          actorId: player.actorId,
+          status: 'Active',
+          rosteredAtUtc: '2026-09-06T16:00:00Z',
+          joinedAtUtc: '2026-09-06T16:00:01Z',
+        },
+        {
+          accountId: crypto.randomUUID(),
+          characterId: crypto.randomUUID(),
+          actorId: ally.actorId,
+          status: 'Active',
+          rosteredAtUtc: '2026-09-06T16:00:00Z',
+          joinedAtUtc: '2026-09-06T16:00:01Z',
+        },
+      ],
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('.combat-screen').attributes('data-party-size')).toBe('2')
+    expect(wrapper.get('[data-combat-party-roster]').text()).toContain('Слаженный отряд')
+    expect(wrapper.findAll('.combat-party-roster__member')).toHaveLength(2)
+    expect(wrapper.get('.combat-party-roster__member--self').text()).toContain('Воин')
+    expect(wrapper.findAll('.party-formation__unit')).toHaveLength(2)
+  })
+
   it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 128, 180, 5, 100, [
