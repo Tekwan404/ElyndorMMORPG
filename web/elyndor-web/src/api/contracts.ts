@@ -469,6 +469,13 @@ export interface ItemReforgeResponse {
   cost: ItemReforgeCost
 }
 
+export interface ItemReforgePreview {
+  itemInstanceId: string
+  slotKey: string
+  current: GeneratedItemSummary
+  cost: ItemReforgeCost
+}
+
 export interface ItemSalvageReward {
   reforgeStoneItemId: string
   reforgeStoneQuantity: number

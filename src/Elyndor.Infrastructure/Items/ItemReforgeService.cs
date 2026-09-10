@@ -14,6 +14,7 @@ public static class ItemReforgeErrorCodes
     public const string CharacterNotFound = "reforge_character_not_found";
     public const string ItemNotFound = "reforge_item_not_found";
     public const string ItemNotGenerated = "reforge_item_not_generated";
+    public const string ItemLocked = "reforge_item_locked";
     public const string ItemEquipped = "reforge_item_equipped";
     public const string ItemTransactionLocked = "reforge_item_transaction_locked";
     public const string InvalidSlot = "reforge_invalid_affix_slot";
@@ -47,11 +48,59 @@ public sealed record ItemReforgeOperationResult(
         new(false, code, null, null, null, null);
 }
 
+public sealed record ItemReforgePreviewResult(
+    bool Succeeded,
+    string? ErrorCode,
+    GeneratedItemInstance? Current,
+    ItemReforgeCost? Cost)
+{
+    public static ItemReforgePreviewResult Failure(string code) => new(false, code, null, null);
+}
+
 public sealed class ItemReforgeService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
+    public async Task<ItemReforgePreviewResult> GetPreviewAsync(
+        Guid accountId,
+        Guid itemInstanceId,
+        string slotKey,
+        CancellationToken cancellationToken)
+    {
+        Character? character = await dbContext.Characters
+            .AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+        if (character is null) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.CharacterNotFound);
+
+        CharacterItem? item = await dbContext.CharacterItems
+            .AsNoTracking()
+            .Include(candidate => candidate.Affixes)
+            .SingleOrDefaultAsync(candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id, cancellationToken);
+        if (item is null) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
+        if (item.IsLocked) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemLocked);
+        if (item.TransactionLockId.HasValue) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemTransactionLocked);
+        if (await dbContext.CharacterEquipment.AsNoTracking().AnyAsync(candidate => candidate.CharacterItemId == item.Id, cancellationToken))
+            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemEquipped);
+
+        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+        if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
+            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        if (current is null || contentSnapshot.Package.Itemization is not { } itemization)
+            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotGenerated);
+
+        GeneratedItemAffix? selected = current.Affixes.SingleOrDefault(affix =>
+            string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
+        if (selected is null || (item.ReforgeSlotKey is not null && !string.Equals(item.ReforgeSlotKey, slotKey, StringComparison.Ordinal)))
+            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.InvalidSlot);
+        if (selected.IsGuaranteed) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.GuaranteedSlot);
+        if (itemization.ReforgeCosts is not { } costProfile)
+            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.CostProfileMissing);
+
+        return new ItemReforgePreviewResult(true, null, current, ResolveCost(costProfile, definition.Rarity, item.ReforgeCount));
+    }
+
     public async Task<ItemReforgeOperationResult?> GetPendingAsync(
         Guid accountId,
         Guid? itemInstanceId,
@@ -161,6 +210,8 @@ public sealed class ItemReforgeService(
 
         if (item.TransactionLockId.HasValue)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemTransactionLocked, cancellationToken);
+        if (item.IsLocked)
+            return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemLocked, cancellationToken);
 
         bool equipped = await dbContext.CharacterEquipment
             .AsNoTracking()

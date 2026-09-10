@@ -14,6 +14,7 @@ import type {
   EquipmentSlot,
   MerchantSnapshot,
   ItemReforgeResponse,
+  ItemReforgePreview,
   ItemSalvagePreview,
   ItemSalvageReward,
   QuestClaimResponse,
@@ -305,6 +306,22 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
+  async function getReforgePreview(
+    characterItemId: string,
+    slotKey: string,
+  ): Promise<ItemReforgePreview | null> {
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      return await apiClient.request<ItemReforgePreview>(
+        `/api/v1/inventory/reforge/preview/${encodeURIComponent(characterItemId)}?slotKey=${encodeURIComponent(slotKey)}`,
+      )
+    } catch (error) {
+      handleError(error)
+      return null
+    }
+  }
+
   async function rollReforge(
     characterItemId: string,
     slotKey: string,
@@ -517,6 +534,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     getSalvagePreview,
     salvageItem,
     getPendingReforge,
+    getReforgePreview,
     rollReforge,
     decideReforge,
     getMerchant,
