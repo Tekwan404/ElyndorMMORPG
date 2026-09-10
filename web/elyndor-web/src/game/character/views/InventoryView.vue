@@ -431,15 +431,15 @@ async function toggleSelectedLock(): Promise<void> {
   <section class="inventory-view">
     <header class="inventory-header">
       <div>
-        <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Инвентарь' }}</p>
-        <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Рюкзак' }}</h1>
+        <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Снаряжение и добыча' }}</p>
+        <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Инвентарь' }}</h1>
       </div>
       <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 4 }">
         <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
       </div>
     </header>
 
-    <section v-if="inventory" class="inventory-tools" aria-label="Фильтры инвентаря">
+    <section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
       <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
         <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
@@ -460,7 +460,7 @@ async function toggleSelectedLock(): Promise<void> {
       <span v-else class="inventory-tools__context">Фильтр слота: {{ slotLabel(contextualSlot) }}</span>
     </section>
 
-    <UIModal :open="filtersOpen" title="Фильтры рюкзака" @close="filtersOpen = false">
+    <UIModal :open="filtersOpen" title="Фильтры инвентаря" @close="filtersOpen = false">
       <section class="inventory-filter-sheet" aria-label="Дополнительные фильтры">
         <div class="filter-row">
           <small>Доступность</small>
@@ -507,7 +507,7 @@ async function toggleSelectedLock(): Promise<void> {
     </UIModal>
 
     <section v-if="inventory" class="bag-surface">
-      <header class="bag-surface__header">
+      <header v-if="bagItems.length" class="bag-surface__header">
         <div>
           <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? 'Все предметы' : 'Результат фильтра' }}</small>
           <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
@@ -552,7 +552,7 @@ async function toggleSelectedLock(): Promise<void> {
       <UILoadingState
         v-else-if="bagItems.length === 0"
         state="empty"
-        title="Рюкзак пуст"
+        title="Инвентарь пуст"
         message="Исследуйте мир и побеждайте противников, чтобы находить добычу."
       />
       <UILoadingState

@@ -138,7 +138,10 @@ async function travel(): Promise<void> {
   if (isTravelling.value || !location || !selectedIsReachable.value || session.mutationPending) return
 
   await session.travel(location.id)
-  if (!session.errorCode) selectedLocationId.value = location.id
+  if (!session.errorCode) {
+    selectedLocationId.value = location.id
+    emit('open-location')
+  }
 }
 
 async function enterSelectedDungeon(): Promise<void> {

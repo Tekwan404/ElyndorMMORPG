@@ -25,7 +25,7 @@ describe('WorldView', () => {
     document.body.innerHTML = ''
   })
 
-  it('renders only the current location and leaves travel to the World map', () => {
+  it('renders city services directly in the current location and leaves travel to the World map', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
     const wrapper = mount(WorldView)
@@ -33,6 +33,7 @@ describe('WorldView', () => {
     expect(wrapper.text()).toContain('Стартовый город')
     expect(wrapper.find('[data-travel]').exists()).toBe(false)
     expect(wrapper.find('.location-routes').exists()).toBe(false)
+    expect(wrapper.find('[data-open-town-services]').exists()).toBe(false)
     expect(wrapper.findAll('[data-town-service]')).toHaveLength(4)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
@@ -52,6 +53,7 @@ describe('WorldView', () => {
     expect(wrapper.find('.scene [data-explore]').exists()).toBe(true)
     expect(wrapper.find('.location-activities').exists()).toBe(false)
     expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
+    expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
   it('disables exploration while a world mutation is pending and shows the server error', async () => {
@@ -86,6 +88,7 @@ describe('WorldView', () => {
 
     expect(wrapper.get('[data-world-quest-id="QUEST_STORY"]').text()).toContain('СЮЖЕТ')
     await wrapper.get('[data-accept-world-quest]').trigger('click')
+    await flushPromises()
     expect(acceptQuest).toHaveBeenCalledWith('QUEST_STORY')
   })
 

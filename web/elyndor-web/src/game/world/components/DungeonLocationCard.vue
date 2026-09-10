@@ -10,7 +10,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton } from '@/ui/components'
 
 const props = defineProps<{ dungeonId: string }>()
-const emit = defineEmits<{ 'open-party': []; 'open-map': [] }>()
+const emit = defineEmits<{ 'open-party': [] }>()
 
 const party = usePartyStore()
 const dungeon = useDungeonStore()
@@ -119,7 +119,6 @@ async function exitRun(): Promise<void> {
         <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
         <div class="dungeon-actions">
           <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard">Повторить</UIButton>
-          <UIButton variant="ghost" @click="emit('open-map')">Карта мира</UIButton>
         </div>
       </template>
     </div>
@@ -213,7 +212,6 @@ async function exitRun(): Promise<void> {
             @click="exitRun"
           >Покинуть забег</UIButton>
           <UIButton variant="secondary" @click="emit('open-party')">Состав группы</UIButton>
-          <UIButton variant="ghost" @click="emit('open-map')">Карта мира</UIButton>
         </div>
       </template>
 
