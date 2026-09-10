@@ -46,10 +46,8 @@ public sealed class AfkFarmSession
         EnsureUtc(startedAtUtc, nameof(startedAtUtc));
         EnsureUtc(endsAtUtc, nameof(endsAtUtc));
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
-        if (endsAtUtc <= startedAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(endsAtUtc), "AFK duration must be positive.");
-        if (createdAtUtc > startedAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(createdAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(endsAtUtc, startedAtUtc);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(createdAtUtc, startedAtUtc);
 
         Id = id;
         CharacterId = characterId;
@@ -89,8 +87,7 @@ public sealed class AfkFarmSession
         EnsureUtc(completedAtUtc, nameof(completedAtUtc));
         if (Status != AfkFarmStatus.Active)
             return false;
-        if (completedAtUtc < StartedAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(completedAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThan(completedAtUtc, StartedAtUtc);
 
         Status = AfkFarmStatus.Cancelled;
         CompletedAtUtc = completedAtUtc;
