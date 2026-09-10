@@ -35,6 +35,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 
   await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
+  await expect(page.getByText('Городские сервисы')).toBeVisible()
   await expect(page.getByText('Представительство Гильдии')).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-city.png', fullPage: true })
 
