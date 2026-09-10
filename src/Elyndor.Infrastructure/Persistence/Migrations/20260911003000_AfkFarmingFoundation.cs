@@ -49,10 +49,10 @@ public partial class AfkFarmingFoundation : Migration
             });
 
         migrationBuilder.CreateIndex(
-            name: "ix_afk_farm_sessions_character_id",
+            name: "ix_afk_farm_sessions_character_created_at_utc",
             schema: "game",
             table: "afk_farm_sessions",
-            column: "CharacterId");
+            columns: new[] { "CharacterId", "CreatedAtUtc" });
 
         migrationBuilder.CreateIndex(
             name: "ix_afk_farm_sessions_status_ends_at_utc",
