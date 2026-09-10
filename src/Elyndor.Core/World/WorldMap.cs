@@ -10,8 +10,20 @@ public sealed class WorldMap
     {
         ArgumentNullException.ThrowIfNull(locations);
 
-        _locations = locations.ToDictionary(
+        LocationDefinition[] configuredLocations = locations.ToArray();
+        string[] locationIds = configuredLocations
+            .Select(location => location.Id)
+            .ToArray();
+
+        _locations = configuredLocations.ToDictionary(
             location => location.Id,
+            location => location with
+            {
+                Transitions = locationIds
+                    .Where(targetId => !string.Equals(targetId, location.Id, StringComparison.Ordinal))
+                    .ToArray(),
+                TravelDurationSeconds = 0
+            },
             StringComparer.Ordinal);
     }
 
