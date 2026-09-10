@@ -212,7 +212,10 @@ public sealed class AfkFarmService(
             JsonSerializer.Serialize(derived.ClassProfile, SnapshotJsonOptions),
             JsonSerializer.Serialize(derived.EffectiveResourceProfile, SnapshotJsonOptions),
             JsonSerializer.Serialize(derived.Inventory.Equipped, SnapshotJsonOptions),
-            new Dictionary<string, int>(derived.ActiveTalentRanks, StringComparer.Ordinal),
+            derived.ActiveTalentRanks.ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value,
+                StringComparer.Ordinal),
             JsonSerializer.Serialize(derived.TalentModifiers, SnapshotJsonOptions),
             derived.KnownAbilityIds.ToArray());
 
