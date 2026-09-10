@@ -90,8 +90,11 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   )
   await page.screenshot({ path: '../../output/playwright/session-3b-map-selection.png', fullPage: true })
   await page.locator('[data-map-travel]').click()
-  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toHaveCount(0)
   await expect(page.locator('[data-location-travel]')).toHaveCount(0)
+  await page.locator('[data-nav="location"]').click()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
 
   await page.locator('[data-nav="world"]').click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()
