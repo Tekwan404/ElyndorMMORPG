@@ -34,8 +34,6 @@ public sealed class CombatLootRollService(
         Guid accountId,
         CancellationToken cancellationToken)
     {
-        await ResolveExpiredAsync(cancellationToken);
-
         Character? character = await dbContext.Characters
             .AsNoTracking()
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId,
@@ -50,7 +48,6 @@ public sealed class CombatLootRollService(
             .ToArrayAsync(cancellationToken);
         CombatLootRoll[] eligibleRolls = openRolls
             .Where(roll => IsEligible(roll, character.Id))
-            .Where(roll => ReadEligibleCharacterIds(roll).Length > 1)
             .ToArray();
         if (eligibleRolls.Length == 0)
             return [];
