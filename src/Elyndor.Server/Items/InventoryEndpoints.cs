@@ -21,6 +21,8 @@ public static class InventoryEndpoints
         group.MapPost("/unequip", UnequipAsync);
         group.MapPost("/use-consumable", UseConsumableAsync);
         group.MapPost("/set-lock", SetItemLockAsync);
+        group.MapGet("/salvage/preview/{characterItemId:guid}", GetSalvagePreviewAsync);
+        group.MapPost("/salvage", SalvageAsync);
         group.MapGet("/reforge/pending", GetPendingReforgeAsync);
         group.MapPost("/reforge/roll", RollReforgeAsync);
         group.MapPost("/reforge/decide", DecideReforgeAsync);
@@ -269,6 +271,50 @@ public static class InventoryEndpoints
             context);
     }
 
+    private static async Task<IResult> GetSalvagePreviewAsync(
+        Guid characterItemId,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemSalvageService service,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        ItemSalvagePreviewResult result = await service.GetPreviewAsync(accountId, characterItemId, cancellationToken);
+        return result.Succeeded
+            ? Results.Ok(new ItemSalvagePreviewResponse(
+                characterItemId,
+                ToSalvageRewardResponse(result.Reward!),
+                result.RequiresConfirmation))
+            : SalvageProblem(result.ErrorCode!, context);
+    }
+
+    private static async Task<IResult> SalvageAsync(
+        SalvageItemRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemSalvageService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                ItemSalvageOperationResult result = await service.SalvageAsync(
+                    accountId,
+                    request.CharacterItemId,
+                    request.MutationId,
+                    request.ConfirmedHighValue,
+                    cancellationToken);
+                return result.Succeeded
+                    ? Results.Ok(new ItemSalvageResponse(ToSalvageRewardResponse(result.Reward!)))
+                    : SalvageProblem(result.ErrorCode!, context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
     private static async Task<IResult> GetMerchantAsync(
         string merchantId,
         ClaimsPrincipal user,
@@ -451,6 +497,23 @@ public static class InventoryEndpoints
                 ["correlationId"] = context.TraceIdentifier
             });
 
+    private static IResult SalvageProblem(string errorCode, HttpContext context) =>
+        Results.Problem(
+            statusCode: errorCode is ItemSalvageErrorCodes.CharacterNotFound or ItemSalvageErrorCodes.ItemNotFound
+                ? StatusCodes.Status404NotFound
+                : errorCode is ItemSalvageErrorCodes.Conflict
+                    or ItemSalvageErrorCodes.MutationConflict
+                    or ItemSalvageErrorCodes.ItemLocked
+                    or ItemSalvageErrorCodes.ItemEquipped
+                    or ItemSalvageErrorCodes.ItemTransactionLocked
+                    ? StatusCodes.Status409Conflict
+                    : StatusCodes.Status422UnprocessableEntity,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = errorCode,
+                ["correlationId"] = context.TraceIdentifier
+            });
+
     private static IResult MerchantProblem(string errorCode, HttpContext context) =>
         Results.Problem(
             statusCode: errorCode is MerchantErrorCodes.CharacterNotFound or MerchantErrorCodes.MerchantNotFound
@@ -619,6 +682,12 @@ public static class InventoryEndpoints
                 cost.CatalystQuantity,
                 cost.CountMultiplier));
     }
+
+    private static ItemSalvageRewardResponse ToSalvageRewardResponse(ItemSalvageYield reward) => new(
+        reward.ReforgeStoneItemId,
+        reward.ReforgeStoneQuantity,
+        reward.MaterialItemId,
+        reward.MaterialQuantity);
 
     private static ConsumableActionResponse[] ToConsumableActions(
         ItemDefinition definition) =>

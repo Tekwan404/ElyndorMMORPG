@@ -193,3 +193,21 @@ public sealed record ItemReforgeResponse(
     GeneratedItemSummaryResponse Current,
     GeneratedItemSummaryResponse Proposed,
     ItemReforgeCostResponse Cost);
+
+public sealed record ItemSalvageRewardResponse(
+    string ReforgeStoneItemId,
+    int ReforgeStoneQuantity,
+    string MaterialItemId,
+    int MaterialQuantity);
+
+public sealed record ItemSalvagePreviewResponse(
+    Guid CharacterItemId,
+    ItemSalvageRewardResponse Reward,
+    bool RequiresConfirmation);
+
+public sealed record SalvageItemRequest(
+    Guid CharacterItemId,
+    Guid MutationId,
+    bool ConfirmedHighValue = false);
+
+public sealed record ItemSalvageResponse(ItemSalvageRewardResponse Reward);

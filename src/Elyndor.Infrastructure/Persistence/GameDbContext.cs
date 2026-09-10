@@ -41,6 +41,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
 
     public DbSet<ItemReforgeOperation> ItemReforgeOperations => Set<ItemReforgeOperation>();
 
+    public DbSet<ItemSalvageOperation> ItemSalvageOperations => Set<ItemSalvageOperation>();
+
     public DbSet<PendingLootItem> PendingLootItems => Set<PendingLootItem>();
 
     public DbSet<CharacterAbilityCooldown> CharacterAbilityCooldowns =>

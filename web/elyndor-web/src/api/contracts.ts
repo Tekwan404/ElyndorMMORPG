@@ -469,6 +469,19 @@ export interface ItemReforgeResponse {
   cost: ItemReforgeCost
 }
 
+export interface ItemSalvageReward {
+  reforgeStoneItemId: string
+  reforgeStoneQuantity: number
+  materialItemId: string
+  materialQuantity: number
+}
+
+export interface ItemSalvagePreview {
+  characterItemId: string
+  reward: ItemSalvageReward
+  requiresConfirmation: boolean
+}
+
 export interface MerchantItem {
   definitionId: string
   name: string
