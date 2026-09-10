@@ -11,6 +11,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20260911003000_AfkFarmingFoundation")]
 public partial class AfkFarmingFoundation : Migration
 {
+    private static readonly string[] CharacterHistoryIndexColumns =
+        ["CharacterId", "CreatedAtUtc"];
+    private static readonly string[] StatusEndIndexColumns =
+        ["Status", "EndsAtUtc"];
+
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
@@ -56,13 +61,13 @@ public partial class AfkFarmingFoundation : Migration
             name: "ix_afk_farm_sessions_character_created_at_utc",
             schema: "game",
             table: "afk_farm_sessions",
-            columns: new[] { "CharacterId", "CreatedAtUtc" });
+            columns: CharacterHistoryIndexColumns);
 
         migrationBuilder.CreateIndex(
             name: "ix_afk_farm_sessions_status_ends_at_utc",
             schema: "game",
             table: "afk_farm_sessions",
-            columns: new[] { "Status", "EndsAtUtc" });
+            columns: StatusEndIndexColumns);
 
         migrationBuilder.CreateIndex(
             name: "uq_afk_farm_sessions_active_character_id",
