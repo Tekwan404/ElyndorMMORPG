@@ -44,7 +44,7 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
   BROODMOTHER_LAIR: {
     label: 'Логово Прародительницы',
     art: gameArt.locations.BROODMOTHER_LAIR,
-    kind: 'dungeon',
+    kind: 'region',
     dangerLabel: 'Высокий риск',
   },
   BLIGHTED_GROVE: {

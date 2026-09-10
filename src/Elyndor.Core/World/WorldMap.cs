@@ -6,12 +6,30 @@ public sealed class WorldMap
 
     public IReadOnlyCollection<LocationDefinition> Locations => _locations.Values;
 
-    public WorldMap(IEnumerable<LocationDefinition> locations)
+    public WorldMap(IEnumerable<LocationDefinition> locations, bool directTravel = false)
     {
         ArgumentNullException.ThrowIfNull(locations);
 
-        _locations = locations.ToDictionary(
+        LocationDefinition[] configuredLocations = locations.ToArray();
+        if (!directTravel)
+        {
+            _locations = configuredLocations.ToDictionary(
+                location => location.Id,
+                StringComparer.Ordinal);
+            return;
+        }
+
+        string[] locationIds = configuredLocations
+            .Select(location => location.Id)
+            .ToArray();
+        _locations = configuredLocations.ToDictionary(
             location => location.Id,
+            location => location with
+            {
+                Transitions = locationIds
+                    .Where(targetId => !string.Equals(targetId, location.Id, StringComparison.Ordinal))
+                    .ToArray()
+            },
             StringComparer.Ordinal);
     }
 

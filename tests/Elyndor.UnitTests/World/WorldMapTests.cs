@@ -5,7 +5,7 @@ namespace Elyndor.UnitTests.World;
 public sealed class WorldMapTests
 {
     [Fact]
-    public void CanTravelAcceptsOnlyConfiguredTransitions()
+    public void CanTravelAcceptsOnlyConfiguredTransitionsByDefault()
     {
         WorldMap worldMap = new(CreatePrototypeLocations());
 
@@ -15,6 +15,29 @@ public sealed class WorldMapTests
         Assert.True(worldMap.CanTravel("DEEP_FOREST", "WHISPERING_FOREST"));
         Assert.False(worldMap.CanTravel("STARTER_TOWN", "DEEP_FOREST"));
         Assert.False(worldMap.CanTravel("MISSING", "STARTER_TOWN"));
+        Assert.False(worldMap.CanTravel("STARTER_TOWN", "MISSING"));
+    }
+
+    [Fact]
+    public void DirectTravelModeConnectsAnyKnownDestination()
+    {
+        WorldMap worldMap = new(CreatePrototypeLocations(), directTravel: true);
+
+        Assert.True(worldMap.CanTravel("STARTER_TOWN", "WHISPERING_FOREST"));
+        Assert.True(worldMap.CanTravel("STARTER_TOWN", "DEEP_FOREST"));
+        Assert.True(worldMap.CanTravel("DEEP_FOREST", "STARTER_TOWN"));
+        Assert.False(worldMap.CanTravel("STARTER_TOWN", "STARTER_TOWN"));
+        Assert.False(worldMap.CanTravel("MISSING", "STARTER_TOWN"));
+        Assert.False(worldMap.CanTravel("STARTER_TOWN", "MISSING"));
+    }
+
+    [Fact]
+    public void DirectTravelModePreservesConfiguredTravelDuration()
+    {
+        WorldMap worldMap = new(CreatePrototypeLocations(), directTravel: true);
+
+        Assert.Equal(12m, worldMap.GetRequired("STARTER_TOWN").TravelDurationSeconds);
+        Assert.Equal(24m, worldMap.GetRequired("DEEP_FOREST").TravelDurationSeconds);
     }
 
     [Fact]
@@ -42,13 +65,26 @@ public sealed class WorldMapTests
 
     private static LocationDefinition[] CreatePrototypeLocations() =>
     [
-        new("STARTER_TOWN", "Starter Town", "SAFE", 1, ["WHISPERING_FOREST"]),
+        new(
+            "STARTER_TOWN",
+            "Starter Town",
+            "SAFE",
+            1,
+            ["WHISPERING_FOREST"],
+            TravelDurationSeconds: 12m),
         new(
             "WHISPERING_FOREST",
             "Whispering Forest",
             "ADVENTURE",
             1,
-            ["STARTER_TOWN", "DEEP_FOREST"]),
-        new("DEEP_FOREST", "Deep Forest", "DANGEROUS", 3, ["WHISPERING_FOREST"])
+            ["STARTER_TOWN", "DEEP_FOREST"],
+            TravelDurationSeconds: 18m),
+        new(
+            "DEEP_FOREST",
+            "Deep Forest",
+            "DANGEROUS",
+            3,
+            ["WHISPERING_FOREST"],
+            TravelDurationSeconds: 24m)
     ];
 }

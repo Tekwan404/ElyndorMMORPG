@@ -17,7 +17,8 @@ public sealed class MutableContentSnapshotProvider : IContentSnapshotProvider
     {
         current = new ActiveContentRuntimeState(
             GameContentSnapshot.Create(
-                initialPackage ?? throw new ArgumentNullException(nameof(initialPackage))),
+                initialPackage ?? throw new ArgumentNullException(nameof(initialPackage)),
+                directTravel: true),
             null,
             null);
     }
@@ -40,7 +41,7 @@ public sealed class MutableContentSnapshotProvider : IContentSnapshotProvider
 
         return revisionCache.GetOrAdd(
             revisionId,
-            _ => GameContentSnapshot.Create(package));
+            _ => GameContentSnapshot.Create(package, directTravel: true));
     }
 
     internal ActiveContentRuntimeState Activate(
