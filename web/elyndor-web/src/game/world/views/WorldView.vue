@@ -5,12 +5,13 @@ import { gameArt } from '@/assets/gameArt'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
+import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { usePartyStore } from '@/game/party/partyStore'
 import { UIButton, UICard, UIToast } from '@/ui/components'
 
-const emit = defineEmits<{ 'open-party': [] }>()
+const emit = defineEmits<{ 'open-party': []; 'open-map': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
 
@@ -33,9 +34,7 @@ const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? '')
-const isDungeonLocation = computed(() =>
-  currentLocationId.value === 'ANCIENT_MINE' || currentLocationId.value === 'ECLIPSED_CITADEL',
-)
+const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
 const isStarterTown = computed(() => currentLocationId.value === STARTER_TOWN_ID)
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
@@ -59,7 +58,9 @@ const hasLocalGuildContracts = computed(() => (session.questJournal?.quests ?? [
   && quest.offerLocationId === currentLocationId.value
   && quest.status !== 'COMPLETED',
 ))
-const locationName = computed(() => world.value?.currentLocation.displayName ?? 'Неизвестная область')
+const locationName = computed(() => world.value
+  ? locationLabel(world.value.currentLocation)
+  : 'Неизвестная область')
 const locationDescription = computed(() =>
   world.value?.currentLocation.description
   || 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.',
@@ -70,12 +71,11 @@ async function acceptQuest(questId: string): Promise<void> {
   await session.acceptQuest(questId)
 }
 const sceneBackground = computed(() => {
-  if (currentLocationId.value === 'STARTER_TOWN') return gameArt.world.starterTown
-  if (currentLocationId.value === 'ANCIENT_MINE') return gameArt.world.ancientRuins
-  if (currentLocationId.value === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
-  if (currentLocationId.value === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
-  return gameArt.world.whisperingForest
+  return locationPresentation(currentLocationId.value).art
 })
+function displayLocationName(locationId: string | null | undefined): string {
+  return locationPresentation(locationId).label
+}
 const levelRange = computed(() => {
   const location = world.value?.currentLocation
   if (!location) return ''
@@ -96,7 +96,7 @@ const worldErrorMessage = computed(() => {
   if (code === 'world_encounter_location_unavailable') return 'Текущее положение героя не удалось подтвердить.'
   if (code === 'travel_conflict') return 'Мир изменился во время перехода. Попробуйте ещё раз.'
   if (code === 'character_in_combat') return 'Сначала завершите текущий бой.'
-  return 'Действие не удалось выполнить.'
+  return 'Сервер не подтвердил действие. Проверьте связь и повторите попытку.'
 })
 const recoveryMessage = computed(() => {
   const vitals = character.value?.vitals
@@ -213,7 +213,7 @@ onMounted(() => {
 
 <template>
   <section v-if="world && character" class="world">
-    <section class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
+    <section v-if="!isDungeonLocation" class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
       <div class="scene__shade" />
       <div class="scene__content">
         <div class="scene-location">
@@ -224,6 +224,19 @@ onMounted(() => {
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
         </div>
+        <div class="scene__actions" aria-label="Действия в мире">
+          <UIButton
+            v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat"
+            data-explore
+            :loading="session.mutationPending"
+            @click="explore"
+          >
+            Исследовать
+          </UIButton>
+          <UIButton data-open-world-map variant="secondary" @click="emit('open-map')">
+            Карта мира
+          </UIButton>
+        </div>
       </div>
     </section>
 
@@ -231,6 +244,7 @@ onMounted(() => {
       v-if="isDungeonLocation && currentLocationId"
       :dungeon-id="currentLocationId"
       @open-party="emit('open-party')"
+      @open-map="emit('open-map')"
     />
 
     <div v-if="session.errorCode" class="world-error" role="alert">
@@ -296,36 +310,12 @@ onMounted(() => {
       title="Герой в пути"
       data-location-travel
     >
-      Путешествие к {{ activeTravel.targetLocationId }} уже началось. Боевые,
+      Путешествие к {{ displayLocationName(activeTravel.targetLocationId) }} уже началось. Боевые,
       торговые и контрактные действия станут доступны после прибытия.
     </UIToast>
 
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
-
-    <section
-      v-if="canExplore && lastCombatResult !== 'Victory'"
-      class="location-activities"
-      aria-labelledby="location-activities-title"
-    >
-      <header class="section-heading">
-        <div>
-          <small>АКТИВНОСТИ</small>
-          <strong id="location-activities-title">Что делать здесь</strong>
-        </div>
-        <span>ОБЛАСТЬ</span>
-      </header>
-
-      <article class="activity-card activity-card--explore">
-        <div class="activity-card__icon" aria-hidden="true">⌁</div>
-        <div class="activity-card__copy">
-          <small>ИССЛЕДОВАНИЕ</small>
-          <strong>Осмотреть {{ locationName }}</strong>
-          <p>Найдите противника или событие. Результат выбирает сервер из контента текущей локации.</p>
-        </div>
-        <UIButton v-if="canStartWorldCombat" data-explore :loading="session.mutationPending" @click="explore">Исследовать</UIButton>
-      </article>
-    </section>
 
     <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
       <header class="section-heading">

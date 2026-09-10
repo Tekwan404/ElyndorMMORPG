@@ -39,7 +39,7 @@ describe('WorldView', () => {
     expect(wrapper.get('[data-town-service="guild"]').text()).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
   })
 
-  it('renders explore as a dedicated current-location activity outside the artwork', async () => {
+  it('keeps the primary explore action attached to the current-location artwork', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot('WHISPERING_FOREST')
     const combat = useCombatSessionStore()
@@ -49,8 +49,8 @@ describe('WorldView', () => {
     const wrapper = mount(WorldView)
     await flushPromises()
 
-    expect(wrapper.find('.scene [data-explore]').exists()).toBe(false)
-    expect(wrapper.find('.location-activities [data-explore]').exists()).toBe(true)
+    expect(wrapper.find('.scene [data-explore]').exists()).toBe(true)
+    expect(wrapper.find('.location-activities').exists()).toBe(false)
     expect(wrapper.find('[data-start-encounter]').exists()).toBe(false)
   })
 

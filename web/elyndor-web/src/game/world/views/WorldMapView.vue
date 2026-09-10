@@ -3,9 +3,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
 import type { WorldLocation } from '@/api/contracts'
-import { gameArt } from '@/assets/gameArt'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
+import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIToast } from '@/ui/components'
 
@@ -25,10 +25,6 @@ const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
-const ancientMinePreview = computed(() =>
-  dungeon.previews.find(item => item.id === 'ANCIENT_MINE') ?? null,
-)
-const ancientMineMinimumLevel = computed(() => ancientMinePreview.value?.minimumLevel ?? 14)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
@@ -51,7 +47,13 @@ const selectedLocation = computed(() =>
   ?? null,
 )
 const selectedIsDungeon = computed(() =>
-  selectedLocation.value?.id === 'ANCIENT_MINE' || selectedLocation.value?.id === 'ECLIPSED_CITADEL',
+  locationKind(selectedLocation.value?.id) === 'dungeon',
+)
+const selectedDungeonPreview = computed(() => selectedIsDungeon.value
+  ? dungeon.previews.find(item => item.id === selectedLocation.value?.id) ?? null
+  : null)
+const selectedDungeonMinimumLevel = computed(() =>
+  selectedDungeonPreview.value?.minimumLevel ?? selectedLocation.value?.minimumLevel ?? 1,
 )
 const selectedIsCurrent = computed(
   () => selectedLocation.value?.id === currentLocationId.value,
@@ -62,11 +64,10 @@ const selectedIsReachable = computed(
     : false,
 )
 function locationArt(locationId: string | null | undefined): string {
-  if (locationId === 'STARTER_TOWN') return gameArt.world.starterTown
-  if (locationId === 'ANCIENT_MINE') return gameArt.world.ancientRuins
-  if (locationId === 'BROODMOTHER_LAIR') return gameArt.world.ancientRuins
-  if (locationId === 'BLIGHTED_GROVE') return gameArt.world.caravanRoad
-  return gameArt.world.whisperingForest
+  return locationPresentation(
+    locationId,
+    visibleLocations.value.find(location => location.id === locationId)?.displayName,
+  ).art
 }
 
 const mapArt = computed(() => locationArt(currentLocationId.value))
@@ -135,22 +136,17 @@ async function travel(): Promise<void> {
   if (!session.errorCode) selectedLocationId.value = location.id
 }
 
-async function enterAncientMine(): Promise<void> {
-  if (characterLevel.value < ancientMineMinimumLevel.value || isTravelling.value) return
-  if (await dungeon.teleport('ANCIENT_MINE')) {
+async function enterSelectedDungeon(): Promise<void> {
+  const dungeonId = selectedDungeonPreview.value?.id
+  if (!dungeonId || characterLevel.value < selectedDungeonMinimumLevel.value || isTravelling.value) return
+  if (await dungeon.teleport(dungeonId)) {
     await session.refreshSnapshot()
     emit('open-location')
   }
 }
 
 function locationName(location: WorldLocation): string {
-  if (location.id === 'STARTER_TOWN') return 'Стартовый город'
-  if (location.id === 'WHISPERING_FOREST') return 'Шепчущий лес'
-  if (location.id === 'DEEP_FOREST') return 'Глубокий лес'
-  if (location.id === 'ANCIENT_MINE') return 'Древняя шахта'
-  if (location.id === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
-  if (location.id === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
-  return location.displayName
+  return locationLabel(location)
 }
 
 function levelRangeLabel(location: WorldLocation): string {
@@ -325,7 +321,7 @@ onMounted(() => {
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
-          <span class="map-node__marker" :data-location-kind="location.id === 'ANCIENT_MINE' || location.id === 'ECLIPSED_CITADEL' ? 'dungeon' : 'normal'">
+          <span class="map-node__marker" :data-location-kind="locationKind(location.id) === 'dungeon' ? 'dungeon' : 'normal'">
             <i />
           </span>
           <span class="map-node__label">
@@ -364,7 +360,7 @@ onMounted(() => {
           <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
             {{ lockReason(selectedLocation) }}
           </em>
-          <em v-if="selectedLocation.id === 'ANCIENT_MINE' && dungeon.errorCode" class="map-selection__lock" role="alert">
+          <em v-if="selectedIsDungeon && dungeon.errorCode" class="map-selection__lock" role="alert">
             {{ socialErrorMessage(dungeon.errorCode) }}
           </em>
         </div>
@@ -378,13 +374,13 @@ onMounted(() => {
             {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
           </UIButton>
           <UIButton
-            v-else-if="selectedLocation.id === 'ANCIENT_MINE'"
+            v-else-if="selectedIsDungeon"
             data-dungeon-map-entry
-            :disabled="characterLevel < ancientMineMinimumLevel || isTravelling"
+            :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling || !selectedDungeonPreview"
             :loading="dungeon.teleporting"
-            @click="enterAncientMine"
+            @click="enterSelectedDungeon"
           >
-            {{ characterLevel < ancientMineMinimumLevel ? `Нужен ${ancientMineMinimumLevel} ур.` : 'Телепорт ко входу' }}
+            {{ characterLevel < selectedDungeonMinimumLevel ? `Нужен ${selectedDungeonMinimumLevel} ур.` : 'Телепорт ко входу' }}
           </UIButton>
           <UIButton
             v-else

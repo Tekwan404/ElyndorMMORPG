@@ -7,21 +7,26 @@ import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel, resourceLabel } from '@/game/character/characterPresentation'
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
+import InventoryView from '@/game/character/views/InventoryView.vue'
 import CombatView from '@/game/combat/views/CombatView.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { IconConfig } from '@/ui/icons/icon.types'
 import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
 
-type ShellView = 'world' | 'location' | 'hero' | 'quests' | 'menu'
+type ShellView = 'world' | 'hero' | 'inventory' | 'quests' | 'menu'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
-const activeView = ref<ShellView>('location')
+const activeView = ref<ShellView>('world')
+const worldMode = ref<'location' | 'map'>('location')
 const menuSection = ref<MenuSection>('profile')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
@@ -32,13 +37,7 @@ const portraitArt = computed(() =>
     : null,
 )
 function worldLocationName(locationId: string): string {
-  if (locationId === 'STARTER_TOWN') return 'Стартовый город'
-  if (locationId === 'WHISPERING_FOREST') return 'Шепчущий лес'
-  if (locationId === 'DEEP_FOREST') return 'Глубокий лес'
-  if (locationId === 'ANCIENT_MINE') return 'Древняя шахта'
-  if (locationId === 'BROODMOTHER_LAIR') return 'Логово Прародительницы'
-  if (locationId === 'BLIGHTED_GROVE') return 'Осквернённая чаща'
-  return locationId
+  return locationPresentation(locationId).label
 }
 
 const locationName = computed(() => {
@@ -82,22 +81,29 @@ const sessionErrorMessage = computed(() => {
 const navigation: readonly {
   id: ShellView
   label: string
-  icon: string
+  icon?: string
+  iconConfig?: IconConfig
   enabled: boolean
   primary?: boolean
 }[] = [
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
-  { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
+  { id: 'inventory', label: 'Рюкзак', iconConfig: { id: 'nav-inventory', glyph: 'chest', category: 'utility' }, enabled: true, primary: true },
   { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: true },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: true },
 ]
 
 function selectView(item: (typeof navigation)[number]) {
-  if (item.enabled) {
+  if (item.enabled && (!combat.isActive || item.id === 'world')) {
     activeView.value = item.id
+    if (item.id === 'world') worldMode.value = 'location'
     if (item.id === 'menu') menuSection.value = 'profile'
   }
+}
+
+function openWorld(mode: 'location' | 'map' = 'location'): void {
+  activeView.value = 'world'
+  worldMode.value = mode
 }
 
 function openMenu(section: MenuSection): void {
@@ -116,6 +122,7 @@ watch(() => session.state, async state => {
 }, { immediate: true })
 
 watch(() => combat.isActive, (active, wasActive) => {
+  if (active) openWorld('location')
   if (!active && wasActive) void session.refreshSnapshot()
 })
 
@@ -127,7 +134,12 @@ onMounted(() => {
 
 <template>
   <div class="game-shell">
-    <section v-if="session.state === 'world' && character && !combat.isActive" class="hud" aria-label="Состояние героя">
+    <section
+      v-if="session.state === 'world' && character"
+      class="hud"
+      :class="{ 'hud--combat': combat.isActive }"
+      aria-label="Состояние героя"
+    >
       <div class="hud__main">
         <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="activeView = 'hero'">
           <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
@@ -138,7 +150,6 @@ onMounted(() => {
           <small class="hud__brand">ELYNDOR</small>
           <b>{{ character.name }}</b>
           <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
-          <small class="hud__code">{{ character.publicCode ?? 'ELY ID недоступен' }}</small>
         </button>
 
         <div class="hud__meta">
@@ -149,7 +160,7 @@ onMounted(() => {
           <div class="server-state" :data-state="session.state" aria-live="polite">
             <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
           </div>
-          <RouterLink v-if="session.isAdmin" class="admin-link" to="/admin">Админка</RouterLink>
+          <RouterLink v-if="session.isAdmin && !combat.isActive" class="admin-link" to="/admin">Админка</RouterLink>
         </div>
       </div>
 
@@ -159,7 +170,7 @@ onMounted(() => {
       </div>
 
       <div class="hud__context">
-        <button type="button" data-hud-location @click="activeView = 'location'">
+        <button type="button" data-hud-location @click="openWorld('location')">
           <img :src="gameArt.navigation.location" alt="" aria-hidden="true" />
           <span>{{ locationName }}</span>
         </button>
@@ -192,16 +203,18 @@ onMounted(() => {
         <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
-      <CombatView v-else-if="session.state === 'world' && combat.isActive" @leave="activeView = 'location'" />
+      <CombatView v-else-if="session.state === 'world' && combat.isActive" @leave="openWorld('location')" />
       <WorldMapView
-        v-else-if="session.state === 'world' && activeView === 'world'"
-        @open-location="activeView = 'location'"
+        v-else-if="session.state === 'world' && activeView === 'world' && worldMode === 'map'"
+        @open-location="openWorld('location')"
       />
       <WorldView
-        v-else-if="session.state === 'world' && activeView === 'location'"
+        v-else-if="session.state === 'world' && activeView === 'world'"
+        @open-map="openWorld('map')"
         @open-party="openMenu('party')"
       />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
+      <InventoryView v-else-if="session.state === 'world' && activeView === 'inventory'" />
       <QuestView v-else-if="session.state === 'world' && activeView === 'quests'" />
       <MenuView
         v-else-if="session.state === 'world' && activeView === 'menu'"
@@ -209,7 +222,7 @@ onMounted(() => {
       />
     </main>
 
-    <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">
+    <nav v-if="session.state === 'world'" class="navigation" aria-label="Основная навигация">
       <button
         v-for="item in navigation"
         :key="item.id"
@@ -217,17 +230,19 @@ onMounted(() => {
         :class="{
           'navigation__item--active': item.id === activeView,
           'navigation__item--primary': item.primary,
+          'navigation__item--combat-locked': combat.isActive && item.id !== 'world',
         }"
         :data-nav="item.id"
         type="button"
-        :disabled="!item.enabled"
+        :disabled="!item.enabled || (combat.isActive && item.id !== 'world')"
         :aria-current="item.id === activeView ? 'page' : undefined"
         @click="selectView(item)"
       >
         <span class="navigation__icon-wrap">
-          <img class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
+          <img v-if="item.icon" class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
+          <IconGenerator v-else-if="item.iconConfig" class="navigation__icon navigation__icon--generated" :config="item.iconConfig" />
         </span>
-        <small>{{ item.label }}</small>
+        <small>{{ combat.isActive && item.id === 'world' ? 'Бой' : item.label }}</small>
       </button>
     </nav>
   </div>
@@ -363,18 +378,6 @@ onMounted(() => {
   margin-top: 2px;
   color: var(--ui-color-text-muted);
   font-size: .57rem;
-}
-
-.hud__code {
-  margin-top: 2px;
-  width: fit-content;
-  padding: 1px 4px;
-  border: 1px solid rgb(209 170 98 / 22%);
-  border-radius: 3px;
-  color: #d7bd7e;
-  font-size: .52rem;
-  font-weight: 700;
-  letter-spacing: .08em;
 }
 
 .hud__meta {
@@ -568,6 +571,10 @@ onMounted(() => {
   opacity: .28;
 }
 
+.navigation__item--combat-locked {
+  opacity: .58;
+}
+
 .navigation__item--active {
   background: linear-gradient(180deg, rgb(209 170 98 / 11%), transparent 76%);
   color: #f0d28e;
@@ -611,6 +618,10 @@ onMounted(() => {
   transition: filter var(--ui-transition-fast), transform var(--ui-transition-fast);
 }
 
+.navigation__icon--generated {
+  color: currentcolor;
+}
+
 .navigation__item--primary .navigation__icon {
   width: 28px;
   height: 28px;
@@ -628,6 +639,20 @@ onMounted(() => {
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hud--combat {
+  gap: 4px;
+  padding-block: 4px;
+}
+
+.hud--combat .hud__portrait {
+  width: 38px;
+  height: 38px;
+}
+
+.hud--combat .hud__context {
+  display: none;
 }
 
 @media (max-width: 360px) {

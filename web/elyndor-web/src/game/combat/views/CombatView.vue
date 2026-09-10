@@ -608,17 +608,6 @@ onUnmounted(() => window.clearInterval(timer))
           </div>
         </div>
 
-        <div v-if="combatPlayers.length > 1" class="party-formation" aria-hidden="true">
-          <span
-            v-for="player in combatPlayers"
-            :key="player.actorId"
-            class="party-formation__unit"
-            :class="{ 'party-formation__unit--self': player.actorId === snapshot.player.actorId }"
-          >
-            <b>{{ player.name.slice(0, 1).toUpperCase() }}</b>
-            <small>{{ combatPlayerRole(player) }}</small>
-          </span>
-        </div>
       </section>
 
       <section v-if="isTraining" class="training-stats" aria-label="Статистика тренировки">
@@ -2085,70 +2074,19 @@ onUnmounted(() => window.clearInterval(timer))
   font-weight: 700;
 }
 
-.combat-screen--party .battlefield {
-  min-height: 22.5rem;
-}
-
 .combat-screen--party .player-figure {
   left: 3%;
 }
 
-.party-formation {
-  position: absolute;
-  bottom: 1.2rem;
-  left: 29%;
-  z-index: 1;
-  display: flex;
-  align-items: end;
-  gap: 5px;
-  padding: 4px 5px;
-  border: 1px solid rgb(205 177 113 / 20%);
-  border-radius: var(--ui-radius-round);
-  background: rgb(5 8 13 / 74%);
-  box-shadow: 0 5px 14px rgb(0 0 0 / 25%);
-}
-
-.party-formation__unit {
-  display: grid;
-  min-width: 2.35rem;
-  justify-items: center;
-  gap: 1px;
-  color: var(--ui-color-text-muted);
-}
-
-.party-formation__unit b {
-  display: grid;
-  width: 1.45rem;
-  height: 1.45rem;
-  place-items: center;
-  border: 1px solid rgb(205 177 113 / 34%);
-  border-radius: 50%;
-  background: rgb(13 18 27 / 92%);
-  color: #dbc989;
-  font-size: .62rem;
-}
-
-.party-formation__unit small {
-  font-size: .42rem;
-  text-transform: uppercase;
-}
-
-.party-formation__unit--self b {
-  border-color: rgb(170 163 255 / 58%);
-  color: #d6d2ff;
-}
-
 @media (max-width: 520px) {
   .combat-party-roster__grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
 
-  .combat-screen--party .battlefield {
-    min-height: 21rem;
-  }
-
-  .party-formation {
-    left: 36%;
+  .combat-party-roster__member {
+    flex: 0 0 min(12rem, 78vw);
   }
 }
 </style>

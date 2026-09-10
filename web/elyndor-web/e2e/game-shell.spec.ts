@@ -33,7 +33,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
-  await page.getByRole('button', { name: 'Локация' }).click()
+  await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
   await expect(page.getByText('Городские сервисы')).toBeVisible()
   await expect(page.getByText('Представительство Гильдии')).toBeVisible()
@@ -57,7 +57,8 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await guildDialog.getByRole('button', { name: 'Close' }).click()
   await expect(guildDialog).toBeHidden()
 
-  await page.getByRole('button', { name: 'Мир' }).click()
+  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-open-world-map]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
   const mapSelection = page.locator('[data-map-selection]')
   await expect(mapSelection).toContainText('Осмотреть локацию')
@@ -66,15 +67,16 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
   await page.locator('[data-map-travel]').click()
-  await page.getByRole('button', { name: 'Локация' }).click()
+  await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   await expect(page.locator('[data-location-travel]')).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Мир' }).click()
+  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-open-world-map]').click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()
   await expect(page.getByText('Требуется 6 уровень.')).toBeVisible()
   await expect(page.locator('[data-map-travel]')).toBeDisabled()
-  await page.getByRole('button', { name: 'Локация' }).click()
+  await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
@@ -90,14 +92,14 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByRole('button', { name: 'Герой' }).click()
   await expect(page.getByRole('heading', { name: 'Снаряжение' })).toBeVisible()
   await expect(page.locator('[data-hero-name]')).toHaveText(heroName)
-  await page.getByRole('button', { name: 'Инвентарь' }).click()
+  await page.locator('[data-nav="inventory"]').click()
   await expect(page.getByRole('heading', { name: 'Рюкзак' })).toBeVisible()
   await expect(page.getByText('Рюкзак пуст')).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
-  await page.getByRole('button', { name: 'Локация' }).click()
+  await page.locator('[data-nav="world"]').click()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
