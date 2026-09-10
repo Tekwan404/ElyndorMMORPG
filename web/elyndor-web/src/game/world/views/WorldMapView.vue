@@ -334,67 +334,68 @@ onMounted(() => {
           </span>
         </button>
 
-        <div
-          v-if="selectedLocation"
-          class="map-selection"
-          :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
-          data-map-selection
-          data-map-preview
-        >
-          <div
-            class="map-selection__art"
-            :style="{ backgroundImage: `url(${selectedArt})` }"
-            aria-hidden="true"
-          />
-          <div class="map-selection__copy">
-            <div class="map-selection__eyebrow">
-              <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
-              <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
-            </div>
-            <strong>{{ locationName(selectedLocation) }}</strong>
-            <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
-            <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
-              {{ lockReason(selectedLocation) }}
-            </em>
-            <em v-if="selectedLocation.id === 'ANCIENT_MINE' && dungeon.errorCode" class="map-selection__lock" role="alert">
-              {{ socialErrorMessage(dungeon.errorCode) }}
-            </em>
-          </div>
-          <div class="map-selection__actions">
-            <UIButton
-              v-if="selectedIsCurrent"
-              data-map-open-location
-              data-open-location
-              @click="emit('open-location')"
-            >
-              {{ selectedIsDungeon ? 'Открыть вход' : 'Открыть локацию' }}
-            </UIButton>
-            <UIButton
-              v-else-if="selectedLocation.id === 'ANCIENT_MINE'"
-              data-dungeon-map-entry
-              :disabled="characterLevel < ancientMineMinimumLevel || isTravelling"
-              :loading="dungeon.teleporting"
-              @click="enterAncientMine"
-            >
-              {{ characterLevel < ancientMineMinimumLevel ? `Нужен ${ancientMineMinimumLevel} ур.` : 'Ко входу' }}
-            </UIButton>
-            <UIButton
-              v-else
-              data-map-travel
-              data-map-travel-inline
-              :disabled="isTravelling || !selectedIsReachable"
-              :loading="session.mutationPending"
-              @click="travel"
-            >
-              {{ isTravelling ? 'В пути' : selectedIsReachable ? 'Отправиться' : 'Путь недоступен' }}
-            </UIButton>
-          </div>
-        </div>
-
         <div class="map-legend" aria-label="Легенда карты">
           <span><i data-state="current" /> Вы здесь</span>
           <span><i data-state="reachable" /> Доступно</span>
           <span><i data-state="locked" /> Нет прямого пути</span>
+        </div>
+      </section>
+
+      <section
+        v-if="selectedLocation"
+        class="map-selection"
+        :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
+        data-map-selection
+        data-map-preview
+        aria-label="Выбранная локация"
+      >
+        <div
+          class="map-selection__art"
+          :style="{ backgroundImage: `url(${selectedArt})` }"
+          aria-hidden="true"
+        />
+        <div class="map-selection__copy">
+          <div class="map-selection__eyebrow">
+            <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
+            <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
+          </div>
+          <strong>{{ locationName(selectedLocation) }}</strong>
+          <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
+          <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
+            {{ lockReason(selectedLocation) }}
+          </em>
+          <em v-if="selectedLocation.id === 'ANCIENT_MINE' && dungeon.errorCode" class="map-selection__lock" role="alert">
+            {{ socialErrorMessage(dungeon.errorCode) }}
+          </em>
+        </div>
+        <div class="map-selection__actions">
+          <UIButton
+            v-if="selectedIsCurrent"
+            data-map-open-location
+            data-open-location
+            @click="emit('open-location')"
+          >
+            {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
+          </UIButton>
+          <UIButton
+            v-else-if="selectedLocation.id === 'ANCIENT_MINE'"
+            data-dungeon-map-entry
+            :disabled="characterLevel < ancientMineMinimumLevel || isTravelling"
+            :loading="dungeon.teleporting"
+            @click="enterAncientMine"
+          >
+            {{ characterLevel < ancientMineMinimumLevel ? `Нужен ${ancientMineMinimumLevel} ур.` : 'Телепорт ко входу' }}
+          </UIButton>
+          <UIButton
+            v-else
+            data-map-travel
+            data-map-travel-inline
+            :disabled="isTravelling || !selectedIsReachable"
+            :loading="session.mutationPending"
+            @click="travel"
+          >
+            {{ isTravelling ? 'Переход выполняется' : selectedIsReachable ? 'Начать переход' : 'Маршрут закрыт' }}
+          </UIButton>
         </div>
       </section>
 
@@ -488,7 +489,7 @@ onMounted(() => {
   --map-art: none;
 
   position: relative;
-  min-height: clamp(32rem, 72dvh, 42rem);
+  min-height: clamp(26rem, 58dvh, 34rem);
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
@@ -695,21 +696,16 @@ onMounted(() => {
 }
 
 .map-selection {
-  position: absolute;
-  right: var(--ui-space-3);
-  bottom: 4.4rem;
-  left: var(--ui-space-3);
-  z-index: 4;
   display: grid;
   grid-template-columns: 5.3rem minmax(0, 1fr);
   gap: var(--ui-space-3);
   overflow: hidden;
+  margin-top: calc(var(--ui-space-2) * -1);
   border: 1px solid rgb(184 177 255 / 32%);
   border-radius: calc(var(--ui-radius-lg) + 1px);
   background: rgb(5 8 14 / 90%);
   box-shadow: 0 1rem 2.4rem rgb(0 0 0 / 34%);
   backdrop-filter: blur(14px);
-  pointer-events: none;
 }
 
 .map-selection[data-kind='dungeon'] {
@@ -786,7 +782,6 @@ onMounted(() => {
   grid-column: 1 / -1;
   display: grid;
   padding: 0 var(--ui-space-3) var(--ui-space-3);
-  pointer-events: auto;
 }
 
 .map-selection__actions :deep(.ui-button) {
@@ -902,7 +897,7 @@ onMounted(() => {
   }
 
   .map-canvas {
-    min-height: 34rem;
+    min-height: 29rem;
   }
 
   .map-node__label {
