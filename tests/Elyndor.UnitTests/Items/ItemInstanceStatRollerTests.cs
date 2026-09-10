@@ -97,4 +97,95 @@ public sealed class ItemInstanceStatRollerTests
 
         Assert.Equal(definition.Stats, resolved);
     }
+
+    [Fact]
+    public void GeneratedItemQualityIsDeterministicAndDoesNotChangeTemplateRarity()
+    {
+        ItemDefinition epicTemplate = ProceduralTemplate(ItemRarity.Epic);
+        ItemizationDefinition itemization = TestItemization();
+
+        GeneratedItemInstance first = ItemInstanceGenerator.Generate(
+            epicTemplate,
+            itemization,
+            "TEST",
+            new SequenceGameRandom(0.60m, 0.50m));
+        GeneratedItemInstance second = ItemInstanceGenerator.Generate(
+            epicTemplate,
+            itemization,
+            "TEST",
+            new SequenceGameRandom(0.60m, 0.50m));
+        GeneratedItemInstance rare = ItemInstanceGenerator.Generate(
+            ProceduralTemplate(ItemRarity.Rare),
+            itemization,
+            "TEST",
+            new SequenceGameRandom(0.60m, 0.50m));
+
+        Assert.Equal(first.ActualItemPower, second.ActualItemPower);
+        Assert.Equal(first.MaxTemplateItemPower, second.MaxTemplateItemPower);
+        Assert.Equal(first.RollQuality, second.RollQuality);
+        Assert.Equal(first.Stars, second.Stars);
+        Assert.Equal(rare.Stars, first.Stars);
+        Assert.NotEqual(rare.ActualItemPower, first.ActualItemPower);
+        Assert.Equal(ItemRarity.Epic, epicTemplate.Rarity);
+    }
+
+    [Fact]
+    public void GeneratedItemQualityMapsLowestAndPerfectRollsToOneAndFiveStars()
+    {
+        ItemDefinition template = ProceduralTemplate(ItemRarity.Rare);
+        ItemizationDefinition itemization = TestItemization();
+
+        GeneratedItemInstance lowest = ItemInstanceGenerator.Generate(
+            template,
+            itemization,
+            "TEST",
+            new SequenceGameRandom(0m, 0.50m));
+        GeneratedItemInstance perfect = ItemInstanceGenerator.Generate(
+            template,
+            itemization,
+            "TEST",
+            new SequenceGameRandom(0.9999m, 0.50m));
+
+        Assert.Equal(1, lowest.Stars);
+        Assert.False(lowest.IsPerfect);
+        Assert.Equal(5, perfect.Stars);
+        Assert.True(perfect.IsPerfect);
+        Assert.Equal("DROP", perfect.PerfectOrigin);
+    }
+
+    private static ItemDefinition ProceduralTemplate(ItemRarity rarity) => new(
+        "TEST_PROCEDURAL_SWORD",
+        "Test procedural sword",
+        ItemType.Equipment,
+        rarity,
+        10,
+        false,
+        1,
+        EquipmentSlot.MainHand,
+        new PrimaryStats(0, 0, 0, 0),
+        "Test procedural equipment.",
+        GuaranteedAffixStatIds: [ItemStatIds.Strength],
+        RandomAffixPoolId: "TEST_POOL",
+        AffixCountProfileId: "TEST_COUNT");
+
+    private static ItemizationDefinition TestItemization() => new(
+        TemplateBasePower: 100,
+        LevelLinearCoefficient: 0,
+        LevelQuadraticCoefficient: 0,
+        SlotMultipliers: new Dictionary<string, decimal> { ["MAIN_HAND"] = 1m },
+        RarityMultipliers: new Dictionary<string, decimal>
+        {
+            ["COMMON"] = 1m,
+            ["UNCOMMON"] = 1m,
+            ["RARE"] = 1.55m,
+            ["EPIC"] = 1.90m,
+            ["LEGENDARY"] = 1m,
+            ["UNIQUE"] = 1m,
+        },
+        StatPowerWeights: new Dictionary<string, decimal> { [ItemStatIds.Strength] = 1m },
+        AffixPools: [new ItemAffixPoolDefinition("TEST_POOL", [ItemStatIds.Strength])],
+        AffixCountProfiles: [new ItemAffixCountProfileDefinition("TEST_COUNT", 1, 0, 0)],
+        QualityProfiles: [new ItemQualityProfileDefinition("TEST", 1m)],
+        AffixNames: [],
+        IndividualQualityDeviationPercent: 0);
 }

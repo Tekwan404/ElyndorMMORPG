@@ -107,6 +107,60 @@ describe('InventoryView', () => {
     expect(document.body.textContent).toContain('Выносливость +4')
   })
 
+  it('shows generated equipment quality in the grid and its detail modal', async () => {
+    const store = useGameSessionStore()
+    const generated = item({
+      id: 'PERFECT_SWORD',
+      name: 'Совершенный клинок',
+      type: 'Equipment',
+      rarity: 'Epic',
+      slot: 'MainHand',
+      weaponCategory: 'ONE_HAND_SWORD',
+      generatedItem: {
+        itemLevel: 12,
+        itemPower: 148.5,
+        maxItemPower: 150,
+        rollQuality: 99,
+        stars: 5,
+        isPerfect: true,
+        perfectOrigin: 'DROP',
+        generatedPrefixId: 'PREFIX_STRENGTH',
+        generatedSuffixId: null,
+        displayName: 'Совершенный клинок',
+        affixes: [],
+      },
+    })
+    store.snapshot = snapshot([generated], currentWeapon())
+
+    const wrapper = mount(InventoryView)
+    expect(wrapper.find('[data-item-id="PERFECT_SWORD"] [data-item-quality-stars]').exists()).toBe(true)
+
+    await wrapper.get('[data-item-id="PERFECT_SWORD"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('Мощь предмета: 148.50 / 150')
+    expect(document.body.textContent).toContain('Качество: 99%')
+    expect(document.body.textContent).toContain('ИДЕАЛЬНЫЙ РОЛЛ')
+    expect(wrapper.findAll('[data-item-quality-stars]')).toHaveLength(1)
+    expect(document.body.querySelectorAll('[data-item-quality-stars]')).toHaveLength(1)
+  })
+
+  it('does not show quality stars for materials or consumables', async () => {
+    const store = useGameSessionStore()
+    const material = item({
+      id: 'IRON_ORE',
+      name: 'Железная руда',
+      type: 'Material',
+      rarity: 'Common',
+    })
+    const potion = consumable('HEALING_POTION', 'Малое зелье лечения')
+    store.snapshot = snapshot([material, potion], currentWeapon())
+
+    const wrapper = mount(InventoryView)
+
+    expect(wrapper.findAll('[data-item-quality-stars]')).toHaveLength(0)
+  })
+
   it('compares candidate equipment with the currently equipped item', async () => {
     const store = useGameSessionStore()
     const candidate = equipment('EPIC_BLADE', 'Клинок сумерек', 'Epic', 5, 12)
@@ -223,6 +277,45 @@ describe('InventoryView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-item-id="FRESH_POTION"]').attributes('data-new')).toBe('false')
+  })
+
+  it('keeps NEW, lock and stars visible together for generated equipment', async () => {
+    const store = useGameSessionStore()
+    const existing = equipment('COMMON_BLADE', 'Existing sword', 'Common', 1, 3)
+    store.snapshot = snapshot([existing], currentWeapon())
+
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+
+    const freshGenerated = item({
+      id: 'FRESH_LOCKED_SWORD',
+      name: 'New sword',
+      type: 'Equipment',
+      rarity: 'Rare',
+      slot: 'MainHand',
+      isLocked: true,
+      generatedItem: {
+        itemLevel: 10,
+        itemPower: 100,
+        maxItemPower: 150,
+        rollQuality: 60,
+        stars: 3,
+        isPerfect: false,
+        perfectOrigin: null,
+        generatedPrefixId: null,
+        generatedSuffixId: null,
+        displayName: 'New sword',
+        affixes: [],
+      },
+    })
+    store.snapshot.character!.inventory.items = [existing, freshGenerated]
+    await flushPromises()
+
+    const cell = wrapper.get('[data-item-id="FRESH_LOCKED_SWORD"]')
+    expect(cell.attributes('data-new')).toBe('true')
+    expect(cell.attributes('data-locked')).toBe('true')
+    expect(cell.text()).toContain('\u041d\u041e\u0412\u041e\u0415')
+    expect(cell.find('[data-item-quality-stars]').exists()).toBe(true)
   })
 
   it('renders server lock state and toggles protection through the game store', async () => {
@@ -369,6 +462,7 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     appearanceProfileId: overrides.appearanceProfileId ?? null,
     weaponHandsRequired: overrides.weaponHandsRequired ?? null,
     hasRandomStats: overrides.hasRandomStats ?? false,
+    generatedItem: overrides.generatedItem ?? null,
   }
 }
 

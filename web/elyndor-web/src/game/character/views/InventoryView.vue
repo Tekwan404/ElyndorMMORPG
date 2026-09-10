@@ -7,7 +7,7 @@ import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
-import { UIButton, UILoadingState, UIModal } from '@/ui/components'
+import { ItemQualityStars, UIButton, UILoadingState, UIModal } from '@/ui/components'
 
 const props = defineProps<{
   slotFilter?: EquipmentSlot | null
@@ -524,7 +524,10 @@ async function toggleSelectedLock(): Promise<void> {
           v-for="(item, index) in visibleCells"
           :key="item?.id ?? `empty-${index}`"
           class="bag-cell"
-          :class="{ 'bag-cell--empty': !item }"
+          :class="{
+            'bag-cell--empty': !item,
+            'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined,
+          }"
           :data-rarity="item?.rarity"
           :data-item-id="item?.id"
           :data-new="item ? newItemIds.has(item.id) : undefined"
@@ -543,6 +546,12 @@ async function toggleSelectedLock(): Promise<void> {
               <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
               <IconGenerator v-else :config="itemIconConfig(item, 'item')" />
             </span>
+            <ItemQualityStars
+              v-if="item.generatedItem"
+              class="bag-cell__quality"
+              :id="`inventory-${item.id}`"
+              :stars="item.generatedItem.stars"
+            />
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
           </template>
@@ -572,6 +581,11 @@ async function toggleSelectedLock(): Promise<void> {
           </span>
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
+            <ItemQualityStars
+              v-if="selectedItem.generatedItem"
+              :id="`inventory-detail-${selectedItem.id}`"
+              :stars="selectedItem.generatedItem.stars"
+            />
             <strong>Количество: {{ selectedItem.quantity }}</strong>
             <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
           </div>
@@ -580,6 +594,17 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
           Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
         </p>
+        <section v-if="selectedItem.generatedItem" class="item-quality-summary" aria-label="Качество предмета">
+          <div>
+            <small>МОЩЬ ПРЕДМЕТА</small>
+            <strong>Мощь предмета: {{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong>
+          </div>
+          <div>
+            <small>КАЧЕСТВО</small>
+            <strong>Качество: {{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong>
+          </div>
+          <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect">ИДЕАЛЬНЫЙ РОЛЛ</span>
+        </section>
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
         </dl>
@@ -943,6 +968,23 @@ async function toggleSelectedLock(): Promise<void> {
   font-size: .67rem;
 }
 
+.bag-cell__quality {
+  position: absolute;
+  z-index: 2;
+  right: 4px;
+  bottom: 3px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 86%));
+}
+
+.bag-cell__quality :deep(.item-quality-stars__star) {
+  width: .5rem;
+  height: .5rem;
+}
+
+.bag-cell--generated .bag-cell__quantity {
+  bottom: .85rem;
+}
+
 .bag-cell__icon img,
 .item-detail__icon img {
   width: 100%;
@@ -991,6 +1033,46 @@ async function toggleSelectedLock(): Promise<void> {
   color: #c9c5ff;
   font-size: .62rem;
   line-height: 1.4;
+}
+
+.item-quality-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 32%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(135deg, rgb(232 200 102 / 8%), rgb(255 255 255 / 1%));
+}
+
+.item-quality-summary > div {
+  display: grid;
+  gap: 2px;
+  padding: var(--ui-space-3);
+}
+
+.item-quality-summary small {
+  color: var(--ui-color-text-muted);
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+.item-quality-summary strong {
+  color: var(--ui-color-text-primary);
+  font-size: .7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-quality-summary__perfect {
+  grid-column: 1 / -1;
+  padding: 7px var(--ui-space-3);
+  border-top: 1px solid rgb(232 200 102 / 20%);
+  color: var(--ui-color-gold);
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-align: center;
 }
 
 .item-detail__description {
