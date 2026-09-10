@@ -5,9 +5,23 @@ namespace Elyndor.UnitTests.World;
 public sealed class WorldMapTests
 {
     [Fact]
-    public void CanTravelAcceptsAnyKnownDestinationForTesting()
+    public void CanTravelAcceptsOnlyConfiguredTransitionsByDefault()
     {
         WorldMap worldMap = new(CreatePrototypeLocations());
+
+        Assert.True(worldMap.CanTravel("STARTER_TOWN", "WHISPERING_FOREST"));
+        Assert.True(worldMap.CanTravel("WHISPERING_FOREST", "STARTER_TOWN"));
+        Assert.True(worldMap.CanTravel("WHISPERING_FOREST", "DEEP_FOREST"));
+        Assert.True(worldMap.CanTravel("DEEP_FOREST", "WHISPERING_FOREST"));
+        Assert.False(worldMap.CanTravel("STARTER_TOWN", "DEEP_FOREST"));
+        Assert.False(worldMap.CanTravel("MISSING", "STARTER_TOWN"));
+        Assert.False(worldMap.CanTravel("STARTER_TOWN", "MISSING"));
+    }
+
+    [Fact]
+    public void DirectTravelModeConnectsAnyKnownDestination()
+    {
+        WorldMap worldMap = new(CreatePrototypeLocations(), directTravel: true);
 
         Assert.True(worldMap.CanTravel("STARTER_TOWN", "WHISPERING_FOREST"));
         Assert.True(worldMap.CanTravel("STARTER_TOWN", "DEEP_FOREST"));
@@ -18,18 +32,12 @@ public sealed class WorldMapTests
     }
 
     [Fact]
-    public void ConstructorMakesKnownLocationsInstantAndDirectForTesting()
+    public void DirectTravelModePreservesConfiguredTravelDuration()
     {
-        WorldMap worldMap = new(CreatePrototypeLocations());
+        WorldMap worldMap = new(CreatePrototypeLocations(), directTravel: true);
 
-        LocationDefinition starterTown = worldMap.GetRequired("STARTER_TOWN");
-        LocationDefinition deepForest = worldMap.GetRequired("DEEP_FOREST");
-
-        Assert.Equal(0m, starterTown.TravelDurationSeconds);
-        Assert.Equal(0m, deepForest.TravelDurationSeconds);
-        Assert.Contains("DEEP_FOREST", starterTown.Transitions);
-        Assert.Contains("STARTER_TOWN", deepForest.Transitions);
-        Assert.DoesNotContain("STARTER_TOWN", starterTown.Transitions);
+        Assert.Equal(12m, worldMap.GetRequired("STARTER_TOWN").TravelDurationSeconds);
+        Assert.Equal(24m, worldMap.GetRequired("DEEP_FOREST").TravelDurationSeconds);
     }
 
     [Fact]
