@@ -79,6 +79,7 @@ builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
 builder.Services.AddSingleton<ITelegramMessageSender, TelegramBotMessageSender>();
 builder.Services.AddScoped<TelegramAdminUpdateProcessor>();
+builder.Services.AddScoped<TelegramServerErrorReporter>();
 builder.Services.AddSingleton<TelegramWebhookRegistrationService>();
 builder.Services.AddHostedService<TelegramWebhookRegistrationWorker>();
 builder.Services.AddHostedService<TelegramAdminLongPollingWorker>();
@@ -225,6 +226,13 @@ app.UseExceptionHandler(errorApp =>
                 context.Request.Path,
                 context.TraceIdentifier,
                 exception);
+
+            TelegramServerErrorReporter reporter = context.RequestServices
+                .GetRequiredService<TelegramServerErrorReporter>();
+            await reporter.ReportAsync(
+                context,
+                exception,
+                context.RequestAborted);
         }
 
         await Results.Problem(
