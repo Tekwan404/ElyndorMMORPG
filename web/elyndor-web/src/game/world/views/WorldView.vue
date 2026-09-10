@@ -26,7 +26,7 @@ const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
-let combatResultTimer: ReturnType<typeof setTimeout> | null = null
+let combatResultTimer: number | null = null
 let vitalsRefreshPending = false
 const COMBAT_RESULT_SESSION_KEY = 'elyndor:last-combat-result-announcement'
 const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
