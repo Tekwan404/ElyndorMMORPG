@@ -5,6 +5,15 @@ export interface ForgeItemAvailability {
   reason: string | null
 }
 
+export function availableForgeMaterialQuantity(
+  items: readonly InventoryItem[],
+  definitionId: string,
+): number {
+  return items
+    .filter(item => item.definitionId === definitionId && !item.isLocked && !item.transactionLocked)
+    .reduce((total, item) => total + item.quantity, 0)
+}
+
 export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailability {
   if (item.type !== 'Equipment' || !item.generatedItem) {
     return { available: false, reason: 'Этот предмет нельзя перековать.' }

@@ -35,6 +35,7 @@ public sealed class GameContentIndexes
         WorldContractsById = ToDictionary(package.WorldContracts, item => item.Id);
         DungeonsById = ToDictionary(package.Dungeons, item => item.Id);
         QuestsById = ToDictionary(package.Quests, item => item.Id);
+        PremiumStoreOffersBySku = ToDictionary(package.PremiumStoreOffers, item => item.Sku);
     }
 
     public IReadOnlyDictionary<GameContentDefinitionKey, GameContentDefinition> DefinitionsByKey { get; }
@@ -54,6 +55,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, WorldContractDefinition> WorldContractsById { get; }
     public IReadOnlyDictionary<string, DungeonDefinition> DungeonsById { get; }
     public IReadOnlyDictionary<string, QuestDefinition> QuestsById { get; }
+    public IReadOnlyDictionary<string, PremiumStoreOfferDefinition> PremiumStoreOffersBySku { get; }
 
     public static GameContentIndexes For(GameContentPackage package)
     {

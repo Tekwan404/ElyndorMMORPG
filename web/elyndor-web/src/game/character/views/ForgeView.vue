@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, ItemAffix, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
-import { forgeableAffixes, forgeItemAvailability, forgeStatLabel } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel } from '@/game/character/forge/forgePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -25,9 +25,13 @@ const affixes = computed(() => selectedItem.value ? forgeableAffixes(selectedIte
 const selectedAffix = computed<ItemAffix | null>(() =>
   affixes.value.find(affix => affix.slotKey === selectedSlotKey.value) ?? null,
 )
-const reforgeStones = computed(() => character.value?.inventory.items
+const totalReforgeStones = computed(() => character.value?.inventory.items
   .filter(item => item.definitionId === 'REFORGE_STONE')
   .reduce((total, item) => total + item.quantity, 0) ?? 0)
+const reforgeStones = computed(() => availableForgeMaterialQuantity(
+  character.value?.inventory.items ?? [],
+  'REFORGE_STONE',
+))
 
 function itemArt(item: InventoryItem): string | undefined {
   return itemArtUrl(item.iconId)
@@ -160,7 +164,7 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
       <div class="forge-resource" aria-label="Камни перековки">
         <IconGenerator :config="{ id: 'forge-stone', glyph: 'ore', category: 'resource' }" />
         <strong>{{ reforgeStones }}</strong>
-        <small>камней</small>
+        <small>доступно из {{ totalReforgeStones }}</small>
       </div>
     </header>
 

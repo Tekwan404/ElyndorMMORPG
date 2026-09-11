@@ -217,6 +217,14 @@ public sealed record MerchantDefinition(
     string Description,
     IReadOnlyList<string> ItemIds);
 
+public sealed record PremiumStoreOfferDefinition(
+    string Sku,
+    string ItemDefinitionId,
+    int Quantity,
+    long CrystalPrice,
+    bool Enabled = true,
+    int? PerAccountLimit = null);
+
 public sealed record LootTableEntry(
     string ItemId,
     decimal DropChance,

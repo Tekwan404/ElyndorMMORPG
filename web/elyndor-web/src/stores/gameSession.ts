@@ -13,6 +13,8 @@ import type {
   CreateCharacterRequest,
   EquipmentSlot,
   MerchantSnapshot,
+  PremiumStoreSnapshot,
+  PremiumStorePurchaseResponse,
   ItemReforgeResponse,
   ItemReforgePreview,
   ItemStarUpgradeResponse,
@@ -401,6 +403,31 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
   }
 
+  async function getPremiumStore(): Promise<PremiumStoreSnapshot> {
+    return await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+  }
+
+  async function buyPremiumStoreOffer(sku: string): Promise<PremiumStorePurchaseResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await runReplaySafeGameMutation<PremiumStorePurchaseResponse>({
+        key: `premium-store:${sku}`,
+        path: '/api/v1/economy/store/purchase',
+        idField: 'mutationId',
+        intent: { sku },
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function buyMerchantItem(
     merchantId: string,
     itemDefinitionId: string,
@@ -562,6 +589,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     upgradeItemStars,
     decideReforge,
     getMerchant,
+    getPremiumStore,
+    buyPremiumStoreOffer,
     buyMerchantItem,
     sellMerchantItem,
     sellMerchantMaterial,

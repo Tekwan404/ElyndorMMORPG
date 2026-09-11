@@ -29,6 +29,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CrystalWallet> CrystalWallets => Set<CrystalWallet>();
 
     public DbSet<CrystalLedgerEntry> CrystalLedgerEntries => Set<CrystalLedgerEntry>();
+    public DbSet<PremiumStorePurchase> PremiumStorePurchases => Set<PremiumStorePurchase>();
 
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
 
