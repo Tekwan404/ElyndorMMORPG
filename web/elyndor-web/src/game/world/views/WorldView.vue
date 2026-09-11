@@ -104,8 +104,8 @@ const recoveryMessage = computed(() => {
   if (!vitals || combat.isActive || isTravelling.value) return null
   if (vitals.currentHp < vitals.maxHp) {
     return isCityLocation.value
-      ? 'Отдых в городе: здоровье восстанавливается со скоростью 5% от максимального здоровья в секунду.'
-      : 'Вне города здоровье восстанавливается со скоростью 1% от максимального здоровья в секунду.'
+      ? 'Отдых в городе: здоровье восстанавливается со скоростью 15% от максимального здоровья в секунду.'
+      : 'Вне города здоровье восстанавливается со скоростью 10% от максимального здоровья в секунду.'
   }
   if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) return 'После боя ярость постепенно угасает.'
   return null

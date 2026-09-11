@@ -61,6 +61,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
+  const abilityQueue = ref<string[]>([])
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
   const encounterPresentation = ref<WorldEncounter | null>(null)
   const participantStatus = computed(() => {
@@ -84,6 +85,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
   let lootRefreshTimer: number | null = null
+  let abilityQueueTimer: number | null = null
+  let abilitySending = false
   const retryCommandIds = new Map<string, string>()
 
   async function connect(): Promise<void> {
@@ -182,12 +185,75 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function useAbility(abilityId: string): Promise<void> {
-    if (!snapshot.value) return
-    const sessionId = snapshot.value.sessionId
-    await invokeRetryableCommand(
-      `UseAbility:${sessionId}:${abilityId}`,
-      commandId => invokeWithOutcome('UseAbility', sessionId, abilityId, commandId),
-    )
+    const current = snapshot.value
+    if (!current || current.status !== 'Active') return
+    if (!current.player.abilities.some((ability) => ability.id === abilityId)) return
+    if (abilityQueue.value.length >= 3) return
+    abilityQueue.value = [...abilityQueue.value, abilityId]
+    scheduleAbilityQueueDrain()
+  }
+
+  function scheduleAbilityQueueDrain(delayMs = 0): void {
+    if (abilityQueueTimer !== null) window.clearTimeout(abilityQueueTimer)
+    abilityQueueTimer = window.setTimeout(() => {
+      abilityQueueTimer = null
+      void drainAbilityQueue()
+    }, Math.max(0, delayMs))
+  }
+
+  async function drainAbilityQueue(): Promise<void> {
+    if (abilitySending || pending.value || abilityQueue.value.length === 0) {
+      if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain(20)
+      return
+    }
+
+    const current = snapshot.value
+    if (!current || current.status !== 'Active') {
+      clearAbilityQueue()
+      return
+    }
+
+    if (current.player.activeCast) {
+      scheduleAbilityQueueDrain(Math.max(15, Date.parse(current.player.activeCast.resolvesAtUtc) - Date.now() + 25))
+      return
+    }
+
+    const abilityId = abilityQueue.value[0]!
+    const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
+    if (!ability) {
+      abilityQueue.value = abilityQueue.value.slice(1)
+      scheduleAbilityQueueDrain()
+      return
+    }
+
+    const readyAt = current.player.cooldowns[abilityId]
+    if (readyAt && Date.parse(readyAt) > Date.now()) {
+      scheduleAbilityQueueDrain(Math.max(15, Date.parse(readyAt) - Date.now() + 25))
+      return
+    }
+
+    abilitySending = true
+    const sessionId = current.sessionId
+    try {
+      const succeeded = await invokeRetryableCommand(
+        `UseAbility:${sessionId}:${abilityId}`,
+        commandId => invokeWithOutcome('UseAbility', sessionId, abilityId, commandId),
+      )
+      if (succeeded || errorCode.value !== null) {
+        abilityQueue.value = abilityQueue.value.slice(1)
+      }
+    } finally {
+      abilitySending = false
+      if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
+    }
+  }
+
+  function clearAbilityQueue(): void {
+    abilityQueue.value = []
+    if (abilityQueueTimer !== null) {
+      window.clearTimeout(abilityQueueTimer)
+      abilityQueueTimer = null
+    }
   }
 
   async function useConsumable(itemDefinitionId: string): Promise<void> {
@@ -230,6 +296,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
         retryCommandIds.clear()
+        clearAbilityQueue()
         clearLootRolls()
         errorCode.value = null
         diagnostic.value = null
@@ -257,6 +324,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
       retryCommandIds.clear()
+      clearAbilityQueue()
       clearLootRolls()
     }
     return succeeded
@@ -373,6 +441,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       && snapshot.value?.sessionId !== incomingSnapshot.sessionId
     if (newSession && incomingSnapshot) {
       retryCommandIds.clear()
+      clearAbilityQueue()
       snapshot.value = null
       events.value = []
       reward.value = null
@@ -394,6 +463,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
     if (incomingSnapshot && incomingSnapshot.status !== 'Active') {
       retryCommandIds.clear()
+      clearAbilityQueue()
     }
     const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
@@ -403,6 +473,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       reward.value = update.reward
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
+    if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
   }
 
   function mergeLootRolls(incoming: CombatLootRoll[]): void {
@@ -484,6 +555,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     errorCode,
     diagnostic,
     pending,
+    abilityQueue,
     isActive,
     participantStatus,
     isParticipantActive,

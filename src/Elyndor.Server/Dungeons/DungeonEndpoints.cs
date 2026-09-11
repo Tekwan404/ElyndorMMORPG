@@ -6,6 +6,7 @@ using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.World;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Dungeons;
@@ -72,6 +73,7 @@ public static class DungeonEndpoints
         ClaimsPrincipal user,
         DungeonService service,
         PartyService partyService,
+        BootstrapService bootstrapService,
         GameDbContext dbContext,
         ICombatActivityReader combatActivity,
         CharacterOperationGuard operationGuard,
@@ -87,6 +89,7 @@ public static class DungeonEndpoints
                 request.RequestId,
                 service,
                 partyService,
+                bootstrapService,
                 dbContext,
                 combatActivity,
                 cancellationToken)),
@@ -106,6 +109,7 @@ public static class DungeonEndpoints
         Guid requestId,
         DungeonService service,
         PartyService partyService,
+        BootstrapService bootstrapService,
         GameDbContext dbContext,
         ICombatActivityReader combatActivity,
         CancellationToken cancellationToken)
@@ -116,7 +120,10 @@ public static class DungeonEndpoints
 
         PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
         if (party is null)
+        {
+            await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
             return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);
+        }
 
         Guid[] memberIds = party.Members
             .Select(member => member.CharacterId)
@@ -145,6 +152,11 @@ public static class DungeonEndpoints
             .ToArrayAsync(cancellationToken);
         if (activeTravelMemberIds.Length != 0)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.TravelInProgress);
+
+        foreach (var member in members)
+        {
+            await bootstrapService.GetAsync(member.AccountId, cancellationToken, checkpoint: true);
+        }
 
         int healthyMemberCount = await dbContext.CharacterVitals
             .AsNoTracking()
