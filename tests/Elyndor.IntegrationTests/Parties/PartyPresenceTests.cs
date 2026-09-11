@@ -84,6 +84,13 @@ public sealed class PartyPresenceTests(PostgresFixture postgres) : IAsyncLifetim
         Assert.Equal(leaderCharacterId, onlyLeader.CharacterId);
         Assert.True(onlyLeader.IsLeader);
 
+        IReadOnlyList<PartyCombatMember> remotePerspective = await service.GetCombatMembersAsync(
+            remoteAccountId,
+            CancellationToken.None);
+        PartyCombatMember onlyRemote = Assert.Single(remotePerspective);
+        Assert.Equal(remoteCharacterId, onlyRemote.CharacterId);
+        Assert.False(onlyRemote.IsLeader);
+
         CharacterLocation remoteLocation = await context.CharacterLocations
             .SingleAsync(location => location.CharacterId == remoteCharacterId);
         remoteLocation.Relocate("STARTER_TOWN", Now.AddSeconds(1));
@@ -93,6 +100,8 @@ public sealed class PartyPresenceTests(PostgresFixture postgres) : IAsyncLifetim
             leaderAccountId,
             CancellationToken.None);
         Assert.Equal(2, together.Count);
+        Assert.True(together.Single(member => member.CharacterId == leaderCharacterId).IsLeader);
+        Assert.False(together.Single(member => member.CharacterId == remoteCharacterId).IsLeader);
 
         PartySnapshot? snapshot = await service.GetAsync(leaderAccountId, CancellationToken.None);
         Assert.NotNull(snapshot);
