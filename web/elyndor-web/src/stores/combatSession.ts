@@ -58,7 +58,6 @@ interface InvokeOutcome {
 
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const ABILITY_QUEUE_WINDOW_MS = 250
-const TELEMETRY_INTERVAL_MS = 1_000
 const emptyTrainingStats = (): TrainingStats => ({
   startedAtUtc: null,
   totalDamage: 0,
@@ -104,7 +103,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let connectPromise: Promise<void> | null = null
   let lootRefreshTimer: number | null = null
   let abilityQueueTimer: number | null = null
-  let telemetryTimer: number | null = null
   let telemetryBusy = false
   let abilitySending = false
   let abilitySendingId: string | null = null
@@ -148,19 +146,15 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       })
       connection.onreconnecting((error) => {
         connectionState.value = 'connecting'
-        stopTelemetryRefresh()
         if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
       })
       connection.onreconnected(() => {
         connectionState.value = 'connected'
         diagnostic.value = null
-        ensureTelemetryRefresh()
-        void refreshCombatTelemetry()
         void resume()
       })
       connection.onclose((error) => {
         connectionState.value = 'disconnected'
-        stopTelemetryRefresh()
         latencyMs.value = null
         threat.value = null
         if (error) recordFailure('signalr_start', 'connection_closed', error)
@@ -171,8 +165,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       await connection.start()
       connectionState.value = 'connected'
       diagnostic.value = null
-      ensureTelemetryRefresh()
-      void refreshCombatTelemetry()
     } catch (error) {
       connectionState.value = 'disconnected'
       recordFailure('signalr_start', 'connect', error)
@@ -219,7 +211,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (abilitySendingId === abilityId || abilityQueue.value.includes(abilityId)) return
 
     const readyAt = current.player.cooldowns[abilityId]
-    if (readyAt && Date.parse(readyAt) > Date.now()) return
+    if (readyAt) {
+      const remainingMs = Date.parse(readyAt) - Date.now()
+      if (remainingMs > ABILITY_QUEUE_WINDOW_MS) return
+    }
 
     abilityQueue.value = [abilityId]
     scheduleAbilityQueueDrain()
@@ -344,7 +339,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       }
       applyUpdate(update)
       await refreshLootRolls()
-      void refreshCombatTelemetry()
       return update.succeeded
     } catch (error) {
       recordFailure('resume', 'ResumeCombat', error)
@@ -426,19 +420,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     } finally {
       telemetryBusy = false
     }
-  }
-
-  function ensureTelemetryRefresh(): void {
-    if (telemetryTimer !== null) return
-    telemetryTimer = window.setInterval(() => {
-      void refreshCombatTelemetry()
-    }, TELEMETRY_INTERVAL_MS)
-  }
-
-  function stopTelemetryRefresh(): void {
-    if (telemetryTimer === null) return
-    window.clearInterval(telemetryTimer)
-    telemetryTimer = null
   }
 
   async function refreshLootRolls(): Promise<void> {
