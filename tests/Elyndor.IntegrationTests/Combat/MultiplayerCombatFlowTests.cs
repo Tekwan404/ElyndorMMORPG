@@ -289,7 +289,7 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
     }
 
     [Fact]
-    public async Task RosteredMemberCanReachTheLocationAndAttachToTheExistingCombat()
+    public async Task RemotePartyMemberIsExcludedFromOpenWorldEncounterRoster()
     {
         Guid leaderAccountId = Guid.CreateVersion7();
         Guid memberAccountId = Guid.CreateVersion7();
@@ -318,58 +318,29 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
         }
 
         IssuedAccessToken leaderToken = IssueToken(factory, leaderAccountId, 9401);
-        IssuedAccessToken memberToken = IssueToken(factory, memberAccountId, 9402);
         await using HubConnection leaderHub = CreateHubConnection(factory, leaderToken);
-        await using HubConnection memberHub = CreateHubConnection(factory, memberToken);
         await leaderHub.StartAsync();
-        await memberHub.StartAsync();
 
-        using (IServiceScope scope = factory.Services.CreateScope())
-        {
-            WorldEncounterRegistry encounterRegistry =
-                scope.ServiceProvider.GetRequiredService<WorldEncounterRegistry>();
-            PendingWorldEncounter pending = encounterRegistry.Register(
-                leaderAccountId,
-                "WHISPERING_FOREST",
-                "FOREST_WOLF_L1");
-            CombatUpdateResponse started = await leaderHub.InvokeAsync<CombatUpdateResponse>(
-                "StartCombat",
-                pending.EncounterId.ToString());
-            Assert.True(started.Succeeded, started.ErrorCode);
-            Assert.Equal(
-                "Rostered",
-                started.Snapshot?.ParticipantRoster?.Single(
-                    participant => participant.CharacterId == member.Id).Status.ToString());
+        using IServiceScope scope = factory.Services.CreateScope();
+        WorldEncounterRegistry encounterRegistry =
+            scope.ServiceProvider.GetRequiredService<WorldEncounterRegistry>();
+        PendingWorldEncounter pending = encounterRegistry.Register(
+            leaderAccountId,
+            "WHISPERING_FOREST",
+            "FOREST_WOLF_L1");
+        CombatUpdateResponse started = await leaderHub.InvokeAsync<CombatUpdateResponse>(
+            "StartCombat",
+            pending.EncounterId.ToString());
 
-            CombatUpdateResponse memberResume = await memberHub.InvokeAsync<CombatUpdateResponse>(
-                "ResumeCombat");
-            Assert.True(memberResume.Succeeded, memberResume.ErrorCode);
-            Assert.Equal("Rostered", memberResume.Snapshot?.ParticipantRoster?.Single(
-                participant => participant.CharacterId == member.Id).Status.ToString());
+        Assert.True(started.Succeeded, started.ErrorCode);
+        Assert.NotNull(started.Snapshot?.ParticipantRoster);
+        Assert.DoesNotContain(
+            started.Snapshot!.ParticipantRoster!,
+            participant => participant.CharacterId == member.Id);
 
-            await using (GameDbContext attachContext = postgres.CreateDbContext())
-            {
-                CharacterLocation memberLocation = await attachContext.CharacterLocations
-                    .SingleAsync(location => location.CharacterId == member.Id);
-                memberLocation.Relocate("WHISPERING_FOREST", Now);
-                await attachContext.SaveChangesAsync();
-            }
-
-            CombatUpdateResponse attached = await memberHub.InvokeAsync<CombatUpdateResponse>(
-                "AttachCombat",
-                started.Snapshot!.SessionId);
-            Assert.True(attached.Succeeded, attached.ErrorCode);
-            Assert.Equal(member.Id, attached.Snapshot?.Player.ActorId);
-            Assert.Equal("Active", attached.Snapshot?.ParticipantRoster?.Single(
-                participant => participant.CharacterId == member.Id).Status.ToString());
-
-            await memberHub.InvokeAsync<CombatUpdateResponse>(
-                "LeaveCombat",
-                "late-member-cleanup-1");
-            await leaderHub.InvokeAsync<CombatUpdateResponse>(
-                "LeaveCombat",
-                "late-leader-cleanup-1");
-        }
+        await leaderHub.InvokeAsync<CombatUpdateResponse>(
+            "LeaveCombat",
+            "remote-member-exclusion-cleanup-1");
     }
 
     private static async Task<CharacterResponse> CreateCharacterAsync(
