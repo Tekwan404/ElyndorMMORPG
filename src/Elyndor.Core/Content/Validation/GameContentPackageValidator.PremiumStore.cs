@@ -8,7 +8,11 @@ public static partial class GameContentPackageValidator
     {
         IReadOnlyList<PremiumStoreOfferDefinition> offers = package.PremiumStoreOffers ?? [];
         HashSet<string> skus = new(StringComparer.Ordinal);
-        IReadOnlyDictionary<string, ItemDefinition> items = GameContentIndexes.For(package).ItemsById;
+        Dictionary<string, ItemDefinition> items = new(StringComparer.Ordinal);
+        foreach (ItemDefinition item in package.Items ?? [])
+        {
+            items.TryAdd(item.Id, item);
+        }
         for (int index = 0; index < offers.Count; index++)
         {
             PremiumStoreOfferDefinition offer = offers[index];
