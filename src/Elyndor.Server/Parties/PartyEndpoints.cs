@@ -169,7 +169,10 @@ public static class PartyEndpoints
                 member.Level,
                 member.ClassId,
                 member.IsLeader,
-                member.JoinedAtUtc)).ToArray());
+                member.JoinedAtUtc,
+                member.LocationId,
+                member.ActiveDungeonRunId)).ToArray(),
+            snapshot.ActiveDungeonRunId);
 
     private static PartyInviteResponse ToResponse(PartyInviteView invite) =>
         new(
