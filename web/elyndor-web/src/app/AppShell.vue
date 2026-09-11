@@ -147,7 +147,7 @@ onMounted(() => {
 <template>
   <div class="game-shell">
     <section
-      v-if="session.state === 'world' && character"
+      v-if="session.state === 'world' && character && !combat.isActive"
       class="hud"
       :class="{ 'hud--combat': combat.isActive }"
       aria-label="Состояние героя"

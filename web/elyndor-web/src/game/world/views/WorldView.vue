@@ -26,7 +26,9 @@ const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
+let combatResultTimer: number | null = null
 let vitalsRefreshPending = false
+const COMBAT_RESULT_SESSION_KEY = 'elyndor:last-combat-result-announcement'
 const lootTimer = window.setInterval(() => (lootNow.value = Date.now()), 1000)
 
 const world = computed(() => session.snapshot?.world)
@@ -100,14 +102,18 @@ const worldErrorMessage = computed(() => {
 const recoveryMessage = computed(() => {
   const vitals = character.value?.vitals
   if (!vitals || combat.isActive || isTravelling.value) return null
-  if (isCityLocation.value && vitals.currentHp < vitals.maxHp) return 'Отдых в городе: здоровье восстанавливается по 5 ед. в секунду.'
+  if (vitals.currentHp < vitals.maxHp) {
+    return isCityLocation.value
+      ? 'Отдых в городе: здоровье восстанавливается со скоростью 15% от максимального здоровья в секунду.'
+      : 'Вне города здоровье восстанавливается со скоростью 10% от максимального здоровья в секунду.'
+  }
   if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) return 'После боя ярость постепенно угасает.'
   return null
 })
 const needsOutOfCombatRefresh = computed(() => {
   const vitals = character.value?.vitals
   if (!vitals || combat.isActive) return false
-  return (isCityLocation.value && vitals.currentHp < vitals.maxHp)
+  return vitals.currentHp < vitals.maxHp
     || (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
 })
 
@@ -130,7 +136,7 @@ async function explore(): Promise<void> {
     || session.mutationPending
     || combat.pending) return
 
-  lastCombatResult.value = null
+  dismissCombatResult()
   const encounter = await session.explore()
   if (!encounter) return
 
@@ -144,7 +150,7 @@ async function startTraining(): Promise<void> {
   if (isTravelling.value || !isCityLocation.value || combat.pending) return
   if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
-    lastCombatResult.value = null
+    dismissCombatResult()
   }
 }
 
@@ -177,10 +183,27 @@ function syncVitalsRefreshTimer(enabled: boolean): void {
   }
 }
 
+function dismissCombatResult(): void {
+  if (combatResultTimer !== null) {
+    window.clearTimeout(combatResultTimer)
+    combatResultTimer = null
+  }
+  lastCombatResult.value = null
+}
+
+function scheduleCombatResultDismiss(): void {
+  if (combatResultTimer !== null) window.clearTimeout(combatResultTimer)
+  combatResultTimer = window.setTimeout(() => {
+    lastCombatResult.value = null
+    combatResultTimer = null
+  }, 8_000)
+}
+
 watch(isTravelling, travelling => {
   if (travelling) {
     merchantOpen.value = false
     guildOpen.value = false
+    dismissCombatResult()
   }
 })
 
@@ -188,13 +211,21 @@ watch(currentLocationId, (locationId, previousLocationId) => {
   if (locationId !== previousLocationId) {
     merchantOpen.value = false
     guildOpen.value = false
+    if (previousLocationId) dismissCombatResult()
   }
 }, { immediate: true })
 
 watch(() => combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
-    if (combat.snapshot) lastEnemyName.value = combat.snapshot.enemy.name
-    lastCombatResult.value = combat.participantStatus === 'Fled' ? 'Cancelled' : status
+    const terminalSnapshot = combat.snapshot
+    if (!terminalSnapshot) return
+
+    if (window.sessionStorage.getItem(COMBAT_RESULT_SESSION_KEY) !== terminalSnapshot.sessionId) {
+      window.sessionStorage.setItem(COMBAT_RESULT_SESSION_KEY, terminalSnapshot.sessionId)
+      lastEnemyName.value = terminalSnapshot.enemies?.[0]?.name ?? terminalSnapshot.enemy.name
+      lastCombatResult.value = combat.participantStatus === 'Fled' ? 'Cancelled' : status
+      scheduleCombatResultDismiss()
+    }
     void session.refreshSnapshot()
   }
 }, { immediate: true })
@@ -205,6 +236,7 @@ watch(() => props.openGuild, open => {
 })
 onBeforeUnmount(() => {
   syncVitalsRefreshTimer(false)
+  if (combatResultTimer !== null) window.clearTimeout(combatResultTimer)
   window.clearInterval(lootTimer)
 })
 onMounted(() => {
@@ -263,7 +295,7 @@ onMounted(() => {
       >Войти в бой</UIButton>
     </UICard>
 
-    <UICard v-if="lastCombatResult === 'Victory'" class="reward-card">
+    <UICard v-if="lastCombatResult === 'Victory'" class="reward-card" data-combat-result="victory">
       <div class="reward-card__heading">
         <small>ПОБЕДА</small>
         <strong>{{ lastEnemyName ?? 'Противник' }} повержен</strong>
@@ -279,6 +311,7 @@ onMounted(() => {
         </ul>
       </div>
       <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+      <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult">Закрыть</UIButton>
     </UICard>
 
     <UICard v-if="combat.lootRolls.length" class="loot-roll-card">
@@ -313,7 +346,11 @@ onMounted(() => {
       торговые и контрактные действия станут доступны после прибытия.
     </UIToast>
 
-    <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение">Вы очнулись в Стартовом городе.</UIToast>
+    <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение" data-combat-result="defeat">
+      {{ isDungeonLocation
+        ? 'Вы восстановились у входа в подземелье. Повтор доступен с 50% ресурса.'
+        : 'Вы очнулись в Стартовом городе.' }}
+    </UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
     <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">

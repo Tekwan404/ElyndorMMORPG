@@ -90,6 +90,8 @@ describe('combatSession realtime authentication', () => {
           player: {
             actorId: '00000000-0000-0000-0000-000000000201',
             autoAttackEnabled: false,
+            cooldowns: {},
+            abilities: [{ id: 'HEROIC_STRIKE' }],
           },
           enemy: {
             actorId: '00000000-0000-0000-0000-000000000301',
@@ -116,8 +118,12 @@ describe('combatSession realtime authentication', () => {
     await store.useAbility('HEROIC_STRIKE')
     await store.useAbility('HEROIC_STRIKE')
 
+    await vi.waitFor(() => {
+      const calls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+      expect(calls).toHaveLength(3)
+    })
+
     const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCalls).toHaveLength(3)
     expect(abilityCalls[0]?.[3]).toBe(abilityCalls[1]?.[3])
     expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
   })

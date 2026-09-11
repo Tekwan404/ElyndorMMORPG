@@ -262,10 +262,22 @@ public sealed class DungeonService(
         DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);
         if (existing is not null)
         {
-            await CommitAsync(transaction, cancellationToken);
-            if (!string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+            if (string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+            {
+                await CommitAsync(transaction, cancellationToken);
+                return new DungeonOperationResult(true, null, ToView(existing, definition));
+            }
+
+            if (existing.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+            {
+                await CommitAsync(transaction, cancellationToken);
                 return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);
-            return new DungeonOperationResult(true, null, ToView(existing, definition));
+            }
+
+            existing.Abandon();
+            foreach (DungeonRunMember member in existing.Members.Where(member => member.State == DungeonRunMemberState.Active))
+                member.MarkLeft();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();

@@ -1285,10 +1285,12 @@ public sealed partial class CombatSession
             return;
         }
 
+        DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+        DateTimeOffset nextAfterCast = restartAtUtc + EffectivePlayerAutoAttackInterval(profile, restartAtUtc);
         if (isOffHand)
-            _nextPlayerOffHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+            _nextPlayerOffHandAutoAttackAtUtc = nextAfterCast;
         else
-            _nextPlayerMainHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+            _nextPlayerMainHandAutoAttackAtUtc = nextAfterCast;
     }
 
     private void ResolveSummon(DateTimeOffset now)

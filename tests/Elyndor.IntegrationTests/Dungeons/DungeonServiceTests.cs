@@ -70,7 +70,7 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task CreatingDifferentDungeonDoesNotReturnExistingRunFromAnotherDungeon()
+    public async Task CreatingDifferentDungeonAbandonsInactiveRunAndCreatesRequestedDungeon()
     {
         (Guid leaderAccountId, _, _) = await SeedPartyCharactersAsync();
 
@@ -99,6 +99,7 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
             Guid.NewGuid(),
             CancellationToken.None);
         Assert.True(mine.Succeeded, mine.ErrorCode);
+        Assert.NotNull(mine.Run);
 
         CharacterLocation location = await context.CharacterLocations
             .SingleAsync(candidate => candidate.CharacterId == leader.Id);
@@ -111,9 +112,19 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
             Guid.NewGuid(),
             CancellationToken.None);
 
-        Assert.False(citadel.Succeeded);
-        Assert.Equal(DungeonErrorCodes.RunAlreadyActive, citadel.ErrorCode);
-        Assert.Null(citadel.Run);
+        Assert.True(citadel.Succeeded, citadel.ErrorCode);
+        Assert.NotNull(citadel.Run);
+        Assert.Equal("ECLIPSED_CITADEL", citadel.Run!.DungeonId);
+        Assert.NotEqual(mine.Run!.RunId, citadel.Run.RunId);
+
+        context.ChangeTracker.Clear();
+        DungeonRun persistedMine = await context.DungeonRuns
+            .Include(run => run.Members)
+            .SingleAsync(run => run.Id == mine.Run.RunId);
+        Assert.Equal(DungeonRunState.Abandoned, persistedMine.State);
+        Assert.All(
+            persistedMine.Members,
+            member => Assert.Equal(DungeonRunMemberState.Left, member.State));
     }
 
     [Fact]

@@ -131,6 +131,11 @@ public sealed class CombatApplicationService(
         if (dungeonService is null)
             return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
 
+        if (bootstrapService is not null)
+        {
+            await bootstrapService.GetAsync(accountId, contentProvider.GetCurrent(), cancellationToken, checkpoint: true);
+        }
+
         (DungeonPreparation? preparation, string? errorCode) =
             await dungeonService.PrepareEncounterAsync(accountId, runId, cancellationToken);
         if (preparation is null)
@@ -189,7 +194,7 @@ public sealed class CombatApplicationService(
                 if (session.SessionId != sessionId)
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound,
                         session.Snapshot(characterId), []);
-                return session.Handle(
+                return session.HandleAbilityInterruptingAutoAttack(
                     characterId,
                     new UseAbilityCommand(commandId, abilityId, Guid.Empty),
                     now);
