@@ -59,7 +59,6 @@ export const useDungeonStore = defineStore('dungeon', () => {
       )
       current.value = null
       await useGameSessionStore().refreshSnapshot()
-      await refresh()
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'dungeon_exit_failed'
     }
