@@ -29,7 +29,9 @@ public sealed record PartyMemberView(
     int Level,
     string ClassId,
     bool IsLeader,
-    DateTimeOffset JoinedAtUtc);
+    DateTimeOffset JoinedAtUtc,
+    string? LocationId,
+    Guid? ActiveDungeonRunId);
 
 public sealed record PartyCombatMember(Guid AccountId, Guid CharacterId, bool IsLeader);
 
@@ -37,7 +39,8 @@ public sealed record PartySnapshot(
     Guid PartyId,
     Guid LeaderCharacterId,
     long Version,
-    IReadOnlyList<PartyMemberView> Members);
+    IReadOnlyList<PartyMemberView> Members,
+    Guid? ActiveDungeonRunId);
 
 public sealed record PartyInviteView(
     Guid Id,
@@ -141,20 +144,40 @@ public sealed class PartyService(
         if (party is null || party.State != PartyState.Active)
             return [new PartyCombatMember(accountId, character.Id, true)];
 
+        string? requesterLocationId = await dbContext.CharacterLocations
+            .AsNoTracking()
+            .Where(location => location.CharacterId == character.Id)
+            .Select(location => location.LocationId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (requesterLocationId is null)
+            return [new PartyCombatMember(accountId, character.Id, true)];
+
         Guid[] characterIds = party.Members
             .Select(member => member.CharacterId)
             .ToArray();
         Dictionary<Guid, Guid> accountIds = await dbContext.Characters
             .Where(candidate => characterIds.Contains(candidate.Id))
             .ToDictionaryAsync(candidate => candidate.Id, candidate => candidate.AccountId, cancellationToken);
+        HashSet<Guid> localCharacterIds = (await dbContext.CharacterLocations
+                .AsNoTracking()
+                .Where(location => characterIds.Contains(location.CharacterId)
+                    && location.LocationId == requesterLocationId)
+                .Select(location => location.CharacterId)
+                .ToArrayAsync(cancellationToken))
+            .ToHashSet();
+
+        Guid localLeaderId = localCharacterIds.Contains(party.LeaderCharacterId)
+            ? party.LeaderCharacterId
+            : character.Id;
 
         return party.Members
             .OrderBy(member => member.JoinedAtUtc)
-            .Where(member => accountIds.ContainsKey(member.CharacterId))
+            .Where(member => localCharacterIds.Contains(member.CharacterId)
+                && accountIds.ContainsKey(member.CharacterId))
             .Select(member => new PartyCombatMember(
                 accountIds[member.CharacterId],
                 member.CharacterId,
-                member.CharacterId == party.LeaderCharacterId))
+                member.CharacterId == localLeaderId))
             .ToArray();
     }
 
@@ -561,6 +584,28 @@ public sealed class PartyService(
                 character => character.Id,
                 character => (character.Name, character.Level, character.ClassId),
                 cancellationToken);
+        Dictionary<Guid, string> locations = await dbContext.CharacterLocations
+            .AsNoTracking()
+            .Where(location => ids.Contains(location.CharacterId))
+            .ToDictionaryAsync(location => location.CharacterId, location => location.LocationId, cancellationToken);
+        Guid? activeDungeonRunId = await dbContext.DungeonRuns
+            .AsNoTracking()
+            .Where(run => run.PartyId == party.Id
+                && run.State != DungeonRunState.Abandoned
+                && run.Members.Any(member => member.State == DungeonRunMemberState.Active))
+            .OrderByDescending(run => run.CreatedAtUtc)
+            .Select(run => (Guid?)run.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        HashSet<Guid> activeDungeonMemberIds = activeDungeonRunId.HasValue
+            ? (await dbContext.DungeonRunMembers
+                .AsNoTracking()
+                .Where(member => member.RunId == activeDungeonRunId.Value
+                    && member.State == DungeonRunMemberState.Active)
+                .Select(member => member.CharacterId)
+                .ToArrayAsync(cancellationToken)).ToHashSet()
+            : [];
+
         return new PartySnapshot(
             party.Id,
             party.LeaderCharacterId,
@@ -576,9 +621,14 @@ public sealed class PartyService(
                         level,
                         classId,
                         member.CharacterId == party.LeaderCharacterId,
-                        member.JoinedAtUtc);
+                        member.JoinedAtUtc,
+                        locations.GetValueOrDefault(member.CharacterId),
+                        activeDungeonRunId.HasValue && activeDungeonMemberIds.Contains(member.CharacterId)
+                            ? activeDungeonRunId
+                            : null);
                 })
-                .ToArray());
+                .ToArray(),
+            activeDungeonRunId);
     }
 
     private async Task<Character?> GetCharacterAsync(
