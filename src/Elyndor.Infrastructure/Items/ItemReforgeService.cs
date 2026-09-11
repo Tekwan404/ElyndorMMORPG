@@ -80,9 +80,6 @@ public sealed class ItemReforgeService(
         if (item is null) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
         if (item.IsLocked) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemLocked);
         if (item.TransactionLockId.HasValue) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemTransactionLocked);
-        if (await dbContext.CharacterEquipment.AsNoTracking().AnyAsync(candidate => candidate.CharacterItemId == item.Id, cancellationToken))
-            return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemEquipped);
-
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
@@ -212,12 +209,6 @@ public sealed class ItemReforgeService(
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemTransactionLocked, cancellationToken);
         if (item.IsLocked)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemLocked, cancellationToken);
-
-        bool equipped = await dbContext.CharacterEquipment
-            .AsNoTracking()
-            .AnyAsync(candidate => candidate.CharacterItemId == item.Id, cancellationToken);
-        if (equipped)
-            return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemEquipped, cancellationToken);
 
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(

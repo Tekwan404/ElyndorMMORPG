@@ -93,6 +93,14 @@ public sealed record ItemSalvageYield(
     string MaterialItemId,
     int MaterialQuantity);
 
+public sealed record ItemStarUpgradeProfileDefinition(
+    string Id,
+    string ReforgeStoneItemId,
+    IReadOnlyDictionary<int, int> GoldByTargetStars,
+    IReadOnlyDictionary<int, int> ReforgeStoneQuantityByTargetStars,
+    string? HighEndCatalystItemId = null,
+    int HighEndCatalystQuantity = 0);
+
 public sealed record ItemizationDefinition(
     decimal TemplateBasePower,
     decimal LevelLinearCoefficient,
@@ -107,7 +115,8 @@ public sealed record ItemizationDefinition(
     decimal IndividualQualityDeviationPercent = 7,
     decimal PerfectSnapThreshold = 0.9995m,
     ItemReforgeCostProfileDefinition? ReforgeCosts = null,
-    ItemSalvageProfileDefinition? Salvage = null);
+    ItemSalvageProfileDefinition? Salvage = null,
+    ItemStarUpgradeProfileDefinition? StarUpgrades = null);
 
 public static class ItemSalvageYieldCalculator
 {

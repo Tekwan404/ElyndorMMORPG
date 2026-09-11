@@ -186,7 +186,8 @@ public sealed record ItemDefinition(
     string? PrefixSuffixPolicyId = null,
     string? UniqueEquippedGroup = null,
     string? TradePolicyId = null,
-    int GenerationVersion = 1);
+    int GenerationVersion = 1,
+    bool PremiumEligible = true);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

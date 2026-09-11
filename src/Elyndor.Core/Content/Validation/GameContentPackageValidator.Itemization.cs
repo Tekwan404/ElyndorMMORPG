@@ -187,6 +187,27 @@ public static partial class GameContentPackageValidator
             }
         }
 
+        if (itemization.StarUpgrades is { } upgrades)
+        {
+            ItemDefinition? stone = (package.Items ?? []).FirstOrDefault(item => item.Id == upgrades.ReforgeStoneItemId);
+            ItemDefinition? catalyst = string.IsNullOrWhiteSpace(upgrades.HighEndCatalystItemId)
+                ? null
+                : (package.Items ?? []).FirstOrDefault(item => item.Id == upgrades.HighEndCatalystItemId);
+            bool invalid = !IsCanonicalIdentifier(upgrades.Id)
+                || stone?.Type != ItemType.Material
+                || Enumerable.Range(2, 4).Any(star => !upgrades.GoldByTargetStars.TryGetValue(star, out int gold) || gold < 0
+                    || !upgrades.ReforgeStoneQuantityByTargetStars.TryGetValue(star, out int quantity) || quantity < 0)
+                || upgrades.HighEndCatalystQuantity < 0
+                || (upgrades.HighEndCatalystQuantity > 0 && (catalyst?.Type != ItemType.Material || catalyst.PremiumEligible));
+            if (invalid)
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_STAR_UPGRADE_PROFILE",
+                    "itemization.starUpgrades",
+                    "Star upgrades require costs for each target star and a non-premium gameplay catalyst for five stars."));
+            }
+        }
+
         HashSet<string> nameIds = new(StringComparer.Ordinal);
         for (var index = 0; index < itemization.AffixNames.Count; index++)
         {

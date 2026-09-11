@@ -15,6 +15,7 @@ import type {
   MerchantSnapshot,
   ItemReforgeResponse,
   ItemReforgePreview,
+  ItemStarUpgradeResponse,
   ItemSalvagePreview,
   ItemSalvageReward,
   QuestClaimResponse,
@@ -347,6 +348,28 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
+  async function upgradeItemStars(characterItemId: string): Promise<ItemStarUpgradeResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await runReplaySafeGameMutation<ItemStarUpgradeResponse>({
+        key: `inventory:star-upgrade:${characterItemId}`,
+        path: '/api/v1/inventory/star-upgrade',
+        idField: 'mutationId',
+        intent: { characterItemId },
+      })
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function decideReforge(
     operationId: string,
     acceptProposed: boolean,
@@ -536,6 +559,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     getPendingReforge,
     getReforgePreview,
     rollReforge,
+    upgradeItemStars,
     decideReforge,
     getMerchant,
     buyMerchantItem,

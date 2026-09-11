@@ -59,4 +59,8 @@ describe('forgeItemAvailability', () => {
   it('accepts an unequipped item with a rerollable affix', () => {
     expect(forgeItemAvailability(equipment())).toEqual({ available: true, reason: null })
   })
+
+  it('accepts an equipped item because reforge changes the same instance', () => {
+    expect(forgeItemAvailability(equipment({ equippedSlot: 'MainHand' }))).toEqual({ available: true, reason: null })
+  })
 })

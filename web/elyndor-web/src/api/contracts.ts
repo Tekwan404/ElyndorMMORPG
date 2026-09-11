@@ -476,6 +476,11 @@ export interface ItemReforgePreview {
   cost: ItemReforgeCost
 }
 
+export interface ItemStarUpgradeResponse {
+  itemInstanceId: string
+  item: GeneratedItemSummary
+}
+
 export interface ItemSalvageReward {
   reforgeStoneItemId: string
   reforgeStoneQuantity: number

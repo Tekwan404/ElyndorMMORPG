@@ -177,6 +177,10 @@ public sealed record DecideItemReforgeRequest(
     Guid OperationId,
     bool AcceptProposed);
 
+public sealed record UpgradeItemStarsRequest(Guid CharacterItemId, Guid MutationId);
+
+public sealed record ItemStarUpgradeResponse(Guid ItemInstanceId, GeneratedItemSummaryResponse Item);
+
 public sealed record ItemReforgeCostResponse(
     int Gold,
     string MaterialItemId,

@@ -12,9 +12,6 @@ export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailabilit
   if (item.isLocked) {
     return { available: false, reason: 'Предмет защищён. Снимите блокировку в инвентаре.' }
   }
-  if (item.equippedSlot) {
-    return { available: false, reason: 'Снимите предмет с экипировки перед перековкой.' }
-  }
   if (item.transactionLocked) {
     return { available: false, reason: 'С этим предметом уже выполняется операция.' }
   }
