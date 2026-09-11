@@ -95,8 +95,7 @@ public sealed class DungeonRun
         DungeonRunMember? existing = Members.SingleOrDefault(member => member.CharacterId == characterId);
         if (existing is not null)
         {
-            if (existing.State == DungeonRunMemberState.Left)
-                throw new InvalidOperationException("A player who left the dungeon run cannot rejoin it.");
+            existing.Rejoin(joinedAtUtc);
             return;
         }
         Members.Add(DungeonRunMember.Create(Id, characterId, joinedAtUtc));
