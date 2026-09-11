@@ -7,6 +7,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
+using Elyndor.Core.Economy;
 
 namespace Elyndor.Core.Content;
 
@@ -36,6 +37,7 @@ public sealed class GameContentIndexes
         DungeonsById = ToDictionary(package.Dungeons, item => item.Id);
         QuestsById = ToDictionary(package.Quests, item => item.Id);
         PremiumStoreOffersBySku = ToDictionary(package.PremiumStoreOffers, item => item.Sku);
+        PromoCodesByCode = ToDictionary(package.PromoCodes, item => item.Code);
     }
 
     public IReadOnlyDictionary<GameContentDefinitionKey, GameContentDefinition> DefinitionsByKey { get; }
@@ -56,6 +58,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, DungeonDefinition> DungeonsById { get; }
     public IReadOnlyDictionary<string, QuestDefinition> QuestsById { get; }
     public IReadOnlyDictionary<string, PremiumStoreOfferDefinition> PremiumStoreOffersBySku { get; }
+    public IReadOnlyDictionary<string, PromoCodeDefinition> PromoCodesByCode { get; }
 
     public static GameContentIndexes For(GameContentPackage package)
     {

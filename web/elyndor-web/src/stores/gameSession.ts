@@ -15,6 +15,7 @@ import type {
   MerchantSnapshot,
   PremiumStoreSnapshot,
   PremiumStorePurchaseResponse,
+  PromoCodeRedemptionResponse,
   ItemReforgeResponse,
   ItemReforgePreview,
   ItemStarUpgradeResponse,
@@ -428,6 +429,27 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
+  async function redeemPromoCode(code: string): Promise<PromoCodeRedemptionResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await runReplaySafeGameMutation<PromoCodeRedemptionResponse>({
+        key: `promo-code:${code.trim().toUpperCase()}`,
+        path: '/api/v1/economy/promo/redeem',
+        idField: 'mutationId',
+        intent: { code },
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function buyMerchantItem(
     merchantId: string,
     itemDefinitionId: string,
@@ -591,6 +613,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     getMerchant,
     getPremiumStore,
     buyPremiumStoreOffer,
+    redeemPromoCode,
     buyMerchantItem,
     sellMerchantItem,
     sellMerchantMaterial,
