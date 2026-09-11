@@ -1,13 +1,17 @@
 name: package-production
 
 on:
-  workflow_dispatch:
-  push:
+  workflow_run:
+    workflows:
+      - ci
+    types:
+      - completed
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
-  group: package-production-${{ github.ref }}
+  group: package-production-main
   cancel-in-progress: true
 
 permissions:
@@ -15,12 +19,24 @@ permissions:
 
 jobs:
   package:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    env:
+      DEPLOY_HOST: ${{ secrets.ELYNDOR_DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.ELYNDOR_DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.ELYNDOR_DEPLOY_SSH_KEY }}
+      DEPLOY_PORT: ${{ secrets.ELYNDOR_DEPLOY_PORT }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.ELYNDOR_DEPLOY_KNOWN_HOSTS }}
+
     steps:
-      - name: Checkout
+      - name: Checkout green revision
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
@@ -46,3 +62,61 @@ jobs:
           path: artifacts/elyndor-linux-x64.tar.gz
           if-no-files-found: error
           retention-days: 7
+
+      - name: Detect automatic deployment configuration
+        id: deploy
+        shell: bash
+        run: |
+          if [[ -z "$DEPLOY_HOST" || -z "$DEPLOY_USER" || -z "$DEPLOY_SSH_KEY" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "port=22" >> "$GITHUB_OUTPUT"
+            echo "::notice::VPS auto-deploy is not configured. Add ELYNDOR_DEPLOY_HOST, ELYNDOR_DEPLOY_USER and ELYNDOR_DEPLOY_SSH_KEY repository secrets."
+            exit 0
+          fi
+
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "port=${DEPLOY_PORT:-22}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure SSH
+        if: >-
+          steps.deploy.outputs.enabled == 'true' &&
+          (github.event_name == 'workflow_run' || github.ref == 'refs/heads/main')
+        shell: bash
+        env:
+          PORT: ${{ steps.deploy.outputs.port }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/elyndor_deploy
+          chmod 600 ~/.ssh/elyndor_deploy
+
+          if [[ -n "$DEPLOY_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H -p "$PORT" "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy release to VPS
+        if: >-
+          steps.deploy.outputs.enabled == 'true' &&
+          (github.event_name == 'workflow_run' || github.ref == 'refs/heads/main')
+        shell: bash
+        env:
+          PORT: ${{ steps.deploy.outputs.port }}
+        run: |
+          set -euo pipefail
+          revision="$(git rev-parse HEAD)"
+          remote_archive="/tmp/elyndor-${revision}.tar.gz"
+          remote_installer="/tmp/elyndor-install-${revision}.sh"
+          ssh_args=(-i ~/.ssh/elyndor_deploy -p "$PORT" -o BatchMode=yes)
+          scp_args=(-i ~/.ssh/elyndor_deploy -P "$PORT" -o BatchMode=yes)
+
+          scp "${scp_args[@]}" artifacts/elyndor-linux-x64.tar.gz \
+            "$DEPLOY_USER@$DEPLOY_HOST:$remote_archive"
+          scp "${scp_args[@]}" deploy/install-release.sh \
+            "$DEPLOY_USER@$DEPLOY_HOST:$remote_installer"
+
+          ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "set +e; chmod 700 '$remote_installer'; if [ \"\$(id -u)\" -eq 0 ]; then bash '$remote_installer' '$remote_archive'; else sudo -n bash '$remote_installer' '$remote_archive'; fi; status=\$?; if [ \$status -eq 0 ]; then test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'; status=\$?; fi; rm -f '$remote_archive' '$remote_installer'; exit \$status"
+
+          echo "Deployed Elyndor revision $revision to $DEPLOY_HOST"
