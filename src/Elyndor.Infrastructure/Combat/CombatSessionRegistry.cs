@@ -276,6 +276,34 @@ public sealed class CombatSessionRegistry(
         return entry.GetPublishedSnapshot(accountId);
     }
 
+    public async Task<CombatThreatSnapshot?> GetThreatSnapshotAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry)
+            || !entry.TryGetBinding(accountId, out ParticipantBinding? binding)
+            || binding is null)
+            return null;
+
+        await entry.Gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!_byAccount.TryGetValue(accountId, out SessionEntry? current)
+                || !ReferenceEquals(current, entry)
+                || !entry.TryGetBinding(accountId, out binding)
+                || binding is null)
+                return null;
+
+            return entry.Session.GetThreatSnapshot(
+                binding.CharacterId,
+                timeProvider.GetUtcNow());
+        }
+        finally
+        {
+            entry.Gate.Release();
+        }
+    }
+
     public async Task PublishCurrentAsync(Guid accountId, CancellationToken cancellationToken)
     {
         if (!_byAccount.TryGetValue(accountId, out SessionEntry? entry)) return;

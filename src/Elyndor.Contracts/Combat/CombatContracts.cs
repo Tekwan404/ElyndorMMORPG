@@ -62,6 +62,19 @@ public sealed record CombatParticipantContributionResponse(
     string Reason,
     decimal ContributionScore);
 
+public sealed record CombatThreatEntryResponse(
+    Guid ActorId,
+    string Name,
+    decimal Threat,
+    bool IsCurrentTarget);
+
+public sealed record CombatThreatResponse(
+    Guid EnemyActorId,
+    string EnemyName,
+    Guid? CurrentTargetActorId,
+    Guid? ForcedTargetActorId,
+    IReadOnlyList<CombatThreatEntryResponse> Entries);
+
 public sealed record CombatSnapshotResponse(
     Guid SessionId,
     long Sequence,

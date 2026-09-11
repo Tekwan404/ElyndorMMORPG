@@ -150,6 +150,30 @@ public sealed class CombatHub(
             commandId,
             Context.ConnectionAborted));
 
+    public string Ping() => "pong";
+
+    public async Task<CombatThreatResponse?> GetThreatSnapshot()
+    {
+        CombatThreatSnapshot? snapshot = await registry.GetThreatSnapshotAsync(
+            GetAccountId(),
+            Context.ConnectionAborted);
+        if (snapshot is null)
+            return null;
+
+        return new CombatThreatResponse(
+            snapshot.EnemyActorId,
+            snapshot.EnemyName,
+            snapshot.CurrentTargetActorId,
+            snapshot.ForcedTargetActorId,
+            snapshot.Entries
+                .Select(entry => new CombatThreatEntryResponse(
+                    entry.ActorId,
+                    entry.Name,
+                    entry.Threat,
+                    entry.IsCurrentTarget))
+                .ToArray());
+    }
+
     public async Task<CombatLootRollChoiceResponse> ChooseLootRoll(
         Guid lootRollId,
         string choice)
