@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, ItemAffix, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
-import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -54,15 +54,18 @@ async function refreshSelection(): Promise<void> {
   preview.value = null
   pending.value = null
   actionError.value = null
-  if (!item || !slotKey || !selectedAvailability.value?.available) return
+  if (!item || !slotKey) return
 
   loadingPreview.value = true
   try {
-    pending.value = await session.getPendingReforge(item.id)
-    if (!pending.value) {
-      preview.value = await session.getReforgePreview(item.id, slotKey)
-      if (!preview.value) actionError.value = reforgeErrorMessage(session.errorCode)
+    if (shouldRestorePendingReforge(item)) {
+      pending.value = await session.getPendingReforge(item.id)
     }
+    if (pending.value) return
+    if (!selectedAvailability.value?.available) return
+
+    preview.value = await session.getReforgePreview(item.id, slotKey)
+    if (!preview.value) actionError.value = reforgeErrorMessage(session.errorCode)
   } finally {
     loadingPreview.value = false
   }
@@ -214,8 +217,8 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
           </div>
         </header>
 
-        <p v-if="!selectedAvailability?.available" class="forge-notice" role="alert">{{ selectedAvailability?.reason }}</p>
-        <template v-else>
+        <p v-if="!selectedAvailability?.available && !pending" class="forge-notice" role="alert">{{ selectedAvailability?.reason }}</p>
+        <template v-if="selectedAvailability?.available || pending">
           <section class="forge-affixes" aria-label="Характеристики предмета">
             <header><small>ХАРАКТЕРИСТИКИ</small><strong>Выберите одну для перековки</strong></header>
             <button

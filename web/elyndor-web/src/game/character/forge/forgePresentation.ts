@@ -30,6 +30,10 @@ export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailabilit
   return { available: true, reason: null }
 }
 
+export function shouldRestorePendingReforge(item: InventoryItem): boolean {
+  return item.transactionLocked === true
+}
+
 export function forgeableAffixes(item: InventoryItem) {
   return item.generatedItem?.affixes.filter(affix => !affix.isGuaranteed) ?? []
 }
