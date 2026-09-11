@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { InventoryItem } from '@/api/contracts'
-import { availableForgeMaterialQuantity, forgeItemAvailability } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeItemAvailability, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 
 function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
   return {
@@ -72,5 +72,11 @@ describe('availableForgeMaterialQuantity', () => {
       equipment({ definitionId: 'REFORGE_STONE', type: 'Material', quantity: 10, isLocked: true, transactionLocked: false }),
       equipment({ definitionId: 'REFORGE_STONE', type: 'Material', quantity: 5, transactionLocked: true }),
     ], 'REFORGE_STONE')).toBe(4)
+  })
+})
+
+describe('shouldRestorePendingReforge', () => {
+  it('restores a pending result even when the item is transaction-locked', () => {
+    expect(shouldRestorePendingReforge(equipment({ transactionLocked: true }))).toBe(true)
   })
 })
