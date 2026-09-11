@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 import { useCombatSessionStore, type CombatThreatEntry } from '@/stores/combatSession'
 
@@ -7,6 +7,7 @@ const combat = useCombatSessionStore()
 const threat = computed(() => combat.threat)
 const maximumThreat = computed(() => Math.max(0, ...(threat.value?.entries.map(entry => entry.threat) ?? [0])))
 const isCombatActive = computed(() => combat.snapshot?.status === 'Active')
+let telemetryTimer: number | null = null
 
 function threatPercent(entry: CombatThreatEntry): number {
   if (maximumThreat.value <= 0) return 0
@@ -19,6 +20,17 @@ function threatLabel(entry: CombatThreatEntry): string {
   if (combat.snapshot?.player.actorId === entry.actorId) return 'ВЫ'
   return ''
 }
+
+onMounted(() => {
+  void combat.refreshCombatTelemetry()
+  telemetryTimer = window.setInterval(() => {
+    void combat.refreshCombatTelemetry()
+  }, 1_000)
+})
+
+onUnmounted(() => {
+  if (telemetryTimer !== null) window.clearInterval(telemetryTimer)
+})
 </script>
 
 <template>
