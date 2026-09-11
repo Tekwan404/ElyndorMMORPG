@@ -57,7 +57,24 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     }
 
     [Fact]
-    public async Task LeftMemberCannotPassEnterGuard()
+    public async Task ExitRetryIsIdempotent()
+    {
+        (Guid accountId, _, _, Guid runId) = await SeedRunAsync(completed: false);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        DungeonNavigationService service = new(context, new FixedTimeProvider(Now.AddMinutes(10)));
+
+        DungeonNavigationResult first = await service.ExitAsync(accountId, runId, CancellationToken.None);
+        DungeonNavigationResult replay = await service.ExitAsync(accountId, runId, CancellationToken.None);
+
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.Equal(WorldLocationIds.StarterTown, replay.LocationId);
+        Assert.Equal(first.LocationVersion, replay.LocationVersion);
+    }
+
+    [Fact]
+    public async Task LeftMemberCanPassEnterGuardForActiveRun()
     {
         (Guid accountId, Guid characterId, _, Guid runId) = await SeedRunAsync(completed: false);
         await using (GameDbContext setup = postgres.CreateDbContext())
@@ -76,8 +93,8 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
             runId,
             CancellationToken.None);
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(DungeonErrorCodes.MemberCannotEnter, result.ErrorCode);
+        Assert.True(result.Succeeded);
+        Assert.Null(result.ErrorCode);
     }
 
     private async Task<(Guid AccountId, Guid CharacterId, Guid PartyId, Guid RunId)> SeedRunAsync(
