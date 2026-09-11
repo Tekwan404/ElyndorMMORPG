@@ -150,7 +150,7 @@ public sealed class PartyService(
             .Select(location => location.LocationId)
             .SingleOrDefaultAsync(cancellationToken);
         if (requesterLocationId is null)
-            return [new PartyCombatMember(accountId, character.Id, true)];
+            return [new PartyCombatMember(accountId, character.Id, false)];
 
         Guid[] characterIds = party.Members
             .Select(member => member.CharacterId)
@@ -166,10 +166,6 @@ public sealed class PartyService(
                 .ToArrayAsync(cancellationToken))
             .ToHashSet();
 
-        Guid localLeaderId = localCharacterIds.Contains(party.LeaderCharacterId)
-            ? party.LeaderCharacterId
-            : character.Id;
-
         return party.Members
             .OrderBy(member => member.JoinedAtUtc)
             .Where(member => localCharacterIds.Contains(member.CharacterId)
@@ -177,7 +173,7 @@ public sealed class PartyService(
             .Select(member => new PartyCombatMember(
                 accountIds[member.CharacterId],
                 member.CharacterId,
-                member.CharacterId == localLeaderId))
+                member.CharacterId == party.LeaderCharacterId))
             .ToArray();
     }
 
