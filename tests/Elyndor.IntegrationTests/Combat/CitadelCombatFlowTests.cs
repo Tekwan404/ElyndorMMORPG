@@ -48,7 +48,7 @@ public sealed class CitadelCombatFlowTests(PostgresFixture postgres) : IAsyncLif
             character.SetLevel(25);
             CharacterLocation location = await setupContext.CharacterLocations
                 .SingleAsync(candidate => candidate.CharacterId == created.Id);
-            location.Relocate("ECLIPSED_CITADEL", seededAtUtc);
+            location.Relocate("ECLIPSED_CITADEL", location.UpdatedAtUtc);
             await setupContext.SaveChangesAsync();
         }
 
