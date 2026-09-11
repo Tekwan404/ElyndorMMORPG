@@ -170,20 +170,6 @@ public sealed class PartyDungeonRunCoordinator(
             return PartyDungeonStartResult.Failure(DungeonErrorCodes.TravelInProgress);
         }
 
-        DungeonRun? currentPartyRun = await dbContext.DungeonRuns
-            .Include(run => run.Members)
-            .Include(run => run.Encounters)
-                .ThenInclude(encounter => encounter.Members)
-            .Where(run => run.PartyId == partyId && run.State == DungeonRunState.Active)
-            .OrderByDescending(run => run.CreatedAtUtc)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (currentPartyRun is not null
-            && string.Equals(currentPartyRun.DungeonId, definition.Id, StringComparison.Ordinal))
-        {
-            await transaction.CommitAsync(cancellationToken);
-            return PartyDungeonStartResult.Success(currentPartyRun.Id);
-        }
-
         DungeonRun[] previousRuns = await dbContext.DungeonRuns
             .Include(run => run.Members)
             .Include(run => run.Encounters)
