@@ -58,7 +58,7 @@ describe('combatSession realtime authentication', () => {
     vi.restoreAllMocks()
   })
 
-  it('refreshes JWT and uses Funnel-safe SignalR long polling', async () => {
+  it('refreshes JWT and lets SignalR negotiate the fastest available transport', async () => {
     const ensureFreshAccessToken = vi
       .spyOn(apiClient, 'ensureFreshAccessToken')
       .mockImplementation(async () => {
@@ -71,7 +71,7 @@ describe('combatSession realtime authentication', () => {
 
     expect(signalRMock.calls).toEqual(['token:fresh', 'signalr:start', 'token:fresh'])
     expect(ensureFreshAccessToken).toHaveBeenCalledTimes(2)
-    expect(signalRMock.transport).toBe(4)
+    expect(signalRMock.transport).toBeNull()
     expect(store.connectionState).toBe('connected')
     expect(store.diagnostic).toBeNull()
   })
@@ -115,17 +115,95 @@ describe('combatSession realtime authentication', () => {
     expect(await store.startTraining()).toBe(true)
 
     await store.useAbility('HEROIC_STRIKE')
-    await store.useAbility('HEROIC_STRIKE')
-    await store.useAbility('HEROIC_STRIKE')
-
     await vi.waitFor(() => {
-      const calls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-      expect(calls).toHaveLength(3)
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    })
+    const firstCall = signalRMock.invoke.mock.calls.find(([method]) => method === 'UseAbility')
+
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(2)
+    })
+    const abilityCallsAfterRetry = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(abilityCallsAfterRetry[1]?.[3]).toBe(firstCall?.[3])
+
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(3)
+    })
+    const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
+  })
+
+  it('deduplicates repeated taps while the same ability is already buffered', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    signalRMock.invoke.mockResolvedValue({
+      succeeded: true,
+      errorCode: null,
+      snapshot: {
+        sessionId: '00000000-0000-0000-0000-000000000121',
+        status: 'Active',
+        sequence: 1,
+        serverTimeUtc: '2026-09-11T18:00:00Z',
+        player: {
+          actorId: '00000000-0000-0000-0000-000000000221',
+          autoAttackEnabled: true,
+          cooldowns: {},
+          abilities: [{ id: 'SHIELD_SLAM' }],
+        },
+        enemy: {
+          actorId: '00000000-0000-0000-0000-000000000321',
+          definitionId: 'WOLF',
+        },
+      },
+      events: [],
+      reward: null,
     })
 
-    const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCalls[0]?.[3]).toBe(abilityCalls[1]?.[3])
-    expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
+    const store = useCombatSessionStore()
+    expect(await store.startTraining()).toBe(true)
+
+    await store.useAbility('SHIELD_SLAM')
+    await store.useAbility('SHIELD_SLAM')
+    expect(store.abilityQueue).toEqual(['SHIELD_SLAM'])
+
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    })
+  })
+
+  it('does not buffer an ability for its full cooldown', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    signalRMock.invoke.mockResolvedValue({
+      succeeded: true,
+      errorCode: null,
+      snapshot: {
+        sessionId: '00000000-0000-0000-0000-000000000131',
+        status: 'Active',
+        sequence: 1,
+        serverTimeUtc: '2026-09-11T18:00:00Z',
+        player: {
+          actorId: '00000000-0000-0000-0000-000000000231',
+          autoAttackEnabled: true,
+          cooldowns: { SHIELD_SLAM: '2099-09-11T18:00:00Z' },
+          abilities: [{ id: 'SHIELD_SLAM' }],
+        },
+        enemy: {
+          actorId: '00000000-0000-0000-0000-000000000331',
+          definitionId: 'WOLF',
+        },
+      },
+      events: [],
+      reward: null,
+    })
+
+    const store = useCombatSessionStore()
+    expect(await store.startTraining()).toBe(true)
+
+    await store.useAbility('SHIELD_SLAM')
+
+    expect(store.abilityQueue).toEqual([])
+    expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(0)
   })
 
   it('sends target selection with a replay-safe command id', async () => {
