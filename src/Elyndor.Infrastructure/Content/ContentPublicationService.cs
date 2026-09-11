@@ -150,12 +150,7 @@ public sealed class ContentPublicationService(
                     $"Published content revision '{release.RevisionId}' is missing.");
             }
 
-            // Category fragments can add runtime definitions without increasing the already-highest
-            // package content version. When the bundled and published versions are equal, keep the
-            // bundled definitions as the authoritative application baseline and layer published-only
-            // extensions on top. Otherwise a stale DB snapshot with the same version can erase a
-            // newly bundled dungeon/location/item after every production restart.
-            GameContentPackage package = IsSameOrNewerContentVersion(
+            GameContentPackage package = IsNewerContentVersion(
                     bundledPackage.ContentVersion,
                     revision.ContentVersion)
                 ? MergePublishedExtensions(
@@ -186,22 +181,12 @@ public sealed class ContentPublicationService(
         }
     }
 
-    private static bool IsSameOrNewerContentVersion(
+    private static bool IsNewerContentVersion(
         string bundledContentVersion,
-        string publishedContentVersion)
-    {
-        if (string.Equals(
-                bundledContentVersion,
-                publishedContentVersion,
-                StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        return Version.TryParse(bundledContentVersion, out Version? bundled)
-            && Version.TryParse(publishedContentVersion, out Version? published)
-            && bundled > published;
-    }
+        string publishedContentVersion) =>
+        Version.TryParse(bundledContentVersion, out Version? bundled)
+        && Version.TryParse(publishedContentVersion, out Version? published)
+        && bundled > published;
 
     private static GameContentPackage MergePublishedExtensions(
         GameContentPackage published,
