@@ -116,6 +116,24 @@ describe('WorldView', () => {
     wrapper.unmount()
   })
 
+  it('opens the Forge only from the Adventurer Guild representation', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+
+    const wrapper = mount(WorldView, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.get('[data-open-adventurer-guild]').trigger('click')
+    await flushPromises()
+
+    const forgeTab = document.body.querySelector<HTMLButtonElement>('[data-guild-section="forge"]')
+    expect(forgeTab).not.toBeNull()
+    forgeTab?.click()
+    await flushPromises()
+
+    expect(document.body.querySelector('[data-forge-workshop]')).not.toBeNull()
+    wrapper.unmount()
+  })
+
   it('starts the server-selected encounter immediately after Explore with no confirmation step', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot('WHISPERING_FOREST')

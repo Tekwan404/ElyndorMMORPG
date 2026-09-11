@@ -157,12 +157,12 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 </script>
 
 <template>
-  <section class="forge-view">
+  <section class="forge-view" data-forge-workshop>
     <header class="forge-header">
       <div>
-        <p>МАСТЕРСКАЯ</p>
-        <h1>Кузница</h1>
-        <span>Перековывайте случайную характеристику предмета.</span>
+        <p>СЛУЖБА КВАРТИРМЕЙСТЕРА</p>
+        <h2>Кузница</h2>
+        <span>Работаем со снятым снаряжением: перековка, улучшение качества и разбор.</span>
       </div>
       <div class="forge-resource" aria-label="Камни перековки">
         <IconGenerator :config="{ id: 'forge-stone', glyph: 'ore', category: 'resource' }" />
@@ -191,6 +191,7 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
             <strong>{{ item.name }}</strong>
             <small>{{ rarityLabel(item) }} · Мощь {{ format(item.generatedItem?.itemPower ?? 0) }}</small>
             <ItemQualityStars v-if="item.generatedItem" :id="`forge-${item.id}`" :stars="item.generatedItem.stars" />
+            <em v-if="!forgeItemAvailability(item).available">{{ forgeItemAvailability(item).reason }}</em>
           </span>
         </button>
       </div>
@@ -279,20 +280,20 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 </template>
 
 <style scoped>
-.forge-view { display: grid; gap: var(--ui-space-4); padding: var(--ui-space-4); }
-.forge-header, .forge-detail, .forge-items { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-lg); background: linear-gradient(145deg, rgb(23 32 51 / 94%), rgb(10 15 27 / 94%)); box-shadow: var(--ui-shadow-panel); }
-.forge-header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-4); }
-.forge-header p, .forge-header h1, .forge-header span, .forge-detail h2 { margin: 0; }
+.forge-view { display: grid; gap: var(--ui-space-3); }
+.forge-header, .forge-detail, .forge-items { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(145deg, rgb(23 32 51 / 94%), rgb(10 15 27 / 94%)); }
+.forge-header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-3); border-color: rgb(232 200 102 / 26%); background: linear-gradient(120deg, rgb(232 200 102 / 10%), rgb(16 23 38 / 96%) 54%); }
+.forge-header p, .forge-header h2, .forge-header span, .forge-detail h2 { margin: 0; }
 .forge-header p, .forge-items small, .forge-affixes header small, .forge-preview small, .forge-result small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); letter-spacing: .08em; }
-.forge-header h1 { margin-top: 2px; font-size: var(--ui-font-size-xl); }
+.forge-header h2 { margin-top: 2px; font-size: var(--ui-font-size-xl); }
 .forge-header span { display: block; margin-top: 4px; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
-.forge-resource { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 4px; min-width: 72px; color: var(--ui-color-gold); }
+.forge-resource { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 4px; min-width: 84px; padding: 6px 8px; border: 1px solid rgb(232 200 102 / 24%); border-radius: var(--ui-radius-sm); background: rgb(5 8 13 / 48%); color: var(--ui-color-gold); }
 .forge-resource :deep(.icon-generator) { width: 28px; height: 28px; grid-row: span 2; }
 .forge-resource small { color: var(--ui-color-text-muted); }
 .forge-layout { display: grid; gap: var(--ui-space-4); }
-.forge-items { padding: var(--ui-space-3); }
+.forge-items { padding: var(--ui-space-2); }
 .forge-items > header { display: grid; gap: 2px; margin-bottom: var(--ui-space-2); }
-.forge-item { display: flex; width: 100%; min-height: 64px; align-items: center; gap: var(--ui-space-3); padding: var(--ui-space-2); border: 1px solid transparent; border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.forge-item { display: flex; width: 100%; min-height: 68px; align-items: center; gap: var(--ui-space-3); padding: var(--ui-space-2); border: 1px solid transparent; border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .forge-item.active { border-color: var(--ui-color-primary); background: rgb(132 121 250 / 10%); }
 .forge-item.unavailable { opacity: .58; }
 .forge-item__art, .forge-detail__art { display: grid; width: 48px; height: 48px; flex: 0 0 48px; place-items: center; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 22%); }
@@ -300,7 +301,8 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 .forge-item__copy { display: grid; min-width: 0; gap: 2px; }
 .forge-item__copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .forge-item__copy small { letter-spacing: 0; }
-.forge-detail { padding: var(--ui-space-4); }
+.forge-item__copy em { overflow: hidden; color: var(--ui-color-warning); font-size: var(--ui-font-size-xs); font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.forge-detail { padding: var(--ui-space-3); }
 .forge-detail__identity { display: flex; gap: var(--ui-space-3); }
 .forge-detail__identity > div { display: grid; align-content: start; gap: 4px; }
 .forge-detail__identity small, .forge-detail__identity > div > strong { color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }

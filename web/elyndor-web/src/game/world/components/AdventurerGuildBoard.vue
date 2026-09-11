@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { Quest } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import ForgeView from '@/game/character/views/ForgeView.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
@@ -39,6 +40,7 @@ const guildNpcs = [
 ]
 
 type ContractFilter = 'ALL' | 'READY_TO_CLAIM' | 'ACTIVE' | 'AVAILABLE' | 'LOCKED'
+type GuildSection = 'contracts' | 'forge'
 
 const contractFilters: Array<{ id: ContractFilter; label: string }> = [
   { id: 'ALL', label: 'Все' },
@@ -49,6 +51,7 @@ const contractFilters: Array<{ id: ContractFilter; label: string }> = [
 ]
 const activeFilter = ref<ContractFilter>('ALL')
 const selectedContractId = ref<string | null>(null)
+const activeSection = ref<GuildSection>('contracts')
 
 const contracts = computed(() => {
   const quests = session.questJournal?.quests ?? []
@@ -76,7 +79,10 @@ const selectedContract = computed(() =>
 )
 
 watch(() => props.open, (open) => {
-  if (open) void session.refreshQuestJournal()
+  if (open) {
+    activeSection.value = 'contracts'
+    void session.refreshQuestJournal()
+  }
 })
 
 watch(contracts, availableContracts => {
@@ -154,6 +160,34 @@ async function claim(quest: Quest): Promise<void> {
         </div>
       </header>
 
+      <nav
+        class="guild-board__sections"
+        :class="{ 'guild-board__sections--single': !isCentralPost }"
+        aria-label="Службы представительства"
+      >
+        <button
+          type="button"
+          data-guild-section="contracts"
+          :class="{ 'guild-board__section--active': activeSection === 'contracts' }"
+          :aria-current="activeSection === 'contracts' ? 'page' : undefined"
+          @click="activeSection = 'contracts'"
+        >
+          Контракты
+        </button>
+        <button
+          v-if="isCentralPost"
+          type="button"
+          data-guild-section="forge"
+          :class="{ 'guild-board__section--active': activeSection === 'forge' }"
+          :aria-current="activeSection === 'forge' ? 'page' : undefined"
+          @click="activeSection = 'forge'"
+        >
+          Кузница
+        </button>
+      </nav>
+
+      <ForgeView v-if="activeSection === 'forge'" />
+      <template v-else>
       <section class="guild-board__people" aria-label="Представители гильдии">
         <header class="guild-staff-heading">
           <div>
@@ -320,12 +354,17 @@ async function claim(quest: Quest): Promise<void> {
         <strong>Новых контрактов нет</strong>
         <p>В этом представительстве сейчас нет работы, доступной для регистрации.</p>
       </div>
+      </template>
     </section>
   </UIModal>
 </template>
 
 <style scoped>
 .guild-board{display:grid;gap:var(--ui-space-3)}
+.guild-board__sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:4px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:rgb(5 8 13 / 70%)}
+.guild-board__sections--single{grid-template-columns:1fr}
+.guild-board__sections button{min-height:var(--ui-touch-target);border:1px solid transparent;border-radius:calc(var(--ui-radius-md) - 3px);background:transparent;color:var(--ui-color-text-muted);font:700 .66rem var(--ui-font-display)}
+.guild-board__sections button.guild-board__section--active{border-color:rgb(232 200 102 / 42%);background:linear-gradient(135deg,rgb(232 200 102 / 14%),rgb(232 200 102 / 4%));color:var(--ui-color-gold)}
 .guild-board__header{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:var(--ui-space-3);align-items:center;padding:var(--ui-space-3);border:1px solid rgb(232 200 102 / 18%);border-radius:var(--ui-radius-md);background:linear-gradient(135deg,rgb(232 200 102 / 8%),transparent 58%),var(--ui-color-surface-1)}
 .guild-board__portrait{display:grid;width:3.4rem;height:3.4rem;place-items:center;overflow:hidden;border:1px solid rgb(232 200 102 / 46%);border-radius:var(--ui-radius-md);background:rgb(5 8 13 / 88%)}
 .guild-board__portrait img{width:145%;height:145%;object-fit:cover;object-position:50% 18%;transform:translateY(8%)}

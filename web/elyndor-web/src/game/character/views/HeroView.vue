@@ -5,11 +5,10 @@ import type { EquipmentSlot } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
-import ForgeView from '@/game/character/views/ForgeView.vue'
 import TalentTreeView from '@/game/talents/views/TalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
-type HeroTab = 'character' | 'inventory' | 'forge' | 'stats' | 'talents'
+type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
@@ -18,7 +17,6 @@ const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER'].includes(sess
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
-  { id: 'forge', label: 'Кузница', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
 ]
@@ -58,7 +56,6 @@ function openSlotInventory(slot: EquipmentSlot): void {
     <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
     <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
-    <ForgeView v-else-if="activeTab === 'forge'" />
     <CharacterStatsView v-else />
   </section>
 </template>
@@ -73,7 +70,7 @@ function openSlotInventory(slot: EquipmentSlot): void {
   z-index: var(--ui-z-sticky);
   top: 0;
   display: grid;
-  grid-template-columns: repeat(5, minmax(max-content, 1fr));
+  grid-template-columns: repeat(4, minmax(max-content, 1fr));
   gap: 2px;
   overflow-x: auto;
   padding: 6px var(--ui-space-3);
