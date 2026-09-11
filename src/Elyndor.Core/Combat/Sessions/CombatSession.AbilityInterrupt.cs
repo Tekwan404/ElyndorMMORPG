@@ -5,9 +5,9 @@ namespace Elyndor.Core.Combat.Sessions;
 public sealed partial class CombatSession
 {
     /// <summary>
-    /// Executes a player ability without restarting the auto-attack cycle. Instant abilities
-    /// leave scheduled swings untouched. Casted abilities are already handled by the combat
-    /// scheduler, which holds a ready swing until the active cast resolves.
+    /// Executes a player ability and, after a successful command, restarts the current
+    /// auto-attack cycle from the ability resolution point. The player's auto-attack toggle
+    /// stays enabled; stale main-hand/off-hand timers cannot fire during the cast.
     /// </summary>
     public CombatCommandResult HandleAbilityInterruptingAutoAttack(
         Guid participantCharacterId,
@@ -18,6 +18,19 @@ public sealed partial class CombatSession
         CombatCommandResult result = Handle(participantCharacterId, command, now);
         if (!result.Succeeded)
             return result;
+
+        ActivatePlayer(participantCharacterId);
+        if (_playerAutoAttackEnabled)
+        {
+            DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast?.ResolvesAtUtc ?? now;
+            _nextPlayerMainHandAutoAttackAtUtc =
+                restartAtUtc + EffectivePlayerAutoAttackInterval(_player.AutoAttack, restartAtUtc);
+            _nextPlayerOffHandAutoAttackAtUtc = _player.OffHandAutoAttack is null
+                ? null
+                : restartAtUtc + EffectivePlayerAutoAttackInterval(
+                    _player.OffHandAutoAttack,
+                    restartAtUtc);
+        }
 
         return new CombatCommandResult(
             true,
