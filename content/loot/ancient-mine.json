@@ -147,19 +147,19 @@
         },
         {
           "itemId": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
-          "dropChance": 0.33,
+          "dropChance": 0.08,
           "minQuantity": 1,
           "maxQuantity": 1
         },
         {
           "itemId": "DUNGEON_MINES_MAGE_LEGENDARY_STAFF",
-          "dropChance": 0.33,
+          "dropChance": 0.08,
           "minQuantity": 1,
           "maxQuantity": 1
         },
         {
           "itemId": "DUNGEON_MINES_ARCHER_LEGENDARY_BOW",
-          "dropChance": 0.33,
+          "dropChance": 0.08,
           "minQuantity": 1,
           "maxQuantity": 1
         }
