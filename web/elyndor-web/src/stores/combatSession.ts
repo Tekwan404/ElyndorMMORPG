@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import {
   HubConnectionBuilder,
   HubConnectionState,
-  HttpTransportType,
   LogLevel,
   type HubConnection,
 } from '@microsoft/signalr'
@@ -37,12 +36,29 @@ export interface TrainingStats {
   maxHit: number
 }
 
+export interface CombatThreatEntry {
+  actorId: string
+  name: string
+  threat: number
+  isCurrentTarget: boolean
+}
+
+export interface CombatThreatSnapshot {
+  enemyActorId: string
+  enemyName: string
+  currentTargetActorId: string | null
+  forcedTargetActorId: string | null
+  entries: CombatThreatEntry[]
+}
+
 interface InvokeOutcome {
   succeeded: boolean
   receivedResponse: boolean
 }
 
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
+const ABILITY_QUEUE_WINDOW_MS = 250
+const TELEMETRY_INTERVAL_MS = 1_000
 const emptyTrainingStats = (): TrainingStats => ({
   startedAtUtc: null,
   totalDamage: 0,
@@ -62,6 +78,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
   const abilityQueue = ref<string[]>([])
+  const latencyMs = ref<number | null>(null)
+  const threat = ref<CombatThreatSnapshot | null>(null)
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
   const encounterPresentation = ref<WorldEncounter | null>(null)
   const participantStatus = computed(() => {
@@ -86,7 +104,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let connectPromise: Promise<void> | null = null
   let lootRefreshTimer: number | null = null
   let abilityQueueTimer: number | null = null
+  let telemetryTimer: number | null = null
+  let telemetryBusy = false
   let abilitySending = false
+  let abilitySendingId: string | null = null
   const retryCommandIds = new Map<string, string>()
 
   async function connect(): Promise<void> {
@@ -115,7 +136,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       connection = new HubConnectionBuilder()
         .withUrl('/hubs/combat', {
           accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
-          transport: HttpTransportType.LongPolling,
         })
         .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
         .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
@@ -128,15 +148,21 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       })
       connection.onreconnecting((error) => {
         connectionState.value = 'connecting'
+        stopTelemetryRefresh()
         if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
       })
       connection.onreconnected(() => {
         connectionState.value = 'connected'
         diagnostic.value = null
+        ensureTelemetryRefresh()
+        void refreshCombatTelemetry()
         void resume()
       })
       connection.onclose((error) => {
         connectionState.value = 'disconnected'
+        stopTelemetryRefresh()
+        latencyMs.value = null
+        threat.value = null
         if (error) recordFailure('signalr_start', 'connection_closed', error)
       })
     }
@@ -145,6 +171,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       await connection.start()
       connectionState.value = 'connected'
       diagnostic.value = null
+      ensureTelemetryRefresh()
+      void refreshCombatTelemetry()
     } catch (error) {
       connectionState.value = 'disconnected'
       recordFailure('signalr_start', 'connect', error)
@@ -188,8 +216,12 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
     if (!current.player.abilities.some((ability) => ability.id === abilityId)) return
-    if (abilityQueue.value.length >= 3) return
-    abilityQueue.value = [...abilityQueue.value, abilityId]
+    if (abilitySendingId === abilityId || abilityQueue.value.includes(abilityId)) return
+
+    const readyAt = current.player.cooldowns[abilityId]
+    if (readyAt && Date.parse(readyAt) > Date.now()) return
+
+    abilityQueue.value = [abilityId]
     scheduleAbilityQueueDrain()
   }
 
@@ -227,23 +259,30 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
 
     const readyAt = current.player.cooldowns[abilityId]
-    if (readyAt && Date.parse(readyAt) > Date.now()) {
-      scheduleAbilityQueueDrain(Math.max(15, Date.parse(readyAt) - Date.now() + 25))
-      return
+    if (readyAt) {
+      const remainingMs = Date.parse(readyAt) - Date.now()
+      if (remainingMs > ABILITY_QUEUE_WINDOW_MS) {
+        abilityQueue.value = abilityQueue.value.slice(1)
+        return
+      }
+      if (remainingMs > 0) {
+        scheduleAbilityQueueDrain(Math.max(15, remainingMs + 25))
+        return
+      }
     }
 
+    abilityQueue.value = abilityQueue.value.slice(1)
     abilitySending = true
+    abilitySendingId = abilityId
     const sessionId = current.sessionId
     try {
-      const succeeded = await invokeRetryableCommand(
+      await invokeRetryableCommand(
         `UseAbility:${sessionId}:${abilityId}`,
         commandId => invokeWithOutcome('UseAbility', sessionId, abilityId, commandId),
       )
-      if (succeeded || errorCode.value !== null) {
-        abilityQueue.value = abilityQueue.value.slice(1)
-      }
     } finally {
       abilitySending = false
+      abilitySendingId = null
       if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
     }
   }
@@ -295,6 +334,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         reward.value = null
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
+        threat.value = null
         retryCommandIds.clear()
         clearAbilityQueue()
         clearLootRolls()
@@ -304,6 +344,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       }
       applyUpdate(update)
       await refreshLootRolls()
+      void refreshCombatTelemetry()
       return update.succeeded
     } catch (error) {
       recordFailure('resume', 'ResumeCombat', error)
@@ -323,6 +364,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       events.value = []
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
+      threat.value = null
       retryCommandIds.clear()
       clearAbilityQueue()
       clearLootRolls()
@@ -366,6 +408,37 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     } finally {
       pending.value = false
     }
+  }
+
+  async function refreshCombatTelemetry(): Promise<void> {
+    if (telemetryBusy || connection?.state !== HubConnectionState.Connected) return
+    telemetryBusy = true
+    const startedAt = performance.now()
+    try {
+      await connection.invoke<string>('Ping')
+      latencyMs.value = Math.max(0, Math.round(performance.now() - startedAt))
+      threat.value = snapshot.value?.status === 'Active'
+        ? await connection.invoke<CombatThreatSnapshot | null>('GetThreatSnapshot')
+        : null
+    } catch {
+      latencyMs.value = null
+      if (connection?.state !== HubConnectionState.Connected) threat.value = null
+    } finally {
+      telemetryBusy = false
+    }
+  }
+
+  function ensureTelemetryRefresh(): void {
+    if (telemetryTimer !== null) return
+    telemetryTimer = window.setInterval(() => {
+      void refreshCombatTelemetry()
+    }, TELEMETRY_INTERVAL_MS)
+  }
+
+  function stopTelemetryRefresh(): void {
+    if (telemetryTimer === null) return
+    window.clearInterval(telemetryTimer)
+    telemetryTimer = null
   }
 
   async function refreshLootRolls(): Promise<void> {
@@ -445,6 +518,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       snapshot.value = null
       events.value = []
       reward.value = null
+      threat.value = null
       clearLootRolls()
       if (encounterPresentation.value?.monsterId !== incomingSnapshot.enemy.definitionId) {
         encounterPresentation.value = null
@@ -464,6 +538,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (incomingSnapshot && incomingSnapshot.status !== 'Active') {
       retryCommandIds.clear()
       clearAbilityQueue()
+      threat.value = null
     }
     const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
     const fresh = update.events.filter((event) => event.sequence > lastSequence)
@@ -556,6 +631,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic,
     pending,
     abilityQueue,
+    latencyMs,
+    threat,
     isActive,
     participantStatus,
     isParticipantActive,
@@ -577,6 +654,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     resume,
     leave,
     flee,
+    refreshCombatTelemetry,
     refreshLootRolls,
     chooseLootRoll,
   }
