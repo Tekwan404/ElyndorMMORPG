@@ -177,6 +177,35 @@ public sealed record GeneratedItemInstance(
     string DisplayName,
     int GenerationVersion);
 
+public static class ItemStarUpgradeCalculator
+{
+    public static GeneratedItemAffix[] IncreaseToTargetStar(
+        IReadOnlyList<GeneratedItemAffix> affixes,
+        int targetStars)
+    {
+        ArgumentNullException.ThrowIfNull(affixes);
+        if (targetStars is < 2 or > 5)
+            throw new ArgumentOutOfRangeException(nameof(targetStars));
+
+        decimal targetQuality = targetStars switch
+        {
+            2 => 0.35m,
+            3 => 0.55m,
+            4 => 0.75m,
+            5 => 1m,
+            _ => throw new ArgumentOutOfRangeException(nameof(targetStars)),
+        };
+        return affixes.Select(affix =>
+        {
+            decimal span = affix.MaxAtGeneration - affix.MinAtGeneration;
+            decimal target = affix.MinAtGeneration + (span * targetQuality);
+            decimal stepped = decimal.Floor(target / affix.StepAtGeneration) * affix.StepAtGeneration;
+            decimal value = decimal.Max(affix.Value, decimal.Min(affix.MaxAtGeneration, stepped));
+            return affix with { Value = value };
+        }).ToArray();
+    }
+}
+
 public sealed record ItemGenerationKey(int Seed, string AuditHash)
 {
     public static ItemGenerationKey Create(Guid sourceOperationId, string templateId, int ordinal)
