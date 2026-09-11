@@ -16,21 +16,23 @@ public sealed class ContentPublicationDungeonRestoreTests(PostgresFixture postgr
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task RestoreWithSameContentVersionKeepsBundledEclipsedCitadel()
+    public async Task RestoreWithOlderPublishedContentKeepsBundledEclipsedCitadel()
     {
         GameContentPackage bundled = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
+        Assert.Equal("0.19.0", bundled.ContentVersion);
         Assert.Contains(
             bundled.Dungeons ?? [],
             dungeon => dungeon.Id == "ECLIPSED_CITADEL");
 
         GameContentPackage stalePublished = bundled with
         {
+            ContentVersion = "0.18.0",
+            PublishedAtUtc = Now.AddDays(-1),
             Dungeons = (bundled.Dungeons ?? [])
                 .Where(dungeon => dungeon.Id != "ECLIPSED_CITADEL")
                 .ToArray()
         };
-        Assert.Equal(bundled.ContentVersion, stalePublished.ContentVersion);
         Assert.DoesNotContain(
             stalePublished.Dungeons ?? [],
             dungeon => dungeon.Id == "ECLIPSED_CITADEL");
@@ -44,12 +46,12 @@ public sealed class ContentPublicationDungeonRestoreTests(PostgresFixture postgr
                 stalePublished,
                 payload,
                 "integration-test",
-                "same-version release created before Eclipsed Citadel was bundled",
+                "release created before Eclipsed Citadel content version advanced",
                 CancellationToken.None);
             _ = await seedStore.PublishAsync(
                 revision.Id,
                 "integration-test",
-                "publish stale same-version content",
+                "publish stale content",
                 CancellationToken.None);
         }
 
