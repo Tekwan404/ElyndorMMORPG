@@ -56,6 +56,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<FriendService>();
         builder.Services.AddScoped<PartyService>();
         builder.Services.AddScoped<DungeonService>();
+        builder.Services.AddScoped<DungeonNavigationService>();
+        builder.Services.AddScoped<PartyDungeonRunCoordinator>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();

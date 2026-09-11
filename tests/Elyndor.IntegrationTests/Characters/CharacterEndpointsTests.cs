@@ -6,6 +6,7 @@ using Elyndor.Contracts.Dungeons;
 using Elyndor.Contracts.Identity;
 using Elyndor.Contracts.World;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
@@ -174,11 +175,20 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
             $"/api/v1/dungeons/runs/{run.RunId}/exit",
             content: null);
         exitResponse.EnsureSuccessStatusCode();
-        DungeonRunResponse exited =
-            (await exitResponse.Content.ReadFromJsonAsync<DungeonRunResponse>())!;
+
+        await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            "Left",
-            exited.Members.Single(member => member.CharacterId == character.Id).State);
+            DungeonRunMemberState.Left,
+            await verify.DungeonRunMembers
+                .Where(member => member.RunId == run.RunId && member.CharacterId == character.Id)
+                .Select(member => member.State)
+                .SingleAsync());
+        Assert.Equal(
+            WorldLocationIds.StarterTown,
+            await verify.CharacterLocations
+                .Where(location => location.CharacterId == character.Id)
+                .Select(location => location.LocationId)
+                .SingleAsync());
     }
 
     private WebApplicationFactory<Program> CreateFactory(

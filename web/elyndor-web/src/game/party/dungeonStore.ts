@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import { apiClient } from '@/api/apiClient'
 import type { DungeonPreview, DungeonRun, DungeonTeleportResponse } from '@/api/contracts'
+import { useGameSessionStore } from '@/stores/gameSession'
 
 export const useDungeonStore = defineStore('dungeon', () => {
   const previews = ref<DungeonPreview[]>([])
@@ -31,6 +32,7 @@ export const useDungeonStore = defineStore('dungeon', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requestId: crypto.randomUUID(), dungeonId }),
     }))
+    await useGameSessionStore().refreshSnapshot()
   }
 
   async function enter(runId: string): Promise<void> {
@@ -38,6 +40,7 @@ export const useDungeonStore = defineStore('dungeon', () => {
       `/api/v1/dungeons/runs/${runId}/enter`,
       { method: 'POST' },
     ))
+    await useGameSessionStore().refreshSnapshot()
   }
 
   async function restart(runId: string): Promise<void> {
@@ -48,10 +51,17 @@ export const useDungeonStore = defineStore('dungeon', () => {
   }
 
   async function exit(runId: string): Promise<void> {
-    await mutate('dungeon_exit_failed', () => apiClient.request<DungeonRun>(
-      `/api/v1/dungeons/runs/${runId}/exit`,
-      { method: 'POST' },
-    ))
+    errorCode.value = null
+    try {
+      await apiClient.request<{ locationId?: string | null; locationVersion?: number | null }>(
+        `/api/v1/dungeons/runs/${runId}/exit`,
+        { method: 'POST' },
+      )
+      current.value = null
+      await useGameSessionStore().refreshSnapshot()
+    } catch (error) {
+      errorCode.value = error instanceof Error ? error.message : 'dungeon_exit_failed'
+    }
   }
 
   async function teleport(dungeonId: string): Promise<boolean> {
@@ -63,6 +73,7 @@ export const useDungeonStore = defineStore('dungeon', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId: crypto.randomUUID(), dungeonId }),
       })
+      await useGameSessionStore().refreshSnapshot()
       await refresh()
       return true
     } catch (error) {

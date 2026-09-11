@@ -29,6 +29,48 @@ describe('social and party mutation errors', () => {
     expect(store.errorCode).toBe('party_full')
   })
 
+  it('detects authoritative leader location changes after the initial party snapshot', async () => {
+    const initialParty = {
+      partyId: 'party-1',
+      leaderCharacterId: 'leader-1',
+      version: 1,
+      members: [{
+        characterId: 'leader-1',
+        name: 'Leader',
+        level: 25,
+        classId: 'WARRIOR',
+        isLeader: true,
+        joinedAtUtc: '2026-09-11T00:00:00Z',
+        locationId: 'STARTER_TOWN',
+        activeDungeonRunId: null,
+      }],
+      activeDungeonRunId: null,
+    }
+    const movedParty = {
+      ...initialParty,
+      version: 2,
+      members: [{ ...initialParty.members[0], locationId: 'DEEP_FOREST' }],
+    }
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(initialParty)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(movedParty)
+      .mockResolvedValueOnce([])
+    const store = usePartyStore()
+
+    await store.refresh()
+    expect(store.leaderLocationChange).toBeNull()
+
+    await store.refresh(true)
+
+    expect(store.leaderLocationChange).toEqual({
+      leaderCharacterId: 'leader-1',
+      leaderName: 'Leader',
+      previousLocationId: 'STARTER_TOWN',
+      locationId: 'DEEP_FOREST',
+    })
+  })
+
   it('exposes outgoing friend requests from the authoritative snapshot', () => {
     const store = useSocialStore()
     store.snapshot = {

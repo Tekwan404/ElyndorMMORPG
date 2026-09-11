@@ -1,4 +1,5 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
 using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Content;
@@ -49,6 +50,7 @@ public static class TravelErrorCodes
     public const string IdempotencyConflict = "idempotency_conflict";
     public const string InProgress = "travel_in_progress";
     public const string Conflict = "travel_conflict";
+    public const string DungeonRunActive = "travel_dungeon_run_active";
 }
 
 public sealed class TravelService
@@ -198,6 +200,17 @@ public sealed class TravelService
             }
 
             return TravelResult.Failure(TravelErrorCodes.InProgress);
+        }
+
+        bool dungeonRunActive = await dbContext.DungeonRuns
+            .AsNoTracking()
+            .AnyAsync(run => run.State != DungeonRunState.Abandoned
+                && run.Members.Any(member => member.CharacterId == character.Id
+                    && member.State == DungeonRunMemberState.Active), cancellationToken);
+        if (dungeonRunActive)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return TravelResult.Failure(TravelErrorCodes.DungeonRunActive);
         }
 
         if (!worldMap.CanTravel(location.LocationId, target.Id))

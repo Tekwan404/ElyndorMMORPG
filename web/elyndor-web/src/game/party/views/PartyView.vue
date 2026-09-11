@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { classLabel } from '@/game/character/characterPresentation'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 
@@ -14,11 +14,26 @@ const party = usePartyStore()
 const session = useGameSessionStore()
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
+const currentMember = computed(() => party.snapshot?.members.find(
+  (member) => member.characterId === currentCharacterId.value,
+) ?? null)
+const leaderMember = computed(() => party.snapshot?.members.find(
+  (member) => member.characterId === party.snapshot?.leaderCharacterId,
+) ?? null)
+const canFollowLeader = computed(() => {
+  const leader = leaderMember.value
+  if (!leader?.locationId || leader.characterId === currentCharacterId.value) return false
+  if (party.snapshot?.activeDungeonRunId) return false
+  return leader.locationId !== currentMember.value?.locationId
+})
+
 type PendingAction =
   | { type: 'disband' }
   | { type: 'leave' }
   | { type: 'kick'; characterId: string }
 const pendingAction = ref<PendingAction | null>(null)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
+
 const confirmationTitle = computed(() => {
   if (pendingAction.value?.type === 'disband') return 'Распустить группу?'
   if (pendingAction.value?.type === 'kick') return 'Исключить игрока?'
@@ -32,7 +47,36 @@ const confirmationMessage = computed(() => {
 
 onMounted(() => {
   void party.refresh()
+  refreshTimer = setInterval(() => {
+    void party.refresh(true)
+  }, 5_000)
 })
+
+onUnmounted(() => {
+  if (refreshTimer !== null) clearInterval(refreshTimer)
+})
+
+function locationLabel(locationId?: string | null): string {
+  if (!locationId) return 'локация неизвестна'
+  const world = session.snapshot?.world
+  if (world?.currentLocation.id === locationId) return world.currentLocation.displayName
+  const known = world?.outgoingTransitions.find((location) => location.id === locationId)
+  if (known) return known.displayName
+  return locationId
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+async function followLeader(): Promise<void> {
+  const targetLocationId = leaderMember.value?.locationId
+  if (!targetLocationId || !canFollowLeader.value) return
+  party.clearLeaderLocationChange()
+  await session.travel(targetLocationId)
+  await party.refresh()
+}
 
 async function kickMember(characterId: string): Promise<void> {
   if (characterId !== currentCharacterId.value) await party.kick(characterId)
@@ -58,7 +102,6 @@ async function confirmPendingAction(): Promise<void> {
   if (action.type === 'leave') await party.leave()
   if (action.type === 'kick') await kickMember(action.characterId)
 }
-
 </script>
 
 <template>
@@ -75,6 +118,22 @@ async function confirmPendingAction(): Promise<void> {
     </header>
 
     <p v-if="party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(party.errorCode) }}</p>
+
+    <UIPanel
+      v-if="party.leaderLocationChange && party.leaderLocationChange.leaderCharacterId !== currentCharacterId"
+      title="Лидер сменил локацию"
+    >
+      <div class="leader-move">
+        <p>
+          <strong>{{ party.leaderLocationChange.leaderName }}</strong>
+          перешёл в {{ locationLabel(party.leaderLocationChange.locationId) }}.
+        </p>
+        <div class="actions">
+          <UIButton v-if="canFollowLeader" @click="followLeader">Следовать</UIButton>
+          <UIButton variant="ghost" @click="party.clearLeaderLocationChange">Скрыть</UIButton>
+        </div>
+      </div>
+    </UIPanel>
 
     <UIPanel v-if="party.invites.length" title="Приглашения">
       <article v-for="invite in party.invites" :key="invite.id" class="invite-row">
@@ -93,11 +152,22 @@ async function confirmPendingAction(): Promise<void> {
           <UIButton variant="secondary" @click="transferLeadership(member.characterId)">Лидер</UIButton>
           <UIButton variant="danger" :data-party-kick="member.characterId" @click="requestConfirmation({ type: 'kick', characterId: member.characterId })">Исключить</UIButton>
         </div>
-        <div>
+        <div class="member-copy">
           <strong>{{ member.name }} <span v-if="member.isLeader">★</span></strong>
           <small>ур. {{ member.level }} · {{ classLabel(member.classId) }}</small>
+          <small class="member-location">
+            {{ locationLabel(member.locationId) }}
+            <span v-if="member.activeDungeonRunId"> · в забеге</span>
+          </small>
         </div>
-        <span v-if="member.characterId === currentCharacterId && member.isLeader" class="leader-label">лидер</span>
+        <div class="member-state">
+          <span v-if="member.characterId === currentCharacterId && member.isLeader" class="leader-label">лидер</span>
+          <UIButton
+            v-if="member.isLeader && member.characterId !== currentCharacterId && canFollowLeader"
+            variant="secondary"
+            @click="followLeader"
+          >Следовать</UIButton>
+        </div>
       </article>
       <UIButton variant="danger" data-party-leave @click="requestConfirmation({ type: 'leave' })">Покинуть группу</UIButton>
     </UIPanel>
@@ -126,10 +196,15 @@ h1 { margin: 2px 0 0; font-family: var(--ui-font-display); font-size: 1.35rem; }
 .party-view__header-actions > span { color: var(--ui-color-text-muted); font-size: .68rem; white-space: nowrap; }
 .party-view__header-actions :deep(.ui-button) { min-height: 2.15rem; padding-inline: .62rem; font-size: .65rem; }
 .member-row, .invite-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgb(255 255 255 / 7%); }
-.member-row div, .invite-row div:first-child { display: grid; gap: 3px; }
+.member-row > .member-copy, .invite-row div:first-child { display: grid; gap: 3px; }
 .member-row small, .invite-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }
+.member-location { color: var(--ui-color-text-secondary) !important; }
+.member-state { display: grid; justify-items: end; gap: 5px; }
+.member-state :deep(.ui-button) { min-height: 1.85rem; padding-inline: .5rem; font-size: .6rem; }
 .error-state { color: var(--ui-color-danger, #ff8d8d); font-size: .72rem; }
 .leader-label { color: var(--ui-color-primary); font-size: .62rem; }
 .actions, .member-actions { display: flex; gap: 6px; align-items: center; }
+.leader-move { display: grid; gap: 10px; }
+.leader-move p { margin: 0; color: var(--ui-color-text-secondary); font-size: .72rem; line-height: 1.45; }
 .party-confirmation { margin: 0; color: var(--ui-color-text-secondary); line-height: 1.5; }
 </style>

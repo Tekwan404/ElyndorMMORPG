@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Dungeons;
+using Elyndor.Core.Dungeons;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
@@ -58,9 +59,39 @@ public static class DungeonEndpoints
         CreateDungeonRunRequest request,
         ClaimsPrincipal user,
         DungeonService service,
+        PartyDungeonRunCoordinator partyRunCoordinator,
+        PartyService partyService,
+        BootstrapService bootstrapService,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+
+        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+        if (party is not null)
+        {
+            PartyDungeonStartResult started = await partyRunCoordinator.StartAsync(
+                accountId,
+                request.DungeonId,
+                request.RequestId,
+                cancellationToken);
+            if (!started.Succeeded)
+                return ToResult(DungeonOperationResult.Failure(started.ErrorCode!));
+
+            DungeonRunView? current = await service.GetCurrentAsync(accountId, cancellationToken);
+            return current is null
+                ? ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunNotFound))
+                : Results.Ok(ToResponse(current));
+        }
+
+        await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
+        DungeonTeleportResult prepared = await service.TeleportToEntryAsync(
+            accountId,
+            request.DungeonId,
+            request.RequestId,
+            cancellationToken);
+        if (!prepared.Succeeded)
+            return ToTeleportResult(prepared);
+
         return ToResult(await service.CreateAsync(
             accountId,
             request.DungeonId,
@@ -135,8 +166,10 @@ public static class DungeonEndpoints
             .Select(character => new { character.Id, character.AccountId, character.Level })
             .ToArrayAsync(cancellationToken);
         var caller = members.SingleOrDefault(member => member.AccountId == accountId);
-        if (caller is null || party.LeaderCharacterId != caller.Id)
-            return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);
+        if (caller is null)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        if (party.LeaderCharacterId != caller.Id)
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.NotLeader);
 
         if (members.Length != memberIds.Length)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
@@ -185,6 +218,7 @@ public static class DungeonEndpoints
         Guid runId,
         ClaimsPrincipal user,
         DungeonService service,
+        DungeonNavigationService navigationService,
         CharacterOperationGuard operationGuard,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -192,7 +226,16 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToResult(await service.EnterAsync(accountId, runId, cancellationToken)),
+            async () =>
+            {
+                DungeonNavigationResult canEnter = await navigationService.CanEnterAsync(
+                    accountId,
+                    runId,
+                    cancellationToken);
+                return canEnter.Succeeded
+                    ? ToResult(await service.EnterAsync(accountId, runId, cancellationToken))
+                    : ToNavigationResult(canEnter);
+            },
             () => Results.Problem(
                 statusCode: StatusCodes.Status409Conflict,
                 extensions: new Dictionary<string, object?>
@@ -231,7 +274,7 @@ public static class DungeonEndpoints
     private static async Task<IResult> ExitAsync(
         Guid runId,
         ClaimsPrincipal user,
-        DungeonService service,
+        DungeonNavigationService navigationService,
         CharacterOperationGuard operationGuard,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -239,7 +282,7 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToResult(await service.ExitAsync(
+            async () => ToNavigationResult(await navigationService.ExitAsync(
                 accountId,
                 runId,
                 cancellationToken)),
@@ -269,6 +312,26 @@ public static class DungeonEndpoints
                                 : StatusCodes.Status409Conflict,
                 extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
 
+    private static IResult ToNavigationResult(DungeonNavigationResult result) =>
+        result.Succeeded
+            ? Results.Ok(new
+            {
+                locationId = result.LocationId,
+                locationVersion = result.LocationVersion
+            })
+            : Results.Problem(
+                statusCode: result.ErrorCode is DungeonErrorCodes.NotLeader
+                    or DungeonErrorCodes.LevelRequired
+                    or DungeonErrorCodes.InvalidLocation
+                        ? StatusCodes.Status403Forbidden
+                        : result.ErrorCode is DungeonErrorCodes.RunNotFound
+                            or DungeonErrorCodes.DungeonNotFound
+                            or DungeonErrorCodes.CharacterNotFound
+                            or DungeonErrorCodes.MemberNotInRun
+                                ? StatusCodes.Status404NotFound
+                                : StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
+
     private static IResult ToTeleportResult(DungeonTeleportResult result) =>
         result.Succeeded
             ? Results.Ok(new DungeonTeleportResponse(
@@ -276,7 +339,8 @@ public static class DungeonEndpoints
                 result.LocationId!,
                 result.LocationVersion!.Value))
             : Results.Problem(
-                statusCode: result.ErrorCode is DungeonErrorCodes.LevelRequired
+                statusCode: result.ErrorCode is DungeonErrorCodes.NotLeader
+                    or DungeonErrorCodes.LevelRequired
                     ? StatusCodes.Status403Forbidden
                     : result.ErrorCode is DungeonErrorCodes.DungeonNotFound
                         or DungeonErrorCodes.CharacterNotFound
