@@ -10,10 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Disambiguate patch
+        run: python3 tools/_fix_patch_script.py
       - name: Apply patch
         run: python3 tools/_patch_combat_client.py
       - name: Commit
         run: |
+          rm tools/_fix_patch_script.py
           rm tools/_patch_combat_client.py
           rm .github/workflows/_run_combat_client_patch.yml
           git config user.name elyndor-fix-bot
