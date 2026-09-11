@@ -4,24 +4,75 @@ import { defineStore } from 'pinia'
 import { apiClient } from '@/api/apiClient'
 import type { PartyInvite, PartySnapshot } from '@/api/contracts'
 
+type PartyMemberWithPresence = PartySnapshot['members'][number] & {
+  locationId?: string | null
+  activeDungeonRunId?: string | null
+}
+
+export type PartySnapshotWithPresence = Omit<PartySnapshot, 'members'> & {
+  members: PartyMemberWithPresence[]
+  activeDungeonRunId?: string | null
+}
+
+export interface LeaderLocationChange {
+  leaderCharacterId: string
+  leaderName: string
+  previousLocationId: string | null
+  locationId: string
+}
+
 export const usePartyStore = defineStore('party', () => {
-  const snapshot = ref<PartySnapshot | null>(null)
+  const snapshot = ref<PartySnapshotWithPresence | null>(null)
   const invites = ref<PartyInvite[]>([])
   const loading = ref(false)
   const errorCode = ref<string | null>(null)
+  const leaderLocationChange = ref<LeaderLocationChange | null>(null)
+  let previousLeaderCharacterId: string | null = null
+  let previousLeaderLocationId: string | null | undefined
 
-  async function refresh(): Promise<void> {
-    loading.value = true
+  async function refresh(silent = false): Promise<void> {
+    if (!silent) loading.value = true
     errorCode.value = null
     try {
-      const response = await apiClient.request<PartySnapshot | null>('/api/v1/party')
+      const response = await apiClient.request<PartySnapshotWithPresence | null>('/api/v1/party')
+      captureLeaderMovement(response)
       snapshot.value = response
       invites.value = await apiClient.request<PartyInvite[]>('/api/v1/party/invites')
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'party_load_failed'
     } finally {
-      loading.value = false
+      if (!silent) loading.value = false
     }
+  }
+
+  function captureLeaderMovement(next: PartySnapshotWithPresence | null): void {
+    if (!next) {
+      previousLeaderCharacterId = null
+      previousLeaderLocationId = undefined
+      leaderLocationChange.value = null
+      return
+    }
+
+    const leader = next.members.find((member) => member.characterId === next.leaderCharacterId)
+    const nextLocationId = leader?.locationId ?? null
+    if (previousLeaderCharacterId === next.leaderCharacterId
+      && previousLeaderLocationId !== undefined
+      && nextLocationId
+      && nextLocationId !== previousLeaderLocationId) {
+      leaderLocationChange.value = {
+        leaderCharacterId: next.leaderCharacterId,
+        leaderName: leader?.name ?? 'Лидер группы',
+        previousLocationId: previousLeaderLocationId,
+        locationId: nextLocationId,
+      }
+    }
+
+    previousLeaderCharacterId = next.leaderCharacterId
+    previousLeaderLocationId = nextLocationId
+  }
+
+  function clearLeaderLocationChange(): void {
+    leaderLocationChange.value = null
   }
 
   async function runMutation(action: () => Promise<void>, fallbackErrorCode: string): Promise<void> {
@@ -95,7 +146,9 @@ export const usePartyStore = defineStore('party', () => {
     invites,
     loading,
     errorCode,
+    leaderLocationChange,
     refresh,
+    clearLeaderLocationChange,
     create,
     invite,
     acceptInvite,
