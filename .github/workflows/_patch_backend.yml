@@ -1,0 +1,53 @@
+name: patch combat backend
+on:
+  push:
+    branches:
+      - fix/combat-dungeon-state-2026-09-11
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected 1 match, got {count}')
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              'src/Elyndor.Infrastructure/Combat/CombatApplicationService.cs',
+              'return session.Handle(\n                    characterId,\n                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),\n                    now);',
+              'return session.HandleAbilityInterruptingAutoAttack(\n                    characterId,\n                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),\n                    now);')
+
+          replace_once(
+              'src/Elyndor.Core/Combat/Sessions/CombatSession.cs',
+              'if (isOffHand)\n            _nextPlayerOffHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;\n        else\n            _nextPlayerMainHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;',
+              'DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;\n        DateTimeOffset nextAfterCast = restartAtUtc + EffectivePlayerAutoAttackInterval(profile, restartAtUtc);\n        if (isOffHand)\n            _nextPlayerOffHandAutoAttackAtUtc = nextAfterCast;\n        else\n            _nextPlayerMainHandAutoAttackAtUtc = nextAfterCast;')
+
+          replace_once(
+              'src/Elyndor.Infrastructure/Combat/CombatApplicationService.cs',
+              'if (dungeonService is null)\n            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);\n\n        (DungeonPreparation? preparation, string? errorCode) =',
+              'if (dungeonService is null)\n            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);\n\n        if (bootstrapService is not null)\n        {\n            await bootstrapService.GetAsync(accountId, contentProvider.GetCurrent(), cancellationToken, checkpoint: true);\n        }\n\n        (DungeonPreparation? preparation, string? errorCode) =')
+
+          replace_once(
+              'src/Elyndor.Infrastructure/Dungeons/DungeonService.cs',
+              'DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);\n        if (existing is not null)\n        {\n            await CommitAsync(transaction, cancellationToken);\n            if (!string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))\n                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);\n            return new DungeonOperationResult(true, null, ToView(existing, definition));\n        }',
+              'DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);\n        if (existing is not null)\n        {\n            if (string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))\n            {\n                await CommitAsync(transaction, cancellationToken);\n                return new DungeonOperationResult(true, null, ToView(existing, definition));\n            }\n\n            if (existing.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))\n            {\n                await CommitAsync(transaction, cancellationToken);\n                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);\n            }\n\n            existing.Abandon();\n            foreach (DungeonRunMember member in existing.Members.Where(member => member.State == DungeonRunMemberState.Active))\n                member.MarkLeft();\n            await dbContext.SaveChangesAsync(cancellationToken);\n        }')
+          PY
+      - name: Commit
+        run: |
+          rm .github/workflows/_patch_backend.yml
+          git config user.name elyndor-fix-bot
+          git config user.email actions@users.noreply.github.com
+          git add -A
+          git commit -m 'fix: preserve combat and dungeon state'
+          git push
