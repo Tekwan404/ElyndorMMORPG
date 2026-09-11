@@ -59,45 +59,35 @@ public static class DungeonEndpoints
         CreateDungeonRunRequest request,
         ClaimsPrincipal user,
         DungeonService service,
+        PartyDungeonRunCoordinator partyRunCoordinator,
         PartyService partyService,
         BootstrapService bootstrapService,
-        GameDbContext dbContext,
-        ICombatActivityReader combatActivity,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
 
-        DungeonRunView? currentRun = await service.GetCurrentAsync(accountId, cancellationToken);
-        if (currentRun is not null)
+        PartySnapshot? party = await partyService.GetAsync(accountId, cancellationToken);
+        if (party is not null)
         {
-            if (currentRun.State == DungeonRunState.Completed)
-                return ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive));
+            PartyDungeonStartResult started = await partyRunCoordinator.StartAsync(
+                accountId,
+                request.DungeonId,
+                request.RequestId,
+                cancellationToken);
+            if (!started.Succeeded)
+                return ToResult(DungeonOperationResult.Failure(started.ErrorCode!));
 
-            if (currentRun.State == DungeonRunState.Active)
-            {
-                if (string.Equals(currentRun.DungeonId, request.DungeonId, StringComparison.Ordinal))
-                {
-                    return ToResult(await service.CreateAsync(
-                        accountId,
-                        request.DungeonId,
-                        request.RequestId,
-                        cancellationToken));
-                }
-
-                if (currentRun.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
-                    return ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive));
-            }
+            DungeonRunView? current = await service.GetCurrentAsync(accountId, cancellationToken);
+            return current is null
+                ? ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunNotFound))
+                : Results.Ok(ToResponse(current));
         }
 
-        DungeonTeleportResult prepared = await TeleportPartyToEntryAsync(
+        await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
+        DungeonTeleportResult prepared = await service.TeleportToEntryAsync(
             accountId,
             request.DungeonId,
             request.RequestId,
-            service,
-            partyService,
-            bootstrapService,
-            dbContext,
-            combatActivity,
             cancellationToken);
         if (!prepared.Succeeded)
             return ToTeleportResult(prepared);
