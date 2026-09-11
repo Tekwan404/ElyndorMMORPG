@@ -53,4 +53,43 @@ public sealed class DungeonRulesTests
         Assert.Equal(1, run.CurrentEncounterIndex);
         Assert.NotNull(run.CompletedAtUtc);
     }
+
+    [Fact]
+    public void VoluntaryLeaverCannotRejoinTheSameRun()
+    {
+        Guid characterId = Guid.NewGuid();
+        DungeonRun run = DungeonRun.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "ECLIPSED_CITADEL",
+            Start);
+        run.AddMember(characterId, Start);
+        run.Members.Single().MarkLeft();
+
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+            run.AddMember(characterId, Start.AddMinutes(1)));
+
+        Assert.Contains("cannot rejoin", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DungeonRunMemberState.Left, run.Members.Single().State);
+    }
+
+    [Fact]
+    public void AddingAnAlreadyActiveMemberIsIdempotent()
+    {
+        Guid characterId = Guid.NewGuid();
+        DungeonRun run = DungeonRun.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "ECLIPSED_CITADEL",
+            Start);
+
+        run.AddMember(characterId, Start);
+        run.AddMember(characterId, Start.AddMinutes(1));
+
+        DungeonRunMember member = Assert.Single(run.Members);
+        Assert.Equal(DungeonRunMemberState.Active, member.State);
+        Assert.Equal(Start, member.JoinedAtUtc);
+    }
 }
