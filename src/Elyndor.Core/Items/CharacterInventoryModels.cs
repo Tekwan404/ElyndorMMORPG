@@ -209,6 +209,30 @@ public sealed class CharacterItem
         GeneratedDisplayName = generatedDisplayName;
     }
 
+    public void ApplyStarUpgrade(GeneratedItemInstance generated)
+    {
+        ArgumentNullException.ThrowIfNull(generated);
+        if (Stars is null || generated.Stars != Stars + 1)
+            throw new InvalidOperationException("Star upgrades must advance exactly one quality tier.");
+
+        foreach (GeneratedItemAffix updated in generated.Affixes)
+        {
+            ItemRolledAffix affix = Affixes.Single(candidate => candidate.SlotKey == updated.SlotKey);
+            affix.ReplaceFrom(updated);
+        }
+        MinimumTemplateItemPower = generated.MinimumTemplateItemPower;
+        ActualItemPower = generated.ActualItemPower;
+        MaxTemplateItemPower = generated.MaxTemplateItemPower;
+        RollQuality = generated.RollQuality;
+        Stars = generated.Stars;
+        IsPerfect = generated.IsPerfect;
+        PerfectOrigin = generated.PerfectOrigin;
+        GeneratedPrefixId = generated.GeneratedPrefixId;
+        GeneratedSuffixId = generated.GeneratedSuffixId;
+        GeneratedDisplayName = generated.DisplayName;
+        EnhancementLevel = checked(EnhancementLevel + 1);
+    }
+
     private void SetRolledPrimaryStats(PrimaryStats? stats)
     {
         RolledStrength = stats?.Strength;

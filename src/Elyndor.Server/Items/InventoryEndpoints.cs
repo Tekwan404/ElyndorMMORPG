@@ -27,6 +27,7 @@ public static class InventoryEndpoints
         group.MapGet("/reforge/preview/{characterItemId:guid}", GetReforgePreviewAsync);
         group.MapPost("/reforge/roll", RollReforgeAsync);
         group.MapPost("/reforge/decide", DecideReforgeAsync);
+        group.MapPost("/star-upgrade", UpgradeItemStarsAsync);
         group.MapGet("/pending-loot", GetPendingLootAsync);
         group.MapPost("/pending-loot/claim", ClaimPendingLootAsync);
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
@@ -232,6 +233,24 @@ public static class InventoryEndpoints
             },
             () => InCombatProblem(context),
             cancellationToken);
+    }
+
+    private static async Task<IResult> UpgradeItemStarsAsync(
+        UpgradeItemStarsRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        ItemStarUpgradeService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+        {
+            ItemStarUpgradeResult result = await service.UpgradeAsync(accountId, request.CharacterItemId, request.MutationId, cancellationToken);
+            return result.Succeeded
+                ? Results.Ok(new ItemStarUpgradeResponse(request.CharacterItemId, ToGeneratedItemResponse(result.Item!)!))
+                : StarUpgradeProblem(result.ErrorCode!, context);
+        }, () => InCombatProblem(context), cancellationToken);
     }
 
     private static async Task<IResult> GetPendingLootAsync(
@@ -517,6 +536,15 @@ public static class InventoryEndpoints
                 ["code"] = errorCode,
                 ["correlationId"] = context.TraceIdentifier
             });
+
+    private static IResult StarUpgradeProblem(string errorCode, HttpContext context) =>
+        Results.Problem(statusCode: errorCode is ItemStarUpgradeErrorCodes.ItemNotFound or ItemStarUpgradeErrorCodes.CharacterNotFound
+                ? StatusCodes.Status404NotFound
+                : errorCode is ItemStarUpgradeErrorCodes.ItemLocked or ItemStarUpgradeErrorCodes.ItemEquipped
+                    or ItemStarUpgradeErrorCodes.ItemTransactionLocked or ItemStarUpgradeErrorCodes.MaxStars
+                    or ItemStarUpgradeErrorCodes.MutationConflict
+                    ? StatusCodes.Status409Conflict : StatusCodes.Status422UnprocessableEntity,
+            extensions: new Dictionary<string, object?> { ["code"] = errorCode, ["correlationId"] = context.TraceIdentifier });
 
     private static IResult SalvageProblem(string errorCode, HttpContext context) =>
         Results.Problem(

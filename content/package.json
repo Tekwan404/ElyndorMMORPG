@@ -3449,6 +3449,24 @@
       "autoAttackBaseDamageMax": 7
     }
   ],
+  "premiumStoreOffers": [
+    {
+      "sku": "REFORGE_STONES_SMALL",
+      "itemDefinitionId": "REFORGE_STONE",
+      "quantity": 10,
+      "crystalPrice": 25,
+      "enabled": true,
+      "perAccountLimit": 20
+    },
+    {
+      "sku": "FORGE_SCRAP_SMALL",
+      "itemDefinitionId": "FORGE_SCRAP",
+      "quantity": 20,
+      "crystalPrice": 20,
+      "enabled": true,
+      "perAccountLimit": 20
+    }
+  ],
   "inventoryProfile": {
     "defaultCapacity": 40
   }

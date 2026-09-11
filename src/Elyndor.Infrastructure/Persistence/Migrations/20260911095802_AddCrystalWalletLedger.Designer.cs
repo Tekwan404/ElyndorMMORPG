@@ -3,6 +3,7 @@ using System;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260911095802_AddCrystalWalletLedger")]
+    partial class AddCrystalWalletLedger
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -752,51 +755,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("crystal_wallets", "game", t =>
                         {
                             t.HasCheckConstraint("ck_crystal_wallets_balance_non_negative", "\"Balance\" >= 0");
-                        });
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Economy.PremiumStorePurchase", b =>
-                {
-                    b.Property<Guid>("OperationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("CrystalPrice")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("ItemDefinitionId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTimeOffset>("PurchasedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.HasKey("OperationId")
-                        .HasName("pk_premium_store_purchases");
-
-                    b.HasIndex("AccountId", "Sku")
-                        .HasDatabaseName("ix_premium_store_purchases_account_sku");
-
-                    b.ToTable("premium_store_purchases", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_premium_store_purchases_price_positive", "\"CrystalPrice\" > 0");
-
-                            t.HasCheckConstraint("ck_premium_store_purchases_quantity_positive", "\"Quantity\" > 0");
                         });
                 });
 

@@ -4,6 +4,10 @@ export interface AuthenticationResponse {
   roles: string[]
 }
 
+export interface PremiumStoreOffer { sku: string; itemDefinitionId: string; name: string; description: string; rarity: string; iconId: string | null; quantity: number; crystalPrice: number; canPurchase: boolean }
+export interface PremiumStoreSnapshot { crystalBalance: number; offers: PremiumStoreOffer[] }
+export interface PremiumStorePurchaseResponse { crystalBalance: number }
+
 export interface ContentAdminCurrent {
   contentVersion: string
   balanceVersion: string
@@ -474,6 +478,11 @@ export interface ItemReforgePreview {
   slotKey: string
   current: GeneratedItemSummary
   cost: ItemReforgeCost
+}
+
+export interface ItemStarUpgradeResponse {
+  itemInstanceId: string
+  item: GeneratedItemSummary
 }
 
 export interface ItemSalvageReward {
