@@ -7,6 +7,7 @@ const combat = useCombatSessionStore()
 const threat = computed(() => combat.threat)
 const maximumThreat = computed(() => Math.max(0, ...(threat.value?.entries.map(entry => entry.threat) ?? [0])))
 const isCombatActive = computed(() => combat.snapshot?.status === 'Active')
+const isTelemetryVisible = computed(() => combat.connectionState !== 'disconnected' || isCombatActive.value)
 let telemetryTimer: number | null = null
 
 function threatPercent(entry: CombatThreatEntry): number {
@@ -34,7 +35,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <aside class="combat-telemetry" aria-label="Сетевая задержка и агро">
+  <aside v-if="isTelemetryVisible" class="combat-telemetry" aria-label="Сетевая задержка и агро">
     <div class="combat-telemetry__ping" :data-connected="combat.connectionState === 'connected'">
       <span>PING</span>
       <strong>{{ combat.latencyMs ?? '—' }}</strong>
