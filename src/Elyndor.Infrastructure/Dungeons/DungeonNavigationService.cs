@@ -54,8 +54,6 @@ public sealed class DungeonNavigationService(
             .SingleOrDefault(candidate => candidate.CharacterId == characterId.Value);
         if (member is null)
             return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberNotInRun);
-        if (member.State != DungeonRunMemberState.Active)
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
 
         return DungeonNavigationResult.Success();
     }
@@ -103,16 +101,6 @@ public sealed class DungeonNavigationService(
             await transaction.RollbackAsync(cancellationToken);
             return DungeonNavigationResult.Failure(DungeonErrorCodes.RunNotFound);
         }
-        if (run.State == DungeonRunState.Abandoned)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterNotReady);
-        }
-        if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterActive);
-        }
 
         DungeonRunMember? member = run.Members
             .SingleOrDefault(candidate => candidate.CharacterId == characterId.Value);
@@ -121,10 +109,25 @@ public sealed class DungeonNavigationService(
             await transaction.RollbackAsync(cancellationToken);
             return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberNotInRun);
         }
-        if (member.State != DungeonRunMemberState.Active)
+
+        CharacterLocation? location = await dbContext.CharacterLocations
+            .SingleOrDefaultAsync(candidate => candidate.CharacterId == characterId.Value, cancellationToken);
+        if (location is null)
         {
             await transaction.RollbackAsync(cancellationToken);
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.InvalidLocation);
+        }
+
+        if (member.State == DungeonRunMemberState.Left || run.State == DungeonRunState.Abandoned)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return DungeonNavigationResult.Success(location.LocationId, location.Version);
+        }
+
+        if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterActive);
         }
 
         member.MarkLeft();
@@ -138,14 +141,6 @@ public sealed class DungeonNavigationService(
             .SingleOrDefaultAsync(state => state.CharacterId == characterId.Value, cancellationToken);
         if (staleTravel is not null)
             dbContext.CharacterTravelStates.Remove(staleTravel);
-
-        CharacterLocation? location = await dbContext.CharacterLocations
-            .SingleOrDefaultAsync(candidate => candidate.CharacterId == characterId.Value, cancellationToken);
-        if (location is null)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.InvalidLocation);
-        }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
         if (!string.Equals(location.LocationId, WorldLocationIds.StarterTown, StringComparison.Ordinal))
