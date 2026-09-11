@@ -1,0 +1,205 @@
+name: apply verified combat backend fixes
+
+on:
+  push:
+    branches:
+      - fix/combat-dungeon-state-2026-09-11
+
+permissions:
+  contents: write
+
+jobs:
+  patch-backend:
+    if: ${{ !contains(github.event.head_commit.message, '[backend-state-fixed]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_DB: elyndor_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elyndor_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/combat-dungeon-state-2026-09-11
+
+      - name: Apply backend fixes
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          def rep(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'Missing patch anchor in {path}: {old[:220]}')
+              if text.count(old) != 1:
+                  raise SystemExit(f'Ambiguous patch anchor in {path}: {text.count(old)} matches')
+              p.write_text(text.replace(old, new, 1))
+
+          # Use the AA-preserving ability path.
+          rep('src/Elyndor.Infrastructure/Combat/CombatApplicationService.cs',
+              '''                return session.Handle(
+                    characterId,
+                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    now);''',
+              '''                return session.HandleAbilityInterruptingAutoAttack(
+                    characterId,
+                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    now);''')
+
+          # A stale AA timer that becomes due during a cast must not fire on cast completion.
+          rep('src/Elyndor.Core/Combat/Sessions/CombatSession.cs',
+              '''        if (isOffHand)
+            _nextPlayerOffHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+        else
+            _nextPlayerMainHandAutoAttackAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;''',
+              '''        DateTimeOffset restartAtUtc = _playerRuntime.ActiveCast.ResolvesAtUtc;
+        DateTimeOffset nextAfterCast = restartAtUtc
+            + EffectivePlayerAutoAttackInterval(profile, restartAtUtc);
+        if (isOffHand)
+            _nextPlayerOffHandAutoAttackAtUtc = nextAfterCast;
+        else
+            _nextPlayerMainHandAutoAttackAtUtc = nextAfterCast;''')
+
+          # Persist lazy out-of-combat recovery before a dungeon relocation.
+          f = 'src/Elyndor.Server/Dungeons/DungeonEndpoints.cs'
+          rep(f,
+              'using Elyndor.Infrastructure.Persistence;\nusing Microsoft.EntityFrameworkCore;',
+              'using Elyndor.Infrastructure.Persistence;\nusing Elyndor.Infrastructure.World;\nusing Microsoft.EntityFrameworkCore;')
+          rep(f,
+              '''    private static async Task<IResult> TeleportAsync(
+        TeleportToDungeonRequest request,
+        ClaimsPrincipal user,
+        DungeonService service,
+        PartyService partyService,
+        GameDbContext dbContext,''',
+              '''    private static async Task<IResult> TeleportAsync(
+        TeleportToDungeonRequest request,
+        ClaimsPrincipal user,
+        DungeonService service,
+        PartyService partyService,
+        BootstrapService bootstrapService,
+        GameDbContext dbContext,''')
+          rep(f,
+              '''                service,
+                partyService,
+                dbContext,''',
+              '''                service,
+                partyService,
+                bootstrapService,
+                dbContext,''')
+          rep(f,
+              '''    private static async Task<DungeonTeleportResult> TeleportPartyToEntryAsync(
+        Guid accountId,
+        string dungeonId,
+        Guid requestId,
+        DungeonService service,
+        PartyService partyService,
+        GameDbContext dbContext,''',
+              '''    private static async Task<DungeonTeleportResult> TeleportPartyToEntryAsync(
+        Guid accountId,
+        string dungeonId,
+        Guid requestId,
+        DungeonService service,
+        PartyService partyService,
+        BootstrapService bootstrapService,
+        GameDbContext dbContext,''')
+          rep(f,
+              '''        if (party is null)
+            return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);''',
+              '''        if (party is null)
+        {
+            await bootstrapService.GetAsync(accountId, cancellationToken, checkpoint: true);
+            return await service.TeleportToEntryAsync(accountId, dungeonId, requestId, cancellationToken);
+        }''')
+          rep(f,
+              '''        int healthyMemberCount = await dbContext.CharacterVitals''',
+              '''        foreach (var member in members)
+        {
+            await bootstrapService.GetAsync(member.AccountId, cancellationToken, checkpoint: true);
+        }
+
+        int healthyMemberCount = await dbContext.CharacterVitals''')
+
+          # Retry/start can happen without a new teleport, so checkpoint once more immediately before encounter creation.
+          rep('src/Elyndor.Infrastructure/Combat/CombatApplicationService.cs',
+              '''        if (dungeonService is null)
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        (DungeonPreparation? preparation, string? errorCode) =''',
+              '''        if (dungeonService is null)
+            return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+
+        if (bootstrapService is not null)
+        {
+            await bootstrapService.GetAsync(
+                accountId,
+                contentProvider.GetCurrent(),
+                cancellationToken,
+                checkpoint: true);
+        }
+
+        (DungeonPreparation? preparation, string? errorCode) =''')
+
+          # An abandoned/wiped run from another dungeon must not invisibly block the dungeon at the current location.
+          rep('src/Elyndor.Infrastructure/Dungeons/DungeonService.cs',
+              '''        DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);
+        if (existing is not null)
+        {
+            await CommitAsync(transaction, cancellationToken);
+            if (!string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);
+            return new DungeonOperationResult(true, null, ToView(existing, definition));
+        }''',
+              '''        DungeonRun? existing = await LoadActiveRunAsync(ownerId, cancellationToken);
+        if (existing is not null)
+        {
+            if (string.Equals(existing.DungeonId, definition.Id, StringComparison.Ordinal))
+            {
+                await CommitAsync(transaction, cancellationToken);
+                return new DungeonOperationResult(true, null, ToView(existing, definition));
+            }
+
+            if (existing.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+            {
+                await CommitAsync(transaction, cancellationToken);
+                return DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive);
+            }
+
+            existing.Abandon();
+            foreach (DungeonRunMember member in existing.Members
+                         .Where(member => member.State == DungeonRunMemberState.Active))
+            {
+                member.MarkLeft();
+            }
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }''')
+          PY
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Verify backend and content
+        run: |
+          dotnet restore Elyndor.slnx
+          dotnet build Elyndor.slnx --configuration Release --no-restore
+          dotnet test Elyndor.slnx --configuration Release --no-build
+          dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- content/package.json
+
+      - name: Commit verified backend
+        run: |
+          rm .github/workflows/_apply_combat_backend_fixes.yml
+          git config user.name "elyndor-fix-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: preserve combat and dungeon state [backend-state-fixed]"
+          git push origin HEAD:fix/combat-dungeon-state-2026-09-11
