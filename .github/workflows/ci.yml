@@ -119,6 +119,7 @@ jobs:
           test -f .artifacts/production/frontend/index.html
           test -f .artifacts/production/frontend-admin/index.html
           test -f .artifacts/production/content/package.json
+          test -f .artifacts/production/content/dungeons/eclipsed-citadel.json
 
       - name: Install Playwright Chromium
         working-directory: web/elyndor-web

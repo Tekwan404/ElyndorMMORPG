@@ -248,6 +248,14 @@ public sealed class ContentPublicationService(
             WorldContracts = ContentCompositionRules.MergeOptionalByKey(
                 published.WorldContracts,
                 bundled.WorldContracts,
+                item => item.Id),
+            Dungeons = ContentCompositionRules.MergeOptionalByKey(
+                published.Dungeons,
+                bundled.Dungeons,
+                item => item.Id),
+            Quests = ContentCompositionRules.MergeOptionalByKey(
+                published.Quests,
+                bundled.Quests,
                 item => item.Id)
         };
 }
