@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Dungeons;
+using Elyndor.Core.Dungeons;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
@@ -65,6 +66,28 @@ public static class DungeonEndpoints
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+
+        DungeonRunView? currentRun = await service.GetCurrentAsync(accountId, cancellationToken);
+        if (currentRun is not null)
+        {
+            if (currentRun.State == DungeonRunState.Completed)
+                return ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive));
+
+            if (currentRun.State == DungeonRunState.Active)
+            {
+                if (string.Equals(currentRun.DungeonId, request.DungeonId, StringComparison.Ordinal))
+                {
+                    return ToResult(await service.CreateAsync(
+                        accountId,
+                        request.DungeonId,
+                        request.RequestId,
+                        cancellationToken));
+                }
+
+                if (currentRun.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+                    return ToResult(DungeonOperationResult.Failure(DungeonErrorCodes.RunAlreadyActive));
+            }
+        }
 
         DungeonTeleportResult prepared = await TeleportPartyToEntryAsync(
             accountId,
