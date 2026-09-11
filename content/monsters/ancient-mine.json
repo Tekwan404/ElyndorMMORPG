@@ -152,7 +152,7 @@
       "name": "Прародительница Глубин",
       "rank": "Boss",
       "level": 16,
-      "maxHp": 6500,
+      "maxHp": 3500,
       "stats": {
         "level": 16,
         "accuracy": 99,

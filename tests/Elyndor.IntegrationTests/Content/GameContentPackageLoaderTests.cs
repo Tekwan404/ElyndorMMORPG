@@ -132,6 +132,7 @@ public sealed class GameContentPackageLoaderTests
                 "ANCIENT_MINE_BROODMOTHER_L16"
             ],
             ancientMine.Encounters.Select(encounter => encounter.MonsterId));
+        Assert.Equal(3500, indexes.MonstersById["ANCIENT_MINE_BROODMOTHER_L16"].MaxHp);
 
         LootTableDefinition mineBossLoot = Assert.Single(
             package.LootTables!,
