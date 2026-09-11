@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Persistence;
