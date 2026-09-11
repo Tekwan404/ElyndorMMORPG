@@ -56,6 +56,8 @@ const sections = [
   { key: 'lootTables', label: 'Loot' },
   { key: 'merchants', label: 'Merchants' },
   { key: 'equipmentSets', label: 'Sets' },
+  { key: 'premiumStoreOffers', label: 'Premium Store' },
+  { key: 'promoCodes', label: 'Promo Codes' },
 ] as const
 
 type SectionKey = (typeof sections)[number]['key']

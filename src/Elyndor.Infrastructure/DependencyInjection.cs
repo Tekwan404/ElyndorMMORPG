@@ -47,6 +47,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ItemStarUpgradeService>();
         builder.Services.AddScoped<CrystalWalletService>();
         builder.Services.AddScoped<PremiumStoreService>();
+        builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();

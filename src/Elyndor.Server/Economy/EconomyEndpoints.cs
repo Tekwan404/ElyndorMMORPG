@@ -18,6 +18,9 @@ public static class EconomyEndpoints
         endpoints.MapGet("/api/v1/economy/store", GetStoreAsync)
             .RequireAuthorization()
             .WithTags("Economy");
+        endpoints.MapPost("/api/v1/economy/promo/redeem", RedeemPromoAsync)
+            .RequireAuthorization()
+            .WithTags("Economy");
         return endpoints;
     }
 
@@ -48,5 +51,14 @@ public static class EconomyEndpoints
         if (!Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId) || accountId == Guid.Empty) return Results.Unauthorized();
         PremiumStorePurchaseResult result = await service.PurchaseAsync(accountId, request.Sku, request.MutationId, cancellationToken);
         return result.Succeeded ? Results.Ok(new PremiumStorePurchaseResponse(result.CrystalBalance)) : Results.Problem(statusCode: StatusCodes.Status409Conflict, extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
+    }
+
+    private static async Task<IResult> RedeemPromoAsync(PromoCodeRedemptionRequest request, ClaimsPrincipal user, PromoCodeService service, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId) || accountId == Guid.Empty) return Results.Unauthorized();
+        PromoCodeRedemptionResult result = await service.RedeemAsync(accountId, request.Code, request.MutationId, cancellationToken);
+        return result.Succeeded
+            ? Results.Ok(new PromoCodeRedemptionResponse(result.CrystalBalance))
+            : Results.Problem(statusCode: StatusCodes.Status409Conflict, extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
     }
 }
