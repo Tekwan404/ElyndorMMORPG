@@ -17,6 +17,7 @@ const dungeon = useDungeonStore()
 const combat = useCombatSessionStore()
 const session = useGameSessionStore()
 const hasLoaded = ref(false)
+const startEncounterError = ref<string | null>(null)
 
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const preview = computed(() =>
@@ -33,6 +34,7 @@ const isSoloRun = computed(() => Boolean(
     && current.value.members[0]?.characterId === currentCharacterId.value,
 ))
 const canManageRun = computed(() => isSoloRun.value || isLeader.value)
+const canCreateRun = computed(() => !party.snapshot || isLeader.value)
 const currentMember = computed(() => current.value?.members.find(
   member => member.characterId === currentCharacterId.value,
 ))
@@ -70,6 +72,7 @@ const stateLabel = computed(() => {
 
 async function refreshCard(): Promise<void> {
   hasLoaded.value = false
+  startEncounterError.value = null
   try {
     await Promise.all([party.refresh(), dungeon.refresh()])
   } finally {
@@ -84,6 +87,7 @@ onMounted(() => {
 async function createRun(): Promise<void> {
   if (!preview.value) return
   if (party.snapshot && party.snapshot.leaderCharacterId !== currentCharacterId.value) return
+  startEncounterError.value = null
   await dungeon.create(preview.value.id)
 }
 
@@ -93,8 +97,15 @@ async function enterRun(): Promise<void> {
 
 async function startEncounter(): Promise<void> {
   if (!current.value || !canStart.value) return
+  startEncounterError.value = null
   await combat.connect()
-  await combat.startDungeonEncounter(current.value.runId)
+  const started = await combat.startDungeonEncounter(current.value.runId)
+  if (!started) {
+    startEncounterError.value = 'Не удалось начать столкновение. Состояние забега обновлено — попробуйте ещё раз.'
+    await dungeon.refresh()
+    return
+  }
+  await dungeon.refresh()
 }
 
 async function restartEncounter(): Promise<void> {
@@ -153,6 +164,9 @@ async function exitRun(): Promise<void> {
       <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">
         {{ socialErrorMessage(dungeon.errorCode) }}
       </p>
+      <p v-if="startEncounterError" class="dungeon-error" role="alert">
+        {{ startEncounterError }}
+      </p>
 
       <template v-if="current">
         <div class="dungeon-run">
@@ -195,7 +209,7 @@ async function exitRun(): Promise<void> {
             @click="enterRun"
           >Войти в забег</UIButton>
           <UIButton
-            v-if="current.state !== 'Active' && canManageRun"
+            v-if="current.state !== 'Active' && canCreateRun"
             data-create-dungeon
             @click="createRun"
           >Новый забег</UIButton>
