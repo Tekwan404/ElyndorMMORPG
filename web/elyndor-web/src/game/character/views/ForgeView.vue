@@ -10,26 +10,56 @@ import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const session = useGameSessionStore()
 type ForgeMode = 'reforge' | 'upgrade' | 'salvage'
+type ForgeEquipmentFilter = 'all' | 'equipped' | 'backpack'
+type ForgeSortMode = 'recommended' | 'power-desc' | 'rarity-desc' | 'level-desc' | 'name-asc'
 
 const selectedItemId = ref<string | null>(null)
 const selectedSlotKey = ref<string | null>(null)
 const activeMode = ref<ForgeMode>('reforge')
+const equipmentFilter = ref<ForgeEquipmentFilter>('all')
+const sortMode = ref<ForgeSortMode>('recommended')
 const preview = ref<ItemReforgePreview | null>(null)
 const pending = ref<ItemReforgeResponse | null>(null)
 const actionError = ref<string | null>(null)
 const loadingPreview = ref(false)
 const salvagePreview = ref<ItemSalvagePreview | null>(null)
 
+const rarityOrder: Record<InventoryItem['rarity'], number> = {
+  Common: 0,
+  Uncommon: 1,
+  Rare: 2,
+  Epic: 3,
+  Legendary: 4,
+  Unique: 5,
+}
+
 const character = computed(() => session.snapshot?.character ?? null)
 const gold = computed(() => character.value?.gold ?? 0)
 const allEquipment = computed(() => character.value?.inventory.items.filter(item => item.type === 'Equipment') ?? [])
-const sortedEquipment = computed(() => [...allEquipment.value].sort((left, right) => {
+const filteredEquipment = computed(() => allEquipment.value.filter((item) => {
+  if (equipmentFilter.value === 'equipped') return isEquipped(item)
+  if (equipmentFilter.value === 'backpack') return !isEquipped(item)
+  return true
+}))
+const displayedEquipment = computed(() => [...filteredEquipment.value].sort((left, right) => {
+  if (sortMode.value === 'power-desc') {
+    return itemPower(right) - itemPower(left)
+  }
+  if (sortMode.value === 'rarity-desc') {
+    return rarityOrder[right.rarity] - rarityOrder[left.rarity] || itemPower(right) - itemPower(left)
+  }
+  if (sortMode.value === 'level-desc') {
+    return right.requiredLevel - left.requiredLevel || itemPower(right) - itemPower(left)
+  }
+  if (sortMode.value === 'name-asc') {
+    return left.name.localeCompare(right.name, 'ru')
+  }
+
   const leftAvailable = forgeItemAvailability(left).available ? 1 : 0
   const rightAvailable = forgeItemAvailability(right).available ? 1 : 0
   if (leftAvailable !== rightAvailable) return rightAvailable - leftAvailable
-  return (right.generatedItem?.itemPower ?? 0) - (left.generatedItem?.itemPower ?? 0)
+  return itemPower(right) - itemPower(left)
 }))
-const availableEquipmentCount = computed(() => allEquipment.value.filter(item => forgeItemAvailability(item).available).length)
 const selectedItem = computed(() => allEquipment.value.find(item => item.id === selectedItemId.value) ?? null)
 const selectedAvailability = computed(() => selectedItem.value ? forgeItemAvailability(selectedItem.value) : null)
 const affixes = computed(() => selectedItem.value ? forgeableAffixes(selectedItem.value) : [])
@@ -79,6 +109,14 @@ const resultComparison = computed(() => {
   if (delta < 0) return { label: format(delta), tone: 'negative' }
   return { label: 'Без изменения значения', tone: 'neutral' }
 })
+
+function isEquipped(item: InventoryItem): boolean {
+  return item.equippedSlot !== null
+}
+
+function itemPower(item: InventoryItem): number {
+  return item.generatedItem?.itemPower ?? 0
+}
 
 function itemArt(item: InventoryItem): string | undefined {
   return itemArtUrl(item.iconId)
@@ -237,14 +275,42 @@ function rarityLabel(item: InventoryItem): string {
       </div>
     </header>
 
-    <section v-if="allEquipment.length" class="forge-layout">
+    <section
+      v-if="allEquipment.length"
+      class="forge-layout"
+      :class="{ 'forge-layout--detail': !!selectedItem }"
+    >
       <div v-if="!selectedItem" class="forge-items" aria-label="Предметы для кузницы">
         <header class="forge-items__header">
           <div><small>СНАРЯЖЕНИЕ</small><strong>Выберите предмет</strong></div>
-          <span>{{ availableEquipmentCount }} доступно</span>
+          <span>{{ displayedEquipment.length }} из {{ allEquipment.length }}</span>
         </header>
+
+        <div class="forge-items__tools">
+          <div class="forge-filter-tabs" aria-label="Фильтр экипировки">
+            <button type="button" :class="{ active: equipmentFilter === 'all' }" data-forge-filter="all" @click="equipmentFilter = 'all'">Все</button>
+            <button type="button" :class="{ active: equipmentFilter === 'equipped' }" data-forge-filter="equipped" @click="equipmentFilter = 'equipped'">Надето</button>
+            <button type="button" :class="{ active: equipmentFilter === 'backpack' }" data-forge-filter="backpack" @click="equipmentFilter = 'backpack'">В рюкзаке</button>
+          </div>
+          <label class="forge-sort">
+            <span>Сортировка</span>
+            <select v-model="sortMode" data-forge-sort>
+              <option value="recommended">Рекомендуемая</option>
+              <option value="power-desc">По мощности</option>
+              <option value="rarity-desc">По редкости</option>
+              <option value="level-desc">По уровню</option>
+              <option value="name-asc">По названию</option>
+            </select>
+          </label>
+        </div>
+
+        <div v-if="!displayedEquipment.length" class="forge-list-empty">
+          <strong>По этому фильтру ничего нет</strong>
+          <span>Переключите «Все», «Надето» или «В рюкзаке».</span>
+        </div>
+
         <button
-          v-for="item in sortedEquipment"
+          v-for="item in displayedEquipment"
           :key="item.id"
           class="forge-item"
           :class="{ active: item.id === selectedItemId, unavailable: !forgeItemAvailability(item).available }"
@@ -259,9 +325,12 @@ function rarityLabel(item: InventoryItem): string {
           <span class="forge-item__copy">
             <span class="forge-item__topline">
               <strong>{{ item.name }}</strong>
-              <b :class="forgeItemAvailability(item).available ? 'is-ready' : 'is-blocked'">
-                {{ forgeItemAvailability(item).available ? 'Готов' : 'Недоступен' }}
-              </b>
+              <span class="forge-item__badges">
+                <b v-if="isEquipped(item)" class="is-equipped">Надето</b>
+                <b :class="forgeItemAvailability(item).available ? 'is-ready' : 'is-blocked'">
+                  {{ forgeItemAvailability(item).available ? 'Готов' : 'Недоступен' }}
+                </b>
+              </span>
             </span>
             <small>{{ rarityLabel(item) }} · ур. {{ item.requiredLevel }} · мощь {{ format(item.generatedItem?.itemPower ?? 0) }}</small>
             <ItemQualityStars v-if="item.generatedItem" :id="`forge-${item.id}`" :stars="item.generatedItem.stars" />
@@ -276,7 +345,7 @@ function rarityLabel(item: InventoryItem): string {
         class="forge-empty"
         state="empty"
         title="Выберите предмет"
-        message="Доступные предметы подняты вверх списка. Заблокированные остаются видимыми с причиной."
+        message="Для разбора удобно выбрать «В рюкзаке», а для работы с текущим сетом — «Надето»."
       />
 
       <article v-else class="forge-detail" :data-rarity="selectedItem.rarity">
@@ -288,7 +357,7 @@ function rarityLabel(item: InventoryItem): string {
             <IconGenerator v-else :config="{ id: `forge-detail-${selectedItem.id}`, glyph: 'sword', category: 'weapon' }" />
           </span>
           <div class="forge-detail__copy">
-            <small>{{ rarityLabel(selectedItem) }} · ур. {{ selectedItem.requiredLevel }}</small>
+            <small>{{ rarityLabel(selectedItem) }} · ур. {{ selectedItem.requiredLevel }}<template v-if="isEquipped(selectedItem)"> · надето</template></small>
             <h2>{{ selectedItem.name }}</h2>
             <ItemQualityStars v-if="selectedItem.generatedItem" :id="`forge-detail-stars-${selectedItem.id}`" :stars="selectedItem.generatedItem.stars" />
             <div v-if="selectedItem.generatedItem" class="forge-power">
@@ -475,7 +544,7 @@ function rarityLabel(item: InventoryItem): string {
 </template>
 
 <style scoped>
-.forge-view { display: grid; gap: var(--ui-space-3); }
+.forge-view { display: grid; width: min(100%, 1180px); gap: var(--ui-space-3); margin-inline: auto; }
 .forge-header, .forge-detail, .forge-items { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(145deg, rgb(23 32 51 / 96%), rgb(10 15 27 / 96%)); }
 .forge-header { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--ui-space-3); overflow: hidden; padding: var(--ui-space-3); border-color: rgb(232 200 102 / 28%); background: radial-gradient(circle at 12% 0%, rgb(232 200 102 / 14%), transparent 38%), linear-gradient(120deg, rgb(24 29 38 / 98%), rgb(12 17 29 / 98%)); }
 .forge-header::after { position: absolute; right: -38px; bottom: -64px; width: 150px; height: 150px; border: 1px solid rgb(232 200 102 / 10%); border-radius: 50%; content: ''; pointer-events: none; }
@@ -496,6 +565,15 @@ function rarityLabel(item: InventoryItem): string {
 .forge-items__header { display: flex; align-items: end; justify-content: space-between; gap: var(--ui-space-2); margin: 2px 2px var(--ui-space-2); padding: 0 var(--ui-space-1); }
 .forge-items__header > div { display: grid; gap: 2px; }
 .forge-items__header > span { padding: 3px 7px; border: 1px solid rgb(94 203 151 / 22%); border-radius: 999px; background: rgb(94 203 151 / 7%); color: var(--ui-color-success); font-size: var(--ui-font-size-xs); white-space: nowrap; }
+.forge-items__tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, .52fr); align-items: end; gap: 8px; margin-bottom: var(--ui-space-2); padding: 8px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 13%); }
+.forge-filter-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.forge-filter-tabs button { min-height: 36px; padding: 6px 8px; border: 1px solid transparent; border-radius: var(--ui-radius-sm); background: rgb(255 255 255 / 2%); color: var(--ui-color-text-secondary); font: inherit; font-size: var(--ui-font-size-xs); cursor: pointer; }
+.forge-filter-tabs button.active { border-color: rgb(146 136 255 / 36%); background: rgb(132 121 250 / 12%); color: var(--ui-color-text-primary); }
+.forge-sort { display: grid; gap: 4px; }
+.forge-sort > span { color: var(--ui-color-text-muted); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.forge-sort select { width: 100%; min-height: 36px; padding: 6px 30px 6px 9px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: rgb(8 12 20 / 92%); color: var(--ui-color-text-primary); font: inherit; font-size: var(--ui-font-size-xs); }
+.forge-list-empty { display: grid; gap: 3px; min-height: 96px; margin: 4px 0; padding: var(--ui-space-3); place-content: center; border: 1px dashed var(--ui-color-border); border-radius: var(--ui-radius-md); color: var(--ui-color-text-secondary); text-align: center; }
+.forge-list-empty span { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .forge-item { display: grid; width: 100%; min-height: 76px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--ui-space-3); margin-top: 3px; padding: var(--ui-space-2); border: 1px solid transparent; border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-primary); font: inherit; text-align: left; cursor: pointer; transition: border-color var(--ui-transition-fast), background var(--ui-transition-fast), transform var(--ui-transition-fast); }
 .forge-item:hover { border-color: var(--ui-color-border); background: rgb(255 255 255 / 2%); }
 .forge-item:active { transform: scale(.995); }
@@ -506,13 +584,15 @@ function rarityLabel(item: InventoryItem): string {
 .forge-item__copy { display: grid; min-width: 0; gap: 3px; }
 .forge-item__topline { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
 .forge-item__topline > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.forge-item__badges { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 4px; }
 .forge-item__topline b { flex: 0 0 auto; padding: 2px 6px; border-radius: 999px; font-size: 10px; font-weight: var(--ui-font-weight-semibold); }
 .forge-item__topline .is-ready { background: rgb(94 203 151 / 10%); color: var(--ui-color-success); }
 .forge-item__topline .is-blocked { background: rgb(226 106 125 / 10%); color: var(--ui-color-danger); }
+.forge-item__topline .is-equipped { background: rgb(232 200 102 / 10%); color: var(--ui-color-gold); }
 .forge-item__copy small { letter-spacing: 0; }
 .forge-item__copy em { overflow: hidden; color: var(--ui-color-warning); font-size: var(--ui-font-size-xs); font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
 .forge-item__chevron { color: var(--ui-color-text-muted); font-size: 26px; }
-.forge-detail { padding: var(--ui-space-3); }
+.forge-detail { min-width: 0; padding: var(--ui-space-3); }
 .forge-detail__identity { display: flex; gap: var(--ui-space-3); padding-bottom: var(--ui-space-3); border-bottom: 1px solid var(--ui-color-border); }
 .forge-detail__art { width: 66px; height: 66px; flex-basis: 66px; }
 .forge-detail__copy { display: grid; min-width: 0; align-content: start; gap: 4px; flex: 1; }
@@ -594,14 +674,23 @@ function rarityLabel(item: InventoryItem): string {
   .forge-header { grid-template-columns: 1fr; }
   .forge-wallet { grid-template-columns: 1fr 1fr; }
   .forge-header__copy > span { font-size: var(--ui-font-size-xs); }
+  .forge-items__tools { grid-template-columns: 1fr; }
   .forge-result { grid-template-columns: 1fr; }
   .forge-result__arrow { transform: rotate(90deg); }
   .forge-actions { grid-template-columns: 1fr; }
   .forge-modes button small { display: none; }
   .forge-modes button { min-height: 52px; }
+  .forge-item__badges .is-blocked, .forge-item__badges .is-ready { display: none; }
 }
 @media (min-width: 720px) {
-  .forge-layout { grid-template-columns: minmax(230px, .72fr) minmax(0, 1.28fr); align-items: start; }
+  .forge-layout { grid-template-columns: minmax(320px, 460px) minmax(0, 1fr); align-items: start; }
+  .forge-layout--detail { grid-template-columns: minmax(0, 1fr); }
+  .forge-layout--detail .forge-detail { width: min(100%, 940px); justify-self: center; }
   .forge-items { position: sticky; top: 62px; max-height: calc(100dvh - 84px); overflow: auto; }
+}
+@media (min-width: 1040px) {
+  .forge-header__copy > span { max-width: 650px; }
+  .forge-detail { padding: var(--ui-space-4); }
+  .forge-panel { padding: var(--ui-space-4); }
 }
 </style>
