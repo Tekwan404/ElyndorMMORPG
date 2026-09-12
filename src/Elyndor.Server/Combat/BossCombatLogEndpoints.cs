@@ -196,7 +196,7 @@ public static class BossCombatLogEndpoints
                 .Append(compactedRegenGroups.ToString(CultureInfo.InvariantCulture))
                 .AppendLine(" строк (соседние тики объединены)");
         }
-        builder.AppendLine("Примечание: «входящий» урон — значение до shield absorption и ограничения остатком HP; реальный щит имеет отдельное событие ShieldAbsorbed.");
+        builder.AppendLine("Примечание: «входящий» урон — значение до shield absorption и ограничения остатком HP; реальный щит имеет отдельное событие ShieldAbsorbed с полем blocked.");
         builder.AppendLine("────────────────────");
 
         for (int index = 0; index < ordered.Length; index++)
@@ -255,20 +255,32 @@ public static class BossCombatLogEndpoints
         if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
             builder.Append(" · ").Append(Sanitize(combatEvent.DefinitionId, 80));
 
-        bool alwaysWriteAmount = string.Equals(
+        bool isShieldAbsorb = string.Equals(
             combatEvent.Type,
-            "ResourceChanged",
+            nameof(CombatEventType.ShieldAbsorbed),
             StringComparison.Ordinal);
-        if (alwaysWriteAmount || combatEvent.Amount != 0 || combatEvent.AmountBeforeShields != 0)
+        if (isShieldAbsorb)
         {
-            builder.Append(" · ")
+            builder.Append(" · blocked=")
                 .Append(FormatNumber(combatEvent.Amount));
-            if (combatEvent.AmountBeforeShields != 0
-                && combatEvent.AmountBeforeShields != combatEvent.Amount)
+        }
+        else
+        {
+            bool alwaysWriteAmount = string.Equals(
+                combatEvent.Type,
+                nameof(CombatEventType.ResourceChanged),
+                StringComparison.Ordinal);
+            if (alwaysWriteAmount || combatEvent.Amount != 0 || combatEvent.AmountBeforeShields != 0)
             {
-                builder.Append(" (входящий ")
-                    .Append(FormatNumber(combatEvent.AmountBeforeShields))
-                    .Append(')');
+                builder.Append(" · ")
+                    .Append(FormatNumber(combatEvent.Amount));
+                if (combatEvent.AmountBeforeShields != 0
+                    && combatEvent.AmountBeforeShields != combatEvent.Amount)
+                {
+                    builder.Append(" (входящий ")
+                        .Append(FormatNumber(combatEvent.AmountBeforeShields))
+                        .Append(')');
+                }
             }
         }
         if (!string.IsNullOrWhiteSpace(combatEvent.WeaponHand))
@@ -318,7 +330,7 @@ public static class BossCombatLogEndpoints
     }
 
     private static bool IsCombatRegen(BossCombatLogEventRequest combatEvent) =>
-        string.Equals(combatEvent.Type, "ResourceChanged", StringComparison.Ordinal)
+        string.Equals(combatEvent.Type, nameof(CombatEventType.ResourceChanged), StringComparison.Ordinal)
         && string.Equals(combatEvent.DefinitionId, CombatRegenDefinitionId, StringComparison.Ordinal);
 
     private static bool CanMergeCombatRegen(
