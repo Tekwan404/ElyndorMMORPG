@@ -7,7 +7,12 @@ import type { CombatEvent } from '@/api/contracts'
 import CombatBlockFeedback from '@/game/combat/CombatBlockFeedback.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 
-function event(sequence: number, type: string, amount: number): CombatEvent {
+function event(
+  sequence: number,
+  type: string,
+  amount: number,
+  amountBeforeShields = 0,
+): CombatEvent {
   return {
     sequence,
     type,
@@ -16,7 +21,7 @@ function event(sequence: number, type: string, amount: number): CombatEvent {
     targetActorId: 'actor-player',
     definitionId: null,
     amount,
-    amountBeforeShields: 0,
+    amountBeforeShields,
     serverTimeUtc: '2026-09-12T12:00:00Z',
   }
 }
@@ -26,7 +31,7 @@ afterEach(() => {
 })
 
 describe('CombatBlockFeedback', () => {
-  it('shows the absorbed amount for ShieldAbsorbed and hides it after the float animation window', async () => {
+  it('shows the blocked amount for DamageBlocked and hides it after the feedback window', async () => {
     vi.useFakeTimers()
     const pinia = createPinia()
     setActivePinia(pinia)
@@ -34,24 +39,42 @@ describe('CombatBlockFeedback', () => {
     const wrapper = mount(CombatBlockFeedback, { global: { plugins: [pinia] } })
 
     combat.events = [
-      event(1, 'DamageDealt', 80),
-      event(2, 'ShieldAbsorbed', 27.6),
+      event(1, 'DamageDealt', 53),
+      event(2, 'DamageBlocked', 27.6, 53),
     ]
     await nextTick()
 
     const feedback = wrapper.get('[data-combat-block-feedback]')
-    expect(feedback.text()).toContain('Блок −28')
+    expect(feedback.text()).toContain('БЛОК −28')
+    expect(feedback.classes()).not.toContain('combat-block-feedback--full')
 
     vi.advanceTimersByTime(1_250)
     await nextTick()
     expect(wrapper.find('[data-combat-block-feedback]').exists()).toBe(false)
   })
 
-  it('ignores ordinary damage events', async () => {
+  it('shows full block when no damage remains after shield block', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const combat = useCombatSessionStore(pinia)
-    combat.events = [event(1, 'DamageDealt', 42)]
+    const wrapper = mount(CombatBlockFeedback, { global: { plugins: [pinia] } })
+
+    combat.events = [event(1, 'DamageBlocked', 42, 0)]
+    await nextTick()
+
+    const feedback = wrapper.get('[data-combat-block-feedback]')
+    expect(feedback.text()).toContain('ПОЛНЫЙ БЛОК')
+    expect(feedback.classes()).toContain('combat-block-feedback--full')
+  })
+
+  it('does not confuse effect shield absorption with equipment block', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const combat = useCombatSessionStore(pinia)
+    combat.events = [
+      event(1, 'DamageDealt', 42),
+      event(2, 'ShieldAbsorbed', 20),
+    ]
 
     const wrapper = mount(CombatBlockFeedback, { global: { plugins: [pinia] } })
     await nextTick()
