@@ -88,26 +88,50 @@ public sealed record InventoryItemResponse(
     string BindState = "UNBOUND",
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0)
+    decimal BlockValueMax = 0,
+    decimal? WeaponDamageMin = null,
+    decimal? WeaponDamageMax = null)
 {
     public string Description { get; init; } = BuildDescription(
         Description,
         BlockChancePercent,
         BlockValueMin,
-        BlockValueMax);
+        BlockValueMax,
+        WeaponDamageMin,
+        WeaponDamageMax);
 
     private static string BuildDescription(
         string description,
         decimal blockChancePercent,
         decimal blockValueMin,
-        decimal blockValueMax)
+        decimal blockValueMax,
+        decimal? weaponDamageMin,
+        decimal? weaponDamageMax)
     {
-        if (blockChancePercent <= 0 || blockValueMax <= 0)
-            return description;
-        if (description.Contains("Шанс блока:", StringComparison.Ordinal))
-            return description;
+        List<string> details = [];
 
-        return $"{description}\n\nШанс блока: {FormatNumber(blockChancePercent)}%. Сила блока: {FormatNumber(blockValueMin)}–{FormatNumber(blockValueMax)}.";
+        if (weaponDamageMin.HasValue
+            && weaponDamageMax.HasValue
+            && weaponDamageMin.Value >= 0
+            && weaponDamageMax.Value >= weaponDamageMin.Value
+            && weaponDamageMax.Value > 0
+            && !description.Contains("Урон оружия:", StringComparison.Ordinal))
+        {
+            details.Add(
+                $"Урон оружия: {FormatNumber(weaponDamageMin.Value)}–{FormatNumber(weaponDamageMax.Value)}.");
+        }
+
+        if (blockChancePercent > 0
+            && blockValueMax > 0
+            && !description.Contains("Шанс блока:", StringComparison.Ordinal))
+        {
+            details.Add(
+                $"Шанс блока: {FormatNumber(blockChancePercent)}%. Сила блока: {FormatNumber(blockValueMin)}–{FormatNumber(blockValueMax)}.");
+        }
+
+        return details.Count == 0
+            ? description
+            : $"{description}\n\n{string.Join(" ", details)}";
     }
 
     private static string FormatNumber(decimal value) =>
