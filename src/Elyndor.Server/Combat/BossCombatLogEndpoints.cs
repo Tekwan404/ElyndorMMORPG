@@ -355,13 +355,13 @@ public static class BossCombatLogEndpoints
         return groups;
     }
 
-    private static long[] FindMissingSequences(IReadOnlyList<BossCombatLogEventRequest> events)
+    private static long[] FindMissingSequences(BossCombatLogEventRequest[] events)
     {
-        if (events.Count < 2) return [];
+        if (events.Length < 2) return [];
 
         List<long> missing = [];
         long previous = events[0].Sequence;
-        for (int index = 1; index < events.Count; index++)
+        for (int index = 1; index < events.Length; index++)
         {
             long current = events[index].Sequence;
             for (long sequence = previous + 1; sequence < current; sequence++)
