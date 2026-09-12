@@ -96,7 +96,8 @@
       "maximumLevel": 11,
       "requiredContractId": null,
       "artId": "whispering-forest",
-      "description": "Тёмная часть леса, где знакомые хищники становятся заметно сильнее, а добыча и опыт ценнее."
+      "description": "Тёмная часть леса, где знакомые хищники становятся заметно сильнее, а добыча и опыт ценнее.",
+      "allowAfk": true
     },
     {
       "id": "ANCIENT_MINE",
@@ -174,7 +175,8 @@
       "maximumLevel": 20,
       "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
       "artId": "caravan-road",
-      "description": "Зона 15–20 уровня за логовом босса. Доступ открывается только после выполнения контракта Прародительницы."
+      "description": "Зона 15–20 уровня за логовом босса. Доступ открывается только после выполнения контракта Прародительницы.",
+      "allowAfk": true
     },
     {
       "id": "ECLIPSED_CITADEL",

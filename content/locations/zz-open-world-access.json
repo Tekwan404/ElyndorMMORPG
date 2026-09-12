@@ -43,6 +43,7 @@
       "maximumLevel": 11,
       "requiredContractId": null,
       "artId": "whispering-forest",
+      "allowAfk": true,
       "description": "Тёмная часть леса, где знакомые хищники становятся заметно сильнее. Уровень зоны — рекомендация, а не ограничение входа."
     },
     {
@@ -105,6 +106,7 @@
       "maximumLevel": 20,
       "requiredContractId": null,
       "artId": "caravan-road",
+      "allowAfk": true,
       "description": "Опасная зона, рассчитанная примерно на 15–20 уровень. Войти можно свободно; уровень показывает рекомендуемую сложность."
     }
   ]
