@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Contracts.Items;
 
 namespace Elyndor.UnitTests.Items;
@@ -5,7 +6,7 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryItemResponseBlockTests
 {
     [Fact]
-    public void ShieldDescriptionExplainsChanceAndAbsorbedDamageRange()
+    public void ShieldBlockProfileRoundTripsWithoutChangingDescription()
     {
         InventoryItemResponse response = new(
             Guid.CreateVersion7(),
@@ -36,12 +37,17 @@ public sealed class InventoryItemResponseBlockTests
             BlockValueMin: 28m,
             BlockValueMax: 42m);
 
-        Assert.Contains("Блок щитом: шанс 4%", response.ClientDescription);
-        Assert.Contains("28–42 входящего урона", response.ClientDescription);
+        string json = JsonSerializer.Serialize(response);
+        InventoryItemResponse restored = JsonSerializer.Deserialize<InventoryItemResponse>(json)!;
+
+        Assert.Equal(response.Description, restored.Description);
+        Assert.Equal(4m, restored.BlockChancePercent);
+        Assert.Equal(28m, restored.BlockValueMin);
+        Assert.Equal(42m, restored.BlockValueMax);
     }
 
     [Fact]
-    public void NonShieldDescriptionIsNotModified()
+    public void NonShieldKeepsZeroBlockProfile()
     {
         InventoryItemResponse response = new(
             Guid.CreateVersion7(),
@@ -67,8 +73,11 @@ public sealed class InventoryItemResponseBlockTests
             0,
             0,
             0,
+            0,
             false);
 
-        Assert.Equal("Обычный меч.", response.ClientDescription);
+        Assert.Equal(0m, response.BlockChancePercent);
+        Assert.Equal(0m, response.BlockValueMin);
+        Assert.Equal(0m, response.BlockValueMax);
     }
 }
