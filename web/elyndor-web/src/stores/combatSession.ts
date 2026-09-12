@@ -64,6 +64,7 @@ interface InvokeOutcome {
 
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const ABILITY_QUEUE_WINDOW_MS = 250
+const COMBAT_EVENT_BUFFER_LIMIT = 1500
 const emptyTrainingStats = (): TrainingStats => ({
   startedAtUtc: null,
   totalDamage: 0,
@@ -116,6 +117,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let abilitySending = false
   let abilitySendingId: string | null = null
   const retryCommandIds = new Map<string, string>()
+  const seenEventSequences = new Set<number>()
 
   async function connect(): Promise<void> {
     if (connection?.state === HubConnectionState.Connected) return
@@ -365,6 +367,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         events.value = []
+        seenEventSequences.clear()
         reward.value = null
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
@@ -395,6 +398,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
       events.value = []
+      seenEventSequences.clear()
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
       threat.value = null
@@ -533,7 +537,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       && currentSnapshot !== null
       && incomingSnapshot.sessionId === currentSnapshot.sessionId
       && incomingSnapshot.sequence < currentSnapshot.sequence
-    if (isStaleSameSession) return
 
     errorCode.value = null
     diagnostic.value = null
@@ -545,6 +548,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       clearAbilityQueue()
       snapshot.value = null
       events.value = []
+      seenEventSequences.clear()
       reward.value = null
       threat.value = null
       clearLootRolls()
@@ -560,18 +564,30 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         : emptyTrainingStats()
     }
 
-    if (incomingSnapshot && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
+    if (!isStaleSameSession
+        && incomingSnapshot
+        && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
       snapshot.value = incomingSnapshot
     }
-    if (incomingSnapshot && incomingSnapshot.status !== 'Active') {
+    if (!isStaleSameSession && incomingSnapshot && incomingSnapshot.status !== 'Active') {
       retryCommandIds.clear()
       clearAbilityQueue()
       threat.value = null
     }
-    const lastSequence = events.value.length > 0 ? events.value[events.value.length - 1]!.sequence : 0
-    const fresh = update.events.filter((event) => event.sequence > lastSequence)
-    events.value = [...events.value, ...fresh].slice(-40)
-    accumulateTrainingStats(fresh, incomingSnapshot ?? snapshot.value)
+
+    const fresh = update.events.filter((event) => {
+      if (seenEventSequences.has(event.sequence)) return false
+      seenEventSequences.add(event.sequence)
+      return true
+    })
+    if (fresh.length > 0) {
+      const bySequence = new Map(events.value.map((event) => [event.sequence, event]))
+      for (const event of fresh) bySequence.set(event.sequence, event)
+      events.value = [...bySequence.values()]
+        .sort((left, right) => left.sequence - right.sequence)
+        .slice(-COMBAT_EVENT_BUFFER_LIMIT)
+    }
+    accumulateTrainingStats(fresh, snapshot.value ?? incomingSnapshot)
     if (update.reward) {
       reward.value = update.reward
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
