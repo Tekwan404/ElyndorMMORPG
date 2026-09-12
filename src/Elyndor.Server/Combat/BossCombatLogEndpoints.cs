@@ -300,7 +300,7 @@ public static class BossCombatLogEndpoints
         builder.Append(' ')
             .Append(FormatTime(first.ServerTimeUtc));
         if (last.ServerTimeUtc != first.ServerTimeUtc)
-            builder.Append("–").Append(FormatTime(last.ServerTimeUtc));
+            builder.Append('–').Append(FormatTime(last.ServerTimeUtc));
 
         builder.Append(" · ResourceChanged · ")
             .Append(source);
@@ -331,7 +331,7 @@ public static class BossCombatLogEndpoints
         && next.SourceActorId == previous.SourceActorId
         && next.TargetActorId == previous.TargetActorId;
 
-    private static int CountCombatRegenGroups(IReadOnlyList<BossCombatLogEventRequest> events)
+    private static int CountCombatRegenGroups(BossCombatLogEventRequest[] events)
     {
         int groups = 0;
         bool previousWasMergeableRegen = false;
@@ -374,13 +374,13 @@ public static class BossCombatLogEndpoints
         return missing.ToArray();
     }
 
-    private static string FormatMissingSequences(IReadOnlyList<long> missing)
+    private static string FormatMissingSequences(long[] missing)
     {
-        if (missing.Count == 0) return "нет";
+        if (missing.Length == 0) return "нет";
         string values = string.Join(", ", missing.Take(20));
-        return missing.Count <= 20
+        return missing.Length <= 20
             ? values
-            : $"{values}, … (не менее {missing.Count})";
+            : $"{values}, … (не менее {missing.Length})";
     }
 
     private static string ResolveActorName(Guid actorId, Dictionary<Guid, string> names) =>
