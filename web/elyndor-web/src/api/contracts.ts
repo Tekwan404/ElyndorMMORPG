@@ -224,6 +224,7 @@ export interface WorldLocation {
   artId: string | null
   description: string
   travelDurationSeconds?: number
+  allowAfk?: boolean
 }
 
 export interface WorldContract {
@@ -567,6 +568,41 @@ export interface BootstrapTravel {
   endsAtUtc: string
 }
 
+export interface AfkFarmState {
+  sessionId: string
+  locationId: string
+  targetMonsterId: string | null
+  status: 'Active' | 'Completed' | 'Cancelled' | 'InventoryFull' | 'Invalidated'
+  startedAtUtc: string
+  endsAtUtc: string
+  processedUntilUtc: string
+  completedAtUtc: string | null
+  stopReason: string | null
+  kills: number
+  xpEarned: number
+  goldEarned: number
+  itemsCount: number
+  efficiencyPercent: number
+}
+
+export interface AfkFarmPreview {
+  locationId: string
+  targetMonsterId: string | null
+  durationMinutes: number
+  encounteredEnemies: number
+  kills: number
+  failedKills: number
+  estimatedXp: number
+  estimatedGold: number
+  potentialLootRolls: number
+  efficiencyPercent: number
+}
+
+export interface AfkFarmTarget {
+  monsterId: string
+  displayName: string
+}
+
 export interface BootstrapSnapshot {
   accountId: string
   character: CharacterSnapshot | null
@@ -580,6 +616,7 @@ export interface BootstrapSnapshot {
   contentVersion: string
   balanceVersion: string
   serverTimeUtc: string
+  afkFarm?: AfkFarmState | null
 }
 
 export interface CreateCharacterRequest {

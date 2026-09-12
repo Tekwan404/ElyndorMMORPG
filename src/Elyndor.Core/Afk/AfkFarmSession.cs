@@ -1,16 +1,10 @@
 namespace Elyndor.Core.Afk;
 
-public enum AfkFarmMode
-{
-    Safe
-}
-
 public enum AfkFarmStatus
 {
     Active,
     Completed,
     Cancelled,
-    Dead,
     InventoryFull,
     Invalidated
 }
@@ -29,7 +23,7 @@ public sealed class AfkFarmSession
         Guid id,
         Guid characterId,
         string locationId,
-        AfkFarmMode mode,
+        string? targetMonsterId,
         DateTimeOffset startedAtUtc,
         DateTimeOffset endsAtUtc,
         string contentVersion,
@@ -52,7 +46,7 @@ public sealed class AfkFarmSession
         Id = id;
         CharacterId = characterId;
         LocationId = locationId;
-        Mode = mode;
+        TargetMonsterId = string.IsNullOrWhiteSpace(targetMonsterId) ? null : targetMonsterId;
         StartedAtUtc = startedAtUtc;
         EndsAtUtc = endsAtUtc;
         LastProcessedAtUtc = startedAtUtc;
@@ -67,7 +61,7 @@ public sealed class AfkFarmSession
     public Guid Id { get; private set; }
     public Guid CharacterId { get; private set; }
     public string LocationId { get; private set; }
-    public AfkFarmMode Mode { get; private set; }
+    public string? TargetMonsterId { get; private set; }
     public DateTimeOffset StartedAtUtc { get; private set; }
     public DateTimeOffset EndsAtUtc { get; private set; }
     public DateTimeOffset LastProcessedAtUtc { get; private set; }

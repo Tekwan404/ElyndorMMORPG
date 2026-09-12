@@ -317,6 +317,7 @@ public static class WorldEndpoints
                 : new BootstrapAfkFarmResponse(
                     snapshot.AfkFarm.SessionId,
                     snapshot.AfkFarm.LocationId,
+                    snapshot.AfkFarm.TargetMonsterId,
                     snapshot.AfkFarm.Status.ToString(),
                     snapshot.AfkFarm.StartedAtUtc,
                     snapshot.AfkFarm.EndsAtUtc,
@@ -326,7 +327,8 @@ public static class WorldEndpoints
                     snapshot.AfkFarm.Kills,
                     snapshot.AfkFarm.XpEarned,
                     snapshot.AfkFarm.GoldEarned,
-                    snapshot.AfkFarm.ItemsCount));
+                    snapshot.AfkFarm.ItemsCount,
+                    snapshot.AfkFarm.EfficiencyPercent));
 
     private static WorldLocationResponse ToLocation(BootstrapLocation location) =>
         new(
@@ -339,7 +341,8 @@ public static class WorldEndpoints
             location.RequiredContractId,
             location.ArtId,
             location.Description,
-            location.TravelDurationSeconds);
+            location.TravelDurationSeconds,
+            location.AllowAfk);
 
     private static WorldLocationResponse ToLocation(LocationDefinition location) =>
         new(
@@ -351,7 +354,8 @@ public static class WorldEndpoints
             location.MaximumLevel,
             location.RequiredContractId,
             location.ArtId,
-            location.Description);
+            location.Description,
+            AllowAfk: location.AllowAfk);
 
     private static bool TryGetAccountId(
         ClaimsPrincipal user,

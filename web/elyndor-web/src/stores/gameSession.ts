@@ -9,6 +9,9 @@ import {
 } from '@/api/replaySafeMutation'
 import type {
   AuthenticationResponse,
+  AfkFarmPreview,
+  AfkFarmState,
+  AfkFarmTarget,
   BootstrapSnapshot,
   CreateCharacterRequest,
   EquipmentSlot,
@@ -208,6 +211,68 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     errorCorrelationId.value = null
     try {
       return await apiClient.request<WorldEncounter>('/api/v1/world/explore', { method: 'POST' })
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function previewAfkFarm(locationId: string, durationMinutes: number, targetMonsterId: string | null = null): Promise<AfkFarmPreview | null> {
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      return await apiClient.request<AfkFarmPreview>('/api/v1/afk/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId, durationMinutes, targetMonsterId }),
+      })
+    } catch (error) {
+      handleError(error)
+      return null
+    }
+  }
+
+  async function getAfkFarmTargets(): Promise<AfkFarmTarget[]> {
+    try {
+      return await apiClient.request<AfkFarmTarget[]>('/api/v1/afk/targets')
+    } catch (error) {
+      handleError(error)
+      return []
+    }
+  }
+
+  async function startAfkFarm(locationId: string, durationMinutes: number, targetMonsterId: string | null = null): Promise<AfkFarmState | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await apiClient.request<AfkFarmState>('/api/v1/afk/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId, durationMinutes, targetMonsterId }),
+      })
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function stopAfkFarm(): Promise<AfkFarmState | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await apiClient.request<AfkFarmState>('/api/v1/afk/stop', { method: 'POST' })
+      await refreshSnapshot()
+      return result
     } catch (error) {
       handleError(error)
       return null
@@ -599,6 +664,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     claimQuest,
     acceptContract,
     explore,
+    previewAfkFarm,
+    getAfkFarmTargets,
+    startAfkFarm,
+    stopAfkFarm,
     equip,
     unequip,
     useConsumable,

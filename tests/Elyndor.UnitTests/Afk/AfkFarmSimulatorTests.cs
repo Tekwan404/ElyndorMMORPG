@@ -23,6 +23,7 @@ public sealed class AfkFarmSimulatorTests
         Assert.Equal(first.Kills, second.Kills);
         Assert.Equal(first.FailedKills, second.FailedKills);
         Assert.Equal(first.EstimatedIncomingDamage, second.EstimatedIncomingDamage);
+        Assert.Equal(first.EfficiencyPercent, second.EfficiencyPercent);
         Assert.Equal(first.XpCandidate, second.XpCandidate);
         Assert.Equal(first.GoldCandidate, second.GoldCandidate);
         Assert.Equal(first.LootCandidates, second.LootCandidates);
@@ -38,6 +39,8 @@ public sealed class AfkFarmSimulatorTests
 
         Assert.True(stronger.Kills > weaker.Kills);
         Assert.True(stronger.XpCandidate > weaker.XpCandidate);
+        AfkFarmSimulationResult underpowered = AfkFarmSimulator.Simulate(CreateRequest(CreateSnapshot(1)));
+        Assert.True(stronger.EfficiencyPercent > underpowered.EfficiencyPercent);
     }
 
     [Fact]
@@ -75,6 +78,33 @@ public sealed class AfkFarmSimulatorTests
             CreateRequest(character, strongMonster));
 
         Assert.True(weakResult.Kills > strongResult.Kills);
+    }
+
+    [Fact]
+    public void TargetedFarmUsesOnlyTheSelectedNormalMonster()
+    {
+        AfkCharacterSnapshot character = CreateSnapshot(20);
+        MonsterDefinition wolf = CreateMonster("WOLF", MonsterRank.Normal, 45, 9);
+        MonsterDefinition boar = CreateMonster("BOAR", MonsterRank.Normal, 90, 9, lootTableId: "BOAR_LOOT");
+        DateTimeOffset start = new(2026, 9, 12, 0, 0, 0, TimeSpan.Zero);
+        AfkFarmSimulationRequest request = new(
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            0,
+            character,
+            new LocationDefinition(
+                "TEST_LOCATION", "Test", "ADVENTURE", 1, [],
+                [new LocationEncounterDefinition(wolf.Id, 1), new LocationEncounterDefinition(boar.Id, 1)],
+                AllowAfk: true),
+            new Dictionary<string, MonsterDefinition> { [wolf.Id] = wolf, [boar.Id] = boar },
+            start,
+            start.AddMinutes(15),
+            "content-v1",
+            TargetMonsterId: boar.Id);
+
+        AfkFarmSimulationResult result = AfkFarmSimulator.Simulate(request);
+
+        Assert.NotEmpty(result.LootCandidates);
+        Assert.All(result.LootCandidates, candidate => Assert.Equal(boar.Id, candidate.MonsterId));
     }
 
     private static AfkFarmSimulationRequest CreateRequest(
@@ -115,9 +145,10 @@ public sealed class AfkFarmSimulatorTests
         string id,
         MonsterRank rank,
         decimal maxHp,
-        decimal attackDamage) => new(
+        decimal attackDamage,
+        string lootTableId = "NONE") => new(
         id, id, rank, 3, maxHp,
         new CombatStats(3, 0, 0, 0, 1, 0, 0, 0, 0, attackDamage, 0),
         TimeSpan.FromSeconds(2), attackDamage, [], "NONE",
-        XpReward: 10, GoldRewardMin: 2, GoldRewardMax: 4);
+        XpReward: 10, LootTableId: lootTableId, GoldRewardMin: 2, GoldRewardMax: 4);
 }

@@ -2,6 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Afk;
 using Elyndor.Core.Afk;
+using Elyndor.Core.Characters;
+using Elyndor.Core.Content;
+using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.Afk;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +20,7 @@ public static class AfkFarmEndpoints
         group.MapPost("/preview", PreviewAsync);
         group.MapPost("/start", StartAsync);
         group.MapGet("", GetAsync);
+        group.MapGet("/targets", GetTargetsAsync);
         group.MapPost("/stop", StopAsync);
         return endpoints;
     }
@@ -25,9 +29,9 @@ public static class AfkFarmEndpoints
         HttpContext context, AfkFarmService service, CancellationToken cancellationToken)
     {
         if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
-        if (!Enum.TryParse(request.Mode, true, out AfkFarmMode mode) || request.DurationMinutes <= 0)
+        if (request.DurationMinutes <= 0)
             return Problem("afk_invalid_request", StatusCodes.Status422UnprocessableEntity, context);
-        AfkFarmMutationResult result = await service.StartAsync(accountId, request.LocationId, mode,
+        AfkFarmMutationResult result = await service.StartAsync(accountId, request.LocationId, request.TargetMonsterId,
             TimeSpan.FromMinutes(request.DurationMinutes), cancellationToken);
         return result.Succeeded
             ? Results.Ok(ToState(result.Session!, []))
@@ -38,9 +42,9 @@ public static class AfkFarmEndpoints
         HttpContext context, AfkFarmService service, CancellationToken cancellationToken)
     {
         if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
-        if (!Enum.TryParse(request.Mode, true, out AfkFarmMode mode) || request.DurationMinutes <= 0)
+        if (request.DurationMinutes <= 0)
             return Problem("afk_invalid_request", StatusCodes.Status422UnprocessableEntity, context);
-        AfkFarmPreviewResult result = await service.PreviewAsync(accountId, request.LocationId, mode,
+        AfkFarmPreviewResult result = await service.PreviewAsync(accountId, request.LocationId, request.TargetMonsterId,
             TimeSpan.FromMinutes(request.DurationMinutes), cancellationToken);
         if (!result.Succeeded)
             return Problem(result.ErrorCode!, StatusCodes.Status409Conflict, context);
@@ -48,7 +52,7 @@ public static class AfkFarmEndpoints
         AfkFarmSimulationResult simulation = result.Simulation!;
         return Results.Ok(new AfkFarmPreviewResponse(
             request.LocationId,
-            mode.ToString(),
+            request.TargetMonsterId,
             request.DurationMinutes,
             simulation.EncounteredEnemies,
             simulation.Kills,
@@ -56,7 +60,7 @@ public static class AfkFarmEndpoints
             result.EstimatedXp,
             result.EstimatedGold,
             simulation.LootCandidates.Count,
-            simulation.EstimatedIncomingDamage));
+            simulation.EfficiencyPercent));
     }
 
     private static async Task<IResult> GetAsync(ClaimsPrincipal user, HttpContext context,
@@ -81,14 +85,41 @@ public static class AfkFarmEndpoints
             : Problem(result.ErrorCode!, StatusCodes.Status404NotFound, context);
     }
 
+    private static async Task<IResult> GetTargetsAsync(ClaimsPrincipal user, GameDbContext dbContext,
+        IContentSnapshotProvider contentProvider, CancellationToken cancellationToken)
+    {
+        if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
+        Guid? characterId = await dbContext.Characters.AsNoTracking()
+            .Where(character => character.AccountId == accountId)
+            .Select(character => (Guid?)character.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (characterId is null) return Results.Ok(Array.Empty<AfkFarmTargetResponse>());
+        string? locationId = await dbContext.CharacterLocations.AsNoTracking()
+            .Where(location => location.CharacterId == characterId.Value)
+            .Select(location => location.LocationId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (locationId is null || !contentProvider.GetCurrent().Indexes.LocationsById.TryGetValue(locationId, out var location))
+            return Results.Ok(Array.Empty<AfkFarmTargetResponse>());
+        var targets = (location.Encounters ?? [])
+            .Where(encounter => contentProvider.GetCurrent().Indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster)
+                && monster.Rank == MonsterRank.Normal)
+            .Select(encounter => contentProvider.GetCurrent().Indexes.MonstersById[encounter.MonsterId])
+            .DistinctBy(monster => monster.Id)
+            .OrderBy(monster => monster.DisplayName, StringComparer.Ordinal)
+            .Select(monster => new AfkFarmTargetResponse(monster.Id, monster.DisplayName ?? monster.Id))
+            .ToArray();
+        return Results.Ok(targets);
+    }
+
     private static AfkFarmStateResponse ToState(AfkFarmSession session,
         IReadOnlyList<AfkFarmIntervalGrant> grants) => new(
-        session.Id, session.LocationId, session.Mode.ToString(), session.Status.ToString(),
+        session.Id, session.LocationId, session.TargetMonsterId, session.Status.ToString(),
         session.StartedAtUtc, session.EndsAtUtc, session.LastProcessedAtUtc, session.CompletedAtUtc,
         session.StopReason, grants.Sum(grant => grant.Kills), grants.Sum(grant => grant.XpEarned),
         grants.Sum(grant => grant.GoldEarned), grants.Sum(grant =>
             System.Text.Json.JsonSerializer.Deserialize<IReadOnlyList<Elyndor.Core.Items.LootRoll>>(grant.LootJson)
-                ?.Sum(loot => loot.Quantity) ?? 0));
+                ?.Sum(loot => loot.Quantity) ?? 0),
+        0);
 
     private static bool TryAccount(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)

@@ -71,7 +71,8 @@ public sealed record BootstrapLocation(
     string? RequiredContractId,
     string? ArtId,
     string Description,
-    decimal TravelDurationSeconds);
+    decimal TravelDurationSeconds,
+    bool AllowAfk);
 
 public sealed record BootstrapWorldContract(
     string Id,
@@ -110,6 +111,7 @@ public sealed record BootstrapSnapshot(
 public sealed record BootstrapAfkFarm(
     Guid SessionId,
     string LocationId,
+    string? TargetMonsterId,
     AfkFarmStatus Status,
     DateTimeOffset StartedAtUtc,
     DateTimeOffset EndsAtUtc,
@@ -119,7 +121,8 @@ public sealed record BootstrapAfkFarm(
     int Kills,
     int XpEarned,
     int GoldEarned,
-    int ItemsCount);
+    int ItemsCount,
+    int EfficiencyPercent);
 
 public sealed class BootstrapService(
     GameDbContext dbContext,
@@ -438,11 +441,11 @@ public sealed class BootstrapService(
                 .Where(grant => grant.SessionId == afkSession.Id)
                 .ToArrayAsync(cancellationToken);
             afkFarm = new BootstrapAfkFarm(
-                afkSession.Id, afkSession.LocationId, afkSession.Status,
+                afkSession.Id, afkSession.LocationId, afkSession.TargetMonsterId, afkSession.Status,
                 afkSession.StartedAtUtc, afkSession.EndsAtUtc, afkSession.LastProcessedAtUtc,
                 afkSession.CompletedAtUtc, afkSession.StopReason,
                 grants.Sum(grant => grant.Kills), grants.Sum(grant => grant.XpEarned),
-                grants.Sum(grant => grant.GoldEarned), 0);
+                grants.Sum(grant => grant.GoldEarned), 0, 0);
         }
 
         return new BootstrapSnapshot(
@@ -665,5 +668,6 @@ public sealed class BootstrapService(
             location.RequiredContractId,
             location.ArtId,
             location.Description,
-            location.TravelDurationSeconds);
+            location.TravelDurationSeconds,
+            location.AllowAfk);
 }
