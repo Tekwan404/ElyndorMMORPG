@@ -9,7 +9,7 @@ import { locationKind, locationLabel, locationPresentation } from '@/game/world/
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { usePartyStore } from '@/game/party/partyStore'
-import { UIButton, UICard, UIToast } from '@/ui/components'
+import { UIButton, UICard, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
@@ -25,6 +25,10 @@ const lastEnemyName = ref<string | null>(null)
 const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
+const afkOpen = ref(false)
+const afkDurationMinutes = ref(60)
+const afkPreviewLoading = ref(false)
+const afkPreview = ref<Awaited<ReturnType<typeof session.previewAfkFarm>>>(null)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
 let combatResultTimer: number | null = null
 let vitalsRefreshPending = false
@@ -38,6 +42,16 @@ const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? '')
 const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
 const isCityLocation = computed(() => locationKind(currentLocationId.value) === 'city')
+const activeAfkFarm = computed(() => session.snapshot?.afkFarm?.status === 'Active'
+  ? session.snapshot.afkFarm
+  : null)
+const canUseAfkFarm = computed(() =>
+  !isTravelling.value
+  && !combat.isActive
+  && !isDungeonLocation.value
+  && world.value?.currentLocation.allowAfk === true
+  && activeAfkFarm.value === null,
+)
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
 )
@@ -144,6 +158,38 @@ async function explore(): Promise<void> {
     lastEnemyName.value = encounter.name
     lastCombatResult.value = null
   }
+}
+
+async function openAfkFarm(): Promise<void> {
+  if (!canUseAfkFarm.value) return
+  afkOpen.value = true
+  await loadAfkPreview()
+}
+
+async function loadAfkPreview(): Promise<void> {
+  if (!currentLocationId.value || afkPreviewLoading.value) return
+  afkPreviewLoading.value = true
+  try {
+    afkPreview.value = await session.previewAfkFarm(currentLocationId.value, afkDurationMinutes.value)
+  } finally {
+    afkPreviewLoading.value = false
+  }
+}
+
+async function selectAfkDuration(durationMinutes: number): Promise<void> {
+  afkDurationMinutes.value = durationMinutes
+  await loadAfkPreview()
+}
+
+async function startAfkFarm(): Promise<void> {
+  if (!currentLocationId.value || session.mutationPending) return
+  const started = await session.startAfkFarm(currentLocationId.value, afkDurationMinutes.value)
+  if (started) afkOpen.value = false
+}
+
+async function stopAfkFarm(): Promise<void> {
+  if (session.mutationPending) return
+  await session.stopAfkFarm()
 }
 
 async function startTraining(): Promise<void> {
@@ -267,6 +313,13 @@ onMounted(() => {
           >
             Исследовать
           </UIButton>
+          <UIButton
+            v-if="canUseAfkFarm"
+            data-afk-farming
+            variant="secondary"
+            :disabled="session.mutationPending"
+            @click="openAfkFarm"
+          >AFK-фарм</UIButton>
         </div>
       </div>
     </section>
@@ -280,6 +333,15 @@ onMounted(() => {
     <div v-if="session.errorCode" class="world-error" role="alert">
       <strong>{{ worldErrorMessage }}</strong>
     </div>
+
+    <UICard v-if="activeAfkFarm" class="afk-status" data-afk-active>
+      <div>
+        <small>AFK-ФАРМ АКТИВЕН</small>
+        <strong>{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{ activeAfkFarm.goldEarned }} золота</strong>
+        <p>До {{ new Date(activeAfkFarm.endsAtUtc).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }}</p>
+      </div>
+      <UIButton variant="secondary" :loading="session.mutationPending" @click="stopAfkFarm">Остановить</UIButton>
+    </UICard>
 
     <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>
       <div class="reward-card__heading">
@@ -526,6 +588,31 @@ onMounted(() => {
       :location-id="currentLocationId ?? ''"
       @close="guildOpen = false"
     />
+    <UIModal :open="afkOpen" title="AFK-фарм" @close="afkOpen = false">
+      <div class="afk-modal" data-afk-farm-modal>
+        <p>Герой останется в этой области и получит безопасный фоновый бонус.</p>
+        <div class="afk-duration" aria-label="Длительность AFK-фарма">
+          <UIButton
+            v-for="duration in [15, 60, 240]"
+            :key="duration"
+            :variant="afkDurationMinutes === duration ? 'primary' : 'secondary'"
+            :disabled="afkPreviewLoading || session.mutationPending"
+            @click="selectAfkDuration(duration)"
+          >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton>
+        </div>
+        <div v-if="afkPreview" class="afk-preview">
+          <span>Примерно {{ afkPreview.kills }} побед</span>
+          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
+          <small>{{ afkPreview.potentialLootRolls }} возможн. лут-роллов · риск: {{ afkPreview.estimatedIncomingDamage }} урона</small>
+        </div>
+        <p v-else-if="afkPreviewLoading">Рассчитываем маршрут фарма…</p>
+        <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия локации.</p>
+      </div>
+      <template #actions>
+        <UIButton variant="secondary" @click="afkOpen = false">Отмена</UIButton>
+        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm">Начать</UIButton>
+      </template>
+    </UIModal>
   </section>
 </template>
 
@@ -545,6 +632,44 @@ onMounted(() => {
 .town-services {
   display: grid;
   gap: var(--ui-space-3);
+}
+
+.afk-status,
+.afk-modal,
+.afk-preview {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.afk-status {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.afk-status small,
+.afk-status p,
+.afk-preview small {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.afk-status strong,
+.afk-preview strong {
+  color: var(--ui-color-text-primary);
+}
+
+.afk-duration {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ui-space-2);
+}
+
+.afk-preview {
+  padding: var(--ui-space-3);
+  border: 1px solid rgb(102 141 225 / 35%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(61 81 137 / 14%);
 }
 
 .world-stories + .field-guild,

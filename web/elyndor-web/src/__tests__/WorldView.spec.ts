@@ -56,6 +56,19 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
+  it('offers AFK farming only from the eligible current location', async () => {
+    const forestStore = useGameSessionStore()
+    forestStore.snapshot = snapshot('WHISPERING_FOREST')
+    const forest = mount(WorldView)
+    expect(forest.find('[data-afk-farming]').exists()).toBe(true)
+    forest.unmount()
+
+    const townStore = useGameSessionStore()
+    townStore.snapshot = snapshot('STARTER_TOWN')
+    const town = mount(WorldView)
+    expect(town.find('[data-afk-farming]').exists()).toBe(false)
+  })
+
   it('disables exploration while a world mutation is pending and shows the server error', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot('WHISPERING_FOREST')
@@ -280,6 +293,7 @@ function snapshot(
             requiredContractId: null,
             artId: null,
             description: 'Test location',
+            allowAfk: true,
           }
         : {
             id: 'STARTER_TOWN',
@@ -291,6 +305,7 @@ function snapshot(
             requiredContractId: null,
             artId: null,
             description: 'Test location',
+            allowAfk: false,
           },
       version: 1,
       outgoingTransitions: inForest

@@ -339,7 +339,8 @@ public static class WorldEndpoints
             location.RequiredContractId,
             location.ArtId,
             location.Description,
-            location.TravelDurationSeconds);
+            location.TravelDurationSeconds,
+            location.AllowAfk);
 
     private static WorldLocationResponse ToLocation(LocationDefinition location) =>
         new(
@@ -351,7 +352,8 @@ public static class WorldEndpoints
             location.MaximumLevel,
             location.RequiredContractId,
             location.ArtId,
-            location.Description);
+            location.Description,
+            AllowAfk: location.AllowAfk);
 
     private static bool TryGetAccountId(
         ClaimsPrincipal user,

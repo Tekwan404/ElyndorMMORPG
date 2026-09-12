@@ -71,7 +71,8 @@ public sealed record BootstrapLocation(
     string? RequiredContractId,
     string? ArtId,
     string Description,
-    decimal TravelDurationSeconds);
+    decimal TravelDurationSeconds,
+    bool AllowAfk);
 
 public sealed record BootstrapWorldContract(
     string Id,
@@ -665,5 +666,6 @@ public sealed class BootstrapService(
             location.RequiredContractId,
             location.ArtId,
             location.Description,
-            location.TravelDurationSeconds);
+            location.TravelDurationSeconds,
+            location.AllowAfk);
 }

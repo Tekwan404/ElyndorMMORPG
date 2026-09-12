@@ -12,7 +12,8 @@ public sealed record WorldLocationResponse(
     string? RequiredContractId,
     string? ArtId,
     string Description,
-    decimal TravelDurationSeconds = 0);
+    decimal TravelDurationSeconds = 0,
+    bool AllowAfk = false);
 
 public sealed record WorldContractResponse(
     string Id,
