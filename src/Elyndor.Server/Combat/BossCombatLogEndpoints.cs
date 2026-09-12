@@ -188,7 +188,7 @@ public static class BossCombatLogEndpoints
             yield return chunk.ToString();
     }
 
-    private static string ResolveActorName(Guid actorId, IReadOnlyDictionary<Guid, string> names) =>
+    private static string ResolveActorName(Guid actorId, Dictionary<Guid, string> names) =>
         names.TryGetValue(actorId, out string? name)
             ? name
             : actorId.ToString("N")[..8];
