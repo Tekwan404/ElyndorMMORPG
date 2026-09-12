@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text.Json.Serialization;
-
 namespace Elyndor.Contracts.Items;
 
 public sealed record ItemStatsResponse(
@@ -64,7 +61,7 @@ public sealed record InventoryItemResponse(
     string? Slot,
     string? EquippedSlot,
     ItemStatsResponse Stats,
-    [property: JsonIgnore] string Description,
+    string Description,
     string? SetId,
     string? WeaponCategory,
     string? ArmorCategory,
@@ -89,17 +86,7 @@ public sealed record InventoryItemResponse(
     string BindState = "UNBOUND",
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0)
-{
-    [JsonPropertyName("description")]
-    public string ClientDescription =>
-        BlockChancePercent > 0 && BlockValueMax > 0
-            ? $"{Description}\n\nБлок щитом: шанс {Format(BlockChancePercent)}%. При успешном блоке щит поглощает {Format(BlockValueMin)}–{Format(BlockValueMax)} входящего урона."
-            : Description;
-
-    private static string Format(decimal value) =>
-        decimal.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
-}
+    decimal BlockValueMax = 0);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
