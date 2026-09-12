@@ -16,6 +16,7 @@ namespace Elyndor.Server.Combat;
 public static class BossCombatLogEndpoints
 {
     private const int MaxEvents = 1500;
+    private const string CombatRegenDefinitionId = "COMBAT_REGEN";
 
     public static IEndpointRouteBuilder MapBossCombatLogEndpoints(
         this IEndpointRouteBuilder endpoints)
@@ -115,6 +116,13 @@ public static class BossCombatLogEndpoints
         if (snapshot.Companion is not null)
             actorNames[snapshot.Companion.ActorId] = snapshot.Companion.Name;
 
+        BossCombatLogEventRequest[] ordered = events
+            .OrderBy(item => item.Sequence)
+            .ToArray();
+        long[] missingSequences = FindMissingSequences(ordered);
+        int rawRegenEvents = ordered.Count(IsCombatRegen);
+        int compactedRegenGroups = CountCombatRegenGroups(ordered);
+
         string bossName = string.Join(", ", bosses.Select(boss =>
             boss.DisplayName ?? boss.Name));
         string result = snapshot.Status switch
@@ -132,54 +140,219 @@ public static class BossCombatLogEndpoints
         builder.Append("Сессия: ").AppendLine(snapshot.SessionId.ToString("D"));
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
-        builder.Append("Событий: ").AppendLine(events.Count.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Событий получено: ")
+            .AppendLine(ordered.Length.ToString(CultureInfo.InvariantCulture));
+        if (ordered.Length > 0)
+        {
+            builder.Append("Sequence: #")
+                .Append(ordered[0].Sequence.ToString(CultureInfo.InvariantCulture))
+                .Append("–#")
+                .AppendLine(ordered[^1].Sequence.ToString(CultureInfo.InvariantCulture));
+        }
+        builder.Append("Пропуски sequence: ")
+            .AppendLine(FormatMissingSequences(missingSequences));
+        if (rawRegenEvents > 0)
+        {
+            builder.Append("COMBAT_REGEN: ")
+                .Append(rawRegenEvents.ToString(CultureInfo.InvariantCulture))
+                .Append(" событий → ")
+                .Append(compactedRegenGroups.ToString(CultureInfo.InvariantCulture))
+                .AppendLine(" строк (соседние тики объединены)");
+        }
+        builder.AppendLine("Примечание: «входящий» урон — значение до shield absorption и ограничения остатком HP; реальный щит имеет отдельное событие ShieldAbsorbed.");
         builder.AppendLine("────────────────────");
 
-        foreach (BossCombatLogEventRequest combatEvent in events.OrderBy(item => item.Sequence))
+        for (int index = 0; index < ordered.Length; index++)
         {
-            string source = ResolveActorName(combatEvent.SourceActorId ?? combatEvent.ActorId, actorNames);
-            string target = combatEvent.TargetActorId is Guid targetActorId
-                ? ResolveActorName(targetActorId, actorNames)
-                : "—";
-            string time = combatEvent.ServerTimeUtc.ToUniversalTime().ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture);
-
-            builder.Append('#')
-                .Append(combatEvent.Sequence.ToString(CultureInfo.InvariantCulture))
-                .Append(' ')
-                .Append(time)
-                .Append(" · ")
-                .Append(Sanitize(combatEvent.Type, 48))
-                .Append(" · ")
-                .Append(source);
-
-            if (combatEvent.TargetActorId is not null)
-                builder.Append(" → ").Append(target);
-            if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
-                builder.Append(" · ").Append(Sanitize(combatEvent.DefinitionId, 80));
-            if (combatEvent.Amount != 0 || combatEvent.AmountBeforeShields != 0)
+            BossCombatLogEventRequest combatEvent = ordered[index];
+            if (IsCombatRegen(combatEvent))
             {
-                builder.Append(" · ")
-                    .Append(FormatNumber(combatEvent.Amount));
-                if (combatEvent.AmountBeforeShields != 0
-                    && combatEvent.AmountBeforeShields != combatEvent.Amount)
+                int end = index;
+                decimal total = combatEvent.Amount;
+                while (end + 1 < ordered.Length
+                    && CanMergeCombatRegen(ordered[end], ordered[end + 1]))
                 {
-                    builder.Append(" (до щита ")
-                        .Append(FormatNumber(combatEvent.AmountBeforeShields))
-                        .Append(')');
+                    end++;
+                    total += ordered[end].Amount;
                 }
+
+                WriteCombatRegenGroup(
+                    builder,
+                    ordered[index],
+                    ordered[end],
+                    total,
+                    end - index + 1,
+                    actorNames);
+                index = end;
+                continue;
             }
-            if (!string.IsNullOrWhiteSpace(combatEvent.WeaponHand))
-                builder.Append(" · ").Append(Sanitize(combatEvent.WeaponHand, 24));
-            builder.AppendLine();
+
+            WriteEvent(builder, combatEvent, actorNames);
         }
 
         return builder.ToString();
+    }
+
+    private static void WriteEvent(
+        StringBuilder builder,
+        BossCombatLogEventRequest combatEvent,
+        Dictionary<Guid, string> actorNames)
+    {
+        string source = ResolveActorName(combatEvent.SourceActorId ?? combatEvent.ActorId, actorNames);
+        string target = combatEvent.TargetActorId is Guid targetActorId
+            ? ResolveActorName(targetActorId, actorNames)
+            : "—";
+        string time = FormatTime(combatEvent.ServerTimeUtc);
+
+        builder.Append('#')
+            .Append(combatEvent.Sequence.ToString(CultureInfo.InvariantCulture))
+            .Append(' ')
+            .Append(time)
+            .Append(" · ")
+            .Append(Sanitize(combatEvent.Type, 48))
+            .Append(" · ")
+            .Append(source);
+
+        if (combatEvent.TargetActorId is not null)
+            builder.Append(" → ").Append(target);
+        if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+            builder.Append(" · ").Append(Sanitize(combatEvent.DefinitionId, 80));
+
+        bool alwaysWriteAmount = string.Equals(
+            combatEvent.Type,
+            "ResourceChanged",
+            StringComparison.Ordinal);
+        if (alwaysWriteAmount || combatEvent.Amount != 0 || combatEvent.AmountBeforeShields != 0)
+        {
+            builder.Append(" · ")
+                .Append(FormatNumber(combatEvent.Amount));
+            if (combatEvent.AmountBeforeShields != 0
+                && combatEvent.AmountBeforeShields != combatEvent.Amount)
+            {
+                builder.Append(" (входящий ")
+                    .Append(FormatNumber(combatEvent.AmountBeforeShields))
+                    .Append(')');
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(combatEvent.WeaponHand))
+            builder.Append(" · ").Append(Sanitize(combatEvent.WeaponHand, 24));
+        builder.AppendLine();
+    }
+
+    private static void WriteCombatRegenGroup(
+        StringBuilder builder,
+        BossCombatLogEventRequest first,
+        BossCombatLogEventRequest last,
+        decimal total,
+        int count,
+        Dictionary<Guid, string> actorNames)
+    {
+        string source = ResolveActorName(first.SourceActorId ?? first.ActorId, actorNames);
+        string target = first.TargetActorId is Guid targetActorId
+            ? ResolveActorName(targetActorId, actorNames)
+            : "—";
+
+        builder.Append('#')
+            .Append(first.Sequence.ToString(CultureInfo.InvariantCulture));
+        if (last.Sequence != first.Sequence)
+        {
+            builder.Append("–#")
+                .Append(last.Sequence.ToString(CultureInfo.InvariantCulture));
+        }
+
+        builder.Append(' ')
+            .Append(FormatTime(first.ServerTimeUtc));
+        if (last.ServerTimeUtc != first.ServerTimeUtc)
+            builder.Append("–").Append(FormatTime(last.ServerTimeUtc));
+
+        builder.Append(" · ResourceChanged · ")
+            .Append(source);
+        if (first.TargetActorId is not null)
+            builder.Append(" → ").Append(target);
+        builder.Append(" · COMBAT_REGEN · ")
+            .Append(FormatNumber(total));
+        if (count > 1)
+        {
+            builder.Append(" · ")
+                .Append(count.ToString(CultureInfo.InvariantCulture))
+                .Append(" тика");
+        }
+        builder.AppendLine();
+    }
+
+    private static bool IsCombatRegen(BossCombatLogEventRequest combatEvent) =>
+        string.Equals(combatEvent.Type, "ResourceChanged", StringComparison.Ordinal)
+        && string.Equals(combatEvent.DefinitionId, CombatRegenDefinitionId, StringComparison.Ordinal);
+
+    private static bool CanMergeCombatRegen(
+        BossCombatLogEventRequest previous,
+        BossCombatLogEventRequest next) =>
+        IsCombatRegen(previous)
+        && IsCombatRegen(next)
+        && next.Sequence == previous.Sequence + 1
+        && next.ActorId == previous.ActorId
+        && next.SourceActorId == previous.SourceActorId
+        && next.TargetActorId == previous.TargetActorId;
+
+    private static int CountCombatRegenGroups(IReadOnlyList<BossCombatLogEventRequest> events)
+    {
+        int groups = 0;
+        bool previousWasMergeableRegen = false;
+        BossCombatLogEventRequest? previous = null;
+        foreach (BossCombatLogEventRequest combatEvent in events)
+        {
+            if (!IsCombatRegen(combatEvent))
+            {
+                previousWasMergeableRegen = false;
+                previous = combatEvent;
+                continue;
+            }
+
+            bool sameGroup = previousWasMergeableRegen
+                && previous is not null
+                && CanMergeCombatRegen(previous, combatEvent);
+            if (!sameGroup) groups++;
+            previousWasMergeableRegen = true;
+            previous = combatEvent;
+        }
+        return groups;
+    }
+
+    private static long[] FindMissingSequences(IReadOnlyList<BossCombatLogEventRequest> events)
+    {
+        if (events.Count < 2) return [];
+
+        List<long> missing = [];
+        long previous = events[0].Sequence;
+        for (int index = 1; index < events.Count; index++)
+        {
+            long current = events[index].Sequence;
+            for (long sequence = previous + 1; sequence < current; sequence++)
+            {
+                missing.Add(sequence);
+                if (missing.Count >= 100) return missing.ToArray();
+            }
+            previous = Math.Max(previous, current);
+        }
+        return missing.ToArray();
+    }
+
+    private static string FormatMissingSequences(IReadOnlyList<long> missing)
+    {
+        if (missing.Count == 0) return "нет";
+        string values = string.Join(", ", missing.Take(20));
+        return missing.Count <= 20
+            ? values
+            : $"{values}, … (не менее {missing.Count})";
     }
 
     private static string ResolveActorName(Guid actorId, Dictionary<Guid, string> names) =>
         names.TryGetValue(actorId, out string? name)
             ? name
             : actorId.ToString("N")[..8];
+
+    private static string FormatTime(DateTimeOffset value) =>
+        value.ToUniversalTime().ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture);
 
     private static string FormatNumber(decimal value) =>
         decimal.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
