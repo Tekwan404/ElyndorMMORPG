@@ -74,7 +74,7 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     }
 
     [Fact]
-    public async Task LeftMemberCanPassEnterGuardForActiveRun()
+    public async Task LeftMemberCannotReenterActiveRun()
     {
         (Guid accountId, Guid characterId, _, Guid runId) = await SeedRunAsync(completed: false);
         await using (GameDbContext setup = postgres.CreateDbContext())
@@ -93,8 +93,8 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
             runId,
             CancellationToken.None);
 
-        Assert.True(result.Succeeded);
-        Assert.Null(result.ErrorCode);
+        Assert.False(result.Succeeded);
+        Assert.Equal(DungeonErrorCodes.MemberCannotEnter, result.ErrorCode);
     }
 
     private async Task<(Guid AccountId, Guid CharacterId, Guid PartyId, Guid RunId)> SeedRunAsync(
