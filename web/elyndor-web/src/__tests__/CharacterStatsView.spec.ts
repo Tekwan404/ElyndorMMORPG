@@ -23,6 +23,27 @@ describe('CharacterStatsView', () => {
     expect(document.body.textContent).toContain('Экипировка')
     wrapper.unmount()
   })
+
+  it('shows block stats and server-calculated effective defense percentages', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot()
+
+    const wrapper = mount(CharacterStatsView, { attachTo: document.body })
+
+    expect(wrapper.get('[data-stat="blockChance"]').text()).toContain('18%')
+    expect(wrapper.get('[data-stat="blockValueMin"]').text()).toContain('24')
+    expect(wrapper.get('[data-stat="blockValueMax"]').text()).toContain('36')
+    expect(wrapper.get('[data-stat="armor"]').text()).toContain('15.97% снижения физического урона')
+    expect(wrapper.get('[data-stat="magicResistance"]').text()).toContain('10.71% снижения магического урона')
+
+    await wrapper.get('[data-stat="armor"]').trigger('click')
+    expect(document.body.textContent).toContain('Эффективное значение')
+    expect(document.body.textContent).toContain('15.97%')
+    expect(document.body.textContent).toContain('до учёта пробивания атакующего')
+    expect(document.body.textContent).toContain('Вклад Выносливости')
+    expect(document.body.textContent).toContain('Бонус экипировки')
+    wrapper.unmount()
+  })
 })
 
 function snapshot() {
@@ -85,9 +106,21 @@ function snapshot() {
         armorPenetration: { finalValue: 0, contributions: [] },
         magicPenetration: { finalValue: 0, contributions: [{ source: 'FORMULA_BASE' as const, value: 0 }] },
         attackSpeed: { finalValue: 1, contributions: [{ source: 'FORMULA_BASE' as const, value: 1 }] },
-        armor: { finalValue: 19, contributions: [{ source: 'STAMINA' as const, value: 14 }, { source: 'STRENGTH' as const, value: 5 }] },
+        armor: {
+          finalValue: 19,
+          contributions: [
+            { source: 'STAMINA' as const, value: 14 },
+            { source: 'STRENGTH' as const, value: 4 },
+            { source: 'EQUIPMENT_BONUS' as const, value: 1 },
+          ],
+        },
+        armorDamageReductionPercent: { finalValue: 15.9663865546, contributions: [] },
         magicResistance: { finalValue: 12, contributions: [{ source: 'STAMINA' as const, value: 7 }, { source: 'INTELLECT' as const, value: 5 }] },
+        magicDamageReductionPercent: { finalValue: 10.7142857143, contributions: [] },
         dodge: { finalValue: 1.8, contributions: [{ source: 'AGILITY' as const, value: 1.8 }] },
+        blockChance: { finalValue: 18, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 18 }] },
+        blockValueMin: { finalValue: 24, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 24 }] },
+        blockValueMax: { finalValue: 36, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 36 }] },
       },
       vitals: {
         currentHp: 120,
