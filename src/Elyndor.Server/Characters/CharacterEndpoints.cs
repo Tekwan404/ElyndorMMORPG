@@ -21,6 +21,8 @@ public static class CharacterEndpoints
                 : Results.Unauthorized());
         group.MapGet("/character", GetCharacterAsync);
         group.MapPost("/character", CreateCharacterAsync);
+        group.MapGet("/character/companion", GetCompanionAsync);
+        group.MapPost("/character/companion/select", SelectCompanionAsync);
 
         return endpoints;
     }
@@ -83,6 +85,42 @@ public static class CharacterEndpoints
         return CreateProblem(result.ErrorCode!, statusCode, httpContext);
     }
 
+    private static async Task<IResult> GetCompanionAsync(
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        CharacterCompanionService companionService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        CharacterCompanionSelectionResult result = await companionService.GetAsync(
+            accountId,
+            cancellationToken);
+        return result.IsSuccess
+            ? Results.Ok(ToResponse(result.Snapshot!))
+            : CreateProblem(result.ErrorCode!, StatusCodes.Status422UnprocessableEntity, httpContext);
+    }
+
+    private static async Task<IResult> SelectCompanionAsync(
+        SelectCompanionRequest request,
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        CharacterCompanionService companionService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        CharacterCompanionSelectionResult result = await companionService.SelectAsync(
+            accountId,
+            request.CompanionProfileId,
+            cancellationToken);
+        return result.IsSuccess
+            ? Results.Ok(ToResponse(result.Snapshot!))
+            : CreateProblem(result.ErrorCode!, StatusCodes.Status422UnprocessableEntity, httpContext);
+    }
+
     private static bool TryGetAccountId(
         ClaimsPrincipal user,
         out Guid accountId) =>
@@ -100,6 +138,16 @@ public static class CharacterEndpoints
             character.ClassId,
             character.Level,
             character.CreatedAtUtc);
+
+    private static CharacterCompanionResponse ToResponse(CharacterCompanionSnapshot snapshot) =>
+        new(
+            snapshot.SelectedPhysicalProfileId,
+            snapshot.EffectiveProfileId,
+            snapshot.AvailableProfiles.Select(profile => new CompanionProfileResponse(
+                profile.Id,
+                profile.Name,
+                profile.Archetype,
+                profile.ArtId)).ToArray());
 
     private static IResult CreateProblem(
         string code,

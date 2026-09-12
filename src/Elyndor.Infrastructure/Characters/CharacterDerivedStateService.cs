@@ -25,6 +25,7 @@ public sealed record CharacterDerivedState(
     public string EffectivePrimaryAttribute =>
         TalentModifiers.Profiles.PrimaryAttribute ?? ClassProfile.PrimaryAttribute;
     public CompanionProfileDefinition? ActiveCompanionProfile { get; init; }
+    public CompanionProfileDefinition? SelectedPhysicalCompanionProfile { get; init; }
 }
 
 public sealed class CharacterDerivedStateService(
@@ -178,9 +179,18 @@ public sealed class CharacterDerivedStateService(
             .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
             .ToArray();
 
+        string? selectedCompanionProfileId = await dbContext.Characters
+            .AsNoTracking()
+            .Where(character => character.Id == characterId)
+            .Select(character => character.ActiveCompanionProfileId)
+            .SingleOrDefaultAsync(cancellationToken);
+        CompanionProfileDefinition? selectedPhysicalCompanionProfile = ResolvePhysicalCompanionProfile(
+            classProfile,
+            selectedCompanionProfileId);
         CompanionProfileDefinition? activeCompanionProfile = ResolveCompanionProfile(
             classProfile,
-            talentModifiers.Profiles.CompanionProfileId);
+            talentModifiers.Profiles.CompanionProfileId,
+            selectedPhysicalCompanionProfile);
 
         return new CharacterDerivedState(
             classProfile,
@@ -194,20 +204,25 @@ public sealed class CharacterDerivedStateService(
             statCalculation,
             knownAbilityIds)
         {
-            ActiveCompanionProfile = activeCompanionProfile
+            ActiveCompanionProfile = activeCompanionProfile,
+            SelectedPhysicalCompanionProfile = selectedPhysicalCompanionProfile
         };
     }
 
     private static CompanionProfileDefinition? ResolveCompanionProfile(
         ClassProfile classProfile,
-        string? overrideProfileId)
+        string? overrideProfileId,
+        CompanionProfileDefinition? selectedPhysicalCompanionProfile)
     {
         IReadOnlyList<CompanionProfileDefinition> profiles =
             classProfile.CompanionProfiles ?? [];
         if (profiles.Count == 0)
             return null;
 
-        string? selectedId = overrideProfileId ?? classProfile.StartingCompanionProfileId;
+        if (string.IsNullOrWhiteSpace(overrideProfileId))
+            return selectedPhysicalCompanionProfile;
+
+        string selectedId = overrideProfileId;
         if (string.IsNullOrWhiteSpace(selectedId))
             return null;
 
@@ -215,6 +230,26 @@ public sealed class CharacterDerivedStateService(
             string.Equals(profile.Id, selectedId, StringComparison.Ordinal))
             ?? throw new InvalidOperationException(
                 $"Companion profile '{selectedId}' is missing for class '{classProfile.Id}'.");
+    }
+
+    private static CompanionProfileDefinition? ResolvePhysicalCompanionProfile(
+        ClassProfile classProfile,
+        string? selectedProfileId)
+    {
+        IReadOnlyList<CompanionProfileDefinition> profiles =
+            classProfile.CompanionProfiles ?? [];
+        if (profiles.Count == 0)
+            return null;
+
+        string? profileId = selectedProfileId ?? classProfile.StartingCompanionProfileId;
+        if (string.IsNullOrWhiteSpace(profileId))
+            return null;
+
+        CompanionProfileDefinition? profile = profiles.SingleOrDefault(candidate =>
+            string.Equals(candidate.Id, profileId, StringComparison.Ordinal));
+        return profile is not null && string.Equals(profile.Tag, "PHYSICAL_PET", StringComparison.Ordinal)
+            ? profile
+            : null;
     }
 
     private async Task<InventorySnapshot> ResolveInventoryAsync(

@@ -14,6 +14,7 @@ import type {
   AfkFarmTarget,
   BootstrapSnapshot,
   CreateCharacterRequest,
+  CharacterCompanionSnapshot,
   EquipmentSlot,
   MerchantSnapshot,
   PremiumStoreSnapshot,
@@ -145,6 +146,41 @@ export const useGameSessionStore = defineStore('gameSession', () => {
 
   async function createCharacter(request: CreateCharacterRequest): Promise<void> {
     await mutate('/api/v1/character', request)
+  }
+
+  async function getCompanion(): Promise<CharacterCompanionSnapshot | null> {
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      return await apiClient.request<CharacterCompanionSnapshot>('/api/v1/character/companion')
+    } catch (error) {
+      handleError(error)
+      return null
+    }
+  }
+
+  async function selectCompanion(companionProfileId: string): Promise<CharacterCompanionSnapshot | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await apiClient.request<CharacterCompanionSnapshot>(
+        '/api/v1/character/companion/select',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companionProfileId }),
+        },
+      )
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
   }
 
   async function travel(targetLocationId: string): Promise<void> {
@@ -657,6 +693,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     bootstrap,
     start,
     createCharacter,
+    getCompanion,
+    selectCompanion,
     travel,
     refreshQuestJournal,
     acceptQuest,

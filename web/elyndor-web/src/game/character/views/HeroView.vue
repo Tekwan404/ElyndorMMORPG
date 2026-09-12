@@ -4,25 +4,30 @@ import { computed, ref } from 'vue'
 import type { EquipmentSlot } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewView.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
+import CompanionView from '@/game/character/views/CompanionView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
 import TalentTreeView from '@/game/talents/views/TalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
-type HeroTab = 'character' | 'inventory' | 'stats' | 'talents'
+type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
 const requestedSlot = ref<EquipmentSlot | null>(null)
 const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER'].includes(session.snapshot?.character?.classId ?? ''))
-const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' }[] = [
+const hasCompanion = computed(() => session.snapshot?.character?.classId === 'ARCHER')
+const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' | 'companion' }[] = [
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
+  { id: 'companion', label: 'Спутник', available: 'companion' },
 ]
 
 function isAvailable(tab: (typeof tabs)[number]): boolean {
-  return tab.available === true || (tab.available === 'talents' && hasTalentTree.value)
+  return tab.available === true
+    || (tab.available === 'talents' && hasTalentTree.value)
+    || (tab.available === 'companion' && hasCompanion.value)
 }
 
 function selectTab(tab: (typeof tabs)[number]): void {
@@ -39,7 +44,7 @@ function openSlotInventory(slot: EquipmentSlot): void {
 
 <template>
   <section class="hero-view">
-    <nav class="hero-tabs" aria-label="Разделы героя">
+    <nav class="hero-tabs" :class="{ 'hero-tabs--with-companion': hasCompanion }" aria-label="Разделы героя">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -55,6 +60,7 @@ function openSlotInventory(slot: EquipmentSlot): void {
     </nav>
     <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
+    <CompanionView v-else-if="activeTab === 'companion' && hasCompanion" />
     <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
     <CharacterStatsView v-else />
   </section>
@@ -80,6 +86,8 @@ function openSlotInventory(slot: EquipmentSlot): void {
   backdrop-filter: blur(14px);
   scrollbar-width: none;
 }
+
+.hero-tabs--with-companion { grid-template-columns: repeat(5, minmax(max-content, 1fr)); }
 
 .hero-tabs::-webkit-scrollbar {
   display: none;
