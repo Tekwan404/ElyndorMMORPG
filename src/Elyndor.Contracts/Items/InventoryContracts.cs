@@ -83,7 +83,10 @@ public sealed record InventoryItemResponse(
     int ReforgeCount = 0,
     string? ReforgeSlotKey = null,
     bool TransactionLocked = false,
-    string BindState = "UNBOUND");
+    string BindState = "UNBOUND",
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,
