@@ -1,0 +1,44 @@
+{
+  "contentVersion": "0.18.1",
+  "balanceVersion": "0.14.1",
+  "publishedAtUtc": "2026-09-12T06:20:00+00:00",
+  "items": [
+    {
+      "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
+      "iconId": "warrior_epic_crimson_fury_weapon",
+      "name": "Клинок Багровой Клятвы",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Тематическое оружие прогрессии «Клятва Багровой Ярости». Не входит в 2/4/6 счётчик брони.",
+      "version": 1,
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 34,
+      "weaponDamageMax": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 14,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1"
+    }
+  ]
+}
