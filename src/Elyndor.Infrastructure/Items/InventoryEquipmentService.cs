@@ -287,7 +287,11 @@ public sealed class InventoryEquipmentService(
                 EquipmentSlot definitionSlot = CanonicalizeEquipmentSlot(definition.Slot.Value);
                 EquipmentSlot canonicalSlot = targetSlot.HasValue
                     ? CanonicalizeEquipmentSlot(targetSlot.Value)
-                    : definitionSlot;
+                    : await ResolveAutomaticEquipmentSlotAsync(
+                        character.Id,
+                        item.Id,
+                        definitionSlot,
+                        cancellationToken);
 
                 bool isOffHandOneHandWeapon = canonicalSlot == EquipmentSlot.OffHand
                     && EquipmentCategoryIds.IsOneHandedWeapon(definition.WeaponCategory);
@@ -916,6 +920,39 @@ public sealed class InventoryEquipmentService(
             .FirstOrDefaultAsync(cancellationToken);
 
         return definitionId is null ? null : FindItem(definitionId);
+    }
+
+    private async Task<EquipmentSlot> ResolveAutomaticEquipmentSlotAsync(
+        Guid characterId,
+        Guid itemId,
+        EquipmentSlot definitionSlot,
+        CancellationToken cancellationToken)
+    {
+        EquipmentSlot[] compatibleSlots = definitionSlot switch
+        {
+            EquipmentSlot.Ring1 => [EquipmentSlot.Ring1, EquipmentSlot.Ring2],
+            EquipmentSlot.Ring2 => [EquipmentSlot.Ring2, EquipmentSlot.Ring1],
+            _ => [definitionSlot]
+        };
+
+        if (compatibleSlots.Length == 1)
+            return definitionSlot;
+
+        EquipmentSlot[] occupiedSlots = await dbContext.CharacterEquipment
+            .AsNoTracking()
+            .Where(equipment => equipment.CharacterId == characterId
+                && equipment.CharacterItemId != itemId
+                && compatibleSlots.Contains(equipment.Slot))
+            .Select(equipment => equipment.Slot)
+            .ToArrayAsync(cancellationToken);
+
+        foreach (EquipmentSlot slot in compatibleSlots)
+        {
+            if (!occupiedSlots.Contains(slot))
+                return slot;
+        }
+
+        return definitionSlot;
     }
 
     private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
