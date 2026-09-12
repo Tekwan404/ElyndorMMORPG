@@ -7,11 +7,13 @@ using Elyndor.Core.World;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
 using Elyndor.Core.Quests;
+using Elyndor.Core.Afk;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Afk;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -102,7 +104,22 @@ public sealed record BootstrapSnapshot(
     BootstrapWorld? World,
     string ContentVersion,
     string BalanceVersion,
-    DateTimeOffset ServerTimeUtc);
+    DateTimeOffset ServerTimeUtc,
+    BootstrapAfkFarm? AfkFarm = null);
+
+public sealed record BootstrapAfkFarm(
+    Guid SessionId,
+    string LocationId,
+    AfkFarmStatus Status,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset EndsAtUtc,
+    DateTimeOffset ProcessedUntilUtc,
+    DateTimeOffset? CompletedAtUtc,
+    string? StopReason,
+    int Kills,
+    int XpEarned,
+    int GoldEarned,
+    int ItemsCount);
 
 public sealed class BootstrapService(
     GameDbContext dbContext,
@@ -111,7 +128,8 @@ public sealed class BootstrapService(
     TimeProvider timeProvider,
     ILogger<BootstrapService>? logger = null,
     ICombatActivityReader? combatActivity = null,
-    IOptions<OutOfCombatRecoveryOptions>? recoveryOptions = null)
+    IOptions<OutOfCombatRecoveryOptions>? recoveryOptions = null,
+    AfkFarmProgressService? afkFarmProgress = null)
 {
     public BootstrapService(
         GameDbContext dbContext,
@@ -162,6 +180,8 @@ public sealed class BootstrapService(
         bool checkpoint = false)
     {
         ArgumentNullException.ThrowIfNull(contentSnapshot);
+        if (afkFarmProgress is not null)
+            await afkFarmProgress.ProcessAsync(accountId, cancellationToken);
         GameContentPackage contentPackage = contentSnapshot.Package;
         GameContentIndexes indexes = contentSnapshot.Indexes;
         WorldMap worldMap = contentSnapshot.WorldMap;
@@ -405,6 +425,26 @@ public sealed class BootstrapService(
             })
             .ToArray();
 
+        AfkFarmSession? afkSession = await dbContext.AfkFarmSessions
+            .AsNoTracking()
+            .Where(session => session.CharacterId == character.Id)
+            .OrderByDescending(session => session.CreatedAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+        BootstrapAfkFarm? afkFarm = null;
+        if (afkSession is not null)
+        {
+            AfkFarmIntervalGrant[] grants = await dbContext.AfkFarmIntervalGrants
+                .AsNoTracking()
+                .Where(grant => grant.SessionId == afkSession.Id)
+                .ToArrayAsync(cancellationToken);
+            afkFarm = new BootstrapAfkFarm(
+                afkSession.Id, afkSession.LocationId, afkSession.Status,
+                afkSession.StartedAtUtc, afkSession.EndsAtUtc, afkSession.LastProcessedAtUtc,
+                afkSession.CompletedAtUtc, afkSession.StopReason,
+                grants.Sum(grant => grant.Kills), grants.Sum(grant => grant.XpEarned),
+                grants.Sum(grant => grant.GoldEarned), 0);
+        }
+
         return new BootstrapSnapshot(
             accountId,
             new BootstrapCharacter(
@@ -448,7 +488,8 @@ public sealed class BootstrapService(
                         activeTravel.EndsAtUtc)),
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
-            now);
+            now,
+            afkFarm);
     }
 
     private async Task<bool> EnsureStartingEquipmentAsync(

@@ -1,3 +1,4 @@
+using Elyndor.Core.Afk;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
@@ -161,6 +162,77 @@ public sealed class PartyDungeonRunCoordinatorTests(PostgresFixture postgres) : 
         Assert.Equal(party.PartyId, latest.PartyId);
         Assert.Equal(2, latest.Members.Count);
         Assert.All(latest.Members, runMember => Assert.Equal(DungeonRunMemberState.Active, runMember.State));
+    }
+
+    [Fact]
+    public async Task StartRejectsPartyWhenAnyMemberHasAnActiveAfkFarm()
+    {
+        Guid leaderAccountId = Guid.Parse("71000000-0000-0000-0000-000000000011");
+        Guid memberAccountId = Guid.Parse("71000000-0000-0000-0000-000000000012");
+        Guid leaderCharacterId = Guid.Parse("71111111-1111-1111-1111-111111111121");
+        Guid memberCharacterId = Guid.Parse("72222222-2222-2222-2222-222222222232");
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        context.Accounts.AddRange(
+            new Account(leaderAccountId, 7111, Now),
+            new Account(memberAccountId, 7112, Now));
+        Character leader = CreateCharacter(leaderCharacterId, leaderAccountId, "AfkLeader");
+        Character member = CreateCharacter(memberCharacterId, memberAccountId, "AfkMember");
+        leader.SetLevel(25);
+        member.SetLevel(25);
+        context.Characters.AddRange(leader, member);
+        context.CharacterVitals.AddRange(CreateVitals(leaderCharacterId), CreateVitals(memberCharacterId));
+        context.CharacterLocations.AddRange(
+            new CharacterLocation(leaderCharacterId, WorldLocationIds.StarterTown, 1, Now),
+            new CharacterLocation(memberCharacterId, WorldLocationIds.StarterTown, 1, Now));
+        context.AfkFarmSessions.Add(new AfkFarmSession(
+            Guid.NewGuid(),
+            memberCharacterId,
+            "WHISPERING_FOREST",
+            AfkFarmMode.Safe,
+            Now,
+            Now.AddHours(1),
+            "content-v1",
+            "balance-v1",
+            "{}",
+            Now));
+        await context.SaveChangesAsync();
+
+        FixedTimeProvider time = new(Now);
+        PartyService partyService = new(context, time);
+        Assert.True((await partyService.CreateAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            CancellationToken.None)).IsSuccess);
+        Guid inviteId = Guid.NewGuid();
+        Assert.True((await partyService.InviteAsync(
+            leaderAccountId,
+            inviteId,
+            memberCharacterId,
+            PartyInviteMode.Direct,
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await partyService.AcceptInviteAsync(
+            memberAccountId,
+            inviteId,
+            CancellationToken.None)).IsSuccess);
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        PartyDungeonRunCoordinator coordinator = new(
+            context,
+            partyService,
+            new StaticContentSnapshotProvider(content),
+            new NoActiveCombatReader(),
+            time);
+
+        PartyDungeonStartResult result = await coordinator.StartAsync(
+            leaderAccountId,
+            "ECLIPSED_CITADEL",
+            Guid.NewGuid(),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(DungeonErrorCodes.AfkFarmActive, result.ErrorCode);
     }
 
     private static Character CreateCharacter(Guid id, Guid accountId, string name) => new(

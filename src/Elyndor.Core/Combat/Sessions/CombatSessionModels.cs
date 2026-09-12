@@ -129,6 +129,7 @@ public static class CombatErrorCodes
     public const string ConsumableUnavailable = "combat_consumable_unavailable";
     public const string AutoAttackUnavailable = "combat_auto_attack_unavailable";
     public const string ParticipantNotActive = "combat_participant_not_active";
+    public const string AfkFarmActive = "combat_afk_farm_active";
 }
 
 public sealed record CombatCommandResult(

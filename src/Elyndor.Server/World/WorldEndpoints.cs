@@ -311,7 +311,22 @@ public static class WorldEndpoints
                             snapshot.World.Travel.EndsAtUtc)),
             snapshot.ContentVersion,
             snapshot.BalanceVersion,
-            snapshot.ServerTimeUtc);
+            snapshot.ServerTimeUtc,
+            snapshot.AfkFarm is null
+                ? null
+                : new BootstrapAfkFarmResponse(
+                    snapshot.AfkFarm.SessionId,
+                    snapshot.AfkFarm.LocationId,
+                    snapshot.AfkFarm.Status.ToString(),
+                    snapshot.AfkFarm.StartedAtUtc,
+                    snapshot.AfkFarm.EndsAtUtc,
+                    snapshot.AfkFarm.ProcessedUntilUtc,
+                    snapshot.AfkFarm.CompletedAtUtc,
+                    snapshot.AfkFarm.StopReason,
+                    snapshot.AfkFarm.Kills,
+                    snapshot.AfkFarm.XpEarned,
+                    snapshot.AfkFarm.GoldEarned,
+                    snapshot.AfkFarm.ItemsCount));
 
     private static WorldLocationResponse ToLocation(BootstrapLocation location) =>
         new(

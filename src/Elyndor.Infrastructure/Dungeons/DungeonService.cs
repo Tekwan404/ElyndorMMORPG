@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
+using Elyndor.Core.Afk;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
@@ -29,6 +30,7 @@ public static class DungeonErrorCodes
     public const string MemberCannotEnter = "dungeon_member_cannot_enter";
     public const string TeleportIdempotencyConflict = "dungeon_teleport_idempotency_conflict";
     public const string TravelInProgress = "dungeon_travel_in_progress";
+    public const string AfkFarmActive = "dungeon_afk_farm_active";
 }
 
 public sealed record DungeonOperationResult(
@@ -730,6 +732,11 @@ public sealed class DungeonService(
                 travel => travel.CharacterId == character.Id,
                 cancellationToken))
             return DungeonErrorCodes.InvalidLocation;
+        if (await dbContext.AfkFarmSessions.AnyAsync(
+                session => session.CharacterId == character.Id
+                    && session.Status == AfkFarmStatus.Active,
+                cancellationToken))
+            return DungeonErrorCodes.AfkFarmActive;
         return null;
     }
 

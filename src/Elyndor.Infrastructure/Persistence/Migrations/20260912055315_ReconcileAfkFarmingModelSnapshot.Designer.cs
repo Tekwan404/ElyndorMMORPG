@@ -3,6 +3,7 @@ using System;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260912055315_ReconcileAfkFarmingModelSnapshot")]
+    partial class ReconcileAfkFarmingModelSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,49 +68,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_admin_command_audits_target_received_at");
 
                     b.ToTable("admin_command_audits", "game");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmIntervalGrant", b =>
-                {
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("IntervalIndex")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("EndedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("GoldEarned")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("GrantedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Kills")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LootJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset>("StartedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("XpEarned")
-                        .HasColumnType("integer");
-
-                    b.HasKey("SessionId", "IntervalIndex")
-                        .HasName("pk_afk_farm_interval_grants");
-
-                    b.ToTable("afk_farm_interval_grants", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_afk_farm_interval_grants_loot_json", "jsonb_typeof(\"LootJson\") = 'array'");
-
-                            t.HasCheckConstraint("ck_afk_farm_interval_grants_non_negative_rewards", "\"Kills\" >= 0 AND \"XpEarned\" >= 0 AND \"GoldEarned\" >= 0");
-
-                            t.HasCheckConstraint("ck_afk_farm_interval_grants_positive_window", "\"EndedAtUtc\" > \"StartedAtUtc\"");
-                        });
                 });
 
             modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmSession", b =>
@@ -1938,16 +1898,6 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasName("pk_travel_operations");
 
                     b.ToTable("travel_operations", "game");
-                });
-
-            modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmIntervalGrant", b =>
-                {
-                    b.HasOne("Elyndor.Core.Afk.AfkFarmSession", null)
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_afk_farm_interval_grants_sessions_session_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmSession", b =>

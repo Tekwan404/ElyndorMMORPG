@@ -111,6 +111,20 @@ public sealed record BootstrapTravelResponse(
     DateTimeOffset StartedAtUtc,
     DateTimeOffset EndsAtUtc);
 
+public sealed record BootstrapAfkFarmResponse(
+    Guid SessionId,
+    string LocationId,
+    string Status,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset EndsAtUtc,
+    DateTimeOffset ProcessedUntilUtc,
+    DateTimeOffset? CompletedAtUtc,
+    string? StopReason,
+    int Kills,
+    int XpEarned,
+    int GoldEarned,
+    int ItemsCount);
+
 public sealed record BootstrapWorldResponse(
     WorldLocationResponse CurrentLocation,
     long Version,
@@ -124,7 +138,8 @@ public sealed record BootstrapResponse(
     BootstrapWorldResponse? World,
     string ContentVersion,
     string BalanceVersion,
-    DateTimeOffset ServerTimeUtc);
+    DateTimeOffset ServerTimeUtc,
+    BootstrapAfkFarmResponse? AfkFarm = null);
 
 public sealed record TravelRequest(Guid RequestId, string TargetLocationId);
 

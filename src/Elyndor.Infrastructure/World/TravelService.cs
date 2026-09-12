@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
 using Elyndor.Core.Content;
+using Elyndor.Core.Afk;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +52,7 @@ public static class TravelErrorCodes
     public const string InProgress = "travel_in_progress";
     public const string Conflict = "travel_conflict";
     public const string DungeonRunActive = "travel_dungeon_run_active";
+    public const string AfkFarmActive = "travel_afk_farm_active";
 }
 
 public sealed class TravelService
@@ -200,6 +202,18 @@ public sealed class TravelService
             }
 
             return TravelResult.Failure(TravelErrorCodes.InProgress);
+        }
+
+        bool afkFarmActive = await dbContext.AfkFarmSessions
+            .AsNoTracking()
+            .AnyAsync(
+                session => session.CharacterId == character.Id
+                    && session.Status == AfkFarmStatus.Active,
+                cancellationToken);
+        if (afkFarmActive)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return TravelResult.Failure(TravelErrorCodes.AfkFarmActive);
         }
 
         bool dungeonRunActive = await dbContext.DungeonRuns
