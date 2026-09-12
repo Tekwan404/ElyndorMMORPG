@@ -15,7 +15,7 @@ namespace Elyndor.Core.Afk;
 
 public sealed record AfkFarmSimulationSettings(TimeSpan EncounterRecoveryDelay)
 {
-    public static AfkFarmSimulationSettings SafeDefault { get; } =
+    public static AfkFarmSimulationSettings Default { get; } =
         new(TimeSpan.FromSeconds(1));
 }
 
@@ -73,7 +73,7 @@ public static class AfkFarmSimulator
         if (request.EndsAtUtc <= request.StartedAtUtc)
             throw new ArgumentOutOfRangeException(nameof(request), "AFK interval must be positive.");
 
-        AfkFarmSimulationSettings settings = request.Settings ?? AfkFarmSimulationSettings.SafeDefault;
+        AfkFarmSimulationSettings settings = request.Settings ?? AfkFarmSimulationSettings.Default;
         if (settings.EncounterRecoveryDelay < TimeSpan.Zero)
             throw new ArgumentOutOfRangeException(nameof(request), "Encounter recovery delay cannot be negative.");
 
