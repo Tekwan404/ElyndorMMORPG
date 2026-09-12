@@ -26,7 +26,7 @@ let audioContext: AudioContext | null = null
 const latestBlock = computed<CombatEvent | null>(() => {
   for (let index = combat.events.length - 1; index >= 0; index--) {
     const event = combat.events[index]
-    if (event.type === 'DamageBlocked') return event
+    if (event?.type === 'DamageBlocked') return event
   }
   return null
 })
