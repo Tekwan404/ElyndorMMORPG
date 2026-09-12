@@ -40,13 +40,13 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult first = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
         AfkFarmMutationResult second = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -73,7 +73,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             "UNKNOWN_LOCATION",
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -91,7 +91,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -112,7 +112,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -130,7 +130,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -150,7 +150,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -168,7 +168,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -186,7 +186,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -212,7 +212,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -239,7 +239,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -269,7 +269,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult result = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
@@ -286,7 +286,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmMutationResult started = await service.StartAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromHours(1),
             CancellationToken.None);
         Assert.True(started.Succeeded);
@@ -310,7 +310,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         GameContentPackage content = CreateContent();
         AfkFarmService start = CreateService(dbContext, content);
         Assert.True((await start.StartAsync(
-            accountId, ForestId, AfkFarmMode.Safe, TimeSpan.FromHours(1), CancellationToken.None)).Succeeded);
+            accountId, ForestId, null, TimeSpan.FromHours(1), CancellationToken.None)).Succeeded);
 
         StaticContentSnapshotProvider provider = new(content);
         AfkFarmProgressService progress = new(
@@ -336,7 +336,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         AfkFarmPreviewResult preview = await service.PreviewAsync(
             accountId,
             ForestId,
-            AfkFarmMode.Safe,
+            null,
             TimeSpan.FromMinutes(15),
             CancellationToken.None);
 

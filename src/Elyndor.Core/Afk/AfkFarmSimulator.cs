@@ -30,6 +30,7 @@ public sealed record AfkFarmSimulationRequest(
     DateTimeOffset StartedAtUtc,
     DateTimeOffset EndsAtUtc,
     string ContentVersion,
+    string? TargetMonsterId = null,
     AfkFarmSimulationSettings? Settings = null);
 
 public sealed record AfkFarmSimulationResult(
@@ -39,13 +40,14 @@ public sealed record AfkFarmSimulationResult(
     int FailedKills,
     decimal EstimatedIncomingDamage,
     decimal ResultingHpEstimate,
+    int EfficiencyPercent,
     int XpCandidate,
     int GoldCandidate,
     IReadOnlyList<AfkFarmLootCandidate> LootCandidates);
 
 /// <summary>
-/// Calculates Safe AFK intervals without creating online combat sessions or mutating durable state.
-/// The Safe mode contract intentionally reports risk without applying damage, resource costs or death.
+/// Calculates AFK intervals without creating online combat sessions or mutating durable state.
+/// Incoming damage informs combat timing only; AFK never spends HP or causes death.
 /// </summary>
 public static class AfkFarmSimulator
 {
@@ -90,6 +92,7 @@ public static class AfkFarmSimulator
         int xp = 0;
         int gold = 0;
         decimal estimatedIncomingDamage = 0;
+        TimeSpan successfulKillTime = TimeSpan.Zero;
         List<AfkFarmLootCandidate> loot = [];
 
         while (remaining > TimeSpan.Zero)
@@ -103,10 +106,11 @@ public static class AfkFarmSimulator
             if (!fight.Killed)
             {
                 failedKills++;
-                break;
+                continue;
             }
 
             kills++;
+            successfulKillTime += fight.Elapsed;
             xp += monster.XpReward;
             gold += RollGold(monster, random);
             if (!string.IsNullOrWhiteSpace(monster.LootTableId))
@@ -118,7 +122,16 @@ public static class AfkFarmSimulator
             remaining -= recovery;
         }
 
-        // Safe AFK intentionally does not consume HP or cause death; this is only a risk estimate.
+        TimeSpan baselineKillTime = TimeSpan.FromSeconds(
+            autoAttack.Interval.TotalSeconds / (double)Math.Max(0.1m, request.Character.Stats.AttackSpeed));
+        int efficiency = kills == 0 || successfulKillTime <= TimeSpan.Zero
+            ? 0
+            : Math.Clamp(
+                (int)Math.Floor(kills * baselineKillTime.TotalMilliseconds / successfulKillTime.TotalMilliseconds * 100d),
+                0,
+                100);
+
+        // AFK intentionally does not consume HP or cause death; this is a combat-efficiency estimate only.
         return new AfkFarmSimulationResult(
             request.EndsAtUtc - request.StartedAtUtc - remaining,
             encountered,
@@ -126,6 +139,7 @@ public static class AfkFarmSimulator
             failedKills,
             decimal.Round(estimatedIncomingDamage, 0, MidpointRounding.AwayFromZero),
             request.Character.CurrentHp,
+            efficiency,
             xp,
             gold,
             loot);
@@ -208,6 +222,8 @@ public static class AfkFarmSimulator
         AfkFarmSimulationRequest request) => (request.Location.Encounters ?? [])
         .Where(encounter => encounter.Weight > 0
             && request.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster)
+            && (request.TargetMonsterId is null
+                || string.Equals(encounter.MonsterId, request.TargetMonsterId, StringComparison.Ordinal))
             && monster.Rank == MonsterRank.Normal)
         .Select(encounter => (request.MonstersById[encounter.MonsterId], encounter.Weight))
         .OrderBy(pair => pair.Item1.Id, StringComparer.Ordinal)
@@ -270,7 +286,7 @@ public static class AfkFarmSimulator
 
     private static AfkFarmSimulationResult Empty(AfkFarmSimulationRequest request) => new(
         request.EndsAtUtc - request.StartedAtUtc,
-        0, 0, 0, 0, request.Character.CurrentHp, 0, 0, []);
+        0, 0, 0, 0, request.Character.CurrentHp, 0, 0, 0, []);
 
     private static void EnsureUtc(DateTimeOffset value, string parameterName)
     {

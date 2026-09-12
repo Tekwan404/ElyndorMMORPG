@@ -189,7 +189,7 @@ public sealed class PartyDungeonRunCoordinatorTests(PostgresFixture postgres) : 
             Guid.NewGuid(),
             memberCharacterId,
             "WHISPERING_FOREST",
-            AfkFarmMode.Safe,
+            null,
             Now,
             Now.AddHours(1),
             "content-v1",

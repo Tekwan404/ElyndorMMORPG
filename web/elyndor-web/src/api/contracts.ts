@@ -571,7 +571,8 @@ export interface BootstrapTravel {
 export interface AfkFarmState {
   sessionId: string
   locationId: string
-  status: 'Active' | 'Completed' | 'Cancelled' | 'Dead' | 'InventoryFull' | 'Invalidated'
+  targetMonsterId: string | null
+  status: 'Active' | 'Completed' | 'Cancelled' | 'InventoryFull' | 'Invalidated'
   startedAtUtc: string
   endsAtUtc: string
   processedUntilUtc: string
@@ -581,11 +582,12 @@ export interface AfkFarmState {
   xpEarned: number
   goldEarned: number
   itemsCount: number
+  efficiencyPercent: number
 }
 
 export interface AfkFarmPreview {
   locationId: string
-  mode: string
+  targetMonsterId: string | null
   durationMinutes: number
   encounteredEnemies: number
   kills: number
@@ -593,7 +595,12 @@ export interface AfkFarmPreview {
   estimatedXp: number
   estimatedGold: number
   potentialLootRolls: number
-  estimatedIncomingDamage: number
+  efficiencyPercent: number
+}
+
+export interface AfkFarmTarget {
+  monsterId: string
+  displayName: string
 }
 
 export interface BootstrapSnapshot {

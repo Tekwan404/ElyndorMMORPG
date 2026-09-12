@@ -27,6 +27,8 @@ const merchantOpen = ref(false)
 const guildOpen = ref(false)
 const afkOpen = ref(false)
 const afkDurationMinutes = ref(60)
+const afkTargetMonsterId = ref<string | null>(null)
+const afkTargets = ref<{ monsterId: string; displayName: string }[]>([])
 const afkPreviewLoading = ref(false)
 const afkPreview = ref<Awaited<ReturnType<typeof session.previewAfkFarm>>>(null)
 let vitalsRefreshTimer: ReturnType<typeof setInterval> | null = null
@@ -163,6 +165,7 @@ async function explore(): Promise<void> {
 async function openAfkFarm(): Promise<void> {
   if (!canUseAfkFarm.value) return
   afkOpen.value = true
+  afkTargets.value = await session.getAfkFarmTargets()
   await loadAfkPreview()
 }
 
@@ -170,7 +173,11 @@ async function loadAfkPreview(): Promise<void> {
   if (!currentLocationId.value || afkPreviewLoading.value) return
   afkPreviewLoading.value = true
   try {
-    afkPreview.value = await session.previewAfkFarm(currentLocationId.value, afkDurationMinutes.value)
+    afkPreview.value = await session.previewAfkFarm(
+      currentLocationId.value,
+      afkDurationMinutes.value,
+      afkTargetMonsterId.value,
+    )
   } finally {
     afkPreviewLoading.value = false
   }
@@ -181,9 +188,18 @@ async function selectAfkDuration(durationMinutes: number): Promise<void> {
   await loadAfkPreview()
 }
 
+async function selectAfkTarget(targetMonsterId: string): Promise<void> {
+  afkTargetMonsterId.value = targetMonsterId || null
+  await loadAfkPreview()
+}
+
 async function startAfkFarm(): Promise<void> {
   if (!currentLocationId.value || session.mutationPending) return
-  const started = await session.startAfkFarm(currentLocationId.value, afkDurationMinutes.value)
+  const started = await session.startAfkFarm(
+    currentLocationId.value,
+    afkDurationMinutes.value,
+    afkTargetMonsterId.value,
+  )
   if (started) afkOpen.value = false
 }
 
@@ -590,7 +606,7 @@ onMounted(() => {
     />
     <UIModal :open="afkOpen" title="AFK-фарм" @close="afkOpen = false">
       <div class="afk-modal" data-afk-farm-modal>
-        <p>Герой останется в этой области и получит безопасный фоновый бонус.</p>
+        <p>Герой останется в этой области и будет фармить до завершения выбранного времени.</p>
         <div class="afk-duration" aria-label="Длительность AFK-фарма">
           <UIButton
             v-for="duration in [15, 60, 240]"
@@ -600,10 +616,19 @@ onMounted(() => {
             @click="selectAfkDuration(duration)"
           >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton>
         </div>
+        <label v-if="afkTargets.length" class="afk-target">
+          <span>Цель</span>
+          <select :value="afkTargetMonsterId ?? ''" :disabled="afkPreviewLoading || session.mutationPending" @change="selectAfkTarget(($event.target as HTMLSelectElement).value)">
+            <option value="">Любые противники</option>
+            <option v-for="target in afkTargets" :key="target.monsterId" :value="target.monsterId">
+              {{ target.displayName }}
+            </option>
+          </select>
+        </label>
         <div v-if="afkPreview" class="afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
           <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
-          <small>{{ afkPreview.potentialLootRolls }} возможн. лут-роллов · риск: {{ afkPreview.estimatedIncomingDamage }} урона</small>
+          <small>{{ afkPreview.potentialLootRolls }} возможн. лут-роллов · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
         </div>
         <p v-else-if="afkPreviewLoading">Рассчитываем маршрут фарма…</p>
         <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия локации.</p>
@@ -663,6 +688,23 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--ui-space-2);
+}
+
+.afk-target {
+  display: grid;
+  gap: 6px;
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-sm);
+}
+
+.afk-target select {
+  min-height: 44px;
+  padding: 0 var(--ui-space-3);
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-surface-2);
+  color: var(--ui-color-text-primary);
+  font: inherit;
 }
 
 .afk-preview {

@@ -115,6 +115,7 @@ public sealed record BootstrapTravelResponse(
 public sealed record BootstrapAfkFarmResponse(
     Guid SessionId,
     string LocationId,
+    string? TargetMonsterId,
     string Status,
     DateTimeOffset StartedAtUtc,
     DateTimeOffset EndsAtUtc,
@@ -124,7 +125,8 @@ public sealed record BootstrapAfkFarmResponse(
     int Kills,
     int XpEarned,
     int GoldEarned,
-    int ItemsCount);
+    int ItemsCount,
+    int EfficiencyPercent);
 
 public sealed record BootstrapWorldResponse(
     WorldLocationResponse CurrentLocation,

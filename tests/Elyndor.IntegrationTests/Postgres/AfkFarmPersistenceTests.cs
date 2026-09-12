@@ -110,7 +110,7 @@ public sealed class AfkFarmPersistenceTests(PostgresFixture postgres) : IAsyncLi
         sessionId,
         characterId,
         "WHISPERING_FOREST",
-        AfkFarmMode.Safe,
+        null,
         Now,
         Now.AddHours(1),
         "content-v1",

@@ -1,12 +1,14 @@
 namespace Elyndor.Contracts.Afk;
 
-public sealed record StartAfkFarmRequest(string LocationId, string Mode, int DurationMinutes);
+public sealed record StartAfkFarmRequest(string LocationId, int DurationMinutes, string? TargetMonsterId = null);
 
-public sealed record PreviewAfkFarmRequest(string LocationId, string Mode, int DurationMinutes);
+public sealed record PreviewAfkFarmRequest(string LocationId, int DurationMinutes, string? TargetMonsterId = null);
+
+public sealed record AfkFarmTargetResponse(string MonsterId, string DisplayName);
 
 public sealed record AfkFarmPreviewResponse(
     string LocationId,
-    string Mode,
+    string? TargetMonsterId,
     int DurationMinutes,
     int EncounteredEnemies,
     int Kills,
@@ -14,12 +16,12 @@ public sealed record AfkFarmPreviewResponse(
     int EstimatedXp,
     int EstimatedGold,
     int PotentialLootRolls,
-    decimal EstimatedIncomingDamage);
+    int EfficiencyPercent);
 
 public sealed record AfkFarmStateResponse(
     Guid SessionId,
     string LocationId,
-    string Mode,
+    string? TargetMonsterId,
     string Status,
     DateTimeOffset StartedAtUtc,
     DateTimeOffset EndsAtUtc,
@@ -29,4 +31,5 @@ public sealed record AfkFarmStateResponse(
     int Kills,
     int XpEarned,
     int GoldEarned,
-    int ItemsCount);
+    int ItemsCount,
+    int EfficiencyPercent);

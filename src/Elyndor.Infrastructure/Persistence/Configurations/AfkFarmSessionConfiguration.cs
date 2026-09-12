@@ -26,10 +26,8 @@ public sealed class AfkFarmSessionConfiguration : IEntityTypeConfiguration<AfkFa
         builder.Property(session => session.LocationId)
             .HasMaxLength(64)
             .IsRequired();
-        builder.Property(session => session.Mode)
-            .HasConversion<string>()
-            .HasMaxLength(32)
-            .IsRequired();
+        builder.Property(session => session.TargetMonsterId)
+            .HasMaxLength(64);
         builder.Property(session => session.Status)
             .HasConversion<string>()
             .HasMaxLength(32)

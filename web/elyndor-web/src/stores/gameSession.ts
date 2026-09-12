@@ -11,6 +11,7 @@ import type {
   AuthenticationResponse,
   AfkFarmPreview,
   AfkFarmState,
+  AfkFarmTarget,
   BootstrapSnapshot,
   CreateCharacterRequest,
   EquipmentSlot,
@@ -218,14 +219,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function previewAfkFarm(locationId: string, durationMinutes: number): Promise<AfkFarmPreview | null> {
+  async function previewAfkFarm(locationId: string, durationMinutes: number, targetMonsterId: string | null = null): Promise<AfkFarmPreview | null> {
     errorCode.value = null
     errorCorrelationId.value = null
     try {
       return await apiClient.request<AfkFarmPreview>('/api/v1/afk/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId, mode: 'Safe', durationMinutes }),
+        body: JSON.stringify({ locationId, durationMinutes, targetMonsterId }),
       })
     } catch (error) {
       handleError(error)
@@ -233,7 +234,16 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function startAfkFarm(locationId: string, durationMinutes: number): Promise<AfkFarmState | null> {
+  async function getAfkFarmTargets(): Promise<AfkFarmTarget[]> {
+    try {
+      return await apiClient.request<AfkFarmTarget[]>('/api/v1/afk/targets')
+    } catch (error) {
+      handleError(error)
+      return []
+    }
+  }
+
+  async function startAfkFarm(locationId: string, durationMinutes: number, targetMonsterId: string | null = null): Promise<AfkFarmState | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
@@ -242,7 +252,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       const result = await apiClient.request<AfkFarmState>('/api/v1/afk/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locationId, mode: 'Safe', durationMinutes }),
+        body: JSON.stringify({ locationId, durationMinutes, targetMonsterId }),
       })
       await refreshSnapshot()
       return result
@@ -655,6 +665,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     acceptContract,
     explore,
     previewAfkFarm,
+    getAfkFarmTargets,
     startAfkFarm,
     stopAfkFarm,
     equip,
