@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
@@ -44,12 +45,6 @@ public static class BossCombatLogEndpoints
         if (request.SessionId == Guid.Empty)
             return Results.BadRequest(new BossCombatLogResponse(false, "combat_log_session_invalid"));
 
-        if (request.Events is null || request.Events.Count == 0)
-            return Results.BadRequest(new BossCombatLogResponse(false, "combat_log_empty"));
-
-        if (request.Events.Count > MaxEvents)
-            return Results.BadRequest(new BossCombatLogResponse(false, "combat_log_too_large"));
-
         CombatOperationResult current = registry.Resume(accountId);
         CombatSessionSnapshot? snapshot = current.Snapshot;
         if (!current.Succeeded
@@ -73,6 +68,35 @@ public static class BossCombatLogEndpoints
         if (bossDefinitions.Length == 0)
             return Results.Ok(new BossCombatLogResponse(false, "combat_log_not_boss"));
 
+        IReadOnlyList<CombatEvent>? authoritativeEvents = null;
+        CombatOperationResult historyRead = await registry.ExecuteAsync(
+            accountId,
+            (session, _) =>
+            {
+                if (session.SessionId == request.SessionId)
+                    authoritativeEvents = session.GetEventsAfter(0);
+
+                // This read runs under the registry session gate. Return an empty event
+                // delta so the diagnostic read itself never re-publishes combat history.
+                return new CombatCommandResult(
+                    session.SessionId == request.SessionId,
+                    session.SessionId == request.SessionId ? null : CombatErrorCodes.NotFound,
+                    session.Snapshot(),
+                    []);
+            },
+            cancellationToken);
+
+        if (!historyRead.Succeeded || authoritativeEvents is null)
+            return Results.NotFound(new BossCombatLogResponse(false, "combat_log_session_not_found"));
+        if (authoritativeEvents.Count == 0)
+            return Results.BadRequest(new BossCombatLogResponse(false, "combat_log_empty"));
+        if (authoritativeEvents.Count > MaxEvents)
+            return Results.BadRequest(new BossCombatLogResponse(false, "combat_log_too_large"));
+
+        BossCombatLogEventRequest[] logEvents = authoritativeEvents
+            .Select(ToLogEvent)
+            .ToArray();
+
         long? telegramUserId = await dbContext.Accounts
             .AsNoTracking()
             .Where(account => account.Id == accountId)
@@ -87,11 +111,11 @@ public static class BossCombatLogEndpoints
                 "Configured Telegram sender does not support document delivery.");
         }
 
-        string log = BuildLog(snapshot, request.Events, bossDefinitions);
+        string log = BuildLog(snapshot, logEvents, bossDefinitions);
         string bossName = string.Join(", ", bossDefinitions.Select(boss =>
             boss.DisplayName ?? boss.Name));
         string fileName = $"elyndor-boss-{request.SessionId:N}.txt";
-        string caption = $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {request.Events.Count} событий";
+        string caption = $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {logEvents.Length} событий";
 
         await documentSender.SendDocumentAsync(
             telegramUserId.Value,
@@ -102,6 +126,19 @@ public static class BossCombatLogEndpoints
 
         return Results.Ok(new BossCombatLogResponse(true, null));
     }
+
+    private static BossCombatLogEventRequest ToLogEvent(CombatEvent combatEvent) => new(
+        combatEvent.Sequence,
+        combatEvent.Type.ToString(),
+        combatEvent.ActorId,
+        combatEvent.SourceActorId,
+        combatEvent.TargetActorId,
+        combatEvent.DefinitionId,
+        combatEvent.Amount,
+        combatEvent.AmountBeforeShields,
+        combatEvent.OccurredAtUtc,
+        combatEvent.WeaponHand?.ToString(),
+        combatEvent.WeaponDefinitionId);
 
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
@@ -140,7 +177,7 @@ public static class BossCombatLogEndpoints
         builder.Append("Сессия: ").AppendLine(snapshot.SessionId.ToString("D"));
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
-        builder.Append("Событий получено: ")
+        builder.Append("Событий: ")
             .AppendLine(ordered.Length.ToString(CultureInfo.InvariantCulture));
         if (ordered.Length > 0)
         {
@@ -370,9 +407,7 @@ public static class BossCombatLogEndpoints
         && accountId != Guid.Empty;
 }
 
-public sealed record BossCombatLogRequest(
-    Guid SessionId,
-    IReadOnlyList<BossCombatLogEventRequest> Events);
+public sealed record BossCombatLogRequest(Guid SessionId);
 
 public sealed record BossCombatLogEventRequest(
     long Sequence,
