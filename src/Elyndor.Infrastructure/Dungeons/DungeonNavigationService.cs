@@ -44,6 +44,7 @@ public sealed class DungeonNavigationService(
         DungeonRun? run = await dbContext.DungeonRuns
             .AsNoTracking()
             .Include(candidate => candidate.Members)
+            .Include(candidate => candidate.Encounters)
             .SingleOrDefaultAsync(candidate => candidate.Id == runId, cancellationToken);
         if (run is null)
             return DungeonNavigationResult.Failure(DungeonErrorCodes.RunNotFound);
@@ -52,8 +53,21 @@ public sealed class DungeonNavigationService(
 
         DungeonRunMember? member = run.Members
             .SingleOrDefault(candidate => candidate.CharacterId == characterId.Value);
-        if (member is null)
-            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberNotInRun);
+        if (member?.State == DungeonRunMemberState.Left)
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
+
+        if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterActive);
+
+        if (member is not null)
+            return DungeonNavigationResult.Success();
+
+        bool belongsToParty = await dbContext.PartyMembers
+            .AsNoTracking()
+            .AnyAsync(candidate => candidate.PartyId == run.PartyId
+                && candidate.CharacterId == characterId.Value, cancellationToken);
+        if (!belongsToParty)
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberNotInParty);
 
         return DungeonNavigationResult.Success();
     }
