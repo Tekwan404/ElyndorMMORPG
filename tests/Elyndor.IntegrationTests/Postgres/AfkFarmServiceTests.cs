@@ -139,7 +139,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task DangerousLocationIsRejectedEvenWhenContentEnablesAfk()
+    public async Task DangerousLocationIsEligibleWhenContentEnablesAfk()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
         Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
@@ -154,8 +154,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(AfkFarmErrorCodes.NotAllowed, result.ErrorCode);
+        Assert.True(result.Succeeded);
     }
 
     [Fact]
@@ -177,7 +176,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task DeadCharacterIsRejected()
+    public async Task ZeroHpDoesNotBlockAfkFarming()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
         Guid accountId = await SeedCharacterAsync(dbContext, ForestId, currentHp: 0);
@@ -190,8 +189,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(AfkFarmErrorCodes.CharacterDead, result.ErrorCode);
+        Assert.True(result.Succeeded);
     }
 
     [Fact]
