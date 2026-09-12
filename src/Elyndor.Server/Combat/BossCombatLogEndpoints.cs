@@ -8,6 +8,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Combat;
@@ -15,7 +16,6 @@ namespace Elyndor.Server.Combat;
 public static class BossCombatLogEndpoints
 {
     private const int MaxEvents = 1500;
-    private const int TelegramChunkLength = 3500;
 
     public static IEndpointRouteBuilder MapBossCombatLogEndpoints(
         this IEndpointRouteBuilder endpoints)
@@ -80,14 +80,24 @@ public static class BossCombatLogEndpoints
         if (telegramUserId is null)
             return Results.NotFound(new BossCombatLogResponse(false, "combat_log_account_not_found"));
 
-        string log = BuildLog(snapshot, request.Events, bossDefinitions);
-        foreach (string chunk in Chunk(log, TelegramChunkLength))
+        if (messageSender is not ITelegramDocumentSender documentSender)
         {
-            await messageSender.SendAsync(
-                telegramUserId.Value,
-                chunk,
-                cancellationToken);
+            throw new InvalidOperationException(
+                "Configured Telegram sender does not support document delivery.");
         }
+
+        string log = BuildLog(snapshot, request.Events, bossDefinitions);
+        string bossName = string.Join(", ", bossDefinitions.Select(boss =>
+            boss.DisplayName ?? boss.Name));
+        string fileName = $"elyndor-boss-{request.SessionId:N}.txt";
+        string caption = $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {request.Events.Count} событий";
+
+        await documentSender.SendDocumentAsync(
+            telegramUserId.Value,
+            fileName,
+            log,
+            caption,
+            cancellationToken);
 
         return Results.Ok(new BossCombatLogResponse(true, null));
     }
@@ -164,28 +174,6 @@ public static class BossCombatLogEndpoints
         }
 
         return builder.ToString();
-    }
-
-    private static IEnumerable<string> Chunk(string text, int maxLength)
-    {
-        StringBuilder chunk = new();
-        foreach (string line in text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
-        {
-            string safeLine = line.Length <= maxLength ? line : line[..maxLength];
-            int required = safeLine.Length + (chunk.Length == 0 ? 0 : 1);
-            if (chunk.Length > 0 && chunk.Length + required > maxLength)
-            {
-                yield return chunk.ToString();
-                chunk.Clear();
-            }
-
-            if (chunk.Length > 0)
-                chunk.AppendLine();
-            chunk.Append(safeLine);
-        }
-
-        if (chunk.Length > 0)
-            yield return chunk.ToString();
     }
 
     private static string ResolveActorName(Guid actorId, Dictionary<Guid, string> names) =>
