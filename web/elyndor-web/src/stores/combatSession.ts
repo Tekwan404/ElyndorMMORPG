@@ -20,6 +20,12 @@ import type {
 } from '@/api/contracts'
 
 type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
+export type CombatConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'reconnecting'
+  | 'syncing'
+  | 'connected'
 
 export interface CombatRealtimeDiagnostic {
   stage: CombatRealtimeStage
@@ -68,7 +74,9 @@ const requiresLootRollDecision = (roll: CombatLootRoll): boolean =>
   roll.eligibleCharacterIds.length > 1
 
 export const useCombatSessionStore = defineStore('combatSession', () => {
-  const connectionState = ref<'disconnected' | 'connecting' | 'connected'>('disconnected')
+  const connectionState = ref<CombatConnectionState>('disconnected')
+  const reconnectCount = ref(0)
+  const lastResyncedAtUtc = ref<string | null>(null)
   const snapshot = ref<CombatSnapshot | null>(null)
   const events = ref<CombatEvent[]>([])
   const reward = ref<CombatReward | null>(null)
@@ -101,6 +109,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
+  let resyncPromise: Promise<void> | null = null
   let lootRefreshTimer: number | null = null
   let abilityQueueTimer: number | null = null
   let telemetryBusy = false
@@ -145,13 +154,13 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         void useDungeonStore().refresh()
       })
       connection.onreconnecting((error) => {
-        connectionState.value = 'connecting'
+        reconnectCount.value += 1
+        connectionState.value = 'reconnecting'
+        latencyMs.value = null
         if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
       })
       connection.onreconnected(() => {
-        connectionState.value = 'connected'
-        diagnostic.value = null
-        void resume()
+        void resynchronizeAfterReconnect()
       })
       connection.onclose((error) => {
         connectionState.value = 'disconnected'
@@ -170,6 +179,36 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       recordFailure('signalr_start', 'connect', error)
       throw error
     }
+  }
+
+  async function resynchronizeAfterReconnect(): Promise<void> {
+    if (resyncPromise) return await resyncPromise
+
+    resyncPromise = resynchronizeCore().finally(() => {
+      resyncPromise = null
+    })
+    return await resyncPromise
+  }
+
+  async function resynchronizeCore(): Promise<void> {
+    if (connection?.state !== HubConnectionState.Connected) return
+
+    connectionState.value = 'syncing'
+    diagnostic.value = null
+
+    const resumeSucceeded = await resume()
+    await Promise.allSettled([
+      usePartyStore().refresh(),
+      useDungeonStore().refresh(),
+    ])
+
+    if (connection?.state !== HubConnectionState.Connected) return
+
+    await refreshCombatTelemetry()
+    if (connection?.state !== HubConnectionState.Connected) return
+
+    if (resumeSucceeded) lastResyncedAtUtc.value = new Date().toISOString()
+    connectionState.value = 'connected'
   }
 
   async function startCombat(encounter: WorldEncounter): Promise<boolean> {
@@ -487,10 +526,18 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       diagnostic.value = null
       return
     }
+
+    const incomingSnapshot = update.snapshot
+    const currentSnapshot = snapshot.value
+    const isStaleSameSession = incomingSnapshot !== null
+      && currentSnapshot !== null
+      && incomingSnapshot.sessionId === currentSnapshot.sessionId
+      && incomingSnapshot.sequence < currentSnapshot.sequence
+    if (isStaleSameSession) return
+
     errorCode.value = null
     diagnostic.value = null
 
-    const incomingSnapshot = update.snapshot
     const newSession = incomingSnapshot !== null
       && snapshot.value?.sessionId !== incomingSnapshot.sessionId
     if (newSession && incomingSnapshot) {
@@ -604,6 +651,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   return {
     connectionState,
+    reconnectCount,
+    lastResyncedAtUtc,
     snapshot,
     events,
     reward,
