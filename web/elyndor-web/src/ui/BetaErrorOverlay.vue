@@ -1,59 +1,41 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { useGameSessionStore } from '@/stores/gameSession'
 
 const session = useGameSessionStore()
-const visible = ref(false)
-const hasDiagnostic = computed(() => Boolean(session.errorCode))
-let dismissTimer: ReturnType<typeof setTimeout> | null = null
-
-function clearDismissTimer(): void {
-  if (dismissTimer === null) return
-  clearTimeout(dismissTimer)
-  dismissTimer = null
-}
-
-function dismiss(): void {
-  clearDismissTimer()
-  visible.value = false
-}
-
-function scheduleDismiss(): void {
-  clearDismissTimer()
-  dismissTimer = setTimeout(() => {
-    visible.value = false
-    dismissTimer = null
-  }, 8_000)
-}
-
-watch(
-  [() => session.errorCode, () => session.errorCorrelationId],
-  ([errorCode]) => {
-    if (!errorCode) {
-      dismiss()
-      return
-    }
-
-    visible.value = true
-    scheduleDismiss()
-  },
-  { immediate: true },
+const dismissedDiagnosticKey = ref<string | null>(null)
+const diagnosticKey = computed(() => {
+  const code = session.errorCode?.trim() ?? ''
+  const correlationId = session.errorCorrelationId?.trim() ?? ''
+  if (!code && !correlationId) return null
+  return `${code}|${correlationId}`
+})
+const visible = computed(() =>
+  diagnosticKey.value !== null
+  && diagnosticKey.value !== dismissedDiagnosticKey.value,
 )
 
-onBeforeUnmount(clearDismissTimer)
+watch(diagnosticKey, (next, previous) => {
+  if (next && next !== previous) dismissedDiagnosticKey.value = null
+})
+
+function dismiss(): void {
+  dismissedDiagnosticKey.value = diagnosticKey.value
+}
 </script>
 
 <template>
   <aside
-    v-if="hasDiagnostic && visible"
+    v-if="visible"
     class="beta-error-diagnostic"
     role="alert"
     aria-live="assertive"
+    data-beta-error-diagnostic
   >
     <div class="beta-error-diagnostic__copy">
       <strong>Ошибка · закрытая бета</strong>
-      <span>Код: {{ session.errorCode }}</span>
+      <span v-if="session.errorCode">Код: {{ session.errorCode }}</span>
       <span v-if="session.errorCorrelationId">ID: {{ session.errorCorrelationId }}</span>
     </div>
     <button
