@@ -77,7 +77,8 @@ public sealed record AbilityActionDefinition(
     decimal AttackPowerCoefficient = 0,
     TimeSpan? Duration = null,
     decimal ArmorPenetrationBonus = 0,
-    decimal SpellPowerCoefficient = 0);
+    decimal SpellPowerCoefficient = 0,
+    decimal DamagePerCharacterLevel = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
