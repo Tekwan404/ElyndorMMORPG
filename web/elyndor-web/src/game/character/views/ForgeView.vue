@@ -12,6 +12,14 @@ const session = useGameSessionStore()
 type ForgeMode = 'reforge' | 'upgrade' | 'salvage'
 type ForgeEquipmentFilter = 'all' | 'equipped' | 'backpack'
 type ForgeSortMode = 'recommended' | 'power-desc' | 'rarity-desc' | 'level-desc' | 'name-asc'
+interface StarUpgradeCost { targetStars: number; gold: number; stones: number; catalystQuantity: number }
+
+const STAR_UPGRADE_COSTS: Record<number, StarUpgradeCost> = {
+  2: { targetStars: 2, gold: 50, stones: 2, catalystQuantity: 0 },
+  3: { targetStars: 3, gold: 100, stones: 4, catalystQuantity: 0 },
+  4: { targetStars: 4, gold: 180, stones: 7, catalystQuantity: 0 },
+  5: { targetStars: 5, gold: 300, stones: 12, catalystQuantity: 1 },
+}
 
 const selectedItemId = ref<string | null>(null)
 const selectedSlotKey = ref<string | null>(null)
@@ -23,38 +31,29 @@ const pending = ref<ItemReforgeResponse | null>(null)
 const actionError = ref<string | null>(null)
 const loadingPreview = ref(false)
 const salvagePreview = ref<ItemSalvagePreview | null>(null)
+const batchSalvageMode = ref(false)
+const batchSalvageIds = ref<string[]>([])
+const batchSalvagePreviews = ref<ItemSalvagePreview[]>([])
+const batchSalvageLoading = ref(false)
 
 const rarityOrder: Record<InventoryItem['rarity'], number> = {
-  Common: 0,
-  Uncommon: 1,
-  Rare: 2,
-  Epic: 3,
-  Legendary: 4,
-  Unique: 5,
+  Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4, Unique: 5,
 }
 
 const character = computed(() => session.snapshot?.character ?? null)
 const gold = computed(() => character.value?.gold ?? 0)
-const allEquipment = computed(() => character.value?.inventory.items.filter(item => item.type === 'Equipment') ?? [])
+const inventoryItems = computed(() => character.value?.inventory.items ?? [])
+const allEquipment = computed(() => inventoryItems.value.filter(item => item.type === 'Equipment'))
 const filteredEquipment = computed(() => allEquipment.value.filter((item) => {
   if (equipmentFilter.value === 'equipped') return isEquipped(item)
   if (equipmentFilter.value === 'backpack') return !isEquipped(item)
   return true
 }))
 const displayedEquipment = computed(() => [...filteredEquipment.value].sort((left, right) => {
-  if (sortMode.value === 'power-desc') {
-    return itemPower(right) - itemPower(left)
-  }
-  if (sortMode.value === 'rarity-desc') {
-    return rarityOrder[right.rarity] - rarityOrder[left.rarity] || itemPower(right) - itemPower(left)
-  }
-  if (sortMode.value === 'level-desc') {
-    return right.requiredLevel - left.requiredLevel || itemPower(right) - itemPower(left)
-  }
-  if (sortMode.value === 'name-asc') {
-    return left.name.localeCompare(right.name, 'ru')
-  }
-
+  if (sortMode.value === 'power-desc') return itemPower(right) - itemPower(left)
+  if (sortMode.value === 'rarity-desc') return rarityOrder[right.rarity] - rarityOrder[left.rarity] || itemPower(right) - itemPower(left)
+  if (sortMode.value === 'level-desc') return right.requiredLevel - left.requiredLevel || itemPower(right) - itemPower(left)
+  if (sortMode.value === 'name-asc') return left.name.localeCompare(right.name, 'ru')
   const leftAvailable = forgeItemAvailability(left).available ? 1 : 0
   const rightAvailable = forgeItemAvailability(right).available ? 1 : 0
   if (leftAvailable !== rightAvailable) return rightAvailable - leftAvailable
@@ -67,24 +66,39 @@ const selectedAffix = computed(() => affixes.value.find(affix => affix.slotKey =
 const pendingAffixes = computed(() => pending.value
   ? reforgeResultAffixes(pending.value.current, pending.value.proposed, pending.value.slotKey)
   : { current: null, proposed: null })
-const reforgeStones = computed(() => availableForgeMaterialQuantity(
-  character.value?.inventory.items ?? [],
-  'REFORGE_STONE',
-))
+const reforgeStones = computed(() => availableForgeMaterialQuantity(inventoryItems.value, 'REFORGE_STONE'))
+const dungeonCatalysts = computed(() => availableForgeMaterialQuantity(inventoryItems.value, 'DUNGEON_CATALYST'))
 const selectedPowerPercent = computed(() => {
   const generated = selectedItem.value?.generatedItem
   if (!generated || generated.maxItemPower <= 0) return 0
   return Math.max(0, Math.min(100, generated.itemPower / generated.maxItemPower * 100))
+})
+const starUpgradeCost = computed<StarUpgradeCost | null>(() => {
+  const stars = selectedItem.value?.generatedItem?.stars
+  if (stars === undefined || stars >= 5) return null
+  return STAR_UPGRADE_COSTS[stars + 1] ?? null
+})
+const canAffordStarUpgrade = computed(() => {
+  const cost = starUpgradeCost.value
+  if (!cost) return false
+  return gold.value >= cost.gold
+    && reforgeStones.value >= cost.stones
+    && dungeonCatalysts.value >= cost.catalystQuantity
+})
+const starUpgradeShortage = computed(() => {
+  const cost = starUpgradeCost.value
+  if (!cost) return null
+  if (gold.value < cost.gold) return `Не хватает золота: нужно ${cost.gold}, у вас ${gold.value}.`
+  if (reforgeStones.value < cost.stones) return `Не хватает Камней перековки: нужно ${cost.stones}, доступно ${reforgeStones.value}.`
+  if (dungeonCatalysts.value < cost.catalystQuantity) return `Не хватает Ядра подземелья: нужно ${cost.catalystQuantity}, доступно ${dungeonCatalysts.value}.`
+  return null
 })
 const canAffordReforge = computed(() => {
   const cost = preview.value?.cost
   if (!cost) return false
   if (gold.value < cost.gold || reforgeStones.value < cost.materialQuantity) return false
   if (cost.catalystQuantity > 0 && cost.catalystItemId) {
-    return availableForgeMaterialQuantity(
-      character.value?.inventory.items ?? [],
-      cost.catalystItemId,
-    ) >= cost.catalystQuantity
+    return availableForgeMaterialQuantity(inventoryItems.value, cost.catalystItemId) >= cost.catalystQuantity
   }
   return true
 })
@@ -94,7 +108,7 @@ const reforgeShortage = computed(() => {
   if (gold.value < cost.gold) return `Не хватает золота: нужно ${cost.gold}, у вас ${gold.value}.`
   if (reforgeStones.value < cost.materialQuantity) return `Не хватает Камней перековки: нужно ${cost.materialQuantity}, доступно ${reforgeStones.value}.`
   if (cost.catalystQuantity > 0 && cost.catalystItemId) {
-    const available = availableForgeMaterialQuantity(character.value?.inventory.items ?? [], cost.catalystItemId)
+    const available = availableForgeMaterialQuantity(inventoryItems.value, cost.catalystItemId)
     if (available < cost.catalystQuantity) return `Не хватает катализатора: нужно ${cost.catalystQuantity}, доступно ${available}.`
   }
   return null
@@ -109,23 +123,67 @@ const resultComparison = computed(() => {
   if (delta < 0) return { label: format(delta), tone: 'negative' }
   return { label: 'Без изменения значения', tone: 'neutral' }
 })
+const batchSalvageReady = computed(() => batchSalvageIds.value.length > 0
+  && batchSalvagePreviews.value.length === batchSalvageIds.value.length)
+const batchStoneTotal = computed(() => batchSalvagePreviews.value.reduce(
+  (sum, item) => sum + item.reward.reforgeStoneQuantity, 0))
+const batchMaterialTotals = computed(() => {
+  const totals = new Map<string, number>()
+  for (const item of batchSalvagePreviews.value) {
+    totals.set(item.reward.materialItemId, (totals.get(item.reward.materialItemId) ?? 0) + item.reward.materialQuantity)
+  }
+  return [...totals.entries()].filter(([, quantity]) => quantity > 0)
+})
 
-function isEquipped(item: InventoryItem): boolean {
-  return item.equippedSlot !== null
+function isEquipped(item: InventoryItem): boolean { return item.equippedSlot !== null }
+function itemPower(item: InventoryItem): number { return item.generatedItem?.itemPower ?? 0 }
+function itemArt(item: InventoryItem): string | undefined { return itemArtUrl(item.iconId) }
+function isBatchSelected(item: InventoryItem): boolean { return batchSalvageIds.value.includes(item.id) }
+function canSelectForBatchSalvage(item: InventoryItem): boolean {
+  return item.type === 'Equipment' && !isEquipped(item) && !item.isLocked && !item.transactionLocked
+}
+function materialLabel(definitionId: string): string {
+  return inventoryItems.value.find(item => item.definitionId === definitionId)?.name
+    ?? ({ FORGE_SCRAP: 'Кузнечный лом', REFORGE_STONE: 'Камень перековки' }[definitionId] ?? definitionId)
 }
 
-function itemPower(item: InventoryItem): number {
-  return item.generatedItem?.itemPower ?? 0
+function toggleBatchSalvage(item: InventoryItem): void {
+  actionError.value = null
+  if (!canSelectForBatchSalvage(item)) {
+    actionError.value = isEquipped(item)
+      ? 'Надетые вещи нельзя разбирать. Снимите предмет, если хотите добавить его в массовый разбор.'
+      : 'Этот предмет сейчас нельзя добавить в разбор.'
+    return
+  }
+  const selected = new Set(batchSalvageIds.value)
+  selected.has(item.id) ? selected.delete(item.id) : selected.add(item.id)
+  batchSalvageIds.value = [...selected]
+  batchSalvagePreviews.value = []
 }
 
-function itemArt(item: InventoryItem): string | undefined {
-  return itemArtUrl(item.iconId)
+function toggleBatchSalvageMode(): void {
+  if (batchSalvageMode.value) {
+    batchSalvageMode.value = false
+    batchSalvageIds.value = []
+    batchSalvagePreviews.value = []
+    actionError.value = null
+    return
+  }
+  clearSelection()
+  batchSalvageMode.value = true
+  activeMode.value = 'salvage'
+  equipmentFilter.value = 'backpack'
+  actionError.value = null
 }
 
 function selectItem(item: InventoryItem): void {
+  if (batchSalvageMode.value) {
+    toggleBatchSalvage(item)
+    return
+  }
   selectedItemId.value = item.id
   selectedSlotKey.value = item.reforgeSlotKey ?? forgeableAffixes(item)[0]?.slotKey ?? null
-  activeMode.value = 'reforge'
+  activeMode.value = isEquipped(item) ? 'upgrade' : 'reforge'
   preview.value = null
   pending.value = null
   actionError.value = null
@@ -136,6 +194,8 @@ function clearSelection(): void {
   selectedItemId.value = null
   selectedSlotKey.value = null
   activeMode.value = 'reforge'
+  preview.value = null
+  pending.value = null
   salvagePreview.value = null
   actionError.value = null
 }
@@ -144,27 +204,30 @@ function setMode(mode: ForgeMode): void {
   if (pending.value && mode !== 'reforge') return
   activeMode.value = mode
   actionError.value = null
+  salvagePreview.value = null
 }
 
 async function refreshSelection(): Promise<void> {
   const item = selectedItem.value
   const slotKey = selectedSlotKey.value
   preview.value = null
-  pending.value = null
   actionError.value = null
-  if (!item || !slotKey) return
-
+  if (!item) return
+  if (shouldRestorePendingReforge(item)) {
+    loadingPreview.value = true
+    try {
+      pending.value = await session.getPendingReforge(item.id)
+      if (pending.value) {
+        activeMode.value = 'reforge'
+        return
+      }
+    } finally {
+      loadingPreview.value = false
+    }
+  }
+  if (activeMode.value !== 'reforge' || !slotKey || !selectedAvailability.value?.available) return
   loadingPreview.value = true
   try {
-    if (shouldRestorePendingReforge(item)) {
-      pending.value = await session.getPendingReforge(item.id)
-    }
-    if (pending.value) {
-      activeMode.value = 'reforge'
-      return
-    }
-    if (!selectedAvailability.value?.available) return
-
     preview.value = await session.getReforgePreview(item.id, slotKey)
     if (!preview.value) actionError.value = reforgeErrorMessage(session.errorCode)
   } finally {
@@ -172,7 +235,7 @@ async function refreshSelection(): Promise<void> {
   }
 }
 
-watch([selectedItemId, selectedSlotKey], refreshSelection)
+watch([selectedItemId, selectedSlotKey, activeMode], refreshSelection)
 
 async function roll(): Promise<void> {
   const item = selectedItem.value
@@ -198,16 +261,21 @@ async function decide(acceptProposed: boolean): Promise<void> {
 
 async function upgradeStars(): Promise<void> {
   const item = selectedItem.value
-  if (!item || session.mutationPending) return
+  if (!item || !canAffordStarUpgrade.value || session.mutationPending) return
   actionError.value = null
   const result = await session.upgradeItemStars(item.id)
   if (!result) actionError.value = starUpgradeErrorMessage(session.errorCode)
 }
 
 async function prepareSalvage(): Promise<void> {
-  if (!selectedItem.value || session.mutationPending) return
+  const item = selectedItem.value
+  if (!item || session.mutationPending) return
+  if (isEquipped(item)) {
+    actionError.value = 'Надетые вещи нельзя разбирать. Снимите предмет перед разбором.'
+    return
+  }
   actionError.value = null
-  salvagePreview.value = await session.getSalvagePreview(selectedItem.value.id)
+  salvagePreview.value = await session.getSalvagePreview(item.id)
   if (!salvagePreview.value) actionError.value = 'Не удалось подготовить разбор. Проверьте состояние предмета.'
 }
 
@@ -218,6 +286,56 @@ async function confirmSalvage(): Promise<void> {
   else actionError.value = 'Не удалось разобрать предмет.'
 }
 
+async function prepareBatchSalvage(): Promise<void> {
+  if (!batchSalvageIds.value.length || batchSalvageLoading.value || session.mutationPending) return
+  batchSalvageLoading.value = true
+  batchSalvagePreviews.value = []
+  actionError.value = null
+  try {
+    const prepared: ItemSalvagePreview[] = []
+    for (const id of batchSalvageIds.value) {
+      const item = allEquipment.value.find(candidate => candidate.id === id)
+      if (!item || !canSelectForBatchSalvage(item)) {
+        actionError.value = 'Список изменился: надетая, защищённая или занятая вещь исключена. Выберите предметы заново.'
+        return
+      }
+      const itemPreview = await session.getSalvagePreview(id)
+      if (!itemPreview) {
+        actionError.value = `Не удалось рассчитать разбор для «${item.name}». Ничего не разобрано.`
+        return
+      }
+      prepared.push(itemPreview)
+    }
+    batchSalvagePreviews.value = prepared
+  } finally {
+    batchSalvageLoading.value = false
+  }
+}
+
+async function confirmBatchSalvage(): Promise<void> {
+  if (!batchSalvageReady.value || session.mutationPending) return
+  const previewsToSalvage = [...batchSalvagePreviews.value]
+  let completed = 0
+  actionError.value = null
+  for (const itemPreview of previewsToSalvage) {
+    const result = await session.salvageItem(itemPreview.characterItemId, itemPreview.requiresConfirmation)
+    if (!result) {
+      actionError.value = completed > 0
+        ? `Разобрано ${completed} из ${previewsToSalvage.length}. Оставшиеся предметы не тронуты.`
+        : 'Не удалось выполнить массовый разбор. Предметы не изменены.'
+      batchSalvageIds.value = batchSalvageIds.value.filter(id =>
+        allEquipment.value.some(item => item.id === id))
+      batchSalvagePreviews.value = []
+      return
+    }
+    completed += 1
+  }
+  batchSalvageIds.value = []
+  batchSalvagePreviews.value = []
+  batchSalvageMode.value = false
+  equipmentFilter.value = 'backpack'
+}
+
 function starUpgradeErrorMessage(code: string | null): string {
   const messages: Record<string, string> = {
     star_upgrade_max_stars: 'Предмет уже достиг ★★★★★.',
@@ -225,7 +343,6 @@ function starUpgradeErrorMessage(code: string | null): string {
     star_upgrade_not_enough_stones: 'Недостаточно Камней перековки.',
     star_upgrade_missing_catalyst: 'Для ★★★★★ требуется Ядро подземелья.',
     star_upgrade_item_locked: 'Предмет защищён. Снимите блокировку в инвентаре.',
-    star_upgrade_item_equipped: 'Снимите предмет с экипировки перед улучшением.',
   }
   return code ? (messages[code] ?? 'Не удалось улучшить качество предмета.') : 'Не удалось улучшить качество предмета.'
 }
@@ -233,7 +350,7 @@ function starUpgradeErrorMessage(code: string | null): string {
 function reforgeErrorMessage(code: string | null): string {
   const messages: Record<string, string> = {
     reforge_item_locked: 'Предмет защищён. Снимите блокировку в инвентаре.',
-    reforge_item_equipped: 'Снимите предмет с экипировки перед перековкой.',
+    reforge_item_equipped: 'Для перековки характеристики предмет пока нужно снять.',
     reforge_item_transaction_locked: 'С этим предметом уже выполняется операция.',
     reforge_not_enough_gold: 'Недостаточно золота.',
     reforge_not_enough_material: 'Недостаточно Камней перековки.',
@@ -243,10 +360,7 @@ function reforgeErrorMessage(code: string | null): string {
   return code ? (messages[code] ?? 'Не удалось выполнить перековку. Попробуйте ещё раз.') : 'Не удалось выполнить перековку.'
 }
 
-function format(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
-}
-
+function format(value: number): string { return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '') }
 function rarityLabel(item: InventoryItem): string {
   const labels: Record<InventoryItem['rarity'], string> = {
     Common: 'Обычный', Uncommon: 'Необычный', Rare: 'Редкий', Epic: 'Эпический', Legendary: 'Легендарный', Unique: 'Уникальный',
@@ -275,14 +389,10 @@ function rarityLabel(item: InventoryItem): string {
       </div>
     </header>
 
-    <section
-      v-if="allEquipment.length"
-      class="forge-layout"
-      :class="{ 'forge-layout--detail': !!selectedItem }"
-    >
+    <section v-if="allEquipment.length" class="forge-layout" :class="{ 'forge-layout--detail': !!selectedItem }">
       <div v-if="!selectedItem" class="forge-items" aria-label="Предметы для кузницы">
         <header class="forge-items__header">
-          <div><small>СНАРЯЖЕНИЕ</small><strong>Выберите предмет</strong></div>
+          <div><small>СНАРЯЖЕНИЕ</small><strong>{{ batchSalvageMode ? 'Выберите вещи для разбора' : 'Выберите предмет' }}</strong></div>
           <span>{{ displayedEquipment.length }} из {{ allEquipment.length }}</span>
         </header>
 
@@ -302,7 +412,32 @@ function rarityLabel(item: InventoryItem): string {
               <option value="name-asc">По названию</option>
             </select>
           </label>
+          <UIButton variant="ghost" class="forge-batch-toggle" @click="toggleBatchSalvageMode">
+            {{ batchSalvageMode ? 'Отменить массовый разбор' : 'Разобрать несколько вещей' }}
+          </UIButton>
         </div>
+
+        <section v-if="batchSalvageMode" class="forge-panel forge-panel--salvage forge-batch-panel">
+          <header class="forge-section-heading forge-section-heading--compact">
+            <span>МАССОВЫЙ РАЗБОР</span>
+            <strong>Выбрано: {{ batchSalvageIds.length }}</strong>
+            <small>Надетые и защищённые вещи выбрать нельзя.</small>
+          </header>
+          <div v-if="batchSalvageReady" class="forge-salvage-reward">
+            <small>ВЫ ПОЛУЧИТЕ СУММАРНО</small>
+            <div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'batch-salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камни перековки ×{{ batchStoneTotal }}</strong></div>
+            <div v-for="[materialId, quantity] in batchMaterialTotals" :key="materialId"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(materialId) }} ×{{ quantity }}</strong></div>
+          </div>
+          <p v-if="actionError" class="forge-error" role="alert">{{ actionError }}</p>
+          <div class="forge-actions">
+            <UIButton variant="ghost" :disabled="!batchSalvageIds.length" :loading="batchSalvageLoading" @click="prepareBatchSalvage">
+              {{ batchSalvageReady ? 'Пересчитать' : 'Показать результат' }}
+            </UIButton>
+            <UIButton variant="danger" :disabled="!batchSalvageReady" :loading="session.mutationPending" @click="confirmBatchSalvage">
+              Разобрать {{ batchSalvageIds.length }}
+            </UIButton>
+          </div>
+        </section>
 
         <div v-if="!displayedEquipment.length" class="forge-list-empty">
           <strong>По этому фильтру ничего нет</strong>
@@ -313,9 +448,13 @@ function rarityLabel(item: InventoryItem): string {
           v-for="item in displayedEquipment"
           :key="item.id"
           class="forge-item"
-          :class="{ active: item.id === selectedItemId, unavailable: !forgeItemAvailability(item).available }"
+          :class="{
+            active: batchSalvageMode ? isBatchSelected(item) : item.id === selectedItemId,
+            unavailable: batchSalvageMode ? !canSelectForBatchSalvage(item) : !forgeItemAvailability(item).available,
+          }"
           :data-forge-item="item.id"
           type="button"
+          :aria-pressed="batchSalvageMode ? isBatchSelected(item) : undefined"
           @click="selectItem(item)"
         >
           <span class="forge-item__art" :data-rarity="item.rarity">
@@ -327,28 +466,26 @@ function rarityLabel(item: InventoryItem): string {
               <strong>{{ item.name }}</strong>
               <span class="forge-item__badges">
                 <b v-if="isEquipped(item)" class="is-equipped">Надето</b>
-                <b :class="forgeItemAvailability(item).available ? 'is-ready' : 'is-blocked'">
+                <b v-if="batchSalvageMode" :class="isBatchSelected(item) ? 'is-ready' : (canSelectForBatchSalvage(item) ? 'is-ready' : 'is-blocked')">
+                  {{ isBatchSelected(item) ? 'Выбрано' : (canSelectForBatchSalvage(item) ? 'Можно' : 'Нельзя') }}
+                </b>
+                <b v-else :class="forgeItemAvailability(item).available ? 'is-ready' : 'is-blocked'">
                   {{ forgeItemAvailability(item).available ? 'Готов' : 'Недоступен' }}
                 </b>
               </span>
             </span>
             <small>{{ rarityLabel(item) }} · ур. {{ item.requiredLevel }} · мощь {{ format(item.generatedItem?.itemPower ?? 0) }}</small>
             <ItemQualityStars v-if="item.generatedItem" :id="`forge-${item.id}`" :stars="item.generatedItem.stars" />
-            <em v-if="!forgeItemAvailability(item).available">{{ forgeItemAvailability(item).reason }}</em>
+            <em v-if="batchSalvageMode && isEquipped(item)">Надетую вещь нельзя разобрать</em>
+            <em v-else-if="!batchSalvageMode && !forgeItemAvailability(item).available">{{ forgeItemAvailability(item).reason }}</em>
           </span>
-          <span class="forge-item__chevron" aria-hidden="true">›</span>
+          <span class="forge-item__chevron" aria-hidden="true">{{ batchSalvageMode ? (isBatchSelected(item) ? '✓' : '○') : '›' }}</span>
         </button>
       </div>
 
-      <UILoadingState
-        v-if="!selectedItem"
-        class="forge-empty"
-        state="empty"
-        title="Выберите предмет"
-        message="Для разбора удобно выбрать «В рюкзаке», а для работы с текущим сетом — «Надето»."
-      />
+      <UILoadingState v-if="!selectedItem && !batchSalvageMode" class="forge-empty" state="empty" title="Выберите предмет" message="Для разбора удобно выбрать «В рюкзаке», а для работы с текущим сетом — «Надето»." />
 
-      <article v-else class="forge-detail" :data-rarity="selectedItem.rarity">
+      <article v-else-if="selectedItem" class="forge-detail" :data-rarity="selectedItem.rarity">
         <UIButton variant="ghost" class="forge-back" @click="clearSelection">← Все предметы</UIButton>
 
         <header class="forge-detail__identity">
@@ -374,99 +511,39 @@ function rarityLabel(item: InventoryItem): string {
 
         <template v-if="selectedAvailability?.available || pending">
           <nav class="forge-modes" aria-label="Действия кузницы">
-            <button type="button" :class="{ active: activeMode === 'reforge' }" @click="setMode('reforge')">
-              <span>↻</span><strong>Перековка</strong><small>Сменить один стат</small>
-            </button>
-            <button type="button" :class="{ active: activeMode === 'upgrade' }" :disabled="!!pending" @click="setMode('upgrade')">
-              <span>★</span><strong>Качество</strong><small>Поднять звезду</small>
-            </button>
-            <button type="button" :class="{ active: activeMode === 'salvage' }" :disabled="!!pending" @click="setMode('salvage')">
-              <span>♢</span><strong>Разбор</strong><small>Вернуть материалы</small>
-            </button>
+            <button type="button" :class="{ active: activeMode === 'reforge' }" @click="setMode('reforge')"><span>↻</span><strong>Перековка</strong><small>Сменить один стат</small></button>
+            <button type="button" :class="{ active: activeMode === 'upgrade' }" :disabled="!!pending" @click="setMode('upgrade')"><span>★</span><strong>Качество</strong><small>Поднять звезду</small></button>
+            <button type="button" :class="{ active: activeMode === 'salvage' }" :disabled="!!pending" @click="setMode('salvage')"><span>♢</span><strong>Разбор</strong><small>Вернуть материалы</small></button>
           </nav>
 
           <section v-if="activeMode === 'reforge'" class="forge-panel forge-panel--reforge">
             <template v-if="pending">
-              <header class="forge-section-heading">
-                <span>РЕЗУЛЬТАТ</span>
-                <strong>Выберите, что оставить</strong>
-                <small>Стоимость уже списана. Решение обязательно завершает текущую перековку.</small>
-              </header>
-
+              <header class="forge-section-heading"><span>РЕЗУЛЬТАТ</span><strong>Выберите, что оставить</strong><small>Стоимость уже списана. Решение обязательно завершает текущую перековку.</small></header>
               <div class="forge-result" aria-live="polite">
-                <div class="forge-result__card forge-result__card--current">
-                  <small>ТЕКУЩАЯ</small>
-                  <strong>{{ forgeStatLabel(pendingAffixes.current?.statId ?? pending.slotKey) }}</strong>
-                  <b>{{ format(pendingAffixes.current?.value ?? 0) }}</b>
-                  <span v-if="pendingAffixes.current">Диапазон {{ format(pendingAffixes.current.min) }}–{{ format(pendingAffixes.current.max) }}</span>
-                </div>
+                <div class="forge-result__card forge-result__card--current"><small>ТЕКУЩАЯ</small><strong>{{ forgeStatLabel(pendingAffixes.current?.statId ?? pending.slotKey) }}</strong><b>{{ format(pendingAffixes.current?.value ?? 0) }}</b><span v-if="pendingAffixes.current">Диапазон {{ format(pendingAffixes.current.min) }}–{{ format(pendingAffixes.current.max) }}</span></div>
                 <div class="forge-result__arrow" aria-hidden="true">→</div>
-                <div class="forge-result__card forge-result__card--proposed">
-                  <small>НОВАЯ</small>
-                  <strong>{{ forgeStatLabel(pendingAffixes.proposed?.statId ?? pending.slotKey) }}</strong>
-                  <b>{{ format(pendingAffixes.proposed?.value ?? 0) }}</b>
-                  <span v-if="pendingAffixes.proposed">Диапазон {{ format(pendingAffixes.proposed.min) }}–{{ format(pendingAffixes.proposed.max) }}</span>
-                  <em :data-tone="resultComparison.tone">{{ resultComparison.label }}</em>
-                </div>
+                <div class="forge-result__card forge-result__card--proposed"><small>НОВАЯ</small><strong>{{ forgeStatLabel(pendingAffixes.proposed?.statId ?? pending.slotKey) }}</strong><b>{{ format(pendingAffixes.proposed?.value ?? 0) }}</b><span v-if="pendingAffixes.proposed">Диапазон {{ format(pendingAffixes.proposed.min) }}–{{ format(pendingAffixes.proposed.max) }}</span><em :data-tone="resultComparison.tone">{{ resultComparison.label }}</em></div>
               </div>
-
-              <div class="forge-actions forge-actions--decision">
-                <UIButton variant="ghost" :loading="session.mutationPending" @click="decide(false)">Оставить текущую</UIButton>
-                <UIButton :loading="session.mutationPending" @click="decide(true)">Применить новую</UIButton>
-              </div>
+              <div class="forge-actions forge-actions--decision"><UIButton variant="ghost" :loading="session.mutationPending" @click="decide(false)">Оставить текущую</UIButton><UIButton :loading="session.mutationPending" @click="decide(true)">Применить новую</UIButton></div>
             </template>
-
             <template v-else>
-              <header class="forge-section-heading">
-                <span>ШАГ 1</span>
-                <strong>Выберите характеристику</strong>
-                <small>Меняется только один случайный аффикс. Остальные параметры предмета сохраняются.</small>
-              </header>
-
+              <header class="forge-section-heading"><span>ШАГ 1</span><strong>Выберите характеристику</strong><small>Меняется только один случайный аффикс. Остальные параметры предмета сохраняются.</small></header>
               <section class="forge-affixes" aria-label="Характеристики предмета">
-                <button
-                  v-for="affix in affixes"
-                  :key="affix.slotKey"
-                  type="button"
-                  :data-forge-affix="affix.slotKey"
-                  :class="{ active: selectedSlotKey === affix.slotKey }"
-                  @click="selectedSlotKey = affix.slotKey"
-                >
-                  <span class="forge-affix__mark">{{ selectedSlotKey === affix.slotKey ? '●' : '○' }}</span>
-                  <span class="forge-affix__copy"><strong>{{ forgeStatLabel(affix.statId) }}</strong><small>Диапазон {{ format(affix.min) }}–{{ format(affix.max) }}</small></span>
-                  <b>{{ format(affix.value) }}</b>
+                <button v-for="affix in affixes" :key="affix.slotKey" type="button" :data-forge-affix="affix.slotKey" :class="{ active: selectedSlotKey === affix.slotKey }" @click="selectedSlotKey = affix.slotKey">
+                  <span class="forge-affix__mark">{{ selectedSlotKey === affix.slotKey ? '●' : '○' }}</span><span class="forge-affix__copy"><strong>{{ forgeStatLabel(affix.statId) }}</strong><small>Диапазон {{ format(affix.min) }}–{{ format(affix.max) }}</small></span><b>{{ format(affix.value) }}</b>
                 </button>
               </section>
-
               <section class="forge-preview" aria-live="polite">
-                <template v-if="loadingPreview">
-                  <div class="forge-preview__loading"><span class="forge-spinner" /> Проверяем стоимость…</div>
-                </template>
+                <template v-if="loadingPreview"><div class="forge-preview__loading"><span class="forge-spinner" /> Проверяем стоимость…</div></template>
                 <template v-else-if="preview">
-                  <header class="forge-section-heading forge-section-heading--compact">
-                    <span>ШАГ 2</span>
-                    <strong>Подтвердите перековку</strong>
-                    <small v-if="selectedAffix">Выбрано: {{ forgeStatLabel(selectedAffix.statId) }} {{ format(selectedAffix.value) }}</small>
-                  </header>
-
+                  <header class="forge-section-heading forge-section-heading--compact"><span>ШАГ 2</span><strong>Подтвердите перековку</strong><small v-if="selectedAffix">Выбрано: {{ forgeStatLabel(selectedAffix.statId) }} {{ format(selectedAffix.value) }}</small></header>
                   <div class="forge-costs">
-                    <div :class="{ insufficient: gold < preview.cost.gold }">
-                      <small>Золото</small>
-                      <strong>{{ preview.cost.gold }}</strong>
-                      <span>у вас {{ gold }}</span>
-                    </div>
-                    <div :class="{ insufficient: reforgeStones < preview.cost.materialQuantity }">
-                      <small>Камни перековки</small>
-                      <strong>{{ preview.cost.materialQuantity }}</strong>
-                      <span>доступно {{ reforgeStones }}</span>
-                    </div>
+                    <div :class="{ insufficient: gold < preview.cost.gold }"><small>Золото</small><strong>{{ preview.cost.gold }}</strong><span>у вас {{ gold }}</span></div>
+                    <div :class="{ insufficient: reforgeStones < preview.cost.materialQuantity }"><small>Камни перековки</small><strong>{{ preview.cost.materialQuantity }}</strong><span>доступно {{ reforgeStones }}</span></div>
                   </div>
-
                   <p class="forge-preview__hint">После оплаты выпадет новая характеристика. Вы сможете сравнить её с текущей и только потом выбрать, какую оставить.</p>
                   <p v-if="reforgeShortage" class="forge-shortage">{{ reforgeShortage }}</p>
-                  <UIButton :disabled="!canAffordReforge" :loading="session.mutationPending" data-forge-roll @click="roll">
-                    Перековать характеристику
-                  </UIButton>
+                  <UIButton :disabled="!canAffordReforge" :loading="session.mutationPending" data-forge-roll @click="roll">Перековать характеристику</UIButton>
                   <small class="forge-attempt">Попыток перековки предмета: {{ selectedItem.reforgeCount ?? 0 }}</small>
                 </template>
               </section>
@@ -474,58 +551,32 @@ function rarityLabel(item: InventoryItem): string {
           </section>
 
           <section v-else-if="activeMode === 'upgrade'" class="forge-panel forge-panel--upgrade">
-            <header class="forge-section-heading">
-              <span>КАЧЕСТВО ПРЕДМЕТА</span>
-              <strong>Усиление без смены характеристик</strong>
-              <small>Повышение звезды усиливает существующие rolled-характеристики, но не меняет их типы.</small>
-            </header>
-
+            <header class="forge-section-heading"><span>КАЧЕСТВО ПРЕДМЕТА</span><strong>Поднять звезду</strong><small>Усилит текущие rolled-характеристики без смены их типов.</small></header>
             <div v-if="selectedItem.generatedItem" class="forge-upgrade-hero">
-              <div><small>СЕЙЧАС</small><strong>★{{ selectedItem.generatedItem.stars }}</strong></div>
-              <span aria-hidden="true">→</span>
-              <div><small>ПОСЛЕ</small><strong>{{ selectedItem.generatedItem.stars < 5 ? `★${selectedItem.generatedItem.stars + 1}` : '★★★★★' }}</strong></div>
+              <div><small>СЕЙЧАС</small><strong>★{{ selectedItem.generatedItem.stars }}</strong></div><span aria-hidden="true">→</span><div><small>ПОСЛЕ</small><strong>{{ selectedItem.generatedItem.stars < 5 ? `★${selectedItem.generatedItem.stars + 1}` : '★★★★★' }}</strong></div>
             </div>
-
-            <template v-if="selectedItem.generatedItem && selectedItem.generatedItem.stars < 5">
-              <div class="forge-info-box">
-                <strong>{{ selectedItem.generatedItem.stars === 4 ? 'Финальное улучшение' : 'Следующий уровень качества' }}</strong>
-                <span>{{ selectedItem.generatedItem.stars === 4 ? 'Для ★★★★★ потребуется Ядро подземелья.' : 'Сервер проверит золото и Камни перековки перед списанием.' }}</span>
+            <template v-if="selectedItem.generatedItem && selectedItem.generatedItem.stars < 5 && starUpgradeCost">
+              <div class="forge-costs">
+                <div :class="{ insufficient: gold < starUpgradeCost.gold }"><small>Золото</small><strong>{{ starUpgradeCost.gold }}</strong><span>у вас {{ gold }}</span></div>
+                <div :class="{ insufficient: reforgeStones < starUpgradeCost.stones }"><small>Камни перековки</small><strong>{{ starUpgradeCost.stones }}</strong><span>доступно {{ reforgeStones }}</span></div>
+                <div v-if="starUpgradeCost.catalystQuantity > 0" :class="{ insufficient: dungeonCatalysts < starUpgradeCost.catalystQuantity }"><small>Ядро подземелья</small><strong>{{ starUpgradeCost.catalystQuantity }}</strong><span>доступно {{ dungeonCatalysts }}</span></div>
               </div>
-              <UIButton :loading="session.mutationPending" data-forge-star-upgrade @click="upgradeStars">
-                Улучшить до ★{{ selectedItem.generatedItem.stars + 1 }}
-              </UIButton>
-              <small class="forge-safe-note">Если ресурсов недостаточно, улучшение не произойдёт и ничего не будет списано.</small>
+              <p v-if="starUpgradeShortage" class="forge-shortage">{{ starUpgradeShortage }}</p>
+              <UIButton :disabled="!canAffordStarUpgrade" :loading="session.mutationPending" data-forge-star-upgrade @click="upgradeStars">Улучшить до ★{{ starUpgradeCost.targetStars }}</UIButton>
             </template>
-            <div v-else class="forge-maxed">
-              <strong>Максимальное качество</strong>
-              <span>Предмет уже достиг ★★★★★.</span>
-            </div>
+            <div v-else class="forge-maxed"><strong>Максимальное качество</strong><span>Предмет уже достиг ★★★★★.</span></div>
           </section>
 
           <section v-else class="forge-panel forge-panel--salvage">
-            <header class="forge-section-heading">
-              <span>РАЗБОР</span>
-              <strong>Разобрать предмет на материалы</strong>
-              <small>Сначала покажем награду. Удаление предмета произойдёт только после отдельного подтверждения.</small>
-            </header>
-
-            <template v-if="!salvagePreview">
-              <div class="forge-danger-box">
-                <strong>Предмет будет уничтожен</strong>
-                <span>Перед подтверждением вы увидите точное количество возвращаемых материалов.</span>
-              </div>
+            <header class="forge-section-heading"><span>РАЗБОР</span><strong>Разобрать предмет на материалы</strong><small>Предмет будет уничтожен после подтверждения.</small></header>
+            <div v-if="isEquipped(selectedItem)" class="forge-danger-box"><strong>Надетую вещь разбирать нельзя</strong><span>Снимите предмет перед разбором. Повышать звёзды на нём можно без снятия.</span></div>
+            <template v-else-if="!salvagePreview">
+              <div class="forge-danger-box"><strong>Предмет будет уничтожен</strong><span>Сначала покажем точную награду.</span></div>
               <UIButton variant="secondary" :loading="session.mutationPending" @click="prepareSalvage">Показать результат разбора</UIButton>
             </template>
             <template v-else>
-              <div class="forge-salvage-reward">
-                <small>ВЫ ПОЛУЧИТЕ</small>
-                <div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камень перековки ×{{ salvagePreview.reward.reforgeStoneQuantity }}</strong></div>
-                <div v-if="salvagePreview.reward.materialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>Материал ×{{ salvagePreview.reward.materialQuantity }}</strong></div>
-              </div>
-              <div class="forge-actions forge-actions--salvage">
-                <UIButton variant="ghost" @click="salvagePreview = null">Назад</UIButton>
-                <UIButton variant="danger" :loading="session.mutationPending" @click="confirmSalvage">Разобрать навсегда</UIButton>
-              </div>
+              <div class="forge-salvage-reward"><small>ВЫ ПОЛУЧИТЕ</small><div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камень перековки ×{{ salvagePreview.reward.reforgeStoneQuantity }}</strong></div><div v-if="salvagePreview.reward.materialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(salvagePreview.reward.materialItemId) }} ×{{ salvagePreview.reward.materialQuantity }}</strong></div></div>
+              <div class="forge-actions forge-actions--salvage"><UIButton variant="ghost" @click="salvagePreview = null">Назад</UIButton><UIButton variant="danger" :loading="session.mutationPending" @click="confirmSalvage">Разобрать навсегда</UIButton></div>
             </template>
           </section>
         </template>
@@ -534,12 +585,7 @@ function rarityLabel(item: InventoryItem): string {
       </article>
     </section>
 
-    <UILoadingState
-      v-else
-      state="empty"
-      title="Нет снаряжения"
-      message="Найдите случайно сгенерированное снаряжение — после этого оно появится в кузнице."
-    />
+    <UILoadingState v-else state="empty" title="Нет снаряжения" message="Найдите случайно сгенерированное снаряжение — после этого оно появится в кузнице." />
   </section>
 </template>
 
@@ -566,6 +612,8 @@ function rarityLabel(item: InventoryItem): string {
 .forge-items__header > div { display: grid; gap: 2px; }
 .forge-items__header > span { padding: 3px 7px; border: 1px solid rgb(94 203 151 / 22%); border-radius: 999px; background: rgb(94 203 151 / 7%); color: var(--ui-color-success); font-size: var(--ui-font-size-xs); white-space: nowrap; }
 .forge-items__tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, .52fr); align-items: end; gap: 8px; margin-bottom: var(--ui-space-2); padding: 8px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 13%); }
+.forge-batch-toggle { grid-column: 1 / -1; }
+.forge-batch-panel { margin: 0 0 var(--ui-space-2); }
 .forge-filter-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
 .forge-filter-tabs button { min-height: 36px; padding: 6px 8px; border: 1px solid transparent; border-radius: var(--ui-radius-sm); background: rgb(255 255 255 / 2%); color: var(--ui-color-text-secondary); font: inherit; font-size: var(--ui-font-size-xs); cursor: pointer; }
 .forge-filter-tabs button.active { border-color: rgb(146 136 255 / 36%); background: rgb(132 121 250 / 12%); color: var(--ui-color-text-primary); }
@@ -605,6 +653,7 @@ function rarityLabel(item: InventoryItem): string {
 .forge-power__track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--ui-color-primary), var(--ui-color-gold)); }
 .forge-back { margin-bottom: var(--ui-space-3); }
 .forge-notice, .forge-error { margin: var(--ui-space-3) 0 0; padding: var(--ui-space-3); border: 1px solid rgb(226 106 125 / 24%); border-radius: var(--ui-radius-md); background: rgb(226 106 125 / 7%); color: var(--ui-color-danger); }
+.forge-batch-panel .forge-error { margin-top: 0; }
 .forge-notice { display: grid; gap: 3px; }
 .forge-notice span { color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
 .forge-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: var(--ui-space-3); padding: 5px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 14%); }
@@ -632,7 +681,7 @@ function rarityLabel(item: InventoryItem): string {
 .forge-preview { display: grid; gap: var(--ui-space-3); padding-top: var(--ui-space-3); border-top: 1px solid var(--ui-color-border); }
 .forge-preview__loading { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 90px; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
 .forge-spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: forge-spin .8s linear infinite; }
-.forge-costs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.forge-costs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
 .forge-costs > div { display: grid; gap: 2px; padding: 10px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: rgb(0 0 0 / 15%); }
 .forge-costs small, .forge-costs span { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
 .forge-costs strong { font-size: var(--ui-font-size-lg); }
