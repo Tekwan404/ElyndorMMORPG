@@ -1,3 +1,4 @@
+using Elyndor.Core.Afk;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
@@ -125,7 +126,21 @@ public sealed class PartyDungeonRunCoordinator(
         Guid[] memberIds = party.Members
             .Select(member => member.CharacterId)
             .Distinct()
+            .Order()
             .ToArray();
+
+        foreach (Guid memberId in memberIds)
+            await AcquireCharacterActivityLockAsync(memberId, cancellationToken);
+
+        bool hasActiveAfkFarm = await dbContext.AfkFarmSessions
+            .AsNoTracking()
+            .AnyAsync(session => memberIds.Contains(session.CharacterId)
+                && session.Status == AfkFarmStatus.Active, cancellationToken);
+        if (hasActiveAfkFarm)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return PartyDungeonStartResult.Failure(DungeonErrorCodes.AfkFarmActive);
+        }
 
         var characters = await dbContext.Characters
             .Where(character => memberIds.Contains(character.Id))
@@ -240,5 +255,16 @@ public sealed class PartyDungeonRunCoordinator(
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return PartyDungeonStartResult.Success(run.Id);
+    }
+
+    private Task AcquireCharacterActivityLockAsync(Guid characterId, CancellationToken cancellationToken)
+    {
+        if (!dbContext.Database.IsNpgsql())
+            return Task.CompletedTask;
+
+        string lockKey = $"combat-character:{characterId:N}";
+        return dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
+            cancellationToken);
     }
 }
