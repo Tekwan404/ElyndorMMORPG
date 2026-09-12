@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
+import { isBossCombatLogEnabled, setBossCombatLogEnabled } from '@/game/combat/bossCombatLogSettings'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
 import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
@@ -18,6 +19,7 @@ const emit = defineEmits<{ 'open-world': [] }>()
 const session = useGameSessionStore()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
+const sendBossCombatLogs = ref(isBossCombatLogEnabled())
 const character = computed(() => session.snapshot?.character ?? null)
 const portraitArt = computed(() => character.value
   ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent')
@@ -33,6 +35,10 @@ async function copyPublicCode(): Promise<void> {
   await navigator.clipboard.writeText(code)
   copied.value = true
   window.setTimeout(() => { copied.value = false }, 1600)
+}
+
+function updateBossCombatLogPreference(): void {
+  setBossCombatLogEnabled(sendBossCombatLogs.value)
 }
 </script>
 
@@ -95,6 +101,24 @@ async function copyPublicCode(): Promise<void> {
         <b aria-hidden="true">›</b>
       </RouterLink>
     </nav>
+
+    <section v-if="activeSection === 'profile'" class="menu-setting" data-boss-log-setting>
+      <div class="menu-setting__copy">
+        <small>ЗАКРЫТАЯ БЕТА · ДИАГНОСТИКА</small>
+        <strong>Логи боёв с боссами</strong>
+        <span>После завершения боя бот отправит технический журнал в этот Telegram-чат.</span>
+      </div>
+      <label class="menu-switch">
+        <input
+          v-model="sendBossCombatLogs"
+          type="checkbox"
+          aria-label="Отправлять логи боёв с боссами в Telegram"
+          @change="updateBossCombatLogPreference"
+        />
+        <span class="menu-switch__track" aria-hidden="true"><i /></span>
+        <b>{{ sendBossCombatLogs ? 'Вкл.' : 'Выкл.' }}</b>
+      </label>
+    </section>
 
     <section v-if="activeSection === 'profile'" class="menu-note">
       <span class="menu-note__mark" aria-hidden="true">i</span>
@@ -323,6 +347,102 @@ async function copyPublicCode(): Promise<void> {
   font-weight: 400;
 }
 
+.menu-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid rgb(182 161 236 / 22%);
+  border-radius: var(--ui-radius-md);
+  background:
+    linear-gradient(90deg, rgb(105 92 184 / 9%), transparent 62%),
+    rgb(6 9 15 / 72%);
+}
+
+.menu-setting__copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.menu-setting__copy small {
+  color: var(--ui-color-primary);
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+
+.menu-setting__copy strong {
+  font-family: var(--ui-font-display);
+  font-size: .77rem;
+}
+
+.menu-setting__copy span {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+  line-height: 1.35;
+}
+
+.menu-switch {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: 3.8rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menu-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.menu-switch__track {
+  position: relative;
+  width: 2.65rem;
+  height: 1.35rem;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-round);
+  background: rgb(2 5 10 / 84%);
+  transition: border-color var(--ui-transition-fast), background var(--ui-transition-fast);
+}
+
+.menu-switch__track i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: .93rem;
+  height: .93rem;
+  border-radius: 50%;
+  background: var(--ui-color-text-muted);
+  transition: transform var(--ui-transition-fast), background var(--ui-transition-fast);
+}
+
+.menu-switch input:checked + .menu-switch__track {
+  border-color: rgb(182 161 236 / 60%);
+  background: rgb(105 92 184 / 26%);
+}
+
+.menu-switch input:checked + .menu-switch__track i {
+  background: var(--ui-color-primary);
+  transform: translateX(1.28rem);
+}
+
+.menu-switch input:focus-visible + .menu-switch__track {
+  outline: 2px solid var(--ui-color-primary);
+  outline-offset: 2px;
+}
+
+.menu-switch b {
+  color: var(--ui-color-text-muted);
+  font-size: .5rem;
+  font-weight: 800;
+}
+
 .menu-note {
   display: grid;
   grid-template-columns: 1.4rem minmax(0, 1fr);
@@ -369,6 +489,16 @@ async function copyPublicCode(): Promise<void> {
   font-size: var(--ui-font-size-xs);
 }
 
+.menu-back :deep(.icon-generator) {
+  width: 1rem;
+  min-width: 1rem;
+  height: 1rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: .85rem;
+}
+
 @media (max-width: 380px) {
   .menu-profile {
     grid-template-columns: 3.5rem minmax(0, 1fr);
@@ -390,6 +520,16 @@ async function copyPublicCode(): Promise<void> {
 
   .menu-grid {
     grid-template-columns: 1fr;
+  }
+
+  .menu-setting {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-switch {
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-items: start;
   }
 }
 </style>

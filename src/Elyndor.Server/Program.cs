@@ -311,6 +311,7 @@ app.MapPartyEndpoints();
 app.MapDungeonEndpoints();
 app.MapTelegramAdminEndpoints();
 app.MapContentAdminEndpoints();
+app.MapBossCombatLogEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 
 app.MapGet(
