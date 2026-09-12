@@ -38,7 +38,8 @@ public sealed class AbilityLevelScalingTests
         Assert.True(result.Succeeded);
         Assert.Equal(2_000m - expectedDamage, target.CurrentHp);
         CombatEvent damage = Assert.Single(
-            result.Events.Where(item => item.Type == CombatEventType.DamageDealt));
+            result.Events,
+            item => item.Type == CombatEventType.DamageDealt);
         Assert.Equal(expectedDamage, damage.Amount);
     }
 
