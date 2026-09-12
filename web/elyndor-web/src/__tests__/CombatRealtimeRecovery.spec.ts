@@ -106,7 +106,7 @@ describe('combat realtime recovery', () => {
     expect(store.diagnostic).toBeNull()
   })
 
-  it('ignores an older response from the same combat session including its events and reward', async () => {
+  it('ignores an older response from the same combat session including future events and reward', async () => {
     const store = useCombatSessionStore()
     await store.connect()
 
@@ -168,5 +168,69 @@ describe('combat realtime recovery', () => {
     expect(store.snapshot?.sequence).toBe(10)
     expect(store.events).toEqual([])
     expect(store.reward).toBeNull()
+  })
+
+  it('accepts a late event from a stale snapshot when it fills an earlier sequence gap', async () => {
+    const store = useCombatSessionStore()
+    await store.connect()
+
+    const sessionId = '00000000-0000-0000-0000-000000000511'
+    const playerId = '00000000-0000-0000-0000-000000000512'
+    const enemyId = '00000000-0000-0000-0000-000000000513'
+    const currentSnapshot = {
+      sessionId,
+      sequence: 51,
+      status: 'Active',
+      serverTimeUtc: '2026-09-12T10:00:51Z',
+      contentVersion: '1',
+      balanceVersion: '1',
+      player: { actorId: playerId, abilities: [], cooldowns: {} },
+      enemy: { actorId: enemyId, definitionId: 'BOSS' },
+    }
+    const handler = realtimeMock.handlers.get('CombatUpdated')
+    expect(handler).toBeDefined()
+
+    handler?.({
+      succeeded: true,
+      errorCode: null,
+      snapshot: currentSnapshot,
+      events: [{
+        sequence: 51,
+        type: 'DamageDealt',
+        actorId: playerId,
+        sourceActorId: playerId,
+        targetActorId: enemyId,
+        definitionId: 'AUTO_ATTACK',
+        amount: 51,
+        amountBeforeShields: 51,
+        serverTimeUtc: '2026-09-12T10:00:51Z',
+      }],
+      reward: null,
+    })
+
+    handler?.({
+      succeeded: true,
+      errorCode: null,
+      snapshot: {
+        ...currentSnapshot,
+        sequence: 50,
+        serverTimeUtc: '2026-09-12T10:00:50Z',
+      },
+      events: [{
+        sequence: 50,
+        type: 'ResourceChanged',
+        actorId: playerId,
+        sourceActorId: playerId,
+        targetActorId: playerId,
+        definitionId: 'COMBAT_REGEN',
+        amount: 0.02,
+        amountBeforeShields: 0,
+        serverTimeUtc: '2026-09-12T10:00:50Z',
+      }],
+      reward: null,
+    })
+
+    expect(store.snapshot?.sequence).toBe(51)
+    expect(store.events.map((event) => event.sequence)).toEqual([50, 51])
   })
 })
