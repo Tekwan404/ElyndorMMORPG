@@ -1,0 +1,34 @@
+{
+  "contentVersion": "0.19.1",
+  "balanceVersion": "0.14.0",
+  "publishedAtUtc": "2026-09-12T07:46:00+00:00",
+  "items": [
+    {
+      "id": "SMALL_HEALING_POTION",
+      "name": "Малое зелье лечения",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 50 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "version": 2,
+      "consumableCooldownSeconds": 5,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 50
+        }
+      ],
+      "buyPriceGold": 20
+    }
+  ]
+}
