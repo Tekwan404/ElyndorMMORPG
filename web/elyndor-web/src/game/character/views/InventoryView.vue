@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { EquipmentSlot, InventoryItem, ItemSalvagePreview } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -19,8 +19,6 @@ const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
-const salvagePreview = ref<ItemSalvagePreview | null>(null)
-const salvageActionError = ref<string | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
@@ -227,8 +225,6 @@ function formatNumber(value: number): string {
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
   equipmentActionError.value = null
-  salvagePreview.value = null
-  salvageActionError.value = null
   if (item) markItemSeen(item.id)
 }
 
@@ -430,48 +426,6 @@ async function toggleSelectedLock(): Promise<void> {
   if (refreshed) selectedItem.value = refreshed
 }
 
-function canSalvage(item: InventoryItem | null): boolean {
-  return item?.type === 'Equipment'
-    && !item.isLocked
-    && !item.equippedSlot
-    && !item.transactionLocked
-}
-
-function salvageErrorMessage(code: string | null): string | null {
-  if (!code) return null
-  if (code === 'salvage_item_locked') return '\u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0437\u0430\u0449\u0438\u0449\u0451\u043d: \u0441\u043d\u0438\u043c\u0438\u0442\u0435 \u0437\u0430\u0449\u0438\u0442\u0443 \u043f\u0435\u0440\u0435\u0434 \u0440\u0430\u0437\u0431\u043e\u0440\u043e\u043c.'
-  if (code === 'salvage_item_equipped') return '\u0421\u043d\u0438\u043c\u0438\u0442\u0435 \u043f\u0440\u0435\u0434\u043c\u0435\u0442 \u0441 \u044d\u043a\u0438\u043f\u0438\u0440\u043e\u0432\u043a\u0438 \u043f\u0435\u0440\u0435\u0434 \u0440\u0430\u0437\u0431\u043e\u0440\u043e\u043c.'
-  if (code === 'salvage_inventory_full') return '\u0412 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435 \u043d\u0435\u0442 \u043c\u0435\u0441\u0442\u0430 \u0434\u043b\u044f \u043d\u0430\u0433\u0440\u0430\u0434\u044b.'
-  if (code === 'character_operation_in_combat') return '\u0420\u0430\u0437\u0431\u043e\u0440 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u0431\u043e\u044f.'
-  return '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0440\u0430\u0437\u043e\u0431\u0440\u0430\u0442\u044c \u043f\u0440\u0435\u0434\u043c\u0435\u0442.'
-}
-
-function formatSalvageReward(preview: ItemSalvagePreview): string {
-  const reward = preview.reward
-  return `\u041a\u0430\u043c\u0435\u043d\u044c \u043f\u0435\u0440\u0435\u043a\u043e\u0432\u043a\u0438: ${reward.reforgeStoneQuantity}; \u043a\u0443\u0437\u043d\u0435\u0447\u043d\u044b\u0439 \u043b\u043e\u043c: ${reward.materialQuantity}`
-}
-
-async function prepareSalvage(): Promise<void> {
-  const item = selectedItem.value
-  if (!item || !canSalvage(item) || session.mutationPending) return
-  salvageActionError.value = null
-  salvagePreview.value = await session.getSalvagePreview(item.id)
-  if (!salvagePreview.value) salvageActionError.value = session.errorCode
-}
-
-async function confirmSalvage(): Promise<void> {
-  const item = selectedItem.value
-  const preview = salvagePreview.value
-  if (!item || !preview || session.mutationPending) return
-  salvageActionError.value = null
-  const reward = await session.salvageItem(item.id, preview.requiresConfirmation)
-  if (reward) {
-    selectedItem.value = null
-    salvagePreview.value = null
-    return
-  }
-  salvageActionError.value = session.errorCode
-}
 </script>
 
 <template>
@@ -690,14 +644,6 @@ async function confirmSalvage(): Promise<void> {
         >
           {{ inventoryActionError(equipmentActionError) }}
         </p>
-        <section v-if="salvagePreview" class="item-salvage-preview" aria-live="polite">
-          <strong>{{ salvagePreview.requiresConfirmation ? '\u0426\u0435\u043d\u043d\u044b\u0439 \u043f\u0440\u0435\u0434\u043c\u0435\u0442' : '\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0430' }}</strong>
-          <p>{{ formatSalvageReward(salvagePreview) }}</p>
-          <small v-if="salvagePreview.requiresConfirmation">\u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043b\u0451\u043d \u0431\u0435\u0437\u0432\u043e\u0437\u0432\u0440\u0430\u0442\u043d\u043e.</small>
-        </section>
-        <p v-if="salvageErrorMessage(salvageActionError)" class="item-detail__error" role="alert">
-          {{ salvageErrorMessage(salvageActionError) }}
-        </p>
       </article>
       <template #actions>
         <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)">
@@ -735,34 +681,6 @@ async function confirmSalvage(): Promise<void> {
           @click="useSelected"
         >
           Использовать
-        </UIButton>
-        <UIButton
-          v-if="canSalvage(selectedItem) && !salvagePreview"
-          variant="secondary"
-          data-item-salvage-action
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending"
-          @click="prepareSalvage"
-        >
-          \u0420\u0430\u0437\u043e\u0431\u0440\u0430\u0442\u044c
-        </UIButton>
-        <UIButton
-          v-if="salvagePreview"
-          variant="secondary"
-          :disabled="session.mutationPending"
-          @click="salvagePreview = null"
-        >
-          \u041e\u0442\u043c\u0435\u043d\u0430
-        </UIButton>
-        <UIButton
-          v-if="salvagePreview"
-          variant="danger"
-          data-confirm-item-salvage
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending"
-          @click="confirmSalvage"
-        >
-          \u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0440\u0430\u0437\u0431\u043e\u0440
         </UIButton>
         <UIButton
           v-if="selectedItem"
@@ -1296,30 +1214,6 @@ async function confirmSalvage(): Promise<void> {
   border-color: rgb(232 200 102 / 26%);
   background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2));
   color: #d8c77e;
-}
-
-.item-salvage-preview {
-  display: grid;
-  gap: var(--ui-space-1);
-  padding: var(--ui-space-3);
-  border: 1px solid color-mix(in srgb, var(--ui-color-warning) 46%, var(--ui-color-border));
-  border-radius: var(--ui-radius-md);
-  background: linear-gradient(135deg, rgb(232 200 102 / 9%), rgb(255 255 255 / 2%));
-}
-
-.item-salvage-preview strong {
-  color: var(--ui-color-gold);
-  font-size: var(--ui-font-size-sm);
-}
-
-.item-salvage-preview p {
-  color: var(--ui-color-text-secondary);
-  font-size: var(--ui-font-size-sm);
-}
-
-.item-salvage-preview small {
-  color: var(--ui-color-warning);
-  font-size: var(--ui-font-size-xs);
 }
 
 .inventory-tools__primary {

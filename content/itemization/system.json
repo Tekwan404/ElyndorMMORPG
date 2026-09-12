@@ -438,6 +438,14 @@
         4.5
       ],
       "overflowGrowthMultiplier": 1.35
+    },
+    "starUpgrades": {
+      "id": "STAR_UPGRADE_V1",
+      "reforgeStoneItemId": "REFORGE_STONE",
+      "goldByTargetStars": { "2": 50, "3": 100, "4": 180, "5": 300 },
+      "reforgeStoneQuantityByTargetStars": { "2": 2, "3": 4, "4": 7, "5": 12 },
+      "highEndCatalystItemId": "DUNGEON_CATALYST",
+      "highEndCatalystQuantity": 1
     }
   }
 }

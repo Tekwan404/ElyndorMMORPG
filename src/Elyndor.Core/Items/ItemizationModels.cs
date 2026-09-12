@@ -93,6 +93,14 @@ public sealed record ItemSalvageYield(
     string MaterialItemId,
     int MaterialQuantity);
 
+public sealed record ItemStarUpgradeProfileDefinition(
+    string Id,
+    string ReforgeStoneItemId,
+    IReadOnlyDictionary<int, int> GoldByTargetStars,
+    IReadOnlyDictionary<int, int> ReforgeStoneQuantityByTargetStars,
+    string? HighEndCatalystItemId = null,
+    int HighEndCatalystQuantity = 0);
+
 public sealed record ItemizationDefinition(
     decimal TemplateBasePower,
     decimal LevelLinearCoefficient,
@@ -107,7 +115,8 @@ public sealed record ItemizationDefinition(
     decimal IndividualQualityDeviationPercent = 7,
     decimal PerfectSnapThreshold = 0.9995m,
     ItemReforgeCostProfileDefinition? ReforgeCosts = null,
-    ItemSalvageProfileDefinition? Salvage = null);
+    ItemSalvageProfileDefinition? Salvage = null,
+    ItemStarUpgradeProfileDefinition? StarUpgrades = null);
 
 public static class ItemSalvageYieldCalculator
 {
@@ -176,6 +185,35 @@ public sealed record GeneratedItemInstance(
     string? GeneratedSuffixId,
     string DisplayName,
     int GenerationVersion);
+
+public static class ItemStarUpgradeCalculator
+{
+    public static GeneratedItemAffix[] IncreaseToTargetStar(
+        IReadOnlyList<GeneratedItemAffix> affixes,
+        int targetStars)
+    {
+        ArgumentNullException.ThrowIfNull(affixes);
+        if (targetStars is < 2 or > 5)
+            throw new ArgumentOutOfRangeException(nameof(targetStars));
+
+        decimal targetQuality = targetStars switch
+        {
+            2 => 0.35m,
+            3 => 0.55m,
+            4 => 0.75m,
+            5 => 1m,
+            _ => throw new ArgumentOutOfRangeException(nameof(targetStars)),
+        };
+        return affixes.Select(affix =>
+        {
+            decimal span = affix.MaxAtGeneration - affix.MinAtGeneration;
+            decimal target = affix.MinAtGeneration + (span * targetQuality);
+            decimal stepped = decimal.Floor(target / affix.StepAtGeneration) * affix.StepAtGeneration;
+            decimal value = decimal.Max(affix.Value, decimal.Min(affix.MaxAtGeneration, stepped));
+            return affix with { Value = value };
+        }).ToArray();
+    }
+}
 
 public sealed record ItemGenerationKey(int Seed, string AuditHash)
 {

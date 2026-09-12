@@ -38,6 +38,7 @@ test -f "$publish_dir/Elyndor.Server.dll"
 test -f "$publish_dir/frontend/index.html"
 test -f "$publish_dir/frontend-admin/index.html"
 test -f "$publish_dir/content/package.json"
+test -f "$publish_dir/content/dungeons/eclipsed-citadel.json"
 
 tar -C "$publish_dir" -czf "$output_path" .
 

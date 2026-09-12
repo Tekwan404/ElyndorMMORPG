@@ -104,6 +104,8 @@ public sealed class ItemValidator : IContentValidationStage
     {
         GameContentPackageValidator.ValidateProgressionItemsAndLoot(context.Package, context.Errors);
         GameContentPackageValidator.ValidateItemization(context.Package, context.Errors);
+        GameContentPackageValidator.ValidatePremiumStore(context.Package, context.Errors);
+        GameContentPackageValidator.ValidatePromoCodes(context.Package, context.Errors);
     }
 }
 

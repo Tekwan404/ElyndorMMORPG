@@ -13,6 +13,7 @@ using Elyndor.Infrastructure.Social;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Dungeons;
 using Elyndor.Infrastructure.Quests;
+using Elyndor.Infrastructure.Economy;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -44,6 +45,10 @@ public static class DependencyInjection
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<ItemReforgeService>();
         builder.Services.AddScoped<ItemSalvageService>();
+        builder.Services.AddScoped<ItemStarUpgradeService>();
+        builder.Services.AddScoped<CrystalWalletService>();
+        builder.Services.AddScoped<PremiumStoreService>();
+        builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();
@@ -53,6 +58,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<PartyService>();
         builder.Services.AddScoped<DungeonService>();
         builder.Services.AddScoped<AfkFarmService>();
+        builder.Services.AddScoped<DungeonNavigationService>();
+        builder.Services.AddScoped<PartyDungeonRunCoordinator>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
         builder.Services.AddSingleton<IGameRandomFactory, SystemGameRandomFactory>();
         builder.Services.AddSingleton<WorldEncounterRegistry>();

@@ -93,6 +93,37 @@ public sealed class GuardianThreatCombatSessionTests
         Assert.Equal(PlayerId, enemySwing.TargetActorId);
     }
 
+    [Fact]
+    public void ThreatTelemetryUsesTheSameTargetAndTauntStateAsEnemyAi()
+    {
+        CombatSession session = CreateSession(ResolvedTalentModifiers.Empty);
+
+        session.AdvanceTo(Now.AddSeconds(1.5));
+        CombatThreatSnapshot beforeTaunt = Assert.IsType<CombatThreatSnapshot>(
+            session.GetThreatSnapshot(PlayerId, Now.AddSeconds(1.5)));
+
+        Assert.Equal(EnemyId, beforeTaunt.EnemyActorId);
+        Assert.Equal(CompanionId, beforeTaunt.CurrentTargetActorId);
+        Assert.Null(beforeTaunt.ForcedTargetActorId);
+        Assert.True(
+            Assert.Single(beforeTaunt.Entries, entry => entry.ActorId == CompanionId).IsCurrentTarget);
+
+        CombatCommandResult provoke = session.Handle(
+            new UseAbilityCommand(
+                "telemetry-provoke",
+                "PROVOKE",
+                EnemyId),
+            Now.AddSeconds(1.6));
+        CombatThreatSnapshot duringTaunt = Assert.IsType<CombatThreatSnapshot>(
+            session.GetThreatSnapshot(PlayerId, Now.AddSeconds(1.6)));
+
+        Assert.True(provoke.Succeeded);
+        Assert.Equal(PlayerId, duringTaunt.CurrentTargetActorId);
+        Assert.Equal(PlayerId, duringTaunt.ForcedTargetActorId);
+        Assert.True(
+            Assert.Single(duringTaunt.Entries, entry => entry.ActorId == PlayerId).IsCurrentTarget);
+    }
+
     private static CombatSession CreateSession(ResolvedTalentModifiers talents)
     {
         CombatStats stats = new(

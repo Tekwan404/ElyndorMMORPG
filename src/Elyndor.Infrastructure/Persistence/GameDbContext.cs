@@ -11,6 +11,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Social;
 using Elyndor.Core.Parties;
 using Elyndor.Core.Dungeons;
+using Elyndor.Core.Economy;
 using Elyndor.Core.Quests;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,12 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterVitals> CharacterVitals => Set<CharacterVitals>();
 
     public DbSet<CharacterMutation> CharacterMutations => Set<CharacterMutation>();
+
+    public DbSet<CrystalWallet> CrystalWallets => Set<CrystalWallet>();
+
+    public DbSet<CrystalLedgerEntry> CrystalLedgerEntries => Set<CrystalLedgerEntry>();
+    public DbSet<PremiumStorePurchase> PremiumStorePurchases => Set<PremiumStorePurchase>();
+    public DbSet<PromoCodeRedemption> PromoCodeRedemptions => Set<PromoCodeRedemption>();
 
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
 

@@ -4,9 +4,11 @@ public sealed class OutOfCombatRecoveryOptions
 {
     public const string SectionName = "Gameplay:Recovery";
 
-    public decimal TownHpPercentPerSecond { get; init; } = 2m;
+    // Percent of MaxHP restored per second while out of combat.
+    public decimal TownHpPercentPerSecond { get; init; } = 15m;
 
-    public decimal FieldHpPercentPerSecond { get; init; } = 0.25m;
+    // Field recovery is intentionally slower than resting in a safe town.
+    public decimal FieldHpPercentPerSecond { get; init; } = 10m;
 
     public bool IsValid() =>
         TownHpPercentPerSecond >= 0m

@@ -34,6 +34,9 @@ const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
 const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
 const combatPlayers = computed(() => snapshot.value?.players ?? (snapshot.value ? [snapshot.value.player] : []))
+const combatAllies = computed(() => combatPlayers.value.filter((player) => player.actorId !== snapshot.value?.player.actorId))
+const companion = computed(() => snapshot.value?.companion ?? null)
+const companionArt = computed(() => monsterArtUrl(companion.value?.artId))
 const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
 const battlefieldArt = computed(() => {
@@ -43,13 +46,14 @@ const battlefieldArt = computed(() => {
     : locationPresentation(locationId).art
 })
 
-type LogSide = 'player' | 'enemy' | 'system'
+type LogSide = 'player' | 'ally' | 'enemy' | 'system'
 interface CombatLogEntry {
   key: number
   side: LogSide
   actor: string
   text: string
   detail?: string
+  occurredAtUtc: string
 }
 interface EnemyPresentation {
   name: string
@@ -184,13 +188,16 @@ const logEntries = computed<CombatLogEntry[]>(() => {
       detail: resourceEvent
         ? `${resourceEvent.amount > 0 ? '+' : ''}${Math.round(resourceEvent.amount * 10) / 10} ${resourceName.value.toLowerCase()} · ${abilityName(resourceEvent.definitionId)}`
         : undefined,
+      occurredAtUtc: event.serverTimeUtc,
     })
   }
   return entries.slice(-12).reverse()
 })
-const recentFeedback = computed(() =>
-  logEntries.value.find((entry) => entry.side !== 'system') ?? logEntries.value[0] ?? null,
-)
+const recentFeedback = computed(() => {
+  const entry = logEntries.value.find((candidate) => candidate.side !== 'system') ?? logEntries.value[0] ?? null
+  if (!entry) return null
+  return now.value - Date.parse(entry.occurredAtUtc) <= 4_500 ? entry : null
+})
 
 function cooldownRemaining(abilityId: string): number {
   const readyAt = snapshot.value?.player.cooldowns[abilityId]
@@ -266,12 +273,14 @@ function eventSide(event: CombatEvent): LogSide {
   }
   const source = event.sourceActorId ?? event.actorId
   if (source === current.player.actorId) return 'player'
+  if (current.companion?.actorId === source) return 'ally'
   if (combatEnemies.value.some((enemy) => enemy.actorId === source)) return 'enemy'
   return 'system'
 }
 
 function actorLabel(side: LogSide, event?: CombatEvent): string {
   if (side === 'player') return 'ВЫ'
+  if (side === 'ally') return companion.value?.name.toUpperCase() ?? 'СПУТНИК'
   if (side === 'enemy') {
     const source = event?.sourceActorId ?? event?.actorId
     return combatEnemies.value.find((enemy) => enemy.actorId === source)?.name.toUpperCase()
@@ -312,7 +321,9 @@ function eventText(event: CombatEvent, critical = false): string {
       return `Провокация · ${definition}`
     case 'ActorDied': {
       const deadEnemy = combatEnemies.value.find((enemy) => enemy.actorId === event.actorId)
-      return deadEnemy ? `${deadEnemy.name} повержен` : 'Вы повержены'
+      if (deadEnemy) return `${deadEnemy.name} повержен`
+      if (companion.value?.actorId === event.actorId) return `${companion.value.name} повержен`
+      return 'Вы повержены'
     }
     case 'EnemyKilled':
       return `${eventEnemy?.name ?? enemyName} повержен`
@@ -484,7 +495,7 @@ onUnmounted(() => window.clearInterval(timer))
       </header>
 
       <section
-        v-if="combatPlayers.length > 1"
+        v-if="combatAllies.length > 0"
         class="combat-party-roster"
         aria-label="Состав группы в бою"
         data-combat-party-roster
@@ -492,13 +503,13 @@ onUnmounted(() => window.clearInterval(timer))
         <header class="combat-party-roster__header">
           <div>
             <small>СОЮЗНИКИ В БОЮ</small>
-            <strong>Слаженный отряд · {{ combatPlayers.length }}</strong>
+            <strong>Союзники · {{ combatAllies.length }}</strong>
           </div>
           <span>Общий фронт</span>
         </header>
         <div class="combat-party-roster__grid">
           <article
-            v-for="player in combatPlayers"
+            v-for="player in combatAllies"
             :key="player.actorId"
             class="combat-party-roster__member"
             :class="{ 'combat-party-roster__member--self': player.actorId === snapshot.player.actorId }"
@@ -631,6 +642,18 @@ onUnmounted(() => window.clearInterval(timer))
           </div>
         </div>
 
+        <div v-if="companion" class="companion-figure" :data-dead="companion.hp <= 0">
+          <div class="companion-figure__portrait">
+            <img v-if="companionArt" :src="companionArt" alt="" />
+            <IconGenerator v-else :config="{ id: `companion-${companion.actorId}`, glyph: 'star', category: 'utility' }" />
+          </div>
+          <div class="companion-figure__state">
+            <strong>{{ companion.name }}</strong>
+            <i><span :style="{ width: `${combatPlayerHealthRatio(companion)}%` }" /></i>
+            <small>{{ Math.ceil(companion.hp) }} / {{ Math.ceil(companion.maxHp) }}</small>
+          </div>
+        </div>
+
       </section>
 
       <section v-if="isTraining" class="training-stats" aria-label="Статистика тренировки">
@@ -703,10 +726,10 @@ onUnmounted(() => window.clearInterval(timer))
             :key="ability?.id ?? `empty-${index}`"
             type="button"
             class="ability-slot"
-            :class="{ 'ability-slot--empty': !ability, 'ability-slot--comet': ability?.id === 'FIRE_COMET' }"
+            :class="{ 'ability-slot--empty': !ability, 'ability-slot--comet': ability?.id === 'FIRE_COMET', 'ability-slot--queued': ability && combat.abilityQueue.includes(ability.id) }"
             :data-ability-slot="ability?.id ?? ''"
             :data-state="ability ? abilityState(ability) : 'empty'"
-            :disabled="!ability || combat.pending || abilityState(ability) !== 'ready'"
+            :disabled="!ability || abilityState(ability) !== 'ready'"
             :aria-label="ability?.displayName ?? 'Пустой слот способности'"
             @click="ability && combat.useAbility(ability.id)"
           >
@@ -727,6 +750,7 @@ onUnmounted(() => window.clearInterval(timer))
             </span>
             <span v-if="ability?.id === 'FIRE_COMET' && heatLimit" class="ability-slot__proc" aria-label="Предел жара активен">ЖАР</span>
             <span v-if="ability?.id === 'COMBUSTION' && combustion" class="ability-slot__proc" aria-label="Возгорание активно">АКТ.</span>
+            <span v-if="ability && combat.abilityQueue.includes(ability.id)" class="ability-slot__queue">{{ combat.abilityQueue.indexOf(ability.id) + 1 }}</span>
             <small v-if="ability">{{ ability.displayName }}</small>
             <b v-if="ability && cooldownRemaining(ability.id) > 0" class="ability-slot__cooldown">
               {{ Math.ceil(cooldownRemaining(ability.id)) }}
@@ -1130,6 +1154,16 @@ onUnmounted(() => window.clearInterval(timer))
   filter: drop-shadow(0 .5rem .9rem rgb(0 0 0 / 62%));
 }
 
+.companion-figure { position: absolute; bottom: .6rem; left: 7.6rem; z-index: 3; display: grid; grid-template-columns: 2.5rem minmax(5rem, 1fr); align-items: center; gap: 6px; max-width: 10rem; padding: 5px 7px; border: 1px solid rgb(79 185 150 / 34%); border-radius: var(--ui-radius-md); background: rgb(5 12 14 / 84%); backdrop-filter: blur(6px); }
+.companion-figure[data-dead='true'] { opacity: .48; }
+.companion-figure__portrait { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; overflow: hidden; border-radius: 50%; background: rgb(79 185 150 / 12%); color: #9be2c9; }
+.companion-figure__portrait img { width: 100%; height: 100%; object-fit: contain; }
+.companion-figure__state { display: grid; min-width: 0; gap: 2px; }
+.companion-figure__state strong { overflow: hidden; font-size: .55rem; text-overflow: ellipsis; white-space: nowrap; }
+.companion-figure__state small { color: var(--ui-color-text-muted); font-size: .44rem; }
+.companion-figure__state i { display: block; height: 4px; overflow: hidden; border-radius: 999px; background: rgb(0 0 0 / 55%); }
+.companion-figure__state i span { display: block; height: 100%; background: #4fb996; }
+
 .player-figure__fallback {
   display: grid;
   width: 4.5rem;
@@ -1311,6 +1345,11 @@ onUnmounted(() => window.clearInterval(timer))
 .combat-feedback[data-side='player'] {
   color: #d1ccff;
 }
+
+.combat-feedback[data-side='ally'] { color: #9be2c9; }
+
+.ability-slot--queued { border-color: rgb(155 226 201 / 55%); box-shadow: inset 0 0 0 1px rgb(155 226 201 / 18%); }
+.ability-slot__queue { position: absolute; top: 3px; left: 3px; z-index: 5; display: grid; width: 1rem; height: 1rem; place-items: center; border-radius: 50%; background: #9be2c9; color: #07110e; font-size: .48rem; font-weight: 900; }
 
 .training-stats {
   display: grid;

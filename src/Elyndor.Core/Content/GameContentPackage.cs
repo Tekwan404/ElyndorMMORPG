@@ -8,6 +8,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
+using Elyndor.Core.Economy;
 
 namespace Elyndor.Core.Content;
 
@@ -35,7 +36,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<DungeonDefinition>? Dungeons = null,
     InventoryProfileDefinition? InventoryProfile = null,
     IReadOnlyList<QuestDefinition>? Quests = null,
-    ItemizationDefinition? Itemization = null);
+    ItemizationDefinition? Itemization = null,
+    IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null,
+    IReadOnlyList<PromoCodeDefinition>? PromoCodes = null);
 
 public sealed record GameContentDefinition(
     string Type,

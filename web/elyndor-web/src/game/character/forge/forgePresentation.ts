@@ -5,15 +5,21 @@ export interface ForgeItemAvailability {
   reason: string | null
 }
 
+export function availableForgeMaterialQuantity(
+  items: readonly InventoryItem[],
+  definitionId: string,
+): number {
+  return items
+    .filter(item => item.definitionId === definitionId && !item.isLocked && !item.transactionLocked)
+    .reduce((total, item) => total + item.quantity, 0)
+}
+
 export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailability {
   if (item.type !== 'Equipment' || !item.generatedItem) {
     return { available: false, reason: 'Этот предмет нельзя перековать.' }
   }
   if (item.isLocked) {
     return { available: false, reason: 'Предмет защищён. Снимите блокировку в инвентаре.' }
-  }
-  if (item.equippedSlot) {
-    return { available: false, reason: 'Снимите предмет с экипировки перед перековкой.' }
   }
   if (item.transactionLocked) {
     return { available: false, reason: 'С этим предметом уже выполняется операция.' }
@@ -22,6 +28,10 @@ export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailabilit
     return { available: false, reason: 'У предмета нет характеристик, доступных для перековки.' }
   }
   return { available: true, reason: null }
+}
+
+export function shouldRestorePendingReforge(item: InventoryItem): boolean {
+  return item.transactionLocked === true
 }
 
 export function forgeableAffixes(item: InventoryItem) {

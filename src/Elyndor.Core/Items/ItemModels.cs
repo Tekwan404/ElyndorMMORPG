@@ -186,7 +186,8 @@ public sealed record ItemDefinition(
     string? PrefixSuffixPolicyId = null,
     string? UniqueEquippedGroup = null,
     string? TradePolicyId = null,
-    int GenerationVersion = 1);
+    int GenerationVersion = 1,
+    bool PremiumEligible = true);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
@@ -215,6 +216,14 @@ public sealed record MerchantDefinition(
     string LocationId,
     string Description,
     IReadOnlyList<string> ItemIds);
+
+public sealed record PremiumStoreOfferDefinition(
+    string Sku,
+    string ItemDefinitionId,
+    int Quantity,
+    long CrystalPrice,
+    bool Enabled = true,
+    int? PerAccountLimit = null);
 
 public sealed record LootTableEntry(
     string ItemId,

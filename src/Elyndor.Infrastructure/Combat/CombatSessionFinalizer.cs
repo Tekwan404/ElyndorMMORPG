@@ -172,12 +172,13 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                         contentSnapshot,
                         cancellationToken);
 
+                string? dungeonId = await dbContext.DungeonEncounters
+                    .Where(encounter => encounter.CombatSessionId == snapshot.SessionId)
+                    .Select(encounter => encounter.Run!.DungeonId)
+                    .SingleOrDefaultAsync(cancellationToken);
+
                 if (location is not null)
                 {
-                    string? dungeonId = await dbContext.DungeonEncounters
-                        .Where(encounter => encounter.CombatSessionId == snapshot.SessionId)
-                        .Select(encounter => encounter.Run!.DungeonId)
-                        .SingleOrDefaultAsync(cancellationToken);
                     string respawnLocation = dungeonId is null
                         ? WorldLocationIds.StarterTown
                         : dungeonService?.GetDefinition(dungeonId)?.EntryLocationId ?? location.LocationId;
@@ -189,10 +190,15 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     checkpointAt = relocateAt;
                 }
 
-                // Dungeon defeats recover at the entrance; ordinary defeat returns to town.
+                // Ordinary defeats use the class respawn resource value. Dungeon wipes recover
+                // at the entrance with half of the effective maximum resource so a retry is
+                // immediately possible without granting a full-resource reset.
+                decimal respawnResource = dungeonId is null
+                    ? derived.EffectiveResourceProfile.RespawnValue
+                    : derived.EffectiveResourceProfile.MaxValue / 2m;
                 vitals.BeginContext(
                     derived.Stats.MaxHp,
-                    derived.EffectiveResourceProfile.RespawnValue,
+                    respawnResource,
                     checkpointAt);
             }
             else

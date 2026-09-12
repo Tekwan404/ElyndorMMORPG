@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { InventoryItem, ItemAffix, ItemReforgePreview, ItemReforgeResponse } from '@/api/contracts'
+import type { InventoryItem, ItemAffix, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
-import { forgeableAffixes, forgeItemAvailability, forgeStatLabel } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -15,6 +15,7 @@ const preview = ref<ItemReforgePreview | null>(null)
 const pending = ref<ItemReforgeResponse | null>(null)
 const actionError = ref<string | null>(null)
 const loadingPreview = ref(false)
+const salvagePreview = ref<ItemSalvagePreview | null>(null)
 
 const character = computed(() => session.snapshot?.character ?? null)
 const allEquipment = computed(() => character.value?.inventory.items.filter(item => item.type === 'Equipment') ?? [])
@@ -24,9 +25,13 @@ const affixes = computed(() => selectedItem.value ? forgeableAffixes(selectedIte
 const selectedAffix = computed<ItemAffix | null>(() =>
   affixes.value.find(affix => affix.slotKey === selectedSlotKey.value) ?? null,
 )
-const reforgeStones = computed(() => character.value?.inventory.items
+const totalReforgeStones = computed(() => character.value?.inventory.items
   .filter(item => item.definitionId === 'REFORGE_STONE')
   .reduce((total, item) => total + item.quantity, 0) ?? 0)
+const reforgeStones = computed(() => availableForgeMaterialQuantity(
+  character.value?.inventory.items ?? [],
+  'REFORGE_STONE',
+))
 
 function itemArt(item: InventoryItem): string | undefined {
   return itemArtUrl(item.iconId)
@@ -38,7 +43,10 @@ function selectItem(item: InventoryItem): void {
   preview.value = null
   pending.value = null
   actionError.value = null
+  salvagePreview.value = null
 }
+
+function clearSelection(): void { selectedItemId.value = null; selectedSlotKey.value = null; salvagePreview.value = null }
 
 async function refreshSelection(): Promise<void> {
   const item = selectedItem.value
@@ -46,15 +54,18 @@ async function refreshSelection(): Promise<void> {
   preview.value = null
   pending.value = null
   actionError.value = null
-  if (!item || !slotKey || !selectedAvailability.value?.available) return
+  if (!item || !slotKey) return
 
   loadingPreview.value = true
   try {
-    pending.value = await session.getPendingReforge(item.id)
-    if (!pending.value) {
-      preview.value = await session.getReforgePreview(item.id, slotKey)
-      if (!preview.value) actionError.value = reforgeErrorMessage(session.errorCode)
+    if (shouldRestorePendingReforge(item)) {
+      pending.value = await session.getPendingReforge(item.id)
     }
+    if (pending.value) return
+    if (!selectedAvailability.value?.available) return
+
+    preview.value = await session.getReforgePreview(item.id, slotKey)
+    if (!preview.value) actionError.value = reforgeErrorMessage(session.errorCode)
   } finally {
     loadingPreview.value = false
   }
@@ -82,6 +93,39 @@ async function decide(acceptProposed: boolean): Promise<void> {
   }
   pending.value = null
   await refreshSelection()
+}
+
+async function upgradeStars(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || session.mutationPending) return
+  actionError.value = null
+  const result = await session.upgradeItemStars(item.id)
+  if (!result) actionError.value = starUpgradeErrorMessage(session.errorCode)
+}
+
+async function prepareSalvage(): Promise<void> {
+  if (!selectedItem.value || session.mutationPending) return
+  actionError.value = null
+  salvagePreview.value = await session.getSalvagePreview(selectedItem.value.id)
+  if (!salvagePreview.value) actionError.value = 'Снимите предмет с экипировки перед разбором.'
+}
+
+async function confirmSalvage(): Promise<void> {
+  if (!selectedItem.value || !salvagePreview.value || session.mutationPending) return
+  const result = await session.salvageItem(selectedItem.value.id, salvagePreview.value.requiresConfirmation)
+  if (result) clearSelection()
+  else actionError.value = 'Не удалось разобрать предмет.'
+}
+
+function starUpgradeErrorMessage(code: string | null): string {
+  const messages: Record<string, string> = {
+    star_upgrade_max_stars: 'Предмет уже достиг ★★★★★.',
+    star_upgrade_not_enough_gold: 'Недостаточно золота для улучшения.',
+    star_upgrade_not_enough_stones: 'Недостаточно Камней перековки.',
+    star_upgrade_missing_catalyst: 'Для ★★★★★ требуется Ядро подземелья.',
+    star_upgrade_item_locked: 'Предмет защищён. Снимите блокировку в инвентаре.',
+  }
+  return code ? (messages[code] ?? 'Не удалось улучшить качество предмета.') : 'Не удалось улучшить качество предмета.'
 }
 
 function reforgeErrorMessage(code: string | null): string {
@@ -113,22 +157,22 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 </script>
 
 <template>
-  <section class="forge-view">
+  <section class="forge-view" data-forge-workshop>
     <header class="forge-header">
       <div>
-        <p>МАСТЕРСКАЯ</p>
-        <h1>Кузница</h1>
-        <span>Перековывайте случайную характеристику предмета.</span>
+        <p>СЛУЖБА КВАРТИРМЕЙСТЕРА</p>
+        <h2>Кузница</h2>
+        <span>Работаем со снятым снаряжением: перековка, улучшение качества и разбор.</span>
       </div>
       <div class="forge-resource" aria-label="Камни перековки">
         <IconGenerator :config="{ id: 'forge-stone', glyph: 'ore', category: 'resource' }" />
         <strong>{{ reforgeStones }}</strong>
-        <small>камней</small>
+        <small>доступно из {{ totalReforgeStones }}</small>
       </div>
     </header>
 
     <section v-if="allEquipment.length" class="forge-layout">
-      <div class="forge-items" aria-label="Предметы для кузницы">
+      <div v-if="!selectedItem" class="forge-items" aria-label="Предметы для кузницы">
         <header><small>СНАРЯЖЕНИЕ</small><strong>Выберите предмет</strong></header>
         <button
           v-for="item in allEquipment"
@@ -147,6 +191,7 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
             <strong>{{ item.name }}</strong>
             <small>{{ rarityLabel(item) }} · Мощь {{ format(item.generatedItem?.itemPower ?? 0) }}</small>
             <ItemQualityStars v-if="item.generatedItem" :id="`forge-${item.id}`" :stars="item.generatedItem.stars" />
+            <em v-if="!forgeItemAvailability(item).available">{{ forgeItemAvailability(item).reason }}</em>
           </span>
         </button>
       </div>
@@ -159,6 +204,7 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
         message="Кузница работает только со снятым случайно сгенерированным снаряжением."
       />
       <article v-else class="forge-detail" :data-rarity="selectedItem.rarity">
+        <UIButton variant="ghost" class="forge-back" @click="clearSelection">← К предметам</UIButton>
         <header class="forge-detail__identity">
           <span class="forge-detail__art">
             <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" />
@@ -172,8 +218,8 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
           </div>
         </header>
 
-        <p v-if="!selectedAvailability?.available" class="forge-notice" role="alert">{{ selectedAvailability?.reason }}</p>
-        <template v-else>
+        <p v-if="!selectedAvailability?.available && !pending" class="forge-notice" role="alert">{{ selectedAvailability?.reason }}</p>
+        <template v-if="selectedAvailability?.available || pending">
           <section class="forge-affixes" aria-label="Характеристики предмета">
             <header><small>ХАРАКТЕРИСТИКИ</small><strong>Выберите одну для перековки</strong></header>
             <button
@@ -211,6 +257,15 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
               <UIButton :loading="session.mutationPending" data-forge-roll @click="roll">Перековать характеристику</UIButton>
             </template>
           </section>
+          <section v-if="selectedItem.generatedItem && selectedItem.generatedItem.stars < 5" class="forge-star-upgrade">
+            <small>КАЧЕСТВО ПРЕДМЕТА</small>
+            <p>Улучшение повысит качество на одну звезду и усилит rolled характеристики. Для ★★★★★ потребуется Ядро подземелья.</p>
+            <UIButton :loading="session.mutationPending" data-forge-star-upgrade @click="upgradeStars">Улучшить до ★{{ selectedItem.generatedItem.stars + 1 }}</UIButton>
+          </section>
+          <section class="forge-salvage">
+            <template v-if="!salvagePreview"><UIButton variant="danger" :loading="session.mutationPending" @click="prepareSalvage">Разобрать предмет</UIButton></template>
+            <template v-else><p>Предмет будет удалён. Камень перековки: {{ salvagePreview.reward.reforgeStoneQuantity }}.</p><UIButton variant="danger" :loading="session.mutationPending" @click="confirmSalvage">Подтвердить разбор</UIButton></template>
+          </section>
         </template>
         <p v-if="actionError" class="forge-error" role="alert">{{ actionError }}</p>
       </article>
@@ -225,20 +280,20 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 </template>
 
 <style scoped>
-.forge-view { display: grid; gap: var(--ui-space-4); padding: var(--ui-space-4); }
-.forge-header, .forge-detail, .forge-items { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-lg); background: linear-gradient(145deg, rgb(23 32 51 / 94%), rgb(10 15 27 / 94%)); box-shadow: var(--ui-shadow-panel); }
-.forge-header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-4); }
-.forge-header p, .forge-header h1, .forge-header span, .forge-detail h2 { margin: 0; }
+.forge-view { display: grid; gap: var(--ui-space-3); }
+.forge-header, .forge-detail, .forge-items { border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(145deg, rgb(23 32 51 / 94%), rgb(10 15 27 / 94%)); }
+.forge-header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-3); border-color: rgb(232 200 102 / 26%); background: linear-gradient(120deg, rgb(232 200 102 / 10%), rgb(16 23 38 / 96%) 54%); }
+.forge-header p, .forge-header h2, .forge-header span, .forge-detail h2 { margin: 0; }
 .forge-header p, .forge-items small, .forge-affixes header small, .forge-preview small, .forge-result small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); letter-spacing: .08em; }
-.forge-header h1 { margin-top: 2px; font-size: var(--ui-font-size-xl); }
+.forge-header h2 { margin-top: 2px; font-size: var(--ui-font-size-xl); }
 .forge-header span { display: block; margin-top: 4px; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
-.forge-resource { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 4px; min-width: 72px; color: var(--ui-color-gold); }
+.forge-resource { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 4px; min-width: 84px; padding: 6px 8px; border: 1px solid rgb(232 200 102 / 24%); border-radius: var(--ui-radius-sm); background: rgb(5 8 13 / 48%); color: var(--ui-color-gold); }
 .forge-resource :deep(.icon-generator) { width: 28px; height: 28px; grid-row: span 2; }
 .forge-resource small { color: var(--ui-color-text-muted); }
 .forge-layout { display: grid; gap: var(--ui-space-4); }
-.forge-items { padding: var(--ui-space-3); }
+.forge-items { padding: var(--ui-space-2); }
 .forge-items > header { display: grid; gap: 2px; margin-bottom: var(--ui-space-2); }
-.forge-item { display: flex; width: 100%; min-height: 64px; align-items: center; gap: var(--ui-space-3); padding: var(--ui-space-2); border: 1px solid transparent; border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
+.forge-item { display: flex; width: 100%; min-height: 68px; align-items: center; gap: var(--ui-space-3); padding: var(--ui-space-2); border: 1px solid transparent; border-radius: var(--ui-radius-md); background: transparent; color: var(--ui-color-text-primary); font: inherit; text-align: left; cursor: pointer; }
 .forge-item.active { border-color: var(--ui-color-primary); background: rgb(132 121 250 / 10%); }
 .forge-item.unavailable { opacity: .58; }
 .forge-item__art, .forge-detail__art { display: grid; width: 48px; height: 48px; flex: 0 0 48px; place-items: center; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(0 0 0 / 22%); }
@@ -246,7 +301,8 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 .forge-item__copy { display: grid; min-width: 0; gap: 2px; }
 .forge-item__copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .forge-item__copy small { letter-spacing: 0; }
-.forge-detail { padding: var(--ui-space-4); }
+.forge-item__copy em { overflow: hidden; color: var(--ui-color-warning); font-size: var(--ui-font-size-xs); font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.forge-detail { padding: var(--ui-space-3); }
 .forge-detail__identity { display: flex; gap: var(--ui-space-3); }
 .forge-detail__identity > div { display: grid; align-content: start; gap: 4px; }
 .forge-detail__identity small, .forge-detail__identity > div > strong { color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
@@ -257,6 +313,12 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 .forge-affixes button.active { border-color: var(--ui-color-primary); background: rgb(132 121 250 / 11%); }
 .forge-affixes button small { grid-column: 1 / -1; color: var(--ui-color-text-muted); }
 .forge-preview, .forge-result { display: grid; gap: var(--ui-space-3); margin-top: var(--ui-space-4); padding: var(--ui-space-3); border: 1px solid rgb(146 136 255 / 28%); border-radius: var(--ui-radius-md); background: rgb(104 91 218 / 7%); }
+.forge-star-upgrade { display: grid; gap: var(--ui-space-3); margin-top: var(--ui-space-4); padding: var(--ui-space-3); border: 1px solid rgb(222 184 92 / 30%); border-radius: var(--ui-radius-md); background: rgb(168 117 32 / 8%); }
+.forge-star-upgrade small { color: var(--ui-color-gold); font-size: var(--ui-font-size-xs); letter-spacing: .08em; }
+.forge-star-upgrade p { margin: 0; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
+.forge-back { margin-bottom: var(--ui-space-3); }
+.forge-salvage { display: grid; gap: var(--ui-space-2); margin-top: var(--ui-space-4); }
+.forge-salvage p { margin: 0; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
 .forge-preview p, .forge-result p { margin: 0; color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); }
 .forge-preview dl { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ui-space-2); margin: 0; }
 .forge-preview dl div { display: grid; padding: var(--ui-space-2); border-radius: var(--ui-radius-sm); background: rgb(0 0 0 / 16%); }

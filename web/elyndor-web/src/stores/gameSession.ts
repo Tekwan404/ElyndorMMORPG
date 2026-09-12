@@ -13,8 +13,12 @@ import type {
   CreateCharacterRequest,
   EquipmentSlot,
   MerchantSnapshot,
+  PremiumStoreSnapshot,
+  PremiumStorePurchaseResponse,
+  PromoCodeRedemptionResponse,
   ItemReforgeResponse,
   ItemReforgePreview,
+  ItemStarUpgradeResponse,
   ItemSalvagePreview,
   ItemSalvageReward,
   QuestClaimResponse,
@@ -347,6 +351,28 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
+  async function upgradeItemStars(characterItemId: string): Promise<ItemStarUpgradeResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await runReplaySafeGameMutation<ItemStarUpgradeResponse>({
+        key: `inventory:star-upgrade:${characterItemId}`,
+        path: '/api/v1/inventory/star-upgrade',
+        idField: 'mutationId',
+        intent: { characterItemId },
+      })
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function decideReforge(
     operationId: string,
     acceptProposed: boolean,
@@ -376,6 +402,52 @@ export const useGameSessionStore = defineStore('gameSession', () => {
 
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
+  }
+
+  async function getPremiumStore(): Promise<PremiumStoreSnapshot> {
+    return await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+  }
+
+  async function buyPremiumStoreOffer(sku: string): Promise<PremiumStorePurchaseResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await runReplaySafeGameMutation<PremiumStorePurchaseResponse>({
+        key: `premium-store:${sku}`,
+        path: '/api/v1/economy/store/purchase',
+        idField: 'mutationId',
+        intent: { sku },
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function redeemPromoCode(code: string): Promise<PromoCodeRedemptionResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await runReplaySafeGameMutation<PromoCodeRedemptionResponse>({
+        key: `promo-code:${code.trim().toUpperCase()}`,
+        path: '/api/v1/economy/promo/redeem',
+        idField: 'mutationId',
+        intent: { code },
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
   }
 
   async function buyMerchantItem(
@@ -536,8 +608,12 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     getPendingReforge,
     getReforgePreview,
     rollReforge,
+    upgradeItemStars,
     decideReforge,
     getMerchant,
+    getPremiumStore,
+    buyPremiumStoreOffer,
+    redeemPromoCode,
     buyMerchantItem,
     sellMerchantItem,
     sellMerchantMaterial,

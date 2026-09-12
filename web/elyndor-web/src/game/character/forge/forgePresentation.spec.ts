@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { InventoryItem } from '@/api/contracts'
-import { forgeItemAvailability } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeItemAvailability, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 
 function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
   return {
@@ -58,5 +58,25 @@ describe('forgeItemAvailability', () => {
 
   it('accepts an unequipped item with a rerollable affix', () => {
     expect(forgeItemAvailability(equipment())).toEqual({ available: true, reason: null })
+  })
+
+  it('accepts an equipped item because reforge changes the same instance', () => {
+    expect(forgeItemAvailability(equipment({ equippedSlot: 'MainHand' }))).toEqual({ available: true, reason: null })
+  })
+})
+
+describe('availableForgeMaterialQuantity', () => {
+  it('excludes protected and transaction-locked material stacks', () => {
+    expect(availableForgeMaterialQuantity([
+      equipment({ definitionId: 'REFORGE_STONE', type: 'Material', quantity: 4, transactionLocked: false }),
+      equipment({ definitionId: 'REFORGE_STONE', type: 'Material', quantity: 10, isLocked: true, transactionLocked: false }),
+      equipment({ definitionId: 'REFORGE_STONE', type: 'Material', quantity: 5, transactionLocked: true }),
+    ], 'REFORGE_STONE')).toBe(4)
+  })
+})
+
+describe('shouldRestorePendingReforge', () => {
+  it('restores a pending result even when the item is transaction-locked', () => {
+    expect(shouldRestorePendingReforge(equipment({ transactionLocked: true }))).toBe(true)
   })
 })

@@ -231,10 +231,32 @@ public sealed class CombatRewardService(
             personalLoot.Add(roll);
         }
 
+        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
         foreach (LootRoll roll in sharedValuableLoot)
         {
             if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))
                 throw new InvalidOperationException($"Item '{roll.ItemId}' is missing from game content.");
+
+            // A roll is only meaningful when at least two eligible players can compete for it.
+            // Solo encounters (and group fights with exactly one eligible contributor) receive
+            // valuable boss loot in the same durable reward transaction as XP/gold. This avoids
+            // the previous 25-second open-roll window where the UI showed no loot even though
+            // the item would only ever have one possible owner.
+            if (eligibleCharacterIds.Length == 1)
+            {
+                if (eligibleCharacterIds[0] == characterId)
+                {
+                    await AddItemAsync(
+                        characterId,
+                        snapshot.SessionId,
+                        roll,
+                        now,
+                        contentSnapshot,
+                        cancellationToken);
+                    personalLoot.Add(roll);
+                }
+                continue;
+            }
 
             derivedForLoot ??= await derivedStateService.ResolveAsync(
                 character.Id,

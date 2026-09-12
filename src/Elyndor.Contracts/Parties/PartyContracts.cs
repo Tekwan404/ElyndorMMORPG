@@ -6,13 +6,16 @@ public sealed record PartyMemberResponse(
     int Level,
     string ClassId,
     bool IsLeader,
-    DateTimeOffset JoinedAtUtc);
+    DateTimeOffset JoinedAtUtc,
+    string? LocationId,
+    Guid? ActiveDungeonRunId);
 
 public sealed record PartyResponse(
     Guid PartyId,
     Guid LeaderCharacterId,
     long Version,
-    IReadOnlyList<PartyMemberResponse> Members);
+    IReadOnlyList<PartyMemberResponse> Members,
+    Guid? ActiveDungeonRunId);
 
 public sealed record PartyInviteResponse(
     Guid Id,

@@ -6,11 +6,12 @@ import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
+import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
-export type MenuSection = 'profile' | 'friends' | 'party'
+export type MenuSection = 'profile' | 'friends' | 'party' | 'store'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
@@ -82,6 +83,10 @@ async function copyPublicCode(): Promise<void> {
         <span><strong>Группа</strong><small>Состав и поход</small></span>
         <b aria-hidden="true">›</b>
       </button>
+      <button class="menu-tile menu-tile--gold" type="button" @click="activeSection = 'store'">
+        <span class="menu-tile__icon" aria-hidden="true"><IconGenerator :config="{ id: 'menu-store', glyph: 'ore', category: 'resource' }" /></span>
+        <span><strong>Магазин</strong><small>Материалы за кристаллы</small></span><b aria-hidden="true">›</b>
+      </button>
       <RouterLink v-if="session.isAdmin" class="menu-tile menu-tile--admin" to="/admin">
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-admin', glyph: 'shield', category: 'utility' }" />
@@ -102,7 +107,8 @@ async function copyPublicCode(): Promise<void> {
         Все системы
       </button>
       <FriendsView v-if="activeSection === 'friends'" />
-      <PartyView v-else embedded @open-world="emit('open-world')" />
+      <PartyView v-else-if="activeSection === 'party'" embedded @open-world="emit('open-world')" />
+      <PremiumStoreView v-if="activeSection === 'store'" />
     </section>
   </section>
 </template>

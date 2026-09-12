@@ -682,6 +682,163 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("dungeon_run_members", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Economy.CrystalLedgerEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("BalanceAfter")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Delta")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("EntryType")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id")
+                        .HasName("pk_crystal_ledger_entries");
+
+                    b.HasIndex("AccountId", "CreatedAtUtc")
+                        .HasDatabaseName("ix_crystal_ledger_entries_account_created_at");
+
+                    b.HasIndex("AccountId", "OperationId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_crystal_ledger_entries_account_operation");
+
+                    b.ToTable("crystal_ledger_entries", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_crystal_ledger_entries_balance_after_non_negative", "\"BalanceAfter\" >= 0");
+
+                            t.HasCheckConstraint("ck_crystal_ledger_entries_delta_non_zero", "\"Delta\" <> 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.CrystalWallet", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Balance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.HasKey("AccountId")
+                        .HasName("pk_crystal_wallets");
+
+                    b.ToTable("crystal_wallets", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_crystal_wallets_balance_non_negative", "\"Balance\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.PremiumStorePurchase", b =>
+                {
+                    b.Property<Guid>("OperationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("CrystalPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("PurchasedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("OperationId")
+                        .HasName("pk_premium_store_purchases");
+
+                    b.HasIndex("AccountId", "Sku")
+                        .HasDatabaseName("ix_premium_store_purchases_account_sku");
+
+                    b.ToTable("premium_store_purchases", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_premium_store_purchases_price_positive", "\"CrystalPrice\" > 0");
+
+                            t.HasCheckConstraint("ck_premium_store_purchases_quantity_positive", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.PromoCodeRedemption", b =>
+                {
+                    b.Property<Guid>("OperationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("RedeemedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("OperationId")
+                        .HasName("pk_promo_code_redemptions");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("Code")
+                        .HasDatabaseName("ix_promo_code_redemptions_code");
+
+                    b.HasIndex("AccountId", "Code")
+                        .HasDatabaseName("ix_promo_code_redemptions_account_code");
+
+                    b.ToTable("promo_code_redemptions", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Identity.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1769,6 +1926,43 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.CrystalLedgerEntry", b =>
+                {
+                    b.HasOne("Elyndor.Core.Identity.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_crystal_ledger_entries_accounts_account_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.CrystalWallet", b =>
+                {
+                    b.HasOne("Elyndor.Core.Identity.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_crystal_wallets_accounts_account_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Economy.PromoCodeRedemption", b =>
+                {
+                    b.HasOne("Elyndor.Core.Identity.Account", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_promo_code_redemptions_accounts_account_id");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_promo_code_redemptions_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Items.CharacterEquipment", b =>

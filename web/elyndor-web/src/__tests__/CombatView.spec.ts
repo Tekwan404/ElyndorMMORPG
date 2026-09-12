@@ -150,9 +150,12 @@ describe('CombatView', () => {
     const wrapper = mount(CombatView)
 
     expect(wrapper.get('.combat-screen').attributes('data-party-size')).toBe('2')
-    expect(wrapper.get('[data-combat-party-roster]').text()).toContain('Слаженный отряд')
-    expect(wrapper.findAll('.combat-party-roster__member')).toHaveLength(2)
-    expect(wrapper.get('.combat-party-roster__member--self').text()).toContain('Воин')
+    const roster = wrapper.get('[data-combat-party-roster]')
+    expect(roster.text()).toContain('Союзники · 1')
+    expect(roster.text()).toContain('Общий фронт')
+    expect(wrapper.findAll('.combat-party-roster__member')).toHaveLength(1)
+    expect(wrapper.get('.combat-party-roster__member').text()).toContain('Маг')
+    expect(wrapper.find('.combat-party-roster__member--self').exists()).toBe(false)
     expect(wrapper.find('.party-formation').exists()).toBe(false)
   })
 
