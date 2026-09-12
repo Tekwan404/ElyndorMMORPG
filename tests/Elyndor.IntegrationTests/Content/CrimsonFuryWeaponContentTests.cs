@@ -16,13 +16,13 @@ public sealed class CrimsonFuryWeaponContentTests
             package.Items!,
             item => item.Id == "WARRIOR_EPIC_CRIMSON_FURY_WEAPON");
 
-        Assert.Equal("MainHand", weapon.Slot);
-        Assert.Equal("ONE_HAND_SWORD", weapon.WeaponCategory);
+        Assert.Equal(EquipmentSlot.MainHand, weapon.Slot);
+        Assert.Equal(EquipmentCategoryIds.OneHandSword, weapon.WeaponCategory);
         Assert.Equal(14, weapon.RequiredLevel);
-        Assert.Equal(34, weapon.WeaponDamageMin);
-        Assert.Equal(52, weapon.WeaponDamageMax);
+        Assert.Equal(34m, weapon.WeaponDamageMin);
+        Assert.Equal(52m, weapon.WeaponDamageMax);
         Assert.Equal(14, weapon.ItemLevelMin);
         Assert.Equal(14, weapon.ItemLevelMax);
-        Assert.Contains("WARRIOR", weapon.AllowedClassIds ?? []);
+        Assert.Contains("WARRIOR", weapon.AllowedClassIds!);
     }
 }
