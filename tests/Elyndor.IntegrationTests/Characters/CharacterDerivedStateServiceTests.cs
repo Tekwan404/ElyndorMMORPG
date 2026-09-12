@@ -201,6 +201,41 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
     }
 
     [Fact]
+    public async Task SelectedPhysicalCompanionIsUsedUnlessArcaneTalentsOverrideIt()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        (Guid characterId, _) = await CreateCharacterAsync("ARCHER", 60);
+        TalentTreeDefinition archerTree =
+            content.TalentTrees!.Single(tree => tree.Id == "ARCHER_TREE");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync(candidate => candidate.Id == characterId);
+            character.SelectCompanionProfile("ARCHER_GUARDIAN");
+
+            CharacterTalentState talentState = new(
+                characterId,
+                archerTree.Id,
+                archerTree.Version,
+                Now);
+            talentState.ReplaceRanks(
+                TalentLoadoutIds.Loadout1,
+                new Dictionary<string, int> { ["A-1-1"] = 1 },
+                Now);
+            setup.CharacterTalentStates.Add(talentState);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterDerivedStateService service = CreateService(context, content);
+        CharacterDerivedState resolved = await service.ResolveAsync(
+            characterId, "ARCHER", 60, CancellationToken.None);
+
+        Assert.Equal("ARCHER_GUARDIAN", resolved.SelectedPhysicalCompanionProfile?.Id);
+        Assert.Equal("ARCHER_SPIRIT", resolved.ActiveCompanionProfile?.Id);
+    }
+
+    [Fact]
     public async Task TalentStateFromPreviousClassIsIgnored()
     {
         GameContentPackage content = await LoadContentAsync();

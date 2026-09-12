@@ -66,6 +66,8 @@ public sealed class Character
 
     public string ClassId { get; private set; }
 
+    public string? ActiveCompanionProfileId { get; private set; }
+
     public int Level { get; private set; }
 
     public long Experience { get; private set; }
@@ -128,6 +130,12 @@ public sealed class Character
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(raceId);
         RaceId = raceId;
+    }
+
+    public void SelectCompanionProfile(string companionProfileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(companionProfileId);
+        ActiveCompanionProfileId = companionProfileId;
     }
 
     private static string BuildPublicCode(Guid id)

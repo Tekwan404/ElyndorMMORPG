@@ -167,6 +167,7 @@ public sealed class CharacterCreationService(
             return replayResult;
         }
 
+        ClassProfile classProfile = contentSnapshot.Indexes.ClassesById[command.ClassId];
         Character character = new(
             Guid.CreateVersion7(),
             accountId,
@@ -177,11 +178,12 @@ public sealed class CharacterCreationService(
             command.GenderId,
             command.ClassId,
             now);
+        if (!string.IsNullOrWhiteSpace(classProfile.StartingCompanionProfileId))
+            character.SelectCompanionProfile(classProfile.StartingCompanionProfileId);
         CharacterLocation location = new(character.Id, WorldLocationIds.StarterTown, 1, now);
         _dbContext.Characters.Add(character);
         _dbContext.CharacterLocations.Add(location);
 
-        ClassProfile classProfile = contentSnapshot.Indexes.ClassesById[command.ClassId];
         int startingOrdinal = 0;
         foreach (string itemId in classProfile.StartingEquipmentItemIds ?? [])
         {
