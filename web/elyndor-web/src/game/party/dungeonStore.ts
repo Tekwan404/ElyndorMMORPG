@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import { apiClient } from '@/api/apiClient'
 import type { DungeonPreview, DungeonRun, DungeonTeleportResponse } from '@/api/contracts'
+import { usePartyStore } from '@/game/party/partyStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 export const useDungeonStore = defineStore('dungeon', () => {
@@ -68,6 +69,10 @@ export const useDungeonStore = defineStore('dungeon', () => {
     teleporting.value = true
     errorCode.value = null
     try {
+      const party = usePartyStore()
+      await party.refresh(true)
+      const activePartyRunId = party.snapshot?.activeDungeonRunId ?? null
+
       await apiClient.request<DungeonTeleportResponse>('/api/v1/dungeons/teleport', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,6 +80,12 @@ export const useDungeonStore = defineStore('dungeon', () => {
       })
       await useGameSessionStore().refreshSnapshot()
       await refresh()
+
+      if (activePartyRunId && current.value === null) {
+        await enter(activePartyRunId)
+        if (errorCode.value) return false
+      }
+
       return true
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'dungeon_teleport_failed'
