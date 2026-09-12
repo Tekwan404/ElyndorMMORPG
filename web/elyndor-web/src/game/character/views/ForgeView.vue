@@ -46,6 +46,11 @@ const loadingStarUpgradePreview = ref(false)
 const rarityOrder: Record<InventoryItem['rarity'], number> = {
   Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4, Unique: 5,
 }
+const materialLabels: Record<string, string> = {
+  FORGE_SCRAP: 'Кузнечный лом',
+  REFORGE_STONE: 'Камень перековки',
+  DUNGEON_CATALYST: 'Ядро подземелья',
+}
 
 const character = computed(() => session.snapshot?.character ?? null)
 const gold = computed(() => character.value?.gold ?? 0)
@@ -150,7 +155,8 @@ function canSelectForBatchSalvage(item: InventoryItem): boolean {
 }
 function materialLabel(definitionId: string): string {
   return inventoryItems.value.find(item => item.definitionId === definitionId)?.name
-    ?? ({ FORGE_SCRAP: 'Кузнечный лом', REFORGE_STONE: 'Камень перековки', DUNGEON_CATALYST: 'Ядро подземелья' }[definitionId] ?? definitionId)
+    ?? materialLabels[definitionId]
+    ?? definitionId
 }
 
 function toggleBatchSalvage(item: InventoryItem): void {
@@ -162,7 +168,8 @@ function toggleBatchSalvage(item: InventoryItem): void {
     return
   }
   const selected = new Set(batchSalvageIds.value)
-  selected.has(item.id) ? selected.delete(item.id) : selected.add(item.id)
+  if (selected.has(item.id)) selected.delete(item.id)
+  else selected.add(item.id)
   batchSalvageIds.value = [...selected]
   batchSalvagePreviews.value = []
 }
