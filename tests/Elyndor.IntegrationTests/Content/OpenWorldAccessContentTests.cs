@@ -12,20 +12,22 @@ public sealed class OpenWorldAccessContentTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        WorldMap worldMap = package.WorldMap;
+        LocationDefinition GetLocation(string id) =>
+            package.Locations.Single(location => location.Id == id);
+
         LocationDefinition[] ordinaryZones =
         [
-            worldMap.GetRequired("WHISPERING_FOREST"),
-            worldMap.GetRequired("DEEP_FOREST"),
-            worldMap.GetRequired("BROODMOTHER_LAIR"),
-            worldMap.GetRequired("BLIGHTED_GROVE")
+            GetLocation("WHISPERING_FOREST"),
+            GetLocation("DEEP_FOREST"),
+            GetLocation("BROODMOTHER_LAIR"),
+            GetLocation("BLIGHTED_GROVE")
         ];
 
         Assert.All(ordinaryZones, zone => Assert.Equal(1, zone.MinimumLevel));
         Assert.All(ordinaryZones, zone => Assert.Null(zone.RequiredContractId));
 
-        Assert.Equal(9, worldMap.GetRequired("DEEP_FOREST").RecommendedLevel);
-        Assert.Equal(14, worldMap.GetRequired("BROODMOTHER_LAIR").RecommendedLevel);
-        Assert.Equal(17, worldMap.GetRequired("BLIGHTED_GROVE").RecommendedLevel);
+        Assert.Equal(9, GetLocation("DEEP_FOREST").RecommendedLevel);
+        Assert.Equal(14, GetLocation("BROODMOTHER_LAIR").RecommendedLevel);
+        Assert.Equal(17, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
     }
 }
