@@ -137,6 +137,26 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task DangerousLocationIsRejectedEvenWhenContentEnablesAfk()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(
+            dbContext,
+            CreateContent(dangerLevel: "DANGEROUS"));
+
+        AfkFarmMutationResult result = await service.StartAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromHours(1),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(AfkFarmErrorCodes.NotAllowed, result.ErrorCode);
+    }
+
+    [Fact]
     public async Task BossOnlyLocationIsNotEligibleForAfk()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
@@ -292,12 +312,13 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         int minimumLevel = 1,
         bool allowAfk = true,
         string? requiredContractId = null,
-        MonsterRank monsterRank = MonsterRank.Normal)
+        MonsterRank monsterRank = MonsterRank.Normal,
+        string dangerLevel = "ADVENTURE")
     {
         LocationDefinition location = new(
             ForestId,
             "AFK test forest",
-            "LOW",
+            dangerLevel,
             minimumLevel,
             [],
             [new LocationEncounterDefinition(WolfId, 1m)],

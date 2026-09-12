@@ -181,7 +181,8 @@ public sealed class AfkFarmService(
             return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.LockedLocation);
         }
 
-        if (!location.AllowAfk)
+        if (!location.AllowAfk
+            || location.DangerLevel is not ("SAFE" or "ADVENTURE"))
         {
             await transaction.RollbackAsync(cancellationToken);
             return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NotAllowed);
