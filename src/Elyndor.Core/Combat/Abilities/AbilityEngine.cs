@@ -240,7 +240,10 @@ public static class AbilityEngine
                             runtime.Actor.Stats.AttackPower,
                             now);
                         decimal spellPower = runtime.Actor.Stats.SpellPower;
+                        decimal levelDamage = Math.Max(0, runtime.Actor.Stats.Level - 1)
+                            * Math.Max(0, action.DamagePerCharacterLevel);
                         decimal baseDamage = action.Amount
+                            + levelDamage
                             + attackPower * Math.Max(0, action.AttackPowerCoefficient)
                             + spellPower * Math.Max(0, action.SpellPowerCoefficient);
                         DamageResult damage = DamagePipeline.Resolve(
