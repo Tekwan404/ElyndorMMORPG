@@ -73,7 +73,6 @@ public sealed class InventoryItemResponseBlockTests
             0,
             0,
             0,
-            0,
             false);
 
         Assert.Equal(0m, response.BlockChancePercent);
