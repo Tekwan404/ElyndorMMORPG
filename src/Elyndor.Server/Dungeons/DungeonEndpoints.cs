@@ -168,6 +168,44 @@ public static class DungeonEndpoints
         var caller = members.SingleOrDefault(member => member.AccountId == accountId);
         if (caller is null)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
+
+        if (party.ActiveDungeonRunId is Guid activeRunId)
+        {
+            string? activeDungeonId = await dbContext.DungeonRuns
+                .AsNoTracking()
+                .Where(run => run.Id == activeRunId
+                    && run.PartyId == party.PartyId
+                    && run.State == DungeonRunState.Active)
+                .Select(run => run.DungeonId)
+                .SingleOrDefaultAsync(cancellationToken);
+            if (string.Equals(activeDungeonId, dungeonId, StringComparison.Ordinal))
+            {
+                if (caller.Level < definition.MinimumLevel)
+                    return DungeonTeleportResult.Failure(DungeonErrorCodes.LevelRequired);
+                if (combatActivity.HasActiveCombat(caller.AccountId))
+                    return DungeonTeleportResult.Failure(CharacterOperationErrorCodes.InCombat);
+                if (await dbContext.CharacterTravelStates
+                        .AsNoTracking()
+                        .AnyAsync(travel => travel.CharacterId == caller.Id, cancellationToken))
+                {
+                    return DungeonTeleportResult.Failure(DungeonErrorCodes.TravelInProgress);
+                }
+
+                await bootstrapService.GetAsync(caller.AccountId, cancellationToken, checkpoint: true);
+                bool isHealthy = await dbContext.CharacterVitals
+                    .AsNoTracking()
+                    .AnyAsync(vitals => vitals.CharacterId == caller.Id && vitals.CurrentHp > 0, cancellationToken);
+                if (!isHealthy)
+                    return DungeonTeleportResult.Failure(DungeonErrorCodes.MemberCannotEnter);
+
+                return await service.TeleportToEntryAsync(
+                    caller.AccountId,
+                    dungeonId,
+                    requestId,
+                    cancellationToken);
+            }
+        }
+
         if (party.LeaderCharacterId != caller.Id)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.NotLeader);
 
