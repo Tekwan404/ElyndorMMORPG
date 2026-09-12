@@ -304,6 +304,7 @@ app.MapWorldEndpoints();
 app.MapQuestEndpoints();
 app.MapTalentEndpoints();
 app.MapInventoryEndpoints();
+app.MapItemStarUpgradePreviewEndpoints();
 app.MapEconomyEndpoints();
 app.MapAfkFarmEndpoints();
 app.MapSocialEndpoints();
