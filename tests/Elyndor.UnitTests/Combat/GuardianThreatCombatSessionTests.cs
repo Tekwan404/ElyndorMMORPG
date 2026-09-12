@@ -105,8 +105,15 @@ public sealed class GuardianThreatCombatSessionTests
         Assert.Equal(EnemyId, beforeTaunt.EnemyActorId);
         Assert.Equal(CompanionId, beforeTaunt.CurrentTargetActorId);
         Assert.Null(beforeTaunt.ForcedTargetActorId);
-        Assert.True(
-            Assert.Single(beforeTaunt.Entries, entry => entry.ActorId == CompanionId).IsCurrentTarget);
+        CombatThreatEntrySnapshot playerEntry = Assert.Single(
+            beforeTaunt.Entries,
+            entry => entry.ActorId == PlayerId);
+        CombatThreatEntrySnapshot companionEntry = Assert.Single(
+            beforeTaunt.Entries,
+            entry => entry.ActorId == CompanionId);
+        Assert.Equal(EnemyId, playerEntry.SelectedTargetActorId);
+        Assert.Null(companionEntry.SelectedTargetActorId);
+        Assert.True(companionEntry.IsCurrentTarget);
 
         CombatCommandResult provoke = session.Handle(
             new UseAbilityCommand(
