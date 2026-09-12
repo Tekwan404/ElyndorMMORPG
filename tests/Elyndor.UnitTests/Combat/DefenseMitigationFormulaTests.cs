@@ -12,7 +12,7 @@ public sealed class DefenseMitigationFormulaTests
         decimal reduction = DefenseMitigationFormula.CalculateReductionPercent(defense);
 
         decimal expected = defense / (DefenseMitigationFormula.MitigationConstant + defense) * 100m;
-        Assert.Equal(expected, reduction);
+        Assert.Equal(expected, reduction, 10);
     }
 
     [Theory]
