@@ -31,6 +31,21 @@ public sealed record ItemStarUpgradeResult(bool Succeeded, string? ErrorCode, Ge
     public static ItemStarUpgradeResult Failure(string code) => new(false, code, null);
 }
 
+public sealed record ItemStarUpgradePreviewResult(
+    bool Succeeded,
+    string? ErrorCode,
+    Guid ItemInstanceId,
+    int TargetStars,
+    int Gold,
+    string ReforgeStoneItemId,
+    int ReforgeStoneQuantity,
+    string? CatalystItemId,
+    int CatalystQuantity)
+{
+    public static ItemStarUpgradePreviewResult Failure(string code) =>
+        new(false, code, Guid.Empty, 0, 0, string.Empty, 0, null, 0);
+}
+
 public sealed class ItemStarUpgradeService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
@@ -42,6 +57,57 @@ public sealed class ItemStarUpgradeService(
         mutationId == Guid.Empty
             ? Task.FromResult(ItemStarUpgradeResult.Failure(ItemStarUpgradeErrorCodes.MutationConflict))
             : dbContext.Database.CreateExecutionStrategy().ExecuteAsync(() => UpgradeCoreAsync(accountId, itemId, mutationId, cancellationToken));
+
+    public async Task<ItemStarUpgradePreviewResult> GetPreviewAsync(
+        Guid accountId,
+        Guid itemId,
+        CancellationToken cancellationToken)
+    {
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        ItemStarUpgradeProfileDefinition? profile = content.Package.Itemization?.StarUpgrades;
+        if (profile is null)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ProfileMissing);
+
+        Character? character = await dbContext.Characters.AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+        if (character is null)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.CharacterNotFound);
+
+        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking()
+            .Include(candidate => candidate.Affixes)
+            .SingleOrDefaultAsync(
+                candidate => candidate.Id == itemId && candidate.CharacterId == character.Id,
+                cancellationToken);
+        if (item is null)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemNotFound);
+        if (item.IsLocked)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemLocked);
+        if (item.TransactionLockId.HasValue)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemTransactionLocked);
+        if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemNotFound);
+
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        if (current is null)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemNotGenerated);
+        if (current.Stars >= 5)
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.MaxStars);
+
+        int targetStars = current.Stars + 1;
+        if (!TryResolveCost(profile, targetStars, out StarUpgradeCost cost))
+            return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ProfileMissing);
+
+        return new ItemStarUpgradePreviewResult(
+            true,
+            null,
+            item.Id,
+            targetStars,
+            cost.Gold,
+            profile.ReforgeStoneItemId,
+            cost.ReforgeStoneQuantity,
+            cost.CatalystItemId,
+            cost.CatalystQuantity);
+    }
 
     private async Task<ItemStarUpgradeResult> UpgradeCoreAsync(Guid accountId, Guid itemId, Guid mutationId, CancellationToken cancellationToken)
     {
@@ -71,11 +137,10 @@ public sealed class ItemStarUpgradeService(
         if (current is null || content.Package.Itemization is not { } itemization) return await Fail(transaction, ItemStarUpgradeErrorCodes.ItemNotGenerated, cancellationToken);
         if (current.Stars >= 5) return await Fail(transaction, ItemStarUpgradeErrorCodes.MaxStars, cancellationToken);
         int targetStars = current.Stars + 1;
-        if (!profile.GoldByTargetStars.TryGetValue(targetStars, out int gold) || !profile.ReforgeStoneQuantityByTargetStars.TryGetValue(targetStars, out int stones)) return await Fail(transaction, ItemStarUpgradeErrorCodes.ProfileMissing, cancellationToken);
-        if (character.Gold < gold) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughGold, cancellationToken);
-        if (!await HasMaterial(character.Id, profile.ReforgeStoneItemId, stones, cancellationToken)) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughStones, cancellationToken);
-        bool catalystRequired = targetStars == 5 && profile.HighEndCatalystQuantity > 0;
-        if (catalystRequired && (string.IsNullOrWhiteSpace(profile.HighEndCatalystItemId) || !await HasMaterial(character.Id, profile.HighEndCatalystItemId, profile.HighEndCatalystQuantity, cancellationToken))) return await Fail(transaction, ItemStarUpgradeErrorCodes.MissingCatalyst, cancellationToken);
+        if (!TryResolveCost(profile, targetStars, out StarUpgradeCost cost)) return await Fail(transaction, ItemStarUpgradeErrorCodes.ProfileMissing, cancellationToken);
+        if (character.Gold < cost.Gold) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughGold, cancellationToken);
+        if (!await HasMaterial(character.Id, profile.ReforgeStoneItemId, cost.ReforgeStoneQuantity, cancellationToken)) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughStones, cancellationToken);
+        if (cost.CatalystQuantity > 0 && (string.IsNullOrWhiteSpace(cost.CatalystItemId) || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken))) return await Fail(transaction, ItemStarUpgradeErrorCodes.MissingCatalyst, cancellationToken);
 
         GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
             definition,
@@ -91,14 +156,35 @@ public sealed class ItemStarUpgradeService(
         // reject a valid upgrade just because that classifier remains below the target tier.
         GeneratedItemInstance upgraded = recalculated with { Stars = targetStars };
 
-        character.TrySpendGold(gold);
-        await Consume(character.Id, profile.ReforgeStoneItemId, stones, cancellationToken);
-        if (catalystRequired) await Consume(character.Id, profile.HighEndCatalystItemId!, profile.HighEndCatalystQuantity, cancellationToken);
+        character.TrySpendGold(cost.Gold);
+        await Consume(character.Id, profile.ReforgeStoneItemId, cost.ReforgeStoneQuantity, cancellationToken);
+        if (cost.CatalystQuantity > 0) await Consume(character.Id, cost.CatalystItemId!, cost.CatalystQuantity, cancellationToken);
         item.ApplyStarUpgrade(upgraded);
         dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, OperationType, fingerprint, timeProvider.GetUtcNow()));
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new(true, null, upgraded);
+    }
+
+    private static bool TryResolveCost(
+        ItemStarUpgradeProfileDefinition profile,
+        int targetStars,
+        out StarUpgradeCost cost)
+    {
+        if (!profile.GoldByTargetStars.TryGetValue(targetStars, out int gold)
+            || !profile.ReforgeStoneQuantityByTargetStars.TryGetValue(targetStars, out int stones))
+        {
+            cost = default;
+            return false;
+        }
+
+        bool catalystRequired = targetStars == 5 && profile.HighEndCatalystQuantity > 0;
+        cost = new StarUpgradeCost(
+            gold,
+            stones,
+            catalystRequired ? profile.HighEndCatalystItemId : null,
+            catalystRequired ? profile.HighEndCatalystQuantity : 0);
+        return true;
     }
 
     private async Task<GeneratedItemInstance?> LoadGeneratedAsync(Guid characterId, Guid itemId, GameContentSnapshot content, CancellationToken ct)
@@ -121,4 +207,10 @@ public sealed class ItemStarUpgradeService(
         if (quantity != 0) throw new InvalidOperationException("Material availability changed inside star upgrade transaction.");
     }
     private static async Task<ItemStarUpgradeResult> Fail(IDbContextTransaction transaction, string code, CancellationToken ct) { await transaction.RollbackAsync(ct); return ItemStarUpgradeResult.Failure(code); }
+
+    private readonly record struct StarUpgradeCost(
+        int Gold,
+        int ReforgeStoneQuantity,
+        string? CatalystItemId,
+        int CatalystQuantity);
 }
