@@ -33,7 +33,8 @@ public sealed record AutoAttackProfile(
     string? WeaponDefinitionId = null,
     CombatWeaponHand? WeaponHand = null,
     DamageType DamageType = DamageType.Physical,
-    decimal SpellPowerCoefficient = 0);
+    decimal SpellPowerCoefficient = 0,
+    decimal WeaponDamageMultiplier = 1);
 
 public sealed record CombatSummonProfile(
     string SourceDefinitionId,

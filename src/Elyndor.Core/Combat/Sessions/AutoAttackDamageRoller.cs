@@ -2,12 +2,22 @@ using Elyndor.Core.Combat.Randomness;
 
 namespace Elyndor.Core.Combat.Sessions;
 
+public sealed record PlayerAutoAttackDamageBreakdown(
+    decimal WeaponDamage,
+    decimal AttackPowerDamage)
+{
+    public decimal TotalDamage => WeaponDamage + AttackPowerDamage;
+}
+
 public static class AutoAttackDamageRoller
 {
-    private const decimal PlayerVarianceMinMultiplier = 0.90m;
-    private const decimal PlayerVarianceMaxMultiplier = 1.10m;
-
     public static decimal RollPlayerDamage(
+        AutoAttackProfile profile,
+        decimal attackPower,
+        IGameRandom random) =>
+        RollPlayerDamageBreakdown(profile, attackPower, random).TotalDamage;
+
+    public static PlayerAutoAttackDamageBreakdown RollPlayerDamageBreakdown(
         AutoAttackProfile profile,
         decimal attackPower,
         IGameRandom random)
@@ -16,25 +26,11 @@ public static class AutoAttackDamageRoller
         ArgumentNullException.ThrowIfNull(random);
         ArgumentOutOfRangeException.ThrowIfNegative(attackPower);
 
-        decimal minimum = profile.BaseDamageMin ?? profile.BaseDamage;
-        decimal maximum = profile.BaseDamageMax ?? minimum;
-        if (minimum < 0 || maximum < minimum)
-            throw new InvalidOperationException("Auto attack damage range is invalid.");
-
-        decimal attackPowerContribution =
-            attackPower * profile.AttackPowerCoefficient;
-        if (minimum == maximum)
-            return minimum + attackPowerContribution;
-
-        decimal roll = random.NextUnit();
-        decimal weaponOrClassDamage =
-            minimum + (maximum - minimum) * roll;
-        decimal varianceMultiplier =
-            PlayerVarianceMinMultiplier
-            + (PlayerVarianceMaxMultiplier - PlayerVarianceMinMultiplier)
-            * roll;
-        return (weaponOrClassDamage + attackPowerContribution)
-            * varianceMultiplier;
+        decimal weaponDamage = RollBaseDamage(profile, random);
+        decimal attackPowerDamage = attackPower * profile.AttackPowerCoefficient;
+        return new PlayerAutoAttackDamageBreakdown(
+            weaponDamage,
+            attackPowerDamage);
     }
 
     public static decimal RollBaseDamage(
@@ -43,14 +39,17 @@ public static class AutoAttackDamageRoller
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(random);
+        if (profile.WeaponDamageMultiplier < 0)
+            throw new InvalidOperationException("Weapon damage multiplier cannot be negative.");
 
         decimal minimum = profile.BaseDamageMin ?? profile.BaseDamage;
         decimal maximum = profile.BaseDamageMax ?? minimum;
         if (minimum < 0 || maximum < minimum)
             throw new InvalidOperationException("Auto attack damage range is invalid.");
-        if (minimum == maximum)
-            return minimum;
 
-        return minimum + (maximum - minimum) * random.NextUnit();
+        decimal rolledDamage = minimum == maximum
+            ? minimum
+            : minimum + (maximum - minimum) * random.NextUnit();
+        return rolledDamage * profile.WeaponDamageMultiplier;
     }
 }
