@@ -8,6 +8,23 @@ const threat = computed(() => combat.threat)
 const maximumThreat = computed(() => Math.max(0, ...(threat.value?.entries.map(entry => entry.threat) ?? [0])))
 const isCombatActive = computed(() => combat.snapshot?.status === 'Active')
 const isTelemetryVisible = computed(() => combat.connectionState !== 'disconnected' || isCombatActive.value)
+const currentThreatTarget = computed(() =>
+  threat.value?.entries.find(entry => entry.actorId === threat.value?.currentTargetActorId) ?? null,
+)
+const playerTarget = computed(() => {
+  const targetActorId = combat.snapshot?.selectedTargetActorId
+  if (!targetActorId) return null
+  return combat.enemies.find(enemy => enemy.actorId === targetActorId) ?? null
+})
+const connectionLabel = computed(() => {
+  switch (combat.connectionState) {
+    case 'connected': return 'В СЕТИ'
+    case 'connecting': return 'ПОДКЛЮЧЕНИЕ'
+    case 'reconnecting': return 'ПЕРЕПОДКЛ.'
+    case 'syncing': return 'СИНХРОНИЗАЦИЯ'
+    default: return 'НЕТ СВЯЗИ'
+  }
+})
 let telemetryTimer: number | null = null
 
 function threatPercent(entry: CombatThreatEntry): number {
@@ -35,12 +52,28 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <aside v-if="isTelemetryVisible" class="combat-telemetry" aria-label="Сетевая задержка и агро">
-    <div class="combat-telemetry__ping" :data-connected="combat.connectionState === 'connected'">
-      <span>PING</span>
+  <aside v-if="isTelemetryVisible" class="combat-telemetry" aria-label="Сетевая задержка, цели и агро">
+    <div class="combat-telemetry__ping" :data-state="combat.connectionState">
+      <span>{{ connectionLabel }}</span>
       <strong>{{ combat.latencyMs ?? '—' }}</strong>
       <small>ms</small>
     </div>
+
+    <section
+      v-if="isCombatActive"
+      class="combat-telemetry__targets"
+      aria-label="Текущие цели"
+      data-combat-target-summary
+    >
+      <div>
+        <span>ВЫ</span>
+        <b>→ {{ playerTarget?.name ?? 'цель не выбрана' }}</b>
+      </div>
+      <div v-if="threat">
+        <span>{{ threat.enemyName }}</span>
+        <b>→ {{ currentThreatTarget?.name ?? 'цель определяется' }}</b>
+      </div>
+    </section>
 
     <section
       v-if="isCombatActive && threat && threat.entries.length > 0"
@@ -82,7 +115,7 @@ onUnmounted(() => {
   right: 6px;
   z-index: 120;
   display: grid;
-  width: min(11.25rem, calc(100vw - 12px));
+  width: min(12rem, calc(100vw - 12px));
   gap: 4px;
   pointer-events: none;
   font-family: var(--ui-font-body, system-ui, sans-serif);
@@ -92,11 +125,11 @@ onUnmounted(() => {
   justify-self: end;
   display: inline-flex;
   align-items: baseline;
-  gap: 3px;
-  padding: 2px 5px;
+  gap: 4px;
+  padding: 3px 6px;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 5px;
-  background: rgb(3 6 11 / 76%);
+  background: rgb(3 6 11 / 80%);
   color: rgb(151 160 176);
   box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
   backdrop-filter: blur(5px);
@@ -115,10 +148,24 @@ onUnmounted(() => {
   line-height: 1;
 }
 
-.combat-telemetry__ping[data-connected='false'] strong {
+.combat-telemetry__ping[data-state='reconnecting'],
+.combat-telemetry__ping[data-state='syncing'] {
+  border-color: rgb(222 160 73 / 28%);
+}
+
+.combat-telemetry__ping[data-state='reconnecting'] span,
+.combat-telemetry__ping[data-state='syncing'] span {
+  color: rgb(244 187 93);
+}
+
+.combat-telemetry__ping[data-state='disconnected'] strong,
+.combat-telemetry__ping[data-state='connecting'] strong,
+.combat-telemetry__ping[data-state='reconnecting'] strong,
+.combat-telemetry__ping[data-state='syncing'] strong {
   color: rgb(121 128 139);
 }
 
+.combat-telemetry__targets,
 .combat-telemetry__threat {
   display: grid;
   gap: 4px;
@@ -128,6 +175,37 @@ onUnmounted(() => {
   background: rgb(3 6 11 / 86%);
   box-shadow: 0 8px 20px rgb(0 0 0 / 28%);
   backdrop-filter: blur(7px);
+}
+
+.combat-telemetry__targets > div {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.combat-telemetry__targets span,
+.combat-telemetry__targets b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-telemetry__targets span {
+  color: rgb(189 197 210);
+  font-size: .45rem;
+  font-weight: 900;
+}
+
+.combat-telemetry__targets b {
+  color: rgb(238 242 248);
+  font-size: .48rem;
+  font-weight: 800;
+}
+
+.combat-telemetry__targets > div:last-child b {
+  color: rgb(239 124 137);
 }
 
 .combat-telemetry__threat header {
