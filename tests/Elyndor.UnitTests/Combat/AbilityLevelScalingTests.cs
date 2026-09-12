@@ -11,14 +11,15 @@ public sealed class AbilityLevelScalingTests
         new(2026, 9, 12, 18, 35, 0, TimeSpan.Zero);
 
     [Theory]
-    [InlineData(1, 100, 195)]
-    [InlineData(30, 100, 354.5)]
-    [InlineData(60, 100, 519.5)]
-    [InlineData(60, 200, 644.5)]
+    [InlineData(1, 100, 195, 195)]
+    [InlineData(30, 100, 354.5, 355)]
+    [InlineData(60, 100, 519.5, 520)]
+    [InlineData(60, 200, 644.5, 645)]
     public void DamageCombinesFixedLevelAndSpellPowerScaling(
         int level,
         decimal spellPower,
-        decimal expectedDamage)
+        decimal expectedRawDamage,
+        decimal expectedAppliedDamage)
     {
         CombatRuntimeState runtime = CreateRuntime(level, spellPower);
         CombatActorState target = CombatActorState.CreateDummy(2_000);
@@ -36,11 +37,12 @@ public sealed class AbilityLevelScalingTests
             new SequenceGameRandom(0.9m));
 
         Assert.True(result.Succeeded);
-        Assert.Equal(2_000m - expectedDamage, target.CurrentHp);
+        Assert.Equal(2_000m - expectedAppliedDamage, target.CurrentHp);
         CombatEvent damage = Assert.Single(
             result.Events,
             item => item.Type == CombatEventType.DamageDealt);
-        Assert.Equal(expectedDamage, damage.Amount);
+        Assert.Equal(expectedRawDamage, damage.RawDamage);
+        Assert.Equal(expectedAppliedDamage, damage.Amount);
     }
 
     [Fact]
