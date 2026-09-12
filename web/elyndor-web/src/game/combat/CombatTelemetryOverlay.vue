@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
+import type { CombatActorSnapshot, CombatEvent } from '@/api/contracts'
 import { useCombatSessionStore, type CombatThreatEntry } from '@/stores/combatSession'
 
 const combat = useCombatSessionStore()
@@ -16,6 +17,13 @@ const playerTarget = computed(() => {
   if (!targetActorId) return null
   return combat.enemies.find(enemy => enemy.actorId === targetActorId) ?? null
 })
+const partyMembers = computed(() =>
+  (combat.snapshot?.players ?? [])
+    .filter(player => player.actorId !== combat.snapshot?.player.actorId)
+    .slice(0, 4),
+)
+const bossCast = computed(() => combat.snapshot?.enemy.activeCast ?? null)
+const bossCastTargetName = computed(() => currentThreatTarget.value?.name ?? 'цель определяется')
 const connectionLabel = computed(() => {
   switch (combat.connectionState) {
     case 'connected': return 'В СЕТИ'
@@ -25,11 +33,32 @@ const connectionLabel = computed(() => {
     default: return 'НЕТ СВЯЗИ'
   }
 })
+const aggroAlert = ref<string | null>(null)
+const compactFeed = computed(() =>
+  combat.events
+    .filter(event => [
+      'DamageDealt',
+      'HealingApplied',
+      'TauntApplied',
+      'ActorDied',
+      'EnemyKilled',
+      'TargetChanged',
+      'CombatEnded',
+    ].includes(event.type))
+    .slice(-3)
+    .reverse(),
+)
 let telemetryTimer: number | null = null
+let aggroAlertTimer: number | null = null
 
 function threatPercent(entry: CombatThreatEntry): number {
   if (maximumThreat.value <= 0) return 0
   return Math.min(100, Math.max(0, (entry.threat / maximumThreat.value) * 100))
+}
+
+function healthPercent(actor: CombatActorSnapshot): number {
+  if (actor.maxHp <= 0) return 0
+  return Math.min(100, Math.max(0, (actor.hp / actor.maxHp) * 100))
 }
 
 function threatLabel(entry: CombatThreatEntry): string {
@@ -38,6 +67,59 @@ function threatLabel(entry: CombatThreatEntry): string {
   if (combat.snapshot?.player.actorId === entry.actorId) return 'ВЫ'
   return ''
 }
+
+function actorName(actorId: string | null): string {
+  if (!actorId) return '—'
+  const snapshot = combat.snapshot
+  if (!snapshot) return '—'
+  if (snapshot.player.actorId === actorId) return 'Вы'
+  const player = snapshot.players?.find(candidate => candidate.actorId === actorId)
+  if (player) return player.name
+  const enemy = combat.enemies.find(candidate => candidate.actorId === actorId)
+  if (enemy) return enemy.name
+  if (snapshot.companion?.actorId === actorId) return snapshot.companion.name
+  return 'Участник'
+}
+
+function definitionName(definitionId: string | null): string {
+  if (!definitionId) return ''
+  const ability = [
+    ...(combat.snapshot?.player.abilities ?? []),
+    ...(combat.snapshot?.enemy.abilities ?? []),
+  ].find(candidate => candidate.id === definitionId)
+  return ability?.displayName ?? definitionId.split('_').join(' ')
+}
+
+function compactEventText(event: CombatEvent): string {
+  const source = actorName(event.sourceActorId ?? event.actorId)
+  const target = actorName(event.targetActorId)
+  const definition = definitionName(event.definitionId)
+  switch (event.type) {
+    case 'DamageDealt': return `${source} → ${target} · ${Math.round(event.amount)}`
+    case 'HealingApplied': return `${source} · +${Math.round(event.amount)} HP`
+    case 'TauntApplied': return `${source} · провокация${definition ? ` · ${definition}` : ''}`
+    case 'ActorDied': return `${actorName(event.actorId)} · пал`
+    case 'EnemyKilled': return `${actorName(event.actorId)} · повержен`
+    case 'TargetChanged': return `${source} → ${target} · новая цель`
+    case 'CombatEnded': return event.definitionId === 'Victory' ? 'Победа' : 'Бой завершён'
+    default: return definition || event.type
+  }
+}
+
+watch(
+  () => threat.value?.currentTargetActorId ?? null,
+  (current, previous) => {
+    if (!current || !previous || current === previous) return
+    const targetName = threat.value?.entries.find(entry => entry.actorId === current)?.name ?? 'новая цель'
+    const forced = threat.value?.forcedTargetActorId === current
+    aggroAlert.value = forced ? `ТАУНТ → ${targetName}` : `АГРО СМЕНИЛОСЬ → ${targetName}`
+    if (aggroAlertTimer !== null) window.clearTimeout(aggroAlertTimer)
+    aggroAlertTimer = window.setTimeout(() => {
+      aggroAlert.value = null
+      aggroAlertTimer = null
+    }, 2_400)
+  },
+)
 
 onMounted(() => {
   void combat.refreshCombatTelemetry()
@@ -48,6 +130,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (telemetryTimer !== null) window.clearInterval(telemetryTimer)
+  if (aggroAlertTimer !== null) window.clearTimeout(aggroAlertTimer)
 })
 </script>
 
@@ -57,6 +140,10 @@ onUnmounted(() => {
       <span>{{ connectionLabel }}</span>
       <strong>{{ combat.latencyMs ?? '—' }}</strong>
       <small>ms</small>
+    </div>
+
+    <div v-if="aggroAlert" class="combat-telemetry__aggro-alert" role="status" aria-live="assertive">
+      {{ aggroAlert }}
     </div>
 
     <section
@@ -73,6 +160,37 @@ onUnmounted(() => {
         <span>{{ threat.enemyName }}</span>
         <b>→ {{ currentThreatTarget?.name ?? 'цель определяется' }}</b>
       </div>
+    </section>
+
+    <section
+      v-if="isCombatActive && partyMembers.length > 0"
+      class="combat-telemetry__party"
+      aria-label="Состояние группы"
+      data-combat-party-frames
+    >
+      <header>
+        <span>ГРУППА</span>
+        <strong>{{ partyMembers.length + 1 }} / 5</strong>
+      </header>
+      <ol>
+        <li v-for="member in partyMembers" :key="member.actorId">
+          <div>
+            <span>{{ member.name }}</span>
+            <b>{{ Math.ceil(member.hp) }} / {{ Math.ceil(member.maxHp) }}</b>
+          </div>
+          <i aria-hidden="true"><span :style="{ width: `${healthPercent(member)}%` }" /></i>
+        </li>
+      </ol>
+    </section>
+
+    <section
+      v-if="isCombatActive && bossCast"
+      class="combat-telemetry__boss-cast"
+      data-combat-boss-cast-target
+    >
+      <span>КАСТ БОССА</span>
+      <strong>{{ definitionName(bossCast.abilityId) }}</strong>
+      <small>→ {{ bossCastTargetName }}</small>
     </section>
 
     <section
@@ -104,6 +222,18 @@ onUnmounted(() => {
           </i>
         </li>
       </ol>
+    </section>
+
+    <section
+      v-if="isCombatActive && compactFeed.length > 0"
+      class="combat-telemetry__feed"
+      aria-label="Последние события боя"
+      data-combat-compact-feed
+    >
+      <header>БОЙ</header>
+      <p v-for="event in compactFeed" :key="event.sequence">
+        {{ compactEventText(event) }}
+      </p>
     </section>
   </aside>
 </template>
@@ -165,8 +295,25 @@ onUnmounted(() => {
   color: rgb(121 128 139);
 }
 
+.combat-telemetry__aggro-alert {
+  justify-self: stretch;
+  padding: 6px 8px;
+  border: 1px solid rgb(244 187 93 / 35%);
+  border-radius: 7px;
+  background: rgb(45 24 7 / 92%);
+  color: rgb(255 214 126);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 30%);
+  font-size: .52rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+  text-align: center;
+}
+
 .combat-telemetry__targets,
-.combat-telemetry__threat {
+.combat-telemetry__party,
+.combat-telemetry__boss-cast,
+.combat-telemetry__threat,
+.combat-telemetry__feed {
   display: grid;
   gap: 4px;
   padding: 6px;
@@ -208,6 +355,7 @@ onUnmounted(() => {
   color: rgb(239 124 137);
 }
 
+.combat-telemetry__party header,
 .combat-telemetry__threat header {
   display: flex;
   align-items: baseline;
@@ -215,13 +363,17 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-.combat-telemetry__threat header span {
+.combat-telemetry__party header span,
+.combat-telemetry__threat header span,
+.combat-telemetry__feed header,
+.combat-telemetry__boss-cast > span {
   color: rgb(221 103 117);
   font-size: .45rem;
   font-weight: 900;
   letter-spacing: .08em;
 }
 
+.combat-telemetry__party header strong,
 .combat-telemetry__threat header strong {
   overflow: hidden;
   color: rgb(189 197 210);
@@ -230,6 +382,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+.combat-telemetry__party ol,
 .combat-telemetry__threat ol {
   display: grid;
   gap: 4px;
@@ -238,9 +391,65 @@ onUnmounted(() => {
   list-style: none;
 }
 
+.combat-telemetry__party li,
 .combat-telemetry__threat li {
   display: grid;
   gap: 2px;
+}
+
+.combat-telemetry__party li > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  color: rgb(176 186 201);
+  font-size: .46rem;
+}
+
+.combat-telemetry__party li > div span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-telemetry__party li > div b {
+  color: rgb(213 221 232);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.combat-telemetry__party li > i,
+.combat-telemetry__threat li > i {
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 7%);
+}
+
+.combat-telemetry__party li > i > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgb(105 185 121 / 78%);
+}
+
+.combat-telemetry__boss-cast {
+  border-color: rgb(221 103 117 / 28%);
+  background: rgb(28 6 10 / 90%);
+}
+
+.combat-telemetry__boss-cast strong {
+  overflow: hidden;
+  color: rgb(246 220 224);
+  font-size: .56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-telemetry__boss-cast small {
+  color: rgb(239 124 137);
+  font-size: .47rem;
+  font-weight: 850;
 }
 
 .combat-telemetry__threat-line {
@@ -281,14 +490,6 @@ onUnmounted(() => {
   font-weight: 800;
 }
 
-.combat-telemetry__threat li > i {
-  display: block;
-  height: 3px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 7%);
-}
-
 .combat-telemetry__threat li > i > span {
   display: block;
   height: 100%;
@@ -302,5 +503,15 @@ onUnmounted(() => {
 
 .combat-telemetry__threat li.is-forced > i > span {
   background: rgb(222 160 73 / 88%);
+}
+
+.combat-telemetry__feed p {
+  overflow: hidden;
+  margin: 0;
+  color: rgb(176 186 201);
+  font-size: .44rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
