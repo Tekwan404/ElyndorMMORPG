@@ -1,3 +1,4 @@
+using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 
