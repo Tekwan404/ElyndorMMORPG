@@ -112,11 +112,67 @@ public sealed class DamageAndHealingPipelineTests
         Assert.Equal(15, result.AbsorbedByShields);
         Assert.Equal(65, result.HpDamage);
         Assert.Equal(135, target.CurrentHp);
-        Assert.Contains(
+
+        CombatEvent blockEvent = Assert.Single(
             result.Events,
-            combatEvent =>
-                combatEvent.Type == CombatEventType.DamageBlocked
-                && combatEvent.Amount == 20);
+            combatEvent => combatEvent.Type == CombatEventType.DamageBlocked);
+        Assert.Equal(20, blockEvent.Amount);
+        Assert.Equal(100, blockEvent.RawDamage);
+        Assert.Equal(100, blockEvent.DamageAfterMitigation);
+        Assert.Equal(100, blockEvent.DamageBeforeBlock);
+        Assert.Equal(80, blockEvent.AmountBeforeShields);
+
+        CombatEvent damageEvent = Assert.Single(
+            result.Events,
+            combatEvent => combatEvent.Type == CombatEventType.DamageDealt);
+        Assert.Equal(65, damageEvent.Amount);
+        Assert.Equal(100, damageEvent.RawDamage);
+        Assert.Equal(100, damageEvent.DamageAfterMitigation);
+        Assert.Equal(100, damageEvent.DamageBeforeBlock);
+        Assert.Equal(80, damageEvent.AmountBeforeShields);
+    }
+
+    [Fact]
+    public void DamageEventBreakdownPreservesArmorThenBlockOrder()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Accuracy = 100 });
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                Armor = 100,
+                BlockChance = 100,
+                BlockValueMin = 20,
+                BlockValueMax = 20
+            });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                100,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom(0m),
+            DateTimeOffset.UnixEpoch);
+
+        CombatEvent blockEvent = Assert.Single(
+            result.Events,
+            combatEvent => combatEvent.Type == CombatEventType.DamageBlocked);
+        CombatEvent damageEvent = Assert.Single(
+            result.Events,
+            combatEvent => combatEvent.Type == CombatEventType.DamageDealt);
+
+        Assert.Equal(100, blockEvent.RawDamage);
+        Assert.Equal(50, blockEvent.DamageAfterMitigation);
+        Assert.Equal(50, blockEvent.DamageBeforeBlock);
+        Assert.Equal(20, blockEvent.Amount);
+        Assert.Equal(30, blockEvent.AmountBeforeShields);
+        Assert.Equal(30, damageEvent.Amount);
     }
 
     [Fact]
