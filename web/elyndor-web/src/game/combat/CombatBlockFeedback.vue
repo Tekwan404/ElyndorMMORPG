@@ -7,18 +7,26 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 interface BlockFeedback {
   sequence: number
   amount: number
+  fullBlock: boolean
   playerSide: boolean
+}
+
+type AudioContextConstructor = new () => AudioContext
+
+type WindowWithWebkitAudio = Window & typeof globalThis & {
+  webkitAudioContext?: AudioContextConstructor
 }
 
 const combat = useCombatSessionStore()
 const feedback = ref<BlockFeedback | null>(null)
 let hideTimer: number | null = null
 let lastSequence = 0
+let audioContext: AudioContext | null = null
 
-const latestShieldAbsorb = computed<CombatEvent | null>(() => {
+const latestBlock = computed<CombatEvent | null>(() => {
   for (let index = combat.events.length - 1; index >= 0; index--) {
     const event = combat.events[index]
-    if (event.type === 'ShieldAbsorbed') return event
+    if (event.type === 'DamageBlocked') return event
   }
   return null
 })
@@ -36,18 +44,48 @@ function clearHideTimer(): void {
   hideTimer = null
 }
 
+function playMetalBlockSound(): void {
+  try {
+    const browserWindow = window as WindowWithWebkitAudio
+    const Context = window.AudioContext ?? browserWindow.webkitAudioContext
+    if (!Context) return
+
+    audioContext ??= new Context()
+    const context = audioContext
+    if (context.state === 'suspended') void context.resume()
+
+    const now = context.currentTime
+    const gain = context.createGain()
+    const oscillator = context.createOscillator()
+    oscillator.type = 'square'
+    oscillator.frequency.setValueAtTime(420, now)
+    oscillator.frequency.exponentialRampToValueAtTime(135, now + 0.16)
+    gain.gain.setValueAtTime(0.0001, now)
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.006)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2)
+    oscillator.connect(gain)
+    gain.connect(context.destination)
+    oscillator.start(now)
+    oscillator.stop(now + 0.21)
+  } catch {
+    // Combat feedback must remain visual if WebAudio is unavailable or blocked by the WebView.
+  }
+}
+
 watch(
-  () => latestShieldAbsorb.value?.sequence ?? 0,
+  () => latestBlock.value?.sequence ?? 0,
   () => {
-    const event = latestShieldAbsorb.value
+    const event = latestBlock.value
     if (!event || event.sequence <= lastSequence || event.amount <= 0) return
 
     lastSequence = event.sequence
     feedback.value = {
       sequence: event.sequence,
       amount: event.amount,
+      fullBlock: event.amountBeforeShields <= 0,
       playerSide: isPlayerSideTarget(event.targetActorId ?? event.actorId),
     }
+    playMetalBlockSound()
 
     clearHideTimer()
     hideTimer = window.setTimeout(() => {
@@ -67,7 +105,13 @@ watch(
   },
 )
 
-onUnmounted(clearHideTimer)
+onUnmounted(() => {
+  clearHideTimer()
+  if (audioContext) {
+    void audioContext.close()
+    audioContext = null
+  }
+})
 </script>
 
 <template>
@@ -76,13 +120,18 @@ onUnmounted(clearHideTimer)
       v-if="feedback"
       :key="feedback.sequence"
       class="combat-block-feedback"
-      :class="{ 'combat-block-feedback--enemy': !feedback.playerSide }"
+      :class="{
+        'combat-block-feedback--enemy': !feedback.playerSide,
+        'combat-block-feedback--full': feedback.fullBlock,
+      }"
       role="status"
       aria-live="polite"
       data-combat-block-feedback
     >
+      <span class="combat-block-feedback__flash" aria-hidden="true" />
       <span class="combat-block-feedback__shield" aria-hidden="true">🛡</span>
-      <strong>Блок −{{ Math.round(feedback.amount) }}</strong>
+      <strong v-if="feedback.fullBlock">ПОЛНЫЙ БЛОК</strong>
+      <strong v-else>БЛОК −{{ Math.round(feedback.amount) }}</strong>
     </div>
   </Transition>
 </template>
@@ -114,16 +163,41 @@ onUnmounted(clearHideTimer)
   transform: translate(50%, -50%);
 }
 
+.combat-block-feedback--full {
+  border-color: rgb(225 239 255 / 86%);
+  background: linear-gradient(135deg, rgb(28 66 95 / 97%), rgb(8 22 38 / 97%));
+  color: rgb(235 247 255);
+  box-shadow: 0 8px 26px rgb(0 0 0 / 42%), 0 0 24px rgb(116 201 255 / 22%);
+}
+
+.combat-block-feedback__flash {
+  position: absolute;
+  inset: 50% auto auto 16px;
+  width: 22px;
+  aspect-ratio: 1;
+  border: 2px solid rgb(172 224 255 / 78%);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgb(100 193 255 / 58%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.35);
+  animation: combat-shield-flash .46s ease-out both;
+}
+
 .combat-block-feedback__shield {
+  position: relative;
+  z-index: 1;
   filter: drop-shadow(0 0 5px rgb(91 177 255 / 48%));
   font-size: 1rem;
   line-height: 1;
+  animation: combat-shield-hit .34s ease-out both;
 }
 
 .combat-block-feedback strong {
+  position: relative;
+  z-index: 1;
   font-size: .72rem;
   font-weight: 950;
-  letter-spacing: .025em;
+  letter-spacing: .035em;
   white-space: nowrap;
 }
 
@@ -145,6 +219,25 @@ onUnmounted(clearHideTimer)
 .combat-block-pop-enter-from.combat-block-feedback--enemy,
 .combat-block-pop-leave-to.combat-block-feedback--enemy {
   transform: translate(50%, -30%) scale(.9);
+}
+
+@keyframes combat-shield-flash {
+  0% { opacity: .92; transform: translate(-50%, -50%) scale(.35); }
+  65% { opacity: .46; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.35); }
+}
+
+@keyframes combat-shield-hit {
+  0% { transform: scale(.7) rotate(-8deg); }
+  45% { transform: scale(1.18) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-block-feedback__flash,
+  .combat-block-feedback__shield {
+    animation: none;
+  }
 }
 
 @media (max-width: 430px) {
