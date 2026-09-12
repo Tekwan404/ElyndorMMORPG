@@ -30,19 +30,19 @@ vi.mock('@microsoft/signalr', () => ({
     build() {
       const connection = {
         state: 'Disconnected',
-        on: vi.fn((event: string, callback: (payload: unknown) => void) => {
+        on: vi.fn<(event: string, callback: (payload: unknown) => void) => void>((event, callback) => {
           realtimeMock.handlers.set(event, callback)
         }),
-        onreconnecting: vi.fn((callback: (error?: Error) => void) => {
+        onreconnecting: vi.fn<(callback: (error?: Error) => void) => void>((callback) => {
           realtimeMock.reconnecting = callback
         }),
-        onreconnected: vi.fn((callback: () => void) => {
+        onreconnected: vi.fn<(callback: () => void) => void>((callback) => {
           realtimeMock.reconnected = callback
         }),
-        onclose: vi.fn((callback: (error?: Error) => void) => {
+        onclose: vi.fn<(callback: (error?: Error) => void) => void>((callback) => {
           realtimeMock.closed = callback
         }),
-        start: vi.fn(async () => {
+        start: vi.fn<() => Promise<void>>(async () => {
           connection.state = 'Connected'
         }),
         invoke: realtimeMock.invoke,
