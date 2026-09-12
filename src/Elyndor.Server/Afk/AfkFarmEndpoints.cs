@@ -14,6 +14,7 @@ public static class AfkFarmEndpoints
     {
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1/afk")
             .RequireAuthorization().WithTags("AFK");
+        group.MapPost("/preview", PreviewAsync);
         group.MapPost("/start", StartAsync);
         group.MapGet("", GetAsync);
         group.MapPost("/stop", StopAsync);
@@ -31,6 +32,31 @@ public static class AfkFarmEndpoints
         return result.Succeeded
             ? Results.Ok(ToState(result.Session!, []))
             : Problem(result.ErrorCode!, StatusCodes.Status409Conflict, context);
+    }
+
+    private static async Task<IResult> PreviewAsync(PreviewAfkFarmRequest request, ClaimsPrincipal user,
+        HttpContext context, AfkFarmService service, CancellationToken cancellationToken)
+    {
+        if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
+        if (!Enum.TryParse(request.Mode, true, out AfkFarmMode mode) || request.DurationMinutes <= 0)
+            return Problem("afk_invalid_request", StatusCodes.Status422UnprocessableEntity, context);
+        AfkFarmPreviewResult result = await service.PreviewAsync(accountId, request.LocationId, mode,
+            TimeSpan.FromMinutes(request.DurationMinutes), cancellationToken);
+        if (!result.Succeeded)
+            return Problem(result.ErrorCode!, StatusCodes.Status409Conflict, context);
+
+        AfkFarmSimulationResult simulation = result.Simulation!;
+        return Results.Ok(new AfkFarmPreviewResponse(
+            request.LocationId,
+            mode.ToString(),
+            request.DurationMinutes,
+            simulation.EncounteredEnemies,
+            simulation.Kills,
+            simulation.FailedKills,
+            result.EstimatedXp,
+            result.EstimatedGold,
+            simulation.LootCandidates.Count,
+            simulation.EstimatedIncomingDamage));
     }
 
     private static async Task<IResult> GetAsync(ClaimsPrincipal user, HttpContext context,

@@ -40,6 +40,23 @@ public sealed record AfkFarmMutationResult(
         new(false, errorCode, session);
 }
 
+public sealed record AfkFarmPreviewResult(
+    bool Succeeded,
+    string? ErrorCode,
+    AfkFarmSimulationResult? Simulation,
+    int EstimatedXp = 0,
+    int EstimatedGold = 0)
+{
+    public static AfkFarmPreviewResult Success(
+        AfkFarmSimulationResult simulation,
+        int estimatedXp,
+        int estimatedGold) =>
+        new(true, null, simulation, estimatedXp, estimatedGold);
+
+    public static AfkFarmPreviewResult Failure(string errorCode) =>
+        new(false, errorCode, null);
+}
+
 public sealed class AfkFarmService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
@@ -60,6 +77,8 @@ public sealed class AfkFarmService(
             return Task.FromResult(AfkFarmMutationResult.Failure(AfkFarmErrorCodes.CharacterNotFound));
         if (string.IsNullOrWhiteSpace(locationId))
             return Task.FromResult(AfkFarmMutationResult.Failure(AfkFarmErrorCodes.InvalidLocation));
+        if (mode != AfkFarmMode.Safe)
+            return Task.FromResult(AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NotAllowed));
         if (duration <= TimeSpan.Zero)
             return Task.FromResult(AfkFarmMutationResult.Failure(AfkFarmErrorCodes.InvalidDuration));
 
@@ -85,6 +104,30 @@ public sealed class AfkFarmService(
             cancellationToken);
     }
 
+    public Task<AfkFarmPreviewResult> PreviewAsync(
+        Guid accountId,
+        string locationId,
+        AfkFarmMode mode,
+        TimeSpan duration,
+        CancellationToken cancellationToken)
+    {
+        if (accountId == Guid.Empty)
+            return Task.FromResult(AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.CharacterNotFound));
+        if (string.IsNullOrWhiteSpace(locationId))
+            return Task.FromResult(AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.InvalidLocation));
+        if (mode != AfkFarmMode.Safe)
+            return Task.FromResult(AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.NotAllowed));
+        if (duration <= TimeSpan.Zero)
+            return Task.FromResult(AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.InvalidDuration));
+
+        return operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            () => dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+                () => PreviewCoreAsync(accountId, locationId, mode, duration, cancellationToken)),
+            () => AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.InCombat),
+            cancellationToken);
+    }
+
     private async Task<AfkFarmMutationResult> StartCoreAsync(
         Guid accountId,
         string locationId,
@@ -105,137 +148,25 @@ public sealed class AfkFarmService(
 
         await AcquireCharacterActivityLockAsync(character.Id, cancellationToken);
 
-        if (await dbContext.ActiveCombatSessions.AsNoTracking()
-            .AnyAsync(state => state.CharacterId == character.Id, cancellationToken))
+        (AfkFarmStartPreparation? preparation, string? errorCode) = await PrepareStartAsync(
+            character, locationId, cancellationToken);
+        if (preparation is null)
         {
             await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.InCombat);
+            return AfkFarmMutationResult.Failure(errorCode!);
         }
-
-        CharacterVitals? vitals = await dbContext.CharacterVitals
-            .AsNoTracking()
-            .SingleOrDefaultAsync(state => state.CharacterId == character.Id, cancellationToken);
-        if (vitals is null || vitals.CurrentHp <= 0)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.CharacterDead);
-        }
-
-        if (await dbContext.CharacterTravelStates.AsNoTracking()
-            .AnyAsync(state => state.CharacterId == character.Id, cancellationToken))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.Traveling);
-        }
-
-        bool inDungeon = await dbContext.DungeonRunMembers.AsNoTracking()
-            .AnyAsync(
-                member => member.CharacterId == character.Id
-                    && member.State == DungeonRunMemberState.Active
-                    && dbContext.DungeonRuns.Any(run =>
-                        run.Id == member.RunId
-                        && run.State == DungeonRunState.Active),
-                cancellationToken);
-        if (inDungeon)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.InDungeon);
-        }
-
-        if (await dbContext.AfkFarmSessions.AsNoTracking()
-            .AnyAsync(
-                session => session.CharacterId == character.Id
-                    && session.Status == AfkFarmStatus.Active,
-                cancellationToken))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.AlreadyActive);
-        }
-
-        CharacterLocation? currentLocation = await dbContext.CharacterLocations
-            .AsNoTracking()
-            .SingleOrDefaultAsync(state => state.CharacterId == character.Id, cancellationToken);
-        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
-        if (currentLocation is null
-            || !string.Equals(currentLocation.LocationId, locationId, StringComparison.Ordinal)
-            || !contentSnapshot.Indexes.LocationsById.TryGetValue(locationId, out LocationDefinition? location))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.InvalidLocation);
-        }
-
-        if (character.Level < location.MinimumLevel || character.Level > location.MaximumLevel)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.LockedLocation);
-        }
-
-        if (!string.IsNullOrWhiteSpace(location.RequiredContractId)
-            && !await dbContext.CharacterContractCompletions.AsNoTracking()
-                .AnyAsync(
-                    completion => completion.CharacterId == character.Id
-                        && completion.ContractId == location.RequiredContractId,
-                    cancellationToken))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.LockedLocation);
-        }
-
-        if (!location.AllowAfk
-            || location.DangerLevel is not ("SAFE" or "ADVENTURE"))
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NotAllowed);
-        }
-
-        bool hasEligibleEncounter = location.Encounters?.Any(encounter =>
-            encounter.Weight > 0
-            && contentSnapshot.Indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster)
-            && monster.Rank == MonsterRank.Normal) == true;
-        if (!hasEligibleEncounter)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NoEligibleEncounters);
-        }
-
-        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
-            character.Id,
-            character.ClassId,
-            character.Level,
-            contentSnapshot,
-            cancellationToken);
-        if (derived.ClassProfile.CombatAutoAttack is null)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NoEligibleEncounters);
-        }
-        AfkCharacterSnapshot characterSnapshot = new(
-            character.ClassId,
-            character.Level,
-            derived.Stats,
-            vitals.CurrentHp,
-            vitals.CurrentResource,
-            JsonSerializer.Serialize(derived.ClassProfile, SnapshotJsonOptions),
-            JsonSerializer.Serialize(derived.EffectiveResourceProfile, SnapshotJsonOptions),
-            JsonSerializer.Serialize(derived.Inventory.Equipped, SnapshotJsonOptions),
-            derived.ActiveTalentRanks.ToDictionary(
-                pair => pair.Key,
-                pair => pair.Value,
-                StringComparer.Ordinal),
-            JsonSerializer.Serialize(derived.TalentModifiers, SnapshotJsonOptions),
-            derived.KnownAbilityIds.ToArray());
 
         DateTimeOffset now = timeProvider.GetUtcNow();
         AfkFarmSession session = new(
             Guid.NewGuid(),
             character.Id,
-            location.Id,
+            preparation.Location.Id,
             mode,
             now,
             now.Add(duration),
-            contentSnapshot.ContentVersion,
-            contentSnapshot.BalanceVersion,
-            JsonSerializer.Serialize(characterSnapshot, SnapshotJsonOptions),
+            preparation.Content.ContentVersion,
+            preparation.Content.BalanceVersion,
+            JsonSerializer.Serialize(preparation.CharacterSnapshot, SnapshotJsonOptions),
             now);
 
         dbContext.AfkFarmSessions.Add(session);
@@ -281,6 +212,147 @@ public sealed class AfkFarmService(
         return AfkFarmMutationResult.Success(session);
     }
 
+    private async Task<AfkFarmPreviewResult> PreviewCoreAsync(
+        Guid accountId,
+        string locationId,
+        AfkFarmMode mode,
+        TimeSpan duration,
+        CancellationToken cancellationToken)
+    {
+        dbContext.ChangeTracker.Clear();
+        await using IDbContextTransaction transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        Character? character = await LockCharacterAsync(accountId, cancellationToken);
+        if (character is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return AfkFarmPreviewResult.Failure(AfkFarmErrorCodes.CharacterNotFound);
+        }
+
+        await AcquireCharacterActivityLockAsync(character.Id, cancellationToken);
+        (AfkFarmStartPreparation? preparation, string? errorCode) = await PrepareStartAsync(
+            character, locationId, cancellationToken);
+        if (preparation is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return AfkFarmPreviewResult.Failure(errorCode!);
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        AfkFarmSimulationResult simulation = AfkFarmSimulator.Simulate(new(
+            character.Id,
+            0,
+            preparation.CharacterSnapshot,
+            preparation.Location,
+            preparation.Content.Indexes.MonstersById,
+            now,
+            now.Add(duration),
+            preparation.Content.ContentVersion));
+        AfkFarmRewardProfile profile = preparation.Content.Package.AfkFarm
+            ?? throw new InvalidOperationException("AFK reward profile is required in content.");
+        ValidateRewardProfile(profile);
+        await transaction.CommitAsync(cancellationToken);
+        return AfkFarmPreviewResult.Success(
+            simulation,
+            Scale(simulation.XpCandidate, profile.XpMultiplier),
+            Scale(simulation.GoldCandidate, profile.GoldMultiplier));
+    }
+
+    private async Task<(AfkFarmStartPreparation? Preparation, string? ErrorCode)> PrepareStartAsync(
+        Character character,
+        string locationId,
+        CancellationToken cancellationToken)
+    {
+        if (await dbContext.ActiveCombatSessions.AsNoTracking()
+            .AnyAsync(state => state.CharacterId == character.Id, cancellationToken))
+            return (null, AfkFarmErrorCodes.InCombat);
+
+        CharacterVitals? vitals = await dbContext.CharacterVitals
+            .AsNoTracking()
+            .SingleOrDefaultAsync(state => state.CharacterId == character.Id, cancellationToken);
+        if (vitals is null || vitals.CurrentHp <= 0)
+            return (null, AfkFarmErrorCodes.CharacterDead);
+
+        if (await dbContext.CharacterTravelStates.AsNoTracking()
+            .AnyAsync(state => state.CharacterId == character.Id, cancellationToken))
+            return (null, AfkFarmErrorCodes.Traveling);
+
+        bool inDungeon = await dbContext.DungeonRunMembers.AsNoTracking()
+            .AnyAsync(
+                member => member.CharacterId == character.Id
+                    && member.State == DungeonRunMemberState.Active
+                    && dbContext.DungeonRuns.Any(run =>
+                        run.Id == member.RunId
+                        && run.State == DungeonRunState.Active),
+                cancellationToken);
+        if (inDungeon)
+            return (null, AfkFarmErrorCodes.InDungeon);
+
+        if (await dbContext.AfkFarmSessions.AsNoTracking()
+            .AnyAsync(
+                session => session.CharacterId == character.Id
+                    && session.Status == AfkFarmStatus.Active,
+                cancellationToken))
+            return (null, AfkFarmErrorCodes.AlreadyActive);
+
+        CharacterLocation? currentLocation = await dbContext.CharacterLocations
+            .AsNoTracking()
+            .SingleOrDefaultAsync(state => state.CharacterId == character.Id, cancellationToken);
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        if (currentLocation is null
+            || !string.Equals(currentLocation.LocationId, locationId, StringComparison.Ordinal)
+            || !content.Indexes.LocationsById.TryGetValue(locationId, out LocationDefinition? location))
+            return (null, AfkFarmErrorCodes.InvalidLocation);
+
+        if (character.Level < location.MinimumLevel || character.Level > location.MaximumLevel)
+            return (null, AfkFarmErrorCodes.LockedLocation);
+
+        if (!string.IsNullOrWhiteSpace(location.RequiredContractId)
+            && !await dbContext.CharacterContractCompletions.AsNoTracking()
+                .AnyAsync(
+                    completion => completion.CharacterId == character.Id
+                        && completion.ContractId == location.RequiredContractId,
+                    cancellationToken))
+            return (null, AfkFarmErrorCodes.LockedLocation);
+
+        if (!location.AllowAfk || location.DangerLevel is not ("SAFE" or "ADVENTURE"))
+            return (null, AfkFarmErrorCodes.NotAllowed);
+
+        bool hasEligibleEncounter = location.Encounters?.Any(encounter =>
+            encounter.Weight > 0
+            && content.Indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster)
+            && monster.Rank == MonsterRank.Normal) == true;
+        if (!hasEligibleEncounter)
+            return (null, AfkFarmErrorCodes.NoEligibleEncounters);
+
+        CharacterDerivedState derived = await derivedStateService.ResolveAsync(
+            character.Id,
+            character.ClassId,
+            character.Level,
+            content,
+            cancellationToken);
+        if (derived.ClassProfile.CombatAutoAttack is null)
+            return (null, AfkFarmErrorCodes.NoEligibleEncounters);
+
+        AfkCharacterSnapshot snapshot = new(
+            character.ClassId,
+            character.Level,
+            derived.Stats,
+            vitals.CurrentHp,
+            vitals.CurrentResource,
+            JsonSerializer.Serialize(derived.ClassProfile, SnapshotJsonOptions),
+            JsonSerializer.Serialize(derived.EffectiveResourceProfile, SnapshotJsonOptions),
+            JsonSerializer.Serialize(derived.Inventory.Equipped, SnapshotJsonOptions),
+            derived.ActiveTalentRanks.ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value,
+                StringComparer.Ordinal),
+            JsonSerializer.Serialize(derived.TalentModifiers, SnapshotJsonOptions),
+            derived.KnownAbilityIds.ToArray());
+        return (new AfkFarmStartPreparation(snapshot, content, location), null);
+    }
+
     private Task<Character?> LockCharacterAsync(Guid accountId, CancellationToken cancellationToken) =>
         dbContext.Characters
             .FromSqlInterpolated(
@@ -297,4 +369,21 @@ public sealed class AfkFarmService(
             $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
             cancellationToken);
     }
+
+    private static int Scale(int value, decimal multiplier) =>
+        checked((int)Math.Floor(value * multiplier));
+
+    private static void ValidateRewardProfile(AfkFarmRewardProfile profile)
+    {
+        if (profile.ProcessingIntervalSeconds is < 1 or > 3600
+            || profile.XpMultiplier is < 0 or > 1
+            || profile.GoldMultiplier is < 0 or > 1
+            || profile.LootMultiplier is < 0 or > 1)
+            throw new InvalidOperationException("AFK reward profile is invalid.");
+    }
+
+    private sealed record AfkFarmStartPreparation(
+        AfkCharacterSnapshot CharacterSnapshot,
+        GameContentSnapshot Content,
+        LocationDefinition Location);
 }

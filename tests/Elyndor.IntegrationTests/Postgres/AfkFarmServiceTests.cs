@@ -326,6 +326,29 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.Single(await dbContext.AfkFarmIntervalGrants.ToArrayAsync());
     }
 
+    [Fact]
+    public async Task PreviewUsesServerSimulationWithoutCreatingAnAfkSessionOrRewards()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        AfkFarmService service = CreateService(dbContext, CreateContent());
+
+        AfkFarmPreviewResult preview = await service.PreviewAsync(
+            accountId,
+            ForestId,
+            AfkFarmMode.Safe,
+            TimeSpan.FromMinutes(15),
+            CancellationToken.None);
+
+        Assert.True(preview.Succeeded, preview.ErrorCode);
+        Assert.NotNull(preview.Simulation);
+        Assert.True(preview.Simulation.Kills > 0);
+        Assert.Empty(await dbContext.AfkFarmSessions.ToArrayAsync());
+        Assert.Empty(await dbContext.AfkFarmIntervalGrants.ToArrayAsync());
+        Assert.Equal(0, await dbContext.Characters.Select(character => character.Experience).SingleAsync());
+        Assert.Equal(0, await dbContext.Characters.Select(character => character.Gold).SingleAsync());
+    }
+
     private static AfkFarmService CreateService(GameDbContext dbContext, GameContentPackage content)
     {
         StaticContentSnapshotProvider provider = new(content);
