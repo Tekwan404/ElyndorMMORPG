@@ -1,28 +1,59 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 import { useGameSessionStore } from '@/stores/gameSession'
 
+const AUTO_HIDE_MS = 8_000
 const session = useGameSessionStore()
-const dismissedDiagnosticKey = ref<string | null>(null)
+const visible = ref(false)
 const diagnosticKey = computed(() => {
   const code = session.errorCode?.trim() ?? ''
   const correlationId = session.errorCorrelationId?.trim() ?? ''
   if (!code && !correlationId) return null
   return `${code}|${correlationId}`
 })
-const visible = computed(() =>
-  diagnosticKey.value !== null
-  && diagnosticKey.value !== dismissedDiagnosticKey.value,
+let hideTimer: number | null = null
+
+function clearHideTimer(): void {
+  if (hideTimer === null) return
+  window.clearTimeout(hideTimer)
+  hideTimer = null
+}
+
+function showForTimeout(): void {
+  clearHideTimer()
+  if (!diagnosticKey.value) {
+    visible.value = false
+    return
+  }
+
+  visible.value = true
+  hideTimer = window.setTimeout(() => {
+    visible.value = false
+    hideTimer = null
+  }, AUTO_HIDE_MS)
+}
+
+watch(
+  diagnosticKey,
+  (next, previous) => {
+    if (!next) {
+      clearHideTimer()
+      visible.value = false
+      return
+    }
+
+    if (next !== previous) showForTimeout()
+  },
+  { immediate: true },
 )
 
-watch(diagnosticKey, (next, previous) => {
-  if (next && next !== previous) dismissedDiagnosticKey.value = null
-})
-
 function dismiss(): void {
-  dismissedDiagnosticKey.value = diagnosticKey.value
+  clearHideTimer()
+  visible.value = false
 }
+
+onUnmounted(clearHideTimer)
 </script>
 
 <template>
