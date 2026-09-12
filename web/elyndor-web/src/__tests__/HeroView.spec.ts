@@ -33,6 +33,27 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-archer-talent-tree]').exists()).toBe(true)
   })
 
+  it('shows the companion tab only for Archer', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([], 'ARCHER')
+
+    const wrapper = mount(HeroView, {
+      global: {
+        stubs: {
+          CharacterOverviewView: true,
+          CharacterStatsView: true,
+          InventoryView: true,
+          TalentTreeView: true,
+          CompanionView: { template: '<div data-companion-view />' },
+        },
+      },
+    })
+
+    await wrapper.get('[data-hero-tab="companion"]').trigger('click')
+
+    expect(wrapper.find('[data-companion-view]').exists()).toBe(true)
+  })
+
   it('opens empty equipment slots in the Hero inventory tab filtered for that slot', async () => {
     const session = useGameSessionStore()
     const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')

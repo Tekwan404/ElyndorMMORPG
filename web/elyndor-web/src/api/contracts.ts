@@ -338,6 +338,19 @@ export interface CharacterSnapshot {
   inventory: InventorySnapshot
 }
 
+export interface CompanionProfile {
+  id: string
+  name: string
+  archetype: 'PREDATOR' | 'GUARDIAN' | 'TRAPPER' | string
+  artId: string | null
+}
+
+export interface CharacterCompanionSnapshot {
+  selectedPhysicalProfileId: string
+  effectiveProfileId: string
+  availableProfiles: CompanionProfile[]
+}
+
 export interface ItemStats {
   strength: number
   agility: number
