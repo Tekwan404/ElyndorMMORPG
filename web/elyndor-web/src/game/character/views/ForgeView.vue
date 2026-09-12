@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
+import { apiClient } from '@/api/apiClient'
 import type { InventoryItem, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
@@ -12,13 +13,17 @@ const session = useGameSessionStore()
 type ForgeMode = 'reforge' | 'upgrade' | 'salvage'
 type ForgeEquipmentFilter = 'all' | 'equipped' | 'backpack'
 type ForgeSortMode = 'recommended' | 'power-desc' | 'rarity-desc' | 'level-desc' | 'name-asc'
-interface StarUpgradeCost { targetStars: number; gold: number; stones: number; catalystQuantity: number }
 
-const STAR_UPGRADE_COSTS: Record<number, StarUpgradeCost> = {
-  2: { targetStars: 2, gold: 50, stones: 2, catalystQuantity: 0 },
-  3: { targetStars: 3, gold: 100, stones: 4, catalystQuantity: 0 },
-  4: { targetStars: 4, gold: 180, stones: 7, catalystQuantity: 0 },
-  5: { targetStars: 5, gold: 300, stones: 12, catalystQuantity: 1 },
+interface StarUpgradePreview {
+  itemInstanceId: string
+  targetStars: number
+  cost: {
+    gold: number
+    reforgeStoneItemId: string
+    reforgeStoneQuantity: number
+    catalystItemId: string | null
+    catalystQuantity: number
+  }
 }
 
 const selectedItemId = ref<string | null>(null)
@@ -35,6 +40,8 @@ const batchSalvageMode = ref(false)
 const batchSalvageIds = ref<string[]>([])
 const batchSalvagePreviews = ref<ItemSalvagePreview[]>([])
 const batchSalvageLoading = ref(false)
+const starUpgradePreview = ref<StarUpgradePreview | null>(null)
+const loadingStarUpgradePreview = ref(false)
 
 const rarityOrder: Record<InventoryItem['rarity'], number> = {
   Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4, Unique: 5,
@@ -67,30 +74,29 @@ const pendingAffixes = computed(() => pending.value
   ? reforgeResultAffixes(pending.value.current, pending.value.proposed, pending.value.slotKey)
   : { current: null, proposed: null })
 const reforgeStones = computed(() => availableForgeMaterialQuantity(inventoryItems.value, 'REFORGE_STONE'))
-const dungeonCatalysts = computed(() => availableForgeMaterialQuantity(inventoryItems.value, 'DUNGEON_CATALYST'))
 const selectedPowerPercent = computed(() => {
   const generated = selectedItem.value?.generatedItem
   if (!generated || generated.maxItemPower <= 0) return 0
   return Math.max(0, Math.min(100, generated.itemPower / generated.maxItemPower * 100))
 })
-const starUpgradeCost = computed<StarUpgradeCost | null>(() => {
-  const stars = selectedItem.value?.generatedItem?.stars
-  if (stars === undefined || stars >= 5) return null
-  return STAR_UPGRADE_COSTS[stars + 1] ?? null
+const starUpgradeCost = computed(() => starUpgradePreview.value?.cost ?? null)
+const starUpgradeCatalystsAvailable = computed(() => {
+  const itemId = starUpgradeCost.value?.catalystItemId
+  return itemId ? availableForgeMaterialQuantity(inventoryItems.value, itemId) : 0
 })
 const canAffordStarUpgrade = computed(() => {
   const cost = starUpgradeCost.value
   if (!cost) return false
   return gold.value >= cost.gold
-    && reforgeStones.value >= cost.stones
-    && dungeonCatalysts.value >= cost.catalystQuantity
+    && reforgeStones.value >= cost.reforgeStoneQuantity
+    && starUpgradeCatalystsAvailable.value >= cost.catalystQuantity
 })
 const starUpgradeShortage = computed(() => {
   const cost = starUpgradeCost.value
   if (!cost) return null
   if (gold.value < cost.gold) return `Не хватает золота: нужно ${cost.gold}, у вас ${gold.value}.`
-  if (reforgeStones.value < cost.stones) return `Не хватает Камней перековки: нужно ${cost.stones}, доступно ${reforgeStones.value}.`
-  if (dungeonCatalysts.value < cost.catalystQuantity) return `Не хватает Ядра подземелья: нужно ${cost.catalystQuantity}, доступно ${dungeonCatalysts.value}.`
+  if (reforgeStones.value < cost.reforgeStoneQuantity) return `Не хватает Камней перековки: нужно ${cost.reforgeStoneQuantity}, доступно ${reforgeStones.value}.`
+  if (starUpgradeCatalystsAvailable.value < cost.catalystQuantity) return `Не хватает ${cost.catalystItemId ? materialLabel(cost.catalystItemId) : 'катализатора'}: нужно ${cost.catalystQuantity}, доступно ${starUpgradeCatalystsAvailable.value}.`
   return null
 })
 const canAffordReforge = computed(() => {
@@ -144,7 +150,7 @@ function canSelectForBatchSalvage(item: InventoryItem): boolean {
 }
 function materialLabel(definitionId: string): string {
   return inventoryItems.value.find(item => item.definitionId === definitionId)?.name
-    ?? ({ FORGE_SCRAP: 'Кузнечный лом', REFORGE_STONE: 'Камень перековки' }[definitionId] ?? definitionId)
+    ?? ({ FORGE_SCRAP: 'Кузнечный лом', REFORGE_STONE: 'Камень перековки', DUNGEON_CATALYST: 'Ядро подземелья' }[definitionId] ?? definitionId)
 }
 
 function toggleBatchSalvage(item: InventoryItem): void {
@@ -186,6 +192,7 @@ function selectItem(item: InventoryItem): void {
   activeMode.value = isEquipped(item) ? 'upgrade' : 'reforge'
   preview.value = null
   pending.value = null
+  starUpgradePreview.value = null
   actionError.value = null
   salvagePreview.value = null
 }
@@ -196,6 +203,7 @@ function clearSelection(): void {
   activeMode.value = 'reforge'
   preview.value = null
   pending.value = null
+  starUpgradePreview.value = null
   salvagePreview.value = null
   actionError.value = null
 }
@@ -235,7 +243,25 @@ async function refreshSelection(): Promise<void> {
   }
 }
 
+async function refreshStarUpgradePreview(): Promise<void> {
+  starUpgradePreview.value = null
+  const item = selectedItem.value
+  if (!item?.generatedItem || activeMode.value !== 'upgrade' || item.generatedItem.stars >= 5) return
+
+  loadingStarUpgradePreview.value = true
+  try {
+    starUpgradePreview.value = await apiClient.request<StarUpgradePreview>(
+      `/api/v1/inventory/star-upgrade/preview/${encodeURIComponent(item.id)}`,
+    )
+  } catch {
+    actionError.value = 'Не удалось получить актуальную стоимость улучшения.'
+  } finally {
+    loadingStarUpgradePreview.value = false
+  }
+}
+
 watch([selectedItemId, selectedSlotKey, activeMode], refreshSelection)
+watch([selectedItemId, activeMode], refreshStarUpgradePreview)
 
 async function roll(): Promise<void> {
   const item = selectedItem.value
@@ -264,7 +290,11 @@ async function upgradeStars(): Promise<void> {
   if (!item || !canAffordStarUpgrade.value || session.mutationPending) return
   actionError.value = null
   const result = await session.upgradeItemStars(item.id)
-  if (!result) actionError.value = starUpgradeErrorMessage(session.errorCode)
+  if (!result) {
+    actionError.value = starUpgradeErrorMessage(session.errorCode)
+    return
+  }
+  await refreshStarUpgradePreview()
 }
 
 async function prepareSalvage(): Promise<void> {
@@ -341,7 +371,7 @@ function starUpgradeErrorMessage(code: string | null): string {
     star_upgrade_max_stars: 'Предмет уже достиг ★★★★★.',
     star_upgrade_not_enough_gold: 'Недостаточно золота для улучшения.',
     star_upgrade_not_enough_stones: 'Недостаточно Камней перековки.',
-    star_upgrade_missing_catalyst: 'Для ★★★★★ требуется Ядро подземелья.',
+    star_upgrade_missing_catalyst: 'Не хватает катализатора для финального улучшения.',
     star_upgrade_item_locked: 'Предмет защищён. Снимите блокировку в инвентаре.',
   }
   return code ? (messages[code] ?? 'Не удалось улучшить качество предмета.') : 'Не удалось улучшить качество предмета.'
@@ -555,14 +585,17 @@ function rarityLabel(item: InventoryItem): string {
             <div v-if="selectedItem.generatedItem" class="forge-upgrade-hero">
               <div><small>СЕЙЧАС</small><strong>★{{ selectedItem.generatedItem.stars }}</strong></div><span aria-hidden="true">→</span><div><small>ПОСЛЕ</small><strong>{{ selectedItem.generatedItem.stars < 5 ? `★${selectedItem.generatedItem.stars + 1}` : '★★★★★' }}</strong></div>
             </div>
-            <template v-if="selectedItem.generatedItem && selectedItem.generatedItem.stars < 5 && starUpgradeCost">
-              <div class="forge-costs">
-                <div :class="{ insufficient: gold < starUpgradeCost.gold }"><small>Золото</small><strong>{{ starUpgradeCost.gold }}</strong><span>у вас {{ gold }}</span></div>
-                <div :class="{ insufficient: reforgeStones < starUpgradeCost.stones }"><small>Камни перековки</small><strong>{{ starUpgradeCost.stones }}</strong><span>доступно {{ reforgeStones }}</span></div>
-                <div v-if="starUpgradeCost.catalystQuantity > 0" :class="{ insufficient: dungeonCatalysts < starUpgradeCost.catalystQuantity }"><small>Ядро подземелья</small><strong>{{ starUpgradeCost.catalystQuantity }}</strong><span>доступно {{ dungeonCatalysts }}</span></div>
-              </div>
-              <p v-if="starUpgradeShortage" class="forge-shortage">{{ starUpgradeShortage }}</p>
-              <UIButton :disabled="!canAffordStarUpgrade" :loading="session.mutationPending" data-forge-star-upgrade @click="upgradeStars">Улучшить до ★{{ starUpgradeCost.targetStars }}</UIButton>
+            <template v-if="selectedItem.generatedItem && selectedItem.generatedItem.stars < 5">
+              <div v-if="loadingStarUpgradePreview" class="forge-preview__loading"><span class="forge-spinner" /> Получаем актуальную стоимость…</div>
+              <template v-else-if="starUpgradePreview && starUpgradeCost">
+                <div class="forge-costs">
+                  <div :class="{ insufficient: gold < starUpgradeCost.gold }"><small>Золото</small><strong>{{ starUpgradeCost.gold }}</strong><span>у вас {{ gold }}</span></div>
+                  <div :class="{ insufficient: reforgeStones < starUpgradeCost.reforgeStoneQuantity }"><small>Камни перековки</small><strong>{{ starUpgradeCost.reforgeStoneQuantity }}</strong><span>доступно {{ reforgeStones }}</span></div>
+                  <div v-if="starUpgradeCost.catalystQuantity > 0" :class="{ insufficient: starUpgradeCatalystsAvailable < starUpgradeCost.catalystQuantity }"><small>{{ starUpgradeCost.catalystItemId ? materialLabel(starUpgradeCost.catalystItemId) : 'Катализатор' }}</small><strong>{{ starUpgradeCost.catalystQuantity }}</strong><span>доступно {{ starUpgradeCatalystsAvailable }}</span></div>
+                </div>
+                <p v-if="starUpgradeShortage" class="forge-shortage">{{ starUpgradeShortage }}</p>
+                <UIButton :disabled="!canAffordStarUpgrade" :loading="session.mutationPending" data-forge-star-upgrade @click="upgradeStars">Улучшить до ★{{ starUpgradePreview.targetStars }}</UIButton>
+              </template>
             </template>
             <div v-else class="forge-maxed"><strong>Максимальное качество</strong><span>Предмет уже достиг ★★★★★.</span></div>
           </section>
