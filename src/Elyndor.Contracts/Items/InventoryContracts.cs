@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Elyndor.Contracts.Items;
 
 public sealed record ItemStatsResponse(
@@ -83,7 +85,34 @@ public sealed record InventoryItemResponse(
     int ReforgeCount = 0,
     string? ReforgeSlotKey = null,
     bool TransactionLocked = false,
-    string BindState = "UNBOUND");
+    string BindState = "UNBOUND",
+    decimal BlockChancePercent = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0)
+{
+    public string Description { get; init; } = BuildDescription(
+        Description,
+        BlockChancePercent,
+        BlockValueMin,
+        BlockValueMax);
+
+    private static string BuildDescription(
+        string description,
+        decimal blockChancePercent,
+        decimal blockValueMin,
+        decimal blockValueMax)
+    {
+        if (blockChancePercent <= 0 || blockValueMax <= 0)
+            return description;
+        if (description.Contains("Шанс блока:", StringComparison.Ordinal))
+            return description;
+
+        return $"{description}\n\nШанс блока: {FormatNumber(blockChancePercent)}%. Сила блока: {FormatNumber(blockValueMin)}–{FormatNumber(blockValueMax)}.";
+    }
+
+    private static string FormatNumber(decimal value) =>
+        decimal.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
+}
 
 public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Weapon,

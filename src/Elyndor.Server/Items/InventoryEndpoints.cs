@@ -620,8 +620,17 @@ public static class InventoryEndpoints
             ToGeneratedItemResponse(item.GeneratedItem));
     }
 
-    internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item) =>
-        new(
+    internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item)
+    {
+        GeneratedItemInstance? generated = item.GeneratedItem;
+        decimal blockChanceBonus = generated?.Affixes
+            .Where(affix => string.Equals(affix.StatId, ItemStatIds.BlockChance, StringComparison.Ordinal))
+            .Sum(affix => affix.Value) ?? 0m;
+        decimal blockValueBonus = generated?.Affixes
+            .Where(affix => string.Equals(affix.StatId, ItemStatIds.BlockValue, StringComparison.Ordinal))
+            .Sum(affix => affix.Value) ?? 0m;
+
+        return new InventoryItemResponse(
             item.Id,
             item.Definition.Id,
             item.Definition.Name,
@@ -668,12 +677,16 @@ public static class InventoryEndpoints
             item.Definition.WeaponCategory is null
                 ? null
                 : EquipmentCategoryIds.UsesBothHands(item.Definition.WeaponCategory) ? 2 : 1,
-            item.Definition.PrimaryStatRanges is not null || item.GeneratedItem is not null,
-            ToGeneratedItemResponse(item.GeneratedItem),
+            item.Definition.PrimaryStatRanges is not null || generated is not null,
+            ToGeneratedItemResponse(generated),
             item.ReforgeCount,
             item.ReforgeSlotKey,
             item.TransactionLocked,
-            item.BindState);
+            item.BindState,
+            item.Definition.BlockChancePercent + blockChanceBonus,
+            item.Definition.BlockValueMin + blockValueBonus,
+            item.Definition.BlockValueMax + blockValueBonus);
+    }
 
     private static GeneratedItemSummaryResponse? ToGeneratedItemResponse(
         GeneratedItemInstance? generated) =>

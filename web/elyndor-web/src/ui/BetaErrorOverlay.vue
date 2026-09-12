@@ -1,59 +1,72 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 import { useGameSessionStore } from '@/stores/gameSession'
 
+const AUTO_HIDE_MS = 8_000
 const session = useGameSessionStore()
 const visible = ref(false)
-const hasDiagnostic = computed(() => Boolean(session.errorCode))
-let dismissTimer: ReturnType<typeof setTimeout> | null = null
+const diagnosticKey = computed(() => {
+  const code = session.errorCode?.trim() ?? ''
+  const correlationId = session.errorCorrelationId?.trim() ?? ''
+  if (!code && !correlationId) return null
+  return `${code}|${correlationId}`
+})
+let hideTimer: number | null = null
 
-function clearDismissTimer(): void {
-  if (dismissTimer === null) return
-  clearTimeout(dismissTimer)
-  dismissTimer = null
+function clearHideTimer(): void {
+  if (hideTimer === null) return
+  window.clearTimeout(hideTimer)
+  hideTimer = null
 }
 
-function dismiss(): void {
-  clearDismissTimer()
-  visible.value = false
-}
-
-function scheduleDismiss(): void {
-  clearDismissTimer()
-  dismissTimer = setTimeout(() => {
+function showForTimeout(): void {
+  clearHideTimer()
+  if (!diagnosticKey.value) {
     visible.value = false
-    dismissTimer = null
-  }, 8_000)
+    return
+  }
+
+  visible.value = true
+  hideTimer = window.setTimeout(() => {
+    visible.value = false
+    hideTimer = null
+  }, AUTO_HIDE_MS)
 }
 
 watch(
-  [() => session.errorCode, () => session.errorCorrelationId],
-  ([errorCode]) => {
-    if (!errorCode) {
-      dismiss()
+  diagnosticKey,
+  (next, previous) => {
+    if (!next) {
+      clearHideTimer()
+      visible.value = false
       return
     }
 
-    visible.value = true
-    scheduleDismiss()
+    if (next !== previous) showForTimeout()
   },
   { immediate: true },
 )
 
-onBeforeUnmount(clearDismissTimer)
+function dismiss(): void {
+  clearHideTimer()
+  visible.value = false
+}
+
+onUnmounted(clearHideTimer)
 </script>
 
 <template>
   <aside
-    v-if="hasDiagnostic && visible"
+    v-if="visible"
     class="beta-error-diagnostic"
     role="alert"
     aria-live="assertive"
+    data-beta-error-diagnostic
   >
     <div class="beta-error-diagnostic__copy">
       <strong>Ошибка · закрытая бета</strong>
-      <span>Код: {{ session.errorCode }}</span>
+      <span v-if="session.errorCode">Код: {{ session.errorCode }}</span>
       <span v-if="session.errorCorrelationId">ID: {{ session.errorCorrelationId }}</span>
     </div>
     <button

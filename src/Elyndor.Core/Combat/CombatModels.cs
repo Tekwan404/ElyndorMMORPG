@@ -156,4 +156,7 @@ public sealed record CombatEvent(
     decimal AmountBeforeShields = 0,
     DamageType? DamageType = null,
     CombatWeaponHand? WeaponHand = null,
-    string? WeaponDefinitionId = null);
+    string? WeaponDefinitionId = null,
+    decimal RawDamage = 0,
+    decimal DamageAfterMitigation = 0,
+    decimal DamageBeforeBlock = 0);
