@@ -6,7 +6,7 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryItemResponseBlockTests
 {
     [Fact]
-    public void ShieldBlockProfileRoundTripsWithoutChangingDescription()
+    public void ShieldBlockProfileRoundTripsWithReadableTooltip()
     {
         InventoryItemResponse response = new(
             Guid.CreateVersion7(),
@@ -37,6 +37,9 @@ public sealed class InventoryItemResponseBlockTests
             BlockValueMin: 28m,
             BlockValueMax: 42m);
 
+        Assert.Contains("Шанс блока: 4%", response.Description);
+        Assert.Contains("Сила блока: 28–42", response.Description);
+
         string json = JsonSerializer.Serialize(response);
         InventoryItemResponse restored = JsonSerializer.Deserialize<InventoryItemResponse>(json)!;
 
@@ -47,7 +50,7 @@ public sealed class InventoryItemResponseBlockTests
     }
 
     [Fact]
-    public void NonShieldKeepsZeroBlockProfile()
+    public void NonShieldKeepsZeroBlockProfileAndOriginalDescription()
     {
         InventoryItemResponse response = new(
             Guid.CreateVersion7(),
@@ -75,6 +78,7 @@ public sealed class InventoryItemResponseBlockTests
             0,
             false);
 
+        Assert.Equal("Обычный меч.", response.Description);
         Assert.Equal(0m, response.BlockChancePercent);
         Assert.Equal(0m, response.BlockValueMin);
         Assert.Equal(0m, response.BlockValueMax);
