@@ -82,7 +82,7 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task LockedLocationIsRejected()
+    public async Task CurrentLocationOutsideItsRecommendedLevelRangeCanStartAfkFarm()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
         Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
@@ -95,9 +95,8 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             TimeSpan.FromHours(1),
             CancellationToken.None);
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(AfkFarmErrorCodes.LockedLocation, result.ErrorCode);
-        Assert.Empty(await dbContext.AfkFarmSessions.ToArrayAsync());
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Session);
     }
 
     [Fact]

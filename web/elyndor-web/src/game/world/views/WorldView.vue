@@ -62,8 +62,8 @@ const canStartWorldCombat = computed(() =>
     || party.snapshot.leaderCharacterId === character.value?.id,
 )
 const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
-  contract.offerLocationId === currentLocationId.value
-  || contract.status === 'ACTIVE',
+  contract.status !== 'COMPLETED'
+  && (contract.offerLocationId === currentLocationId.value || contract.status === 'ACTIVE'),
 ))
 const locationQuestLeads = computed(() => (session.questJournal?.quests ?? []).filter(quest =>
   quest.status === 'AVAILABLE'
@@ -113,6 +113,11 @@ const worldErrorMessage = computed(() => {
   if (code === 'world_encounter_location_unavailable') return 'Текущее положение героя не удалось подтвердить.'
   if (code === 'travel_conflict') return 'Мир изменился во время перехода. Попробуйте ещё раз.'
   if (code === 'character_in_combat') return 'Сначала завершите текущий бой.'
+  if (code === 'afk_locked_location') return 'Сначала откройте эту область через её контракт.'
+  if (code === 'afk_not_allowed') return 'В этой области AFK-фарм пока недоступен.'
+  if (code === 'afk_conflict_combat') return 'Сначала завершите текущий бой.'
+  if (code === 'afk_conflict_travel') return 'Дождитесь завершения путешествия.'
+  if (code === 'afk_conflict_dungeon') return 'Сначала покиньте активный забег в подземелье.'
   return 'Сервер не подтвердил действие. Проверьте связь и повторите попытку.'
 })
 const recoveryMessage = computed(() => {
@@ -335,7 +340,7 @@ onMounted(() => {
             variant="secondary"
             :disabled="session.mutationPending"
             @click="openAfkFarm"
-          >AFK-фарм</UIButton>
+          >Отправить в AFK-фарм</UIButton>
         </div>
       </div>
     </section>
