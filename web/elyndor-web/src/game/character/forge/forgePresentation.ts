@@ -1,8 +1,13 @@
-import type { InventoryItem } from '@/api/contracts'
+import type { GeneratedItemSummary, InventoryItem, ItemAffix } from '@/api/contracts'
 
 export interface ForgeItemAvailability {
   available: boolean
   reason: string | null
+}
+
+export interface ReforgeResultAffixes {
+  current: ItemAffix | null
+  proposed: ItemAffix | null
 }
 
 export function availableForgeMaterialQuantity(
@@ -38,6 +43,17 @@ export function forgeableAffixes(item: InventoryItem) {
   return item.generatedItem?.affixes.filter(affix => !affix.isGuaranteed) ?? []
 }
 
+export function reforgeResultAffixes(
+  current: GeneratedItemSummary,
+  proposed: GeneratedItemSummary,
+  slotKey: string,
+): ReforgeResultAffixes {
+  return {
+    current: current.affixes.find(affix => affix.slotKey === slotKey) ?? null,
+    proposed: proposed.affixes.find(affix => affix.slotKey === slotKey) ?? null,
+  }
+}
+
 export function forgeStatLabel(statId: string): string {
   const labels: Record<string, string> = {
     STRENGTH: 'Сила',
@@ -50,6 +66,16 @@ export function forgeStatLabel(statId: string): string {
     ARMOR: 'Броня',
     MAGIC_RESISTANCE: 'Сопротивление магии',
     CRITICAL_CHANCE: 'Крит. шанс',
+    CRITICAL_DAMAGE: 'Крит. урон',
+    ACCURACY: 'Точность',
+    ATTACK_SPEED: 'Скорость атаки',
+    DODGE: 'Уклонение',
+    ARMOR_PENETRATION: 'Пробивание брони',
+    MAGIC_PENETRATION: 'Пробивание магии',
+    MAX_RESOURCE: 'Макс. ресурс',
+    BLOCK_CHANCE: 'Шанс блока',
+    BLOCK_VALUE: 'Сила блока',
+    WEAPON_DAMAGE: 'Урон оружия',
   }
   return labels[statId] ?? statId
 }
