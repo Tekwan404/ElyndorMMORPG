@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
+import type { GlyphName } from '@/ui/icons/icon.types'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard } from '@/ui/components'
@@ -68,6 +69,9 @@ function locationName(id: string): string { return locationPresentation(id).labe
 function targetName(id: string): string { return targetNames[id] ?? 'Неизвестная цель' }
 function objectiveLabel(objective: QuestObjective): string {
   return objective.type === 'CollectItem' ? 'Собрать: ' + targetName(objective.targetId) : 'Победить: ' + targetName(objective.targetId)
+}
+function objectiveGlyph(objective: QuestObjective): GlyphName {
+  return objective.type === 'CollectItem' ? 'chest' : 'sword'
 }
 function objectiveProgress(objective: QuestObjective): number {
   return Math.min(100, Math.round(objective.currentCount / objective.requiredCount * 100))
@@ -172,12 +176,19 @@ onMounted(async () => {
             class="objective"
             :class="{ 'objective--done': objective.completed }"
           >
-            <div class="objective__line">
-              <span>{{ objectiveLabel(objective) }}</span>
-              <b>{{ objective.currentCount }} / {{ objective.requiredCount }}</b>
-            </div>
-            <div class="objective__bar" aria-hidden="true">
-              <span :style="{ width: `${objectiveProgress(objective)}%` }" />
+            <IconGenerator
+              class="objective__icon"
+              :data-quest-objective-icon="objective.type"
+              :config="{ id: `quest-objective-${objective.type}`, glyph: objectiveGlyph(objective), category: 'utility' }"
+            />
+            <div class="objective__content">
+              <div class="objective__line">
+                <span>{{ objectiveLabel(objective) }}</span>
+                <b>{{ objective.currentCount }} / {{ objective.requiredCount }}</b>
+              </div>
+              <div class="objective__bar" aria-hidden="true">
+                <span :style="{ width: `${objectiveProgress(objective)}%` }" />
+              </div>
             </div>
           </div>
         </section>
@@ -261,12 +272,12 @@ onMounted(async () => {
 .quest-card__location{margin:.15rem 0 0;color:var(--ui-color-primary);font-size:.7rem}
 .quest-card__description{margin:0;color:var(--ui-color-text-muted);line-height:1.48}
 .quest-card__objectives{display:grid;gap:8px;padding:10px;border:1px solid rgb(255 255 255 / 6%);border-radius:var(--ui-radius-md);background:rgb(0 0 0 / 12%)}
-.objective{display:grid;gap:5px}.objective__line{display:flex;justify-content:space-between;gap:var(--ui-space-3);font-size:.72rem}.objective__line b{white-space:nowrap;font-variant-numeric:tabular-nums}.objective--done .objective__line{color:var(--ui-color-success)}
+.objective{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:8px}.objective__icon{width:30px;height:30px}.objective__content{display:grid;gap:5px}.objective__line{display:flex;justify-content:space-between;gap:var(--ui-space-3);font-size:.72rem}.objective__line b{white-space:nowrap;font-variant-numeric:tabular-nums}.objective--done .objective__line{color:var(--ui-color-success)}
 .objective__bar{height:4px;overflow:hidden;border-radius:var(--ui-radius-round);background:rgb(255 255 255 / 7%)}.objective__bar span{display:block;height:100%;border-radius:inherit;background:var(--ui-color-primary)}
 .objective--done .objective__bar span{background:var(--ui-color-success)}
 .quest-card__rewards{display:grid;gap:5px}.quest-card__rewards small{color:var(--ui-color-gold);font-size:var(--ui-font-size-xs);font-weight:800;letter-spacing:.08em}.quest-card__rewards div{display:flex;flex-wrap:wrap;gap:6px}.quest-card__rewards span{padding:4px 7px;border:1px solid rgb(232 200 102 / 14%);border-radius:var(--ui-radius-round);background:rgb(232 200 102 / 4%);color:#ddd3a5;font-size:var(--ui-font-size-xs)}
 .quest-card__unlock{margin:0;padding-top:var(--ui-space-2);border-top:1px solid var(--ui-color-border);color:var(--ui-color-text-muted);font-size:.7rem}.quest-card__unlock strong{color:var(--ui-color-text-primary)}
-.quest-card__actions{display:flex;justify-content:flex-end}.quest-card__completed-mark{color:var(--ui-color-success);font-size:var(--ui-font-size-xs);font-weight:700}.quest-card--completed{opacity:.74}
+.quest-card__actions{display:flex;justify-content:flex-end}.quest-card__completed-mark{display:inline-flex;align-items:center;gap:6px;color:var(--ui-color-success);font-size:var(--ui-font-size-xs);font-weight:700}.quest-card__completed-mark :deep(.icon-generator){width:20px;height:20px}.quest-card--completed{opacity:.74}
 .quests__empty{text-align:center}.quests__empty p{margin-bottom:0;color:var(--ui-color-text-muted)}
 .quests__error{margin:0;padding:9px 11px;border:1px solid color-mix(in srgb,var(--ui-color-danger) 36%,transparent);border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-color-danger) 8%,transparent);color:var(--ui-color-danger);font-size:.72rem}
 .quest-tabs{display:flex;overflow-x:auto;gap:6px;padding-bottom:2px;scrollbar-width:none}

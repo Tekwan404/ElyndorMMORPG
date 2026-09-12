@@ -67,6 +67,20 @@ describe('QuestView', () => {
     expect(claim).toHaveBeenCalledWith('QUEST_READY')
   })
 
+  it('renders a semantic glyph beside every quest objective', async () => {
+    const session = useGameSessionStore()
+    session.questJournal = {
+      quests: [quest('QUEST_ACTIVE', 'ACTIVE', 'STORY')],
+    }
+    vi.spyOn(session, 'refreshQuestJournal').mockResolvedValue(session.questJournal)
+
+    const wrapper = mount(QuestView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-quest-objective-icon="KillMonster"]').attributes('data-icon-id'))
+      .toBe('quest-objective-KillMonster')
+  })
+
   it('opens the guild from the contracts journal in any city location', async () => {
     const session = useGameSessionStore()
     session.snapshot = {

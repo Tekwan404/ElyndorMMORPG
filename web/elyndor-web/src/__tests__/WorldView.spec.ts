@@ -61,12 +61,34 @@ describe('WorldView', () => {
     forestStore.snapshot = snapshot('WHISPERING_FOREST')
     const forest = mount(WorldView)
     expect(forest.find('[data-afk-farming]').exists()).toBe(true)
+    expect(forest.get('[data-afk-farming]').text()).toContain('Отправить в AFK-фарм')
     forest.unmount()
 
     const townStore = useGameSessionStore()
     townStore.snapshot = snapshot('STARTER_TOWN')
     const town = mount(WorldView)
     expect(town.find('[data-afk-farming]').exists()).toBe(false)
+  })
+
+  it('does not show completed contracts in the current location', () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot('WHISPERING_FOREST')
+    store.snapshot.world!.contracts = [{
+      id: 'CONTRACT_DONE',
+      displayName: 'Завершённый контракт',
+      description: 'Этот контракт уже выполнен.',
+      requiredLevel: 1,
+      targetMonsterId: 'FOREST_WOLF_L1',
+      unlockLocationId: 'DEEP_FOREST',
+      status: 'COMPLETED',
+      offerLocationId: 'WHISPERING_FOREST',
+      rewardXp: 10,
+      rewardGold: 5,
+    }]
+
+    const wrapper = mount(WorldView)
+
+    expect(wrapper.find('.location-contracts').exists()).toBe(false)
   })
 
   it('disables exploration while a world mutation is pending and shows the server error', async () => {

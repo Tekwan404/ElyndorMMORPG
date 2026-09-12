@@ -304,9 +304,6 @@ public sealed class AfkFarmService(
             || !content.Indexes.LocationsById.TryGetValue(locationId, out LocationDefinition? location))
             return (null, AfkFarmErrorCodes.InvalidLocation);
 
-        if (character.Level < location.MinimumLevel || character.Level > location.MaximumLevel)
-            return (null, AfkFarmErrorCodes.LockedLocation);
-
         if (!string.IsNullOrWhiteSpace(location.RequiredContractId)
             && !await dbContext.CharacterContractCompletions.AsNoTracking()
                 .AnyAsync(
