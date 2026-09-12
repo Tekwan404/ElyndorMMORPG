@@ -6,7 +6,7 @@ namespace Elyndor.UnitTests.Combat;
 public sealed class AutoAttackDamageRollerTests
 {
     [Fact]
-    public void RollPlayerDamageAppliesVarianceToWeaponAndAttackPowerTotal()
+    public void RollPlayerDamageAddsWeaponRollAndAttackPowerSeparately()
     {
         AutoAttackProfile profile = new(
             TimeSpan.FromSeconds(2),
@@ -17,7 +17,7 @@ public sealed class AutoAttackDamageRollerTests
             BaseDamageMax: 20);
 
         Assert.Equal(
-            22.5m,
+            25m,
             AutoAttackDamageRoller.RollPlayerDamage(
                 profile,
                 attackPower: 30,
@@ -29,12 +29,57 @@ public sealed class AutoAttackDamageRollerTests
                 attackPower: 30,
                 new SequenceGameRandom(0.5m)));
         Assert.Equal(
-            38.5m,
+            34.99999m,
             AutoAttackDamageRoller.RollPlayerDamage(
                 profile,
                 attackPower: 30,
                 new SequenceGameRandom(0.999999m)),
             precision: 4);
+    }
+
+    [Fact]
+    public void RollPlayerDamageBreakdownKeepsComponentsSeparate()
+    {
+        AutoAttackProfile profile = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 0,
+            AttackPowerCoefficient: 0.5m,
+            ResourceOnHit: 0,
+            BaseDamageMin: 10,
+            BaseDamageMax: 20);
+
+        PlayerAutoAttackDamageBreakdown breakdown =
+            AutoAttackDamageRoller.RollPlayerDamageBreakdown(
+                profile,
+                attackPower: 30,
+                new SequenceGameRandom(0.5m));
+
+        Assert.Equal(15m, breakdown.WeaponDamage);
+        Assert.Equal(15m, breakdown.AttackPowerDamage);
+        Assert.Equal(30m, breakdown.TotalDamage);
+    }
+
+    [Fact]
+    public void WeaponDamageMultiplierChangesOnlyWeaponComponent()
+    {
+        AutoAttackProfile profile = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 0,
+            AttackPowerCoefficient: 0.5m,
+            ResourceOnHit: 0,
+            BaseDamageMin: 10,
+            BaseDamageMax: 20,
+            WeaponDamageMultiplier: 1.25m);
+
+        PlayerAutoAttackDamageBreakdown breakdown =
+            AutoAttackDamageRoller.RollPlayerDamageBreakdown(
+                profile,
+                attackPower: 30,
+                new SequenceGameRandom(0.5m));
+
+        Assert.Equal(18.75m, breakdown.WeaponDamage);
+        Assert.Equal(15m, breakdown.AttackPowerDamage);
+        Assert.Equal(33.75m, breakdown.TotalDamage);
     }
 
     [Fact]
@@ -84,6 +129,24 @@ public sealed class AutoAttackDamageRollerTests
             ResourceOnHit: 0,
             BaseDamageMin: 20,
             BaseDamageMax: 10);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            AutoAttackDamageRoller.RollBaseDamage(
+                profile,
+                new SequenceGameRandom(0m)));
+    }
+
+    [Fact]
+    public void RollBaseDamageRejectsNegativeWeaponDamageMultiplier()
+    {
+        AutoAttackProfile profile = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 0,
+            AttackPowerCoefficient: 0.5m,
+            ResourceOnHit: 0,
+            BaseDamageMin: 10,
+            BaseDamageMax: 20,
+            WeaponDamageMultiplier: -0.1m);
 
         Assert.Throws<InvalidOperationException>(() =>
             AutoAttackDamageRoller.RollBaseDamage(
