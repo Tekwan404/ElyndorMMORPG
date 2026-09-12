@@ -78,6 +78,8 @@ public sealed class CombatSessionFactory(
             checkpoint: true);
         BootstrapCharacter? character = bootstrap.Character;
         if (character is null) return Failure("character_not_found");
+        if (bootstrap.AfkFarm?.Status == Elyndor.Core.Afk.AfkFarmStatus.Active)
+            return Failure(CombatErrorCodes.AfkFarmActive, character.Id);
         if (!PlayableCombatClassIds.Contains(character.ClassId))
             return Failure(CombatErrorCodes.UnsupportedClass, character.Id);
 
