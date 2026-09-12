@@ -10,12 +10,18 @@ const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const selectedStat = ref<StatRow | null>(null)
 
+type ExtraStatId = 'blockChance' | 'blockValueMin' | 'blockValueMax'
+type EffectiveStatId = 'armorDamageReductionPercent' | 'magicDamageReductionPercent'
+type StatId = keyof CharacterStats | ExtraStatId
+
 type StatRow = {
-  id: keyof CharacterStats
+  id: StatId
   label: string
   description: string
   percent?: boolean
   multiplier?: boolean
+  effectiveId?: EffectiveStatId
+  effectiveLabel?: string
 }
 
 const groups: { title: string; description: string; rows: StatRow[] }[] = [
@@ -38,19 +44,34 @@ const groups: { title: string; description: string; rows: StatRow[] }[] = [
       { id: 'criticalChance', label: 'Шанс критического удара', description: 'Вероятность нанести критический удар с повышенным уроном.', percent: true },
       { id: 'criticalDamage', label: 'Критический урон', description: 'Дополнительный урон, который наносит успешный критический удар.', percent: true },
       { id: 'accuracy', label: 'Меткость', description: 'Вероятность успешно попасть атакой по цели до учёта её уклонения.', percent: true },
-      { id: 'armorPenetration', label: 'Пробивание брони', description: 'Часть физической защиты противника, которая игнорируется вашими атаками.', percent: true },
-      { id: 'magicPenetration', label: 'Пробивание магии', description: 'Часть магической защиты противника, которая игнорируется вашими заклинаниями.', percent: true },
+      { id: 'armorPenetration', label: 'Пробивание брони', description: 'Прямой параметр пробивания физической защиты. Это не рейтинг брони и не эффективное снижение урона.', percent: true },
+      { id: 'magicPenetration', label: 'Пробивание магии', description: 'Прямой параметр пробивания магической защиты. Это не рейтинг сопротивления магии.', percent: true },
       { id: 'attackSpeed', label: 'Скорость атаки', description: 'Множитель скорости обычных атак. Значение 1× соответствует базовой скорости.', multiplier: true },
     ],
   },
   {
     title: 'Защита',
-    description: 'Параметры выживаемости героя в бою.',
+    description: 'Сырые защитные рейтинги и их реальный боевой эффект по серверной формуле.',
     rows: [
       { id: 'maxHp', label: 'Максимальное здоровье', description: 'Максимальный запас здоровья. Основной источник — Выносливость.' },
-      { id: 'armor', label: 'Броня', description: 'Снижает получаемый физический урон. Формируется из Выносливости, Силы и талантов.' },
-      { id: 'magicResistance', label: 'Сопротивление магии', description: 'Защищает от магического урона и зависит от Выносливости и Интеллекта.' },
+      {
+        id: 'armor',
+        label: 'Броня',
+        description: 'Рейтинг физической защиты. Итоговое снижение физического урона рассчитывается сервером отдельно и показано рядом.',
+        effectiveId: 'armorDamageReductionPercent',
+        effectiveLabel: 'снижения физического урона',
+      },
+      {
+        id: 'magicResistance',
+        label: 'Сопротивление магии',
+        description: 'Рейтинг магической защиты. Итоговое снижение магического урона рассчитывается сервером отдельно и показано рядом.',
+        effectiveId: 'magicDamageReductionPercent',
+        effectiveLabel: 'снижения магического урона',
+      },
       { id: 'dodge', label: 'Уклонение', description: 'Вероятность полностью избежать подходящей для уклонения атаки.', percent: true },
+      { id: 'blockChance', label: 'Шанс блока', description: 'Вероятность заблокировать физическую атаку при наличии подходящего щита.', percent: true },
+      { id: 'blockValueMin', label: 'Сила блока — минимум', description: 'Минимальное количество входящего физического урона, которое может поглотить успешный блок.' },
+      { id: 'blockValueMax', label: 'Сила блока — максимум', description: 'Максимальное количество входящего физического урона, которое может поглотить успешный блок.' },
     ],
   },
 ]
@@ -61,19 +82,37 @@ const primaryAttributeLabel = computed(() => {
   return 'Интеллект'
 })
 
+const breakdowns = computed<Record<string, CharacterStatBreakdown>>(() =>
+  (character.value?.statBreakdown ?? {}) as Record<string, CharacterStatBreakdown>,
+)
+
+function statValue(row: StatRow): number {
+  const stats = character.value?.stats as Record<string, number | undefined> | undefined
+  return stats?.[row.id] ?? breakdowns.value[row.id]?.finalValue ?? 0
+}
+
 function format(row: StatRow, value?: number): string {
-  const resolved = value ?? character.value?.stats[row.id] ?? 0
+  const resolved = value ?? statValue(row)
   if (row.multiplier) return `${resolved.toFixed(2)}×`
-  if (row.percent) return `${resolved.toFixed(2).replace(/\.00$/, '')}%`
+  if (row.percent) return formatPercent(resolved)
   return Number.isInteger(resolved) ? resolved.toString() : resolved.toFixed(1)
 }
 
-function isPrimary(id: keyof CharacterStats): boolean {
+function formatPercent(value: number): string {
+  return `${value.toFixed(2).replace(/\.00$/, '')}%`
+}
+
+function effectivePercent(row: StatRow): number | null {
+  if (!row.effectiveId) return null
+  return breakdowns.value[row.effectiveId]?.finalValue ?? null
+}
+
+function isPrimary(id: StatId): boolean {
   return character.value?.primaryAttribute.toLowerCase() === id.toLowerCase()
 }
 
 function breakdownFor(row: StatRow): CharacterStatBreakdown | null {
-  return character.value?.statBreakdown?.[row.id] ?? null
+  return breakdowns.value[row.id] ?? null
 }
 
 function sourceLabel(source: string): string {
@@ -88,6 +127,7 @@ function sourceLabel(source: string): string {
   if (source === 'AGILITY') return 'Вклад Ловкости'
   if (source === 'INTELLECT') return 'Вклад Интеллекта'
   if (source === 'STAMINA') return 'Вклад Выносливости'
+  if (source === 'EQUIPMENT_BONUS') return 'Бонус экипировки'
   if (source === 'TALENT_BONUS') return 'Бонус талантов'
   return source
 }
@@ -130,7 +170,12 @@ function contributionValue(row: StatRow, value: number): string {
             <small v-if="isPrimary(row.id)">Основная характеристика класса</small>
             <small v-else>Нажмите для подробностей</small>
           </span>
-          <b>{{ format(row) }}</b>
+          <div class="stat-row__value">
+            <b>{{ format(row) }}</b>
+            <small v-if="effectivePercent(row) !== null">
+              {{ formatPercent(effectivePercent(row)!) }} {{ row.effectiveLabel }}
+            </small>
+          </div>
           <i>›</i>
         </button>
       </div>
@@ -141,6 +186,11 @@ function contributionValue(row: StatRow, value: number): string {
         <div class="stat-detail__value">
           <small>Текущее значение</small>
           <strong>{{ format(selectedStat) }}</strong>
+        </div>
+        <div v-if="effectivePercent(selectedStat) !== null" class="stat-detail__effective">
+          <small>Эффективное значение</small>
+          <strong>{{ formatPercent(effectivePercent(selectedStat)!) }}</strong>
+          <span>{{ selectedStat.effectiveLabel }} · до учёта пробивания атакующего</span>
         </div>
         <p>{{ selectedStat.description }}</p>
 
@@ -175,13 +225,19 @@ function contributionValue(row: StatRow, value: number): string {
 .stat-row > span { display: grid; min-width: 0; gap: 2px; }
 .stat-row strong { color: var(--ui-color-text-primary); }
 .stat-row small { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); }
-.stat-row > b { color: var(--ui-color-primary); font-size: var(--ui-font-size-md); font-variant-numeric: tabular-nums; }
+.stat-row__value { display: grid; justify-items: end; gap: 1px; text-align: right; }
+.stat-row__value b { color: var(--ui-color-primary); font-size: var(--ui-font-size-md); font-variant-numeric: tabular-nums; }
+.stat-row__value small { max-width: 11rem; color: var(--ui-color-success); line-height: 1.2; }
 .stat-row > i { color: var(--ui-color-text-muted); font-size: 1.4rem; font-style: normal; }
 .stat-detail { display: grid; gap: var(--ui-space-4); }
 .stat-detail > p { margin: 0; color: var(--ui-color-text-muted); line-height: var(--ui-line-height-normal); }
 .stat-detail__value { display: flex; align-items: end; justify-content: space-between; gap: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-primary); border-radius: var(--ui-radius-md); background: rgb(105 93 255 / 9%); }
 .stat-detail__value small { color: var(--ui-color-text-muted); }
 .stat-detail__value strong { color: var(--ui-color-primary); font-family: var(--ui-font-display); font-size: var(--ui-font-size-2xl); }
+.stat-detail__effective { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-success); border-radius: var(--ui-radius-md); background: rgb(61 184 129 / 8%); }
+.stat-detail__effective small, .stat-detail__effective span { color: var(--ui-color-text-muted); }
+.stat-detail__effective strong { color: var(--ui-color-success); font-size: var(--ui-font-size-xl); font-variant-numeric: tabular-nums; }
+.stat-detail__effective span { grid-column: 1 / -1; font-size: var(--ui-font-size-xs); }
 .stat-detail section { display: grid; gap: var(--ui-space-2); }
 .stat-detail h3 { margin: 0; font-size: var(--ui-font-size-md); }
 .stat-detail dl { display: grid; gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-border); }
@@ -190,5 +246,5 @@ function contributionValue(row: StatRow, value: number): string {
 .stat-detail dd { margin: 0; color: var(--ui-color-success); font-weight: var(--ui-font-weight-semibold); font-variant-numeric: tabular-nums; }
 .no-breakdown { margin: 0; color: var(--ui-color-text-muted); }
 .stat-detail__note { padding-top: var(--ui-space-3); border-top: 1px solid var(--ui-color-border); font-size: var(--ui-font-size-xs); }
-@media (max-width: 360px) { .stats-view { padding-inline: var(--ui-space-3); } .stat-row { padding-inline: var(--ui-space-2); } }
+@media (max-width: 360px) { .stats-view { padding-inline: var(--ui-space-3); } .stat-row { padding-inline: var(--ui-space-2); } .stat-row__value small { max-width: 8rem; } }
 </style>
