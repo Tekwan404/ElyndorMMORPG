@@ -77,8 +77,20 @@ public sealed class ItemStarUpgradeService(
         bool catalystRequired = targetStars == 5 && profile.HighEndCatalystQuantity > 0;
         if (catalystRequired && (string.IsNullOrWhiteSpace(profile.HighEndCatalystItemId) || !await HasMaterial(character.Id, profile.HighEndCatalystItemId, profile.HighEndCatalystQuantity, cancellationToken))) return await Fail(transaction, ItemStarUpgradeErrorCodes.MissingCatalyst, cancellationToken);
 
-        GeneratedItemInstance upgraded = ItemInstanceGenerator.Recalculate(definition, itemization, current.ItemLevel, ItemStarUpgradeCalculator.IncreaseToTargetStar(current.Affixes, targetStars), perfectOrigin: "STAR_UPGRADE");
-        if (upgraded.Stars != targetStars) return await Fail(transaction, ItemStarUpgradeErrorCodes.ProfileMissing, cancellationToken);
+        GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
+            definition,
+            itemization,
+            current.ItemLevel,
+            ItemStarUpgradeCalculator.IncreaseToTargetStar(current.Affixes, targetStars),
+            perfectOrigin: "STAR_UPGRADE");
+
+        // Drop stars describe how much of the original random item budget happened to roll.
+        // Forge stars are explicit progression: the player pays to advance exactly one tier
+        // while preserving the existing affix identities/count. Sparse legal rolls can never
+        // reach the next natural drop-quality threshold through Recalculate alone, so do not
+        // reject a valid upgrade just because that classifier remains below the target tier.
+        GeneratedItemInstance upgraded = recalculated with { Stars = targetStars };
+
         character.TrySpendGold(gold);
         await Consume(character.Id, profile.ReforgeStoneItemId, stones, cancellationToken);
         if (catalystRequired) await Consume(character.Id, profile.HighEndCatalystItemId!, profile.HighEndCatalystQuantity, cancellationToken);

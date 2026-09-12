@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { InventoryItem, ItemAffix, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
+import type { InventoryItem, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
-import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -22,9 +22,9 @@ const allEquipment = computed(() => character.value?.inventory.items.filter(item
 const selectedItem = computed(() => allEquipment.value.find(item => item.id === selectedItemId.value) ?? null)
 const selectedAvailability = computed(() => selectedItem.value ? forgeItemAvailability(selectedItem.value) : null)
 const affixes = computed(() => selectedItem.value ? forgeableAffixes(selectedItem.value) : [])
-const selectedAffix = computed<ItemAffix | null>(() =>
-  affixes.value.find(affix => affix.slotKey === selectedSlotKey.value) ?? null,
-)
+const pendingAffixes = computed(() => pending.value
+  ? reforgeResultAffixes(pending.value.current, pending.value.proposed, pending.value.slotKey)
+  : { current: null, proposed: null })
 const totalReforgeStones = computed(() => character.value?.inventory.items
   .filter(item => item.definitionId === 'REFORGE_STONE')
   .reduce((total, item) => total + item.quantity, 0) ?? 0)
@@ -150,10 +150,6 @@ function rarityLabel(item: InventoryItem): string {
   }
   return labels[item.rarity]
 }
-
-function affixValue(item: ItemReforgeResponse['current'], slotKey: string): number {
-  return item.affixes.find(affix => affix.slotKey === slotKey)?.value ?? 0
-}
 </script>
 
 <template>
@@ -238,7 +234,15 @@ function affixValue(item: ItemReforgeResponse['current'], slotKey: string): numb
 
           <section v-if="pending" class="forge-result" aria-live="polite">
             <small>РЕЗУЛЬТАТ ПЕРЕКОВКИ</small>
-            <strong>{{ forgeStatLabel(selectedAffix?.statId ?? pending.slotKey) }}: {{ format(affixValue(pending.current, pending.slotKey)) }} → {{ format(affixValue(pending.proposed, pending.slotKey)) }}</strong>
+            <strong>
+              {{ forgeStatLabel(pendingAffixes.current?.statId ?? pending.slotKey) }}
+              {{ format(pendingAffixes.current?.value ?? 0) }} →
+              {{ forgeStatLabel(pendingAffixes.proposed?.statId ?? pending.slotKey) }}
+              {{ format(pendingAffixes.proposed?.value ?? 0) }}
+            </strong>
+            <small v-if="pendingAffixes.proposed">
+              Диапазон результата: {{ format(pendingAffixes.proposed.min) }}–{{ format(pendingAffixes.proposed.max) }}
+            </small>
             <p>Стоимость уже списана. Оставьте текущую характеристику или примените результат.</p>
             <div class="forge-actions">
               <UIButton variant="ghost" :loading="session.mutationPending" @click="decide(false)">Оставить текущую</UIButton>
