@@ -17,3 +17,16 @@ public sealed record CharacterResponse(
     string ClassId,
     int Level,
     DateTimeOffset CreatedAtUtc);
+
+public sealed record CompanionProfileResponse(
+    string Id,
+    string Name,
+    string Archetype,
+    string? ArtId);
+
+public sealed record CharacterCompanionResponse(
+    string SelectedPhysicalProfileId,
+    string EffectiveProfileId,
+    IReadOnlyList<CompanionProfileResponse> AvailableProfiles);
+
+public sealed record SelectCompanionRequest(string CompanionProfileId);
