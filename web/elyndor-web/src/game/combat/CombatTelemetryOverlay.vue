@@ -4,6 +4,10 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { CombatActorSnapshot, CombatEvent } from '@/api/contracts'
 import { useCombatSessionStore, type CombatThreatEntry } from '@/stores/combatSession'
 
+type CombatThreatEntryWithTarget = CombatThreatEntry & {
+  selectedTargetActorId?: string | null
+}
+
 const combat = useCombatSessionStore()
 const threat = computed(() => combat.threat)
 const maximumThreat = computed(() => Math.max(0, ...(threat.value?.entries.map(entry => entry.threat) ?? [0])))
@@ -66,6 +70,15 @@ function threatLabel(entry: CombatThreatEntry): string {
   if (entry.isCurrentTarget) return 'АГРО'
   if (combat.snapshot?.player.actorId === entry.actorId) return 'ВЫ'
   return ''
+}
+
+function memberTargetName(actorId: string): string {
+  const entry = threat.value?.entries.find(candidate => candidate.actorId === actorId) as
+    | CombatThreatEntryWithTarget
+    | undefined
+  const targetActorId = entry?.selectedTargetActorId
+  if (!targetActorId) return 'цель не выбрана'
+  return combat.enemies.find(enemy => enemy.actorId === targetActorId)?.name ?? 'неизвестная цель'
 }
 
 function actorName(actorId: string | null): string {
@@ -178,6 +191,7 @@ onUnmounted(() => {
             <span>{{ member.name }}</span>
             <b>{{ Math.ceil(member.hp) }} / {{ Math.ceil(member.maxHp) }}</b>
           </div>
+          <small>→ {{ memberTargetName(member.actorId) }}</small>
           <i aria-hidden="true"><span :style="{ width: `${healthPercent(member)}%` }" /></i>
         </li>
       </ol>
@@ -414,6 +428,15 @@ onUnmounted(() => {
 .combat-telemetry__party li > div b {
   color: rgb(213 221 232);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.combat-telemetry__party li > small {
+  overflow: hidden;
+  color: rgb(142 154 173);
+  font-size: .41rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
