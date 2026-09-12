@@ -204,11 +204,13 @@
       "school": "PHYSICAL",
       "actions": [],
       "displayName": "Команда: Фас",
-      "description": "Приказывает активному физическому спутнику провести особую атаку. Хищник наносит усиленный удар, Страж защищает хозяина, Ловчий ослабляет цель. Стоит 20 концентрации.",
+      "description": "Приказывает активному физическому спутнику применить его особый приём: Хищник наносит усиленный укус и вызывает кровотечение, Страж провоцирует цель, Ловчий ненадолго оглушает. Стоит 20 концентрации.",
       "runtimeParameters": {
         "predatorDamageMultiplier": 1.5,
-        "guardianIncomingDamageMultiplier": 0.9,
-        "guardianDurationSeconds": 6
+        "predatorBleedPercent": 30,
+        "predatorBleedDurationSeconds": 3,
+        "guardianTauntDurationSeconds": 3,
+        "trapperStunDurationSeconds": 1
       }
     },
     {
