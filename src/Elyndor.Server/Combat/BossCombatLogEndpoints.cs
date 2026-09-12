@@ -138,7 +138,10 @@ public static class BossCombatLogEndpoints
         combatEvent.AmountBeforeShields,
         combatEvent.OccurredAtUtc,
         combatEvent.WeaponHand?.ToString(),
-        combatEvent.WeaponDefinitionId);
+        combatEvent.WeaponDefinitionId,
+        combatEvent.RawDamage,
+        combatEvent.DamageAfterMitigation,
+        combatEvent.DamageBeforeBlock);
 
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
@@ -196,7 +199,7 @@ public static class BossCombatLogEndpoints
                 .Append(compactedRegenGroups.ToString(CultureInfo.InvariantCulture))
                 .AppendLine(" строк (соседние тики объединены)");
         }
-        builder.AppendLine("Примечание: «входящий» урон — значение до shield absorption и ограничения остатком HP; реальный щит имеет отдельное событие ShieldAbsorbed с полем blocked.");
+        builder.AppendLine("Примечание: DamageBlocked — блок экипированным щитом; ShieldAbsorbed — поглощение временным эффектом/барьером. Для блока щитом ниже печатается цепочка raw → armor → block → barrier → HP.");
         builder.AppendLine("────────────────────");
 
         for (int index = 0; index < ordered.Length; index++)
@@ -224,10 +227,107 @@ public static class BossCombatLogEndpoints
                 continue;
             }
 
+            if (string.Equals(
+                    combatEvent.Type,
+                    nameof(CombatEventType.DamageBlocked),
+                    StringComparison.Ordinal))
+            {
+                WriteBlockBreakdown(builder, ordered, index, actorNames);
+                continue;
+            }
+
             WriteEvent(builder, combatEvent, actorNames);
         }
 
         return builder.ToString();
+    }
+
+    private static void WriteBlockBreakdown(
+        StringBuilder builder,
+        BossCombatLogEventRequest[] events,
+        int blockIndex,
+        Dictionary<Guid, string> actorNames)
+    {
+        BossCombatLogEventRequest blockEvent = events[blockIndex];
+        string source = ResolveActorName(blockEvent.SourceActorId ?? blockEvent.ActorId, actorNames);
+        string target = blockEvent.TargetActorId is Guid targetActorId
+            ? ResolveActorName(targetActorId, actorNames)
+            : "—";
+
+        BossCombatLogEventRequest? damageEvent = null;
+        decimal barrierAbsorbed = 0;
+        for (int index = blockIndex + 1; index < events.Length && index <= blockIndex + 4; index++)
+        {
+            BossCombatLogEventRequest candidate = events[index];
+            if (candidate.ServerTimeUtc != blockEvent.ServerTimeUtc
+                || candidate.SourceActorId != blockEvent.SourceActorId
+                || candidate.TargetActorId != blockEvent.TargetActorId)
+            {
+                continue;
+            }
+
+            if (string.Equals(
+                    candidate.Type,
+                    nameof(CombatEventType.ShieldAbsorbed),
+                    StringComparison.Ordinal))
+            {
+                barrierAbsorbed += candidate.Amount;
+                continue;
+            }
+
+            if (string.Equals(
+                    candidate.Type,
+                    nameof(CombatEventType.DamageDealt),
+                    StringComparison.Ordinal))
+            {
+                damageEvent = candidate;
+                break;
+            }
+        }
+
+        decimal beforeBlock = blockEvent.DamageBeforeBlock > 0
+            ? blockEvent.DamageBeforeBlock
+            : blockEvent.Amount + blockEvent.AmountBeforeShields;
+        decimal raw = blockEvent.RawDamage > 0
+            ? blockEvent.RawDamage
+            : beforeBlock;
+        decimal afterMitigation = blockEvent.DamageAfterMitigation > 0
+            ? blockEvent.DamageAfterMitigation
+            : beforeBlock;
+        decimal received = damageEvent?.Amount
+            ?? Math.Max(0, blockEvent.AmountBeforeShields - barrierAbsorbed);
+
+        builder.Append('#')
+            .Append(blockEvent.Sequence.ToString(CultureInfo.InvariantCulture))
+            .Append(' ')
+            .Append(FormatTime(blockEvent.ServerTimeUtc))
+            .Append(" · BLOCK · ")
+            .Append(source)
+            .Append(" → ")
+            .Append(target)
+            .Append(" · наносит ")
+            .Append(FormatNumber(raw))
+            .Append(" → после брони: ")
+            .Append(FormatNumber(afterMitigation));
+
+        if (beforeBlock != afterMitigation)
+        {
+            builder.Append(" → после модификаторов: ")
+                .Append(FormatNumber(beforeBlock));
+        }
+
+        builder.Append(" → щит блокирует ")
+            .Append(FormatNumber(blockEvent.Amount));
+        if (barrierAbsorbed > 0)
+        {
+            builder.Append(" → барьер поглощает ")
+                .Append(FormatNumber(barrierAbsorbed));
+        }
+        builder.Append(" → получено ")
+            .Append(FormatNumber(received));
+        if (received <= 0)
+            builder.Append(" · ПОЛНЫЙ БЛОК");
+        builder.AppendLine();
     }
 
     private static void WriteEvent(
@@ -261,7 +361,7 @@ public static class BossCombatLogEndpoints
             StringComparison.Ordinal);
         if (isShieldAbsorb)
         {
-            builder.Append(" · blocked=")
+            builder.Append(" · absorbed=")
                 .Append(FormatNumber(combatEvent.Amount));
         }
         else
@@ -277,7 +377,7 @@ public static class BossCombatLogEndpoints
                 if (combatEvent.AmountBeforeShields != 0
                     && combatEvent.AmountBeforeShields != combatEvent.Amount)
                 {
-                    builder.Append(" (входящий ")
+                    builder.Append(" (до barrier/HP cap ")
                         .Append(FormatNumber(combatEvent.AmountBeforeShields))
                         .Append(')');
                 }
@@ -432,6 +532,9 @@ public sealed record BossCombatLogEventRequest(
     decimal AmountBeforeShields,
     DateTimeOffset ServerTimeUtc,
     string? WeaponHand = null,
-    string? WeaponDefinitionId = null);
+    string? WeaponDefinitionId = null,
+    decimal RawDamage = 0,
+    decimal DamageAfterMitigation = 0,
+    decimal DamageBeforeBlock = 0);
 
 public sealed record BossCombatLogResponse(bool Sent, string? ErrorCode);
