@@ -170,7 +170,8 @@ public sealed class CombatHub(
                     entry.ActorId,
                     entry.Name,
                     entry.Threat,
-                    entry.IsCurrentTarget))
+                    entry.IsCurrentTarget,
+                    entry.SelectedTargetActorId))
                 .ToArray());
     }
 
