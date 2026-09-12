@@ -179,6 +179,10 @@ public static class DamagePipeline
             ? Math.Max(modified, Math.Max(0, request.MinimumDamage))
             : 0;
         decimal rounded = decimal.Round(minimumApplied, 0, MidpointRounding.AwayFromZero);
+        decimal roundedAfterMitigation = decimal.Round(
+            afterMitigation,
+            0,
+            MidpointRounding.AwayFromZero);
         decimal blocked = ResolveBlock(request, rounded, random);
         decimal afterBlock = Math.Max(0, rounded - blocked);
         decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, afterBlock);
@@ -228,7 +232,10 @@ public static class DamagePipeline
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
                 AmountBeforeShields: afterBlock,
-                DamageType: request.Type));
+                DamageType: request.Type,
+                RawDamage: raw,
+                DamageAfterMitigation: roundedAfterMitigation,
+                DamageBeforeBlock: rounded));
         }
 
         if (absorbed > 0)
@@ -240,7 +247,10 @@ public static class DamagePipeline
                 Amount: absorbed,
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
-                DamageType: request.Type));
+                DamageType: request.Type,
+                RawDamage: raw,
+                DamageAfterMitigation: roundedAfterMitigation,
+                DamageBeforeBlock: rounded));
         }
 
         if (critical && rounded > 0)
@@ -253,7 +263,10 @@ public static class DamagePipeline
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
                 AmountBeforeShields: afterBlock,
-                DamageType: request.Type));
+                DamageType: request.Type,
+                RawDamage: raw,
+                DamageAfterMitigation: roundedAfterMitigation,
+                DamageBeforeBlock: rounded));
         }
 
         events.Add(new CombatEvent(
@@ -264,7 +277,10 @@ public static class DamagePipeline
             SourceActorId: request.Source.ActorId,
             TargetActorId: request.Target.ActorId,
             AmountBeforeShields: afterBlock,
-            DamageType: request.Type));
+            DamageType: request.Type,
+            RawDamage: raw,
+            DamageAfterMitigation: roundedAfterMitigation,
+            DamageBeforeBlock: rounded));
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(
@@ -293,7 +309,7 @@ public static class DamagePipeline
             critical,
             raw,
             raw - afterMitigation,
-            decimal.Round(afterMitigation, 0, MidpointRounding.AwayFromZero),
+            roundedAfterMitigation,
             rounded,
             blocked > 0,
             blocked,
