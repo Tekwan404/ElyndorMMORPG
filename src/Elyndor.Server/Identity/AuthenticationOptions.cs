@@ -36,7 +36,7 @@ public sealed class TelegramAuthenticationOptions
 {
     public string BotToken { get; init; } = string.Empty;
 
-    public int InitDataMaxAgeSeconds { get; init; } = 300;
+    public int InitDataMaxAgeSeconds { get; init; } = 43200;
 
     public int MaxFutureSkewSeconds { get; init; } = 30;
 }
