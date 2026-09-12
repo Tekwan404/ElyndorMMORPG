@@ -685,7 +685,9 @@ public static class InventoryEndpoints
             item.BindState,
             item.Definition.BlockChancePercent + blockChanceBonus,
             item.Definition.BlockValueMin + blockValueBonus,
-            item.Definition.BlockValueMax + blockValueBonus);
+            item.Definition.BlockValueMax + blockValueBonus,
+            item.Definition.WeaponDamageMin,
+            item.Definition.WeaponDamageMax);
     }
 
     private static GeneratedItemSummaryResponse? ToGeneratedItemResponse(
