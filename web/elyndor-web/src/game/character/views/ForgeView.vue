@@ -37,9 +37,6 @@ const selectedAffix = computed(() => affixes.value.find(affix => affix.slotKey =
 const pendingAffixes = computed(() => pending.value
   ? reforgeResultAffixes(pending.value.current, pending.value.proposed, pending.value.slotKey)
   : { current: null, proposed: null })
-const totalReforgeStones = computed(() => character.value?.inventory.items
-  .filter(item => item.definitionId === 'REFORGE_STONE')
-  .reduce((total, item) => total + item.quantity, 0) ?? 0)
 const reforgeStones = computed(() => availableForgeMaterialQuantity(
   character.value?.inventory.items ?? [],
   'REFORGE_STONE',
