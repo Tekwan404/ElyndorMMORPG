@@ -8,11 +8,16 @@ public sealed partial class CombatSession
 {
     private const decimal HealingThreatCoefficient = 0.5m;
 
-    // Compatibility hook kept because the constructor still calls it before the
-    // authoritative _enemyThreatTables dictionary is created. Threat state now lives
+    // Compatibility hooks kept because CombatSession.cs still invokes the old
+    // initialization/summon entry points. Authoritative threat state now lives
     // exclusively in _enemyThreatTables.
-    private void InitializeThreatTables()
+    private static void InitializeThreatTables()
     {
+    }
+
+    private static void EnsureThreatTable(Guid enemyActorId)
+    {
+        _ = enemyActorId;
     }
 
     private void RegisterThreat(CombatEvent combatEvent)
