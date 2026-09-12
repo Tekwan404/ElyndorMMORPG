@@ -66,7 +66,8 @@ public sealed record CombatThreatEntryResponse(
     Guid ActorId,
     string Name,
     decimal Threat,
-    bool IsCurrentTarget);
+    bool IsCurrentTarget,
+    Guid? SelectedTargetActorId);
 
 public sealed record CombatThreatResponse(
     Guid EnemyActorId,

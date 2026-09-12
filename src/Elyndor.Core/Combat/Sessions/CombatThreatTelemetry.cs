@@ -7,7 +7,8 @@ public sealed record CombatThreatEntrySnapshot(
     Guid ActorId,
     string Name,
     decimal Threat,
-    bool IsCurrentTarget);
+    bool IsCurrentTarget,
+    Guid? SelectedTargetActorId);
 
 public sealed record CombatThreatSnapshot(
     Guid EnemyActorId,
@@ -71,7 +72,8 @@ public sealed partial class CombatSession
                 actorId,
                 state.Definition.Name,
                 threatTable.GetThreat(actorId),
-                actorId == currentTargetActorId));
+                actorId == currentTargetActorId,
+                state.SelectedTargetActorId == Guid.Empty ? null : state.SelectedTargetActorId));
         }
 
         if (_companion is not null && !_companion.Actor.IsDead)
@@ -80,7 +82,8 @@ public sealed partial class CombatSession
                 _companion.Actor.ActorId,
                 _companion.Name,
                 threatTable.GetThreat(_companion.Actor.ActorId),
-                _companion.Actor.ActorId == currentTargetActorId));
+                _companion.Actor.ActorId == currentTargetActorId,
+                null));
         }
 
         return new CombatThreatSnapshot(
