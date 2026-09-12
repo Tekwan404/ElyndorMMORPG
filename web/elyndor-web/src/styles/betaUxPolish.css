@@ -33,6 +33,54 @@ body .combat-telemetry .combat-telemetry__feed {
   backdrop-filter: blur(10px) !important;
 }
 
+/* Audit follow-up: enemy is the primary combat focal point, not another equal web card. */
+.combat-screen .combat-hud {
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr) !important;
+}
+
+.combat-screen .combat-hud__actor--enemy {
+  padding: 8px 10px !important;
+  border-color: rgb(216 95 114 / 48%) !important;
+  background:
+    linear-gradient(110deg, rgb(116 38 53 / 15%), transparent 58%),
+    rgb(8 12 20 / 96%) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 3%),
+    0 7px 18px rgb(0 0 0 / 18%) !important;
+}
+
+.combat-screen .combat-hud__actor--enemy .combat-hud__identity strong {
+  font-size: .82rem !important;
+}
+
+.combat-screen .battlefield {
+  min-height: 20rem !important;
+}
+
+.combat-screen .enemy-figure {
+  top: 2.2rem !important;
+  right: 6% !important;
+  left: 6% !important;
+  height: 13.2rem !important;
+}
+
+.combat-screen .player-figure {
+  width: 6.8rem !important;
+  height: 8.8rem !important;
+  opacity: .64 !important;
+}
+
+/* Audit follow-up: this tab is the player's journal, not only a quest list. */
+.game-shell .navigation__item[data-nav='quests'] small {
+  font-size: 0 !important;
+}
+
+.game-shell .navigation__item[data-nav='quests'] small::after {
+  content: 'Журнал';
+  font-size: var(--ui-font-size-xs);
+  font-weight: 600;
+}
+
 /* Main HUD: location and XP are two independent rows. */
 .game-shell .hud {
   gap: 8px !important;
@@ -209,6 +257,19 @@ body .combat-telemetry .combat-telemetry__feed {
     top: calc(env(safe-area-inset-top, 0px) + 128px) !important;
     right: 5px !important;
     width: min(9.25rem, 43vw) !important;
+  }
+
+  .combat-screen .combat-hud {
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
+  }
+
+  .combat-screen .battlefield {
+    min-height: 19rem !important;
+  }
+
+  .combat-screen .enemy-figure {
+    top: 2.4rem !important;
+    height: 12.2rem !important;
   }
 
   .game-shell .xp small {
