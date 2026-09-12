@@ -1,5 +1,4 @@
 # Unified AFK Farming Implementation Plan
-
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace mode-based AFK with one deterministic location-farming session that optionally targets one normal monster and never causes AFK death.
@@ -219,4 +218,3 @@ Update `docs/development/AFK_FARMING_IMPLEMENTATION_PLAN.md` only with verified 
 git add docs/development/AFK_FARMING_IMPLEMENTATION_PLAN.md
 git commit -m "docs: record unified AFK farming completion"
 ```
-
