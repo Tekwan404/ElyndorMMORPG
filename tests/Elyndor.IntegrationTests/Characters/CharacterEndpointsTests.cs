@@ -80,10 +80,16 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
         Assert.Equal(7, locations?.Length);
 
-        HttpResponseMessage levelGatedTravel = await client.PostAsJsonAsync(
+        HttpResponseMessage recommendedLevelTravel = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
             new TravelRequest(Guid.CreateVersion7(), "DEEP_FOREST"));
-        Assert.Equal(HttpStatusCode.Forbidden, levelGatedTravel.StatusCode);
+        recommendedLevelTravel.EnsureSuccessStatusCode();
+        TravelResponse? deepForestTravel =
+            await recommendedLevelTravel.Content.ReadFromJsonAsync<TravelResponse>();
+        Assert.Equal("DEEP_FOREST", deepForestTravel?.LocationId);
+        Assert.Equal(2, deepForestTravel?.Version);
+        Assert.False(deepForestTravel?.IsTravelling ?? false);
+        Assert.Null(deepForestTravel?.TargetLocationId);
 
         HttpResponseMessage travelResponse = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
@@ -91,7 +97,7 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         travelResponse.EnsureSuccessStatusCode();
         TravelResponse? travel = await travelResponse.Content.ReadFromJsonAsync<TravelResponse>();
         Assert.Equal("WHISPERING_FOREST", travel?.LocationId);
-        Assert.Equal(2, travel?.Version);
+        Assert.Equal(3, travel?.Version);
         Assert.False(travel?.IsTravelling ?? false);
         Assert.Null(travel?.TargetLocationId);
 
