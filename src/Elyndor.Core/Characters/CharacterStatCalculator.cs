@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 
@@ -202,11 +203,15 @@ public sealed class CharacterStatCalculator(
                 ("STRENGTH", primary.Strength * formula.ArmorPerStrength),
                 ("EQUIPMENT_BONUS", equipmentDerived.ArmorFlat),
                 ("TALENT_BONUS", stats.Armor - armorBeforeTalent)),
+            ["armorDamageReductionPercent"] = Breakdown(
+                DefenseMitigationFormula.CalculateReductionPercent(stats.Armor)),
             ["magicResistance"] = Breakdown(stats.MagicResistance,
                 ("STAMINA", primary.Stamina * formula.MagicResistancePerStamina),
                 ("INTELLECT", primary.Intellect * formula.MagicResistancePerIntellect),
                 ("EQUIPMENT_BONUS", equipmentDerived.MagicResistanceFlat),
                 ("TALENT_BONUS", stats.MagicResistance - magicResistanceBeforeTalent)),
+            ["magicDamageReductionPercent"] = Breakdown(
+                DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance)),
             ["dodge"] = Breakdown(stats.Dodge,
                 ("AGILITY", primary.Agility * formula.DodgePerAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
