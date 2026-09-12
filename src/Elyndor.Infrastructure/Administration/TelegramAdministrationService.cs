@@ -153,6 +153,18 @@ public sealed class TelegramAdministrationService(
                 "Имя уже занято.",
                 cancellationToken);
         }
+        catch (DbUpdateException exception) when (
+            operation.Type == AdministrationOperationType.Delete
+            && IsForeignKeyViolation(exception, "fk_parties_leader_character"))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            return await RecordTerminalFailureAsync(
+                audit,
+                "admin_character_party_blocked",
+                "Персонаж связан с группой как лидер. Сначала передайте лидерство или распустите группу.",
+                cancellationToken);
+        }
     }
 
     private async Task<AdministrationResult> ExecuteCharacterOperationAsync(
@@ -467,7 +479,8 @@ public sealed class TelegramAdministrationService(
             && !audit.ResultCode.Contains("not_found", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("mismatch", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("uncertain", StringComparison.Ordinal)
-            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal),
+            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("blocked", StringComparison.Ordinal),
             audit.ResultCode,
             audit.ResultSummary,
             duplicate);
@@ -476,6 +489,14 @@ public sealed class TelegramAdministrationService(
         exception.InnerException is PostgresException
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: var actualConstraint
+        }
+        && string.Equals(actualConstraint, constraintName, StringComparison.Ordinal);
+
+    private static bool IsForeignKeyViolation(DbUpdateException exception, string constraintName) =>
+        exception.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.ForeignKeyViolation,
             ConstraintName: var actualConstraint
         }
         && string.Equals(actualConstraint, constraintName, StringComparison.Ordinal);
