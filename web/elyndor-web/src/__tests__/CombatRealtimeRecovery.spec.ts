@@ -113,7 +113,7 @@ describe('combat realtime recovery', () => {
     const sessionId = '00000000-0000-0000-0000-000000000501'
     const playerId = '00000000-0000-0000-0000-000000000502'
     const enemyId = '00000000-0000-0000-0000-000000000503'
-    store.snapshot = {
+    const currentSnapshot = {
       sessionId,
       sequence: 10,
       status: 'Active',
@@ -122,7 +122,7 @@ describe('combat realtime recovery', () => {
       balanceVersion: '1',
       player: { actorId: playerId, abilities: [], cooldowns: {} },
       enemy: { actorId: enemyId, definitionId: 'BOSS' },
-    } as never
+    }
 
     const handler = realtimeMock.handlers.get('CombatUpdated')
     expect(handler).toBeDefined()
@@ -130,8 +130,17 @@ describe('combat realtime recovery', () => {
     handler?.({
       succeeded: true,
       errorCode: null,
+      snapshot: currentSnapshot,
+      events: [],
+      reward: null,
+    })
+    expect(store.snapshot?.sequence).toBe(10)
+
+    handler?.({
+      succeeded: true,
+      errorCode: null,
       snapshot: {
-        ...store.snapshot,
+        ...currentSnapshot,
         sequence: 9,
         serverTimeUtc: '2026-09-12T10:00:09Z',
       },
