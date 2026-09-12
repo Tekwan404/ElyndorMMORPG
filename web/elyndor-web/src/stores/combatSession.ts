@@ -575,7 +575,13 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       threat.value = null
     }
 
+    const eventSequenceCeiling = currentSnapshot?.sequence
+      ?? incomingSnapshot?.sequence
+      ?? Number.MAX_SAFE_INTEGER
     const fresh = update.events.filter((event) => {
+      // A stale snapshot may legitimately carry a late event that fills a gap behind
+      // the current authoritative sequence, but it must never inject future events.
+      if (isStaleSameSession && event.sequence > eventSequenceCeiling) return false
       if (seenEventSequences.has(event.sequence)) return false
       seenEventSequences.add(event.sequence)
       return true
@@ -588,7 +594,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         .slice(-COMBAT_EVENT_BUFFER_LIMIT)
     }
     accumulateTrainingStats(fresh, snapshot.value ?? incomingSnapshot)
-    if (update.reward) {
+    if (!isStaleSameSession && update.reward) {
       reward.value = update.reward
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
