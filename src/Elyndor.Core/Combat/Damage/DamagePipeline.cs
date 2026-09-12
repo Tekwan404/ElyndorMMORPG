@@ -49,7 +49,6 @@ public static class DamagePipeline
     private const decimal LevelPenaltyPerLevel = 0.01m;
     private const decimal MaxLevelPenalty = 0.10m;
     private const decimal MaxMissChance = 0.30m;
-    private const decimal MitigationConstant = 100m;
 
     public static DamageResult Resolve(
         DamageRequest request,
@@ -385,7 +384,7 @@ public static class DamagePipeline
             : request.Source.Stats.MagicPenetration + request.MagicPenetrationBonus;
         decimal effectiveDefense =
             Math.Max(0, defense * (1 - Math.Clamp(penetration, 0, 1)));
-        return damage * MitigationConstant / (MitigationConstant + effectiveDefense);
+        return damage * DefenseMitigationFormula.CalculateDamageMultiplier(effectiveDefense);
     }
 
     private static decimal AbsorbShields(CombatActorState target, decimal incoming)
@@ -404,7 +403,7 @@ public static class DamagePipeline
             remaining -= absorbed;
             if (shield.RemainingMagnitude <= 0)
             {
-                target.ActiveEffects.Remove(shield);
+                target.ActiveEffects.Remove(prevention: shield);
             }
 
             if (remaining <= 0)
