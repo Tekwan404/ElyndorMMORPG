@@ -53,6 +53,21 @@ public sealed class AfkFarmSessionTests
             now));
     }
 
+    [Fact]
+    public void CompleteIntervalAdvancesCursorAndCompletesAtEnd()
+    {
+        DateTimeOffset now = new(2026, 9, 11, 0, 0, 0, TimeSpan.Zero);
+        AfkFarmSession session = Create(now);
+
+        session.CompleteInterval(now.AddMinutes(15));
+        session.CompleteInterval(now.AddHours(1));
+
+        Assert.Equal(now.AddHours(1), session.LastProcessedAtUtc);
+        Assert.Equal(AfkFarmStatus.Completed, session.Status);
+        Assert.Equal(now.AddHours(1), session.CompletedAtUtc);
+        Assert.Equal("duration_elapsed", session.StopReason);
+    }
+
     private static AfkFarmSession Create(DateTimeOffset now) => new(
         Guid.NewGuid(),
         Guid.NewGuid(),

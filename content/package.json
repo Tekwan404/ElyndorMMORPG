@@ -3469,5 +3469,11 @@
   ],
   "inventoryProfile": {
     "defaultCapacity": 40
+  },
+  "afkFarm": {
+    "processingIntervalSeconds": 900,
+    "xpMultiplier": 0.7,
+    "goldMultiplier": 0.7,
+    "lootMultiplier": 0.7
   }
 }

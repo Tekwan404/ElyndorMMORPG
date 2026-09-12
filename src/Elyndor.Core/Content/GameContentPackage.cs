@@ -38,7 +38,14 @@ public sealed record GameContentPackage(
     IReadOnlyList<QuestDefinition>? Quests = null,
     ItemizationDefinition? Itemization = null,
     IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null,
-    IReadOnlyList<PromoCodeDefinition>? PromoCodes = null);
+    IReadOnlyList<PromoCodeDefinition>? PromoCodes = null,
+    AfkFarmRewardProfile? AfkFarm = null);
+
+public sealed record AfkFarmRewardProfile(
+    int ProcessingIntervalSeconds,
+    decimal XpMultiplier,
+    decimal GoldMultiplier,
+    decimal LootMultiplier);
 
 public sealed record GameContentDefinition(
     string Type,

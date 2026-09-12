@@ -204,6 +204,11 @@ public sealed class AfkFarmService(
             character.Level,
             contentSnapshot,
             cancellationToken);
+        if (derived.ClassProfile.CombatAutoAttack is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return AfkFarmMutationResult.Failure(AfkFarmErrorCodes.NoEligibleEncounters);
+        }
         AfkCharacterSnapshot characterSnapshot = new(
             character.ClassId,
             character.Level,

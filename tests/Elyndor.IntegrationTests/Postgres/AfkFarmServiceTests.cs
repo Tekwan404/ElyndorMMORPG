@@ -7,6 +7,8 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Parties;
 using Elyndor.Core.World;
+using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Afk;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
@@ -300,6 +302,30 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.Single(await dbContext.AfkFarmSessions.ToArrayAsync());
     }
 
+    [Fact]
+    public async Task ProcessingTheSameIntervalTwiceCreatesOneGrant()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        GameContentPackage content = CreateContent();
+        AfkFarmService start = CreateService(dbContext, content);
+        Assert.True((await start.StartAsync(
+            accountId, ForestId, AfkFarmMode.Safe, TimeSpan.FromHours(1), CancellationToken.None)).Succeeded);
+
+        StaticContentSnapshotProvider provider = new(content);
+        AfkFarmProgressService progress = new(
+            dbContext,
+            provider,
+            new OffsetTimeProvider(Now.AddMinutes(15)));
+
+        AfkFarmProgressResult first = await progress.ProcessAsync(accountId, CancellationToken.None);
+        AfkFarmProgressResult second = await progress.ProcessAsync(accountId, CancellationToken.None);
+
+        Assert.True(first.Processed);
+        Assert.False(second.Processed);
+        Assert.Single(await dbContext.AfkFarmIntervalGrants.ToArrayAsync());
+    }
+
     private static AfkFarmService CreateService(GameDbContext dbContext, GameContentPackage content)
     {
         StaticContentSnapshotProvider provider = new(content);
@@ -338,10 +364,20 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             [],
             "AFK_TEST_AI");
 
-        return PhaseTwoTestContent.Create(Now, [], [location]) with
+        GameContentPackage baseContent = PhaseTwoTestContent.Create(Now, [], [location]);
+        return baseContent with
         {
             Monsters = [wolf],
-            MonsterAiProfiles = [new("AFK_TEST_AI", [])]
+            MonsterAiProfiles = [new("AFK_TEST_AI", [])],
+            AfkFarm = new AfkFarmRewardProfile(900, 0.7m, 0.7m, 0.7m),
+            LevelProgression = new LevelProgressionDefinition("AFK_TEST", 60, 100, 1.1m),
+            ClassProfiles = baseContent.ClassProfiles!
+                .Select(profile => profile with
+                {
+                    CombatAutoAttack = new AutoAttackProfile(
+                        TimeSpan.FromSeconds(2), 2, 0.5m, 0, 1, 2)
+                })
+                .ToArray()
         };
     }
 
@@ -377,5 +413,10 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     private sealed class FixedTimeProvider : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    private sealed class OffsetTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 }

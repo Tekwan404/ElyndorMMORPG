@@ -96,6 +96,51 @@ public sealed class AfkFarmSession
         return true;
     }
 
+    public bool CompleteInterval(DateTimeOffset processedUntilUtc)
+    {
+        EnsureUtc(processedUntilUtc, nameof(processedUntilUtc));
+        if (Status != AfkFarmStatus.Active)
+            return false;
+        if (processedUntilUtc < LastProcessedAtUtc || processedUntilUtc > EndsAtUtc)
+            throw new ArgumentOutOfRangeException(nameof(processedUntilUtc));
+
+        LastProcessedAtUtc = processedUntilUtc;
+        if (processedUntilUtc == EndsAtUtc)
+        {
+            Status = AfkFarmStatus.Completed;
+            CompletedAtUtc = processedUntilUtc;
+            StopReason = "duration_elapsed";
+        }
+
+        Version++;
+        return true;
+    }
+
+    public bool Invalidate(DateTimeOffset completedAtUtc, string reason)
+    {
+        return Stop(AfkFarmStatus.Invalidated, completedAtUtc, reason);
+    }
+
+    public bool StopForInventoryFull(DateTimeOffset completedAtUtc)
+    {
+        return Stop(AfkFarmStatus.InventoryFull, completedAtUtc, "inventory_full");
+    }
+
+    private bool Stop(AfkFarmStatus status, DateTimeOffset completedAtUtc, string reason)
+    {
+        EnsureUtc(completedAtUtc, nameof(completedAtUtc));
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (Status != AfkFarmStatus.Active)
+            return false;
+        ArgumentOutOfRangeException.ThrowIfLessThan(completedAtUtc, StartedAtUtc);
+
+        Status = status;
+        CompletedAtUtc = completedAtUtc;
+        StopReason = reason;
+        Version++;
+        return true;
+    }
+
     private static void EnsureUtc(DateTimeOffset timestamp, string parameterName)
     {
         if (timestamp.Offset != TimeSpan.Zero)

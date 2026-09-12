@@ -40,6 +40,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterTravelState> CharacterTravelStates => Set<CharacterTravelState>();
 
     public DbSet<AfkFarmSession> AfkFarmSessions => Set<AfkFarmSession>();
+    public DbSet<AfkFarmIntervalGrant> AfkFarmIntervalGrants => Set<AfkFarmIntervalGrant>();
 
     public DbSet<AdminCommandAudit> AdminCommandAudits => Set<AdminCommandAudit>();
 

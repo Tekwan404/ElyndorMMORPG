@@ -58,6 +58,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<PartyService>();
         builder.Services.AddScoped<DungeonService>();
         builder.Services.AddScoped<AfkFarmService>();
+        builder.Services.AddScoped<AfkFarmProgressService>();
         builder.Services.AddScoped<DungeonNavigationService>();
         builder.Services.AddScoped<PartyDungeonRunCoordinator>();
         builder.Services.AddSingleton<ContentPublicationCoordinator>();
