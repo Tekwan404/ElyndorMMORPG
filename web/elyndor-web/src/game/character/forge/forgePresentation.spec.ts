@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import type { InventoryItem } from '@/api/contracts'
-import { availableForgeMaterialQuantity, forgeItemAvailability, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
+import type { GeneratedItemSummary, InventoryItem } from '@/api/contracts'
+import { availableForgeMaterialQuantity, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 
 function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
   return {
@@ -48,6 +48,32 @@ function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
   }
 }
 
+function generatedAffix(statId: string, value: number, min: number, max: number): GeneratedItemSummary {
+  return {
+    itemLevel: 23,
+    itemPower: 290.2,
+    maxItemPower: 494.91,
+    rollQuality: 42,
+    stars: 2,
+    isPerfect: false,
+    perfectOrigin: null,
+    generatedPrefixId: null,
+    generatedSuffixId: null,
+    displayName: 'Сапоги Чёрного Созвездия',
+    affixes: [{
+      slotKey: 'AFFIX_4',
+      statId,
+      value,
+      min,
+      max,
+      step: 0.1,
+      affixTier: 4,
+      isGuaranteed: false,
+      isReforgeSlot: true,
+    }],
+  }
+}
+
 describe('forgeItemAvailability', () => {
   it('marks a locked generated item unavailable with an explicit reason', () => {
     expect(forgeItemAvailability(equipment({ isLocked: true }))).toEqual({
@@ -78,5 +104,20 @@ describe('availableForgeMaterialQuantity', () => {
 describe('shouldRestorePendingReforge', () => {
   it('restores a pending result even when the item is transaction-locked', () => {
     expect(shouldRestorePendingReforge(equipment({ transactionLocked: true }))).toBe(true)
+  })
+})
+
+describe('reforgeResultAffixes', () => {
+  it('keeps current and proposed stat identities and ranges separate', () => {
+    const result = reforgeResultAffixes(
+      generatedAffix('ACCURACY', 4.4, 2.3, 5.9),
+      generatedAffix('DODGE', 1.6, 0.8, 2.1),
+      'AFFIX_4',
+    )
+
+    expect(result.current).toMatchObject({ statId: 'ACCURACY', value: 4.4, min: 2.3, max: 5.9 })
+    expect(result.proposed).toMatchObject({ statId: 'DODGE', value: 1.6, min: 0.8, max: 2.1 })
+    expect(forgeStatLabel(result.current!.statId)).toBe('Точность')
+    expect(forgeStatLabel(result.proposed!.statId)).toBe('Уклонение')
   })
 })
