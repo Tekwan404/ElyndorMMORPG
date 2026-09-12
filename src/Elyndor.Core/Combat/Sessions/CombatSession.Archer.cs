@@ -26,6 +26,8 @@ public sealed partial class CombatSession
     private const string TrapperAccuracyEffectId = "ARCHER_TRAPPER_ACCURACY";
     private const string TrapperDamageEffectId = "ARCHER_TRAPPER_DAMAGE";
     private const string PredatorBleedEffectId = "ARCHER_PREDATOR_BLEED";
+    private const string PredatorCommandBleedEffectId = "ARCHER_PREDATOR_COMMAND_BLEED";
+    private const string TrapperCommandStunEffectId = "ARCHER_TRAPPER_COMMAND_STUN";
     private const string ArcaneFlowEffectId = "ARCHER_ARCANE_FLOW";
     private const string SpiritAfterArrowEffectId = "ARCHER_SPIRIT_AFTER_ARROW";
     private const string SpiritOwnerResistanceEffectId = "ARCHER_SPIRIT_OWNER_RESISTANCE";
@@ -825,28 +827,43 @@ public sealed partial class CombatSession
                     * ResolvePhysicalCompanionAbilityDamageMultiplier(),
                     "COMMAND_ATTACK",
                     now);
-                break;
-
-            case "GUARDIAN":
-                ApplyArcherEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        GuardianBarrierEffectId,
-                        EffectKind.StatModifier,
-                        ArcherRuntimeDuration(
-                            "COMMAND_ATTACK",
-                            "guardianDurationSeconds"),
-                        1,
-                        EffectStackPolicy.Replace,
-                        ArcherRuntimeParameter(
-                            "COMMAND_ATTACK",
-                            "guardianIncomingDamageMultiplier"),
-                        ModifiedStat: EffectStat.IncomingDamageMultiplier,
-                        ModifierMode: EffectModifierMode.Multiplicative),
+                ApplyCompanionAttackPowerDot(
+                    target,
+                    PredatorCommandBleedEffectId,
+                    ArcherRuntimeParameter("COMMAND_ATTACK", "predatorBleedPercent"),
+                    ArcherRuntimeDuration("COMMAND_ATTACK", "predatorBleedDurationSeconds"),
+                    TimeSpan.FromSeconds(1),
                     now);
                 break;
 
+            case "GUARDIAN":
+                ApplyKernelEvents(
+                    [new CombatEvent(
+                        CombatEventType.TauntApplied,
+                        now,
+                        target.ActorId,
+                        "COMMAND_ATTACK",
+                        ArcherRuntimeParameter("COMMAND_ATTACK", "guardianTauntDurationSeconds"),
+                        _companion.Actor.ActorId,
+                        target.ActorId)],
+                    _companion.Actor.ActorId,
+                    target.ActorId,
+                    "COMMAND_ATTACK");
+                break;
+
             case "TRAPPER":
+                ApplyArcherEffectFrom(
+                    target,
+                    _companion.Actor.ActorId,
+                    new EffectDefinition(
+                        TrapperCommandStunEffectId,
+                        EffectKind.Stun,
+                        ArcherRuntimeDuration("COMMAND_ATTACK", "trapperStunDurationSeconds"),
+                        1,
+                        EffectStackPolicy.Replace,
+                        0,
+                        SourceSpecific: true),
+                    now);
                 ApplyTrapperDebuff(target, now);
                 if (TryGetArcherHook("B-6-3", out ResolvedTalentEventHook silent)
                     && TalentCooldownReady($"{silent.TalentId}:{target.ActorId}", now))
