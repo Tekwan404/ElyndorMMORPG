@@ -97,7 +97,10 @@ public sealed class DungeonReconnectRecoveryTests(PostgresFixture postgres) : IA
         Assert.Equal(runId, recovered!.RunId);
         Assert.Equal(DungeonRunState.Active, recovered.State);
         Assert.Equal("ANCIENT_MINE", recovered.DungeonId);
-        Assert.Contains(recovered.Members, member => member.CharacterId == characterId && member.IsActive);
+        Assert.Contains(
+            recovered.Members,
+            member => member.CharacterId == characterId
+                && member.State == DungeonRunMemberState.Active);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
