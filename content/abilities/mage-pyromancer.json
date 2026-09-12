@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.12.0",
-  "balanceVersion": "0.10.0",
-  "publishedAtUtc": "2026-09-07T04:55:00+00:00",
+  "contentVersion": "0.20.0",
+  "balanceVersion": "0.15.0",
+  "publishedAtUtc": "2026-09-12T18:35:00+00:00",
   "definitions": [
     {
       "type": "CLASS",
@@ -112,8 +112,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 70,
           "damageType": "Magical",
-          "spellPowerCoefficient": 1.25
+          "spellPowerCoefficient": 1.25,
+          "damagePerCharacterLevel": 5.5
         }
       ],
       "displayName": "Огненный шар",
@@ -133,8 +135,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 45,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.75
+          "spellPowerCoefficient": 0.75,
+          "damagePerCharacterLevel": 3.5
         }
       ],
       "displayName": "Тайная искра",
@@ -154,8 +158,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 60,
           "damageType": "Magical",
-          "spellPowerCoefficient": 1.05
+          "spellPowerCoefficient": 1.05,
+          "damagePerCharacterLevel": 4.8
         }
       ],
       "displayName": "Ледяной осколок",
@@ -175,8 +181,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 55,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.95
+          "spellPowerCoefficient": 0.95,
+          "damagePerCharacterLevel": 4.2
         }
       ],
       "displayName": "Вспышка",
@@ -196,8 +204,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 42,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.75
+          "spellPowerCoefficient": 0.75,
+          "damagePerCharacterLevel": 3.2
         }
       ],
       "displayName": "Огненная волна",
@@ -232,8 +242,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 110,
           "damageType": "Magical",
-          "spellPowerCoefficient": 2.4
+          "spellPowerCoefficient": 2.4,
+          "damagePerCharacterLevel": 8.5
         }
       ],
       "displayName": "Огненная комета",
@@ -253,8 +265,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 65,
           "damageType": "Magical",
-          "spellPowerCoefficient": 1.1
+          "spellPowerCoefficient": 1.1,
+          "damagePerCharacterLevel": 5.0
         }
       ],
       "displayName": "Тайный взрыв",
@@ -289,8 +303,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 80,
           "damageType": "Magical",
-          "spellPowerCoefficient": 1.5
+          "spellPowerCoefficient": 1.5,
+          "damagePerCharacterLevel": 6.2
         }
       ],
       "displayName": "Арканный каскад",
@@ -310,8 +326,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 35,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.6
+          "spellPowerCoefficient": 0.6,
+          "damagePerCharacterLevel": 2.5
         }
       ],
       "displayName": "Тайная печать",
@@ -331,8 +349,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 55,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.95
+          "spellPowerCoefficient": 0.95,
+          "damagePerCharacterLevel": 4.2
         }
       ],
       "displayName": "Ледяное копьё",
@@ -352,8 +372,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 40,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.7
+          "spellPowerCoefficient": 0.7,
+          "damagePerCharacterLevel": 3.0
         }
       ],
       "displayName": "Ледяной раскол",
@@ -388,8 +410,10 @@
       "actions": [
         {
           "type": "Damage",
+          "amount": 32,
           "damageType": "Magical",
-          "spellPowerCoefficient": 0.55
+          "spellPowerCoefficient": 0.55,
+          "damagePerCharacterLevel": 2.3
         }
       ],
       "displayName": "Морозная печать",
