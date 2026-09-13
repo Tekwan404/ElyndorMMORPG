@@ -381,8 +381,8 @@ internal static class BossCombatLogArchive
 
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
-        IReadOnlyList<CombatEvent> events,
-        IReadOnlyList<MonsterDefinition> bosses,
+        CombatEvent[] events,
+        MonsterDefinition[] bosses,
         int droppedEvents)
     {
         Dictionary<Guid, string> actorNames = new();
@@ -414,9 +414,9 @@ internal static class BossCombatLogArchive
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
         builder.Append("Событий: ")
-            .AppendLine(events.Count.ToString(CultureInfo.InvariantCulture));
+            .AppendLine(events.Length.ToString(CultureInfo.InvariantCulture));
 
-        if (events.Count > 0)
+        if (events.Length > 0)
         {
             builder.Append("Sequence: #")
                 .Append(events[0].Sequence.ToString(CultureInfo.InvariantCulture))
@@ -506,9 +506,9 @@ internal static class BossCombatLogArchive
         builder.AppendLine();
     }
 
-    private static long[] FindMissingSequences(IReadOnlyList<CombatEvent> events)
+    private static long[] FindMissingSequences(CombatEvent[] events)
     {
-        if (events.Count == 0)
+        if (events.Length == 0)
             return [];
 
         List<long> missing = [];
@@ -543,7 +543,7 @@ internal static class BossCombatLogArchive
 
     private static string ResolveActorName(
         Guid actorId,
-        IReadOnlyDictionary<Guid, string> names) =>
+        Dictionary<Guid, string> names) =>
         names.TryGetValue(actorId, out string? name)
             ? name
             : actorId.ToString("N")[..8];
