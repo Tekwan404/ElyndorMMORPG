@@ -405,7 +405,7 @@ public static class DamagePipeline
             remaining -= absorbed;
             if (shield.RemainingMagnitude <= 0)
             {
-                request.Target.ActiveEffects.Remove(shield);
+                target.ActiveEffects.Remove(shield);
             }
 
             if (remaining <= 0)
