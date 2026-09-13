@@ -32,6 +32,7 @@ public static class PartyEndpoints
         group.MapPost("/kick/{characterId:guid}", KickAsync);
         group.MapPost("/transfer/{characterId:guid}", TransferAsync);
         group.MapPost("/disband", DisbandAsync);
+        group.MapPost("/dungeon-runs/{runId:guid}/return-to-town", ReturnToTownAsync);
         return endpoints;
     }
 
@@ -127,6 +128,19 @@ public static class PartyEndpoints
             needsEntry,
             canEnter,
             enterBlockedReason));
+    }
+
+    private static async Task<IResult> ReturnToTownAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonNavigationService navigationService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToNavigationResult(await navigationService.ReturnToTownAsync(
+            accountId,
+            runId,
+            cancellationToken));
     }
 
     private static async Task<IResult> GetInvitesAsync(
@@ -248,6 +262,24 @@ public static class PartyEndpoints
             ["code"] = result.ErrorCode
         });
     }
+
+    private static IResult ToNavigationResult(DungeonNavigationResult result) =>
+        result.Succeeded
+            ? Results.Ok(new
+            {
+                locationId = result.LocationId,
+                locationVersion = result.LocationVersion
+            })
+            : Results.Problem(
+                statusCode: result.ErrorCode is DungeonErrorCodes.RunNotFound
+                    or DungeonErrorCodes.CharacterNotFound
+                    or DungeonErrorCodes.MemberNotInRun
+                        ? StatusCodes.Status404NotFound
+                        : StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = result.ErrorCode
+                });
 
     private static PartyResponse ToResponse(PartySnapshot snapshot) =>
         new(
