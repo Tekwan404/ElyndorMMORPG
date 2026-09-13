@@ -1228,19 +1228,20 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
-    public void SingleEnemyAbilityUsesSelectedTargetInsteadOfCallerTarget()
+    public void SingleEnemyAbilityUsesExplicitTargetAndUpdatesPlayerSelection()
     {
-        CombatSession session = CreateTargetingSession(100, 100, 100);
+        CombatSession session = CreateTargetingSession(100, 200, 100);
 
         CombatCommandResult result = session.Handle(
             new UseAbilityCommand("single-authoritative", "STRIKE", EnemyTwoId),
             Now);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(0, result.Snapshot.Enemies!.Single(enemy =>
+        Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy =>
             enemy.ActorId == EnemyId).Hp);
         Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy =>
             enemy.ActorId == EnemyTwoId).Hp);
+        Assert.Equal(EnemyTwoId, result.Snapshot.SelectedTargetActorId);
     }
 
     [Fact]

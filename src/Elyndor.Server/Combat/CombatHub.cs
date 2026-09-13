@@ -63,6 +63,7 @@ public sealed class CombatHub(
     public Task<CombatUpdateResponse> UseAbility(
         Guid sessionId,
         string abilityId,
+        Guid targetActorId,
         string commandId)
     {
         Guid accountId = GetCommandAccountId();
@@ -81,7 +82,7 @@ public sealed class CombatHub(
 
                 return session.HandleAbilityInterruptingAutoAttack(
                     characterId,
-                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    new UseAbilityCommand(commandId, abilityId, targetActorId),
                     now);
             },
             Context.ConnectionAborted));

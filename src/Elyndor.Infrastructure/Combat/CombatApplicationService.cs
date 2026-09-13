@@ -186,7 +186,7 @@ public sealed class CombatApplicationService(
     }
 
     public Task<CombatOperationResult> UseAbilityAsync(
-        Guid accountId, Guid sessionId, string commandId, string abilityId,
+        Guid accountId, Guid sessionId, string commandId, string abilityId, Guid targetActorId,
         CancellationToken cancellationToken) => registry.ExecuteParticipantAsync(
             accountId,
             (session, characterId, pinnedContent, now) =>
@@ -196,7 +196,7 @@ public sealed class CombatApplicationService(
                         session.Snapshot(characterId), []);
                 return session.HandleAbilityInterruptingAutoAttack(
                     characterId,
-                    new UseAbilityCommand(commandId, abilityId, Guid.Empty),
+                    new UseAbilityCommand(commandId, abilityId, targetActorId),
                     now);
             }, cancellationToken);
 
