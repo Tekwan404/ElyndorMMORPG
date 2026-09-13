@@ -33,7 +33,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
-  await page.locator('.menu-tile--violet').click()
+  await page.getByRole('button', { name: 'Группа Состав и поход' }).click()
   await expect(page.getByRole('heading', { name: 'Группа' })).toBeVisible()
   await page.locator('[data-party-open-dungeons]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
