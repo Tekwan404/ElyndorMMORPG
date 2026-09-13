@@ -64,7 +64,10 @@ public sealed record AbilityDefinition(
     string? IconId = null,
     int TargetCount = 0,
     AbilityTargetSelectorProfile TargetSelectorProfile = AbilityTargetSelectorProfile.EncounterOrder,
-    IReadOnlyDictionary<string, decimal>? RuntimeParameters = null);
+    IReadOnlyDictionary<string, decimal>? RuntimeParameters = null,
+    string? RequiredActiveEffectId = null,
+    string? FreeResourceCostWhileEffectId = null,
+    string? ConsumeEffectId = null);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
