@@ -7,6 +7,7 @@ import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
+import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -731,6 +732,19 @@ onUnmounted(() => window.clearInterval(timer))
             Возгорание · {{ effectRemaining(combustion.expiresAtUtc).toFixed(1) }}с
           </span>
         </div>
+
+        <CombatAbilityHotbar
+          :slots="abilitySlots"
+          :queued-ability-ids="combat.abilityQueue.map((queued) => queued.abilityId)"
+          :fireball-streak="fireballStreak"
+          :heat-active="Boolean(heatLimit)"
+          :combustion-active="Boolean(combustion)"
+          :ability-state="abilityState"
+          :ability-icon="abilityIcon"
+          :ability-glyph="abilityGlyph"
+          :cooldown-remaining="cooldownRemaining"
+          @use="(ability) => combat.useAbility(ability.id)"
+        />
 
         <div v-if="playerCast" class="cast-bar cast-bar--player" data-player-cast>
           <div>
@@ -1507,7 +1521,7 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .ability-row {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 4px;
 }
