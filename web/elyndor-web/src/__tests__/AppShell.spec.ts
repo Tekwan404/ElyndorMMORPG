@@ -28,11 +28,42 @@ describe('AppShell', () => {
     party.snapshot = { partyId: 'party', leaderCharacterId: characterId, members: [], version: 1 }
     vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
     const dungeon = useDungeonStore()
-    dungeon.previews = [{ id: 'ANCIENT_MINE' } as (typeof dungeon.previews)[number]]
+    dungeon.previews = [{
+      id: 'ANCIENT_MINE',
+      displayName: 'Древняя шахта',
+      description: 'Тестовое подземелье',
+      minimumLevel: 1,
+      maximumLevel: 60,
+      entryLocationId: 'ANCIENT_MINE',
+      minimumPartySize: 1,
+      maximumPartySize: 5,
+      encounters: [{
+        id: 'encounter-0',
+        monsterId: 'DEEP_WOLF_L6',
+        checkpointId: 'MINE_ENTRANCE',
+        isBoss: false,
+      }],
+    }]
     dungeon.current = {
-      runId: 'run', dungeonId: 'ANCIENT_MINE', state: 'Active', currentEncounterIndex: 0,
-      members: [{ characterId, state: 'Active' }], encounters: [{ encounterIndex: 0, state: 'Pending' }],
-    } as NonNullable<typeof dungeon.current>
+      runId: 'run',
+      dungeonId: 'ANCIENT_MINE',
+      displayName: 'Древняя шахта',
+      description: 'Тестовое подземелье',
+      state: 'Active',
+      currentEncounterIndex: 0,
+      currentCheckpointId: 'MINE_ENTRANCE',
+      encounterCount: 1,
+      partyId: 'party',
+      members: [{ characterId, state: 'Active', joinedAtUtc: '2026-09-13T00:00:00Z' }],
+      encounters: [{
+        encounterId: 'encounter-0',
+        encounterIndex: 0,
+        monsterId: 'DEEP_WOLF_L6',
+        state: 'Pending',
+        wipeCount: 0,
+        characterIds: [],
+      }],
+    }
     vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
@@ -192,6 +223,8 @@ describe('AppShell', () => {
     store.snapshot = worldSnapshot()
     const party = usePartyStore()
     vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
+    const dungeon = useDungeonStore()
+    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = mount(AppShell)
     await wrapper.get('[data-nav="menu"]').trigger('click')
