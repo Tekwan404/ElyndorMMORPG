@@ -200,7 +200,7 @@
           "englishName": "Provoke",
           "maxRank": 1,
           "prerequisites": [],
-          "description": "Открывает «Провокацию»: 0 Rage, CD 10 сек.; Threat становится равным текущему лидеру +1 и цель принудительно атакует Стража 3 сек.",
+          "description": "Открывает «Провокацию»: 0 Rage, CD 10 сек.; Threat становится равным текущему лидеру +1 и цель принудительно атакует Стража 5 сек.",
           "modifiers": [
             { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "PROVOKE" }
           ],
