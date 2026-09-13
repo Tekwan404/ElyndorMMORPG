@@ -12,6 +12,7 @@ using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Server.Combat;
 
@@ -43,8 +44,10 @@ public static class BossCombatLogArchiveEndpoints
             return Results.Unauthorized();
 
         if (request.SessionId == Guid.Empty)
+        {
             return Results.BadRequest(
                 new BossCombatLogResponse(false, "combat_log_session_invalid"));
+        }
 
         CombatSessionSnapshot? snapshot = null;
         IReadOnlyList<CombatEvent>? events = null;
@@ -87,7 +90,7 @@ public static class BossCombatLogArchiveEndpoints
             }
         }
 
-        BossCombatLogResponse result = await BossCombatLogArchive.SendAsync(
+        BossCombatLogResponse response = await BossCombatLogArchive.SendAsync(
             accountId,
             request.SessionId,
             snapshot,
@@ -100,7 +103,7 @@ public static class BossCombatLogArchiveEndpoints
             timeProvider.GetUtcNow(),
             cancellationToken);
 
-        return Results.Ok(result);
+        return Results.Ok(response);
     }
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
@@ -112,9 +115,28 @@ internal static class BossCombatLogArchive
 {
     private const int MaxEvents = 1500;
     private const int MaxSessions = 256;
-    private const string CombatRegenDefinitionId = "COMBAT_REGEN";
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(30);
     private static readonly ConcurrentDictionary<ArchiveKey, ArchiveEntry> Entries = [];
+
+    private static readonly Action<ILogger, Guid, Exception?> DocumentSenderUnavailable =
+        LoggerMessage.Define<Guid>(
+            LogLevel.Error,
+            new EventId(2301, nameof(DocumentSenderUnavailable)),
+            "Boss combat log sender does not support documents for session {SessionId}.");
+
+    private static readonly Action<ILogger, Guid, Guid, Exception?> DeliveryFailed =
+        LoggerMessage.Define<Guid, Guid>(
+            LogLevel.Error,
+            new EventId(2302, nameof(DeliveryFailed)),
+            "Failed to send boss combat log {SessionId} for account {AccountId}; "
+            + "the archived log is retained for retry.");
+
+    private static readonly Action<ILogger, Guid, Guid, int, int, Exception?> DeliverySucceeded =
+        LoggerMessage.Define<Guid, Guid, int, int>(
+            LogLevel.Information,
+            new EventId(2303, nameof(DeliverySucceeded)),
+            "Sent boss combat log {SessionId} for account {AccountId} "
+            + "with {EventCount} events ({DroppedEventCount} dropped from archive).");
 
     public static void Capture(
         Guid accountId,
@@ -129,8 +151,9 @@ internal static class BossCombatLogArchive
             return;
         }
 
+        ArchiveKey key = new(accountId, snapshot.SessionId);
         ArchiveEntry entry = Entries.GetOrAdd(
-            new ArchiveKey(accountId, snapshot.SessionId),
+            key,
             _ => new ArchiveEntry(snapshot, update.ContentSnapshot, capturedAtUtc));
 
         Merge(entry, snapshot, update.Events, update.ContentSnapshot, capturedAtUtc);
@@ -208,7 +231,7 @@ internal static class BossCombatLogArchive
                 archivedContent ?? contentProvider.GetCurrent();
             CombatActorSnapshot[] enemies =
                 (snapshot.Enemies ?? [snapshot.Enemy]).ToArray();
-            MonsterDefinition[] bossDefinitions = enemies
+            MonsterDefinition[] bosses = enemies
                 .Select(enemy => content.Package.Monsters?.FirstOrDefault(monster =>
                     string.Equals(
                         monster.Id,
@@ -218,7 +241,7 @@ internal static class BossCombatLogArchive
                 .Cast<MonsterDefinition>()
                 .ToArray();
 
-            if (bossDefinitions.Length == 0)
+            if (bosses.Length == 0)
                 return new BossCombatLogResponse(false, "combat_log_not_boss");
 
             if (events.Length == 0)
@@ -238,30 +261,22 @@ internal static class BossCombatLogArchive
 
             if (messageSender is not ITelegramDocumentSender documentSender)
             {
-                logger.LogError(
-                    "Boss combat log sender does not support documents for session {SessionId}.",
-                    sessionId);
+                DocumentSenderUnavailable(logger, sessionId, null);
                 return new BossCombatLogResponse(
                     false,
                     "combat_log_sender_unavailable");
             }
 
-            BossCombatLogEventRequest[] logEvents = events
-                .Select(ToLogEvent)
-                .OrderBy(item => item.Sequence)
+            CombatEvent[] ordered = events
+                .OrderBy(combatEvent => combatEvent.Sequence)
                 .ToArray();
-
             string bossName = string.Join(
                 ", ",
-                bossDefinitions.Select(boss => boss.DisplayName ?? boss.Name));
-            string log = BuildLog(
-                snapshot,
-                logEvents,
-                bossDefinitions,
-                droppedEvents);
+                bosses.Select(boss => boss.DisplayName ?? boss.Name));
+            string log = BuildLog(snapshot, ordered, bosses, droppedEvents);
             string fileName = $"elyndor-boss-{sessionId:N}.txt";
             string caption =
-                $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {logEvents.Length} событий";
+                $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {ordered.Length} событий";
 
             try
             {
@@ -276,12 +291,7 @@ internal static class BossCombatLogArchive
                 exception is not OperationCanceledException
                 || !cancellationToken.IsCancellationRequested)
             {
-                logger.LogError(
-                    exception,
-                    "Failed to send boss combat log {SessionId} for account {AccountId}; "
-                    + "the archived log is retained for retry.",
-                    sessionId,
-                    accountId);
+                DeliveryFailed(logger, sessionId, accountId, exception);
                 return new BossCombatLogResponse(
                     false,
                     "combat_log_telegram_failed");
@@ -293,13 +303,13 @@ internal static class BossCombatLogArchive
                 entry.UpdatedAtUtc = nowUtc;
             }
 
-            logger.LogInformation(
-                "Sent boss combat log {SessionId} for account {AccountId} "
-                + "with {EventCount} events ({DroppedEventCount} dropped from archive).",
+            DeliverySucceeded(
+                logger,
                 sessionId,
                 accountId,
-                logEvents.Length,
-                droppedEvents);
+                ordered.Length,
+                droppedEvents,
+                null);
 
             return new BossCombatLogResponse(true, null);
         }
@@ -327,8 +337,8 @@ internal static class BossCombatLogArchive
 
             while (entry.Events.Count > MaxEvents)
             {
-                long first = entry.Events.Keys.First();
-                entry.Events.Remove(first);
+                long firstSequence = entry.Events.Keys.First();
+                entry.Events.Remove(firstSequence);
                 entry.DroppedEvents++;
             }
 
@@ -338,14 +348,14 @@ internal static class BossCombatLogArchive
 
     private static void Purge(DateTimeOffset nowUtc)
     {
-        foreach ((ArchiveKey key, ArchiveEntry entry) in Entries)
+        foreach (KeyValuePair<ArchiveKey, ArchiveEntry> pair in Entries)
         {
-            DateTimeOffset updatedAt;
-            lock (entry.Gate)
-                updatedAt = entry.UpdatedAtUtc;
+            DateTimeOffset updatedAtUtc;
+            lock (pair.Value.Gate)
+                updatedAtUtc = pair.Value.UpdatedAtUtc;
 
-            if (nowUtc - updatedAt > Lifetime)
-                Entries.TryRemove(key, out _);
+            if (nowUtc - updatedAtUtc > Lifetime)
+                Entries.TryRemove(pair.Key, out _);
         }
 
         int overflow = Entries.Count - MaxSessions;
@@ -355,10 +365,10 @@ internal static class BossCombatLogArchive
         ArchiveKey[] oldest = Entries
             .Select(pair =>
             {
-                DateTimeOffset updatedAt;
+                DateTimeOffset updatedAtUtc;
                 lock (pair.Value.Gate)
-                    updatedAt = pair.Value.UpdatedAtUtc;
-                return (pair.Key, UpdatedAtUtc: updatedAt);
+                    updatedAtUtc = pair.Value.UpdatedAtUtc;
+                return (pair.Key, UpdatedAtUtc: updatedAtUtc);
             })
             .OrderBy(item => item.UpdatedAtUtc)
             .Take(overflow)
@@ -369,25 +379,9 @@ internal static class BossCombatLogArchive
             Entries.TryRemove(key, out _);
     }
 
-    private static BossCombatLogEventRequest ToLogEvent(CombatEvent combatEvent) => new(
-        combatEvent.Sequence,
-        combatEvent.Type.ToString(),
-        combatEvent.ActorId,
-        combatEvent.SourceActorId,
-        combatEvent.TargetActorId,
-        combatEvent.DefinitionId,
-        combatEvent.Amount,
-        combatEvent.AmountBeforeShields,
-        combatEvent.OccurredAtUtc,
-        combatEvent.WeaponHand?.ToString(),
-        combatEvent.WeaponDefinitionId,
-        combatEvent.RawDamage,
-        combatEvent.DamageAfterMitigation,
-        combatEvent.DamageBeforeBlock);
-
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
-        IReadOnlyList<BossCombatLogEventRequest> events,
+        IReadOnlyList<CombatEvent> events,
         IReadOnlyList<MonsterDefinition> bosses,
         int droppedEvents)
     {
@@ -398,13 +392,6 @@ internal static class BossCombatLogArchive
             actorNames[actor.ActorId] = actor.Name;
         if (snapshot.Companion is not null)
             actorNames[snapshot.Companion.ActorId] = snapshot.Companion.Name;
-
-        BossCombatLogEventRequest[] ordered = events
-            .OrderBy(item => item.Sequence)
-            .ToArray();
-        long[] missingSequences = FindMissingSequences(ordered);
-        int rawRegenEvents = ordered.Count(IsCombatRegen);
-        int compactedRegenGroups = CountCombatRegenGroups(ordered);
 
         string bossName = string.Join(
             ", ",
@@ -417,6 +404,8 @@ internal static class BossCombatLogArchive
             _ => snapshot.Status.ToString().ToUpperInvariant()
         };
 
+        long[] missingSequences = FindMissingSequences(events);
+
         StringBuilder builder = new();
         builder.AppendLine("⚔️ ELYNDOR · ЛОГ БОЯ С БОССОМ");
         builder.Append("Босс: ").AppendLine(bossName);
@@ -425,191 +414,50 @@ internal static class BossCombatLogArchive
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
         builder.Append("Событий: ")
-            .AppendLine(ordered.Length.ToString(CultureInfo.InvariantCulture));
+            .AppendLine(events.Count.ToString(CultureInfo.InvariantCulture));
+
+        if (events.Count > 0)
+        {
+            builder.Append("Sequence: #")
+                .Append(events[0].Sequence.ToString(CultureInfo.InvariantCulture))
+                .Append("–#")
+                .AppendLine(events[^1].Sequence.ToString(CultureInfo.InvariantCulture));
+        }
+
+        builder.Append("Пропуски sequence: ")
+            .AppendLine(FormatMissingSequences(missingSequences));
+
         if (droppedEvents > 0)
         {
             builder.Append("Архив ограничен: отброшено старых событий: ")
                 .AppendLine(droppedEvents.ToString(CultureInfo.InvariantCulture));
         }
 
-        if (ordered.Length > 0)
-        {
-            builder.Append("Sequence: #")
-                .Append(ordered[0].Sequence.ToString(CultureInfo.InvariantCulture))
-                .Append("–#")
-                .AppendLine(ordered[^1].Sequence.ToString(CultureInfo.InvariantCulture));
-        }
-
-        builder.Append("Пропуски sequence: ")
-            .AppendLine(FormatMissingSequences(missingSequences));
-        if (rawRegenEvents > 0)
-        {
-            builder.Append("COMBAT_REGEN: ")
-                .Append(rawRegenEvents.ToString(CultureInfo.InvariantCulture))
-                .Append(" событий → ")
-                .Append(compactedRegenGroups.ToString(CultureInfo.InvariantCulture))
-                .AppendLine(" строк (соседние тики объединены)");
-        }
-
-        builder.AppendLine(
-            "Примечание: DamageBlocked — блок экипированным щитом; "
-            + "ShieldAbsorbed — поглощение временным эффектом/барьером. "
-            + "Для блока щитом ниже печатается цепочка "
-            + "raw → armor → block → barrier → HP.");
         builder.AppendLine("────────────────────");
 
-        for (int index = 0; index < ordered.Length; index++)
-        {
-            BossCombatLogEventRequest combatEvent = ordered[index];
-            if (IsCombatRegen(combatEvent))
-            {
-                int end = index;
-                decimal total = combatEvent.Amount;
-                while (end + 1 < ordered.Length
-                    && CanMergeCombatRegen(ordered[end], ordered[end + 1]))
-                {
-                    end++;
-                    total += ordered[end].Amount;
-                }
-
-                WriteCombatRegenGroup(
-                    builder,
-                    ordered[index],
-                    ordered[end],
-                    total,
-                    end - index + 1,
-                    actorNames);
-                index = end;
-                continue;
-            }
-
-            if (string.Equals(
-                    combatEvent.Type,
-                    nameof(CombatEventType.DamageBlocked),
-                    StringComparison.Ordinal))
-            {
-                WriteBlockBreakdown(builder, ordered, index, actorNames);
-                continue;
-            }
-
+        foreach (CombatEvent combatEvent in events)
             WriteEvent(builder, combatEvent, actorNames);
-        }
 
         return builder.ToString();
     }
 
-    private static void WriteBlockBreakdown(
-        StringBuilder builder,
-        BossCombatLogEventRequest[] events,
-        int blockIndex,
-        Dictionary<Guid, string> actorNames)
-    {
-        BossCombatLogEventRequest blockEvent = events[blockIndex];
-        string source = ResolveActorName(
-            blockEvent.SourceActorId ?? blockEvent.ActorId,
-            actorNames);
-        string target = blockEvent.TargetActorId is Guid targetActorId
-            ? ResolveActorName(targetActorId, actorNames)
-            : "—";
-
-        BossCombatLogEventRequest? damageEvent = null;
-        decimal barrierAbsorbed = 0;
-        for (int index = blockIndex + 1;
-             index < events.Length && index <= blockIndex + 4;
-             index++)
-        {
-            BossCombatLogEventRequest candidate = events[index];
-            if (candidate.ServerTimeUtc != blockEvent.ServerTimeUtc
-                || candidate.SourceActorId != blockEvent.SourceActorId
-                || candidate.TargetActorId != blockEvent.TargetActorId)
-            {
-                continue;
-            }
-
-            if (string.Equals(
-                    candidate.Type,
-                    nameof(CombatEventType.ShieldAbsorbed),
-                    StringComparison.Ordinal))
-            {
-                barrierAbsorbed += candidate.Amount;
-                continue;
-            }
-
-            if (string.Equals(
-                    candidate.Type,
-                    nameof(CombatEventType.DamageDealt),
-                    StringComparison.Ordinal))
-            {
-                damageEvent = candidate;
-                break;
-            }
-        }
-
-        decimal beforeBlock = blockEvent.DamageBeforeBlock > 0
-            ? blockEvent.DamageBeforeBlock
-            : blockEvent.Amount + blockEvent.AmountBeforeShields;
-        decimal raw = blockEvent.RawDamage > 0
-            ? blockEvent.RawDamage
-            : beforeBlock;
-        decimal afterMitigation = blockEvent.DamageAfterMitigation > 0
-            ? blockEvent.DamageAfterMitigation
-            : beforeBlock;
-        decimal received = damageEvent?.Amount
-            ?? Math.Max(0, blockEvent.AmountBeforeShields - barrierAbsorbed);
-
-        builder.Append('#')
-            .Append(blockEvent.Sequence.ToString(CultureInfo.InvariantCulture))
-            .Append(' ')
-            .Append(FormatTime(blockEvent.ServerTimeUtc))
-            .Append(" · BLOCK · ")
-            .Append(source)
-            .Append(" → ")
-            .Append(target)
-            .Append(" · наносит ")
-            .Append(FormatNumber(raw))
-            .Append(" → после брони: ")
-            .Append(FormatNumber(afterMitigation));
-
-        if (beforeBlock != afterMitigation)
-        {
-            builder.Append(" → после модификаторов: ")
-                .Append(FormatNumber(beforeBlock));
-        }
-
-        builder.Append(" → щит блокирует ")
-            .Append(FormatNumber(blockEvent.Amount));
-        if (barrierAbsorbed > 0)
-        {
-            builder.Append(" → барьер поглощает ")
-                .Append(FormatNumber(barrierAbsorbed));
-        }
-
-        builder.Append(" → получено ")
-            .Append(FormatNumber(received));
-        if (received <= 0)
-            builder.Append(" · ПОЛНЫЙ БЛОК");
-        builder.AppendLine();
-    }
-
     private static void WriteEvent(
         StringBuilder builder,
-        BossCombatLogEventRequest combatEvent,
+        CombatEvent combatEvent,
         Dictionary<Guid, string> actorNames)
     {
-        string source = ResolveActorName(
-            combatEvent.SourceActorId ?? combatEvent.ActorId,
-            actorNames);
+        Guid sourceActorId = combatEvent.SourceActorId ?? combatEvent.ActorId;
+        string source = ResolveActorName(sourceActorId, actorNames);
         string target = combatEvent.TargetActorId is Guid targetActorId
             ? ResolveActorName(targetActorId, actorNames)
             : "—";
-        string time = FormatTime(combatEvent.ServerTimeUtc);
 
         builder.Append('#')
             .Append(combatEvent.Sequence.ToString(CultureInfo.InvariantCulture))
             .Append(' ')
-            .Append(time)
+            .Append(FormatTime(combatEvent.OccurredAtUtc))
             .Append(" · ")
-            .Append(Sanitize(combatEvent.Type, 48))
+            .Append(combatEvent.Type)
             .Append(" · ")
             .Append(source);
 
@@ -618,150 +466,65 @@ internal static class BossCombatLogArchive
         if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
             builder.Append(" · ").Append(Sanitize(combatEvent.DefinitionId, 80));
 
-        bool isShieldAbsorb = string.Equals(
-            combatEvent.Type,
-            nameof(CombatEventType.ShieldAbsorbed),
-            StringComparison.Ordinal);
-        if (isShieldAbsorb)
+        if (combatEvent.Amount != 0
+            || combatEvent.AmountBeforeShields != 0
+            || combatEvent.RawDamage != 0
+            || combatEvent.DamageAfterMitigation != 0
+            || combatEvent.DamageBeforeBlock != 0)
         {
-            builder.Append(" · absorbed=")
-                .Append(FormatNumber(combatEvent.Amount));
-        }
-        else
-        {
-            bool alwaysWriteAmount = string.Equals(
-                combatEvent.Type,
-                nameof(CombatEventType.ResourceChanged),
-                StringComparison.Ordinal);
-            if (alwaysWriteAmount
-                || combatEvent.Amount != 0
-                || combatEvent.AmountBeforeShields != 0)
+            builder.Append(" · amount=").Append(FormatNumber(combatEvent.Amount));
+
+            if (combatEvent.AmountBeforeShields != 0)
             {
-                builder.Append(" · ")
-                    .Append(FormatNumber(combatEvent.Amount));
-                if (combatEvent.AmountBeforeShields != 0
-                    && combatEvent.AmountBeforeShields != combatEvent.Amount)
-                {
-                    builder.Append(" (до barrier/HP cap ")
-                        .Append(FormatNumber(combatEvent.AmountBeforeShields))
-                        .Append(')');
-                }
+                builder.Append(" · beforeShields=")
+                    .Append(FormatNumber(combatEvent.AmountBeforeShields));
+            }
+
+            if (combatEvent.RawDamage != 0)
+                builder.Append(" · raw=").Append(FormatNumber(combatEvent.RawDamage));
+            if (combatEvent.DamageAfterMitigation != 0)
+            {
+                builder.Append(" · afterArmor=")
+                    .Append(FormatNumber(combatEvent.DamageAfterMitigation));
+            }
+
+            if (combatEvent.DamageBeforeBlock != 0)
+            {
+                builder.Append(" · beforeBlock=")
+                    .Append(FormatNumber(combatEvent.DamageBeforeBlock));
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(combatEvent.WeaponHand))
-            builder.Append(" · ").Append(Sanitize(combatEvent.WeaponHand, 24));
-        builder.AppendLine();
-    }
-
-    private static void WriteCombatRegenGroup(
-        StringBuilder builder,
-        BossCombatLogEventRequest first,
-        BossCombatLogEventRequest last,
-        decimal total,
-        int count,
-        Dictionary<Guid, string> actorNames)
-    {
-        string source = ResolveActorName(
-            first.SourceActorId ?? first.ActorId,
-            actorNames);
-        string target = first.TargetActorId is Guid targetActorId
-            ? ResolveActorName(targetActorId, actorNames)
-            : "—";
-
-        builder.Append('#')
-            .Append(first.Sequence.ToString(CultureInfo.InvariantCulture));
-        if (last.Sequence != first.Sequence)
+        if (combatEvent.WeaponHand is not null)
+            builder.Append(" · ").Append(combatEvent.WeaponHand);
+        if (!string.IsNullOrWhiteSpace(combatEvent.WeaponDefinitionId))
         {
-            builder.Append("–#")
-                .Append(last.Sequence.ToString(CultureInfo.InvariantCulture));
-        }
-
-        builder.Append(' ')
-            .Append(FormatTime(first.ServerTimeUtc));
-        if (last.ServerTimeUtc != first.ServerTimeUtc)
-            builder.Append('–').Append(FormatTime(last.ServerTimeUtc));
-
-        builder.Append(" · ResourceChanged · ")
-            .Append(source);
-        if (first.TargetActorId is not null)
-            builder.Append(" → ").Append(target);
-        builder.Append(" · COMBAT_REGEN · ")
-            .Append(FormatNumber(total));
-        if (count > 1)
-        {
-            builder.Append(" · ")
-                .Append(count.ToString(CultureInfo.InvariantCulture))
-                .Append(" тика");
+            builder.Append(" · weapon=")
+                .Append(Sanitize(combatEvent.WeaponDefinitionId, 80));
         }
 
         builder.AppendLine();
     }
 
-    private static bool IsCombatRegen(BossCombatLogEventRequest combatEvent) =>
-        string.Equals(
-            combatEvent.Type,
-            nameof(CombatEventType.ResourceChanged),
-            StringComparison.Ordinal)
-        && string.Equals(
-            combatEvent.DefinitionId,
-            CombatRegenDefinitionId,
-            StringComparison.Ordinal);
-
-    private static bool CanMergeCombatRegen(
-        BossCombatLogEventRequest previous,
-        BossCombatLogEventRequest next) =>
-        IsCombatRegen(previous)
-        && IsCombatRegen(next)
-        && next.Sequence == previous.Sequence + 1
-        && next.ActorId == previous.ActorId
-        && next.SourceActorId == previous.SourceActorId
-        && next.TargetActorId == previous.TargetActorId;
-
-    private static int CountCombatRegenGroups(BossCombatLogEventRequest[] events)
+    private static long[] FindMissingSequences(IReadOnlyList<CombatEvent> events)
     {
-        int groups = 0;
-        bool previousWasMergeableRegen = false;
-        BossCombatLogEventRequest? previous = null;
-        foreach (BossCombatLogEventRequest combatEvent in events)
-        {
-            if (!IsCombatRegen(combatEvent))
-            {
-                previousWasMergeableRegen = false;
-                previous = combatEvent;
-                continue;
-            }
-
-            bool sameGroup = previousWasMergeableRegen
-                && previous is not null
-                && CanMergeCombatRegen(previous, combatEvent);
-            if (!sameGroup)
-                groups++;
-            previousWasMergeableRegen = true;
-            previous = combatEvent;
-        }
-
-        return groups;
-    }
-
-    private static long[] FindMissingSequences(BossCombatLogEventRequest[] events)
-    {
-        if (events.Length == 0)
+        if (events.Count == 0)
             return [];
 
         List<long> missing = [];
         long previous = 0;
-        foreach (BossCombatLogEventRequest combatEvent in events)
+        foreach (CombatEvent combatEvent in events)
         {
-            long current = combatEvent.Sequence;
-            for (long sequence = previous + 1; sequence < current; sequence++)
+            for (long sequence = previous + 1;
+                 sequence < combatEvent.Sequence;
+                 sequence++)
             {
                 missing.Add(sequence);
                 if (missing.Count >= 100)
                     return missing.ToArray();
             }
 
-            previous = Math.Max(previous, current);
+            previous = Math.Max(previous, combatEvent.Sequence);
         }
 
         return missing.ToArray();
@@ -780,7 +543,7 @@ internal static class BossCombatLogArchive
 
     private static string ResolveActorName(
         Guid actorId,
-        Dictionary<Guid, string> names) =>
+        IReadOnlyDictionary<Guid, string> names) =>
         names.TryGetValue(actorId, out string? name)
             ? name
             : actorId.ToString("N")[..8];
@@ -802,6 +565,7 @@ internal static class BossCombatLogArchive
             .Replace('\r', ' ')
             .Replace('\n', ' ')
             .Trim();
+
         return sanitized.Length <= maxLength
             ? sanitized
             : sanitized[..maxLength];
