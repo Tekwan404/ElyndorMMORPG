@@ -1,6 +1,6 @@
 {
   "contentVersion": "0.17.0",
-  "balanceVersion": "0.14.0",
+  "balanceVersion": "0.14.1",
   "publishedAtUtc": "2026-09-09T08:30:00+00:00",
   "lootTables": [
     {
@@ -669,7 +669,7 @@
         },
         {
           "itemId": "BROODMOTHER_FANG_CHARM",
-          "dropChance": 1,
+          "dropChance": 0.08,
           "minQuantity": 1,
           "maxQuantity": 1
         },
