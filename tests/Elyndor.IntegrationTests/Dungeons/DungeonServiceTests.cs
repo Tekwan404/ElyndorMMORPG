@@ -354,7 +354,7 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task LeaderCanRestartWipedEncounterAndMemberCanExitAndReenterRun()
+    public async Task LeaderCanRestartWipedEncounterAndLeavingRunIsTerminal()
     {
         (Guid leaderAccountId, Guid firstMemberAccountId, _) =
             await SeedPartyCharactersAsync();
@@ -446,16 +446,23 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
             firstMemberAccountId,
             created.Run!.RunId,
             CancellationToken.None);
-        Assert.True(reentered.Succeeded, reentered.ErrorCode);
+        Assert.False(reentered.Succeeded);
+        Assert.Equal(DungeonErrorCodes.MemberCannotEnter, reentered.ErrorCode);
+
+        DungeonRunView? afterRejectedReentry = await dungeonService.GetCurrentAsync(
+            leaderAccountId,
+            CancellationToken.None);
+        Assert.NotNull(afterRejectedReentry);
         Assert.Equal(
-            DungeonRunMemberState.Active,
-            reentered.Run!.Members.Single(member => member.CharacterId == firstMember.Id).State);
+            DungeonRunMemberState.Left,
+            afterRejectedReentry!.Members.Single(member => member.CharacterId == firstMember.Id).State);
 
         DungeonOperationResult leaderExited = await dungeonService.ExitAsync(
             leaderAccountId,
             created.Run!.RunId,
             CancellationToken.None);
         Assert.True(leaderExited.Succeeded, leaderExited.ErrorCode);
+        Assert.Equal(DungeonRunState.Abandoned, leaderExited.Run!.State);
 
         (DungeonPreparation? blockedPreparation, string? blockedError) =
             await dungeonService.PrepareEncounterAsync(
@@ -463,13 +470,7 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
                 created.Run!.RunId,
                 CancellationToken.None);
         Assert.Null(blockedPreparation);
-        Assert.Equal(DungeonErrorCodes.MemberNotInRun, blockedError);
-
-        DungeonOperationResult leaderReentered = await dungeonService.EnterAsync(
-            leaderAccountId,
-            created.Run!.RunId,
-            CancellationToken.None);
-        Assert.True(leaderReentered.Succeeded, leaderReentered.ErrorCode);
+        Assert.Equal(DungeonErrorCodes.EncounterNotReady, blockedError);
     }
 
     [Fact]
