@@ -25,7 +25,9 @@ public static class DungeonEndpoints
         group.MapPost("/runs", CreateAsync);
         group.MapPost("/runs/{runId:guid}/enter", EnterAsync);
         group.MapPost("/runs/{runId:guid}/restart", RestartAsync);
-        group.MapPost("/runs/{runId:guid}/exit", ExitAsync);
+        group.MapPost("/runs/{runId:guid}/city-exit", ExitToCityAsync);
+        group.MapPost("/runs/{runId:guid}/return", ReturnToRunAsync);
+        group.MapPost("/runs/{runId:guid}/leave", LeaveRunAsync);
         return endpoints;
     }
 
@@ -274,13 +276,7 @@ public static class DungeonEndpoints
                     ? ToResult(await service.EnterAsync(accountId, runId, cancellationToken))
                     : ToNavigationResult(canEnter);
             },
-            () => Results.Problem(
-                statusCode: StatusCodes.Status409Conflict,
-                extensions: new Dictionary<string, object?>
-                {
-                    ["code"] = CharacterOperationErrorCodes.InCombat,
-                    ["correlationId"] = httpContext.TraceIdentifier
-                }),
+            () => InCombat(httpContext),
             cancellationToken);
     }
 
@@ -299,17 +295,11 @@ public static class DungeonEndpoints
                 accountId,
                 runId,
                 cancellationToken)),
-            () => Results.Problem(
-                statusCode: StatusCodes.Status409Conflict,
-                extensions: new Dictionary<string, object?>
-                {
-                    ["code"] = CharacterOperationErrorCodes.InCombat,
-                    ["correlationId"] = httpContext.TraceIdentifier
-                }),
+            () => InCombat(httpContext),
             cancellationToken);
     }
 
-    private static async Task<IResult> ExitAsync(
+    private static async Task<IResult> ExitToCityAsync(
         Guid runId,
         ClaimsPrincipal user,
         DungeonNavigationService navigationService,
@@ -320,19 +310,76 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToNavigationResult(await navigationService.ExitAsync(
+            async () => ToNavigationResult(await navigationService.ExitToCityAsync(
                 accountId,
                 runId,
                 cancellationToken)),
-            () => Results.Problem(
-                statusCode: StatusCodes.Status409Conflict,
-                extensions: new Dictionary<string, object?>
-                {
-                    ["code"] = CharacterOperationErrorCodes.InCombat,
-                    ["correlationId"] = httpContext.TraceIdentifier
-                }),
+            () => InCombat(httpContext),
             cancellationToken);
     }
+
+    private static async Task<IResult> ReturnToRunAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonService service,
+        DungeonNavigationService navigationService,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                DungeonRunView? current = await service.GetCurrentAsync(accountId, cancellationToken);
+                if (current is null || current.RunId != runId)
+                    return ToNavigationResult(DungeonNavigationResult.Failure(DungeonErrorCodes.MemberNotInRun));
+                if (current.State != DungeonRunState.Active)
+                    return ToNavigationResult(DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterNotReady));
+
+                DungeonDefinition? definition = service.GetDefinition(current.DungeonId);
+                if (definition is null)
+                    return ToNavigationResult(DungeonNavigationResult.Failure(DungeonErrorCodes.DungeonNotFound));
+
+                return ToNavigationResult(await navigationService.ReturnToRunAsync(
+                    accountId,
+                    runId,
+                    current.DungeonId,
+                    definition.EntryLocationId,
+                    cancellationToken));
+            },
+            () => InCombat(httpContext),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> LeaveRunAsync(
+        Guid runId,
+        ClaimsPrincipal user,
+        DungeonNavigationService navigationService,
+        CharacterOperationGuard operationGuard,
+        HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToNavigationResult(await navigationService.LeaveRunAsync(
+                accountId,
+                runId,
+                cancellationToken)),
+            () => InCombat(httpContext),
+            cancellationToken);
+    }
+
+    private static IResult InCombat(HttpContext httpContext) =>
+        Results.Problem(
+            statusCode: StatusCodes.Status409Conflict,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = CharacterOperationErrorCodes.InCombat,
+                ["correlationId"] = httpContext.TraceIdentifier
+            });
 
     private static IResult ToResult(DungeonOperationResult result) =>
         result.Succeeded
