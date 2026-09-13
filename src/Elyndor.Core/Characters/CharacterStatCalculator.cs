@@ -126,20 +126,16 @@ public sealed class CharacterStatCalculator(
                 + equipmentDerived.DodgePercent,
             0,
             DodgeCap);
-        bool hasShieldBlockProfile = equipmentDerived.BlockChancePercent > 0
-            && equipmentDerived.BlockValueMax > 0;
-        decimal blockChance = hasShieldBlockProfile
-            ? decimal.Clamp(
-                equipmentDerived.BlockChancePercent + talent.BlockChancePercent,
-                0,
-                DamagePipeline.MaximumBlockChancePercent)
-            : 0;
-        decimal blockValueMin = hasShieldBlockProfile
-            ? Math.Max(0, equipmentDerived.BlockValueMin + talent.BlockValueFlat)
-            : 0;
-        decimal blockValueMax = hasShieldBlockProfile
-            ? Math.Max(blockValueMin, equipmentDerived.BlockValueMax + talent.BlockValueFlat)
-            : 0;
+        ShieldBlockResult shieldBlock = ShieldBlockFormula.Resolve(
+            equipmentDerived.BlockChancePercent,
+            equipmentDerived.BlockValueMin,
+            equipmentDerived.BlockValueMax,
+            primary.Strength,
+            talent.BlockChancePercent,
+            talent.BlockValueFlat);
+        decimal blockChance = shieldBlock.BlockChancePercent;
+        decimal blockValueMin = shieldBlock.BlockValueMin;
+        decimal blockValueMax = shieldBlock.BlockValueMax;
 
         CharacterStats stats = new(
             primary.Strength,
@@ -234,14 +230,16 @@ public sealed class CharacterStatCalculator(
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
                 ("TALENT_BONUS", talent.DodgePercent)),
             ["blockChance"] = Breakdown(stats.BlockChance,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockChancePercent),
-                ("TALENT_BONUS", hasShieldBlockProfile ? talent.BlockChancePercent : 0)),
+                ("EQUIPMENT_BONUS", shieldBlock.HasShieldProfile ? equipmentDerived.BlockChancePercent : 0),
+                ("TALENT_BONUS", shieldBlock.HasShieldProfile ? talent.BlockChancePercent : 0)),
             ["blockValueMin"] = Breakdown(stats.BlockValueMin,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMin),
-                ("TALENT_BONUS", hasShieldBlockProfile ? talent.BlockValueFlat : 0)),
+                ("EQUIPMENT_BONUS", shieldBlock.HasShieldProfile ? equipmentDerived.BlockValueMin : 0),
+                ("STRENGTH", shieldBlock.StrengthContribution),
+                ("TALENT_BONUS", shieldBlock.HasShieldProfile ? talent.BlockValueFlat : 0)),
             ["blockValueMax"] = Breakdown(stats.BlockValueMax,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMax),
-                ("TALENT_BONUS", hasShieldBlockProfile ? talent.BlockValueFlat : 0))
+                ("EQUIPMENT_BONUS", shieldBlock.HasShieldProfile ? equipmentDerived.BlockValueMax : 0),
+                ("STRENGTH", shieldBlock.StrengthContribution),
+                ("TALENT_BONUS", shieldBlock.HasShieldProfile ? talent.BlockValueFlat : 0))
         };
 
         return new CharacterStatCalculation(stats, breakdown);

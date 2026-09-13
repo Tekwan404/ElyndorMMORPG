@@ -149,7 +149,7 @@ public sealed class CharacterStatCalculatorTests
     }
 
     [Fact]
-    public void ShieldBlockProfileUsesTalentBonusesButNeverCreatesGlobalBlock()
+    public void ShieldBlockProfileUsesStrengthAndTalentBonusesButNeverCreatesGlobalBlock()
     {
         CharacterStatCalculator calculator = new(Formula(), Profiles());
         CharacterStatInputs shieldInputs = CharacterStatInputs.Empty with
@@ -163,7 +163,7 @@ public sealed class CharacterStatCalculatorTests
                 BlockValueFlat: 5)
         };
 
-        CharacterStats shielded = calculator.Calculate("WARRIOR", 3, shieldInputs);
+        CharacterStatCalculation shielded = calculator.CalculateDetailed("WARRIOR", 3, shieldInputs);
         CharacterStats withoutShield = calculator.Calculate("WARRIOR", 3,
             CharacterStatInputs.Empty with
             {
@@ -172,12 +172,41 @@ public sealed class CharacterStatCalculatorTests
                     BlockValueFlat: 5)
             });
 
-        Assert.Equal(60, shielded.BlockChance);
-        Assert.Equal(25, shielded.BlockValueMin);
-        Assert.Equal(45, shielded.BlockValueMax);
+        Assert.Equal(60, shielded.Stats.BlockChance);
+        Assert.Equal(38.5m, shielded.Stats.BlockValueMin);
+        Assert.Equal(58.5m, shielded.Stats.BlockValueMax);
+        Assert.Contains(
+            shielded.Breakdown["blockValueMin"].Contributions,
+            contribution => contribution.Source == "STRENGTH" && contribution.Value == 13.5m);
         Assert.Equal(0, withoutShield.BlockChance);
         Assert.Equal(0, withoutShield.BlockValueMin);
         Assert.Equal(0, withoutShield.BlockValueMax);
+    }
+
+    [Fact]
+    public void MoreStrengthRaisesShieldBlockValueButNotArmorOrBlockChance()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs baseInputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                ArmorFlat: 100,
+                BlockChancePercent: 10,
+                BlockValueMin: 30,
+                BlockValueMax: 50)
+        };
+        CharacterStatInputs strongerInputs = baseInputs with
+        {
+            Equipment = new PrimaryStats(100, 0, 0, 0)
+        };
+
+        CharacterStats baseline = calculator.Calculate("WARRIOR", level: 1, baseInputs);
+        CharacterStats stronger = calculator.Calculate("WARRIOR", level: 1, strongerInputs);
+
+        Assert.Equal(baseline.Armor, stronger.Armor);
+        Assert.Equal(baseline.BlockChance, stronger.BlockChance);
+        Assert.Equal(75, stronger.BlockValueMin - baseline.BlockValueMin);
+        Assert.Equal(75, stronger.BlockValueMax - baseline.BlockValueMax);
     }
 
     [Fact]
