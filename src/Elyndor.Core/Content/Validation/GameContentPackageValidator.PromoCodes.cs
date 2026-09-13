@@ -16,8 +16,9 @@ public static partial class GameContentPackageValidator
             string path = $"promoCodes[{index}]";
             bool invalid = !IsCanonicalIdentifier(promo.Code) || !codes.Add(promo.Code)
                 || promo.CrystalAmount < 0 || promo.GlobalRedemptionLimit is <= 0 || promo.PerAccountRedemptionLimit is <= 0
-                || promo.StartsAtUtc?.Offset != TimeSpan.Zero || promo.ExpiresAtUtc?.Offset != TimeSpan.Zero
-                || promo.ExpiresAtUtc <= promo.StartsAtUtc
+                || promo.StartsAtUtc is DateTimeOffset startsAt && startsAt.Offset != TimeSpan.Zero
+                || promo.ExpiresAtUtc is DateTimeOffset expiresAt && expiresAt.Offset != TimeSpan.Zero
+                || promo.StartsAtUtc is DateTimeOffset start && promo.ExpiresAtUtc is DateTimeOffset expiry && expiry <= start
                 || (promo.CrystalAmount == 0 && (promo.ItemRewards?.Count ?? 0) == 0);
             if (invalid) errors.Add(new("INVALID_PROMO_CODE", path, "Promo code fields or reward definition are invalid."));
             foreach (PromoItemRewardDefinition reward in promo.ItemRewards ?? [])
