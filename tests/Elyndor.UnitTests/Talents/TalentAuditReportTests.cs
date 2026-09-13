@@ -16,7 +16,7 @@ public sealed class TalentAuditReportTests
 
         Assert.Equal(3, report.TreeCount);
         Assert.Equal(288, report.NodeCount);
-        Assert.Equal(321, report.ModifierCount);
+        Assert.Equal(322, report.ModifierCount);
         Assert.Equal(0, report.DeferredModifierCount);
         Assert.Equal(0, report.FullyDeferredNodeCount);
         Assert.True(
@@ -75,7 +75,7 @@ public sealed class TalentAuditReportTests
         string[] abilityIds =
         [
             "LAST_STAND", "REVENGE", "SHIELD_BLOCK", "PROVOKE", "SUNDER_ARMOR",
-            "CONCUSSION_BLOW", "BASTION", "CHALLENGING_SHOUT", "SHIELD_SLAM"
+            "CONCUSSION_BLOW", "SHIELD_BASH", "BASTION", "CHALLENGING_SHOUT", "SHIELD_SLAM"
         ];
 
         Assert.All(
