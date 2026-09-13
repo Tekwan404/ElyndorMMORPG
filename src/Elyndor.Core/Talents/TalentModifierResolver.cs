@@ -47,9 +47,7 @@ public static class TalentModifierResolver
                 }
 
                 if (modifier.Values.Count < rank)
-                {
                     continue;
-                }
 
                 decimal value = modifier.Values[rank - 1];
                 if (modifier.Type == TalentModifierType.EventTriggered)
@@ -137,46 +135,27 @@ public static class TalentModifierResolver
         string key,
         decimal value) => key switch
     {
-        TalentModifierKeys.StrengthPercent =>
-            stats with { StrengthPercent = stats.StrengthPercent + value },
-        TalentModifierKeys.AgilityPercent =>
-            stats with { AgilityPercent = stats.AgilityPercent + value },
-        TalentModifierKeys.IntellectPercent =>
-            stats with { IntellectPercent = stats.IntellectPercent + value },
-        TalentModifierKeys.StaminaPercent =>
-            stats with { StaminaPercent = stats.StaminaPercent + value },
-        TalentModifierKeys.AttackPowerPercent =>
-            stats with { AttackPowerPercent = stats.AttackPowerPercent + value },
-        TalentModifierKeys.SpellPowerPercent =>
-            stats with { SpellPowerPercent = stats.SpellPowerPercent + value },
-        TalentModifierKeys.ArmorPercent =>
-            stats with { ArmorPercent = stats.ArmorPercent + value },
-        TalentModifierKeys.MagicResistancePercent =>
-            stats with { MagicResistancePercent = stats.MagicResistancePercent + value },
-        TalentModifierKeys.AccuracyPercent =>
-            stats with { AccuracyPercent = stats.AccuracyPercent + value },
-        TalentModifierKeys.DodgePercent =>
-            stats with { DodgePercent = stats.DodgePercent + value },
-        TalentModifierKeys.BlockChancePercent =>
-            stats with { BlockChancePercent = stats.BlockChancePercent + value },
-        TalentModifierKeys.BlockValueFlat =>
-            stats with { BlockValueFlat = stats.BlockValueFlat + value },
-        TalentModifierKeys.CriticalChancePercent =>
-            stats with { CriticalChancePercent = stats.CriticalChancePercent + value },
-        TalentModifierKeys.CriticalDamagePercent =>
-            stats with { CriticalDamagePercent = stats.CriticalDamagePercent + value },
-        TalentModifierKeys.ArmorPenetrationPercent =>
-            stats with { ArmorPenetrationPercent = stats.ArmorPenetrationPercent + value },
-        TalentModifierKeys.MagicPenetrationPercent =>
-            stats with { MagicPenetrationPercent = stats.MagicPenetrationPercent + value },
-        TalentModifierKeys.AttackSpeedPercent =>
-            stats with { AttackSpeedPercent = stats.AttackSpeedPercent + value },
-        TalentModifierKeys.MaxHpPercent =>
-            stats with { MaxHpPercent = stats.MaxHpPercent + value },
-        TalentModifierKeys.MaxResourceFlat =>
-            stats with { MaxResourceFlat = stats.MaxResourceFlat + value },
-        TalentModifierKeys.MaxResourcePercent =>
-            stats with { MaxResourcePercent = stats.MaxResourcePercent + value },
+        TalentModifierKeys.StrengthPercent => stats with { StrengthPercent = stats.StrengthPercent + value },
+        TalentModifierKeys.AgilityPercent => stats with { AgilityPercent = stats.AgilityPercent + value },
+        TalentModifierKeys.IntellectPercent => stats with { IntellectPercent = stats.IntellectPercent + value },
+        TalentModifierKeys.StaminaPercent => stats with { StaminaPercent = stats.StaminaPercent + value },
+        TalentModifierKeys.AttackPowerPercent => stats with { AttackPowerPercent = stats.AttackPowerPercent + value },
+        TalentModifierKeys.SpellPowerPercent => stats with { SpellPowerPercent = stats.SpellPowerPercent + value },
+        TalentModifierKeys.ArmorPercent => stats with { ArmorPercent = stats.ArmorPercent + value },
+        TalentModifierKeys.MagicResistancePercent => stats with { MagicResistancePercent = stats.MagicResistancePercent + value },
+        TalentModifierKeys.AccuracyPercent => stats with { AccuracyPercent = stats.AccuracyPercent + value },
+        TalentModifierKeys.DodgePercent => stats with { DodgePercent = stats.DodgePercent + value },
+        TalentModifierKeys.BlockChancePercent => stats with { BlockChancePercent = stats.BlockChancePercent + value },
+        TalentModifierKeys.BlockValueFlat => stats with { BlockValueFlat = stats.BlockValueFlat + value },
+        TalentModifierKeys.BlockValuePercent => stats with { BlockValuePercent = stats.BlockValuePercent + value },
+        TalentModifierKeys.CriticalChancePercent => stats with { CriticalChancePercent = stats.CriticalChancePercent + value },
+        TalentModifierKeys.CriticalDamagePercent => stats with { CriticalDamagePercent = stats.CriticalDamagePercent + value },
+        TalentModifierKeys.ArmorPenetrationPercent => stats with { ArmorPenetrationPercent = stats.ArmorPenetrationPercent + value },
+        TalentModifierKeys.MagicPenetrationPercent => stats with { MagicPenetrationPercent = stats.MagicPenetrationPercent + value },
+        TalentModifierKeys.AttackSpeedPercent => stats with { AttackSpeedPercent = stats.AttackSpeedPercent + value },
+        TalentModifierKeys.MaxHpPercent => stats with { MaxHpPercent = stats.MaxHpPercent + value },
+        TalentModifierKeys.MaxResourceFlat => stats with { MaxResourceFlat = stats.MaxResourceFlat + value },
+        TalentModifierKeys.MaxResourcePercent => stats with { MaxResourcePercent = stats.MaxResourcePercent + value },
         _ => stats
     };
 
@@ -225,12 +204,9 @@ public static class TalentModifierResolver
 
         return modifier.Key switch
         {
-            TalentModifierKeys.ResourceProfileOverride =>
-                profiles with { ResourceProfileId = modifier.TargetId },
-            TalentModifierKeys.CompanionProfileOverride =>
-                profiles with { CompanionProfileId = modifier.TargetId },
-            TalentModifierKeys.PrimaryAttributeOverride =>
-                profiles with { PrimaryAttribute = modifier.TargetId },
+            TalentModifierKeys.ResourceProfileOverride => profiles with { ResourceProfileId = modifier.TargetId },
+            TalentModifierKeys.CompanionProfileOverride => profiles with { CompanionProfileId = modifier.TargetId },
+            TalentModifierKeys.PrimaryAttributeOverride => profiles with { PrimaryAttribute = modifier.TargetId },
             _ => profiles
         };
     }
@@ -242,13 +218,11 @@ public static class TalentModifierResolver
     {
         TalentModifierKeys.IncomingPhysicalDamageReductionPercent => combat with
         {
-            IncomingPhysicalDamageReductionPercent =
-                combat.IncomingPhysicalDamageReductionPercent + value
+            IncomingPhysicalDamageReductionPercent = combat.IncomingPhysicalDamageReductionPercent + value
         },
         TalentModifierKeys.IncomingMagicalDamageReductionPercent => combat with
         {
-            IncomingMagicalDamageReductionPercent =
-                combat.IncomingMagicalDamageReductionPercent + value
+            IncomingMagicalDamageReductionPercent = combat.IncomingMagicalDamageReductionPercent + value
         },
         TalentModifierKeys.DamageDealtPercent => combat with
         {
