@@ -282,9 +282,15 @@ internal static class CategoryContentComposer
                         .ToArray();
                 nodes[nodeIndex] = node with
                 {
+                    Name = nodePatch.Name ?? node.Name,
+                    EnglishName = nodePatch.EnglishName ?? node.EnglishName,
+                    MaxRank = nodePatch.MaxRank ?? node.MaxRank,
+                    Prerequisites = nodePatch.Prerequisites ?? node.Prerequisites,
                     Description = nodePatch.Description ?? node.Description,
+                    RequiredLevel = nodePatch.RequiredLevel ?? node.RequiredLevel,
                     Modifiers = modifiers,
-                    Version = Math.Max(node.Version, nodePatch.Version ?? node.Version)
+                    Version = Math.Max(node.Version, nodePatch.Version ?? node.Version),
+                    IconId = nodePatch.IconId ?? node.IconId
                 };
             }
 
@@ -331,10 +337,16 @@ internal static class CategoryContentComposer
 
     private sealed record TalentNodePatch(
         string NodeId,
+        string? Name = null,
+        string? EnglishName = null,
+        int? MaxRank = null,
+        IReadOnlyList<TalentPrerequisite>? Prerequisites = null,
         string? Description = null,
+        int? RequiredLevel = null,
         IReadOnlyList<TalentModifierDefinition>? AppendModifiers = null,
         IReadOnlyList<TalentModifierDefinition>? ReplaceModifiers = null,
-        int? Version = null);
+        int? Version = null,
+        string? IconId = null);
 
     private sealed record LocationEncounterFragment(
         string ContentVersion,
