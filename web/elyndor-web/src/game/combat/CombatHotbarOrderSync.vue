@@ -27,4 +27,4 @@ watch(
 )
 </script>
 
-<template />
+<template></template>
