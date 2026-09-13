@@ -7,9 +7,9 @@ namespace Elyndor.UnitTests.Characters;
 public sealed class CharacterStatCalculatorTests
 {
     [Theory]
-    [InlineData("WARRIOR", 18, 8, 5, 14, 190, 44, 10, 7)]
-    [InlineData("ARCHER", 7, 15, 7, 11, 160, 29, 14, 8.75)]
-    [InlineData("MAGE", 5, 7, 17, 10, 150, 17, 34, 6.75)]
+    [InlineData("WARRIOR", 18, 8, 5, 14, 190, 44, 10, 6.9230769231)]
+    [InlineData("ARCHER", 7, 15, 7, 11, 160, 29, 14, 8.4883720930)]
+    [InlineData("MAGE", 5, 7, 17, 10, 150, 17, 34, 6.6908212560)]
     public void CalculatesApprovedStatsFromClassAndLevel(
         string classId,
         decimal strength,
@@ -32,12 +32,13 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(maxHp, result.MaxHp);
         Assert.Equal(attackPower, result.AttackPower);
         Assert.Equal(spellPower, result.SpellPower);
-        Assert.Equal(criticalChance, result.CriticalChance);
+        Assert.Equal(criticalChance, result.CriticalChance, 8);
         Assert.Equal(100, result.CriticalDamage);
         Assert.Equal(95, result.Accuracy);
         Assert.Equal(0, result.ArmorPenetration);
         Assert.Equal(0, result.MagicPenetration);
         Assert.Equal(1, result.AttackSpeed);
+        Assert.Equal(0, result.Armor);
     }
 
     [Fact]
@@ -46,6 +47,7 @@ public sealed class CharacterStatCalculatorTests
         CharacterStatCalculator calculator = new(Formula(), Profiles());
         CharacterStatInputs inputs = CharacterStatInputs.Empty with
         {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(ArmorFlat: 40),
             TalentDerived = new TalentStatModifiers(
                 AttackPowerPercent: 10,
                 ArmorPercent: 20,
@@ -62,11 +64,11 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(209, result.MaxHp);
         Assert.Equal(48.4m, result.AttackPower);
         Assert.Equal(98, result.Accuracy);
-        Assert.Equal(11, result.CriticalChance);
+        Assert.Equal(10.9230769231m, result.CriticalChance, 8);
         Assert.Equal(115, result.CriticalDamage);
         Assert.Equal(9, result.ArmorPenetration);
         Assert.Equal(1.06m, result.AttackSpeed);
-        Assert.Equal(55.2m, result.Armor);
+        Assert.Equal(48m, result.Armor);
     }
 
     [Fact]
@@ -101,15 +103,76 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(236.5m, result.MaxHp);
         Assert.Equal(56.1m, result.AttackPower);
         Assert.Equal(19, result.SpellPower);
-        Assert.Equal(10, result.CriticalChance);
+        Assert.Equal(9.9230769231m, result.CriticalChance, 8);
         Assert.Equal(110, result.CriticalDamage);
         Assert.Equal(96, result.Accuracy);
         Assert.Equal(6, result.ArmorPenetration);
         Assert.Equal(6, result.MagicPenetration);
         Assert.Equal(1.05m, result.AttackSpeed);
-        Assert.Equal(76.8m, result.Armor);
+        Assert.Equal(21.6m, result.Armor);
         Assert.Equal(30, result.MagicResistance);
-        Assert.Equal(4.6m, result.Dodge);
+        Assert.Equal(4.5384615385m, result.Dodge, 8);
+    }
+
+    [Fact]
+    public void FourHundredAgilityUsesDiminishingReturnsInsteadOfOneHundredPercentCrit()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            Equipment = new PrimaryStats(0, 394, 0, 0)
+        };
+
+        CharacterStats result = calculator.Calculate("WARRIOR", level: 1, inputs);
+
+        Assert.Equal(400, result.Agility);
+        Assert.Equal(38.3333333333m, result.CriticalChance, 8);
+        Assert.Equal(26.6666666667m, result.Dodge, 8);
+    }
+
+    [Fact]
+    public void AgilityCombatStatsRespectHardCapsAfterExternalBonuses()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            Equipment = new PrimaryStats(0, 994, 0, 0),
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                CriticalChancePercent: 50,
+                DodgePercent: 50)
+        };
+
+        CharacterStats result = calculator.Calculate("WARRIOR", level: 1, inputs);
+
+        Assert.Equal(CharacterStatCalculator.CriticalChanceCap, result.CriticalChance);
+        Assert.Equal(CharacterStatCalculator.DodgeCap, result.Dodge);
+    }
+
+    [Fact]
+    public void StrengthAndStaminaNeverCreateArmorWithoutEquipment()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+
+        CharacterStats result = calculator.Calculate("WARRIOR", level: 60);
+
+        Assert.True(result.Strength > 0);
+        Assert.True(result.Stamina > 0);
+        Assert.Equal(0, result.Armor);
+    }
+
+    [Fact]
+    public void ArmorReductionBreakdownUsesCharacterLevelAsReference()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(ArmorFlat: 745)
+        };
+
+        CharacterStatCalculation result = calculator.CalculateDetailed("WARRIOR", 18, inputs);
+
+        CharacterStatBreakdown reduction = result.Breakdown["armorDamageReductionPercent"];
+        Assert.InRange(reduction.FinalValue, 49m, 50m);
     }
 
     private static StatFormulaProfile Formula() => new(

@@ -384,7 +384,9 @@ public static class DamagePipeline
             : request.Source.Stats.MagicPenetration + request.MagicPenetrationBonus;
         decimal effectiveDefense =
             Math.Max(0, defense * (1 - Math.Clamp(penetration, 0, 1)));
-        return damage * DefenseMitigationFormula.CalculateDamageMultiplier(effectiveDefense);
+        return damage * DefenseMitigationFormula.CalculateDamageMultiplier(
+            effectiveDefense,
+            request.Source.Stats.Level);
     }
 
     private static decimal AbsorbShields(CombatActorState target, decimal incoming)

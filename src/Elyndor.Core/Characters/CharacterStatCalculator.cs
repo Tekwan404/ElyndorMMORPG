@@ -35,6 +35,10 @@ public sealed class CharacterStatCalculator(
     StatFormulaProfile formula,
     IReadOnlyList<ClassProfile> profiles)
 {
+    public const decimal AgilityDiminishingReturnsRating = 200m;
+    public const decimal CriticalChanceCap = 60m;
+    public const decimal DodgeCap = 35m;
+
     public CharacterStats Calculate(
         string classId,
         int level,
@@ -79,22 +83,26 @@ public sealed class CharacterStatCalculator(
         decimal spellPower = ApplyPercent(
             spellPowerBeforeTalent,
             talent.SpellPowerPercent);
-        decimal armorBeforeTalent = (primary.Stamina * formula.ArmorPerStamina)
-            + (primary.Strength * formula.ArmorPerStrength)
-            + equipmentDerived.ArmorFlat;
+        decimal armorBeforeTalent = equipmentDerived.ArmorFlat;
         decimal magicResistanceBeforeTalent = (primary.Stamina * formula.MagicResistancePerStamina)
             + (primary.Intellect * formula.MagicResistancePerIntellect)
             + equipmentDerived.MagicResistanceFlat;
+        decimal criticalChanceFromAgility = CalculateAgilityContribution(
+            primary.Agility,
+            formula.CriticalChancePerAgility);
+        decimal dodgeFromAgility = CalculateAgilityContribution(
+            primary.Agility,
+            formula.DodgePerAgility);
 
         decimal maxHp = ApplyPercent(maxHpBeforeTalent, talent.MaxHpPercent);
         decimal attackPower = ApplyPercent(attackPowerBeforeTalent, talent.AttackPowerPercent);
         decimal criticalChance = decimal.Clamp(
             formula.CriticalChanceBase
-                + (primary.Agility * formula.CriticalChancePerAgility)
+                + criticalChanceFromAgility
                 + equipmentDerived.CriticalChancePercent
                 + talent.CriticalChancePercent,
             0,
-            100);
+            CriticalChanceCap);
         decimal criticalDamage = formula.CriticalDamageBase
             + equipmentDerived.CriticalDamagePercent
             + talent.CriticalDamagePercent;
@@ -113,11 +121,11 @@ public sealed class CharacterStatCalculator(
         decimal magicPenetration = equipmentDerived.MagicPenetrationPercent
             + talent.MagicPenetrationPercent;
         decimal dodge = decimal.Clamp(
-            primary.Agility * formula.DodgePerAgility
+            dodgeFromAgility
                 + talent.DodgePercent
                 + equipmentDerived.DodgePercent,
             0,
-            100);
+            DodgeCap);
         decimal blockChance = decimal.Clamp(equipmentDerived.BlockChancePercent, 0, 100);
         decimal blockValueMin = Math.Max(0, equipmentDerived.BlockValueMin);
         decimal blockValueMax = Math.Max(blockValueMin, equipmentDerived.BlockValueMax);
@@ -177,7 +185,7 @@ public sealed class CharacterStatCalculator(
                 ("TALENT_BONUS", stats.SpellPower - spellPowerBeforeTalent)),
             ["criticalChance"] = Breakdown(stats.CriticalChance,
                 ("FORMULA_BASE", formula.CriticalChanceBase),
-                ("AGILITY", primary.Agility * formula.CriticalChancePerAgility),
+                ("AGILITY", criticalChanceFromAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.CriticalChancePercent),
                 ("TALENT_BONUS", talent.CriticalChancePercent)),
             ["criticalDamage"] = Breakdown(stats.CriticalDamage,
@@ -199,21 +207,19 @@ public sealed class CharacterStatCalculator(
                 ("EQUIPMENT_BONUS", formula.AttackSpeedBase * equipmentDerived.AttackSpeedPercent / 100m),
                 ("TALENT_BONUS", formula.AttackSpeedBase * talent.AttackSpeedPercent / 100m)),
             ["armor"] = Breakdown(stats.Armor,
-                ("STAMINA", primary.Stamina * formula.ArmorPerStamina),
-                ("STRENGTH", primary.Strength * formula.ArmorPerStrength),
                 ("EQUIPMENT_BONUS", equipmentDerived.ArmorFlat),
                 ("TALENT_BONUS", stats.Armor - armorBeforeTalent)),
             ["armorDamageReductionPercent"] = Breakdown(
-                DefenseMitigationFormula.CalculateReductionPercent(stats.Armor)),
+                DefenseMitigationFormula.CalculateReductionPercent(stats.Armor, level)),
             ["magicResistance"] = Breakdown(stats.MagicResistance,
                 ("STAMINA", primary.Stamina * formula.MagicResistancePerStamina),
                 ("INTELLECT", primary.Intellect * formula.MagicResistancePerIntellect),
                 ("EQUIPMENT_BONUS", equipmentDerived.MagicResistanceFlat),
                 ("TALENT_BONUS", stats.MagicResistance - magicResistanceBeforeTalent)),
             ["magicDamageReductionPercent"] = Breakdown(
-                DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance)),
+                DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance, level)),
             ["dodge"] = Breakdown(stats.Dodge,
-                ("AGILITY", primary.Agility * formula.DodgePerAgility),
+                ("AGILITY", dodgeFromAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
                 ("TALENT_BONUS", talent.DodgePercent)),
             ["blockChance"] = Breakdown(stats.BlockChance,
@@ -225,6 +231,13 @@ public sealed class CharacterStatCalculator(
         };
 
         return new CharacterStatCalculation(stats, breakdown);
+    }
+
+    public static decimal CalculateAgilityContribution(decimal agility, decimal linearCoefficient)
+    {
+        decimal effectiveAgility = Math.Max(0, agility);
+        decimal denominator = 1 + (effectiveAgility / AgilityDiminishingReturnsRating);
+        return effectiveAgility * linearCoefficient / denominator;
     }
 
     private static CharacterStatBreakdown PrimaryBreakdown(

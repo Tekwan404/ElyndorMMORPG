@@ -27,10 +27,10 @@ public sealed class DamageAndHealingPipelineTests
 
         Assert.True(result.IsCritical);
         Assert.Equal(200, result.RawAmount);
-        Assert.Equal(111, result.AfterMitigation);
+        Assert.Equal(106, result.AfterMitigation);
         Assert.Equal(25, result.AbsorbedByShields);
-        Assert.Equal(86, result.HpDamage);
-        Assert.Equal(114, target.CurrentHp);
+        Assert.Equal(81, result.HpDamage);
+        Assert.Equal(119, target.CurrentHp);
     }
 
     [Fact]
@@ -168,11 +168,52 @@ public sealed class DamageAndHealingPipelineTests
             combatEvent => combatEvent.Type == CombatEventType.DamageDealt);
 
         Assert.Equal(100, blockEvent.RawDamage);
-        Assert.Equal(50, blockEvent.DamageAfterMitigation);
-        Assert.Equal(50, blockEvent.DamageBeforeBlock);
+        Assert.Equal(47, blockEvent.DamageAfterMitigation);
+        Assert.Equal(47, blockEvent.DamageBeforeBlock);
         Assert.Equal(20, blockEvent.Amount);
-        Assert.Equal(30, blockEvent.AmountBeforeShields);
-        Assert.Equal(30, damageEvent.Amount);
+        Assert.Equal(27, blockEvent.AmountBeforeShields);
+        Assert.Equal(27, damageEvent.Amount);
+    }
+
+    [Fact]
+    public void HigherLevelAttackerMakesOldArmorLessEffective()
+    {
+        CombatActorState level18 = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Level = 18, Accuracy = 100 });
+        CombatActorState level60 = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Level = 60, Accuracy = 100 });
+        CombatActorState target18 = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Armor = 745 });
+        CombatActorState target60 = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with { Armor = 745 });
+
+        DamageResult sameTier = DamagePipeline.Resolve(
+            new DamageRequest(
+                level18,
+                target18,
+                100,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom());
+        DamageResult oldGear = DamagePipeline.Resolve(
+            new DamageRequest(
+                level60,
+                target60,
+                100,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(51, sameTier.HpDamage);
+        Assert.Equal(77, oldGear.HpDamage);
     }
 
     [Fact]
