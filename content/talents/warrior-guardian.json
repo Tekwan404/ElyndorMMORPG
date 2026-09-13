@@ -41,15 +41,8 @@
           "version": 3,
           "name": "Провокация",
           "englishName": "Provoke",
-          "description": "Открывает способность «Провокация». Она не требует Rage, поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём. Дополнительно снижает Threat союзников на этой цели на 10% и увеличивает ForcedTarget ещё на 1 секунду.",
+          "description": "Открывает способность «Провокация». Она не требует Rage, поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём в течение 3 секунд.",
           "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [1],
-              "secondaryValues": [10],
-              "runtimeStatus": "Supported"
-            },
             {
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
@@ -80,6 +73,7 @@
           "version": 3,
           "name": "Сокрушение щитом",
           "englishName": "Shield Slam",
+          "prerequisites": [],
           "description": "Открывает способность «Сокрушение щитом». Стоит 25 Rage, перезарядка 4 секунды. Наносит физический урон и создаёт значительно больше Threat, чем обычная атака.",
           "replaceModifiers": [
             {
@@ -119,6 +113,21 @@
               "key": "UNLOCK_ABILITY",
               "values": [1],
               "targetId": "SHIELD_BLOCK",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-7-4",
+          "version": 3,
+          "description": "При HP ниже 35% получаемое лечение увеличивается на 5% / 10%, а MagicResistance — на 3% / 6%.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [5, 10],
+              "secondaryValues": [3, 6],
+              "threshold": 35,
               "runtimeStatus": "Supported"
             }
           ]
