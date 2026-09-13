@@ -27,10 +27,10 @@ public sealed class DamageAndHealingPipelineTests
 
         Assert.True(result.IsCritical);
         Assert.Equal(200, result.RawAmount);
-        Assert.Equal(106, result.AfterMitigation);
+        Assert.Equal(172, result.AfterMitigation);
         Assert.Equal(25, result.AbsorbedByShields);
-        Assert.Equal(81, result.HpDamage);
-        Assert.Equal(119, target.CurrentHp);
+        Assert.Equal(147, result.HpDamage);
+        Assert.Equal(53, target.CurrentHp);
     }
 
     [Fact]
@@ -168,11 +168,11 @@ public sealed class DamageAndHealingPipelineTests
             combatEvent => combatEvent.Type == CombatEventType.DamageDealt);
 
         Assert.Equal(100, blockEvent.RawDamage);
-        Assert.Equal(47, blockEvent.DamageAfterMitigation);
-        Assert.Equal(47, blockEvent.DamageBeforeBlock);
+        Assert.Equal(83, blockEvent.DamageAfterMitigation);
+        Assert.Equal(83, blockEvent.DamageBeforeBlock);
         Assert.Equal(20, blockEvent.Amount);
-        Assert.Equal(27, blockEvent.AmountBeforeShields);
-        Assert.Equal(27, damageEvent.Amount);
+        Assert.Equal(63, blockEvent.AmountBeforeShields);
+        Assert.Equal(63, damageEvent.Amount);
     }
 
     [Fact]
@@ -212,8 +212,8 @@ public sealed class DamageAndHealingPipelineTests
                 CanCrit: false),
             new SequenceGameRandom());
 
-        Assert.Equal(51, sameTier.HpDamage);
-        Assert.Equal(77, oldGear.HpDamage);
+        Assert.Equal(72, sameTier.HpDamage);
+        Assert.Equal(88, oldGear.HpDamage);
     }
 
     [Fact]
