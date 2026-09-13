@@ -22,9 +22,8 @@ public static partial class GameContentPackageValidator
             if (invalid) errors.Add(new("INVALID_PROMO_CODE", path, "Promo code fields or reward definition are invalid."));
             foreach (PromoItemRewardDefinition reward in promo.ItemRewards ?? [])
             {
-                if (reward.Quantity <= 0 || !items.TryGetValue(reward.ItemDefinitionId, out ItemDefinition? item)
-                    || item.Type == ItemType.Equipment)
-                    errors.Add(new("INVALID_PROMO_REWARD", path, "Promo reward must reference a non-equipment item with a positive quantity."));
+                if (reward.Quantity <= 0 || !items.ContainsKey(reward.ItemDefinitionId))
+                    errors.Add(new("INVALID_PROMO_REWARD", path, "Promo reward must reference an existing item with a positive quantity."));
             }
         }
     }
