@@ -28,6 +28,10 @@ public sealed record EquipmentModifierSummary(
 
 public static class EquipmentStatModifierResolver
 {
+    private const decimal ClothArmorMultiplier = 0.40m;
+    private const decimal LeatherArmorMultiplier = 0.65m;
+    private const decimal HeavyArmorMultiplier = 1.00m;
+
     public static PrimaryStats Resolve(IEnumerable<ItemDefinition> equippedItems) =>
         ResolveDetailed(equippedItems, []).PrimaryStats;
 
@@ -57,7 +61,7 @@ public static class EquipmentStatModifierResolver
         decimal criticalDamagePercent = items.Sum(item => item.CriticalDamagePercent);
         decimal accuracyPercent = items.Sum(item => item.AccuracyPercent);
         decimal attackSpeedPercent = items.Sum(item => item.AttackSpeedPercent);
-        decimal armorFlat = items.Sum(item => item.ArmorFlat);
+        decimal armorFlat = items.Sum(ResolveArmorContribution);
         decimal magicResistanceFlat = items.Sum(item => item.MagicResistanceFlat);
         decimal dodgePercent = items.Sum(item => item.DodgePercent);
         decimal armorPenetrationPercent = items.Sum(item => item.ArmorPenetrationPercent);
@@ -97,7 +101,6 @@ public static class EquipmentStatModifierResolver
                 criticalDamagePercent += bonus.CriticalDamagePercent;
                 accuracyPercent += bonus.AccuracyPercent;
                 attackSpeedPercent += bonus.AttackSpeedPercent;
-                armorFlat += bonus.ArmorFlat;
                 magicResistanceFlat += bonus.MagicResistanceFlat;
                 dodgePercent += bonus.DodgePercent;
                 armorPenetrationPercent += bonus.ArmorPenetrationPercent;
@@ -129,6 +132,22 @@ public static class EquipmentStatModifierResolver
             blockChancePercent,
             blockValueMin,
             blockValueMax);
+    }
+
+    private static decimal ResolveArmorContribution(ItemDefinition item)
+    {
+        decimal multiplier = item.ArmorCategory switch
+        {
+            EquipmentCategoryIds.Cloth => ClothArmorMultiplier,
+            EquipmentCategoryIds.Leather => LeatherArmorMultiplier,
+            EquipmentCategoryIds.Heavy => HeavyArmorMultiplier,
+            _ when string.Equals(
+                item.OffHandCategory,
+                EquipmentCategoryIds.Shield,
+                StringComparison.Ordinal) => HeavyArmorMultiplier,
+            _ => 0m
+        };
+        return item.ArmorFlat * multiplier;
     }
 
     private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) =>
