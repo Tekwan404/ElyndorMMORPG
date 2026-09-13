@@ -25,6 +25,9 @@ public sealed record CombatStats(
 
 public sealed class CombatActorState
 {
+    private readonly decimal _baseMaxHp;
+    private readonly Dictionary<string, decimal> _temporaryMaxHpPercentBonuses = new(StringComparer.Ordinal);
+
     public CombatActorState(
         Guid actorId,
         decimal maxHp,
@@ -38,6 +41,7 @@ public sealed class CombatActorState
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHp);
         ArgumentOutOfRangeException.ThrowIfNegative(maxResource);
         ActorId = actorId;
+        _baseMaxHp = maxHp;
         MaxHp = maxHp;
         CanDie = canDie;
         CurrentHp = ClampHp(currentHp);
@@ -48,7 +52,8 @@ public sealed class CombatActorState
     }
 
     public Guid ActorId { get; }
-    public decimal MaxHp { get; }
+    public decimal BaseMaxHp => _baseMaxHp;
+    public decimal MaxHp { get; private set; }
     public decimal CurrentHp { get; private set; }
     public decimal MaxResource { get; }
     public decimal CurrentResource { get; private set; }
@@ -82,6 +87,31 @@ public sealed class CombatActorState
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
     public void ApplyHealing(decimal value) => SetCurrentHp(CurrentHp + Math.Max(0, value));
 
+    public void SetTemporaryMaxHpPercentBonus(
+        string sourceId,
+        decimal percent,
+        bool healByIncrease)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
+        decimal previousMaxHp = MaxHp;
+        _temporaryMaxHpPercentBonuses[sourceId] = Math.Max(0, percent);
+        RecalculateMaxHp();
+        if (healByIncrease && MaxHp > previousMaxHp)
+        {
+            CurrentHp = ClampHp(CurrentHp + MaxHp - previousMaxHp);
+        }
+    }
+
+    public void RemoveTemporaryMaxHpPercentBonus(string sourceId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
+        if (!_temporaryMaxHpPercentBonuses.Remove(sourceId))
+            return;
+
+        RecalculateMaxHp();
+        CurrentHp = ClampHp(CurrentHp);
+    }
+
     public bool TrySpendResource(decimal amount)
     {
         if (amount < 0 || CurrentResource < amount)
@@ -98,6 +128,12 @@ public sealed class CombatActorState
         decimal previous = CurrentResource;
         CurrentResource = Math.Clamp(CurrentResource + amount, 0, MaxResource);
         return CurrentResource - previous;
+    }
+
+    private void RecalculateMaxHp()
+    {
+        decimal totalPercent = _temporaryMaxHpPercentBonuses.Values.Sum();
+        MaxHp = _baseMaxHp * (1 + totalPercent / 100m);
     }
 
     private decimal ClampHp(decimal value)
