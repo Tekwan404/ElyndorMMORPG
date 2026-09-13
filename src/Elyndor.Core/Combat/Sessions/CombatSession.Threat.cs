@@ -114,8 +114,9 @@ public sealed partial class CombatSession
             ? 0
             : threatTable.Snapshot.Values.Max();
         decimal currentThreat = threatTable.GetThreat(sourceActorId);
-        if (currentThreat < highestThreat)
-            threatTable.AddThreat(sourceActorId, highestThreat - currentThreat);
+        decimal minimumThreat = highestThreat + 1m;
+        if (currentThreat < minimumThreat)
+            threatTable.AddThreat(sourceActorId, minimumThreat - currentThreat);
     }
 
     private CombatParticipantDefinition ResolveEnemyPrimaryTarget(
