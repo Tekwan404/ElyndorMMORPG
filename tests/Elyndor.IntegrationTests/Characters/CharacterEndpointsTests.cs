@@ -134,7 +134,7 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
     }
 
     [Fact]
-    public async Task DungeonEndpointsExposeCheckpointAndAllowRunExit()
+    public async Task DungeonEndpointsSeparateCityExitReturnAndLeave()
     {
         await using WebApplicationFactory<Program> factory = CreateFactory();
         using HttpClient client = factory.CreateClient();
@@ -177,21 +177,63 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal("MINE_ENTRANCE", run.CurrentCheckpointId);
         Assert.Equal("Active", run.State);
 
-        HttpResponseMessage exitResponse = await client.PostAsync(
-            $"/api/v1/dungeons/runs/{run.RunId}/exit",
+        HttpResponseMessage cityExitResponse = await client.PostAsync(
+            $"/api/v1/dungeons/runs/{run.RunId}/city-exit",
             content: null);
-        exitResponse.EnsureSuccessStatusCode();
+        cityExitResponse.EnsureSuccessStatusCode();
 
-        await using GameDbContext verify = postgres.CreateDbContext();
+        await using (GameDbContext verifyCity = postgres.CreateDbContext())
+        {
+            Assert.Equal(
+                DungeonRunMemberState.Active,
+                await verifyCity.DungeonRunMembers
+                    .Where(member => member.RunId == run.RunId && member.CharacterId == character.Id)
+                    .Select(member => member.State)
+                    .SingleAsync());
+            Assert.Equal(
+                WorldLocationIds.StarterTown,
+                await verifyCity.CharacterLocations
+                    .Where(location => location.CharacterId == character.Id)
+                    .Select(location => location.LocationId)
+                    .SingleAsync());
+        }
+
+        HttpResponseMessage returnResponse = await client.PostAsync(
+            $"/api/v1/dungeons/runs/{run.RunId}/return",
+            content: null);
+        returnResponse.EnsureSuccessStatusCode();
+
+        await using (GameDbContext verifyReturn = postgres.CreateDbContext())
+        {
+            Assert.Equal(
+                DungeonRunMemberState.Active,
+                await verifyReturn.DungeonRunMembers
+                    .Where(member => member.RunId == run.RunId && member.CharacterId == character.Id)
+                    .Select(member => member.State)
+                    .SingleAsync());
+            Assert.Equal(
+                "ANCIENT_MINE",
+                await verifyReturn.CharacterLocations
+                    .Where(location => location.CharacterId == character.Id)
+                    .Select(location => location.LocationId)
+                    .SingleAsync());
+        }
+
+        HttpResponseMessage leaveResponse = await client.PostAsync(
+            $"/api/v1/dungeons/runs/{run.RunId}/leave",
+            content: null);
+        leaveResponse.EnsureSuccessStatusCode();
+
+        await using GameDbContext verifyLeave = postgres.CreateDbContext();
         Assert.Equal(
             DungeonRunMemberState.Left,
-            await verify.DungeonRunMembers
+            await verifyLeave.DungeonRunMembers
                 .Where(member => member.RunId == run.RunId && member.CharacterId == character.Id)
                 .Select(member => member.State)
                 .SingleAsync());
         Assert.Equal(
             WorldLocationIds.StarterTown,
-            await verify.CharacterLocations
+            await verifyLeave.CharacterLocations
                 .Where(location => location.CharacterId == character.Id)
                 .Select(location => location.LocationId)
                 .SingleAsync());

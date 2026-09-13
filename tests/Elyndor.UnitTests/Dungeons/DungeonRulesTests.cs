@@ -55,7 +55,7 @@ public sealed class DungeonRulesTests
     }
 
     [Fact]
-    public void MemberCanRejoinAnActiveRunBetweenEncounters()
+    public void MemberThatLeftCannotRejoinTheSameRun()
     {
         Guid characterId = Guid.NewGuid();
         DungeonRun run = DungeonRun.Create(
@@ -67,10 +67,12 @@ public sealed class DungeonRulesTests
         run.AddMember(characterId, Start);
         run.Members.Single().MarkLeft();
 
-        run.AddMember(characterId, Start.AddMinutes(1));
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+            run.AddMember(characterId, Start.AddMinutes(1)));
 
+        Assert.Contains("cannot rejoin", error.Message, StringComparison.OrdinalIgnoreCase);
         DungeonRunMember member = Assert.Single(run.Members);
-        Assert.Equal(DungeonRunMemberState.Active, member.State);
+        Assert.Equal(DungeonRunMemberState.Left, member.State);
         Assert.Equal(Start, member.JoinedAtUtc);
     }
 

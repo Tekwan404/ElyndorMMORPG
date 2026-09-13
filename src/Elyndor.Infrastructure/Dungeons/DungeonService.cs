@@ -363,6 +363,11 @@ public sealed class DungeonService(
         Character? character = await GetCharacterAsync(accountId, cancellationToken);
         if (character is null)
             return DungeonOperationResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        DungeonRunMember? existingMember = run.Members.SingleOrDefault(member =>
+            member.CharacterId == character.Id);
+        if (existingMember?.State == DungeonRunMemberState.Left)
+            return DungeonOperationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
+
         bool solo = IsSoloRun(run, character.Id);
         if (!solo)
         {

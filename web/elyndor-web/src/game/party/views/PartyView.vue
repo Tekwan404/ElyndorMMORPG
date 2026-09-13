@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { classLabel } from '@/game/character/characterPresentation'
-import { socialErrorMessage } from '@/game/social/socialPresentation'
-
+import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
+import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal, UIPanel } from '@/ui/components'
 
@@ -11,8 +11,10 @@ const props = withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: fa
 const emit = defineEmits<{ 'open-world': [] }>()
 
 const party = usePartyStore()
+const dungeon = useDungeonStore()
 const session = useGameSessionStore()
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
+const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
 const currentMember = computed(() => party.snapshot?.members.find(
   (member) => member.characterId === currentCharacterId.value,
@@ -20,6 +22,41 @@ const currentMember = computed(() => party.snapshot?.members.find(
 const leaderMember = computed(() => party.snapshot?.members.find(
   (member) => member.characterId === party.snapshot?.leaderCharacterId,
 ) ?? null)
+const currentDungeonMember = computed(() => dungeon.current?.members.find(
+  (member) => member.characterId === currentCharacterId.value,
+) ?? null)
+const currentDungeonRun = computed(() => currentDungeonMember.value?.state === 'Active'
+  ? dungeon.current
+  : null)
+const currentDungeonPreview = computed(() => dungeon.previews.find(
+  (preview) => preview.id === currentDungeonRun.value?.dungeonId,
+) ?? null)
+const currentDungeonEncounter = computed(() => currentDungeonRun.value?.encounters.find(
+  (encounter) => encounter.encounterIndex === currentDungeonRun.value?.currentEncounterIndex,
+) ?? null)
+const currentDungeonEntryLocationId = computed(() =>
+  currentDungeonPreview.value?.entryLocationId ?? currentDungeonRun.value?.dungeonId ?? '',
+)
+const dungeonStageNumber = computed(() => {
+  const run = currentDungeonRun.value
+  if (!run) return 0
+  if (run.state === 'Completed') return run.encounterCount
+  return Math.min(run.currentEncounterIndex + 1, run.encounterCount)
+})
+const dungeonStateLabel = computed(() => {
+  const run = currentDungeonRun.value
+  if (!run) return ''
+  if (run.state === 'Completed') return 'Завершено'
+  if (run.state === 'Abandoned') return 'Забег прекращён'
+  if (currentDungeonEncounter.value?.state === 'Active') return 'В бою'
+  return 'Между боями'
+})
+const canReturnToDungeonRun = computed(() => Boolean(
+  currentDungeonRun.value?.state === 'Active'
+    && currentDungeonEntryLocationId.value
+    && currentLocationId.value !== currentDungeonEntryLocationId.value
+    && currentDungeonEncounter.value?.state !== 'Active',
+))
 const canFollowLeader = computed(() => {
   const leader = leaderMember.value
   if (!leader?.locationId || leader.characterId === currentCharacterId.value) return false
@@ -47,6 +84,7 @@ const confirmationMessage = computed(() => {
 
 onMounted(() => {
   void party.refresh()
+  void dungeon.refresh()
   refreshTimer = setInterval(() => {
     void party.refresh(true)
   }, 5_000)
@@ -68,6 +106,13 @@ function locationLabel(locationId?: string | null): string {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
+}
+
+async function returnToDungeonRun(): Promise<void> {
+  const run = currentDungeonRun.value
+  if (!run || !canReturnToDungeonRun.value) return
+  await dungeon.returnToRun(run.runId)
+  await party.refresh(true)
 }
 
 async function followLeader(): Promise<void> {
@@ -118,6 +163,26 @@ async function confirmPendingAction(): Promise<void> {
     </header>
 
     <p v-if="party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(party.errorCode) }}</p>
+    <p v-if="dungeon.errorCode" class="error-state" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
+
+    <UIPanel v-if="currentDungeonRun" title="Текущий забег" data-party-dungeon-run>
+      <div class="dungeon-run-summary">
+        <div>
+          <strong>{{ currentDungeonRun.displayName }}</strong>
+          <small>
+            Этап {{ dungeonStageNumber }} / {{ currentDungeonRun.encounterCount }} · {{ dungeonStateLabel }}
+          </small>
+        </div>
+        <p v-if="canReturnToDungeonRun">
+          Ты временно вне подземелья, но всё ещё участник этого забега. Прогресс группы сохранён.
+        </p>
+        <UIButton
+          v-if="canReturnToDungeonRun"
+          data-party-dungeon-return
+          @click="returnToDungeonRun"
+        >Вернуться в забег</UIButton>
+      </div>
+    </UIPanel>
 
     <UIPanel
       v-if="party.leaderLocationChange && party.leaderLocationChange.leaderCharacterId !== currentCharacterId"
@@ -195,6 +260,11 @@ h1 { margin: 2px 0 0; font-family: var(--ui-font-display); font-size: 1.35rem; }
 .party-view__header-actions { display: flex; align-items: center; gap: 8px; }
 .party-view__header-actions > span { color: var(--ui-color-text-muted); font-size: .68rem; white-space: nowrap; }
 .party-view__header-actions :deep(.ui-button) { min-height: 2.15rem; padding-inline: .62rem; font-size: .65rem; }
+.dungeon-run-summary { display: grid; gap: 9px; }
+.dungeon-run-summary > div { display: grid; gap: 3px; }
+.dungeon-run-summary small { color: var(--ui-color-text-muted); font-size: .68rem; }
+.dungeon-run-summary p { margin: 0; color: var(--ui-color-text-secondary); font-size: .72rem; line-height: 1.45; }
+.dungeon-run-summary :deep(.ui-button) { justify-self: start; }
 .member-row, .invite-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgb(255 255 255 / 7%); }
 .member-row > .member-copy, .invite-row div:first-child { display: grid; gap: 3px; }
 .member-row small, .invite-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }

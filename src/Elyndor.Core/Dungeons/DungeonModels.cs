@@ -166,6 +166,8 @@ public sealed class DungeonRunMember
     {
         if (joinedAtUtc.Offset != TimeSpan.Zero)
             throw new ArgumentException("Dungeon timestamps must be UTC.", nameof(joinedAtUtc));
+        if (State == DungeonRunMemberState.Left)
+            throw new InvalidOperationException("A member that left cannot rejoin the same dungeon run.");
         State = DungeonRunMemberState.Active;
     }
 }
