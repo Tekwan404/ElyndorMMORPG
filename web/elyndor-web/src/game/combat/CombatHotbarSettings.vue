@@ -53,7 +53,9 @@ function selectSlot(abilityId: string): void {
   }
 
   const next = [...order.value]
-  ;[next[sourceIndex], next[targetIndex]] = [next[targetIndex]!, next[sourceIndex]!]
+  const sourceAbilityId = next[sourceIndex]!
+  next[sourceIndex] = next[targetIndex]!
+  next[targetIndex] = sourceAbilityId
   order.value = next
   saveCombatHotbarOrder(props.characterId, next)
   selectedAbilityId.value = null
