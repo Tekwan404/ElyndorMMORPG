@@ -277,8 +277,9 @@
           "englishName": "Improved Shield Bash",
           "maxRank": 2,
           "prerequisites": [],
-          "description": "После успешного Shield Bash цель дополнительно получает Silence на 0.5 / 1 сек.",
+          "description": "Открывает «Удар щитом». После успешного Shield Bash цель дополнительно получает Silence на 0.5 / 1 сек.",
           "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1, 1], "targetId": "SHIELD_BASH" },
             { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [0.5, 1], "targetId": "SHIELD_BASH", "runtimeStatus": "Supported" }
           ],
           "version": 4
