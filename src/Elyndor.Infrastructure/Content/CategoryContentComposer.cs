@@ -159,6 +159,7 @@ internal static class CategoryContentComposer
             package.TalentTrees,
             fragment.TalentTrees,
             item => item.Id);
+        talentTrees = ApplyTalentBranchReplacements(talentTrees, fragment.TalentBranchReplacements);
         talentTrees = ApplyTalentTreePatches(talentTrees, fragment.TalentTreePatches);
 
         return package with
@@ -236,6 +237,74 @@ internal static class CategoryContentComposer
                 item => item.Id),
             Itemization = fragment.Itemization ?? package.Itemization
         };
+    }
+
+    private static IReadOnlyList<TalentTreeDefinition>? ApplyTalentBranchReplacements(
+        IReadOnlyList<TalentTreeDefinition>? trees,
+        IReadOnlyList<TalentBranchReplacement>? replacements)
+    {
+        if (replacements is null || replacements.Count == 0)
+            return trees;
+        if (trees is null)
+            throw new InvalidDataException("Talent branch replacements require talent trees to be loaded first.");
+
+        List<TalentTreeDefinition> result = trees.ToList();
+        HashSet<(string TreeId, string BranchId)> replacedBranches = [];
+
+        foreach (TalentBranchReplacement replacement in replacements)
+        {
+            if (!replacedBranches.Add((replacement.TreeId, replacement.BranchId)))
+            {
+                throw new InvalidDataException(
+                    $"Talent branch '{replacement.TreeId}:{replacement.BranchId}' is replaced more than once.");
+            }
+
+            int treeIndex = result.FindIndex(tree =>
+                string.Equals(tree.Id, replacement.TreeId, StringComparison.Ordinal));
+            if (treeIndex < 0)
+                throw new InvalidDataException(
+                    $"Talent branch replacement references unknown tree '{replacement.TreeId}'.");
+
+            TalentTreeDefinition tree = result[treeIndex];
+            int branchIndex = tree.Branches.ToList().FindIndex(branch =>
+                string.Equals(branch.Id, replacement.BranchId, StringComparison.Ordinal));
+            if (branchIndex < 0)
+                throw new InvalidDataException(
+                    $"Talent branch replacement references unknown branch '{replacement.TreeId}:{replacement.BranchId}'.");
+
+            if (replacement.Nodes.Count == 0
+                || replacement.Nodes.Any(node =>
+                    !string.Equals(node.BranchId, replacement.BranchId, StringComparison.Ordinal)))
+            {
+                throw new InvalidDataException(
+                    $"Replacement nodes for '{replacement.TreeId}:{replacement.BranchId}' must all belong to that branch.");
+            }
+
+            if (replacement.Nodes.Select(node => node.Id).Distinct(StringComparer.Ordinal).Count()
+                != replacement.Nodes.Count)
+            {
+                throw new InvalidDataException(
+                    $"Talent branch replacement '{replacement.TreeId}:{replacement.BranchId}' contains duplicate node IDs.");
+            }
+
+            List<TalentBranchDefinition> branches = tree.Branches.ToList();
+            TalentBranchDefinition branch = branches[branchIndex];
+            branches[branchIndex] = branch with { NodeCount = replacement.Nodes.Count };
+
+            TalentDefinition[] nodes = tree.Nodes
+                .Where(node => !string.Equals(node.BranchId, replacement.BranchId, StringComparison.Ordinal))
+                .Concat(replacement.Nodes)
+                .ToArray();
+
+            result[treeIndex] = tree with
+            {
+                Branches = branches,
+                Nodes = nodes,
+                Version = Math.Max(tree.Version, replacement.Version ?? tree.Version)
+            };
+        }
+
+        return result;
     }
 
     private static IReadOnlyList<TalentTreeDefinition>? ApplyTalentTreePatches(
@@ -316,6 +385,7 @@ internal static class CategoryContentComposer
         IReadOnlyList<EffectDefinition>? Effects = null,
         IReadOnlyList<AbilityDefinition>? Abilities = null,
         IReadOnlyList<TalentTreeDefinition>? TalentTrees = null,
+        IReadOnlyList<TalentBranchReplacement>? TalentBranchReplacements = null,
         IReadOnlyList<TalentTreePatch>? TalentTreePatches = null,
         IReadOnlyList<MonsterDefinition>? Monsters = null,
         IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
@@ -329,6 +399,12 @@ internal static class CategoryContentComposer
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
         ItemizationDefinition? Itemization = null);
+
+    private sealed record TalentBranchReplacement(
+        string TreeId,
+        string BranchId,
+        IReadOnlyList<TalentDefinition> Nodes,
+        int? Version = null);
 
     private sealed record TalentTreePatch(
         string TreeId,
