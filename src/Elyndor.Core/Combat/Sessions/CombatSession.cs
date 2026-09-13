@@ -1056,8 +1056,11 @@ public sealed partial class CombatSession
                 return [];
 
             bool isCurrentPlayer = requestedTargetActorId == _player.Actor.ActorId;
-            bool isActiveAlly = ActivePlayerActorIds().Contains(requestedTargetActorId);
-            return (isCurrentPlayer && ability.AllowSelfTarget) || isActiveAlly
+            bool isActiveOtherPlayer = !isCurrentPlayer
+                && ActivePlayerActorIds().Contains(requestedTargetActorId);
+            return (isCurrentPlayer
+                ? ability.AllowSelfTarget
+                : isActiveOtherPlayer)
                 ? [requestedTargetActorId]
                 : [];
         }
