@@ -1,167 +1,486 @@
 {
-  "contentVersion": "0.19.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-13T19:15:00+00:00",
-  "talentTreePatches": [
+  "contentVersion": "0.21.0",
+  "balanceVersion": "0.16.0",
+  "publishedAtUtc": "2026-09-13T19:50:00+00:00",
+  "talentBranchReplacements": [
     {
       "treeId": "WARRIOR_TREE",
-      "version": 3,
+      "branchId": "GUARDIAN",
+      "version": 4,
       "nodes": [
         {
-          "nodeId": "G-1-2",
-          "version": 3,
+          "id": "G-1-1",
+          "branchId": "GUARDIAN",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Стойка Стража",
+          "englishName": "Guardian Stance",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Пока экипирован щит, весь создаваемый Threat умножается на 1.30, а наносимый урон уменьшается на 5%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [30], "targetId": "GUARDIAN_STANCE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-1-2",
+          "branchId": "GUARDIAN",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Специализация на щитах",
+          "englishName": "Shield Specialization",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Пока экипирован щит, Block Chance увеличивается на 1 / 2 / 3 процентных пункта.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "BLOCK_CHANCE_PERCENT", "values": [1, 2, 3] }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-1-3",
+          "branchId": "GUARDIAN",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Закалённая броня",
+          "englishName": "Toughness",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Armor от экипировки увеличивается на 3% / 6% / 10%.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "ARMOR_PERCENT", "values": [3, 6, 10] }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-1-4",
+          "branchId": "GUARDIAN",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Мастерство щита",
+          "englishName": "Shield Mastery",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Block Value экипированного щита увеличивается на 5% / 10% / 15%.",
+          "modifiers": [
+            { "type": "StatModifier", "key": "BLOCK_VALUE_PERCENT", "values": [5, 10, 15] }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-1-5",
+          "branchId": "GUARDIAN",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Предвидение",
+          "englishName": "Anticipation",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Получаемый урон от критических ударов уменьшается на 10% / 20%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_DAMAGE_TAKEN", "values": [10, 20], "targetId": "INCOMING_CRITICAL_DAMAGE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+
+        {
+          "id": "G-2-1",
+          "branchId": "GUARDIAN",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Последний рубеж",
+          "englishName": "Last Stand",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Последний рубеж»: на 8 сек. +20% Max HP и немедленно столько же текущего HP. Перезарядка 120 сек.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "LAST_STAND" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-2-2",
+          "branchId": "GUARDIAN",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Возмездие",
+          "englishName": "Revenge",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Возмездие»: после успешного Block способность доступна 5 сек., стоит 5 Rage и создаёт высокий Threat.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "REVENGE" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-2-3",
+          "branchId": "GUARDIAN",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Улучшенное Возмездие",
+          "englishName": "Improved Revenge",
+          "maxRank": 3,
+          "prerequisites": [ { "talentId": "G-2-2", "requiredRank": 1 } ],
+          "description": "Threat «Возмездия» +10% / +20% / +30%. По обычным противникам 10% / 20% / 30% шанс краткого оглушения.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [10, 20, 30], "secondaryValues": [10, 20, 30], "targetId": "REVENGE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-2-4",
+          "branchId": "GUARDIAN",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Непокорность",
+          "englishName": "Defiance",
+          "maxRank": 3,
+          "prerequisites": [ { "talentId": "G-1-1", "requiredRank": 1 } ],
+          "description": "В Стойке Стража весь создаваемый Threat дополнительно увеличивается на 5% / 10% / 15%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [5, 10, 15], "targetId": "GUARDIAN_STANCE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-2-5",
+          "branchId": "GUARDIAN",
+          "tier": 2,
+          "requiredSpentPoints": 5,
           "name": "Ярость щита",
           "englishName": "Shield Fury",
-          "description": "Каждый успешный Block дополнительно генерирует +2 / +3 / +4 Rage. Срабатывает только от реального блока щитом.",
-          "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [2, 3, 4],
-              "runtimeStatus": "Supported"
-            }
-          ]
-        },
-        {
-          "nodeId": "G-2-1",
-          "version": 3,
-          "name": "Щитовой рефлекс",
-          "englishName": "Shield Reflex",
-          "description": "Пока экипирован щит, Block Chance увеличивается на 2 / 4 процентных пункта. Без щита талант не создаёт Block Chance.",
-          "replaceModifiers": [
-            {
-              "type": "StatModifier",
-              "key": "BLOCK_CHANCE_PERCENT",
-              "values": [2, 4]
-            }
-          ]
-        },
-        {
-          "nodeId": "G-2-2",
-          "version": 3,
-          "name": "Провокация",
-          "englishName": "Provoke",
-          "description": "Открывает способность «Провокация». Она не требует Rage, поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём в течение 3 секунд.",
-          "replaceModifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [1],
-              "targetId": "PROVOKE",
-              "runtimeStatus": "Supported"
-            }
-          ]
-        },
-        {
-          "nodeId": "G-3-1",
-          "version": 3,
-          "name": "Реванш",
-          "englishName": "Revenge",
-          "description": "Открывает способность «Реванш». После успешного Block способность доступна 3 секунды. Наносит мощный физический ответный удар и стоит 10 Rage.",
-          "replaceModifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [1, 1],
-              "targetId": "REVENGE",
-              "runtimeStatus": "Supported"
-            }
-          ]
-        },
-        {
-          "nodeId": "G-4-2",
-          "version": 3,
-          "name": "Сокрушение щитом",
-          "englishName": "Shield Slam",
+          "maxRank": 3,
           "prerequisites": [],
-          "description": "Открывает способность «Сокрушение щитом». Стоит 25 Rage, перезарядка 4 секунды. Наносит физический урон и создаёт значительно больше Threat, чем обычная атака.",
-          "replaceModifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [1, 1],
-              "targetId": "SHIELD_SLAM",
-              "runtimeStatus": "Supported"
-            }
-          ]
+          "description": "Успешный Block дополнительно даёт 1 / 2 / 3 Rage.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_DAMAGE_TAKEN", "values": [1, 2, 3], "targetId": "BLOCK", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
         },
+
         {
-          "nodeId": "G-4-4",
-          "version": 3,
-          "name": "Ответная ярость",
-          "englishName": "Defiant Fury",
-          "description": "Успешный Block восстанавливает дополнительно +3 / +5 Rage. InternalCooldown = 2 секунды.",
-          "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [3, 5],
-              "internalCooldownSeconds": 2,
-              "runtimeStatus": "Supported"
-            }
-          ]
-        },
-        {
-          "nodeId": "G-6-1",
-          "version": 3,
+          "id": "G-3-1",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
           "name": "Блок щитом",
           "englishName": "Shield Block",
-          "description": "Открывает способность «Блок щитом». Стоит 30 Rage, перезарядка 12 секунд. На 5 секунд даёт +25 п.п. Block Chance и +25% Block Value. Итоговый Block Chance ограничен 60%.",
-          "replaceModifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [1],
-              "targetId": "SHIELD_BLOCK",
-              "runtimeStatus": "Supported"
-            }
-          ]
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Блок щитом»: 20 Rage, CD 12 сек., 5 сек. действия, +30 п.п. Block Chance и +25% Block Value. Общий cap Block Chance — 60%.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "SHIELD_BLOCK" }
+          ],
+          "version": 4
         },
         {
-          "nodeId": "G-7-4",
-          "version": 3,
-          "description": "При HP ниже 35% получаемое лечение увеличивается на 5% / 10%, а MagicResistance — на 3% / 6%.",
-          "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [5, 10],
-              "secondaryValues": [3, 6],
-              "threshold": 35,
-              "runtimeStatus": "Supported"
-            }
-          ]
+          "id": "G-3-2",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Улучшенный блок щитом",
+          "englishName": "Improved Shield Block",
+          "maxRank": 2,
+          "prerequisites": [ { "talentId": "G-3-1", "requiredRank": 1 } ],
+          "description": "«Блок щитом» длится на 1 / 2 сек. дольше и стоит на 2 / 5 Rage меньше.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "EFFECT_DURATION_SECONDS", "values": [1, 2], "targetId": "SHIELD_BLOCK" },
+            { "type": "AbilityModifier", "key": "ABILITY_RESOURCE_COST_FLAT", "values": [2, 5], "targetId": "SHIELD_BLOCK" }
+          ],
+          "version": 4
         },
         {
-          "nodeId": "G-8-2",
-          "version": 3,
-          "name": "Нерушимый бастион",
-          "englishName": "Unbreakable Bastion",
-          "description": "Пока активен Бастион, Block Chance дополнительно увеличивается на 10 / 20 процентных пунктов. Эффект не позволяет превысить общий лимит Block Chance 60%.",
-          "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [10, 20],
-              "targetId": "BASTION",
-              "runtimeStatus": "Supported"
-            }
-          ]
+          "id": "G-3-3",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Провокация",
+          "englishName": "Provoke",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Провокацию»: 0 Rage, CD 10 сек.; Threat становится равным текущему лидеру и цель принудительно атакует Стража 3 сек.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "PROVOKE" }
+          ],
+          "version": 4
         },
         {
-          "nodeId": "G-9-1",
-          "version": 3,
+          "id": "G-3-4",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Улучшенная провокация",
+          "englishName": "Improved Provoke",
+          "maxRank": 2,
+          "prerequisites": [ { "talentId": "G-3-3", "requiredRank": 1 } ],
+          "description": "Перезарядка «Провокации» сокращается на 1 / 2 сек.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "ABILITY_COOLDOWN_SECONDS", "values": [1, 2], "targetId": "PROVOKE" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-3-5",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Раскол брони",
+          "englishName": "Sunder Armor",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Раскол брони»: 10 Rage, высокий flat Threat, Armor цели −4% на 30 сек., до 5 стаков.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "SUNDER_ARMOR" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-3-6",
+          "branchId": "GUARDIAN",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Пробитая броня",
+          "englishName": "Improved Sunder Armor",
+          "maxRank": 3,
+          "prerequisites": [ { "talentId": "G-3-5", "requiredRank": 1 } ],
+          "description": "Стоимость «Раскола брони» снижается на 1 / 2 / 3 Rage, а создаваемый им Threat увеличивается на 10% / 20% / 30%.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "ABILITY_RESOURCE_COST_FLAT", "values": [1, 2, 3], "targetId": "SUNDER_ARMOR" },
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [10, 20, 30], "targetId": "SUNDER_ARMOR", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+
+        {
+          "id": "G-4-1",
+          "branchId": "GUARDIAN",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Оглушающий удар",
+          "englishName": "Concussion Blow",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Оглушающий удар»: 15 Rage, CD 30 сек., оглушает обычную цель на 3 сек. Боссы невосприимчивы к оглушению.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "CONCUSSION_BLOW" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-4-2",
+          "branchId": "GUARDIAN",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Улучшенный удар щитом",
+          "englishName": "Improved Shield Bash",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "После успешного Shield Bash цель дополнительно получает Silence на 0.5 / 1 сек.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [0.5, 1], "targetId": "SHIELD_BASH", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-4-3",
+          "branchId": "GUARDIAN",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Одноручная специализация",
+          "englishName": "One-Handed Weapon Specialization",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "При боевом комплекте со щитом наносимый урон увеличивается на 3% / 6% / 10%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [3, 6, 10], "targetId": "ONE_HAND_SHIELD", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-4-4",
+          "branchId": "GUARDIAN",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Тяжёлый щит",
+          "englishName": "Heavy Shield",
+          "maxRank": 3,
+          "prerequisites": [ { "talentId": "G-3-1", "requiredRank": 1 } ],
+          "description": "Во время «Блока щитом» Block Value дополнительно увеличивается на 10% / 20% / 30%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [10, 20, 30], "targetId": "SHIELD_BLOCK", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-4-5",
+          "branchId": "GUARDIAN",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Мастер провокации",
+          "englishName": "Master Provoke",
+          "maxRank": 2,
+          "prerequisites": [ { "talentId": "G-3-3", "requiredRank": 1 } ],
+          "description": "После «Провокации» весь Threat Стража по этой цели увеличивается на 10% / 20% в течение 4 сек.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [10, 20], "targetId": "PROVOKE", "durationSeconds": 4, "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+
+        {
+          "id": "G-5-1",
+          "branchId": "GUARDIAN",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Бастион",
+          "englishName": "Bastion",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Бастион»: 40 Rage, CD 120 сек., на 6 сек. уменьшает весь получаемый урон на 40%.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "BASTION" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-5-2",
+          "branchId": "GUARDIAN",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Укреплённый Бастион",
+          "englishName": "Fortified Bastion",
+          "maxRank": 2,
+          "prerequisites": [ { "talentId": "G-5-1", "requiredRank": 1 } ],
+          "description": "Перезарядка «Бастиона» сокращается на 15 / 30 сек.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "ABILITY_COOLDOWN_SECONDS", "values": [15, 30], "targetId": "BASTION" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-5-3",
+          "branchId": "GUARDIAN",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Вызывающий клич",
+          "englishName": "Challenging Shout",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Вызывающий клич»: все живые противники принудительно атакуют Стража 4 сек., но их Threat table не изменяется. CD 90 сек.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "CHALLENGING_SHOUT" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-5-4",
+          "branchId": "GUARDIAN",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Улучшенный последний рубеж",
+          "englishName": "Improved Last Stand",
+          "maxRank": 2,
+          "prerequisites": [ { "talentId": "G-2-1", "requiredRank": 1 } ],
+          "description": "CD «Последнего рубежа» сокращается на 15 / 30 сек., а бонус Max HP увеличивается ещё на 5 / 10 процентных пунктов.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "ABILITY_COOLDOWN_SECONDS", "values": [15, 30], "targetId": "LAST_STAND" },
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [5, 10], "targetId": "LAST_STAND", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-5-5",
+          "branchId": "GUARDIAN",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Держать строй",
+          "englishName": "Hold the Line",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Пока активен «Блок щитом» или «Бастион», союзники в этом бою получают на 2% / 4% / 6% меньше урона.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_PARTY_EVENT", "values": [2, 4, 6], "targetId": "GUARDIAN_DEFENSIVE_WINDOW", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+
+        {
+          "id": "G-6-1",
+          "branchId": "GUARDIAN",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Сокрушение щитом",
+          "englishName": "Shield Slam",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Сокрушение щитом»: 20 Rage, CD 6 сек. Урон зависит от Attack Power и Block Value и создаёт очень высокий Threat.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "UNLOCK_ABILITY", "values": [1], "targetId": "SHIELD_SLAM" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-6-2",
+          "branchId": "GUARDIAN",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Мастер сокрушения",
+          "englishName": "Shield Slam Mastery",
+          "maxRank": 3,
+          "prerequisites": [ { "talentId": "G-6-1", "requiredRank": 1 } ],
+          "description": "Threat «Сокрушения щитом» увеличивается на 15% / 30% / 45%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_ABILITY_USED", "values": [15, 30, 45], "targetId": "SHIELD_SLAM", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-6-3",
+          "branchId": "GUARDIAN",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Сосредоточенная ярость",
+          "englishName": "Focused Rage",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Стоимость «Сокрушения щитом» и «Возмездия» снижается на 2 / 4 Rage.",
+          "modifiers": [
+            { "type": "AbilityModifier", "key": "ABILITY_RESOURCE_COST_FLAT", "values": [2, 4], "targetId": "SHIELD_SLAM" },
+            { "type": "AbilityModifier", "key": "ABILITY_RESOURCE_COST_FLAT", "values": [2, 4], "targetId": "REVENGE" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-6-4",
+          "branchId": "GUARDIAN",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Последняя крепость",
+          "englishName": "Last Fortress",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При HP ниже 35% Block Value увеличивается на 10% / 20%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_HP_THRESHOLD", "values": [10, 20], "threshold": 35, "targetId": "BLOCK_VALUE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
+        },
+        {
+          "id": "G-6-5",
+          "branchId": "GUARDIAN",
+          "tier": 6,
+          "requiredSpentPoints": 25,
           "name": "НЕПОКОЛЕБИМЫЙ СТРАЖ",
           "englishName": "UNYIELDING GUARDIAN",
-          "description": "Требует 40 очков в Страже. Успешный Block уменьшает оставшийся Cooldown «Сокрушения щитом» на 1 секунду. Во время «Блока щитом» «Реванш» не требует Rage. При активации «Бастиона» Threat Стража повышается до лидирующего значения у каждого живого противника в бою.",
-          "replaceModifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [1],
-              "runtimeStatus": "Supported"
-            }
-          ]
+          "maxRank": 1,
+          "prerequisites": [ { "talentId": "G-6-1", "requiredRank": 1 } ],
+          "description": "Успешный Block уменьшает оставшийся CD «Сокрушения щитом» на 1 сек. Во время «Блока щитом» «Возмездие» бесплатно. Во время «Бастиона» Threat generation по всем engaged enemies увеличивается на 30%.",
+          "modifiers": [
+            { "type": "EventTriggered", "key": "ON_DAMAGE_TAKEN", "values": [1], "targetId": "GUARDIAN_CAPSTONE", "runtimeStatus": "Supported" }
+          ],
+          "version": 4
         }
       ]
     }
