@@ -18,6 +18,7 @@ const combat = useCombatSessionStore()
 const session = useGameSessionStore()
 const hasLoaded = ref(false)
 const startEncounterError = ref<string | null>(null)
+const confirmingExit = ref(false)
 
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const preview = computed(() =>
@@ -38,7 +39,20 @@ const canCreateRun = computed(() => !party.snapshot || isLeader.value)
 const currentMember = computed(() => current.value?.members.find(
   member => member.characterId === currentCharacterId.value,
 ))
-const needsEntry = computed(() => currentMember.value?.state !== 'Active')
+const needsEntry = computed(() => {
+  if (!current.value) return false
+  if (dungeon.state?.currentRun?.runId === current.value.runId) return dungeon.state.needsEntry
+  return currentMember.value?.state !== 'Active'
+})
+const canEnterCurrent = computed(() => {
+  if (!current.value || !needsEntry.value) return false
+  if (dungeon.state?.currentRun?.runId === current.value.runId) return dungeon.state.canEnter
+  return false
+})
+const entryBlockedMessage = computed(() => {
+  const code = dungeon.state?.enterBlockedReason
+  return code ? socialErrorMessage(code) : 'Сейчас вернуться в забег нельзя.'
+})
 const currentEncounter = computed(() => current.value?.encounters.find(
   encounter => encounter.encounterIndex === current.value?.currentEncounterIndex,
 ))
@@ -73,8 +87,9 @@ const stateLabel = computed(() => {
 async function refreshCard(): Promise<void> {
   hasLoaded.value = false
   startEncounterError.value = null
+  confirmingExit.value = false
   try {
-    await Promise.all([party.refresh(), dungeon.refresh()])
+    await dungeon.refresh()
   } finally {
     hasLoaded.value = true
   }
@@ -88,16 +103,20 @@ async function createRun(): Promise<void> {
   if (!preview.value) return
   if (party.snapshot && party.snapshot.leaderCharacterId !== currentCharacterId.value) return
   startEncounterError.value = null
+  confirmingExit.value = false
   await dungeon.create(preview.value.id)
 }
 
 async function enterRun(): Promise<void> {
-  if (current.value) await dungeon.enter(current.value.runId)
+  if (!current.value || !canEnterCurrent.value) return
+  confirmingExit.value = false
+  await dungeon.enter(current.value.runId)
 }
 
 async function startEncounter(): Promise<void> {
   if (!current.value || !canStart.value) return
   startEncounterError.value = null
+  confirmingExit.value = false
   await combat.connect()
   const started = await combat.startDungeonEncounter(current.value.runId)
   if (!started) {
@@ -109,10 +128,21 @@ async function startEncounter(): Promise<void> {
 }
 
 async function restartEncounter(): Promise<void> {
+  confirmingExit.value = false
   if (current.value && canManageRun.value) await dungeon.restart(current.value.runId)
 }
 
-async function exitRun(): Promise<void> {
+async function returnToTown(): Promise<void> {
+  confirmingExit.value = false
+  if (current.value) await dungeon.returnToTown(current.value.runId)
+}
+
+function requestExit(): void {
+  confirmingExit.value = true
+}
+
+async function confirmExit(): Promise<void> {
+  confirmingExit.value = false
   if (current.value) await dungeon.exit(current.value.runId)
 }
 </script>
@@ -200,14 +230,16 @@ async function exitRun(): Promise<void> {
 
         <p v-if="current.state === 'Completed'" class="dungeon-hint">Подземелье пройдено. Можно начать новый забег.</p>
         <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">Предыдущий забег завершён. Он не смешивается с другими подземельями.</p>
+        <p v-else-if="needsEntry && !canEnterCurrent" class="dungeon-hint">{{ entryBlockedMessage }}</p>
         <p v-else-if="!canManageRun" class="dungeon-hint">Следующее столкновение запускает лидер группы.</p>
 
         <div class="dungeon-actions">
           <UIButton
             v-if="needsEntry && current.state === 'Active'"
             variant="secondary"
+            :disabled="!canEnterCurrent"
             @click="enterRun"
-          >Войти в забег</UIButton>
+          >Вернуться в забег</UIButton>
           <UIButton
             v-if="current.state !== 'Active' && canCreateRun"
             data-create-dungeon
@@ -227,10 +259,21 @@ async function exitRun(): Promise<void> {
           >Повторить столкновение</UIButton>
           <UIButton
             v-if="currentMember?.state === 'Active' && !current.encounters.some(encounter => encounter.state === 'Active')"
-            variant="ghost"
+            variant="secondary"
+            data-dungeon-return-town
+            @click="returnToTown"
+          >В город</UIButton>
+          <UIButton
+            v-if="currentMember?.state === 'Active' && !current.encounters.some(encounter => encounter.state === 'Active') && !confirmingExit"
+            variant="danger"
             data-dungeon-exit
-            @click="exitRun"
+            @click="requestExit"
           >Покинуть забег</UIButton>
+          <template v-if="confirmingExit">
+            <span class="dungeon-exit-confirm">Выход из забега необратим.</span>
+            <UIButton variant="ghost" @click="confirmingExit = false">Отмена</UIButton>
+            <UIButton variant="danger" data-dungeon-exit-confirm @click="confirmExit">Подтвердить выход</UIButton>
+          </template>
           <UIButton v-if="party.snapshot" variant="secondary" @click="emit('open-party')">Состав группы</UIButton>
         </div>
       </template>
@@ -451,6 +494,14 @@ async function exitRun(): Promise<void> {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+.dungeon-exit-confirm {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ui-color-danger, #ff8d8d);
+  font-size: .64rem;
+  font-weight: 700;
 }
 
 .dungeon-hint {
