@@ -241,7 +241,8 @@ public sealed class CombatSessionFactory(
                 0,
                 monster.AutoAttackBaseDamageMin,
                 monster.AutoAttackBaseDamageMax),
-            new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal));
+            new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal),
+            MonsterRank: monster.Rank);
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
 
