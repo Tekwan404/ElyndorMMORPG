@@ -175,9 +175,10 @@ public sealed class CharacterDerivedStateService(
             talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat,
             talentModifiers.Stats.MaxResourcePercent);
 
-        string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
-            .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
-            .ToArray();
+        IReadOnlyList<string> knownAbilityIds = CharacterKnownAbilityResolver.Resolve(
+            classProfile,
+            level,
+            talentModifiers.UnlockedAbilityIds);
 
         string? selectedCompanionProfileId = await dbContext.Characters
             .AsNoTracking()
@@ -246,7 +247,7 @@ public sealed class CharacterDerivedStateService(
             return null;
 
         CompanionProfileDefinition? profile = profiles.SingleOrDefault(candidate =>
-            string.Equals(candidate.Id, profileId, StringComparison.Ordinal));
+            string.Equals(profile.Id, profileId, StringComparison.Ordinal));
         return profile is not null && string.Equals(profile.Tag, "PHYSICAL_PET", StringComparison.Ordinal)
             ? profile
             : null;
