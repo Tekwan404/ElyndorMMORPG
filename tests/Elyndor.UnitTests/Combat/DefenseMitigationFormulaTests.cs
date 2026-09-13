@@ -29,16 +29,57 @@ public sealed class DefenseMitigationFormulaTests
         decimal level60 = DefenseMitigationFormula.CalculateReductionPercent(defense, 60);
 
         Assert.True(level18 > level60);
-        Assert.InRange(level18, 49m, 50m);
-        Assert.InRange(level60, 23m, 24m);
+        Assert.InRange(level18, 27m, 29m);
+        Assert.InRange(level60, 11m, 13m);
     }
 
     [Fact]
-    public void ReductionIsHardCappedAtSixtyPercent()
+    public void ReductionIsHardCappedAtSeventyFivePercent()
     {
-        decimal reduction = DefenseMitigationFormula.CalculateReductionPercent(100_000m, 1);
+        decimal reduction = DefenseMitigationFormula.CalculateReductionPercent(1_000_000m, 1);
 
         Assert.Equal(DefenseMitigationFormula.MaximumReductionPercent, reduction);
+    }
+
+    [Fact]
+    public void LevelSixtyThreeReferenceMatchesTargetCurve()
+    {
+        const int attackerLevel = 63;
+
+        decimal constant = DefenseMitigationFormula.BaseMitigationConstant
+            + (DefenseMitigationFormula.MitigationConstantPerLevel * attackerLevel);
+
+        Assert.Equal(5_755m, constant);
+        Assert.InRange(
+            DefenseMitigationFormula.CalculateReductionPercent(2_000m, attackerLevel),
+            25.7m,
+            25.9m);
+        Assert.InRange(
+            DefenseMitigationFormula.CalculateReductionPercent(4_000m, attackerLevel),
+            40.9m,
+            41.1m);
+        Assert.Equal(
+            50m,
+            DefenseMitigationFormula.CalculateReductionPercent(5_755m, attackerLevel));
+        Assert.InRange(
+            DefenseMitigationFormula.CalculateReductionPercent(8_000m, attackerLevel),
+            58.1m,
+            58.3m);
+        Assert.InRange(
+            DefenseMitigationFormula.CalculateReductionPercent(12_000m, attackerLevel),
+            67.5m,
+            67.7m);
+    }
+
+    [Fact]
+    public void SeventyFivePercentCapAtLevelSixtyThreeStartsAtThreeTimesMitigationConstant()
+    {
+        const int attackerLevel = 63;
+        const decimal armorAtCap = 17_265m;
+
+        Assert.Equal(
+            75m,
+            DefenseMitigationFormula.CalculateReductionPercent(armorAtCap, attackerLevel));
     }
 
     [Theory]
