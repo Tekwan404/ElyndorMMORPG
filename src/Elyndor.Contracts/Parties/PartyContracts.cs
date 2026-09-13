@@ -1,3 +1,5 @@
+using Elyndor.Contracts.Dungeons;
+
 namespace Elyndor.Contracts.Parties;
 
 public sealed record PartyMemberResponse(
@@ -16,6 +18,15 @@ public sealed record PartyResponse(
     long Version,
     IReadOnlyList<PartyMemberResponse> Members,
     Guid? ActiveDungeonRunId);
+
+public sealed record PartyDungeonStateResponse(
+    PartyResponse? Party,
+    DungeonRunResponse? CurrentRun,
+    Guid CharacterId,
+    string? LocationId,
+    bool NeedsEntry,
+    bool CanEnter,
+    string? EnterBlockedReason);
 
 public sealed record PartyInviteResponse(
     Guid Id,
