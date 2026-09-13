@@ -266,6 +266,31 @@ describe('combatSession realtime authentication', () => {
     expect(call?.[3]).toHaveLength(36)
   })
 
+  it('keeps friendly target selection local and independent from the enemy target', () => {
+    const store = useCombatSessionStore()
+    const playerId = '00000000-0000-0000-0000-000000000211'
+    const allyId = '00000000-0000-0000-0000-000000000212'
+    const enemyId = '00000000-0000-0000-0000-000000000311'
+    store.snapshot = {
+      sessionId: '00000000-0000-0000-0000-000000000111',
+      status: 'Active', sequence: 1, serverTimeUtc: '2026-09-14T12:00:00Z',
+      contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: { actorId: playerId, hp: 100, autoAttackEnabled: true },
+      players: [
+        { actorId: playerId, hp: 100, autoAttackEnabled: true },
+        { actorId: allyId, hp: 80, autoAttackEnabled: true },
+      ],
+      enemy: { actorId: enemyId, definitionId: 'WOLF' },
+      selectedTargetActorId: enemyId,
+    } as never
+
+    store.selectFriendlyTarget(allyId)
+
+    expect(store.selectedFriendlyTargetActorId).toBe(allyId)
+    expect(store.snapshot?.selectedTargetActorId).toBe(enemyId)
+    expect(signalRMock.invoke).not.toHaveBeenCalled()
+  })
+
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     signalRMock.startError = new Error('Failed to complete negotiation with the server')
