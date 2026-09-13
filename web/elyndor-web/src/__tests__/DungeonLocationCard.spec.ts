@@ -14,26 +14,8 @@ describe('DungeonLocationCard', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
   it('shows the dungeon that matches the actual current location instead of Ancient Mine', async () => {
-    const session = useGameSessionStore()
-    session.snapshot = {
-      accountId: 'account-1',
-      character: { id: CHARACTER_ID, level: 25 },
-      world: { currentLocation: { id: 'ECLIPSED_CITADEL' } },
-    } as unknown as BootstrapSnapshot
-
-    const party = usePartyStore()
-    party.snapshot = {
-      partyId: 'party-1',
-      leaderCharacterId: CHARACTER_ID,
-      version: 1,
-      members: [],
-    }
-    vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
-
-    const dungeon = useDungeonStore()
-    dungeon.previews = [ancientMine(), eclipsedCitadel()]
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
     dungeon.current = citadelRun()
-    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = mount(DungeonLocationCard, {
       props: { dungeonId: 'ECLIPSED_CITADEL' },
@@ -47,30 +29,12 @@ describe('DungeonLocationCard', () => {
   })
 
   it('does not leak a run from another dungeon into the current location', async () => {
-    const session = useGameSessionStore()
-    session.snapshot = {
-      accountId: 'account-1',
-      character: { id: CHARACTER_ID, level: 25 },
-      world: { currentLocation: { id: 'ECLIPSED_CITADEL' } },
-    } as unknown as BootstrapSnapshot
-
-    const party = usePartyStore()
-    party.snapshot = {
-      partyId: 'party-1',
-      leaderCharacterId: CHARACTER_ID,
-      version: 1,
-      members: [],
-    }
-    vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
-
-    const dungeon = useDungeonStore()
-    dungeon.previews = [ancientMine(), eclipsedCitadel()]
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
     dungeon.current = {
       ...citadelRun(),
       dungeonId: 'ANCIENT_MINE',
       displayName: 'Древняя шахта',
     }
-    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
 
     const wrapper = mount(DungeonLocationCard, {
       props: { dungeonId: 'ECLIPSED_CITADEL' },
@@ -81,7 +45,81 @@ describe('DungeonLocationCard', () => {
     expect(wrapper.text()).toContain('Группа готова к новому заходу')
     expect(wrapper.text()).not.toContain('Древняя шахта')
   })
+
+  it('shows return to the same active run while the member is temporarily in town', async () => {
+    const { dungeon } = prepareCard('STARTER_TOWN')
+    dungeon.current = activeCitadelRun()
+
+    const wrapper = mount(DungeonLocationCard, {
+      props: { dungeonId: 'ECLIPSED_CITADEL' },
+    })
+    await flushPromises()
+
+    const status = wrapper.get('[data-dungeon-status]').text()
+    expect(status).toContain('1 / 5')
+    expect(status).toContain('Завершить текущее столкновение')
+    expect(status).toContain('Между боями')
+    expect(status).not.toContain('Pending')
+    expect(wrapper.find('[data-dungeon-return]').exists()).toBe(true)
+    expect(wrapper.find('[data-dungeon-city-exit]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('остаёшься участником этого забега')
+  })
+
+  it('shows separate city and permanent leave actions inside the dungeon', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+
+    const wrapper = mount(DungeonLocationCard, {
+      props: { dungeonId: 'ECLIPSED_CITADEL' },
+    })
+    await flushPromises()
+
+    expect(wrapper.get('[data-dungeon-city-exit]').text()).toBe('В город')
+    expect(wrapper.get('[data-dungeon-leave]').text()).toBe('Покинуть забег')
+    expect(wrapper.find('[data-dungeon-return]').exists()).toBe(false)
+  })
+
+  it('labels the boss stage without exposing raw encounter enums', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = bossCitadelRun()
+
+    const wrapper = mount(DungeonLocationCard, {
+      props: { dungeonId: 'ECLIPSED_CITADEL' },
+    })
+    await flushPromises()
+
+    const status = wrapper.get('[data-dungeon-status]').text()
+    expect(status).toContain('5 / 5')
+    expect(status).toContain('Победить босса')
+    expect(status).toContain('БОСС')
+    expect(status).toContain('Между боями')
+    expect(status).not.toContain('Pending')
+  })
 })
+
+function prepareCard(locationId: string) {
+  const session = useGameSessionStore()
+  session.snapshot = {
+    accountId: 'account-1',
+    character: { id: CHARACTER_ID, level: 25 },
+    world: { currentLocation: { id: locationId } },
+  } as unknown as BootstrapSnapshot
+
+  const party = usePartyStore()
+  party.snapshot = {
+    partyId: 'party-1',
+    leaderCharacterId: CHARACTER_ID,
+    version: 1,
+    members: [],
+  }
+  vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
+
+  const dungeon = useDungeonStore()
+  dungeon.previews = [ancientMine(), eclipsedCitadel()]
+  vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
+
+  return { session, party, dungeon }
+}
 
 function ancientMine(): DungeonPreview {
   return {
@@ -133,6 +171,30 @@ function citadelRun(): DungeonRun {
       encounterId: 'encounter-1',
       encounterIndex: 0,
       monsterId: 'M1',
+      state: 'Pending',
+      wipeCount: 0,
+      characterIds: [],
+    }],
+  }
+}
+
+function activeCitadelRun(): DungeonRun {
+  return {
+    ...citadelRun(),
+    state: 'Active',
+    members: [{ characterId: CHARACTER_ID, state: 'Active', joinedAtUtc: '2026-09-13T00:00:00Z' }],
+  }
+}
+
+function bossCitadelRun(): DungeonRun {
+  return {
+    ...activeCitadelRun(),
+    currentEncounterIndex: 4,
+    currentCheckpointId: 'FINAL_SEAL',
+    encounters: [{
+      encounterId: 'encounter-boss',
+      encounterIndex: 4,
+      monsterId: 'BOSS',
       state: 'Pending',
       wipeCount: 0,
       characterIds: [],
