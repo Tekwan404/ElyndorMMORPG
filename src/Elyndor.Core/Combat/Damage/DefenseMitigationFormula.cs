@@ -2,9 +2,9 @@ namespace Elyndor.Core.Combat.Damage;
 
 public static class DefenseMitigationFormula
 {
-    public const decimal BaseMitigationConstant = 50m;
-    public const decimal MitigationConstantPerLevel = 40m;
-    public const decimal MaximumReductionPercent = 60m;
+    public const decimal BaseMitigationConstant = 400m;
+    public const decimal MitigationConstantPerLevel = 85m;
+    public const decimal MaximumReductionPercent = 75m;
 
     public static decimal CalculateDamageMultiplier(decimal defense, int referenceLevel)
     {
