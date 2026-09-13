@@ -34,7 +34,8 @@ public sealed record CombatActorResponse(
     CombatCastResponse? ActiveCast = null,
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
-    DateTimeOffset? NextAutoAttackAtUtc = null);
+    DateTimeOffset? NextAutoAttackAtUtc = null,
+    Guid? CurrentAggroTargetActorId = null);
 
 public sealed record CombatContributionResponse(
     Guid CharacterId,

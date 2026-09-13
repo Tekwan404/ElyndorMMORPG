@@ -2476,7 +2476,10 @@ public sealed partial class CombatSession
                     StringComparer.Ordinal)
                 : null,
             autoAttackIntervalSeconds,
-            nextAutoAttackAtUtc);
+            nextAutoAttackAtUtc,
+            definition.Kind == CombatActorKind.Monster
+                ? GetEnemyCurrentTargetActorId(definition.Actor.ActorId, CurrentTimeUtc)
+                : null);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()

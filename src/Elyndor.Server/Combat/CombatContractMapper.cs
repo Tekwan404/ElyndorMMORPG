@@ -165,7 +165,8 @@ internal static class CombatContractMapper
                     actor.ActiveCast.ResolvesAtUtc),
             actor.ConsumableCooldowns,
             actor.AutoAttackIntervalSeconds,
-            actor.NextAutoAttackAtUtc);
+            actor.NextAutoAttackAtUtc,
+            actor.CurrentAggroTargetActorId);
     }
 
     private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(

@@ -90,7 +90,8 @@ public sealed record CombatActorSnapshot(
     CombatCastSnapshot? ActiveCast = null,
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
-    DateTimeOffset? NextAutoAttackAtUtc = null);
+    DateTimeOffset? NextAutoAttackAtUtc = null,
+    Guid? CurrentAggroTargetActorId = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

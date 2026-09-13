@@ -34,31 +34,8 @@ public sealed partial class CombatSession
             return null;
         }
 
-        HashSet<Guid> activePlayerActorIds = _participantRoster.Participants
-            .Where(item => item.Status is CombatParticipantStatus.Active)
-            .Select(item => item.ActorId)
-            .ToHashSet();
-
-        List<CombatActor> candidates = _playerStatesByActorId.Values
-            .Where(state => activePlayerActorIds.Contains(state.Definition.Actor.ActorId)
-                && !state.Definition.Actor.IsDead)
-            .Select(state => new CombatActor(
-                state.Definition.Actor.ActorId,
-                CombatActorSide.Friendly))
-            .ToList();
-
-        if (_companion is not null && !_companion.Actor.IsDead)
-        {
-            candidates.Add(new CombatActor(
-                _companion.Actor.ActorId,
-                CombatActorSide.Friendly));
-        }
-
-        Guid? currentTargetActorId = TargetSelectionPolicy.SelectForcedOrThreatTarget(
-            forcedTarget,
-            threatTable,
-            candidates,
-            now);
+        HashSet<Guid> activePlayerActorIds = ActivePlayerActorIds().ToHashSet();
+        Guid? currentTargetActorId = GetEnemyCurrentTargetActorId(enemyActorId, now);
         Guid? forcedTargetActorId = forcedTarget.GetActive(now);
 
         List<CombatThreatEntrySnapshot> entries = [];
@@ -95,5 +72,26 @@ public sealed partial class CombatSession
                 .OrderByDescending(entry => entry.Threat)
                 .ThenBy(entry => entry.Name, StringComparer.Ordinal)
                 .ToArray());
+    }
+
+    private Guid? GetEnemyCurrentTargetActorId(Guid enemyActorId, DateTimeOffset now)
+    {
+        if (!_enemyThreatTables.TryGetValue(enemyActorId, out ThreatTable? threatTable)
+            || !_enemyForcedTargets.TryGetValue(enemyActorId, out ForcedTargetState? forcedTarget))
+        {
+            return null;
+        }
+
+        List<CombatActor> candidates = ActivePlayerActorIds()
+            .Select(actorId => new CombatActor(actorId, CombatActorSide.Friendly))
+            .ToList();
+        if (_companion is not null && !_companion.Actor.IsDead)
+            candidates.Add(new CombatActor(_companion.Actor.ActorId, CombatActorSide.Friendly));
+
+        return TargetSelectionPolicy.SelectForcedOrThreatTarget(
+            forcedTarget,
+            threatTable,
+            candidates,
+            now);
     }
 }
