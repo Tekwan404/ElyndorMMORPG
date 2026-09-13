@@ -155,6 +155,11 @@ internal static class CategoryContentComposer
             : ContentCompositionRules.Later(
                 package.PublishedAtUtc,
                 fragment.PublishedAtUtc.Value);
+        IReadOnlyList<TalentTreeDefinition>? talentTrees = ContentCompositionRules.MergeOptionalByKey(
+            package.TalentTrees,
+            fragment.TalentTrees,
+            item => item.Id);
+        talentTrees = ApplyTalentTreePatches(talentTrees, fragment.TalentTreePatches);
 
         return package with
         {
@@ -190,10 +195,7 @@ internal static class CategoryContentComposer
                 package.Abilities,
                 fragment.Abilities,
                 item => item.Id),
-            TalentTrees = ContentCompositionRules.MergeOptionalByKey(
-                package.TalentTrees,
-                fragment.TalentTrees,
-                item => item.Id),
+            TalentTrees = talentTrees,
             Monsters = ContentCompositionRules.MergeOptionalByKey(
                 package.Monsters,
                 fragment.Monsters,
@@ -236,6 +238,66 @@ internal static class CategoryContentComposer
         };
     }
 
+    private static IReadOnlyList<TalentTreeDefinition>? ApplyTalentTreePatches(
+        IReadOnlyList<TalentTreeDefinition>? trees,
+        IReadOnlyList<TalentTreePatch>? patches)
+    {
+        if (patches is null || patches.Count == 0)
+            return trees;
+        if (trees is null)
+            throw new InvalidDataException("Talent tree patches require talent trees to be loaded first.");
+
+        List<TalentTreeDefinition> result = trees.ToList();
+        HashSet<(string TreeId, string NodeId)> patchedNodes = [];
+
+        foreach (TalentTreePatch patch in patches)
+        {
+            int treeIndex = result.FindIndex(tree =>
+                string.Equals(tree.Id, patch.TreeId, StringComparison.Ordinal));
+            if (treeIndex < 0)
+                throw new InvalidDataException($"Talent patch references unknown tree '{patch.TreeId}'.");
+
+            TalentTreeDefinition tree = result[treeIndex];
+            List<TalentDefinition> nodes = tree.Nodes.ToList();
+            foreach (TalentNodePatch nodePatch in patch.Nodes)
+            {
+                if (!patchedNodes.Add((patch.TreeId, nodePatch.NodeId)))
+                {
+                    throw new InvalidDataException(
+                        $"Talent '{patch.TreeId}:{nodePatch.NodeId}' is patched more than once.");
+                }
+
+                int nodeIndex = nodes.FindIndex(node =>
+                    string.Equals(node.Id, nodePatch.NodeId, StringComparison.Ordinal));
+                if (nodeIndex < 0)
+                {
+                    throw new InvalidDataException(
+                        $"Talent patch references unknown node '{patch.TreeId}:{nodePatch.NodeId}'.");
+                }
+
+                TalentDefinition node = nodes[nodeIndex];
+                IReadOnlyList<TalentModifierDefinition>? modifiers = nodePatch.ReplaceModifiers
+                    ?? (node.Modifiers ?? [])
+                        .Concat(nodePatch.AppendModifiers ?? [])
+                        .ToArray();
+                nodes[nodeIndex] = node with
+                {
+                    Description = nodePatch.Description ?? node.Description,
+                    Modifiers = modifiers,
+                    Version = Math.Max(node.Version, nodePatch.Version ?? node.Version)
+                };
+            }
+
+            result[treeIndex] = tree with
+            {
+                Nodes = nodes,
+                Version = Math.Max(tree.Version, patch.Version ?? tree.Version)
+            };
+        }
+
+        return result;
+    }
+
     private sealed record ContentCategoryFragment(
         string? ContentVersion = null,
         string? BalanceVersion = null,
@@ -248,6 +310,7 @@ internal static class CategoryContentComposer
         IReadOnlyList<EffectDefinition>? Effects = null,
         IReadOnlyList<AbilityDefinition>? Abilities = null,
         IReadOnlyList<TalentTreeDefinition>? TalentTrees = null,
+        IReadOnlyList<TalentTreePatch>? TalentTreePatches = null,
         IReadOnlyList<MonsterDefinition>? Monsters = null,
         IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
         LevelProgressionDefinition? LevelProgression = null,
@@ -260,6 +323,18 @@ internal static class CategoryContentComposer
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
         ItemizationDefinition? Itemization = null);
+
+    private sealed record TalentTreePatch(
+        string TreeId,
+        IReadOnlyList<TalentNodePatch> Nodes,
+        int? Version = null);
+
+    private sealed record TalentNodePatch(
+        string NodeId,
+        string? Description = null,
+        IReadOnlyList<TalentModifierDefinition>? AppendModifiers = null,
+        IReadOnlyList<TalentModifierDefinition>? ReplaceModifiers = null,
+        int? Version = null);
 
     private sealed record LocationEncounterFragment(
         string ContentVersion,

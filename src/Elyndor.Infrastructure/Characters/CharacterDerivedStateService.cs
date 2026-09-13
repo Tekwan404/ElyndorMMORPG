@@ -87,8 +87,12 @@ public sealed class CharacterDerivedStateService(
 
         IReadOnlyList<ClassProfile> classProfiles = content.ClassProfiles
             ?? throw new InvalidOperationException("Class profiles are required.");
-        if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile))
+        if (!indexes.ClassesById.TryGetValue(classId, out ClassProfile? classProfile)
+            || classProfile is null)
+        {
             throw new InvalidOperationException($"Class profile '{classId}' is missing from game content.");
+        }
+
         InventorySnapshot inventory = await ResolveInventoryAsync(
             contentSnapshot,
             characterId,
@@ -175,9 +179,10 @@ public sealed class CharacterDerivedStateService(
             talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat,
             talentModifiers.Stats.MaxResourcePercent);
 
-        string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
-            .OrderBy(abilityId => abilityId, StringComparer.Ordinal)
-            .ToArray();
+        IReadOnlyList<string> knownAbilityIds = CharacterKnownAbilityResolver.Resolve(
+            classProfile,
+            level,
+            talentModifiers.UnlockedAbilityIds);
 
         string? selectedCompanionProfileId = await dbContext.Characters
             .AsNoTracking()
@@ -226,8 +231,8 @@ public sealed class CharacterDerivedStateService(
         if (string.IsNullOrWhiteSpace(selectedId))
             return null;
 
-        return profiles.SingleOrDefault(profile =>
-            string.Equals(profile.Id, selectedId, StringComparison.Ordinal))
+        return profiles.SingleOrDefault(candidate =>
+            string.Equals(candidate.Id, selectedId, StringComparison.Ordinal))
             ?? throw new InvalidOperationException(
                 $"Companion profile '{selectedId}' is missing for class '{classProfile.Id}'.");
     }
@@ -245,10 +250,13 @@ public sealed class CharacterDerivedStateService(
         if (string.IsNullOrWhiteSpace(profileId))
             return null;
 
-        CompanionProfileDefinition? profile = profiles.SingleOrDefault(candidate =>
+        CompanionProfileDefinition? resolvedProfile = profiles.SingleOrDefault(candidate =>
             string.Equals(candidate.Id, profileId, StringComparison.Ordinal));
-        return profile is not null && string.Equals(profile.Tag, "PHYSICAL_PET", StringComparison.Ordinal)
-            ? profile
+        if (resolvedProfile is null)
+            return null;
+
+        return string.Equals(resolvedProfile.Tag, "PHYSICAL_PET", StringComparison.Ordinal)
+            ? resolvedProfile
             : null;
     }
 

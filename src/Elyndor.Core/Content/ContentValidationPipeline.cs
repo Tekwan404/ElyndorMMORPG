@@ -95,6 +95,7 @@ public sealed class TalentValidator : IContentValidationStage
         GameContentPackageValidator.ValidateTalentDefinitions(
             context.Package.TalentTrees ?? [],
             context.Package.Abilities ?? [],
+            context.Package.ClassProfiles ?? [],
             context.Errors);
 }
 
