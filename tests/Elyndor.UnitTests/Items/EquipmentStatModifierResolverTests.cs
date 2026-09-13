@@ -45,12 +45,60 @@ public sealed class EquipmentStatModifierResolverTests
 
         Assert.Equal(new PrimaryStats(3, 1, 0, 6), result.PrimaryStats);
         Assert.Equal(5, result.AttackPowerFlat);
-        Assert.Equal(20, result.ArmorFlat);
+        Assert.Equal(7.8m, result.ArmorFlat);
         Assert.Equal(3, result.CriticalChancePercent);
         Assert.Equal(3, result.AttackSpeedPercent);
         Assert.Equal(2, result.DodgePercent);
         Assert.Equal(10, result.MaxResourceFlat);
         Assert.Single(result.ActiveSetBonuses);
+    }
+
+    [Theory]
+    [InlineData(EquipmentCategoryIds.Cloth, 40)]
+    [InlineData(EquipmentCategoryIds.Leather, 65)]
+    [InlineData(EquipmentCategoryIds.Heavy, 100)]
+    public void ArmorMaterialControlsEffectiveArmor(string armorCategory, int expectedArmor)
+    {
+        ItemDefinition armor = new(
+            "TEST_ARMOR",
+            "Test Armor",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.Chest,
+            new PrimaryStats(0, 0, 0, 0),
+            "Test",
+            ArmorCategory: armorCategory,
+            ArmorFlat: 100);
+
+        EquipmentModifierSummary result =
+            EquipmentStatModifierResolver.ResolveDetailed([armor], []);
+
+        Assert.Equal(expectedArmor, result.ArmorFlat);
+    }
+
+    [Fact]
+    public void NonArmorEquipmentCannotContributeArmor()
+    {
+        ItemDefinition ring = new(
+            "TEST_RING",
+            "Test Ring",
+            ItemType.Equipment,
+            ItemRarity.Common,
+            1,
+            false,
+            1,
+            EquipmentSlot.Ring1,
+            new PrimaryStats(0, 0, 0, 0),
+            "Test",
+            ArmorFlat: 100);
+
+        EquipmentModifierSummary result =
+            EquipmentStatModifierResolver.ResolveDetailed([ring], []);
+
+        Assert.Equal(0, result.ArmorFlat);
     }
 
     [Fact]
