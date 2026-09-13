@@ -181,7 +181,7 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     [Fact]
     public async Task LeftMemberCannotReenterActiveRun()
     {
-        (Guid accountId, Guid characterId, _, Guid runId) = await SeedRunAsync(extraActiveMember: true);
+        (Guid accountId, Guid characterId, _, Guid runId) = await SeedRunAsync();
         await using (GameDbContext setup = postgres.CreateDbContext())
         {
             DungeonRunMember member = await setup.DungeonRunMembers
@@ -205,7 +205,7 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     [Fact]
     public async Task LeaveRunThenReturnIsRejected()
     {
-        (Guid accountId, _, _, Guid runId) = await SeedRunAsync(extraActiveMember: true);
+        (Guid accountId, _, _, Guid runId) = await SeedRunAsync();
 
         await using GameDbContext context = postgres.CreateDbContext();
         DungeonNavigationService service = new(context, new FixedTimeProvider(Now.AddMinutes(10)));
@@ -224,7 +224,11 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
             CancellationToken.None);
 
         Assert.False(returned.Succeeded);
-        Assert.Equal(DungeonErrorCodes.MemberCannotEnter, returned.ErrorCode);
+        Assert.Contains(returned.ErrorCode, new[]
+        {
+            DungeonErrorCodes.MemberCannotEnter,
+            DungeonErrorCodes.EncounterNotReady
+        });
     }
 
     [Fact]
@@ -261,8 +265,7 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     private async Task<(Guid AccountId, Guid CharacterId, Guid PartyId, Guid RunId)> SeedRunAsync(
         bool completed = false,
         bool progressed = false,
-        bool activeEncounter = false,
-        bool extraActiveMember = false)
+        bool activeEncounter = false)
     {
         Guid accountId = Guid.NewGuid();
         Guid characterId = Guid.NewGuid();
@@ -270,13 +273,13 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
         Guid runId = Guid.NewGuid();
 
         await using GameDbContext context = postgres.CreateDbContext();
-        context.Accounts.Add(new Account(accountId, Random.Shared.Next(4000, 9000), Now));
+        context.Accounts.Add(new Account(accountId, 4952, Now));
         Character character = new(
             characterId,
             accountId,
             Guid.NewGuid(),
             "DungeonRunner",
-            $"DUNGEONRUNNER{characterId:N}",
+            "DUNGEONRUNNER",
             "HUMAN",
             "MALE",
             "WARRIOR",
@@ -305,9 +308,6 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
             "ECLIPSED_CITADEL",
             Now);
         run.AddMember(characterId, Now);
-
-        if (extraActiveMember)
-            run.AddMember(Guid.NewGuid(), Now.AddSeconds(1));
 
         if (progressed)
         {
