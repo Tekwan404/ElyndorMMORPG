@@ -205,6 +205,95 @@ public sealed class AbilityEngineTests
         Assert.Equal(100, third.CurrentHp);
     }
 
+    [Fact]
+    public void EffectGatedAbilityRequiresAndConsumesItsWindow()
+    {
+        CombatRuntimeState runtime = CreateRuntime(resource: 50);
+        AbilityDefinition ability = Instant("REVENGE_TEST", 10, 0) with
+        {
+            UsesGlobalCooldown = false,
+            RequiredActiveEffectId = "REVENGE_WINDOW",
+            ConsumeEffectId = "REVENGE_WINDOW"
+        };
+
+        AbilityExecutionResult unavailable = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent("revenge-missing", ability.Id, runtime.Actor.ActorId),
+            Now);
+
+        EffectEngine.Apply(
+            runtime.Actor,
+            runtime.Actor.ActorId,
+            new EffectDefinition(
+                "REVENGE_WINDOW",
+                EffectKind.Buff,
+                TimeSpan.FromSeconds(3),
+                1,
+                EffectStackPolicy.Replace,
+                1),
+            Now);
+
+        AbilityExecutionResult used = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent("revenge-ready", ability.Id, runtime.Actor.ActorId),
+            Now);
+
+        Assert.Equal(AbilityErrorCode.AbilityUnavailable, unavailable.ErrorCode);
+        Assert.True(used.Succeeded);
+        Assert.Equal(40, runtime.Actor.CurrentResource);
+        Assert.DoesNotContain(runtime.Actor.ActiveEffects, effect =>
+            effect.Definition.Id == "REVENGE_WINDOW");
+    }
+
+    [Fact]
+    public void EffectCanMakeAbilityResourceCostFree()
+    {
+        CombatRuntimeState runtime = CreateRuntime(resource: 5);
+        AbilityDefinition ability = Instant("FREE_REVENGE_TEST", 10, 0) with
+        {
+            UsesGlobalCooldown = false,
+            RequiredActiveEffectId = "REVENGE_WINDOW",
+            FreeResourceCostWhileEffectId = "FREE_REVENGE",
+            ConsumeEffectId = "REVENGE_WINDOW"
+        };
+        EffectEngine.Apply(
+            runtime.Actor,
+            runtime.Actor.ActorId,
+            new EffectDefinition(
+                "REVENGE_WINDOW",
+                EffectKind.Buff,
+                TimeSpan.FromSeconds(3),
+                1,
+                EffectStackPolicy.Replace,
+                1),
+            Now);
+        EffectEngine.Apply(
+            runtime.Actor,
+            runtime.Actor.ActorId,
+            new EffectDefinition(
+                "FREE_REVENGE",
+                EffectKind.Buff,
+                TimeSpan.FromSeconds(5),
+                1,
+                EffectStackPolicy.Replace,
+                1),
+            Now);
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent("free-revenge", ability.Id, runtime.Actor.ActorId),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(5, runtime.Actor.CurrentResource);
+        Assert.Contains(result.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.ResourceChanged
+            && combatEvent.Amount == 0);
+    }
+
     private static CombatRuntimeState CreateRuntime(decimal resource) =>
         new(CombatActorState.CreateDummy(100, 100, resource));
 

@@ -28,16 +28,24 @@ public static class AbilityEngine
             return AbilityExecutionResult.Failure(validation);
         }
 
-        if (!runtime.Actor.TrySpendResource(ability.ResourceCost))
+        decimal resourceCost = ResolveResourceCost(runtime, ability, now);
+        if (!runtime.Actor.TrySpendResource(resourceCost))
         {
             return AbilityExecutionResult.Failure(AbilityErrorCode.InsufficientResource);
         }
 
         List<CombatEvent> events =
         [
-            new(CombatEventType.ResourceChanged, now, runtime.Actor.ActorId, ability.Id, -ability.ResourceCost),
+            new(CombatEventType.ResourceChanged, now, runtime.Actor.ActorId, ability.Id, -resourceCost),
             new(CombatEventType.AbilityStarted, now, runtime.Actor.ActorId, ability.Id)
         ];
+        if (!string.IsNullOrWhiteSpace(ability.ConsumeEffectId))
+        {
+            events.AddRange(EffectEngine.Remove(
+                runtime.Actor,
+                ability.ConsumeEffectId,
+                now));
+        }
         StartGcd(runtime, ability, now);
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
@@ -141,6 +149,11 @@ public static class AbilityEngine
         if (runtime.Actor.IsDead) return AbilityErrorCode.DeadActor;
         if (!string.Equals(intent.AbilityId, ability.Id, StringComparison.Ordinal))
             return AbilityErrorCode.AbilityUnavailable;
+        if (!string.IsNullOrWhiteSpace(ability.RequiredActiveEffectId)
+            && !HasActiveEffect(runtime.Actor, ability.RequiredActiveEffectId, now))
+        {
+            return AbilityErrorCode.AbilityUnavailable;
+        }
         if (ability.TargetType is not (AbilityTargetType.Self
             or AbilityTargetType.SingleAlly
             or AbilityTargetType.SingleEnemy
@@ -199,7 +212,7 @@ public static class AbilityEngine
             return AbilityErrorCode.SchoolLocked;
         if (runtime.ActiveCast is not null && !ability.CanUseWhileCasting)
             return AbilityErrorCode.CastAlreadyActive;
-        if (runtime.Actor.CurrentResource < ability.ResourceCost)
+        if (runtime.Actor.CurrentResource < ResolveResourceCost(runtime, ability, now))
             return AbilityErrorCode.InsufficientResource;
         return AbilityErrorCode.None;
     }
@@ -330,6 +343,23 @@ public static class AbilityEngine
             ? intent.TargetIds.ToArray()
             : [intent.TargetId];
     }
+
+    private static decimal ResolveResourceCost(
+        CombatRuntimeState runtime,
+        AbilityDefinition ability,
+        DateTimeOffset now) =>
+        !string.IsNullOrWhiteSpace(ability.FreeResourceCostWhileEffectId)
+        && HasActiveEffect(runtime.Actor, ability.FreeResourceCostWhileEffectId, now)
+            ? 0
+            : ability.ResourceCost;
+
+    private static bool HasActiveEffect(
+        CombatActorState actor,
+        string effectId,
+        DateTimeOffset now) =>
+        actor.ActiveEffects.Any(effect =>
+            effect.ExpiresAtUtc > now
+            && string.Equals(effect.Definition.Id, effectId, StringComparison.Ordinal));
 
     private static void EnsureExecutable(AbilityDefinition ability, IGameRandom? random)
     {

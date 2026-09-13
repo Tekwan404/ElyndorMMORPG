@@ -5,13 +5,13 @@ namespace Elyndor.UnitTests.Talents;
 public sealed class WarriorTalentRuntimeCatalogTests
 {
     [Fact]
-    public void GuardianCatalogCoversEveryDeferredGuardianEvent()
+    public void GuardianCatalogCoversEveryRuntimeBackedGuardianEvent()
     {
         string[] expected =
         [
-            "G-1-2", "G-1-4", "G-2-1", "G-2-2", "G-2-4", "G-3-1", "G-3-2", "G-3-4",
-            "G-4-1", "G-4-2", "G-4-4", "G-5-2", "G-6-1", "G-6-2", "G-6-3",
-            "G-6-4", "G-7-2", "G-7-4", "G-8-1", "G-8-2", "G-8-3", "G-9-1"
+            "G-1-2", "G-1-4", "G-2-4", "G-3-2", "G-3-4", "G-4-1", "G-4-4",
+            "G-5-2", "G-6-2", "G-6-3", "G-6-4", "G-7-2", "G-7-4", "G-8-1",
+            "G-8-2", "G-8-3", "G-9-1"
         ];
 
         Assert.Equal(
@@ -36,16 +36,16 @@ public sealed class WarriorTalentRuntimeCatalogTests
     }
 
     [Fact]
-    public void GuardianDeferredHookResolvesThroughItsCatalog()
+    public void GuardianLegacyDeferredBlockHookResolvesThroughItsCatalog()
     {
         TalentDefinition node = new(
-            "G-4-2", "GUARDIAN", 4, 10, "Провокация", "Taunt", 2, [], "Описание",
+            "G-4-4", "GUARDIAN", 4, 10, "Ответная ярость", "Defiant Fury", 2, [], "Описание",
             Modifiers:
             [
                 new(
                     TalentModifierType.EventTriggered,
-                    TalentModifierKeys.OnAbilityUsed,
-                    [0, 0],
+                    TalentModifierKeys.OnDamageTaken,
+                    [3, 5],
                     RuntimeStatus: TalentModifierRuntimeStatus.Deferred,
                     DeferredOwner: TalentRuntimeOwners.CombatSession)
             ]);

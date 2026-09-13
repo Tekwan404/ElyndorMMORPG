@@ -1,24 +1,164 @@
 {
-  "contentVersion": "0.18.1",
-  "balanceVersion": "0.8.1",
-  "publishedAtUtc": "2026-09-13T17:13:33+00:00",
+  "contentVersion": "0.19.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-13T19:15:00+00:00",
   "talentTreePatches": [
     {
       "treeId": "WARRIOR_TREE",
-      "version": 2,
+      "version": 3,
       "nodes": [
         {
+          "nodeId": "G-1-2",
+          "version": 3,
+          "name": "Ярость щита",
+          "englishName": "Shield Fury",
+          "description": "Каждый успешный Block дополнительно генерирует +2 / +3 / +4 Rage. Срабатывает только от реального блока щитом.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [2, 3, 4],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-2-1",
+          "version": 3,
+          "name": "Щитовой рефлекс",
+          "englishName": "Shield Reflex",
+          "description": "Пока экипирован щит, Block Chance увеличивается на 2 / 4 процентных пункта. Без щита талант не создаёт Block Chance.",
+          "replaceModifiers": [
+            {
+              "type": "StatModifier",
+              "key": "BLOCK_CHANCE_PERCENT",
+              "values": [2, 4]
+            }
+          ]
+        },
+        {
           "nodeId": "G-2-2",
-          "version": 2,
-          "description": "Открывает способность «Провокация»: воин поднимает свой Threat выше текущего лидера и принудительно удерживает выбранного противника на себе. Дополнительно после Taunt снижает Threat союзников на этой цели на 10% и увеличивает ForcedTarget ещё на 1 секунду.",
-          "appendModifiers": [
+          "version": 3,
+          "name": "Провокация",
+          "englishName": "Provoke",
+          "description": "Открывает способность «Провокация». Она не требует Rage, поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём в течение 3 секунд.",
+          "replaceModifiers": [
             {
               "type": "AbilityModifier",
               "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
+              "values": [1],
               "targetId": "PROVOKE",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-3-1",
+          "version": 3,
+          "name": "Реванш",
+          "englishName": "Revenge",
+          "description": "Открывает способность «Реванш». После успешного Block способность доступна 3 секунды. Наносит мощный физический ответный удар и стоит 10 Rage.",
+          "replaceModifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [1, 1],
+              "targetId": "REVENGE",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-4-2",
+          "version": 3,
+          "name": "Сокрушение щитом",
+          "englishName": "Shield Slam",
+          "prerequisites": [],
+          "description": "Открывает способность «Сокрушение щитом». Стоит 25 Rage, перезарядка 4 секунды. Наносит физический урон и создаёт значительно больше Threat, чем обычная атака.",
+          "replaceModifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [1, 1],
+              "targetId": "SHIELD_SLAM",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-4-4",
+          "version": 3,
+          "name": "Ответная ярость",
+          "englishName": "Defiant Fury",
+          "description": "Успешный Block восстанавливает дополнительно +3 / +5 Rage. InternalCooldown = 2 секунды.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [3, 5],
+              "internalCooldownSeconds": 2,
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-6-1",
+          "version": 3,
+          "name": "Блок щитом",
+          "englishName": "Shield Block",
+          "description": "Открывает способность «Блок щитом». Стоит 30 Rage, перезарядка 12 секунд. На 5 секунд даёт +25 п.п. Block Chance и +25% Block Value. Итоговый Block Chance ограничен 60%.",
+          "replaceModifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [1],
+              "targetId": "SHIELD_BLOCK",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-7-4",
+          "version": 3,
+          "description": "При HP ниже 35% получаемое лечение увеличивается на 5% / 10%, а MagicResistance — на 3% / 6%.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [5, 10],
+              "secondaryValues": [3, 6],
+              "threshold": 35,
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-8-2",
+          "version": 3,
+          "name": "Нерушимый бастион",
+          "englishName": "Unbreakable Bastion",
+          "description": "Пока активен Бастион, Block Chance дополнительно увеличивается на 10 / 20 процентных пунктов. Эффект не позволяет превысить общий лимит Block Chance 60%.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [10, 20],
+              "targetId": "BASTION",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "nodeId": "G-9-1",
+          "version": 3,
+          "name": "НЕПОКОЛЕБИМЫЙ СТРАЖ",
+          "englishName": "UNYIELDING GUARDIAN",
+          "description": "Требует 40 очков в Страже. Успешный Block уменьшает оставшийся Cooldown «Сокрушения щитом» на 1 секунду. Во время «Блока щитом» «Реванш» не требует Rage. При активации «Бастиона» Threat Стража повышается до лидирующего значения у каждого живого противника в бою.",
+          "replaceModifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [1],
               "runtimeStatus": "Supported"
             }
           ]

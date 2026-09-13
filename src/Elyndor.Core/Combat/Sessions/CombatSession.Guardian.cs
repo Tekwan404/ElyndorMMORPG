@@ -8,17 +8,20 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private const string GuardianLowHealthDodgeEffectId = "GUARDIAN_SHIELD_REFLEX";
     private const string GuardianFirstLineEffectId = "GUARDIAN_FIRST_LINE";
     private const string GuardianLastStandEffectId = "GUARDIAN_LAST_STAND";
     private const string GuardianBloodArmorEffectId = "GUARDIAN_BLOOD_ARMOR";
-    private const string GuardianBastionDodgeEffectId = "GUARDIAN_UNBREAKABLE_BASTION";
+    private const string GuardianBastionBlockEffectId = "GUARDIAN_UNBREAKABLE_BASTION";
+    private const string GuardianRevengeWindowEffectId = "GUARDIAN_REVENGE_WINDOW";
+    private const string GuardianCapstoneShieldBlockEffectId = "GUARDIAN_CAPSTONE_SHIELD_BLOCK";
+    private const decimal GuardianShieldSlamBonusThreat = 200m;
     private bool _guardianEmergencyTriggered;
 
     private bool IsGuardian =>
         string.Equals(_player.DefinitionId, "WARRIOR", StringComparison.Ordinal)
         && (_playerTalents.EventHooks.Any(hook => hook.TalentId.StartsWith("G-", StringComparison.Ordinal))
-            || _playerTalents.UnlockedAbilityIds.Contains("BASTION"));
+            || _playerTalents.UnlockedAbilityIds.Any(abilityId =>
+                abilityId is "PROVOKE" or "REVENGE" or "SHIELD_SLAM" or "SHIELD_BLOCK" or "BASTION"));
 
     private void ApplyGuardianStartingEffects(DateTimeOffset now)
     {
@@ -63,19 +66,56 @@ public sealed partial class CombatSession
         _ = PublishGuardianEvent(
             TalentModifierKeys.OnAbilityUsed,
             combatEvent,
-            hook => hook.TalentId is "G-2-2" or "G-3-2" or "G-6-3" or "G-8-2");
+            hook => hook.TalentId is "G-3-2" or "G-6-3" or "G-8-2");
 
-        if (combatEvent.DefinitionId == "BASTION"
-            && GetGuardianHook("G-8-2") is { } bastionDodge)
+        if (string.Equals(combatEvent.DefinitionId, "SHIELD_SLAM", StringComparison.Ordinal)
+            && combatEvent.TargetActorId is { } shieldSlamTarget
+            && _enemyThreatTables.TryGetValue(shieldSlamTarget, out ThreatTable? shieldSlamThreat))
+        {
+            shieldSlamThreat.AddThreat(
+                _player.Actor.ActorId,
+                GuardianShieldSlamBonusThreat,
+                GuardianThreatMultiplier);
+        }
+
+        if (string.Equals(combatEvent.DefinitionId, "SHIELD_BLOCK", StringComparison.Ordinal)
+            && HasGuardianTalent("G-9-1"))
         {
             ApplyGuardianEffect(
                 _player.Actor,
-                GuardianBastionDodgeEffectId,
-                EffectStat.Dodge,
-                bastionDodge.Value,
+                GuardianCapstoneShieldBlockEffectId,
+                null,
+                1,
                 combatEvent.OccurredAtUtc,
                 EffectModifierMode.Flat,
-                TimeSpan.FromSeconds(6));
+                TimeSpan.FromSeconds(5),
+                EffectKind.Buff);
+        }
+
+        if (string.Equals(combatEvent.DefinitionId, "BASTION", StringComparison.Ordinal))
+        {
+            if (GetGuardianHook("G-8-2") is { } bastionBlock)
+            {
+                ApplyGuardianEffect(
+                    _player.Actor,
+                    GuardianBastionBlockEffectId,
+                    EffectStat.BlockChance,
+                    bastionBlock.Value,
+                    combatEvent.OccurredAtUtc,
+                    EffectModifierMode.Flat,
+                    TimeSpan.FromSeconds(6));
+            }
+
+            if (HasGuardianTalent("G-9-1"))
+            {
+                foreach (CombatParticipantDefinition enemy in _enemies.Where(item => !item.Actor.IsDead))
+                {
+                    if (_enemyThreatTables.TryGetValue(enemy.Actor.ActorId, out ThreatTable? threatTable))
+                    {
+                        RaiseTaunterToTopThreat(threatTable, _player.Actor.ActorId);
+                    }
+                }
+            }
         }
 
         SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
@@ -91,39 +131,10 @@ public sealed partial class CombatSession
             return;
         }
 
-        foreach (TalentRuntimeAction action in PublishGuardianEvent(
-                     TalentModifierKeys.OnDamageTaken,
-                     combatEvent,
-                     hook => hook.TalentId is "G-1-2" or "G-3-4" or "G-5-2" or "G-8-3" or "G-9-1"))
-        {
-            switch (action.TalentId)
-            {
-                case "G-1-2":
-                    AddResource(_player.Actor, action.Value, combatEvent.OccurredAtUtc, action.TalentId);
-                    break;
-                case "G-9-1":
-                    foreach (CombatActorState actor in PartyActors)
-                    {
-                        HealingResult healing = HealingPipeline.Resolve(
-                            new HealingRequest(
-                                actor,
-                                actor.MaxHp * action.Value / 100m,
-                                OccurredAtUtc: combatEvent.OccurredAtUtc));
-                        if (healing.EffectiveHealing > 0)
-                        {
-                            Append(new CombatEvent(
-                                CombatEventType.HealingApplied,
-                                combatEvent.OccurredAtUtc,
-                                actor.ActorId,
-                                action.TalentId,
-                                healing.EffectiveHealing,
-                                SourceActorId: _player.Actor.ActorId,
-                                TargetActorId: actor.ActorId));
-                        }
-                    }
-                    break;
-            }
-        }
+        _ = PublishGuardianEvent(
+            TalentModifierKeys.OnDamageTaken,
+            combatEvent,
+            hook => hook.TalentId is "G-3-4" or "G-5-2" or "G-8-3" or "G-9-1");
 
         SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
     }
@@ -139,8 +150,6 @@ public sealed partial class CombatSession
             return;
         }
 
-        // A full block has no DamageDealt event, so it must still produce the
-        // Guardian's baseline defensive resource response.
         if (combatEvent.AmountBeforeShields <= 0
             && string.Equals(_player.ResourceType, "RAGE", StringComparison.Ordinal))
         {
@@ -154,42 +163,46 @@ public sealed partial class CombatSession
         foreach (TalentRuntimeAction action in PublishGuardianEvent(
                      TalentModifierKeys.OnDamageTaken,
                      combatEvent,
-                     hook => hook.TalentId == "G-1-2"))
+                     hook => hook.TalentId is "G-1-2" or "G-4-4"))
         {
-            AddResource(_player.Actor, action.Value, combatEvent.OccurredAtUtc, action.TalentId);
+            AddResource(
+                _player.Actor,
+                action.Value,
+                combatEvent.OccurredAtUtc,
+                action.TalentId);
         }
 
-        // Blocked damage is threat-relevant damage. It uses the same Guardian
-        // threat modifier as every other defensive contribution.
         threatTable.AddThreat(
             _player.Actor.ActorId,
             combatEvent.Amount,
             GuardianThreatMultiplier);
+
+        if (_playerTalents.UnlockedAbilityIds.Contains("REVENGE"))
+        {
+            ApplyGuardianEffect(
+                _player.Actor,
+                GuardianRevengeWindowEffectId,
+                null,
+                1,
+                combatEvent.OccurredAtUtc,
+                EffectModifierMode.Flat,
+                TimeSpan.FromSeconds(3),
+                EffectKind.Buff);
+        }
+
+        if (HasGuardianTalent("G-9-1"))
+        {
+            ReduceGuardianCooldown(
+                "SHIELD_SLAM",
+                TimeSpan.FromSeconds(1),
+                combatEvent.OccurredAtUtc);
+        }
     }
 
-    private void ApplyGuardianDodgeHooks(CombatEvent combatEvent)
+    private static void ApplyGuardianDodgeHooks(CombatEvent combatEvent)
     {
-        if (!IsGuardian)
-            return;
-
-        foreach (TalentRuntimeAction action in PublishGuardianEvent(
-                     TalentModifierKeys.OnDodge,
-                     combatEvent,
-                     hook => hook.TalentId is "G-3-1" or "G-4-4"))
-        {
-            if (action.TalentId == "G-4-4")
-            {
-                AddResource(_player.Actor, action.Value, combatEvent.OccurredAtUtc, action.TalentId);
-                continue;
-            }
-
-            decimal counterChance = GetGuardianHook("G-3-1")?.SecondaryValue ?? 0;
-            if (action.TalentId == "G-3-1"
-                && _random.NextUnit() < counterChance / 100m)
-            {
-                ResolveGuardianCounterAttack(combatEvent);
-            }
-        }
+        // Guardian V2 deliberately has no Dodge-based runtime talents.
+        _ = combatEvent;
     }
 
     private void ApplyGuardianCriticalHooks(CombatEvent combatEvent)
@@ -214,7 +227,7 @@ public sealed partial class CombatSession
             new DamageRequest(
                 _player.Actor,
                 source.Actor,
-                _player.Actor.Stats.AttackPower * reflection!.Value / 100m,
+                _player.Actor.Stats.AttackPower * reflection.Value / 100m,
                 DamageType.Physical,
                 CanMiss: false,
                 CanDodge: false,
@@ -248,61 +261,11 @@ public sealed partial class CombatSession
                 && filter(hook));
     }
 
-    private void ResolveGuardianCounterAttack(CombatEvent combatEvent)
+    private static void ApplyGuardianAutoAttackHooks(CombatEvent combatEvent)
     {
-        if (combatEvent.SourceActorId is not { } sourceId
-            || !_enemiesById.TryGetValue(sourceId, out CombatParticipantDefinition? target)
-            || target.Actor.IsDead)
-        {
-            return;
-        }
-
-        decimal multiplier = (GetGuardianHook("G-3-1")?.Value ?? 0) / 100m;
-        DamageResult damage = DamagePipeline.Resolve(
-            new DamageRequest(
-                _player.Actor,
-                target.Actor,
-                AutoAttackDamageRoller.RollPlayerDamage(
-                    _player.AutoAttack,
-                    _player.Actor.Stats.AttackPower,
-                    _random) * multiplier,
-                DamageType.Physical,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false),
-            _random,
-            combatEvent.OccurredAtUtc);
-        ApplyKernelEvents(
-            damage.Events,
-            _player.Actor.ActorId,
-            target.Actor.ActorId,
-            "G-3-1");
-    }
-
-    private void ApplyGuardianAutoAttackHooks(CombatEvent combatEvent)
-    {
-        if (!IsGuardian
-            || combatEvent.SourceActorId != _player.Actor.ActorId
-            || combatEvent.DefinitionId != "AUTO_ATTACK"
-            || combatEvent.Amount <= 0)
-        {
-            return;
-        }
-
-        ResolvedTalentEventHook? livingShield = GetGuardianHook("G-6-1");
-        if (livingShield is not null
-            && _random.NextUnit() < livingShield.ChancePercent / 100m)
-        {
-            ApplyGuardianEffect(
-                _player.Actor,
-                "GUARDIAN_LIVING_SHIELD",
-                null,
-                _player.Actor.MaxHp * livingShield!.Value / 100m,
-                combatEvent.OccurredAtUtc,
-                EffectModifierMode.Flat,
-                TimeSpan.FromSeconds(8),
-                EffectKind.Shield);
-        }
+        // Guardian V2 uses Block rather than random auto-attack shields as its
+        // reactive defensive loop. Kept as a compatibility hook for CombatSession.
+        _ = combatEvent;
     }
 
     private void SyncGuardianConditionalEffects(DateTimeOffset now)
@@ -311,24 +274,6 @@ public sealed partial class CombatSession
             return;
 
         decimal hpPercent = _player.Actor.CurrentHp / _player.Actor.MaxHp * 100m;
-        if (GetGuardianHook("G-2-1") is { } reflex)
-        {
-            if (hpPercent < 30)
-            {
-                ApplyGuardianEffect(
-                    _player.Actor,
-                    GuardianLowHealthDodgeEffectId,
-                    EffectStat.Dodge,
-                    reflex.SecondaryValue > 0 ? reflex.SecondaryValue : reflex.Value,
-                    now,
-                    EffectModifierMode.Flat,
-                    TimeSpan.FromDays(1));
-            }
-            else
-            {
-                RemoveGuardianEffect(GuardianLowHealthDodgeEffectId, now);
-            }
-        }
 
         if (GetGuardianHook("G-2-4") is { } firstLine)
         {
@@ -393,12 +338,42 @@ public sealed partial class CombatSession
                     now,
                     EffectModifierMode.Multiplicative,
                     TimeSpan.FromDays(1));
+                if (lastBoundary.SecondaryValue > 0)
+                {
+                    ApplyGuardianEffect(
+                        _player.Actor,
+                        "GUARDIAN_LAST_BOUNDARY_RESISTANCE",
+                        EffectStat.MagicResistance,
+                        lastBoundary.SecondaryValue / 100m,
+                        now,
+                        EffectModifierMode.Percent,
+                        TimeSpan.FromDays(1));
+                }
             }
             else
             {
                 RemoveGuardianEffect("GUARDIAN_LAST_BOUNDARY_HEALING", now);
+                RemoveGuardianEffect("GUARDIAN_LAST_BOUNDARY_RESISTANCE", now);
             }
         }
+    }
+
+    private void ReduceGuardianCooldown(
+        string abilityId,
+        TimeSpan reduction,
+        DateTimeOffset now)
+    {
+        if (!_playerRuntime.Cooldowns.TryGetValue(abilityId, out DateTimeOffset readyAt)
+            || readyAt <= now)
+        {
+            return;
+        }
+
+        DateTimeOffset reduced = readyAt - reduction;
+        if (reduced <= now)
+            _playerRuntime.Cooldowns.Remove(abilityId);
+        else
+            _playerRuntime.Cooldowns[abilityId] = reduced;
     }
 
     private ResolvedTalentEventHook? GetGuardianHook(string talentId) =>
@@ -406,8 +381,7 @@ public sealed partial class CombatSession
             string.Equals(hook.TalentId, talentId, StringComparison.Ordinal));
 
     private bool HasGuardianTalent(string talentId) =>
-        GetGuardianHook(talentId) is not null
-        || _playerTalents.UnlockedAbilityIds.Contains(talentId);
+        GetGuardianHook(talentId) is not null;
 
     private void ApplyGuardianEffect(
         CombatActorState target,
