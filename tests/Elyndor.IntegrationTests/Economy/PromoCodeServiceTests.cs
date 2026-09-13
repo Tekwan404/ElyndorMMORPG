@@ -39,6 +39,50 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Single(await verify.CrystalLedgerEntries.Where(entry => entry.EntryType == CrystalLedgerEntryType.PromoCode).ToArrayAsync());
     }
 
+    [Fact]
+    public async Task PromoEquipmentRewardUsesProceduralItemGenerator()
+    {
+        Guid accountId = await CreateAccountAsync();
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        package = package with
+        {
+            PromoCodes =
+            [
+                new PromoCodeDefinition(
+                    "BLACKHEART_PROMO",
+                    ItemRewards: [new PromoItemRewardDefinition("UNIQUE_WARRIOR_BLACKHEART_L25", 1)])
+            ]
+        };
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        PromoCodeService service = new(
+            context,
+            new StaticContentSnapshotProvider(package),
+            new FixedTimeProvider(Now));
+        Guid operationId = Guid.CreateVersion7();
+
+        PromoCodeRedemptionResult result = await service.RedeemAsync(
+            accountId,
+            "blackheart_promo",
+            operationId,
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem item = await verify.CharacterItems
+            .Include(candidate => candidate.Affixes)
+            .SingleAsync(candidate => candidate.CharacterId == result.CharacterId
+                && candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+        Assert.Equal(25, item.ItemLevel);
+        Assert.Equal(1, item.GenerationVersion);
+        Assert.Equal("PROMO_CODE", item.SourceType);
+        Assert.Equal(operationId, item.SourceOperationId);
+        Assert.Equal("BLACKHEART_PROMO", item.SourceEntryId);
+        Assert.Equal(5, item.Affixes.Count);
+        Assert.Equal(3, item.Affixes.Count(affix => affix.IsGuaranteed));
+    }
+
     private async Task<Guid> CreateAccountAsync()
     {
         Guid accountId = Guid.CreateVersion7();
