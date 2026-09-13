@@ -38,6 +38,7 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(0, result.ArmorPenetration);
         Assert.Equal(0, result.MagicPenetration);
         Assert.Equal(1, result.AttackSpeed);
+        Assert.Equal(0, result.Armor);
     }
 
     [Fact]
@@ -46,6 +47,7 @@ public sealed class CharacterStatCalculatorTests
         CharacterStatCalculator calculator = new(Formula(), Profiles());
         CharacterStatInputs inputs = CharacterStatInputs.Empty with
         {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(ArmorFlat: 40),
             TalentDerived = new TalentStatModifiers(
                 AttackPowerPercent: 10,
                 ArmorPercent: 20,
@@ -66,7 +68,7 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(115, result.CriticalDamage);
         Assert.Equal(9, result.ArmorPenetration);
         Assert.Equal(1.06m, result.AttackSpeed);
-        Assert.Equal(55.2m, result.Armor);
+        Assert.Equal(48m, result.Armor);
     }
 
     [Fact]
@@ -107,9 +109,36 @@ public sealed class CharacterStatCalculatorTests
         Assert.Equal(6, result.ArmorPenetration);
         Assert.Equal(6, result.MagicPenetration);
         Assert.Equal(1.05m, result.AttackSpeed);
-        Assert.Equal(76.8m, result.Armor);
+        Assert.Equal(21.6m, result.Armor);
         Assert.Equal(30, result.MagicResistance);
         Assert.Equal(4.6m, result.Dodge);
+    }
+
+    [Fact]
+    public void StrengthAndStaminaNeverCreateArmorWithoutEquipment()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+
+        CharacterStats result = calculator.Calculate("WARRIOR", level: 60);
+
+        Assert.True(result.Strength > 0);
+        Assert.True(result.Stamina > 0);
+        Assert.Equal(0, result.Armor);
+    }
+
+    [Fact]
+    public void ArmorReductionBreakdownUsesCharacterLevelAsReference()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(ArmorFlat: 745)
+        };
+
+        CharacterStatCalculation result = calculator.CalculateDetailed("WARRIOR", 18, inputs);
+
+        CharacterStatBreakdown reduction = result.Breakdown["armorDamageReductionPercent"];
+        Assert.InRange(reduction.FinalValue, 49m, 50m);
     }
 
     private static StatFormulaProfile Formula() => new(
