@@ -6,9 +6,10 @@ namespace Elyndor.Core.Characters;
 /// </summary>
 public static class ShieldBlockFormula
 {
-    // First-pass balance values for the shield rework. Keep them isolated here so
-    // they can move into balance content without changing combat resolution order.
-    public const decimal BlockRatingPerPercent = 5m;
+    // First-pass balance values for the shield rework. Existing itemization budgets
+    // express shield rating in small decimal units, so 0.30 rating = 1 percentage point.
+    // Keep this isolated so it can move into balance content in a later slice.
+    public const decimal BlockRatingPerPercent = 0.30m;
     public const decimal BlockValuePerStrength = 0.75m;
 
     public static ShieldBlockResult Resolve(
