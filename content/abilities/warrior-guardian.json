@@ -52,11 +52,7 @@
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        {
-          "type": "Damage",
-          "damageType": "Physical",
-          "attackPowerCoefficient": 0.85
-        }
+        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.85 }
       ],
       "displayName": "Возмездие",
       "description": "Дешёвая контратака с высокой угрозой. Доступна в течение 5 сек. после успешного блока.",
@@ -133,10 +129,7 @@
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        {
-          "type": "Taunt",
-          "duration": "00:00:03"
-        }
+        { "type": "Taunt", "duration": "00:00:03" }
       ],
       "displayName": "Провокация",
       "description": "Уравнивает угрозу Стража с текущим лидером и принудительно удерживает выбранного противника на нём 3 сек. Не требует Rage.",
@@ -161,7 +154,7 @@
             "kind": "StatModifier",
             "duration": "00:00:30",
             "maxStacks": 5,
-            "stackPolicy": "Add",
+            "stackPolicy": "Stack",
             "magnitude": -0.04,
             "modifiedStat": "Armor",
             "modifierMode": "Percent"
@@ -184,11 +177,7 @@
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        {
-          "type": "Damage",
-          "damageType": "Physical",
-          "attackPowerCoefficient": 0.45
-        }
+        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.45 }
       ],
       "displayName": "Оглушающий удар",
       "description": "Наносит физический урон и оглушает обычного противника на 3 сек. Боссы не оглушаются.",
@@ -252,12 +241,7 @@
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        {
-          "type": "Damage",
-          "damageType": "Physical",
-          "attackPowerCoefficient": 0.55,
-          "blockValueCoefficient": 1.0
-        }
+        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.55, "blockValueCoefficient": 1.0 }
       ],
       "displayName": "Сокрушение щитом",
       "description": "Глубокая способность Стража: урон зависит от Attack Power и Block Value и создаёт очень высокую угрозу.",
