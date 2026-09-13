@@ -1,7 +1,7 @@
 {
   "contentVersion": "0.17.0",
-  "balanceVersion": "0.14.0",
-  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
+  "balanceVersion": "0.15.0",
+  "publishedAtUtc": "2026-09-13T14:19:08+00:00",
   "itemization": {
     "templateBasePower": 110,
     "levelLinearCoefficient": 0.055,
@@ -82,7 +82,6 @@
           "STRENGTH",
           "BLOCK_CHANCE",
           "BLOCK_VALUE",
-          "ARMOR",
           "MAGIC_RESISTANCE"
         ]
       },
