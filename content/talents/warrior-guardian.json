@@ -1,0 +1,29 @@
+{
+  "contentVersion": "0.18.1",
+  "balanceVersion": "0.8.1",
+  "publishedAtUtc": "2026-09-13T17:13:33+00:00",
+  "talentTreePatches": [
+    {
+      "treeId": "WARRIOR_TREE",
+      "version": 2,
+      "nodes": [
+        {
+          "nodeId": "G-2-2",
+          "version": 2,
+          "description": "Открывает способность «Провокация»: воин поднимает свой Threat выше текущего лидера и принудительно удерживает выбранного противника на себе. Дополнительно после Taunt снижает Threat союзников на этой цели на 10% и увеличивает ForcedTarget ещё на 1 секунду.",
+          "appendModifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "PROVOKE",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
