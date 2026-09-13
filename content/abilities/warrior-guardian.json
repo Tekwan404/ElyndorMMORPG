@@ -1,73 +1,50 @@
 {
-  "contentVersion": "0.19.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-13T19:15:00+00:00",
+  "contentVersion": "0.21.0",
+  "balanceVersion": "0.16.0",
+  "publishedAtUtc": "2026-09-13T19:50:00+00:00",
   "definitions": [
-    {
-      "type": "ABILITY",
-      "id": "SHIELD_SLAM",
-      "references": []
-    },
-    {
-      "type": "ABILITY",
-      "id": "REVENGE",
-      "references": []
-    },
-    {
-      "type": "ABILITY",
-      "id": "SHIELD_BLOCK",
-      "references": []
-    }
+    { "type": "ABILITY", "id": "LAST_STAND", "references": [] },
+    { "type": "ABILITY", "id": "REVENGE", "references": [] },
+    { "type": "ABILITY", "id": "SHIELD_BLOCK", "references": [] },
+    { "type": "ABILITY", "id": "SUNDER_ARMOR", "references": [] },
+    { "type": "ABILITY", "id": "CONCUSSION_BLOW", "references": [] },
+    { "type": "ABILITY", "id": "CHALLENGING_SHOUT", "references": [] },
+    { "type": "ABILITY", "id": "SHIELD_SLAM", "references": [] }
   ],
   "abilities": [
     {
-      "id": "PROVOKE",
-      "type": "Taunt",
-      "targetType": "SingleEnemy",
-      "resourceCost": 0,
-      "cooldown": "00:00:08",
-      "castTime": "00:00:00",
-      "usesGlobalCooldown": true,
-      "globalCooldownCategory": "Standard",
-      "isSpell": false,
-      "school": "PHYSICAL",
-      "actions": [
-        {
-          "type": "Taunt",
-          "duration": "00:00:03"
-        }
-      ],
-      "displayName": "Провокация",
-      "description": "Мгновенно поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём. Не требует Rage.",
-      "iconId": "provoke"
-    },
-    {
-      "id": "SHIELD_SLAM",
+      "id": "LAST_STAND",
       "type": "Instant",
-      "targetType": "SingleEnemy",
-      "resourceCost": 25,
-      "cooldown": "00:00:04",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:02:00",
       "castTime": "00:00:00",
-      "usesGlobalCooldown": true,
-      "globalCooldownCategory": "Standard",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
         {
-          "type": "Damage",
-          "damageType": "Physical",
-          "attackPowerCoefficient": 0.9
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "GUARDIAN_LAST_STAND_ACTIVE",
+            "kind": "Buff",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1
+          }
         }
       ],
-      "displayName": "Сокрушение щитом",
-      "description": "Мощный удар щитом. Стоит 25 Rage, перезарядка 4 сек. Создаёт повышенный Threat.",
-      "iconId": "shield-slam"
+      "displayName": "Последний рубеж",
+      "description": "На 8 сек. увеличивает максимальный запас здоровья на 20% и немедленно восстанавливает столько же здоровья. После окончания бонуса максимум здоровья возвращается к исходному значению.",
+      "iconId": "last-stand"
     },
     {
       "id": "REVENGE",
       "type": "Instant",
       "targetType": "SingleEnemy",
-      "resourceCost": 10,
+      "resourceCost": 5,
       "cooldown": "00:00:01.5000000",
       "castTime": "00:00:00",
       "usesGlobalCooldown": true,
@@ -78,11 +55,11 @@
         {
           "type": "Damage",
           "damageType": "Physical",
-          "attackPowerCoefficient": 1.0
+          "attackPowerCoefficient": 0.85
         }
       ],
-      "displayName": "Реванш",
-      "description": "Ответный удар, доступный в течение 3 сек. после успешного блока. Стоит 10 Rage; во время усиленного Блока щитом с капстоуном становится бесплатным.",
+      "displayName": "Возмездие",
+      "description": "Дешёвая контратака с высокой угрозой. Доступна в течение 5 сек. после успешного блока.",
       "iconId": "revenge",
       "requiredActiveEffectId": "GUARDIAN_REVENGE_WINDOW",
       "freeResourceCostWhileEffectId": "GUARDIAN_CAPSTONE_SHIELD_BLOCK",
@@ -92,7 +69,7 @@
       "id": "SHIELD_BLOCK",
       "type": "Instant",
       "targetType": "Self",
-      "resourceCost": 30,
+      "resourceCost": 20,
       "cooldown": "00:00:12",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
@@ -108,7 +85,7 @@
             "duration": "00:00:05",
             "maxStacks": 1,
             "stackPolicy": "Refresh",
-            "magnitude": 25,
+            "magnitude": 30,
             "modifiedStat": "BlockChance",
             "modifierMode": "Flat"
           }
@@ -141,8 +118,150 @@
         }
       ],
       "displayName": "Блок щитом",
-      "description": "На 5 сек. повышает шанс блока на 25 п.п. и Block Value на 25%. Эффективный шанс блока всё равно ограничен 60%. Требует экипированный щит.",
+      "description": "На 5 сек. даёт +30 п.п. Block Chance и +25% Block Value. Эффективный Block Chance всё равно ограничен 60%.",
       "iconId": "shield-block"
+    },
+    {
+      "id": "PROVOKE",
+      "type": "Taunt",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Taunt",
+          "duration": "00:00:03"
+        }
+      ],
+      "displayName": "Провокация",
+      "description": "Уравнивает угрозу Стража с текущим лидером и принудительно удерживает выбранного противника на нём 3 сек. Не требует Rage.",
+      "iconId": "provoke"
+    },
+    {
+      "id": "SUNDER_ARMOR",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 10,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "GUARDIAN_SUNDER_ARMOR",
+            "kind": "StatModifier",
+            "duration": "00:00:30",
+            "maxStacks": 5,
+            "stackPolicy": "Add",
+            "magnitude": -0.04,
+            "modifiedStat": "Armor",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Раскол брони",
+      "description": "Создаёт высокую угрозу и снижает Armor цели на 4% на 30 сек. Складывается до 5 раз.",
+      "iconId": "sunder-armor"
+    },
+    {
+      "id": "CONCUSSION_BLOW",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.45
+        }
+      ],
+      "displayName": "Оглушающий удар",
+      "description": "Наносит физический урон и оглушает обычного противника на 3 сек. Боссы не оглушаются.",
+      "iconId": "concussion-blow"
+    },
+    {
+      "id": "BASTION",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 40,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BASTION_GUARD",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.60,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Бастион",
+      "description": "На 6 сек. уменьшает получаемый урон на 40%. Стоит 40 Rage.",
+      "iconId": "bastion"
+    },
+    {
+      "id": "CHALLENGING_SHOUT",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [],
+      "displayName": "Вызывающий клич",
+      "description": "На 4 сек. заставляет всех живых противников в текущем бою атаковать Стража. Не изменяет их таблицы Threat.",
+      "iconId": "challenging-shout"
+    },
+    {
+      "id": "SHIELD_SLAM",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.55,
+          "blockValueCoefficient": 1.0
+        }
+      ],
+      "displayName": "Сокрушение щитом",
+      "description": "Глубокая способность Стража: урон зависит от Attack Power и Block Value и создаёт очень высокую угрозу.",
+      "iconId": "shield-slam"
     }
   ]
 }
