@@ -570,7 +570,7 @@ public sealed partial class CombatSession
             effectId);
     }
 
-    private decimal GuardianRageMultiplier => 1m;
+    private static decimal GuardianRageMultiplier => 1m;
 
     private decimal GuardianThreatMultiplier =>
         GuardianThreatMultiplierForTarget(null, CurrentTimeUtc);
