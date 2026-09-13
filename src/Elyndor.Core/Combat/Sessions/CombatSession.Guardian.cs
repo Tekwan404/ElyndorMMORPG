@@ -1,58 +1,79 @@
 using Elyndor.Core.Combat;
-using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Targeting;
+using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private const string GuardianFirstLineEffectId = "GUARDIAN_FIRST_LINE";
-    private const string GuardianLastStandEffectId = "GUARDIAN_LAST_STAND";
-    private const string GuardianBloodArmorEffectId = "GUARDIAN_BLOOD_ARMOR";
-    private const string GuardianBastionBlockEffectId = "GUARDIAN_UNBREAKABLE_BASTION";
+    private const string GuardianStanceDamageEffectId = "GUARDIAN_STANCE_DAMAGE";
+    private const string GuardianOneHandDamageEffectId = "GUARDIAN_ONE_HAND_DAMAGE";
+    private const string GuardianLastStandActiveEffectId = "GUARDIAN_LAST_STAND_ACTIVE";
+    private const string GuardianLastStandMaxHpSourceId = "GUARDIAN_LAST_STAND_MAX_HP";
     private const string GuardianRevengeWindowEffectId = "GUARDIAN_REVENGE_WINDOW";
     private const string GuardianCapstoneShieldBlockEffectId = "GUARDIAN_CAPSTONE_SHIELD_BLOCK";
-    private const decimal GuardianShieldSlamBonusThreat = 200m;
-    private bool _guardianEmergencyTriggered;
+    private const string GuardianLowHpBlockMinEffectId = "GUARDIAN_LAST_FORTRESS_MIN";
+    private const string GuardianLowHpBlockMaxEffectId = "GUARDIAN_LAST_FORTRESS_MAX";
+    private const string GuardianHeavyShieldMinEffectId = "GUARDIAN_HEAVY_SHIELD_MIN";
+    private const string GuardianHeavyShieldMaxEffectId = "GUARDIAN_HEAVY_SHIELD_MAX";
+    private const string GuardianHoldLineEffectId = "GUARDIAN_HOLD_THE_LINE";
+    private const decimal GuardianRevengeBaseThreat = 120m;
+    private const decimal GuardianSunderBaseThreat = 150m;
+    private const decimal GuardianShieldSlamBaseThreat = 250m;
+    private readonly Dictionary<(Guid PlayerId, Guid EnemyId), DateTimeOffset> _guardianProvokeThreatWindows = [];
 
     private bool IsGuardian =>
         string.Equals(_player.DefinitionId, "WARRIOR", StringComparison.Ordinal)
         && (_playerTalents.EventHooks.Any(hook => hook.TalentId.StartsWith("G-", StringComparison.Ordinal))
             || _playerTalents.UnlockedAbilityIds.Any(abilityId =>
-                abilityId is "PROVOKE" or "REVENGE" or "SHIELD_SLAM" or "SHIELD_BLOCK" or "BASTION"));
+                abilityId is "LAST_STAND"
+                    or "REVENGE"
+                    or "SHIELD_BLOCK"
+                    or "PROVOKE"
+                    or "SUNDER_ARMOR"
+                    or "CONCUSSION_BLOW"
+                    or "BASTION"
+                    or "CHALLENGING_SHOUT"
+                    or "SHIELD_SLAM"));
+
+    private bool GuardianHasShieldProfile =>
+        _player.Actor.Stats.BlockValueMax > 0
+        || _player.Actor.Stats.BlockChance > 0;
 
     private void ApplyGuardianStartingEffects(DateTimeOffset now)
     {
         if (!IsGuardian)
             return;
 
-        if (GetGuardianHook("G-3-4") is { } criticalReduction)
+        if (GetGuardianHook("G-1-5") is { } criticalReduction)
         {
             _player.Actor.IncomingCriticalDamageReductionPercent = criticalReduction.Value;
         }
-        decimal controlReduction =
-            (GetGuardianHook("G-3-2")?.Value ?? 0)
-            + (GetGuardianHook("G-6-3")?.Value ?? 0);
-        _player.Actor.IncomingControlDurationMultiplier =
-            Math.Max(0, 1 - controlReduction / 100m);
-        _player.Actor.OwnShieldMagnitudeMultiplier =
-            1 + (GetGuardianHook("G-6-4")?.Value ?? 0) / 100m;
 
-        if (HasGuardianTalent("G-7-2"))
+        if (GuardianHasShieldProfile && HasGuardianTalent("G-1-1"))
         {
-            EffectEngine.Apply(
+            ApplyGuardianEffect(
                 _player.Actor,
-                _player.Actor.ActorId,
-                new EffectDefinition(
-                    "GUARDIAN_SHIELD_OF_ETERNITY",
-                    EffectKind.LethalDamagePrevention,
-                    TimeSpan.FromDays(1),
-                    1,
-                    EffectStackPolicy.Replace,
-                    1),
-                now);
+                GuardianStanceDamageEffectId,
+                EffectStat.OutgoingDamageMultiplier,
+                0.95m,
+                now,
+                EffectModifierMode.Multiplicative,
+                TimeSpan.FromDays(30));
+        }
+
+        if (GuardianHasShieldProfile && GetGuardianHook("G-4-3") is { } oneHanded)
+        {
+            ApplyGuardianEffect(
+                _player.Actor,
+                GuardianOneHandDamageEffectId,
+                EffectStat.OutgoingDamageMultiplier,
+                1 + oneHanded.Value / 100m,
+                now,
+                EffectModifierMode.Multiplicative,
+                TimeSpan.FromDays(30));
         }
 
         SyncGuardianConditionalEffects(now);
@@ -63,62 +84,103 @@ public sealed partial class CombatSession
         if (!IsGuardian || combatEvent.DefinitionId is null)
             return;
 
-        _ = PublishGuardianEvent(
-            TalentModifierKeys.OnAbilityUsed,
-            combatEvent,
-            hook => hook.TalentId is "G-3-2" or "G-6-3" or "G-8-2");
+        DateTimeOffset now = combatEvent.OccurredAtUtc;
+        Guid? targetActorId = combatEvent.TargetActorId;
 
-        if (string.Equals(combatEvent.DefinitionId, "SHIELD_SLAM", StringComparison.Ordinal)
-            && combatEvent.TargetActorId is { } shieldSlamTarget
-            && _enemyThreatTables.TryGetValue(shieldSlamTarget, out ThreatTable? shieldSlamThreat))
+        switch (combatEvent.DefinitionId)
         {
-            shieldSlamThreat.AddThreat(
-                _player.Actor.ActorId,
-                GuardianShieldSlamBonusThreat,
-                GuardianThreatMultiplier);
-        }
+            case "LAST_STAND":
+                SyncGuardianLastStand(now);
+                break;
 
-        if (string.Equals(combatEvent.DefinitionId, "SHIELD_BLOCK", StringComparison.Ordinal)
-            && HasGuardianTalent("G-9-1"))
-        {
-            ApplyGuardianEffect(
-                _player.Actor,
-                GuardianCapstoneShieldBlockEffectId,
-                null,
-                1,
-                combatEvent.OccurredAtUtc,
-                EffectModifierMode.Flat,
-                TimeSpan.FromSeconds(5),
-                EffectKind.Buff);
-        }
+            case "REVENGE":
+                if (targetActorId is { } revengeTarget)
+                {
+                    decimal threatBonus = 1 + (GetGuardianHook("G-2-3")?.Value ?? 0) / 100m;
+                    AddGuardianFlatThreat(
+                        revengeTarget,
+                        GuardianRevengeBaseThreat * threatBonus,
+                        now);
+                    TryApplyGuardianRevengeStun(revengeTarget, now);
+                }
+                break;
 
-        if (string.Equals(combatEvent.DefinitionId, "BASTION", StringComparison.Ordinal))
-        {
-            if (GetGuardianHook("G-8-2") is { } bastionBlock)
-            {
-                ApplyGuardianEffect(
-                    _player.Actor,
-                    GuardianBastionBlockEffectId,
-                    EffectStat.BlockChance,
-                    bastionBlock.Value,
-                    combatEvent.OccurredAtUtc,
-                    EffectModifierMode.Flat,
+            case "SHIELD_BLOCK":
+                ApplyGuardianShieldBlockUpgrades(now);
+                ApplyGuardianPartyMitigationForDefensiveWindow(
+                    now,
+                    ResolveGuardianShieldBlockRemainingDuration(now));
+                break;
+
+            case "PROVOKE":
+                if (targetActorId is { } provokeTarget
+                    && GetGuardianHook("G-4-5") is { } masterProvoke)
+                {
+                    _guardianProvokeThreatWindows[(_player.Actor.ActorId, provokeTarget)] =
+                        now + (masterProvoke.Duration > TimeSpan.Zero
+                            ? masterProvoke.Duration
+                            : TimeSpan.FromSeconds(4));
+                }
+                break;
+
+            case "SUNDER_ARMOR":
+                if (targetActorId is { } sunderTarget)
+                {
+                    decimal threatBonus = 1 + (GetGuardianHook("G-3-6")?.Value ?? 0) / 100m;
+                    AddGuardianFlatThreat(
+                        sunderTarget,
+                        GuardianSunderBaseThreat * threatBonus,
+                        now);
+                }
+                break;
+
+            case "CONCUSSION_BLOW":
+                if (targetActorId is { } concussionTarget)
+                    TryApplyGuardianConcussionStun(concussionTarget, now);
+                break;
+
+            case "SHIELD_BASH":
+                if (targetActorId is { } bashTarget
+                    && GetGuardianHook("G-4-2") is { } improvedBash)
+                {
+                    ApplyGuardianControlEffect(
+                        bashTarget,
+                        "GUARDIAN_IMPROVED_SHIELD_BASH",
+                        EffectKind.Silence,
+                        TimeSpan.FromSeconds((double)improvedBash.Value),
+                        now);
+                }
+                break;
+
+            case "BASTION":
+                ApplyGuardianPartyMitigationForDefensiveWindow(
+                    now,
                     TimeSpan.FromSeconds(6));
-            }
+                break;
 
-            if (HasGuardianTalent("G-9-1"))
-            {
+            case "CHALLENGING_SHOUT":
                 foreach (CombatParticipantDefinition enemy in _enemies.Where(item => !item.Actor.IsDead))
                 {
-                    if (_enemyThreatTables.TryGetValue(enemy.Actor.ActorId, out ThreatTable? threatTable))
-                    {
-                        RaiseTaunterToTopThreat(threatTable, _player.Actor.ActorId);
-                    }
+                    _enemyForcedTargets[enemy.Actor.ActorId].Set(
+                        _player.Actor.ActorId,
+                        now,
+                        TimeSpan.FromSeconds(4));
                 }
-            }
+                break;
+
+            case "SHIELD_SLAM":
+                if (targetActorId is { } shieldSlamTarget)
+                {
+                    decimal threatBonus = 1 + (GetGuardianHook("G-6-2")?.Value ?? 0) / 100m;
+                    AddGuardianFlatThreat(
+                        shieldSlamTarget,
+                        GuardianShieldSlamBaseThreat * threatBonus,
+                        now);
+                }
+                break;
         }
 
-        SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
+        SyncGuardianConditionalEffects(now);
     }
 
     private void ApplyGuardianDamageTakenHooks(CombatEvent combatEvent)
@@ -130,11 +192,6 @@ public sealed partial class CombatSession
         {
             return;
         }
-
-        _ = PublishGuardianEvent(
-            TalentModifierKeys.OnDamageTaken,
-            combatEvent,
-            hook => hook.TalentId is "G-3-4" or "G-5-2" or "G-8-3" or "G-9-1");
 
         SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
     }
@@ -155,27 +212,24 @@ public sealed partial class CombatSession
         {
             AddResource(
                 _player.Actor,
-                BaseRageFromDirectDamageTaken * GuardianRageMultiplier,
+                BaseRageFromDirectDamageTaken,
                 combatEvent.OccurredAtUtc,
                 "FULL_BLOCK");
         }
 
-        foreach (TalentRuntimeAction action in PublishGuardianEvent(
-                     TalentModifierKeys.OnDamageTaken,
-                     combatEvent,
-                     hook => hook.TalentId is "G-1-2" or "G-4-4"))
+        if (GetGuardianHook("G-2-5") is { } shieldFury)
         {
             AddResource(
                 _player.Actor,
-                action.Value,
+                shieldFury.Value,
                 combatEvent.OccurredAtUtc,
-                action.TalentId);
+                shieldFury.TalentId);
         }
 
         threatTable.AddThreat(
             _player.Actor.ActorId,
             combatEvent.Amount,
-            GuardianThreatMultiplier);
+            GuardianThreatMultiplierForTarget(enemyActorId, combatEvent.OccurredAtUtc));
 
         if (_playerTalents.UnlockedAbilityIds.Contains("REVENGE"))
         {
@@ -186,11 +240,11 @@ public sealed partial class CombatSession
                 1,
                 combatEvent.OccurredAtUtc,
                 EffectModifierMode.Flat,
-                TimeSpan.FromSeconds(3),
+                TimeSpan.FromSeconds(5),
                 EffectKind.Buff);
         }
 
-        if (HasGuardianTalent("G-9-1"))
+        if (HasGuardianTalent("G-6-5"))
         {
             ReduceGuardianCooldown(
                 "SHIELD_SLAM",
@@ -201,71 +255,182 @@ public sealed partial class CombatSession
 
     private static void ApplyGuardianDodgeHooks(CombatEvent combatEvent)
     {
-        // Guardian V2 deliberately has no Dodge-based runtime talents.
         _ = combatEvent;
     }
 
-    private void ApplyGuardianCriticalHooks(CombatEvent combatEvent)
+    private static void ApplyGuardianCriticalHooks(CombatEvent combatEvent)
     {
-        if (!IsGuardian || combatEvent.TargetActorId != _player.Actor.ActorId)
-            return;
-
-        ResolvedTalentEventHook? reflection = GetGuardianHook("G-8-1");
-        if (reflection is null || _random.NextUnit() >= reflection.ChancePercent / 100m)
-        {
-            return;
-        }
-
-        if (combatEvent.SourceActorId is not { } sourceId
-            || !_enemiesById.TryGetValue(sourceId, out CombatParticipantDefinition? source)
-            || source.Actor.IsDead)
-        {
-            return;
-        }
-
-        DamageResult damage = DamagePipeline.Resolve(
-            new DamageRequest(
-                _player.Actor,
-                source.Actor,
-                _player.Actor.Stats.AttackPower * reflection.Value / 100m,
-                DamageType.Physical,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false),
-            _random,
-            combatEvent.OccurredAtUtc);
-        ApplyKernelEvents(
-            damage.Events,
-            _player.Actor.ActorId,
-            source.Actor.ActorId,
-            "G-8-1");
-    }
-
-    private IReadOnlyList<TalentRuntimeAction> PublishGuardianEvent(
-        string key,
-        CombatEvent combatEvent,
-        Func<ResolvedTalentEventHook, bool> filter)
-    {
-        CombatRuntimeEventKind kind = key switch
-        {
-            TalentModifierKeys.OnDamageTaken => CombatRuntimeEventKind.DamageTaken,
-            TalentModifierKeys.OnDodge => CombatRuntimeEventKind.Dodge,
-            TalentModifierKeys.OnAbilityUsed => CombatRuntimeEventKind.AbilityCompleted,
-            _ => throw new InvalidOperationException($"Unsupported Guardian event key '{key}'.")
-        };
-        return _talentRuntimeEngine.Publish(
-            ToRuntimeEvent(combatEvent, kind),
-            _playerTalents,
-            hook => hook.TalentId.StartsWith("G-", StringComparison.Ordinal)
-                && string.Equals(hook.Key, key, StringComparison.Ordinal)
-                && filter(hook));
+        _ = combatEvent;
     }
 
     private static void ApplyGuardianAutoAttackHooks(CombatEvent combatEvent)
     {
-        // Guardian V2 uses Block rather than random auto-attack shields as its
-        // reactive defensive loop. Kept as a compatibility hook for CombatSession.
         _ = combatEvent;
+    }
+
+    private void ApplyGuardianShieldBlockUpgrades(DateTimeOffset now)
+    {
+        TimeSpan duration = ResolveGuardianShieldBlockRemainingDuration(now);
+        if (duration <= TimeSpan.Zero)
+            duration = TimeSpan.FromSeconds(5);
+
+        if (GetGuardianHook("G-4-4") is { } heavyShield)
+        {
+            decimal percent = heavyShield.Value / 100m;
+            ApplyGuardianEffect(
+                _player.Actor,
+                GuardianHeavyShieldMinEffectId,
+                EffectStat.BlockValueMin,
+                percent,
+                now,
+                EffectModifierMode.Percent,
+                duration);
+            ApplyGuardianEffect(
+                _player.Actor,
+                GuardianHeavyShieldMaxEffectId,
+                EffectStat.BlockValueMax,
+                percent,
+                now,
+                EffectModifierMode.Percent,
+                duration);
+        }
+
+        if (HasGuardianTalent("G-6-5"))
+        {
+            ApplyGuardianEffect(
+                _player.Actor,
+                GuardianCapstoneShieldBlockEffectId,
+                null,
+                1,
+                now,
+                EffectModifierMode.Flat,
+                duration,
+                EffectKind.Buff);
+        }
+    }
+
+    private void ApplyGuardianPartyMitigationForDefensiveWindow(
+        DateTimeOffset now,
+        TimeSpan duration)
+    {
+        if (duration <= TimeSpan.Zero
+            || GetGuardianHook("G-5-5") is not { } holdLine)
+        {
+            return;
+        }
+
+        decimal multiplier = Math.Max(0, 1 - holdLine.Value / 100m);
+        foreach (CombatPlayerRuntimeState ally in _playerStatesByActorId.Values.Where(state =>
+                     state.Definition.Actor.ActorId != _player.Actor.ActorId
+                     && !state.Definition.Actor.IsDead))
+        {
+            ApplyGuardianEffect(
+                ally.Definition.Actor,
+                $"{GuardianHoldLineEffectId}_{_player.Actor.ActorId:N}",
+                EffectStat.IncomingDamageMultiplier,
+                multiplier,
+                now,
+                EffectModifierMode.Multiplicative,
+                duration);
+        }
+    }
+
+    private void TryApplyGuardianRevengeStun(Guid targetActorId, DateTimeOffset now)
+    {
+        if (GetGuardianHook("G-2-3") is not { } improvedRevenge
+            || improvedRevenge.SecondaryValue <= 0
+            || _random.NextUnit() >= improvedRevenge.SecondaryValue / 100m)
+        {
+            return;
+        }
+
+        if (_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+            && target.MonsterRank != MonsterRank.Boss)
+        {
+            ApplyGuardianControlEffect(
+                targetActorId,
+                "GUARDIAN_IMPROVED_REVENGE_STUN",
+                EffectKind.Stun,
+                TimeSpan.FromSeconds(1),
+                now);
+        }
+    }
+
+    private void TryApplyGuardianConcussionStun(Guid targetActorId, DateTimeOffset now)
+    {
+        if (_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+            && target.MonsterRank != MonsterRank.Boss)
+        {
+            ApplyGuardianControlEffect(
+                targetActorId,
+                "GUARDIAN_CONCUSSION_BLOW_STUN",
+                EffectKind.Stun,
+                TimeSpan.FromSeconds(3),
+                now);
+        }
+    }
+
+    private void ApplyGuardianControlEffect(
+        Guid targetActorId,
+        string effectId,
+        EffectKind kind,
+        TimeSpan duration,
+        DateTimeOffset now)
+    {
+        if (duration <= TimeSpan.Zero
+            || !_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+            || target.Actor.IsDead)
+        {
+            return;
+        }
+
+        ApplyKernelEvents(
+            EffectEngine.Apply(
+                target.Actor,
+                _player.Actor.ActorId,
+                new EffectDefinition(
+                    effectId,
+                    kind,
+                    duration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    1,
+                    DispelCategory: "CONTROL"),
+                now),
+            _player.Actor.ActorId,
+            targetActorId,
+            effectId);
+    }
+
+    private void AddGuardianFlatThreat(
+        Guid targetActorId,
+        decimal amount,
+        DateTimeOffset now)
+    {
+        if (amount <= 0
+            || !_enemyThreatTables.TryGetValue(targetActorId, out ThreatTable? threatTable))
+        {
+            return;
+        }
+
+        threatTable.AddThreat(
+            _player.Actor.ActorId,
+            amount,
+            GuardianThreatMultiplierForTarget(targetActorId, now));
+    }
+
+    private TimeSpan ResolveGuardianShieldBlockRemainingDuration(DateTimeOffset now)
+    {
+        DateTimeOffset? expiresAt = _player.Actor.ActiveEffects
+            .Where(effect =>
+                effect.ExpiresAtUtc > now
+                && string.Equals(
+                    effect.Definition.Id,
+                    "GUARDIAN_SHIELD_BLOCK_CHANCE",
+                    StringComparison.Ordinal))
+            .Select(effect => (DateTimeOffset?)effect.ExpiresAtUtc)
+            .Max();
+        return expiresAt is null ? TimeSpan.Zero : expiresAt.Value - now;
     }
 
     private void SyncGuardianConditionalEffects(DateTimeOffset now)
@@ -273,89 +438,64 @@ public sealed partial class CombatSession
         if (!IsGuardian)
             return;
 
-        decimal hpPercent = _player.Actor.CurrentHp / _player.Actor.MaxHp * 100m;
+        SyncGuardianLastStand(now);
+        decimal hpPercent = _player.Actor.MaxHp <= 0
+            ? 0
+            : _player.Actor.CurrentHp / _player.Actor.MaxHp * 100m;
 
-        if (GetGuardianHook("G-2-4") is { } firstLine)
+        if (GetGuardianHook("G-6-4") is { } lastFortress
+            && hpPercent < lastFortress.Threshold)
         {
-            if (hpPercent > firstLine.Threshold)
-            {
-                ApplyGuardianEffect(
-                    _player.Actor,
-                    GuardianFirstLineEffectId,
-                    EffectStat.IncomingDamageMultiplier,
-                    Math.Max(0, 1 - firstLine.Value / 100m),
-                    now,
-                    EffectModifierMode.Multiplicative,
-                    TimeSpan.FromDays(1));
-            }
-            else
-            {
-                RemoveGuardianEffect(GuardianFirstLineEffectId, now);
-            }
-        }
-
-        if (hpPercent < 25
-            && !_guardianEmergencyTriggered
-            && GetGuardianHook("G-4-1") is { } emergency)
-        {
-            _guardianEmergencyTriggered = true;
-            AddResource(_player.Actor, 15, now, emergency.TalentId);
+            decimal percent = lastFortress.Value / 100m;
             ApplyGuardianEffect(
                 _player.Actor,
-                GuardianLastStandEffectId,
-                EffectStat.IncomingDamageMultiplier,
-                0.88m,
+                GuardianLowHpBlockMinEffectId,
+                EffectStat.BlockValueMin,
+                percent,
                 now,
-                EffectModifierMode.Multiplicative,
-                TimeSpan.FromSeconds(6));
-        }
-
-        if (GetGuardianHook("G-6-2") is { } bloodArmor)
-        {
-            decimal armorBonus = Math.Min(
-                bloodArmor.SecondaryValue > 0 ? bloodArmor.SecondaryValue : 6,
-                Math.Max(0, (_player.Actor.CurrentResource - 50) / 25m)
-                    * bloodArmor.Value);
+                EffectModifierMode.Percent,
+                TimeSpan.FromSeconds(2));
             ApplyGuardianEffect(
                 _player.Actor,
-                GuardianBloodArmorEffectId,
-                EffectStat.Armor,
-                armorBonus,
+                GuardianLowHpBlockMaxEffectId,
+                EffectStat.BlockValueMax,
+                percent,
                 now,
                 EffectModifierMode.Percent,
                 TimeSpan.FromSeconds(2));
         }
-
-        if (GetGuardianHook("G-7-4") is { } lastBoundary)
+        else
         {
-            if (hpPercent < lastBoundary.Threshold)
-            {
-                ApplyGuardianEffect(
-                    _player.Actor,
-                    "GUARDIAN_LAST_BOUNDARY_HEALING",
-                    EffectStat.HealingReceivedMultiplier,
-                    1 + lastBoundary.Value / 100m,
-                    now,
-                    EffectModifierMode.Multiplicative,
-                    TimeSpan.FromDays(1));
-                if (lastBoundary.SecondaryValue > 0)
-                {
-                    ApplyGuardianEffect(
-                        _player.Actor,
-                        "GUARDIAN_LAST_BOUNDARY_RESISTANCE",
-                        EffectStat.MagicResistance,
-                        lastBoundary.SecondaryValue / 100m,
-                        now,
-                        EffectModifierMode.Percent,
-                        TimeSpan.FromDays(1));
-                }
-            }
-            else
-            {
-                RemoveGuardianEffect("GUARDIAN_LAST_BOUNDARY_HEALING", now);
-                RemoveGuardianEffect("GUARDIAN_LAST_BOUNDARY_RESISTANCE", now);
-            }
+            RemoveGuardianEffect(GuardianLowHpBlockMinEffectId, now);
+            RemoveGuardianEffect(GuardianLowHpBlockMaxEffectId, now);
         }
+
+        foreach ((Guid PlayerId, Guid EnemyId) key in _guardianProvokeThreatWindows
+                     .Where(pair => pair.Value <= now)
+                     .Select(pair => pair.Key)
+                     .ToArray())
+        {
+            _guardianProvokeThreatWindows.Remove(key);
+        }
+    }
+
+    private void SyncGuardianLastStand(DateTimeOffset now)
+    {
+        bool active = HasActiveGuardianEffect(
+            _player.Actor,
+            GuardianLastStandActiveEffectId,
+            now);
+        if (!active)
+        {
+            _player.Actor.RemoveTemporaryMaxHpPercentBonus(GuardianLastStandMaxHpSourceId);
+            return;
+        }
+
+        decimal bonusPercent = 20 + (GetGuardianHook("G-5-4")?.Value ?? 0);
+        _player.Actor.SetTemporaryMaxHpPercentBonus(
+            GuardianLastStandMaxHpSourceId,
+            bonusPercent,
+            healByIncrease: true);
     }
 
     private void ReduceGuardianCooldown(
@@ -383,6 +523,14 @@ public sealed partial class CombatSession
     private bool HasGuardianTalent(string talentId) =>
         GetGuardianHook(talentId) is not null;
 
+    private static bool HasActiveGuardianEffect(
+        CombatActorState actor,
+        string effectId,
+        DateTimeOffset now) =>
+        actor.ActiveEffects.Any(effect =>
+            effect.ExpiresAtUtc > now
+            && string.Equals(effect.Definition.Id, effectId, StringComparison.Ordinal));
+
     private void ApplyGuardianEffect(
         CombatActorState target,
         string effectId,
@@ -393,6 +541,9 @@ public sealed partial class CombatSession
         TimeSpan duration,
         EffectKind kind = EffectKind.StatModifier)
     {
+        if (duration <= TimeSpan.Zero)
+            return;
+
         EffectDefinition definition = new(
             effectId,
             kind,
@@ -419,16 +570,43 @@ public sealed partial class CombatSession
             effectId);
     }
 
-    private decimal GuardianRageMultiplier =>
-        1 + (GetGuardianHook("G-8-3")?.Value ?? 0) / 100m;
+    private decimal GuardianRageMultiplier => 1m;
 
     private decimal GuardianThreatMultiplier =>
-        1 + (GetGuardianHook("G-5-2")?.Value ?? 0) / 100m;
+        GuardianThreatMultiplierForTarget(null, CurrentTimeUtc);
 
-    private decimal GuardianAutoAttackThreatMultiplier =>
-        GuardianThreatMultiplier
-        + (GetGuardianHook("G-1-4")?.Value ?? 0) / 100m;
+    private decimal GuardianAutoAttackThreatMultiplier => GuardianThreatMultiplier;
+
+    private decimal GuardianThreatMultiplierForTarget(
+        Guid? enemyActorId,
+        DateTimeOffset now)
+    {
+        if (!IsGuardian || !GuardianHasShieldProfile || !HasGuardianTalent("G-1-1"))
+            return 1m;
+
+        decimal multiplier = 1.30m;
+        multiplier *= 1 + (GetGuardianHook("G-2-4")?.Value ?? 0) / 100m;
+
+        if (HasGuardianTalent("G-6-5")
+            && HasActiveGuardianEffect(_player.Actor, "BASTION_GUARD", now))
+        {
+            multiplier *= 1.30m;
+        }
+
+        if (enemyActorId is { } targetId
+            && _guardianProvokeThreatWindows.TryGetValue(
+                (_player.Actor.ActorId, targetId),
+                out DateTimeOffset provokeEndsAt)
+            && provokeEndsAt > now)
+        {
+            multiplier *= 1 + (GetGuardianHook("G-4-5")?.Value ?? 0) / 100m;
+        }
+
+        return multiplier;
+    }
 
     private decimal? GetGuardianHookValue(string talentId) =>
-        GetGuardianHook(talentId)?.Value;
+        string.Equals(talentId, "G-4-2", StringComparison.Ordinal)
+            ? null
+            : GetGuardianHook(talentId)?.Value;
 }
