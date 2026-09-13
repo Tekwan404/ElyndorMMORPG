@@ -4,6 +4,7 @@ using Elyndor.Core.Combat;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Parties;
 using Elyndor.Core.World;
@@ -25,6 +26,8 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     private static readonly DateTimeOffset Now = new(2026, 9, 11, 0, 0, 0, TimeSpan.Zero);
     private const string ForestId = "AFK_TEST_FOREST";
     private const string WolfId = "AFK_TEST_WOLF";
+    private const string AfkMaterialId = "AFK_TEST_WOLF_PELT";
+    private const string AfkLootTableId = "AFK_TEST_WOLF_LOOT";
 
     public Task InitializeAsync() => postgres.ResetAsync();
 
@@ -324,6 +327,31 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task ProcessingLootStacksStackableAfkMaterialsIntoOneInventorySlot()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        GameContentPackage content = CreateContent(withStackableLoot: true);
+        AfkFarmService start = CreateService(dbContext, content);
+        Assert.True((await start.StartAsync(
+            accountId, ForestId, null, TimeSpan.FromMinutes(15), CancellationToken.None)).Succeeded);
+
+        AfkFarmProgressService progress = new(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            new OffsetTimeProvider(Now.AddMinutes(15)));
+
+        AfkFarmProgressResult result = await progress.ProcessAsync(accountId, CancellationToken.None);
+
+        Assert.True(result.Processed);
+        CharacterItem[] stacks = await dbContext.CharacterItems
+            .Where(item => item.ItemDefinitionId == AfkMaterialId)
+            .ToArrayAsync();
+        CharacterItem stack = Assert.Single(stacks);
+        Assert.True(stack.Quantity >= 2);
+    }
+
+    [Fact]
     public async Task EarlyRefreshDoesNotConsumeTheFirstIntervalOrBlockCompletion()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
@@ -391,7 +419,8 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
         bool allowAfk = true,
         string? requiredContractId = null,
         MonsterRank monsterRank = MonsterRank.Normal,
-        string dangerLevel = "ADVENTURE")
+        string dangerLevel = "ADVENTURE",
+        bool withStackableLoot = false)
     {
         LocationDefinition location = new(
             ForestId,
@@ -414,14 +443,37 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
             TimeSpan.FromSeconds(2),
             5,
             [],
-            "AFK_TEST_AI");
+            "AFK_TEST_AI",
+            LootTableId: withStackableLoot ? AfkLootTableId : null);
 
         GameContentPackage baseContent = PhaseTwoTestContent.Create(Now, [], [location]);
         return baseContent with
         {
             Monsters = [wolf],
             MonsterAiProfiles = [new("AFK_TEST_AI", [])],
-            AfkFarm = new AfkFarmRewardProfile(900, 0.7m, 0.7m, 0.7m),
+            Items = withStackableLoot
+                ? [new ItemDefinition(
+                    AfkMaterialId,
+                    "AFK test wolf pelt",
+                    ItemType.Material,
+                    ItemRarity.Common,
+                    1,
+                    true,
+                    999,
+                    null,
+                    new PrimaryStats(0, 0, 0, 0),
+                    "AFK test stackable material.")]
+                : [],
+            LootTables = withStackableLoot
+                ? [new LootTableDefinition(
+                    AfkLootTableId,
+                    [new LootTableEntry(AfkMaterialId, 1m, 2, 2)])]
+                : [],
+            AfkFarm = new AfkFarmRewardProfile(
+                900,
+                0.7m,
+                0.7m,
+                withStackableLoot ? 1m : 0.7m),
             LevelProgression = new LevelProgressionDefinition("AFK_TEST", 60, 100, 1.1m),
             ClassProfiles = baseContent.ClassProfiles!
                 .Select(profile => profile with

@@ -143,10 +143,18 @@ public sealed class AfkFarmProgressService(
         {
             if (!content.Indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? definition))
                 throw new InvalidOperationException($"AFK loot item '{roll.ItemId}' is missing from content.");
+            if (definition.Stackable)
+            {
+                overflow |= await AddStackableLootAsync(
+                    characterId, sessionId, intervalIndex, roll, definition, now, content, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                continue;
+            }
+
             for (var ordinal = 0; ordinal < roll.Quantity; ordinal++)
             {
-                if (!definition.Stackable && await InventoryCapacity.FreeSlotsAsync(
-                        dbContext, characterId, content, cancellationToken) <= 0)
+                if (await InventoryCapacity.FreeSlotsAsync(
+                    dbContext, characterId, content, cancellationToken) <= 0)
                 {
                     dbContext.PendingLootItems.Add(ItemInstancePersistenceFactory.CreatePendingLootItem(
                         characterId, definition, sessionId, "AFK", $"{intervalIndex}:{roll.ItemId}", ordinal,
@@ -159,8 +167,65 @@ public sealed class AfkFarmProgressService(
                     characterId, definition, sessionId, "AFK", $"{intervalIndex}:{roll.ItemId}", ordinal,
                     now, content.Package));
             }
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
         return overflow;
+    }
+
+    private async Task<bool> AddStackableLootAsync(
+        Guid characterId,
+        Guid sessionId,
+        int intervalIndex,
+        LootRoll roll,
+        ItemDefinition definition,
+        DateTimeOffset now,
+        GameContentSnapshot content,
+        CancellationToken cancellationToken)
+    {
+        int remaining = roll.Quantity;
+        CharacterItem[] stacks = await dbContext.CharacterItems
+            .Where(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
+                && item.Quantity < definition.MaxStack)
+            .OrderBy(item => item.AcquiredAtUtc)
+            .ToArrayAsync(cancellationToken);
+
+        foreach (CharacterItem stack in stacks)
+        {
+            if (remaining == 0)
+                return false;
+
+            int quantity = Math.Min(definition.MaxStack - stack.Quantity, remaining);
+            stack.AddQuantity(quantity, definition.MaxStack);
+            remaining -= quantity;
+        }
+
+        int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+            dbContext, characterId, content, cancellationToken);
+        while (remaining > 0 && freeSlots > 0)
+        {
+            int quantity = Math.Min(definition.MaxStack, remaining);
+            dbContext.CharacterItems.Add(new CharacterItem(
+                Guid.CreateVersion7(),
+                characterId,
+                definition.Id,
+                quantity,
+                now,
+                definition.Version));
+            remaining -= quantity;
+            freeSlots--;
+        }
+
+        if (remaining == 0)
+            return false;
+
+        PendingLootItem pending = ItemInstancePersistenceFactory.CreatePendingLootItem(
+            characterId, definition, sessionId, "AFK", $"{intervalIndex}:{roll.ItemId}", 0,
+            now, content.Package);
+        pending.SetQuantity(remaining);
+        dbContext.PendingLootItems.Add(pending);
+        return true;
     }
 
     private static LootRoll[] RollLoot(IReadOnlyList<AfkFarmLootCandidate> candidates,
