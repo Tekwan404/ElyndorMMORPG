@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
 import { isBossCombatLogEnabled, setBossCombatLogEnabled } from '@/game/combat/bossCombatLogSettings'
+import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
 import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
@@ -12,7 +13,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
-export type MenuSection = 'profile' | 'friends' | 'party' | 'store'
+export type MenuSection = 'profile' | 'friends' | 'party' | 'store' | 'hotbar'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
@@ -93,6 +94,13 @@ function updateBossCombatLogPreference(): void {
         <span class="menu-tile__icon" aria-hidden="true"><IconGenerator :config="{ id: 'menu-store', glyph: 'ore', category: 'resource' }" /></span>
         <span><strong>Магазин</strong><small>Материалы за кристаллы</small></span><b aria-hidden="true">›</b>
       </button>
+      <button class="menu-tile menu-tile--violet" type="button" data-open-hotbar-settings @click="activeSection = 'hotbar'">
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-hotbar', glyph: 'sword', category: 'utility' }" />
+        </span>
+        <span><strong>Панель боя</strong><small>Порядок способностей</small></span>
+        <b aria-hidden="true">›</b>
+      </button>
       <RouterLink v-if="session.isAdmin" class="menu-tile menu-tile--admin" to="/admin">
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-admin', glyph: 'shield', category: 'utility' }" />
@@ -132,7 +140,12 @@ function updateBossCombatLogPreference(): void {
       </button>
       <FriendsView v-if="activeSection === 'friends'" />
       <PartyView v-else-if="activeSection === 'party'" embedded @open-world="emit('open-world')" />
-      <PremiumStoreView v-if="activeSection === 'store'" />
+      <PremiumStoreView v-else-if="activeSection === 'store'" />
+      <CombatHotbarSettings
+        v-else-if="activeSection === 'hotbar' && character"
+        :character-id="character.id"
+        :abilities="character.knownAbilities"
+      />
     </section>
   </section>
 </template>
