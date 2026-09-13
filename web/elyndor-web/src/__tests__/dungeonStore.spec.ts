@@ -25,20 +25,50 @@ describe('dungeon store', () => {
     expect(store.current).toEqual(run)
   })
 
-  it('leaves a run, clears local run state and refreshes the world snapshot', async () => {
+  it('temporarily exits to town without clearing the active run', async () => {
     const run = dungeonRun()
-    const request = vi.spyOn(apiClient, 'request').mockResolvedValue({
-      locationId: 'STARTER_TOWN',
-      locationVersion: 2,
-    })
+    const request = mockNavigationRequests(run)
     const session = useGameSessionStore()
     const refreshSnapshot = vi.spyOn(session, 'refreshSnapshot').mockResolvedValue(undefined)
     const store = useDungeonStore()
     store.current = run
 
-    await store.exit(run.runId)
+    await store.exitToCity(run.runId)
 
-    expect(request).toHaveBeenCalledWith(`/api/v1/dungeons/runs/${run.runId}/exit`, {
+    expect(request).toHaveBeenCalledWith(`/api/v1/dungeons/runs/${run.runId}/city-exit`, {
+      method: 'POST',
+    })
+    expect(store.current?.runId).toBe(run.runId)
+    expect(refreshSnapshot).toHaveBeenCalledOnce()
+  })
+
+  it('returns to the exact existing run through the dedicated endpoint', async () => {
+    const run = dungeonRun()
+    const request = mockNavigationRequests(run)
+    const session = useGameSessionStore()
+    vi.spyOn(session, 'refreshSnapshot').mockResolvedValue(undefined)
+    const store = useDungeonStore()
+    store.current = run
+
+    await store.returnToRun(run.runId)
+
+    expect(request).toHaveBeenCalledWith(`/api/v1/dungeons/runs/${run.runId}/return`, {
+      method: 'POST',
+    })
+    expect(store.current?.runId).toBe(run.runId)
+  })
+
+  it('permanently leaves a run through a distinct endpoint', async () => {
+    const run = dungeonRun()
+    const request = mockNavigationRequests(null)
+    const session = useGameSessionStore()
+    const refreshSnapshot = vi.spyOn(session, 'refreshSnapshot').mockResolvedValue(undefined)
+    const store = useDungeonStore()
+    store.current = run
+
+    await store.leaveRun(run.runId)
+
+    expect(request).toHaveBeenCalledWith(`/api/v1/dungeons/runs/${run.runId}/leave`, {
       method: 'POST',
     })
     expect(store.current).toBeNull()
@@ -49,11 +79,22 @@ describe('dungeon store', () => {
     vi.spyOn(apiClient, 'request').mockRejectedValue(new Error('dungeon_encounter_active'))
     const store = useDungeonStore()
 
-    await store.exit('run-1')
+    await store.exitToCity('run-1')
 
     expect(store.errorCode).toBe('dungeon_encounter_active')
   })
 })
+
+function mockNavigationRequests(currentRun: DungeonRun | null) {
+  return vi.spyOn(apiClient, 'request').mockImplementation(async (url) => {
+    if (url === '/api/v1/dungeons') return []
+    if (url === '/api/v1/dungeons/current') return currentRun
+    return {
+      locationId: 'STARTER_TOWN',
+      locationVersion: 2,
+    }
+  })
+}
 
 function dungeonRun(): DungeonRun {
   return {
