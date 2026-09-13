@@ -470,7 +470,7 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
                 created.Run!.RunId,
                 CancellationToken.None);
         Assert.Null(blockedPreparation);
-        Assert.Equal(DungeonErrorCodes.MemberNotInRun, blockedError);
+        Assert.Equal(DungeonErrorCodes.EncounterNotReady, blockedError);
     }
 
     [Fact]
