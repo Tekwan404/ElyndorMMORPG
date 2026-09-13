@@ -30,13 +30,17 @@ export const usePartyStore = defineStore('party', () => {
   let previousLeaderCharacterId: string | null = null
   let previousLeaderLocationId: string | null | undefined
 
+  function applySnapshot(next: PartySnapshotWithPresence | null): void {
+    captureLeaderMovement(next)
+    snapshot.value = next
+  }
+
   async function refresh(silent = false): Promise<void> {
     if (!silent) loading.value = true
     errorCode.value = null
     try {
       const response = await apiClient.request<PartySnapshotWithPresence | null>('/api/v1/party')
-      captureLeaderMovement(response)
-      snapshot.value = response
+      applySnapshot(response)
       invites.value = await apiClient.request<PartyInvite[]>('/api/v1/party/invites')
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'party_load_failed'
@@ -147,6 +151,7 @@ export const usePartyStore = defineStore('party', () => {
     loading,
     errorCode,
     leaderLocationChange,
+    applySnapshot,
     refresh,
     clearLeaderLocationChange,
     create,
