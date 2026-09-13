@@ -3,12 +3,23 @@ import { defineStore } from 'pinia'
 
 import { apiClient } from '@/api/apiClient'
 import type { DungeonPreview, DungeonRun, DungeonTeleportResponse } from '@/api/contracts'
-import { usePartyStore } from '@/game/party/partyStore'
+import { usePartyStore, type PartySnapshotWithPresence } from '@/game/party/partyStore'
 import { useGameSessionStore } from '@/stores/gameSession'
+
+export interface PartyDungeonState {
+  party: PartySnapshotWithPresence | null
+  currentRun: DungeonRun | null
+  characterId: string
+  locationId: string | null
+  needsEntry: boolean
+  canEnter: boolean
+  enterBlockedReason: string | null
+}
 
 export const useDungeonStore = defineStore('dungeon', () => {
   const previews = ref<DungeonPreview[]>([])
   const current = ref<DungeonRun | null>(null)
+  const state = ref<PartyDungeonState | null>(null)
   const loading = ref(false)
   const teleporting = ref(false)
   const errorCode = ref<string | null>(null)
@@ -17,9 +28,14 @@ export const useDungeonStore = defineStore('dungeon', () => {
     loading.value = true
     errorCode.value = null
     try {
-      previews.value = await apiClient.request<DungeonPreview[]>('/api/v1/dungeons')
-      const response = await apiClient.request<DungeonRun | null>('/api/v1/dungeons/current')
-      current.value = response
+      const [previewResponse, stateResponse] = await Promise.all([
+        apiClient.request<DungeonPreview[]>('/api/v1/dungeons'),
+        apiClient.request<PartyDungeonState>('/api/v1/party/state'),
+      ])
+      previews.value = previewResponse
+      state.value = stateResponse
+      current.value = stateResponse.currentRun
+      usePartyStore().applySnapshot(stateResponse.party)
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'dungeon_load_failed'
     } finally {
@@ -33,7 +49,9 @@ export const useDungeonStore = defineStore('dungeon', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requestId: crypto.randomUUID(), dungeonId }),
     }))
+    if (errorCode.value) return
     await useGameSessionStore().refreshSnapshot()
+    await refresh()
   }
 
   async function enter(runId: string): Promise<void> {
@@ -41,7 +59,9 @@ export const useDungeonStore = defineStore('dungeon', () => {
       `/api/v1/dungeons/runs/${runId}/enter`,
       { method: 'POST' },
     ))
+    if (errorCode.value) return
     await useGameSessionStore().refreshSnapshot()
+    await refresh()
   }
 
   async function restart(runId: string): Promise<void> {
@@ -49,6 +69,21 @@ export const useDungeonStore = defineStore('dungeon', () => {
       `/api/v1/dungeons/runs/${runId}/restart`,
       { method: 'POST' },
     ))
+    if (!errorCode.value) await refresh()
+  }
+
+  async function returnToTown(runId: string): Promise<void> {
+    errorCode.value = null
+    try {
+      await apiClient.request<{ locationId?: string | null; locationVersion?: number | null }>(
+        `/api/v1/party/dungeon-runs/${runId}/return-to-town`,
+        { method: 'POST' },
+      )
+      await useGameSessionStore().refreshSnapshot()
+      await refresh()
+    } catch (error) {
+      errorCode.value = error instanceof Error ? error.message : 'dungeon_return_to_town_failed'
+    }
   }
 
   async function exit(runId: string): Promise<void> {
@@ -58,8 +93,8 @@ export const useDungeonStore = defineStore('dungeon', () => {
         `/api/v1/dungeons/runs/${runId}/exit`,
         { method: 'POST' },
       )
-      current.value = null
       await useGameSessionStore().refreshSnapshot()
+      await refresh()
     } catch (error) {
       errorCode.value = error instanceof Error ? error.message : 'dungeon_exit_failed'
     }
@@ -69,10 +104,6 @@ export const useDungeonStore = defineStore('dungeon', () => {
     teleporting.value = true
     errorCode.value = null
     try {
-      const party = usePartyStore()
-      await party.refresh(true)
-      const activePartyRunId = party.snapshot?.activeDungeonRunId ?? null
-
       await apiClient.request<DungeonTeleportResponse>('/api/v1/dungeons/teleport', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,8 +112,12 @@ export const useDungeonStore = defineStore('dungeon', () => {
       await useGameSessionStore().refreshSnapshot()
       await refresh()
 
-      if (activePartyRunId && current.value === null) {
-        await enter(activePartyRunId)
+      if (state.value?.needsEntry && current.value) {
+        if (!state.value.canEnter) {
+          errorCode.value = state.value.enterBlockedReason ?? 'dungeon_member_cannot_enter'
+          return false
+        }
+        await enter(current.value.runId)
         if (errorCode.value) return false
       }
 
@@ -107,5 +142,19 @@ export const useDungeonStore = defineStore('dungeon', () => {
     }
   }
 
-  return { previews, current, loading, teleporting, errorCode, refresh, create, enter, restart, exit, teleport }
+  return {
+    previews,
+    current,
+    state,
+    loading,
+    teleporting,
+    errorCode,
+    refresh,
+    create,
+    enter,
+    restart,
+    returnToTown,
+    exit,
+    teleport,
+  }
 })
