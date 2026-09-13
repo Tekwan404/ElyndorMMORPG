@@ -52,6 +52,48 @@ public sealed class TalentAuditReportTests
     }
 
     [Fact]
+    public async Task ComposedContentContainsExactGuardianClassicV2Tree()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        TalentTreeDefinition warrior = Assert.Single(
+            package.TalentTrees!,
+            tree => tree.Id == "WARRIOR_TREE");
+        TalentBranchDefinition guardian = Assert.Single(
+            warrior.Branches,
+            branch => branch.Id == "GUARDIAN");
+        TalentDefinition[] nodes = warrior.Nodes
+            .Where(node => node.BranchId == "GUARDIAN")
+            .OrderBy(node => node.Tier)
+            .ThenBy(node => node.Id, StringComparer.Ordinal)
+            .ToArray();
+        string[] expectedIds =
+        [
+            "G-1-1", "G-1-2", "G-1-3", "G-1-4", "G-1-5",
+            "G-2-1", "G-2-2", "G-2-3", "G-2-4", "G-2-5",
+            "G-3-1", "G-3-2", "G-3-3", "G-3-4", "G-3-5", "G-3-6",
+            "G-4-1", "G-4-2", "G-4-3", "G-4-4", "G-4-5",
+            "G-5-1", "G-5-2", "G-5-3", "G-5-4", "G-5-5",
+            "G-6-1", "G-6-2", "G-6-3", "G-6-4", "G-6-5"
+        ];
+
+        Assert.Equal(31, guardian.NodeCount);
+        Assert.Equal(31, nodes.Length);
+        Assert.Equal(expectedIds, nodes.Select(node => node.Id));
+        Assert.DoesNotContain(nodes, node => node.Id.StartsWith("G-7-", StringComparison.Ordinal)
+            || node.Id.StartsWith("G-8-", StringComparison.Ordinal)
+            || node.Id.StartsWith("G-9-", StringComparison.Ordinal));
+        Assert.DoesNotContain(nodes.SelectMany(node => node.Modifiers ?? []), modifier =>
+            modifier.Key is TalentModifierKeys.DodgePercent or TalentModifierKeys.OnDodge);
+
+        Assert.All(nodes.Where(node => node.Tier == 1), node => Assert.Equal(0, node.RequiredSpentPoints));
+        Assert.All(nodes.Where(node => node.Tier == 2), node => Assert.Equal(5, node.RequiredSpentPoints));
+        Assert.All(nodes.Where(node => node.Tier == 3), node => Assert.Equal(10, node.RequiredSpentPoints));
+        Assert.All(nodes.Where(node => node.Tier == 4), node => Assert.Equal(15, node.RequiredSpentPoints));
+        Assert.All(nodes.Where(node => node.Tier == 5), node => Assert.Equal(20, node.RequiredSpentPoints));
+        Assert.All(nodes.Where(node => node.Tier == 6), node => Assert.Equal(25, node.RequiredSpentPoints));
+    }
+
+    [Fact]
     public async Task ComposedContentContainsEveryWarlordTalentGatedAbility()
     {
         var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
@@ -72,7 +114,11 @@ public sealed class TalentAuditReportTests
     public async Task ComposedContentContainsEveryGuardianTalentGatedAbility()
     {
         var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
-        string[] abilityIds = ["PROVOKE", "REVENGE", "SHIELD_SLAM", "SHIELD_BLOCK"];
+        string[] abilityIds =
+        [
+            "LAST_STAND", "REVENGE", "SHIELD_BLOCK", "PROVOKE", "SUNDER_ARMOR",
+            "CONCUSSION_BLOW", "BASTION", "CHALLENGING_SHOUT", "SHIELD_SLAM"
+        ];
 
         Assert.All(
             abilityIds,
