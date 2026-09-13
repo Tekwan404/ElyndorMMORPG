@@ -46,29 +46,46 @@ Do not conflate these values:
 
 Block chance and block value are independent. Increasing block rating must not directly increase block value, and increasing block value must not silently increase block chance.
 
+### First-pass conversion
+
+```text
+FinalBlockChance = BlockRating / 0.30
+FinalBlockChance = clamp(FinalBlockChance, 0%, 100%)
+
+StrengthBlockValue = Strength * 0.75
+FinalBlockValueMin = ShieldBlockValueMin + StrengthBlockValue
+FinalBlockValueMax = ShieldBlockValueMax + StrengthBlockValue
+```
+
+The `0.30 rating = 1 percentage point` calibration deliberately fits the current item-power scale: shield rating is stored in small decimal units and remains expensive in the item budget.
+
+During this branch the persisted/content names `BlockChancePercent` and `BLOCK_CHANCE` are legacy compatibility names. In the character stat pipeline their value is treated as **block rating**, and only `CharacterStats.BlockChance` is the final resolved percentage. A later schema/content migration can rename the legacy identifiers without changing this gameplay rule.
+
 ## Block value target model
 
-The target model for the next implementation commit is:
+The implemented first-pass model is:
 
 ```text
 FinalBlockValue = ShieldBlockValue
                 + ItemFlatBlockValue
                 + StrengthContribution
-                + approved talent/effect modifiers
+                + approved talent/effect modifiers (future integration)
 ```
 
-Strength contributes to block value only while a valid shield is equipped. Strength does not grant Armor by itself and must not make a shieldless Berserker tanky through the block system.
+Strength contributes to block value only while a valid shield block profile exists. Strength does not grant Armor by itself and does not create block for a shieldless Berserker.
 
-The exact Strength coefficient is balance data and must be covered by tests before release.
+The current coefficient is `0.75 BlockValue per 1 Strength`; it is isolated in `ShieldBlockFormula` and covered by tests so it can be tuned independently from the damage pipeline.
 
 ## Shield identity
 
-A shield should provide four distinct defensive axes:
+A shield provides four distinct defensive axes:
 
 1. meaningful `Armor`;
-2. block chance / block rating support;
+2. block rating, which resolves into final block chance;
 3. `BlockValue`;
 4. approved defensive affixes such as Strength, Stamina and generic Magic Resistance.
+
+The first balance pass uses roughly 5% base block chance at level 2, 6–7% through early/mid progression and 9–10% on late/legendary shields before additional rolled rating. Shield Armor and base BlockValue were raised at the same time so successful blocks remain visible at current damage values.
 
 Higher-rarity shields may later receive one item proc / special effect through the item-effect system. Those procs are deliberately outside this first core-formula commit and must not be implemented as Guardian talent special cases.
 
