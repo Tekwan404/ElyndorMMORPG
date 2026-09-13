@@ -8,7 +8,7 @@ public sealed class ShieldBlockFormulaTests
     public void BlockRatingControlsChanceWithoutChangingBlockValue()
     {
         ShieldBlockResult result = ShieldBlockFormula.Resolve(
-            blockRating: 40,
+            blockRating: 2.4m,
             shieldBlockValueMin: 50,
             shieldBlockValueMax: 70,
             strength: 0);
@@ -23,7 +23,7 @@ public sealed class ShieldBlockFormulaTests
     public void StrengthScalesBlockValueWithoutChangingBlockChance()
     {
         ShieldBlockResult result = ShieldBlockFormula.Resolve(
-            blockRating: 40,
+            blockRating: 2.4m,
             shieldBlockValueMin: 50,
             shieldBlockValueMax: 70,
             strength: 100);
@@ -50,7 +50,7 @@ public sealed class ShieldBlockFormulaTests
     public void BlockChanceIsClampedAtOneHundredPercent()
     {
         ShieldBlockResult result = ShieldBlockFormula.Resolve(
-            blockRating: 10_000,
+            blockRating: 100,
             shieldBlockValueMin: 1,
             shieldBlockValueMax: 1,
             strength: 0);
