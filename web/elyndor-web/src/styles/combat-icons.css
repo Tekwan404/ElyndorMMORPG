@@ -1,0 +1,70 @@
+/* Combat renders generated glyphs inside its own framed slots. Keep the SVG only;
+   the generic IconGenerator chrome creates a distracting nested box in battle UI. */
+.combat-screen .icon-generator {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.combat-screen .icon-generator__rarity-accent {
+  display: none;
+}
+
+.combat-screen .ability-slot__icon .icon-generator,
+.combat-screen .utility-action__icon .icon-generator,
+.combat-screen .combat-targets__portrait .icon-generator,
+.combat-screen .companion-figure__portrait .icon-generator {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.combat-screen .ability-slot__icon .icon-generator svg {
+  width: 82%;
+  height: 82%;
+}
+
+.combat-screen .utility-action__icon .icon-generator svg {
+  width: 74%;
+  height: 74%;
+}
+
+.combat-screen .combat-targets__portrait .icon-generator svg {
+  width: 72%;
+  height: 72%;
+}
+
+.combat-screen .enemy-placeholder .icon-generator {
+  width: 3.4rem;
+  height: 3.4rem;
+}
+
+.combat-screen .enemy-placeholder .icon-generator svg {
+  width: 100%;
+  height: 100%;
+}
+
+.combat-screen .training-dummy .icon-generator {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.combat-screen .training-dummy .icon-generator svg {
+  width: 100%;
+  height: 100%;
+}
+
+.combat-screen .companion-figure__portrait .icon-generator svg {
+  width: 64%;
+  height: 64%;
+}
+
+.combat-screen .combat-party-roster__state .icon-generator {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.combat-screen .combat-party-roster__state .icon-generator svg {
+  width: 72%;
+  height: 72%;
+}
