@@ -1,7 +1,7 @@
 {
   "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "balanceVersion": "0.15.0",
+  "publishedAtUtc": "2026-09-13T14:19:08+00:00",
   "equipmentSets": [
     {
       "id": "SET_WARRIOR_GREY_FANG",
@@ -49,7 +49,7 @@
         },
         {
           "requiredPieces": 4,
-          "armorFlat": 55
+          "maxHpFlat": 65
         },
         {
           "requiredPieces": 6,
@@ -68,7 +68,7 @@
         },
         {
           "requiredPieces": 4,
-          "armorFlat": 85
+          "maxHpFlat": 100
         },
         {
           "requiredPieces": 6,
