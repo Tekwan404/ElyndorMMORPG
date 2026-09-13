@@ -35,6 +35,10 @@ public sealed class CharacterStatCalculator(
     StatFormulaProfile formula,
     IReadOnlyList<ClassProfile> profiles)
 {
+    public const decimal AgilityDiminishingReturnsRating = 200m;
+    public const decimal CriticalChanceCap = 60m;
+    public const decimal DodgeCap = 35m;
+
     public CharacterStats Calculate(
         string classId,
         int level,
@@ -83,16 +87,22 @@ public sealed class CharacterStatCalculator(
         decimal magicResistanceBeforeTalent = (primary.Stamina * formula.MagicResistancePerStamina)
             + (primary.Intellect * formula.MagicResistancePerIntellect)
             + equipmentDerived.MagicResistanceFlat;
+        decimal criticalChanceFromAgility = CalculateAgilityContribution(
+            primary.Agility,
+            formula.CriticalChancePerAgility);
+        decimal dodgeFromAgility = CalculateAgilityContribution(
+            primary.Agility,
+            formula.DodgePerAgility);
 
         decimal maxHp = ApplyPercent(maxHpBeforeTalent, talent.MaxHpPercent);
         decimal attackPower = ApplyPercent(attackPowerBeforeTalent, talent.AttackPowerPercent);
         decimal criticalChance = decimal.Clamp(
             formula.CriticalChanceBase
-                + (primary.Agility * formula.CriticalChancePerAgility)
+                + criticalChanceFromAgility
                 + equipmentDerived.CriticalChancePercent
                 + talent.CriticalChancePercent,
             0,
-            100);
+            CriticalChanceCap);
         decimal criticalDamage = formula.CriticalDamageBase
             + equipmentDerived.CriticalDamagePercent
             + talent.CriticalDamagePercent;
@@ -111,11 +121,11 @@ public sealed class CharacterStatCalculator(
         decimal magicPenetration = equipmentDerived.MagicPenetrationPercent
             + talent.MagicPenetrationPercent;
         decimal dodge = decimal.Clamp(
-            primary.Agility * formula.DodgePerAgility
+            dodgeFromAgility
                 + talent.DodgePercent
                 + equipmentDerived.DodgePercent,
             0,
-            100);
+            DodgeCap);
         decimal blockChance = decimal.Clamp(equipmentDerived.BlockChancePercent, 0, 100);
         decimal blockValueMin = Math.Max(0, equipmentDerived.BlockValueMin);
         decimal blockValueMax = Math.Max(blockValueMin, equipmentDerived.BlockValueMax);
@@ -175,7 +185,7 @@ public sealed class CharacterStatCalculator(
                 ("TALENT_BONUS", stats.SpellPower - spellPowerBeforeTalent)),
             ["criticalChance"] = Breakdown(stats.CriticalChance,
                 ("FORMULA_BASE", formula.CriticalChanceBase),
-                ("AGILITY", primary.Agility * formula.CriticalChancePerAgility),
+                ("AGILITY", criticalChanceFromAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.CriticalChancePercent),
                 ("TALENT_BONUS", talent.CriticalChancePercent)),
             ["criticalDamage"] = Breakdown(stats.CriticalDamage,
@@ -209,7 +219,7 @@ public sealed class CharacterStatCalculator(
             ["magicDamageReductionPercent"] = Breakdown(
                 DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance, level)),
             ["dodge"] = Breakdown(stats.Dodge,
-                ("AGILITY", primary.Agility * formula.DodgePerAgility),
+                ("AGILITY", dodgeFromAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
                 ("TALENT_BONUS", talent.DodgePercent)),
             ["blockChance"] = Breakdown(stats.BlockChance,
@@ -221,6 +231,13 @@ public sealed class CharacterStatCalculator(
         };
 
         return new CharacterStatCalculation(stats, breakdown);
+    }
+
+    public static decimal CalculateAgilityContribution(decimal agility, decimal linearCoefficient)
+    {
+        decimal effectiveAgility = Math.Max(0, agility);
+        decimal denominator = 1 + (effectiveAgility / AgilityDiminishingReturnsRating);
+        return effectiveAgility * linearCoefficient / denominator;
     }
 
     private static CharacterStatBreakdown PrimaryBreakdown(
