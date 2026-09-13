@@ -79,9 +79,7 @@ public sealed class CharacterStatCalculator(
         decimal spellPower = ApplyPercent(
             spellPowerBeforeTalent,
             talent.SpellPowerPercent);
-        decimal armorBeforeTalent = (primary.Stamina * formula.ArmorPerStamina)
-            + (primary.Strength * formula.ArmorPerStrength)
-            + equipmentDerived.ArmorFlat;
+        decimal armorBeforeTalent = equipmentDerived.ArmorFlat;
         decimal magicResistanceBeforeTalent = (primary.Stamina * formula.MagicResistancePerStamina)
             + (primary.Intellect * formula.MagicResistancePerIntellect)
             + equipmentDerived.MagicResistanceFlat;
@@ -199,19 +197,17 @@ public sealed class CharacterStatCalculator(
                 ("EQUIPMENT_BONUS", formula.AttackSpeedBase * equipmentDerived.AttackSpeedPercent / 100m),
                 ("TALENT_BONUS", formula.AttackSpeedBase * talent.AttackSpeedPercent / 100m)),
             ["armor"] = Breakdown(stats.Armor,
-                ("STAMINA", primary.Stamina * formula.ArmorPerStamina),
-                ("STRENGTH", primary.Strength * formula.ArmorPerStrength),
                 ("EQUIPMENT_BONUS", equipmentDerived.ArmorFlat),
                 ("TALENT_BONUS", stats.Armor - armorBeforeTalent)),
             ["armorDamageReductionPercent"] = Breakdown(
-                DefenseMitigationFormula.CalculateReductionPercent(stats.Armor)),
+                DefenseMitigationFormula.CalculateReductionPercent(stats.Armor, level)),
             ["magicResistance"] = Breakdown(stats.MagicResistance,
                 ("STAMINA", primary.Stamina * formula.MagicResistancePerStamina),
                 ("INTELLECT", primary.Intellect * formula.MagicResistancePerIntellect),
                 ("EQUIPMENT_BONUS", equipmentDerived.MagicResistanceFlat),
                 ("TALENT_BONUS", stats.MagicResistance - magicResistanceBeforeTalent)),
             ["magicDamageReductionPercent"] = Breakdown(
-                DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance)),
+                DefenseMitigationFormula.CalculateReductionPercent(stats.MagicResistance, level)),
             ["dodge"] = Breakdown(stats.Dodge,
                 ("AGILITY", primary.Agility * formula.DodgePerAgility),
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
