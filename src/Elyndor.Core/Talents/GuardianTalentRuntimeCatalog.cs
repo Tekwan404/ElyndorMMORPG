@@ -7,7 +7,6 @@ public static class GuardianTalentRuntimeCatalog
         {
             ["G-1-2"] = Keys(TalentModifierKeys.OnDamageTaken),
             ["G-1-4"] = Keys(TalentModifierKeys.OnAutoAttack),
-            ["G-2-2"] = Keys(TalentModifierKeys.OnAbilityUsed),
             ["G-2-4"] = Keys(TalentModifierKeys.OnHpThreshold),
             ["G-3-2"] = Keys(TalentModifierKeys.OnAbilityUsed),
             ["G-3-4"] = Keys(TalentModifierKeys.OnDamageTaken),
