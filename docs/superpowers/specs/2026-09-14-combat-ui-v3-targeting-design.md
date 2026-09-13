@@ -14,7 +14,7 @@ Make the mobile combat screen read as a compact dark-fantasy MMORPG battlefield:
 
 ## Existing state and issue
 
-`CombatSession` currently keeps one `_selectedTargetActorId` for the entire session. `UseAbility` reaches the session with `Guid.Empty`, then resolves a `SingleEnemy` ability against that shared state. This cannot support independent choices by party members and cannot support a friendly target without making it authoritative only in the UI.
+`CombatSession` already keeps `SelectedTargetActorId` on each `CombatPlayerRuntimeState`, normalizes it after an enemy dies, and projects it into the requesting participant's snapshot. `UseAbility` nevertheless reaches the session with `Guid.Empty` and therefore ignores the command's existing `TargetActorId`; `SingleAlly` has no command-target resolution yet. The feature must extend this existing model rather than create a second hostile-selection system.
 
 PR #156 already provides `combatHotbarSettings.ts` with per-character localStorage normalization and `CombatHotbarSettings.vue`, but the active display is limited to six entries.
 
@@ -22,16 +22,16 @@ PR #156 already provides `combatHotbarSettings.ts` with per-character localStora
 
 ### Per-participant targeting
 
-Each player runtime state owns its current hostile target. The player command carries an explicit optional target actor id. The combat session resolves and validates that intent using the ability's existing `AbilityTargetType`:
+Each player runtime state already owns its current hostile target and `SelectTarget` already changes it through the combat session's single writer. The player command carries an explicit optional target actor id. The combat session resolves and validates that intent using the ability's existing `AbilityTargetType`:
 
 - `Self`, companion, and area target types ignore a selected target where appropriate.
 - `SingleEnemy` accepts only a living enemy participant.
 - `SingleAlly` accepts only a living active ally, respecting `AllowSelfTarget`.
 - Invalid, dead, or vanished targets are rejected authoritatively with the existing invalid-target result.
 
-The server exposes the requesting participant's selected hostile target in its snapshot. This preserves existing automatic attack behavior while allowing party members to target independently. Target choice stays session-runtime state, not a database entity.
+For `SingleEnemy`, an empty command target falls back to the participant's existing selected hostile target; an explicit valid enemy becomes that participant's selected hostile target before the ability executes, preserving automatic attack behavior. The server already exposes the requesting participant's target in its snapshot. Target choice stays session-runtime state, not a database entity.
 
-Frontend `useCombatSessionStore` owns `selectedHostileTargetId` and `selectedFriendlyTargetId`. It normalizes them whenever an authoritative snapshot changes: a vanished/dead hostile falls forward to the first living enemy, and a vanished/dead friendly falls back to the local player. SignalR updates never erase a still-valid client choice or local hotbar order.
+Frontend `useCombatSessionStore` reuses the authoritative `snapshot.selectedTargetActorId` as `selectedHostileTargetId` and owns only `selectedFriendlyTargetId` locally. It normalizes friendly selection whenever an authoritative snapshot changes: a vanished/dead friendly falls back to the local player. The existing combat session already normalizes hostile selection. SignalR updates never erase a still-valid choice or local hotbar order.
 
 ### Aggro presentation
 

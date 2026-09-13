@@ -4,7 +4,7 @@
 
 **Goal:** Ship a mobile combat battlefield with independent ally/enemy targets and a stable 12-slot action bar without changing combat balance.
 
-**Architecture:** Extend the existing single-writer CombatSession so every player runtime has its own hostile target and every manual ability carries an explicit target intent. Vue/Pinia owns independent ephemeral hostile/friendly selections. Reuse PR #156 local per-character hotbar order and extend its active range from 6 to 12.
+**Architecture:** Reuse the existing per-player authoritative hostile target in CombatPlayerRuntimeState and make every manual ability honor its already-existing explicit target intent. Vue/Pinia adds only ephemeral friendly selection. Reuse PR #156 local per-character hotbar order and extend its active range from 6 to 12.
 
 **Tech Stack:** C#/.NET 10, SignalR, Vue 3, TypeScript, Pinia, xUnit, Vitest, Playwright.
 
@@ -29,12 +29,12 @@
 - Modify: `src/Elyndor.Infrastructure/Combat/CombatApplicationService.cs`, `src/Elyndor.Server/Combat/CombatHub.cs`, `src/Elyndor.Contracts/Combat/CombatContracts.cs`, `src/Elyndor.Server/Combat/CombatContractMapper.cs`.
 - Test: `tests/Elyndor.UnitTests/Combat/CombatSessionTests.cs`.
 
-**Interfaces:** `UseAbility(sessionId, abilityId, targetActorId, commandId)` reaches `UseAbilityCommand`. `SingleEnemy` validates living enemies; `SingleAlly` validates living active allies and `AllowSelfTarget`; self/area/companion rules remain unchanged.
+**Interfaces:** `UseAbility(sessionId, abilityId, targetActorId, commandId)` reaches the existing `UseAbilityCommand`. `SingleEnemy` validates living enemies and updates the existing requesting-player selection; `SingleAlly` validates living active allies and `AllowSelfTarget`; self/area/companion rules remain unchanged.
 
 - [ ] Write failing tests that an explicit second enemy receives `STRIKE`, and a foreign/dead ally produces `CombatErrorCodes.InvalidTarget`.
 - [ ] Run `dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --filter FullyQualifiedName~CombatSessionTests`; confirm current global selection cannot satisfy participant-specific behavior.
-- [ ] Implement `ResolvePlayerAbilityTargetIds(AbilityDefinition ability, Guid requestedTargetActorId)`, retaining current resolution for non-selected target kinds. Store the selected hostile actor on the requesting player runtime only. Add no persistence.
-- [ ] Map that participant's selected hostile target into its snapshot response and preserve command-id duplicate protection.
+- [ ] Implement `ResolvePlayerAbilityTargetIds(AbilityDefinition ability, Guid requestedTargetActorId)`, retaining current resolution for non-selected target kinds. Reuse the existing selected hostile actor on the requesting player runtime; add no persistence.
+- [ ] Update the existing selected hostile actor only after an explicit enemy target validates, and preserve command-id duplicate protection and the existing snapshot mapping.
 - [ ] Re-run the focused test and `dotnet build Elyndor.slnx --configuration Release --no-restore`; commit `feat: validate participant ability targets`.
 
 ### Task 2: Per-enemy aggro projection
@@ -59,11 +59,11 @@
 - Modify: `web/elyndor-web/src/stores/combatSession.ts`.
 - Test: `web/elyndor-web/src/__tests__/CombatSessionStore.spec.ts`.
 
-**Interfaces:** store exposes `selectedHostileTargetId`, `selectedFriendlyTargetId`, `selectHostileTarget`, `selectFriendlyTarget`, and target-aware `useAbility`.
+**Interfaces:** store exposes `selectedHostileTargetId` as the existing authoritative snapshot field, local `selectedFriendlyTargetId`, `selectHostileTarget` through the existing SelectTarget command, `selectFriendlyTarget`, and target-aware `useAbility`.
 
 - [ ] Write failing store tests: choosing an ally does not change hostile selection, choosing an enemy does not change friendly selection, a single-enemy ability sends the selected hostile actor id, a mock `SingleAlly` ability sends the selected friendly actor id, and an invalid target response preserves valid UI state.
 - [ ] Run `npm run test:unit -- --run src/__tests__/CombatSessionStore.spec.ts`; confirm selections and command argument are absent.
-- [ ] Implement normalization only after authoritative snapshots: invalid/dead hostile falls to first living enemy; invalid/dead friendly falls to local player. Keep hotbar order unchanged across updates. Preserve the current one-in-flight ability guard and retry command id map.
+- [ ] Implement only friendly normalization after authoritative snapshots: invalid/dead friendly falls to local player. Reuse server-side hostile normalization. Keep hotbar order unchanged across updates. Preserve the current one-in-flight ability guard and retry command id map.
 - [ ] Run focused Vitest and `npm run type-check`; commit `feat: add independent combat target selections`.
 
 ### Task 4: Extend existing hotbar settings to twelve active positions
