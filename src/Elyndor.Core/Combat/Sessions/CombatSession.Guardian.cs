@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
@@ -125,6 +126,45 @@ public sealed partial class CombatSession
         }
 
         SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
+    }
+
+    private void ApplyGuardianBlockHooks(CombatEvent combatEvent)
+    {
+        if (!IsGuardian
+            || combatEvent.TargetActorId != _player.Actor.ActorId
+            || combatEvent.SourceActorId is not { } enemyActorId
+            || combatEvent.Amount <= 0
+            || !_enemyThreatTables.TryGetValue(enemyActorId, out ThreatTable? threatTable))
+        {
+            return;
+        }
+
+        // A full block has no DamageDealt event, so it must still produce the
+        // Guardian's baseline defensive resource response.
+        if (combatEvent.AmountBeforeShields <= 0
+            && string.Equals(_player.ResourceType, "RAGE", StringComparison.Ordinal))
+        {
+            AddResource(
+                _player.Actor,
+                BaseRageFromDirectDamageTaken * GuardianRageMultiplier,
+                combatEvent.OccurredAtUtc,
+                "FULL_BLOCK");
+        }
+
+        foreach (TalentRuntimeAction action in PublishGuardianEvent(
+                     TalentModifierKeys.OnDamageTaken,
+                     combatEvent,
+                     hook => hook.TalentId == "G-1-2"))
+        {
+            AddResource(_player.Actor, action.Value, combatEvent.OccurredAtUtc, action.TalentId);
+        }
+
+        // Blocked damage is threat-relevant damage. It uses the same Guardian
+        // threat modifier as every other defensive contribution.
+        threatTable.AddThreat(
+            _player.Actor.ActorId,
+            combatEvent.Amount,
+            GuardianThreatMultiplier);
     }
 
     private void ApplyGuardianDodgeHooks(CombatEvent combatEvent)

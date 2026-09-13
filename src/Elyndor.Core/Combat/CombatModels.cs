@@ -139,6 +139,7 @@ public enum CombatEventType
     TauntApplied,
     ResourceChanged,
     DamageBlocked,
+    UnblockableHit,
     Dodge,
     ActorDied
 }
@@ -159,4 +160,5 @@ public sealed record CombatEvent(
     string? WeaponDefinitionId = null,
     decimal RawDamage = 0,
     decimal DamageAfterMitigation = 0,
-    decimal DamageBeforeBlock = 0);
+    decimal DamageBeforeBlock = 0,
+    bool IsUnblockable = false);

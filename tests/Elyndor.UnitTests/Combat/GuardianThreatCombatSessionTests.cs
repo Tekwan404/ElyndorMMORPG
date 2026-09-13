@@ -131,6 +131,55 @@ public sealed class GuardianThreatCombatSessionTests
             Assert.Single(duringTaunt.Entries, entry => entry.ActorId == PlayerId).IsCurrentTarget);
     }
 
+    [Fact]
+    public void FullBlockGrantsGuardianRageAndThreatWithoutHpDamage()
+    {
+        CombatStats playerStats = new(
+            20, 100, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+            BlockChance: 60, BlockValueMin: 100, BlockValueMax: 100);
+        CombatStats enemyStats = new(20, 100, 0, 0, 1, 0, 0, 0, 0, 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(PlayerId, 1_000, 1_000, 100, 0, playerStats),
+            CombatActorKind.Player, "WARRIOR", "Guardian", "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal), CanAutoAttack: false);
+        CombatParticipantDefinition enemy = new(
+            new CombatActorState(EnemyId, 10_000, 10_000, 0, 0, enemyStats),
+            CombatActorKind.Monster, "BLOCK_TEST", "Block Test", "NONE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(1), 50, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal));
+        ResolvedTalentModifiers talents = ResolvedTalentModifiers.Empty with
+        {
+            EventHooks =
+            [
+                new ResolvedTalentEventHook("G-1-2", TalentModifierKeys.OnDamageTaken,
+                    1, 4, null, TimeSpan.Zero, false),
+                new ResolvedTalentEventHook("G-5-2", TalentModifierKeys.OnDamageTaken,
+                    1, 9, null, TimeSpan.Zero, false),
+                new ResolvedTalentEventHook("G-8-3", TalentModifierKeys.OnDamageTaken,
+                    1, 35, null, TimeSpan.Zero, false)
+            ]
+        };
+        CombatSession session = new(
+            Guid.CreateVersion7(), player, enemy,
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
+            new MonsterAiProfile("BLOCK_TEST_AI", []), talents,
+            new SequenceGameRandom(0.99m, 0.99m, 0m), Now);
+
+        CombatCommandResult result = session.AdvanceTo(Now.AddSeconds(1));
+
+        Assert.Equal(1_000, result.Snapshot.Player.Hp);
+        Assert.Contains(result.Events, item => item.Type == CombatEventType.DamageBlocked
+            && item.Amount == 50 && item.AmountBeforeShields == 0);
+        Assert.Contains(result.Events, item => item.Type == CombatEventType.ResourceChanged
+            && item.DefinitionId == "FULL_BLOCK" && item.Amount == 6.75m);
+        Assert.Contains(result.Events, item => item.Type == CombatEventType.ResourceChanged
+            && item.DefinitionId == "G-1-2" && item.Amount == 4m);
+        CombatThreatSnapshot threat = Assert.IsType<CombatThreatSnapshot>(
+            session.GetThreatSnapshot(PlayerId, Now.AddSeconds(1)));
+        Assert.True(Assert.Single(threat.Entries, item => item.ActorId == PlayerId).Threat > 1m);
+    }
+
     private static CombatSession CreateSession(ResolvedTalentModifiers talents)
     {
         CombatStats stats = new(

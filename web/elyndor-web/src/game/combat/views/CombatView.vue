@@ -53,6 +53,7 @@ interface CombatLogEntry {
   actor: string
   text: string
   detail?: string
+  unblockable?: boolean
   occurredAtUtc: string
 }
 interface EnemyPresentation {
@@ -141,6 +142,9 @@ const playerEffects = computed(() => snapshot.value?.player.effects.slice(0, 6) 
 const enemyEffects = computed(() => snapshot.value?.enemy.effects.slice(0, 6) ?? [])
 const playerCast = computed(() => snapshot.value?.player.activeCast ?? null)
 const enemyCast = computed(() => snapshot.value?.enemy.activeCast ?? null)
+const enemyCastIsUnblockable = computed(() => enemyCast.value !== null
+  && snapshot.value?.enemy.abilities.some(ability =>
+    ability.id === enemyCast.value?.abilityId && ability.isUnblockable === true) === true)
 
 const logEntries = computed<CombatLogEntry[]>(() => {
   const events = combat.events.slice(-40)
@@ -187,7 +191,8 @@ const logEntries = computed<CombatLogEntry[]>(() => {
       text: eventText(event, critical),
       detail: resourceEvent
         ? `${resourceEvent.amount > 0 ? '+' : ''}${Math.round(resourceEvent.amount * 10) / 10} ${resourceName.value.toLowerCase()} · ${abilityName(resourceEvent.definitionId)}`
-        : undefined,
+        : damageBreakdown(event),
+      unblockable: event.type === 'UnblockableHit' || event.isUnblockable === true,
       occurredAtUtc: event.serverTimeUtc,
     })
   }
@@ -290,6 +295,14 @@ function actorLabel(side: LogSide, event?: CombatEvent): string {
   return 'СИСТЕМА'
 }
 
+function damageBreakdown(event: CombatEvent): string | undefined {
+  if (event.type !== 'DamageDealt' || !event.rawDamage) return undefined
+  const afterArmor = event.damageAfterMitigation ?? event.rawDamage
+  const armor = Math.max(0, Math.round(event.rawDamage - afterArmor))
+  const blocked = Math.max(0, Math.round((event.damageBeforeBlock ?? 0) - event.amountBeforeShields))
+  return `${Math.round(event.rawDamage)} входящего → броня −${armor} → блок −${blocked} → ${Math.round(event.amount)} получено`
+}
+
 function eventText(event: CombatEvent, critical = false): string {
   const definition = abilityName(event.definitionId)
   const enemyName = enemyPresentation.value?.name ?? 'Противник'
@@ -305,8 +318,12 @@ function eventText(event: CombatEvent, critical = false): string {
       return 'Автоатака остановлена'
     case 'DamageDealt':
       return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТ!' : ''}`
+    case 'UnblockableHit':
+      return 'НЕБЛОКИРУЕМЫЙ УДАР'
     case 'DamageBlocked':
-      return `Заблокировано ${Math.round(event.amount)} урона`
+      return event.amountBeforeShields <= 0
+        ? 'ПОЛНЫЙ БЛОК'
+        : `БЛОК −${Math.round(event.amount)}`
     case 'AbilityUsed':
       return `${definition} · действие выполнено`
     case 'EffectApplied':
@@ -593,10 +610,10 @@ onUnmounted(() => window.clearInterval(timer))
           </span>
         </div>
 
-        <div v-if="enemyCast" class="cast-bar cast-bar--enemy" data-enemy-cast>
+        <div v-if="enemyCast" class="cast-bar cast-bar--enemy" :class="{ 'cast-bar--unblockable': enemyCastIsUnblockable }" data-enemy-cast>
           <div>
             <strong>{{ abilityName(enemyCast.abilityId) }}</strong>
-            <small>{{ castRemaining(enemyCast).toFixed(1) }}с</small>
+            <small>{{ enemyCastIsUnblockable ? 'НЕБЛОКИРУЕМО · ' : '' }}{{ castRemaining(enemyCast).toFixed(1) }}с</small>
           </div>
           <i><span :style="{ width: `${castProgress(enemyCast)}%` }" /></i>
         </div>
@@ -906,7 +923,7 @@ onUnmounted(() => window.clearInterval(timer))
           <strong>{{ logOpen ? '−' : '+' }}</strong>
         </button>
         <ol v-if="logOpen">
-          <li v-for="entry in logEntries" :key="entry.key" :data-side="entry.side">
+          <li v-for="entry in logEntries" :key="entry.key" :data-side="entry.side" :data-unblockable="entry.unblockable || undefined">
             <span class="actor">{{ entry.actor }}</span>
             <div>
               <strong>{{ entry.text }}</strong>
@@ -1279,6 +1296,15 @@ onUnmounted(() => window.clearInterval(timer))
 
 .cast-bar--enemy > i > span {
   background: linear-gradient(90deg, #a64859, #e18996);
+}
+
+.cast-bar--unblockable {
+  border-color: #ff536d;
+  box-shadow: 0 0 18px rgb(255 61 91 / 36%);
+}
+
+.cast-bar--unblockable > i > span {
+  background: linear-gradient(90deg, #d72645, #ff9b42);
 }
 
 .cast-bar--player {
@@ -1782,6 +1808,12 @@ onUnmounted(() => window.clearInterval(timer))
 
 .combat-log li[data-side='enemy'] {
   border-left-color: var(--ui-color-danger);
+}
+
+.combat-log li[data-unblockable='true'] {
+  border-left-color: #ff536d;
+  background: rgb(139 35 52 / 20%);
+  color: #ffd3da;
 }
 
 .actor {

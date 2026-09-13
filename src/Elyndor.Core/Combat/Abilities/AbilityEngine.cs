@@ -266,7 +266,8 @@ public static class AbilityEngine
                                 CriticalDamageBonus: ability.CriticalDamageBonus
                                     + targetModifier.CriticalDamageBonus,
                                 MagicPenetrationBonus: ability.MagicPenetrationBonus
-                                    + targetModifier.MagicPenetrationBonus),
+                                    + targetModifier.MagicPenetrationBonus,
+                                IsUnblockable: action.IsUnblockable),
                             random,
                             now);
                         events.AddRange(damage.Events);
