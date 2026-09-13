@@ -27,6 +27,8 @@ public sealed record CharacterEquipmentDerivedModifiers(
     decimal DodgePercent = 0,
     decimal ArmorPenetrationPercent = 0,
     decimal MagicPenetrationPercent = 0,
+    // Legacy field name during the shield rework: this is now interpreted as block rating,
+    // not as an already-resolved final percentage chance.
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
     decimal BlockValueMax = 0);
@@ -126,9 +128,14 @@ public sealed class CharacterStatCalculator(
                 + equipmentDerived.DodgePercent,
             0,
             DodgeCap);
-        decimal blockChance = decimal.Clamp(equipmentDerived.BlockChancePercent, 0, 100);
-        decimal blockValueMin = Math.Max(0, equipmentDerived.BlockValueMin);
-        decimal blockValueMax = Math.Max(blockValueMin, equipmentDerived.BlockValueMax);
+        ShieldBlockResult shieldBlock = ShieldBlockFormula.Resolve(
+            equipmentDerived.BlockChancePercent,
+            equipmentDerived.BlockValueMin,
+            equipmentDerived.BlockValueMax,
+            primary.Strength);
+        decimal blockChance = shieldBlock.BlockChancePercent;
+        decimal blockValueMin = shieldBlock.BlockValueMin;
+        decimal blockValueMax = shieldBlock.BlockValueMax;
 
         CharacterStats stats = new(
             primary.Strength,
@@ -223,11 +230,13 @@ public sealed class CharacterStatCalculator(
                 ("EQUIPMENT_BONUS", equipmentDerived.DodgePercent),
                 ("TALENT_BONUS", talent.DodgePercent)),
             ["blockChance"] = Breakdown(stats.BlockChance,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockChancePercent)),
+                ("BLOCK_RATING", stats.BlockChance)),
             ["blockValueMin"] = Breakdown(stats.BlockValueMin,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMin)),
+                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMin),
+                ("STRENGTH", shieldBlock.StrengthContribution)),
             ["blockValueMax"] = Breakdown(stats.BlockValueMax,
-                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMax))
+                ("EQUIPMENT_BONUS", equipmentDerived.BlockValueMax),
+                ("STRENGTH", shieldBlock.StrengthContribution))
         };
 
         return new CharacterStatCalculation(stats, breakdown);
