@@ -1,0 +1,148 @@
+{
+  "contentVersion": "0.19.0",
+  "balanceVersion": "0.9.0",
+  "publishedAtUtc": "2026-09-13T19:15:00+00:00",
+  "definitions": [
+    {
+      "type": "ABILITY",
+      "id": "SHIELD_SLAM",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "REVENGE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "SHIELD_BLOCK",
+      "references": []
+    }
+  ],
+  "abilities": [
+    {
+      "id": "PROVOKE",
+      "type": "Taunt",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Taunt",
+          "duration": "00:00:03"
+        }
+      ],
+      "displayName": "Провокация",
+      "description": "Мгновенно поднимает Threat воина выше текущего лидера и принудительно удерживает выбранного противника на нём. Не требует Rage.",
+      "iconId": "provoke"
+    },
+    {
+      "id": "SHIELD_SLAM",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 25,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.9
+        }
+      ],
+      "displayName": "Сокрушение щитом",
+      "description": "Мощный удар щитом. Стоит 25 Rage, перезарядка 4 сек. Создаёт повышенный Threat.",
+      "iconId": "shield-slam"
+    },
+    {
+      "id": "REVENGE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 10,
+      "cooldown": "00:00:01.5000000",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 1.0
+        }
+      ],
+      "displayName": "Реванш",
+      "description": "Ответный удар, доступный в течение 3 сек. после успешного блока. Стоит 10 Rage; во время усиленного Блока щитом с капстоуном становится бесплатным.",
+      "iconId": "revenge",
+      "requiredActiveEffectId": "GUARDIAN_REVENGE_WINDOW",
+      "freeResourceCostWhileEffectId": "GUARDIAN_CAPSTONE_SHIELD_BLOCK",
+      "consumeEffectId": "GUARDIAN_REVENGE_WINDOW"
+    },
+    {
+      "id": "SHIELD_BLOCK",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 30,
+      "cooldown": "00:00:12",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "GUARDIAN_SHIELD_BLOCK_CHANCE",
+            "kind": "StatModifier",
+            "duration": "00:00:05",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 25,
+            "modifiedStat": "BlockChance",
+            "modifierMode": "Flat"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "GUARDIAN_SHIELD_BLOCK_VALUE_MIN",
+            "kind": "StatModifier",
+            "duration": "00:00:05",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.25,
+            "modifiedStat": "BlockValueMin",
+            "modifierMode": "Percent"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "GUARDIAN_SHIELD_BLOCK_VALUE_MAX",
+            "kind": "StatModifier",
+            "duration": "00:00:05",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.25,
+            "modifiedStat": "BlockValueMax",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Блок щитом",
+      "description": "На 5 сек. повышает шанс блока на 25 п.п. и Block Value на 25%. Эффективный шанс блока всё равно ограничен 60%. Требует экипированный щит.",
+      "iconId": "shield-block"
+    }
+  ]
+}
