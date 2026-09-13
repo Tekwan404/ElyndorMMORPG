@@ -199,7 +199,7 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplyGuardianDodgeHooks(CombatEvent combatEvent)
+    private static void ApplyGuardianDodgeHooks(CombatEvent combatEvent)
     {
         // Guardian V2 deliberately has no Dodge-based runtime talents.
         _ = combatEvent;
@@ -261,7 +261,7 @@ public sealed partial class CombatSession
                 && filter(hook));
     }
 
-    private void ApplyGuardianAutoAttackHooks(CombatEvent combatEvent)
+    private static void ApplyGuardianAutoAttackHooks(CombatEvent combatEvent)
     {
         // Guardian V2 uses Block rather than random auto-attack shields as its
         // reactive defensive loop. Kept as a compatibility hook for CombatSession.
