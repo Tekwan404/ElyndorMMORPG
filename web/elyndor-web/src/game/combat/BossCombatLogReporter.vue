@@ -23,7 +23,7 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
 
   reportingSessions.add(sessionId)
   try {
-    const response = await apiClient.request<BossCombatLogResponse>('/api/v1/combat/boss-log/telegram', {
+    const response = await apiClient.request<BossCombatLogResponse>('/api/v1/combat/boss-log/telegram-v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId }),
@@ -61,7 +61,8 @@ watch(
     const sessionId = combat.snapshot?.sessionId
     if (!sessionId) return
 
-    // The server owns the complete ordered event history; the client only requests export.
+    // The server archives combat updates before publishing the terminal SignalR event,
+    // so this export remains available even if another fight starts immediately.
     void reportTerminalCombat(sessionId)
   },
 )

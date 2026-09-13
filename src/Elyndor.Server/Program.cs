@@ -313,6 +313,7 @@ app.MapDungeonEndpoints();
 app.MapTelegramAdminEndpoints();
 app.MapContentAdminEndpoints();
 app.MapBossCombatLogEndpoints();
+app.MapBossCombatLogArchiveEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 
 app.MapGet(
