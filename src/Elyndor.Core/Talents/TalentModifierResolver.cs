@@ -157,6 +157,10 @@ public static class TalentModifierResolver
             stats with { AccuracyPercent = stats.AccuracyPercent + value },
         TalentModifierKeys.DodgePercent =>
             stats with { DodgePercent = stats.DodgePercent + value },
+        TalentModifierKeys.BlockChancePercent =>
+            stats with { BlockChancePercent = stats.BlockChancePercent + value },
+        TalentModifierKeys.BlockValueFlat =>
+            stats with { BlockValueFlat = stats.BlockValueFlat + value },
         TalentModifierKeys.CriticalChancePercent =>
             stats with { CriticalChancePercent = stats.CriticalChancePercent + value },
         TalentModifierKeys.CriticalDamagePercent =>

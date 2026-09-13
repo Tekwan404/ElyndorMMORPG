@@ -1845,6 +1845,10 @@ public sealed partial class CombatSession
                     normalized.OccurredAtUtc);
             }
             ApplyTalentHooks(normalized);
+            if (normalized.Type == CombatEventType.DamageBlocked)
+            {
+                ApplyGuardianBlockHooks(normalized);
+            }
             if (normalized.Type == CombatEventType.ActorDied)
             {
                 FinishForDeath(

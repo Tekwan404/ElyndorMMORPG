@@ -257,6 +257,28 @@ describe('CombatView', () => {
     expect(wrapper.get('[data-enemy-cast]').text()).toContain('Укус')
   })
 
+  it('uses the server unblockable flag for the enemy cast telegraph', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Warrior', 160, 180, 0, 100, [])
+    const enemy = actor('Monster', 'BROODMOTHER', 'Broodmother', 220, 220, 0, 0, [
+      { id: 'CRUSH', resourceCost: 0, cooldownSeconds: 9, isUnblockable: true },
+    ], 14, 'spider-broodmother')
+    enemy.activeCast = {
+      abilityId: 'CRUSH',
+      startedAtUtc: new Date(Date.now() - 250).toISOString(),
+      resolvesAtUtc: new Date(Date.now() + 750).toISOString(),
+    }
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 7, status: 'Active',
+      serverTimeUtc: new Date().toISOString(), contentVersion: '0.20.0', balanceVersion: '0.15.0',
+      player, enemy,
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('[data-enemy-cast]').classes()).toContain('cast-bar--unblockable')
+  })
+
   it('disables Need for a loot item rejected by the server equipability contract', () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'MAGE', 'Mage', 100, 120, 80, 100, [])
@@ -304,6 +326,7 @@ function actor(
     resourceCost: number
     cooldownSeconds: number
     displayName?: string
+    isUnblockable?: boolean
   }[],
   level?: number,
   artId?: string | null,

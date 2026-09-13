@@ -138,7 +138,8 @@ internal static class CombatContractMapper
                     definition?.Description ?? string.Empty,
                     definition?.IconId,
                     ability.ResourceCost,
-                    ability.Cooldown.TotalSeconds);
+                    ability.Cooldown.TotalSeconds,
+                    definition?.Actions?.Any(action => action.IsUnblockable) == true);
             }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
                 effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray(),
@@ -166,5 +167,9 @@ internal static class CombatContractMapper
         combatEvent.OccurredAtUtc,
         combatEvent.AmountBeforeShields,
         combatEvent.WeaponHand?.ToString(),
-        combatEvent.WeaponDefinitionId);
+        combatEvent.WeaponDefinitionId,
+        combatEvent.RawDamage,
+        combatEvent.DamageAfterMitigation,
+        combatEvent.DamageBeforeBlock,
+        combatEvent.IsUnblockable);
 }

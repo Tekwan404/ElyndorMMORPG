@@ -149,6 +149,38 @@ public sealed class CharacterStatCalculatorTests
     }
 
     [Fact]
+    public void ShieldBlockProfileUsesTalentBonusesButNeverCreatesGlobalBlock()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs shieldInputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                BlockChancePercent: 55,
+                BlockValueMin: 20,
+                BlockValueMax: 40),
+            TalentDerived = new TalentStatModifiers(
+                BlockChancePercent: 15,
+                BlockValueFlat: 5)
+        };
+
+        CharacterStats shielded = calculator.Calculate("WARRIOR", 3, shieldInputs);
+        CharacterStats withoutShield = calculator.Calculate("WARRIOR", 3,
+            CharacterStatInputs.Empty with
+            {
+                TalentDerived = new TalentStatModifiers(
+                    BlockChancePercent: 15,
+                    BlockValueFlat: 5)
+            });
+
+        Assert.Equal(60, shielded.BlockChance);
+        Assert.Equal(25, shielded.BlockValueMin);
+        Assert.Equal(45, shielded.BlockValueMax);
+        Assert.Equal(0, withoutShield.BlockChance);
+        Assert.Equal(0, withoutShield.BlockValueMin);
+        Assert.Equal(0, withoutShield.BlockValueMax);
+    }
+
+    [Fact]
     public void StrengthAndStaminaNeverCreateArmorWithoutEquipment()
     {
         CharacterStatCalculator calculator = new(Formula(), Profiles());

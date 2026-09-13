@@ -686,6 +686,7 @@ export interface CombatAbility {
   iconId: string | null
   resourceCost: number
   cooldownSeconds: number
+  isUnblockable?: boolean
 }
 
 export interface CombatCastSnapshot {
@@ -778,6 +779,10 @@ export interface CombatEvent {
   serverTimeUtc: string
   weaponHand?: 'MainHand' | 'OffHand' | null
   weaponDefinitionId?: string | null
+  rawDamage?: number
+  damageAfterMitigation?: number
+  damageBeforeBlock?: number
+  isUnblockable?: boolean
 }
 
 export interface CombatUpdate {

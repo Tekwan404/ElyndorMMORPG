@@ -133,6 +133,89 @@ public sealed class DamageAndHealingPipelineTests
     }
 
     [Fact]
+    public void EffectiveBlockChanceIsCappedAtSixtyPercent()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 100,
+                BlockValueMin = 50,
+                BlockValueMax = 50
+            });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                50,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom(0.61m));
+
+        Assert.False(result.WasBlocked);
+        Assert.Equal(50, result.HpDamage);
+    }
+
+    [Fact]
+    public void BlockEffectsModifyShieldProfileBeforeTheServerSideCap()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 45,
+                BlockValueMin = 10,
+                BlockValueMax = 10
+            });
+        EffectEngine.Apply(target, target.ActorId, new EffectDefinition(
+            "TEST_BLOCK_CHANCE", EffectKind.StatModifier, TimeSpan.FromSeconds(10), 1,
+            EffectStackPolicy.Replace, 30, ModifiedStat: EffectStat.BlockChance), DateTimeOffset.UnixEpoch);
+        EffectEngine.Apply(target, target.ActorId, new EffectDefinition(
+            "TEST_BLOCK_VALUE", EffectKind.StatModifier, TimeSpan.FromSeconds(10), 1,
+            EffectStackPolicy.Replace, 15, ModifiedStat: EffectStat.BlockValueMin), DateTimeOffset.UnixEpoch);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 50, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom(0.59m),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.True(result.WasBlocked);
+        Assert.Equal(25, result.BlockedAmount);
+        Assert.Equal(25, result.HpDamage);
+    }
+
+    [Fact]
+    public void UnblockablePhysicalDamageBypassesShieldBlockAndPublishesItsOwnEvent()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 60,
+                BlockValueMin = 100,
+                BlockValueMax = 100
+            });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 50, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false, IsUnblockable: true),
+            new SequenceGameRandom(0m),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.False(result.WasBlocked);
+        Assert.Equal(50, result.HpDamage);
+        Assert.Contains(result.Events, item => item.Type == CombatEventType.UnblockableHit
+            && item.IsUnblockable);
+    }
+
+    [Fact]
     public void DamageEventBreakdownPreservesArmorThenBlockOrder()
     {
         CombatActorState source = CombatActorState.CreateDummy(

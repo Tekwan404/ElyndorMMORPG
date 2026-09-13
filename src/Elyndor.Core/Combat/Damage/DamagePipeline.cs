@@ -24,7 +24,8 @@ public sealed record DamageRequest(
     decimal CriticalChanceBonus = 0,
     decimal CriticalDamageBonus = 0,
     decimal MagicPenetrationBonus = 0,
-    bool CanBlock = true);
+    bool CanBlock = true,
+    bool IsUnblockable = false);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -45,6 +46,7 @@ public sealed record DamageResult(
 
 public static class DamagePipeline
 {
+    public const decimal MaximumBlockChancePercent = 60m;
     private const decimal BaseMissChance = 0.05m;
     private const decimal LevelPenaltyPerLevel = 0.01m;
     private const decimal MaxLevelPenalty = 0.10m;
@@ -182,7 +184,7 @@ public static class DamagePipeline
             afterMitigation,
             0,
             MidpointRounding.AwayFromZero);
-        decimal blocked = ResolveBlock(request, rounded, random);
+        decimal blocked = ResolveBlock(request, rounded, random, occurredAtUtc);
         decimal afterBlock = Math.Max(0, rounded - blocked);
         decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, afterBlock);
         decimal hpDamage = Math.Min(
@@ -221,6 +223,21 @@ public static class DamagePipeline
         }
 
         List<CombatEvent> events = [];
+        if (request.IsUnblockable && rounded > 0)
+        {
+            events.Add(new CombatEvent(
+                CombatEventType.UnblockableHit,
+                occurredAtUtc,
+                request.Target.ActorId,
+                Amount: rounded,
+                SourceActorId: request.Source.ActorId,
+                TargetActorId: request.Target.ActorId,
+                DamageType: request.Type,
+                RawDamage: raw,
+                DamageAfterMitigation: roundedAfterMitigation,
+                DamageBeforeBlock: rounded,
+                IsUnblockable: true));
+        }
         if (blocked > 0)
         {
             events.Add(new CombatEvent(
@@ -279,7 +296,8 @@ public static class DamagePipeline
             DamageType: request.Type,
             RawDamage: raw,
             DamageAfterMitigation: roundedAfterMitigation,
-            DamageBeforeBlock: rounded));
+            DamageBeforeBlock: rounded,
+            IsUnblockable: request.IsUnblockable));
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(
@@ -323,9 +341,11 @@ public static class DamagePipeline
     private static decimal ResolveBlock(
         DamageRequest request,
         decimal incoming,
-        IGameRandom random)
+        IGameRandom random,
+        DateTimeOffset occurredAtUtc)
     {
         if (!request.CanBlock
+            || request.IsUnblockable
             || request.Type != DamageType.Physical
             || incoming <= 0
             || request.Target.Stats.BlockChance <= 0)
@@ -333,16 +353,25 @@ public static class DamagePipeline
             return 0;
         }
 
-        decimal blockChance = request.Target.Stats.BlockChance;
-        decimal blockValueMin = request.Target.Stats.BlockValueMin;
-        decimal blockValueMax = request.Target.Stats.BlockValueMax;
-        if (blockChance is < 0 or > 100
-            || blockValueMin < 0
-            || blockValueMax < blockValueMin
-            || blockChance > 0 && blockValueMax <= 0)
+        decimal baseBlockChance = request.Target.Stats.BlockChance;
+        decimal baseBlockValueMin = request.Target.Stats.BlockValueMin;
+        decimal baseBlockValueMax = request.Target.Stats.BlockValueMax;
+        if (baseBlockChance < 0
+            || baseBlockValueMin < 0
+            || baseBlockValueMax < baseBlockValueMin
+            || baseBlockChance > 0 && baseBlockValueMax <= 0)
         {
             throw new InvalidOperationException("Target block profile is invalid.");
         }
+
+        decimal blockChance = decimal.Clamp(
+            EffectEngine.CalculateStat(request.Target, EffectStat.BlockChance, baseBlockChance, occurredAtUtc),
+            0,
+            MaximumBlockChancePercent);
+        decimal blockValueMin = Math.Max(0, EffectEngine.CalculateStat(
+            request.Target, EffectStat.BlockValueMin, baseBlockValueMin, occurredAtUtc));
+        decimal blockValueMax = Math.Max(blockValueMin, EffectEngine.CalculateStat(
+            request.Target, EffectStat.BlockValueMax, baseBlockValueMax, occurredAtUtc));
 
         if (random.NextUnit() >= blockChance / 100m)
             return 0;

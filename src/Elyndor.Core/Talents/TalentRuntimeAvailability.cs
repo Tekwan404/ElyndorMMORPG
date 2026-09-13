@@ -14,6 +14,8 @@ public static class TalentRuntimeAvailability
         TalentModifierKeys.MagicResistancePercent,
         TalentModifierKeys.AccuracyPercent,
         TalentModifierKeys.DodgePercent,
+        TalentModifierKeys.BlockChancePercent,
+        TalentModifierKeys.BlockValueFlat,
         TalentModifierKeys.CriticalChancePercent,
         TalentModifierKeys.CriticalDamagePercent,
         TalentModifierKeys.ArmorPenetrationPercent,

@@ -12,6 +12,8 @@ public static class TalentModifierKeys
     public const string MagicResistancePercent = "MAGIC_RESISTANCE_PERCENT";
     public const string AccuracyPercent = "ACCURACY_PERCENT";
     public const string DodgePercent = "DODGE_PERCENT";
+    public const string BlockChancePercent = "BLOCK_CHANCE_PERCENT";
+    public const string BlockValueFlat = "BLOCK_VALUE_FLAT";
     public const string CriticalChancePercent = "CRITICAL_CHANCE_PERCENT";
     public const string CriticalDamagePercent = "CRITICAL_DAMAGE_PERCENT";
     public const string ArmorPenetrationPercent = "ARMOR_PENETRATION_PERCENT";
@@ -49,7 +51,7 @@ public static class TalentModifierKeys
     public static IReadOnlySet<string> All { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
         StrengthPercent, AgilityPercent, IntellectPercent, StaminaPercent, AttackPowerPercent, SpellPowerPercent, ArmorPercent,
-        MagicResistancePercent, AccuracyPercent, DodgePercent, CriticalChancePercent,
+        MagicResistancePercent, AccuracyPercent, DodgePercent, BlockChancePercent, BlockValueFlat, CriticalChancePercent,
         CriticalDamagePercent, ArmorPenetrationPercent, MagicPenetrationPercent, AttackSpeedPercent, MaxHpPercent,
         MaxResourceFlat, MaxResourcePercent, UnlockAbility, AbilityCooldownSeconds, AbilityResourceCostFlat,
         AbilityResourceCostPercent, AbilityDamagePercent, AbilityArmorPenetrationPercent,

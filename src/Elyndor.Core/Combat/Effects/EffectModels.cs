@@ -40,7 +40,10 @@ public enum EffectStat
     IncomingMagicalDamageMultiplier,
     OutgoingDamageMultiplier,
     OutgoingPhysicalDamageMultiplier,
-    IncomingPhysicalDamageMultiplier
+    IncomingPhysicalDamageMultiplier,
+    BlockChance,
+    BlockValueMin,
+    BlockValueMax
 }
 public enum EffectModifierMode { Flat, Percent, Multiplicative }
 

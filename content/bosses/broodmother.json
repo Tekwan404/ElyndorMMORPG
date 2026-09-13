@@ -2,10 +2,37 @@
   "contentVersion": "0.11.0",
   "balanceVersion": "0.9.0",
   "publishedAtUtc": "2026-09-06T19:42:00+00:00",
+  "abilities": [
+    {
+      "id": "BROODMOTHER_CRUSH",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:09",
+      "castTime": "00:00:01.2000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "amount": 18,
+          "attackPowerCoefficient": 0.95,
+          "isUnblockable": true
+        }
+      ],
+      "displayName": "Сокрушающий удар",
+      "description": "Неблокируемый удар Прародительницы.",
+      "iconId": "boss-crush"
+    }
+  ],
   "monsterAiProfiles": [
     {
       "id": "BROODMOTHER_AI",
       "priorityAbilityIds": [
+        "BROODMOTHER_CRUSH",
         "BITE"
       ],
       "version": 1
@@ -40,6 +67,7 @@
       "autoAttackBaseDamage": 39,
       "autoAttackAttackPowerCoefficient": 0.55,
       "abilityIds": [
+        "BROODMOTHER_CRUSH",
         "BITE"
       ],
       "aiProfileId": "BROODMOTHER_AI",

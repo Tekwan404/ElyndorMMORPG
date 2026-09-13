@@ -11,7 +11,8 @@ public sealed record CombatAbilityResponse(
     string Description,
     string? IconId,
     decimal ResourceCost,
-    double CooldownSeconds);
+    double CooldownSeconds,
+    bool IsUnblockable = false);
 
 public sealed record CombatActorResponse(
     Guid ActorId,
@@ -105,7 +106,11 @@ public sealed record CombatEventResponse(
     DateTimeOffset ServerTimeUtc,
     decimal AmountBeforeShields = 0,
     string? WeaponHand = null,
-    string? WeaponDefinitionId = null);
+    string? WeaponDefinitionId = null,
+    decimal RawDamage = 0,
+    decimal DamageAfterMitigation = 0,
+    decimal DamageBeforeBlock = 0,
+    bool IsUnblockable = false);
 
 public sealed record CombatRewardItemResponse(
     string ItemId,
