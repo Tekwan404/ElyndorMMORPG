@@ -6,6 +6,7 @@ import { abilityArtUrl } from '@/assets/abilityArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -76,9 +77,12 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
     art: monsterArtUrl(artId),
   }
 })
-const displayAbilities = computed(() => snapshot.value?.player.abilities.slice(0, 6) ?? [])
+const displayAbilities = computed(() => orderCombatAbilities(
+  session.snapshot?.character?.id ?? '',
+  snapshot.value?.player.abilities ?? [],
+).slice(0, 12))
 const abilitySlots = computed<(CombatAbility | null)[]>(() =>
-  Array.from({ length: 6 }, (_, index) => displayAbilities.value[index] ?? null),
+  Array.from({ length: 12 }, (_, index) => displayAbilities.value[index] ?? null),
 )
 const abilityById = computed(() => new Map<string, CombatAbility>(
   [
@@ -374,6 +378,13 @@ async function selectCombatTarget(targetActorId: string): Promise<void> {
   await combat.selectTarget(targetActorId)
 }
 
+function enemyAggroName(enemy: { currentAggroTargetActorId?: string | null }): string {
+  const actorId = enemy.currentAggroTargetActorId
+  if (!actorId) return '—'
+  return [...combatPlayers.value, ...(companion.value ? [companion.value] : [])]
+    .find(actor => actor.actorId === actorId)?.name ?? '—'
+}
+
 function consumableCooldownRemaining(item: InventoryItem): number {
   const category = item.consumableCooldownCategoryId
   if (!category) return 0
@@ -529,8 +540,16 @@ onUnmounted(() => window.clearInterval(timer))
             v-for="player in combatAllies"
             :key="player.actorId"
             class="combat-party-roster__member"
-            :class="{ 'combat-party-roster__member--self': player.actorId === snapshot.player.actorId }"
+            :class="{
+              'combat-party-roster__member--self': player.actorId === snapshot.player.actorId,
+              'combat-party-roster__member--selected': player.actorId === combat.selectedFriendlyTargetActorId,
+            }"
             :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
+            role="button"
+            tabindex="0"
+            @click="combat.selectFriendlyTarget(player.actorId)"
+            @keydown.enter.prevent="combat.selectFriendlyTarget(player.actorId)"
+            @keydown.space.prevent="combat.selectFriendlyTarget(player.actorId)"
           >
             <span class="combat-party-roster__crest" aria-hidden="true">
               {{ player.name.slice(0, 1).toUpperCase() }}
@@ -582,6 +601,7 @@ onUnmounted(() => window.clearInterval(timer))
           @click="selectCombatTarget(enemy.actorId)"
         >
           <span>{{ enemy.name }}</span>
+          <em v-if="enemy.currentAggroTargetActorId" class="combat-targets__aggro">Агро: {{ enemyAggroName(enemy) }}</em>
           <div class="combat-targets__vitals">
             <i aria-hidden="true"><b :style="{ width: `${combatEnemyHealthRatio(enemy)}%` }" /></i>
             <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(combatEnemyHealthRatio(enemy)) }}%</small>
@@ -743,7 +763,7 @@ onUnmounted(() => window.clearInterval(timer))
             :key="ability?.id ?? `empty-${index}`"
             type="button"
             class="ability-slot"
-            :class="{ 'ability-slot--empty': !ability, 'ability-slot--comet': ability?.id === 'FIRE_COMET', 'ability-slot--queued': ability && combat.abilityQueue.includes(ability.id) }"
+            :class="{ 'ability-slot--empty': !ability, 'ability-slot--comet': ability?.id === 'FIRE_COMET', 'ability-slot--queued': ability && combat.abilityQueue.some((queued) => queued.abilityId === ability.id) }"
             :data-ability-slot="ability?.id ?? ''"
             :data-state="ability ? abilityState(ability) : 'empty'"
             :disabled="!ability || abilityState(ability) !== 'ready'"
@@ -767,7 +787,7 @@ onUnmounted(() => window.clearInterval(timer))
             </span>
             <span v-if="ability?.id === 'FIRE_COMET' && heatLimit" class="ability-slot__proc" aria-label="Предел жара активен">ЖАР</span>
             <span v-if="ability?.id === 'COMBUSTION' && combustion" class="ability-slot__proc" aria-label="Возгорание активно">АКТ.</span>
-            <span v-if="ability && combat.abilityQueue.includes(ability.id)" class="ability-slot__queue">{{ combat.abilityQueue.indexOf(ability.id) + 1 }}</span>
+            <span v-if="ability && combat.abilityQueue.some((queued) => queued.abilityId === ability.id)" class="ability-slot__queue">{{ combat.abilityQueue.findIndex((queued) => queued.abilityId === ability.id) + 1 }}</span>
             <small v-if="ability">{{ ability.displayName }}</small>
             <b v-if="ability && cooldownRemaining(ability.id) > 0" class="ability-slot__cooldown">
               {{ Math.ceil(cooldownRemaining(ability.id)) }}
@@ -1496,7 +1516,7 @@ onUnmounted(() => window.clearInterval(timer))
   position: relative;
   display: grid;
   min-width: 0;
-  min-height: 62px;
+  min-height: 52px;
   place-items: center;
   align-content: center;
   gap: 2px;
@@ -2111,6 +2131,11 @@ onUnmounted(() => window.clearInterval(timer))
   background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%));
 }
 
+.combat-party-roster__member--selected {
+  border-color: rgb(205 177 113 / 72%);
+  box-shadow: inset 0 0 0 1px rgb(205 177 113 / 18%);
+}
+
 .combat-party-roster__member[data-status='Fled'],
 .combat-party-roster__member[data-status='Dead'] {
   opacity: .58;
@@ -2218,6 +2243,16 @@ onUnmounted(() => window.clearInterval(timer))
 .combat-targets button > span:first-child {
   grid-column: 2;
   font-size: var(--ui-font-size-xs);
+}
+
+.combat-targets__aggro {
+  grid-column: 2;
+  overflow: hidden;
+  color: var(--ui-color-gold-muted);
+  font-size: .5rem;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .combat-targets__vitals {

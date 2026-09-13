@@ -10,7 +10,7 @@ import {
 } from '@/game/combat/combatHotbarSettings'
 import { UIButton } from '@/ui/components'
 
-const HOTBAR_SLOT_COUNT = 6
+const HOTBAR_SLOT_COUNT = 12
 
 const props = defineProps<{
   characterId: string

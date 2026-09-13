@@ -687,7 +687,18 @@ export interface CombatAbility {
   resourceCost: number
   cooldownSeconds: number
   isUnblockable?: boolean
+  targetType?: CombatAbilityTargetType
 }
+
+export type CombatAbilityTargetType =
+  | 'Self'
+  | 'SingleAlly'
+  | 'SingleEnemy'
+  | 'AllEnemiesInCombat'
+  | 'NEnemiesInCombat'
+  | 'SelfAndPartyMembersInCombat'
+  | 'ActiveCompanion'
+  | 'Owner'
 
 export interface CombatCastSnapshot {
   abilityId: string
@@ -716,6 +727,7 @@ export interface CombatActorSnapshot {
   consumableCooldowns?: Record<string, string> | null
   level?: number
   artId?: string | null
+  currentAggroTargetActorId?: string | null
 }
 
 export interface CombatContributionSnapshot {

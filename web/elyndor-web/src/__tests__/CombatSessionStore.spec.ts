@@ -125,14 +125,14 @@ describe('combatSession realtime authentication', () => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(2)
     })
     const abilityCallsAfterRetry = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCallsAfterRetry[1]?.[3]).toBe(firstCall?.[3])
+    expect(abilityCallsAfterRetry[1]?.[4]).toBe(firstCall?.[4])
 
     await store.useAbility('HEROIC_STRIKE')
     await vi.waitFor(() => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(3)
     })
     const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
+    expect(abilityCalls[2]?.[4]).not.toBe(abilityCalls[1]?.[4])
   })
 
   it('deduplicates repeated taps while the same ability is already buffered', async () => {
@@ -165,7 +165,12 @@ describe('combatSession realtime authentication', () => {
 
     await store.useAbility('SHIELD_SLAM')
     await store.useAbility('SHIELD_SLAM')
-    expect(store.abilityQueue).toEqual(['SHIELD_SLAM'])
+    expect(store.abilityQueue).toEqual([
+      {
+        abilityId: 'SHIELD_SLAM',
+        targetActorId: '00000000-0000-0000-0000-000000000321',
+      },
+    ])
 
     await vi.waitFor(() => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)

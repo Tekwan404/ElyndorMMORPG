@@ -12,7 +12,8 @@ public sealed record CombatAbilityResponse(
     string? IconId,
     decimal ResourceCost,
     double CooldownSeconds,
-    bool IsUnblockable = false);
+    bool IsUnblockable = false,
+    string TargetType = "SingleEnemy");
 
 public sealed record CombatActorResponse(
     Guid ActorId,

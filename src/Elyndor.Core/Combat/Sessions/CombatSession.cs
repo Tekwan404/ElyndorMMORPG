@@ -2438,7 +2438,8 @@ public sealed partial class CombatSession
             .Select(ability => new CombatAbilitySnapshot(
                 ability.Id,
                 ability.ResourceCost,
-                ability.Cooldown))
+                ability.Cooldown,
+                ability.TargetType))
             .ToArray();
         return new(
             definition.Actor.ActorId,

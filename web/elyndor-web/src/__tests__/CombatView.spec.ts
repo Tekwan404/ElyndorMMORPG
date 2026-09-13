@@ -58,7 +58,7 @@ describe('CombatView', () => {
     expect(wrapper.find('img[alt="Волк"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
     expect(wrapper.find('[data-combat-battlefield]').exists()).toBe(true)
-    expect(wrapper.findAll('.ability-slot')).toHaveLength(6)
+    expect(wrapper.findAll('.ability-slot')).toHaveLength(12)
     expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
