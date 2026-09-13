@@ -51,17 +51,42 @@ export const useDungeonStore = defineStore('dungeon', () => {
     ))
   }
 
-  async function exit(runId: string): Promise<void> {
+  async function exitToCity(runId: string): Promise<void> {
+    await navigate(
+      'dungeon_city_exit_failed',
+      `/api/v1/dungeons/runs/${runId}/city-exit`,
+      false,
+    )
+  }
+
+  async function returnToRun(runId: string): Promise<void> {
+    await navigate(
+      'dungeon_return_failed',
+      `/api/v1/dungeons/runs/${runId}/return`,
+      false,
+    )
+  }
+
+  async function leaveRun(runId: string): Promise<void> {
+    await navigate(
+      'dungeon_leave_failed',
+      `/api/v1/dungeons/runs/${runId}/leave`,
+      true,
+    )
+  }
+
+  async function navigate(fallbackCode: string, url: string, clearCurrent: boolean): Promise<void> {
     errorCode.value = null
     try {
       await apiClient.request<{ locationId?: string | null; locationVersion?: number | null }>(
-        `/api/v1/dungeons/runs/${runId}/exit`,
+        url,
         { method: 'POST' },
       )
-      current.value = null
+      if (clearCurrent) current.value = null
       await useGameSessionStore().refreshSnapshot()
+      await refresh()
     } catch (error) {
-      errorCode.value = error instanceof Error ? error.message : 'dungeon_exit_failed'
+      errorCode.value = error instanceof Error ? error.message : fallbackCode
     }
   }
 
@@ -107,5 +132,19 @@ export const useDungeonStore = defineStore('dungeon', () => {
     }
   }
 
-  return { previews, current, loading, teleporting, errorCode, refresh, create, enter, restart, exit, teleport }
+  return {
+    previews,
+    current,
+    loading,
+    teleporting,
+    errorCode,
+    refresh,
+    create,
+    enter,
+    restart,
+    exitToCity,
+    returnToRun,
+    leaveRun,
+    teleport,
+  }
 })
