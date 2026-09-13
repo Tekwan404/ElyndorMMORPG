@@ -71,7 +71,7 @@ public sealed class GuardianWarlordCombatSessionTests
     }
 
     [Fact]
-    public void GuardianBastionTalentAddsDodgeDuringItsSixSecondWindow()
+    public void GuardianBastionReducesIncomingDamageWithoutAddingDodge()
     {
         CombatActorState playerActor = Actor(Guid.Parse("30000000-0000-0000-0000-000000000001"), 100, 100);
         AbilityDefinition bastion = new(
@@ -79,7 +79,7 @@ public sealed class GuardianWarlordCombatSessionTests
             AbilityType.Instant,
             AbilityTargetType.Self,
             40,
-            TimeSpan.FromSeconds(90),
+            TimeSpan.FromSeconds(120),
             TimeSpan.Zero,
             false,
             GlobalCooldownCategory.None,
@@ -90,12 +90,12 @@ public sealed class GuardianWarlordCombatSessionTests
                 new(
                     AbilityActionType.ApplyEffect,
                     Effect: new EffectDefinition(
-                        "BASTION_DAMAGE_REDUCTION",
+                        "BASTION_GUARD",
                         EffectKind.StatModifier,
                         TimeSpan.FromSeconds(6),
                         1,
-                        EffectStackPolicy.Refresh,
-                        0.7m,
+                        EffectStackPolicy.Replace,
+                        0.60m,
                         ModifiedStat: EffectStat.IncomingDamageMultiplier,
                         ModifierMode: EffectModifierMode.Multiplicative))
             ]);
@@ -107,20 +107,31 @@ public sealed class GuardianWarlordCombatSessionTests
             {
                 [bastion.Id] = bastion
             },
-            new ResolvedTalentModifiers(
-                new TalentStatModifiers(),
-                new TalentCombatModifiers(),
-                new HashSet<string>([bastion.Id], StringComparer.Ordinal),
-                new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
-                [Hook("G-8-2", 1, 8)],
-                []));
+            ResolvedTalentModifiers.Empty with
+            {
+                UnlockedAbilityIds = new HashSet<string>([bastion.Id], StringComparer.Ordinal)
+            });
 
         CombatCommandResult result = session.Handle(
             new UseAbilityCommand("guardian-bastion", bastion.Id, playerActor.ActorId),
             Now);
 
         Assert.True(result.Succeeded);
-        Assert.Contains(result.Snapshot.Player.Effects, effect => effect.Id == "GUARDIAN_UNBREAKABLE_BASTION");
+        Assert.Contains(result.Snapshot.Player.Effects, effect => effect.Id == "BASTION_GUARD");
+        Assert.Equal(
+            0.60m,
+            EffectEngine.CalculateStat(
+                playerActor,
+                EffectStat.IncomingDamageMultiplier,
+                1m,
+                Now));
+        Assert.Equal(
+            0m,
+            EffectEngine.CalculateStat(
+                playerActor,
+                EffectStat.Dodge,
+                0m,
+                Now));
     }
 
     private static CombatSession CreateSession(

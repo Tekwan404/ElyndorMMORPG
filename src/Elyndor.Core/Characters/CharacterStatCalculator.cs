@@ -134,8 +134,11 @@ public sealed class CharacterStatCalculator(
             talent.BlockChancePercent,
             talent.BlockValueFlat);
         decimal blockChance = shieldBlock.BlockChancePercent;
-        decimal blockValueMin = shieldBlock.BlockValueMin;
-        decimal blockValueMax = shieldBlock.BlockValueMax;
+        decimal blockValuePercentMultiplier = shieldBlock.HasShieldProfile
+            ? 1 + Math.Max(0, talent.BlockValuePercent) / 100m
+            : 1;
+        decimal blockValueMin = shieldBlock.BlockValueMin * blockValuePercentMultiplier;
+        decimal blockValueMax = shieldBlock.BlockValueMax * blockValuePercentMultiplier;
 
         CharacterStats stats = new(
             primary.Strength,
@@ -235,11 +238,15 @@ public sealed class CharacterStatCalculator(
             ["blockValueMin"] = Breakdown(stats.BlockValueMin,
                 ("EQUIPMENT_BONUS", shieldBlock.HasShieldProfile ? equipmentDerived.BlockValueMin : 0),
                 ("STRENGTH", shieldBlock.StrengthContribution),
-                ("TALENT_BONUS", shieldBlock.HasShieldProfile ? talent.BlockValueFlat : 0)),
+                ("TALENT_BONUS", shieldBlock.HasShieldProfile
+                    ? talent.BlockValueFlat + shieldBlock.BlockValueMin * Math.Max(0, talent.BlockValuePercent) / 100m
+                    : 0)),
             ["blockValueMax"] = Breakdown(stats.BlockValueMax,
                 ("EQUIPMENT_BONUS", shieldBlock.HasShieldProfile ? equipmentDerived.BlockValueMax : 0),
                 ("STRENGTH", shieldBlock.StrengthContribution),
-                ("TALENT_BONUS", shieldBlock.HasShieldProfile ? talent.BlockValueFlat : 0))
+                ("TALENT_BONUS", shieldBlock.HasShieldProfile
+                    ? talent.BlockValueFlat + shieldBlock.BlockValueMax * Math.Max(0, talent.BlockValuePercent) / 100m
+                    : 0))
         };
 
         return new CharacterStatCalculation(stats, breakdown);

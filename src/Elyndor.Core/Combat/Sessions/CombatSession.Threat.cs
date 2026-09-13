@@ -8,9 +8,6 @@ public sealed partial class CombatSession
 {
     private const decimal HealingThreatCoefficient = 0.5m;
 
-    // Compatibility hooks kept because CombatSession.cs still invokes the old
-    // initialization/summon entry points. Authoritative threat state now lives
-    // exclusively in _enemyThreatTables.
     private static void InitializeThreatTables()
     {
     }
@@ -31,7 +28,10 @@ public sealed partial class CombatSession
 
         if (combatEvent.Type == CombatEventType.HealingApplied)
         {
-            RegisterHealingThreat(sourceActorId, combatEvent.Amount);
+            RegisterHealingThreat(
+                sourceActorId,
+                combatEvent.Amount,
+                combatEvent.OccurredAtUtc);
             SuppressLegacyAutomaticThreat(combatEvent, sourceActorId);
             return;
         }
@@ -58,29 +58,28 @@ public sealed partial class CombatSession
                 break;
 
             default:
-                // CriticalHit, EffectTicked, DamageBlocked, ShieldAbsorbed and other
-                // event telemetry can describe the same action as DamageDealt. They
-                // must not generate a second implicit copy of threat.
                 threatTable.SuppressNextAutomaticAdd(sourceActorId);
                 break;
         }
     }
 
-    private void RegisterHealingThreat(Guid sourceActorId, decimal effectiveHealing)
+    private void RegisterHealingThreat(
+        Guid sourceActorId,
+        decimal effectiveHealing,
+        DateTimeOffset now)
     {
-        decimal multiplier = sourceActorId == _player.Actor.ActorId
-            ? GuardianThreatMultiplier
-            : 1m;
-
         foreach (CombatParticipantDefinition enemy in _enemies.Where(item => !item.Actor.IsDead))
         {
-            if (_enemyThreatTables.TryGetValue(enemy.Actor.ActorId, out ThreatTable? threatTable))
-            {
-                threatTable.AddThreat(
-                    sourceActorId,
-                    effectiveHealing,
-                    HealingThreatCoefficient * multiplier);
-            }
+            if (!_enemyThreatTables.TryGetValue(enemy.Actor.ActorId, out ThreatTable? threatTable))
+                continue;
+
+            decimal multiplier = sourceActorId == _player.Actor.ActorId
+                ? GuardianThreatMultiplierForTarget(enemy.Actor.ActorId, now)
+                : 1m;
+            threatTable.AddThreat(
+                sourceActorId,
+                effectiveHealing,
+                HealingThreatCoefficient * multiplier);
         }
     }
 
@@ -102,12 +101,9 @@ public sealed partial class CombatSession
         if (sourceActorId != _player.Actor.ActorId)
             return 1m;
 
-        return string.Equals(
-            combatEvent.DefinitionId,
-            "AUTO_ATTACK",
-            StringComparison.Ordinal)
-                ? GuardianAutoAttackThreatMultiplier
-                : GuardianThreatMultiplier;
+        return GuardianThreatMultiplierForTarget(
+            combatEvent.TargetActorId,
+            combatEvent.OccurredAtUtc);
     }
 
     private static void RaiseTaunterToTopThreat(

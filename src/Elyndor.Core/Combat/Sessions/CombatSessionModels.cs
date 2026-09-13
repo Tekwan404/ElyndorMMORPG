@@ -54,7 +54,8 @@ public sealed record CombatParticipantDefinition(
     IReadOnlySet<string> KnownAbilityIds,
     decimal ResourceRegenPerSecond = 0,
     bool CanAutoAttack = true,
-    AutoAttackProfile? OffHandAutoAttack = null);
+    AutoAttackProfile? OffHandAutoAttack = null,
+    MonsterRank? MonsterRank = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,

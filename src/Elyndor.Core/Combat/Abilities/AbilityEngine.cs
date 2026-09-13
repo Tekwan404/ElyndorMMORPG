@@ -253,12 +253,24 @@ public static class AbilityEngine
                             runtime.Actor.Stats.AttackPower,
                             now);
                         decimal spellPower = runtime.Actor.Stats.SpellPower;
+                        decimal blockValueMin = EffectEngine.CalculateStat(
+                            runtime.Actor,
+                            EffectStat.BlockValueMin,
+                            runtime.Actor.Stats.BlockValueMin,
+                            now);
+                        decimal blockValueMax = EffectEngine.CalculateStat(
+                            runtime.Actor,
+                            EffectStat.BlockValueMax,
+                            runtime.Actor.Stats.BlockValueMax,
+                            now);
+                        decimal averageBlockValue = Math.Max(0, (blockValueMin + blockValueMax) / 2m);
                         decimal levelDamage = Math.Max(0, runtime.Actor.Stats.Level - 1)
                             * Math.Max(0, action.DamagePerCharacterLevel);
                         decimal baseDamage = action.Amount
                             + levelDamage
                             + attackPower * Math.Max(0, action.AttackPowerCoefficient)
-                            + spellPower * Math.Max(0, action.SpellPowerCoefficient);
+                            + spellPower * Math.Max(0, action.SpellPowerCoefficient)
+                            + averageBlockValue * Math.Max(0, action.BlockValueCoefficient);
                         DamageResult damage = DamagePipeline.Resolve(
                             new DamageRequest(
                                 runtime.Actor,

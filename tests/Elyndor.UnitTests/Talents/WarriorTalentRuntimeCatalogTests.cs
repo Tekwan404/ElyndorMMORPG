@@ -9,9 +9,9 @@ public sealed class WarriorTalentRuntimeCatalogTests
     {
         string[] expected =
         [
-            "G-1-2", "G-1-4", "G-2-4", "G-3-2", "G-3-4", "G-4-1", "G-4-4",
-            "G-5-2", "G-6-2", "G-6-3", "G-6-4", "G-7-2", "G-7-4", "G-8-1",
-            "G-8-2", "G-8-3", "G-9-1"
+            "G-1-1", "G-1-5", "G-2-3", "G-2-4", "G-2-5", "G-3-6", "G-4-2",
+            "G-4-3", "G-4-4", "G-4-5", "G-5-4", "G-5-5", "G-6-2", "G-6-4",
+            "G-6-5"
         ];
 
         Assert.Equal(
@@ -39,13 +39,13 @@ public sealed class WarriorTalentRuntimeCatalogTests
     public void GuardianLegacyDeferredBlockHookResolvesThroughItsCatalog()
     {
         TalentDefinition node = new(
-            "G-4-4", "GUARDIAN", 4, 10, "Ответная ярость", "Defiant Fury", 2, [], "Описание",
+            "G-2-5", "GUARDIAN", 2, 5, "Ярость щита", "Shield Fury", 3, [], "Описание",
             Modifiers:
             [
                 new(
                     TalentModifierType.EventTriggered,
                     TalentModifierKeys.OnDamageTaken,
-                    [3, 5],
+                    [1, 2, 3],
                     RuntimeStatus: TalentModifierRuntimeStatus.Deferred,
                     DeferredOwner: TalentRuntimeOwners.CombatSession)
             ]);

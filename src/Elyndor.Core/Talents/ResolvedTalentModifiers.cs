@@ -13,6 +13,7 @@ public sealed record TalentStatModifiers(
     decimal DodgePercent = 0,
     decimal BlockChancePercent = 0,
     decimal BlockValueFlat = 0,
+    decimal BlockValuePercent = 0,
     decimal CriticalChancePercent = 0,
     decimal CriticalDamagePercent = 0,
     decimal ArmorPenetrationPercent = 0,

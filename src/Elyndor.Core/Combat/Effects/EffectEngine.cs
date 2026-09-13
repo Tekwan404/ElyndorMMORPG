@@ -353,10 +353,12 @@ public static class EffectEngine
 
     private static void Validate(EffectDefinition definition)
     {
+        bool invalidNegativeMagnitude = definition.Magnitude < 0
+            && definition.Kind != EffectKind.StatModifier;
         if (string.IsNullOrWhiteSpace(definition.Id)
             || definition.Duration <= TimeSpan.Zero
             || definition.MaxStacks <= 0
-            || definition.Magnitude < 0
+            || invalidNegativeMagnitude
             || definition.TickInterval <= TimeSpan.Zero)
         {
             throw new ArgumentException("Effect definition contains invalid values.", nameof(definition));

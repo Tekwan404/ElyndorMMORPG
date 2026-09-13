@@ -82,7 +82,8 @@ public sealed record AbilityActionDefinition(
     decimal ArmorPenetrationBonus = 0,
     decimal SpellPowerCoefficient = 0,
     decimal DamagePerCharacterLevel = 0,
-    bool IsUnblockable = false);
+    bool IsUnblockable = false,
+    decimal BlockValueCoefficient = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,

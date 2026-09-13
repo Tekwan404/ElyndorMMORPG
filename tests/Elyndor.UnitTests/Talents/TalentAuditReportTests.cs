@@ -16,7 +16,7 @@ public sealed class TalentAuditReportTests
 
         Assert.Equal(3, report.TreeCount);
         Assert.Equal(288, report.NodeCount);
-        Assert.Equal(317, report.ModifierCount);
+        Assert.Equal(322, report.ModifierCount);
         Assert.Equal(0, report.DeferredModifierCount);
         Assert.Equal(0, report.FullyDeferredNodeCount);
         Assert.True(
@@ -72,7 +72,11 @@ public sealed class TalentAuditReportTests
     public async Task ComposedContentContainsEveryGuardianTalentGatedAbility()
     {
         var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
-        string[] abilityIds = ["PROVOKE", "REVENGE", "SHIELD_SLAM", "SHIELD_BLOCK"];
+        string[] abilityIds =
+        [
+            "LAST_STAND", "REVENGE", "SHIELD_BLOCK", "PROVOKE", "SUNDER_ARMOR",
+            "CONCUSSION_BLOW", "SHIELD_BASH", "BASTION", "CHALLENGING_SHOUT", "SHIELD_SLAM"
+        ];
 
         Assert.All(
             abilityIds,
