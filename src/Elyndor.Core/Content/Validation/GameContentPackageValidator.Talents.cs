@@ -12,6 +12,13 @@ public static partial class GameContentPackageValidator
         internal static void ValidateTalentDefinitions(
             IReadOnlyList<TalentTreeDefinition> trees,
             IReadOnlyList<AbilityDefinition> abilities,
+            List<ContentValidationError> errors) =>
+            ValidateTalentDefinitions(trees, abilities, [], errors);
+
+        internal static void ValidateTalentDefinitions(
+            IReadOnlyList<TalentTreeDefinition> trees,
+            IReadOnlyList<AbilityDefinition> abilities,
+            IReadOnlyList<ClassProfile> classProfiles,
             List<ContentValidationError> errors)
         {
             HashSet<string> treeIds = [];
@@ -41,6 +48,27 @@ public static partial class GameContentPackageValidator
 
                 Dictionary<string, TalentDefinition> nodes = [];
                 HashSet<string> abilityIds = abilities.Select(ability => ability.Id).ToHashSet(StringComparer.Ordinal);
+                ClassProfile? classProfile = classProfiles.SingleOrDefault(profile =>
+                    string.Equals(profile.Id, tree.ClassId, StringComparison.Ordinal));
+                HashSet<string> grantedAbilityIds = new(
+                    classProfile?.StartingAbilityIds ?? [],
+                    StringComparer.Ordinal);
+                foreach (AbilityUnlockDefinition unlock in classProfile?.AbilityUnlocks ?? [])
+                    grantedAbilityIds.Add(unlock.AbilityId);
+                foreach (TalentDefinition talent in tree.Nodes)
+                {
+                    foreach (TalentModifierDefinition modifier in talent.Modifiers ?? [])
+                    {
+                        if (modifier.Type == TalentModifierType.AbilityModifier
+                            && modifier.Key == TalentModifierKeys.UnlockAbility
+                            && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
+                            && !string.IsNullOrWhiteSpace(modifier.TargetId))
+                        {
+                            grantedAbilityIds.Add(modifier.TargetId);
+                        }
+                    }
+                }
+
                 foreach (TalentDefinition node in tree.Nodes)
                 {
                     if (string.IsNullOrWhiteSpace(node.Id) || !nodes.TryAdd(node.Id, node))
@@ -86,13 +114,23 @@ public static partial class GameContentPackageValidator
 
                     if (node.Modifiers?.Any(modifier =>
                         modifier.Type == TalentModifierType.AbilityModifier
-                        && modifier.Key == TalentModifierKeys.UnlockAbility
                         && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
                         && (string.IsNullOrWhiteSpace(modifier.TargetId)
                             || !abilityIds.Contains(modifier.TargetId))) == true)
                     {
                         errors.Add(new("MISSING_TALENT_ABILITY_REFERENCE", path,
                             $"Talent node '{node.Id}' references an ability that does not exist."));
+                    }
+
+                    if (node.Modifiers?.Any(modifier =>
+                        modifier.Type == TalentModifierType.AbilityModifier
+                        && modifier.Key != TalentModifierKeys.UnlockAbility
+                        && modifier.RuntimeStatus == TalentModifierRuntimeStatus.Supported
+                        && !string.IsNullOrWhiteSpace(modifier.TargetId)
+                        && !grantedAbilityIds.Contains(modifier.TargetId)) == true)
+                    {
+                        errors.Add(new("TALENT_MODIFIES_UNAVAILABLE_ABILITY", path,
+                            $"Talent node '{node.Id}' modifies an ability that the class or talent tree never grants."));
                     }
 
                     if (node.Modifiers?.Any(modifier =>
