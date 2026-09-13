@@ -72,16 +72,24 @@ public sealed class DungeonNavigationService(
         return DungeonNavigationResult.Success();
     }
 
+    public Task<DungeonNavigationResult> ReturnToTownAsync(
+        Guid accountId,
+        Guid runId,
+        CancellationToken cancellationToken) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            () => MoveToTownCoreAsync(accountId, runId, leaveRun: false, cancellationToken));
+
     public Task<DungeonNavigationResult> ExitAsync(
         Guid accountId,
         Guid runId,
         CancellationToken cancellationToken) =>
         dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => ExitCoreAsync(accountId, runId, cancellationToken));
+            () => MoveToTownCoreAsync(accountId, runId, leaveRun: true, cancellationToken));
 
-    private async Task<DungeonNavigationResult> ExitCoreAsync(
+    private async Task<DungeonNavigationResult> MoveToTownCoreAsync(
         Guid accountId,
         Guid runId,
+        bool leaveRun,
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
@@ -132,10 +140,16 @@ public sealed class DungeonNavigationService(
             return DungeonNavigationResult.Failure(DungeonErrorCodes.InvalidLocation);
         }
 
-        if (member.State == DungeonRunMemberState.Left || run.State == DungeonRunState.Abandoned)
+        if (leaveRun && (member.State == DungeonRunMemberState.Left || run.State == DungeonRunState.Abandoned))
         {
             await transaction.CommitAsync(cancellationToken);
             return DungeonNavigationResult.Success(location.LocationId, location.Version);
+        }
+
+        if (!leaveRun && (member.State == DungeonRunMemberState.Left || run.State == DungeonRunState.Abandoned))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
         }
 
         if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
@@ -144,11 +158,14 @@ public sealed class DungeonNavigationService(
             return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterActive);
         }
 
-        member.MarkLeft();
-        if (run.State == DungeonRunState.Active
-            && run.Members.All(candidate => candidate.State == DungeonRunMemberState.Left))
+        if (leaveRun)
         {
-            run.Abandon();
+            member.MarkLeft();
+            if (run.State == DungeonRunState.Active
+                && run.Members.All(candidate => candidate.State == DungeonRunMemberState.Left))
+            {
+                run.Abandon();
+            }
         }
 
         CharacterTravelState? staleTravel = await dbContext.CharacterTravelStates
