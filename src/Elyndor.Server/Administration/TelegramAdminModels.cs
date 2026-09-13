@@ -13,7 +13,9 @@ public enum AdminCommandType
     SetClass,
     SetRace,
     Delete,
-    Message
+    Message,
+    GiveItem,
+    CreatePromoCode
 }
 
 public sealed record AdminCommand(
