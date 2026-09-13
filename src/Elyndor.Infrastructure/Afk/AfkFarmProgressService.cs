@@ -74,10 +74,9 @@ public sealed class AfkFarmProgressService(
         ValidateProfile(profile);
         DateTimeOffset intervalStart = session.LastProcessedAtUtc;
         DateTimeOffset intervalEnd = Min(
-            now,
             session.EndsAtUtc,
             intervalStart.AddSeconds(profile.ProcessingIntervalSeconds));
-        if (intervalEnd <= intervalStart)
+        if (now < intervalEnd)
         {
             await transaction.CommitAsync(cancellationToken);
             return new(false, session, null);

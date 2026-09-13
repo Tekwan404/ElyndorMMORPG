@@ -324,6 +324,38 @@ public sealed class AfkFarmServiceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task EarlyRefreshDoesNotConsumeTheFirstIntervalOrBlockCompletion()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext, ForestId);
+        GameContentPackage content = CreateContent();
+        AfkFarmService start = CreateService(dbContext, content);
+        Assert.True((await start.StartAsync(
+            accountId, ForestId, null, TimeSpan.FromMinutes(15), CancellationToken.None)).Succeeded);
+
+        StaticContentSnapshotProvider provider = new(content);
+        AfkFarmProgressService earlyProgress = new(
+            dbContext,
+            provider,
+            new OffsetTimeProvider(Now.AddMinutes(1)));
+
+        AfkFarmProgressResult early = await earlyProgress.ProcessAsync(accountId, CancellationToken.None);
+
+        Assert.False(early.Processed);
+        Assert.Empty(await dbContext.AfkFarmIntervalGrants.ToArrayAsync());
+
+        AfkFarmProgressService completionProgress = new(
+            dbContext,
+            provider,
+            new OffsetTimeProvider(Now.AddMinutes(15)));
+        AfkFarmProgressResult completed = await completionProgress.ProcessAsync(accountId, CancellationToken.None);
+
+        Assert.True(completed.Processed);
+        Assert.Equal(AfkFarmStatus.Completed, completed.Session!.Status);
+        Assert.Single(await dbContext.AfkFarmIntervalGrants.ToArrayAsync());
+    }
+
+    [Fact]
     public async Task PreviewUsesServerSimulationWithoutCreatingAnAfkSessionOrRewards()
     {
         await using GameDbContext dbContext = postgres.CreateDbContext();
