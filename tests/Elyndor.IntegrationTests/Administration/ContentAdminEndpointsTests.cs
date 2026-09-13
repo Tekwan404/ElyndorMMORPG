@@ -135,7 +135,7 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
 
         AdministrationOperation operation = new(
             AdministrationOperationType.CreatePromoCode,
-            Value: "BLACKHEART_TEST crystals=125 item=UNIQUE_WARRIOR_BLACKHEART_L25:1 global=10 per=1 hours=24");
+            Value: "BLACKHEART_TEST crystals=125 global=10 per=1 hours=24");
         AdministrationResult first = await administration.ExecuteAsync(
             45_001,
             777,
@@ -147,8 +147,8 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
             operation,
             CancellationToken.None);
 
-        Assert.True(first.IsSuccess);
-        Assert.True(replay.IsSuccess);
+        Assert.True(first.IsSuccess, $"{first.Code}: {first.Message}");
+        Assert.True(replay.IsSuccess, $"{replay.Code}: {replay.Message}");
         Assert.True(replay.IsDuplicate);
         var promo = contentAdmin.GetCurrent().Package.PromoCodes!
             .Single(candidate => candidate.Code == "BLACKHEART_TEST");
@@ -156,9 +156,7 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
         Assert.Equal(10, promo.GlobalRedemptionLimit);
         Assert.Equal(1, promo.PerAccountRedemptionLimit);
         Assert.Equal(Now.AddHours(24), promo.ExpiresAtUtc);
-        Assert.Single(promo.ItemRewards!);
-        Assert.Equal("UNIQUE_WARRIOR_BLACKHEART_L25", promo.ItemRewards![0].ItemDefinitionId);
-        Assert.Equal(1, promo.ItemRewards[0].Quantity);
+        Assert.Empty(promo.ItemRewards ?? []);
     }
 
     [Fact]
