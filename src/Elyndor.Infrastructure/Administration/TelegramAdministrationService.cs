@@ -1,6 +1,7 @@
 using Elyndor.Core.Administration;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
+using Elyndor.Core.Economy;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
@@ -8,6 +9,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -24,12 +26,14 @@ public enum AdministrationOperationType
     SetClass,
     SetRace,
     Delete,
-    Message
+    Message,
+    GiveItem,
+    CreatePromoCode
 }
 
 public sealed record AdministrationOperation(
     AdministrationOperationType Type,
-    long TargetTelegramUserId,
+    long? TargetTelegramUserId = null,
     string? Value = null,
     int? NumericValue = null);
 
@@ -49,8 +53,12 @@ public sealed class TelegramAdministrationService(
     TimeProvider timeProvider,
     IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
+    ContentAdministrationService? contentAdministrationService = null,
     ITelegramMessageSender? messageSender = null)
 {
+    private static readonly HashSet<string> AdminItemQualityProfiles =
+        new(["NORMAL", "ELITE", "BOSS"], StringComparer.Ordinal);
+
     public TelegramAdministrationService(
         GameDbContext dbContext,
         TimeProvider timeProvider,
@@ -62,6 +70,7 @@ public sealed class TelegramAdministrationService(
             timeProvider,
             new StaticContentSnapshotProvider(content),
             derivedStateService,
+            null,
             messageSender)
     {
     }
@@ -129,7 +138,19 @@ public sealed class TelegramAdministrationService(
             return await DeliverMessageAsync(audit, operation, cancellationToken);
         }
 
+        if (operation.Type == AdministrationOperationType.CreatePromoCode)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            AdministrationResult promoResult = await CreatePromoCodeAsync(
+                administratorTelegramUserId,
+                operation.Value,
+                cancellationToken);
+            return await CompleteDeferredAuditAsync(updateId, promoResult, cancellationToken);
+        }
+
         AdministrationResult result = await ExecuteCharacterOperationAsync(
+            updateId,
             operation,
             now,
             cancellationToken);
@@ -156,12 +177,19 @@ public sealed class TelegramAdministrationService(
     }
 
     private async Task<AdministrationResult> ExecuteCharacterOperationAsync(
+        long updateId,
         AdministrationOperation operation,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
+        if (!operation.TargetTelegramUserId.HasValue)
+        {
+            return Failure("admin_target_invalid", "Для команды нужен Telegram ID игрока.");
+        }
+
+        long targetTelegramUserId = operation.TargetTelegramUserId.Value;
         Account? account = await dbContext.Accounts.SingleOrDefaultAsync(
-            candidate => candidate.TelegramUserId == operation.TargetTelegramUserId,
+            candidate => candidate.TelegramUserId == targetTelegramUserId,
             cancellationToken);
         if (account is null)
         {
@@ -174,6 +202,11 @@ public sealed class TelegramAdministrationService(
         if (character is null)
         {
             return Failure("admin_character_not_found", "Персонаж не найден.");
+        }
+
+        if (operation.Type == AdministrationOperationType.GiveItem)
+        {
+            return await GiveItemAsync(character, updateId, operation.Value, now, cancellationToken);
         }
 
         CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
@@ -235,6 +268,346 @@ public sealed class TelegramAdministrationService(
             default:
                 return Failure("admin_operation_invalid", "Команда не поддерживается.");
         }
+    }
+
+    private async Task<AdministrationResult> GiveItemAsync(
+        Character character,
+        long updateId,
+        string? rawSpec,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (!TryParseItemGrant(rawSpec, out string itemId, out int quantity, out string qualityProfile))
+        {
+            return Failure(
+                "admin_item_invalid",
+                "Формат: giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS].");
+        }
+
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        if (!content.Indexes.ItemsById.TryGetValue(itemId, out ItemDefinition? definition))
+        {
+            return Failure("admin_item_not_found", $"Предмет {itemId} отсутствует в content package.");
+        }
+
+        int usedSlots = await InventoryCapacity.CountUsedSlotsAsync(
+            dbContext,
+            character.Id,
+            cancellationToken);
+        int additionalSlots = await InventoryCapacity.AdditionalSlotsRequiredAsync(
+            dbContext,
+            character.Id,
+            definition,
+            quantity,
+            cancellationToken);
+        if (usedSlots + additionalSlots > InventoryCapacity.Resolve(content))
+        {
+            return Failure("admin_inventory_full", $"{character.Name}: в инвентаре недостаточно места.");
+        }
+
+        Guid sourceOperationId = Guid.CreateVersion7();
+        if (!definition.Stackable)
+        {
+            for (var ordinal = 0; ordinal < quantity; ordinal++)
+            {
+                CharacterItem item = ItemInstancePersistenceFactory.CreateCharacterItem(
+                    character.Id,
+                    definition,
+                    sourceOperationId,
+                    "ADMIN_GRANT",
+                    $"telegram-update:{updateId}",
+                    ordinal,
+                    now,
+                    content.Package,
+                    qualityProfile);
+                dbContext.CharacterItems.Add(item);
+            }
+        }
+        else
+        {
+            CharacterItem[] stacks = await dbContext.CharacterItems
+                .Where(item => item.CharacterId == character.Id
+                    && item.ItemDefinitionId == definition.Id
+                    && item.DefinitionVersion == definition.Version
+                    && item.Quantity < definition.MaxStack)
+                .OrderBy(item => item.AcquiredAtUtc)
+                .ToArrayAsync(cancellationToken);
+            int remaining = quantity;
+            foreach (CharacterItem stack in stacks)
+            {
+                int added = Math.Min(definition.MaxStack - stack.Quantity, remaining);
+                stack.AddQuantity(added, definition.MaxStack);
+                remaining -= added;
+                if (remaining == 0) break;
+            }
+
+            while (remaining > 0)
+            {
+                int stackSize = Math.Min(definition.MaxStack, remaining);
+                dbContext.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    character.Id,
+                    definition.Id,
+                    stackSize,
+                    now,
+                    definition.Version));
+                remaining -= stackSize;
+            }
+        }
+
+        return Success(
+            "admin_item_granted",
+            $"{character.Name}: выдано {definition.Name} ×{quantity} ({definition.Id}), качество {qualityProfile}.");
+    }
+
+    private async Task<AdministrationResult> CreatePromoCodeAsync(
+        long administratorTelegramUserId,
+        string? rawSpec,
+        CancellationToken cancellationToken)
+    {
+        if (contentAdministrationService is null)
+        {
+            return Failure("admin_promo_unavailable", "Hot content administration недоступен.");
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        if (!TryParsePromoCode(
+                rawSpec,
+                content,
+                now,
+                out PromoCodeDefinition? promo,
+                out string errorMessage))
+        {
+            return Failure("admin_promo_invalid", errorMessage);
+        }
+
+        ContentAdminRuntimeState current = contentAdministrationService.GetCurrent();
+        if ((current.Package.PromoCodes ?? []).Any(existing =>
+                string.Equals(existing.Code, promo!.Code, StringComparison.Ordinal)))
+        {
+            return Failure("admin_promo_exists", $"Промокод {promo!.Code} уже существует.");
+        }
+
+        GameContentPackage candidate = current.Package with
+        {
+            PublishedAtUtc = now,
+            PromoCodes = [.. (current.Package.PromoCodes ?? []), promo!]
+        };
+        string payload = GameContentPackageCodec.SerializeCanonical(candidate);
+        string actor = $"telegram-admin:{administratorTelegramUserId}";
+        string note = $"create promo {promo!.Code}";
+
+        try
+        {
+            ContentRevision draft = await contentAdministrationService.CreateDraftAsync(
+                payload,
+                current.PayloadSha256,
+                actor,
+                note,
+                cancellationToken);
+            ContentPublicationResult? publication = await contentAdministrationService.PublishAsync(
+                draft.Id,
+                current.PayloadSha256,
+                actor,
+                note,
+                cancellationToken);
+            if (publication is null)
+            {
+                return Failure("admin_promo_publish_failed", "Не удалось опубликовать промокод.");
+            }
+        }
+        catch (ContentDraftConflictException)
+        {
+            return Failure("admin_promo_conflict", "Live content изменился. Повтори команду.");
+        }
+        catch (ContentPublicationConflictException)
+        {
+            return Failure("admin_promo_conflict", "Live content изменился. Повтори команду.");
+        }
+        catch (ContentDraftValidationException exception)
+        {
+            string details = exception.Errors.Count == 0
+                ? "Промокод не прошёл валидацию контента."
+                : exception.Errors[0].Message;
+            return Failure("admin_promo_invalid", details);
+        }
+
+        string rewards = DescribePromoRewards(promo!);
+        string limits = promo!.GlobalRedemptionLimit is int globalLimit
+            ? $"общий лимит {globalLimit}"
+            : "без общего лимита";
+        string expiry = promo.ExpiresAtUtc is DateTimeOffset expiresAt
+            ? $", до {expiresAt:yyyy-MM-dd HH:mm} UTC"
+            : string.Empty;
+        return Success(
+            "admin_promo_created",
+            $"Промокод {promo.Code} создан: {rewards}; {limits}, на аккаунт {promo.PerAccountRedemptionLimit ?? 1}{expiry}.");
+    }
+
+    private async Task<AdministrationResult> CompleteDeferredAuditAsync(
+        long updateId,
+        AdministrationResult result,
+        CancellationToken cancellationToken)
+    {
+        dbContext.ChangeTracker.Clear();
+        AdminCommandAudit audit = await dbContext.AdminCommandAudits
+            .SingleAsync(candidate => candidate.UpdateId == updateId, cancellationToken);
+        audit.Complete(result.Code, result.Message, timeProvider.GetUtcNow());
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return result;
+    }
+
+    private static bool TryParseItemGrant(
+        string? rawSpec,
+        out string itemId,
+        out int quantity,
+        out string qualityProfile)
+    {
+        itemId = string.Empty;
+        quantity = 1;
+        qualityProfile = "NORMAL";
+        string[] tokens = rawSpec?.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        if (tokens.Length is < 1 or > 3) return false;
+
+        itemId = tokens[0].ToUpperInvariant();
+        if (tokens.Length >= 2)
+        {
+            if (int.TryParse(tokens[1], out int parsedQuantity))
+            {
+                if (parsedQuantity is < 1 or > 1000) return false;
+                quantity = parsedQuantity;
+                if (tokens.Length == 3)
+                    qualityProfile = tokens[2].ToUpperInvariant();
+            }
+            else
+            {
+                if (tokens.Length == 3) return false;
+                qualityProfile = tokens[1].ToUpperInvariant();
+            }
+        }
+
+        return itemId.Length is > 0 and <= 128
+            && AdminItemQualityProfiles.Contains(qualityProfile);
+    }
+
+    private static bool TryParsePromoCode(
+        string? rawSpec,
+        GameContentSnapshot content,
+        DateTimeOffset now,
+        out PromoCodeDefinition? promo,
+        out string errorMessage)
+    {
+        promo = null;
+        errorMessage = "Формат: promocode create <CODE> crystals=<amount> [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>].";
+        string[] tokens = rawSpec?.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        if (tokens.Length < 2) return false;
+
+        string code = NormalizePromoCode(tokens[0]);
+        if (code.Length == 0)
+        {
+            errorMessage = "Код: 1-64 символа A-Z, 0-9 и _, первый символ — буква.";
+            return false;
+        }
+
+        long crystals = 0;
+        int? globalLimit = null;
+        int perAccountLimit = 1;
+        int? hours = null;
+        bool crystalsSeen = false;
+        bool globalSeen = false;
+        bool perSeen = false;
+        bool hoursSeen = false;
+        List<PromoItemRewardDefinition> itemRewards = [];
+
+        foreach (string token in tokens.Skip(1))
+        {
+            int separator = token.IndexOf('=');
+            if (separator <= 0 || separator == token.Length - 1) return false;
+            string key = token[..separator].ToLowerInvariant();
+            string value = token[(separator + 1)..];
+            switch (key)
+            {
+                case "crystals":
+                    if (crystalsSeen || !long.TryParse(value, out crystals) || crystals is < 0 or > 1_000_000_000)
+                        return false;
+                    crystalsSeen = true;
+                    break;
+                case "global":
+                    if (globalSeen || !int.TryParse(value, out int parsedGlobal) || parsedGlobal is < 1 or > 1_000_000)
+                        return false;
+                    globalLimit = parsedGlobal;
+                    globalSeen = true;
+                    break;
+                case "per":
+                    if (perSeen || !int.TryParse(value, out perAccountLimit) || perAccountLimit is < 1 or > 100)
+                        return false;
+                    perSeen = true;
+                    break;
+                case "hours":
+                    if (hoursSeen || !int.TryParse(value, out int parsedHours) || parsedHours is < 1 or > 8760)
+                        return false;
+                    hours = parsedHours;
+                    hoursSeen = true;
+                    break;
+                case "item":
+                    int quantitySeparator = value.LastIndexOf(':');
+                    if (quantitySeparator <= 0
+                        || quantitySeparator == value.Length - 1
+                        || !int.TryParse(value[(quantitySeparator + 1)..], out int itemQuantity)
+                        || itemQuantity is < 1 or > 1000)
+                    {
+                        return false;
+                    }
+                    string itemId = value[..quantitySeparator].ToUpperInvariant();
+                    if (!content.Indexes.ItemsById.ContainsKey(itemId))
+                    {
+                        errorMessage = $"Предмет {itemId} отсутствует в content package.";
+                        return false;
+                    }
+                    itemRewards.Add(new PromoItemRewardDefinition(itemId, itemQuantity));
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        if (crystals <= 0 && itemRewards.Count == 0)
+        {
+            errorMessage = "У промокода должна быть награда: crystals>0 и/или item=ITEM_ID:qty.";
+            return false;
+        }
+
+        promo = new PromoCodeDefinition(
+            code,
+            crystals,
+            itemRewards,
+            Enabled: true,
+            StartsAtUtc: null,
+            ExpiresAtUtc: hours.HasValue ? now.AddHours(hours.Value) : null,
+            GlobalRedemptionLimit: globalLimit,
+            PerAccountRedemptionLimit: perAccountLimit);
+        return true;
+    }
+
+    private static string NormalizePromoCode(string raw)
+    {
+        string code = raw.Trim().ToUpperInvariant();
+        if (code.Length is < 1 or > 64
+            || code[0] is < 'A' or > 'Z'
+            || !code.All(character => char.IsAsciiLetterOrDigit(character) || character == '_'))
+        {
+            return string.Empty;
+        }
+        return code;
+    }
+
+    private static string DescribePromoRewards(PromoCodeDefinition promo)
+    {
+        List<string> parts = [];
+        if (promo.CrystalAmount > 0) parts.Add($"{promo.CrystalAmount} кристаллов");
+        parts.AddRange((promo.ItemRewards ?? []).Select(reward => $"{reward.ItemDefinitionId} ×{reward.Quantity}"));
+        return string.Join(", ", parts);
     }
 
     private async Task<AdministrationResult> SetLevelAsync(
@@ -414,12 +787,12 @@ public sealed class TelegramAdministrationService(
         AdministrationResult result;
         try
         {
-            if (messageSender is null)
+            if (messageSender is null || !operation.TargetTelegramUserId.HasValue)
             {
-                throw new InvalidOperationException("Telegram sender is not configured.");
+                throw new InvalidOperationException("Telegram sender is not configured or target is missing.");
             }
 
-            await messageSender.SendAsync(operation.TargetTelegramUserId, operation.Value!, cancellationToken);
+            await messageSender.SendAsync(operation.TargetTelegramUserId.Value, operation.Value!, cancellationToken);
             result = Success("admin_message_sent", "Сообщение отправлено пользователю.");
         }
         catch
@@ -467,7 +840,12 @@ public sealed class TelegramAdministrationService(
             && !audit.ResultCode.Contains("not_found", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("mismatch", StringComparison.Ordinal)
             && !audit.ResultCode.Contains("uncertain", StringComparison.Ordinal)
-            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal),
+            && !audit.ResultCode.Contains("taken", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("full", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("exists", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("conflict", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("failed", StringComparison.Ordinal)
+            && !audit.ResultCode.Contains("unavailable", StringComparison.Ordinal),
             audit.ResultCode,
             audit.ResultSummary,
             duplicate);
