@@ -19,7 +19,7 @@ public sealed class GuardianThreatCombatSessionTests
         Guid.Parse("73000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public void HeavyPresenceIncreasesOnlyAutoAttackThreatAndChangesEnemyTarget()
+    public void GuardianStanceAndDefianceIncreaseThreatAndReduceDamageByFivePercent()
     {
         CombatSession baseline = CreateSession(ResolvedTalentModifiers.Empty);
         CombatSession guardian = CreateSession(
@@ -28,11 +28,19 @@ public sealed class GuardianThreatCombatSessionTests
                 EventHooks =
                 [
                     new ResolvedTalentEventHook(
-                        "G-1-4",
-                        TalentModifierKeys.OnAutoAttack,
-                        4,
+                        "G-1-1",
+                        TalentModifierKeys.OnAbilityUsed,
+                        1,
+                        30,
+                        "GUARDIAN_STANCE",
+                        TimeSpan.Zero,
+                        false),
+                    new ResolvedTalentEventHook(
+                        "G-2-4",
+                        TalentModifierKeys.OnAbilityUsed,
+                        3,
                         15,
-                        null,
+                        "GUARDIAN_STANCE",
                         TimeSpan.Zero,
                         false)
                 ]
@@ -66,7 +74,7 @@ public sealed class GuardianThreatCombatSessionTests
                 && item.DefinitionId == "AUTO_ATTACK"
                 && item.SourceActorId == PlayerId).Amount;
 
-        Assert.Equal(baselinePlayerDamage, guardianPlayerDamage);
+        Assert.Equal(baselinePlayerDamage * 0.95m, guardianPlayerDamage);
     }
 
     [Fact]
@@ -152,12 +160,14 @@ public sealed class GuardianThreatCombatSessionTests
         {
             EventHooks =
             [
-                new ResolvedTalentEventHook("G-1-2", TalentModifierKeys.OnDamageTaken,
-                    1, 4, null, TimeSpan.Zero, false),
-                new ResolvedTalentEventHook("G-5-2", TalentModifierKeys.OnDamageTaken,
-                    1, 9, null, TimeSpan.Zero, false),
-                new ResolvedTalentEventHook("G-8-3", TalentModifierKeys.OnDamageTaken,
-                    1, 35, null, TimeSpan.Zero, false)
+                new ResolvedTalentEventHook(
+                    "G-2-5",
+                    TalentModifierKeys.OnDamageTaken,
+                    3,
+                    3,
+                    "BLOCK",
+                    TimeSpan.Zero,
+                    false)
             ]
         };
         CombatSession session = new(
@@ -172,9 +182,9 @@ public sealed class GuardianThreatCombatSessionTests
         Assert.Contains(result.Events, item => item.Type == CombatEventType.DamageBlocked
             && item.Amount == 50 && item.AmountBeforeShields == 0);
         Assert.Contains(result.Events, item => item.Type == CombatEventType.ResourceChanged
-            && item.DefinitionId == "FULL_BLOCK" && item.Amount == 6.75m);
+            && item.DefinitionId == "FULL_BLOCK" && item.Amount == 5m);
         Assert.Contains(result.Events, item => item.Type == CombatEventType.ResourceChanged
-            && item.DefinitionId == "G-1-2" && item.Amount == 4m);
+            && item.DefinitionId == "G-2-5" && item.Amount == 3m);
         CombatThreatSnapshot threat = Assert.IsType<CombatThreatSnapshot>(
             session.GetThreatSnapshot(PlayerId, Now.AddSeconds(1)));
         Assert.True(Assert.Single(threat.Entries, item => item.ActorId == PlayerId).Threat > 1m);
@@ -193,7 +203,10 @@ public sealed class GuardianThreatCombatSessionTests
             ArmorPenetration: 0,
             MagicPenetration: 0,
             AttackPower: 0,
-            SpellPower: 0);
+            SpellPower: 0,
+            BlockChance: 10,
+            BlockValueMin: 20,
+            BlockValueMax: 20);
 
         CombatParticipantDefinition player = new(
             new CombatActorState(PlayerId, 1_000, 1_000, 100, 0, stats),
