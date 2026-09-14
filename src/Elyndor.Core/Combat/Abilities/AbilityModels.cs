@@ -83,7 +83,8 @@ public sealed record AbilityActionDefinition(
     decimal SpellPowerCoefficient = 0,
     decimal DamagePerCharacterLevel = 0,
     bool IsUnblockable = false,
-    decimal BlockValueCoefficient = 0);
+    decimal BlockValueCoefficient = 0,
+    bool HealingCanCrit = false);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
