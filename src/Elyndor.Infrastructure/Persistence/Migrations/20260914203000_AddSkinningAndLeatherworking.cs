@@ -10,6 +10,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20260914203000_AddSkinningAndLeatherworking")]
 public partial class AddSkinningAndLeatherworking : Migration
 {
+    private static readonly string[] CharacterCorpseExpiryIndexColumns =
+        ["character_id", "expires_at_utc"];
+
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
@@ -74,7 +77,7 @@ public partial class AddSkinningAndLeatherworking : Migration
             name: "IX_character_skinnable_corpses_character_id_expires_at_utc",
             schema: "game",
             table: "character_skinnable_corpses",
-            columns: new[] { "character_id", "expires_at_utc" });
+            columns: CharacterCorpseExpiryIndexColumns);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
