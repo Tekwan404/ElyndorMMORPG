@@ -52,6 +52,8 @@ public static class DamagePipeline
     private const decimal MaxLevelPenalty = 0.10m;
     private const decimal MaxMissChance = 0.30m;
 
+    private sealed record ShieldAbsorption(string DefinitionId, decimal Amount);
+
     public static DamageResult Resolve(
         DamageRequest request,
         IGameRandom random,
@@ -186,7 +188,10 @@ public static class DamagePipeline
             MidpointRounding.AwayFromZero);
         decimal blocked = ResolveBlock(request, rounded, random, occurredAtUtc);
         decimal afterBlock = Math.Max(0, rounded - blocked);
-        decimal absorbed = request.IgnoreShields ? 0 : AbsorbShields(request.Target, afterBlock);
+        IReadOnlyList<ShieldAbsorption> shieldAbsorptions = request.IgnoreShields
+            ? []
+            : AbsorbShields(request.Target, afterBlock);
+        decimal absorbed = shieldAbsorptions.Sum(item => item.Amount);
         decimal hpDamage = Math.Min(
             request.Target.CurrentHp,
             Math.Max(0, afterBlock - absorbed));
@@ -254,13 +259,14 @@ public static class DamagePipeline
                 DamageBeforeBlock: rounded));
         }
 
-        if (absorbed > 0)
+        foreach (ShieldAbsorption shieldAbsorption in shieldAbsorptions)
         {
             events.Add(new CombatEvent(
                 CombatEventType.ShieldAbsorbed,
                 occurredAtUtc,
                 request.Target.ActorId,
-                Amount: absorbed,
+                DefinitionId: shieldAbsorption.DefinitionId,
+                Amount: shieldAbsorption.Amount,
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
                 DamageType: request.Type,
@@ -418,9 +424,12 @@ public static class DamagePipeline
             request.Source.Stats.Level);
     }
 
-    private static decimal AbsorbShields(CombatActorState target, decimal incoming)
+    private static IReadOnlyList<ShieldAbsorption> AbsorbShields(
+        CombatActorState target,
+        decimal incoming)
     {
         decimal remaining = incoming;
+        List<ShieldAbsorption> absorptions = [];
         foreach (ActiveEffect shield in target.ActiveEffects
                      .Where(effect =>
                          effect.Definition.Kind == EffectKind.Shield
@@ -432,6 +441,9 @@ public static class DamagePipeline
             decimal absorbed = Math.Min(shield.RemainingMagnitude, remaining);
             shield.RemainingMagnitude -= absorbed;
             remaining -= absorbed;
+            if (absorbed > 0)
+                absorptions.Add(new ShieldAbsorption(shield.Definition.Id, absorbed));
+
             if (shield.RemainingMagnitude <= 0)
             {
                 target.ActiveEffects.Remove(shield);
@@ -443,7 +455,7 @@ public static class DamagePipeline
             }
         }
 
-        return incoming - remaining;
+        return absorptions;
     }
 
     private static DamageResult Empty(
