@@ -101,9 +101,64 @@ public sealed partial class CombatSession
         if (sourceActorId != _player.Actor.ActorId)
             return 1m;
 
-        return GuardianThreatMultiplierForTarget(
+        decimal multiplier = GuardianThreatMultiplierForTarget(
             combatEvent.TargetActorId,
             combatEvent.OccurredAtUtc);
+
+        if (IsMage)
+            multiplier *= ResolveMageThreatMultiplier(combatEvent);
+
+        return Math.Max(0, multiplier);
+    }
+
+    private decimal ResolveMageThreatMultiplier(CombatEvent combatEvent)
+    {
+        if (combatEvent.DamageType != Damage.DamageType.Magical)
+            return 1m;
+
+        decimal multiplier = 1m;
+        if (TryGetMageHook("A-1-4", out ResolvedTalentEventHook subtlety))
+            multiplier *= Math.Max(0, 1 - subtlety.Value / 100m);
+
+        string? school = ResolveMageDamageSchool(combatEvent.DefinitionId);
+        if (string.Equals(school, "FIRE", StringComparison.Ordinal)
+            && TryGetMageHook("F-1-3", out ResolvedTalentEventHook burningSoul))
+        {
+            multiplier *= Math.Max(0, 1 - burningSoul.Value / 100m);
+        }
+        else if (string.Equals(school, "FROST", StringComparison.Ordinal)
+            && TryGetMageHook("I-3-4", out ResolvedTalentEventHook focusedIce))
+        {
+            multiplier *= Math.Max(0, 1 - focusedIce.SecondaryValue / 100m);
+        }
+
+        return multiplier;
+    }
+
+    private string? ResolveMageDamageSchool(string? definitionId)
+    {
+        if (string.IsNullOrWhiteSpace(definitionId))
+            return null;
+
+        if (_abilities.TryGetValue(definitionId, out Abilities.AbilityDefinition? ability)
+            && ability.IsSpell)
+        {
+            return ability.School;
+        }
+
+        if (IsFireDamageDefinition(definitionId)
+            || string.Equals(definitionId, "MAGE_PYROBLAST_BURN", StringComparison.Ordinal))
+        {
+            return "FIRE";
+        }
+
+        if (string.Equals(definitionId, ArcaneEchoEffectId, StringComparison.Ordinal))
+            return "ARCANE";
+
+        if (string.Equals(definitionId, "MAGE_DEEP_FREEZE_HIT", StringComparison.Ordinal))
+            return "FROST";
+
+        return null;
     }
 
     private static void RaiseTaunterToTopThreat(
