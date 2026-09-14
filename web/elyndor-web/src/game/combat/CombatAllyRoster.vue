@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
@@ -26,6 +27,10 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
   const selected = ally.actorId === props.selectedFriendlyTargetActorId ? ', выбранная дружеская цель' : ''
   const aggro = isAggroed(ally.actorId) ? ', враг атакует этого союзника' : ''
   return `${ally.name}, ${props.roleLabel(ally)}, здоровье ${Math.round(props.healthRatio(ally))}%${selected}${aggro}`
+}
+
+function allyArt(ally: CombatActorSnapshot): string | null {
+  return resolveCharacterArt(ally.definitionId, 'MALE')
 }
 </script>
 
@@ -59,7 +64,10 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
         :aria-pressed="ally.actorId === selectedFriendlyTargetActorId"
         @click="emit('select', ally.actorId)"
       >
-        <span class="combat-ally-roster__crest" aria-hidden="true">{{ ally.name.slice(0, 1).toUpperCase() }}</span>
+        <span class="combat-ally-roster__portrait" aria-hidden="true">
+          <img v-if="allyArt(ally)" :src="allyArt(ally)!" alt="" />
+          <b v-else>{{ ally.name.slice(0, 1).toUpperCase() }}</b>
+        </span>
         <span class="combat-ally-roster__body">
           <span class="combat-ally-roster__identity"><strong>{{ ally.actorId === playerActorId ? `Вы · ${ally.name}` : ally.name }}</strong><small>{{ roleLabel(ally) }}</small><b v-if="ally.actorId === selectedFriendlyTargetActorId">ЦЕЛЬ</b><b v-if="isAggroed(ally.actorId)">АГРО</b></span>
           <span class="combat-ally-roster__bar" aria-hidden="true"><i :style="{ width: `${healthRatio(ally)}%` }" /></span>
@@ -84,7 +92,8 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
 .combat-ally-roster__member--self { border-color: rgb(170 163 255 / 56%); background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%)); }
 .combat-ally-roster__member--aggro { border-color: rgb(205 177 113 / 72%); box-shadow: 0 0 11px rgb(205 177 113 / 15%); }
 .combat-ally-roster__member[data-status='Fled'], .combat-ally-roster__member[data-status='Dead'] { opacity: .58; }
-.combat-ally-roster__crest { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid rgb(205 177 113 / 42%); border-radius: 50%; background: radial-gradient(circle, rgb(205 177 113 / 20%), rgb(9 12 18 / 96%) 68%); color: #ecd797; font-family: var(--ui-font-display); font-size: .8rem; }
+.combat-ally-roster__portrait { display: grid; width: 2rem; height: 2rem; place-items: center; overflow: hidden; border: 1px solid rgb(205 177 113 / 42%); border-radius: 50%; background: radial-gradient(circle, rgb(205 177 113 / 20%), rgb(9 12 18 / 96%) 68%); color: #ecd797; font-family: var(--ui-font-display); font-size: .8rem; }
+.combat-ally-roster__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .combat-ally-roster__body { display: grid; min-width: 0; gap: 2px; }
 .combat-ally-roster__identity { display: grid; min-width: 0; }
 .combat-ally-roster__identity strong { overflow: hidden; font-size: var(--ui-font-size-xs); text-overflow: ellipsis; white-space: nowrap; }
@@ -110,7 +119,7 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
 .combat-ally-roster--battlefield .combat-ally-roster__header { display: none; }
 .combat-ally-roster--battlefield .combat-ally-roster__grid { grid-template-columns: 1fr; gap: 3px; }
 .combat-ally-roster--battlefield .combat-ally-roster__member { min-height: 34px; grid-template-columns: 1.45rem minmax(0, 1fr) auto; gap: 4px; padding: 3px 4px; }
-.combat-ally-roster--battlefield .combat-ally-roster__crest { width: 1.45rem; height: 1.45rem; font-size: .58rem; }
+.combat-ally-roster--battlefield .combat-ally-roster__portrait { width: 1.8rem; height: 1.8rem; font-size: .58rem; }
 .combat-ally-roster--battlefield .combat-ally-roster__identity { display: flex; align-items: center; gap: 3px; }
 .combat-ally-roster--battlefield .combat-ally-roster__identity strong { font-size: .52rem; }
 .combat-ally-roster--battlefield .combat-ally-roster__identity small,
