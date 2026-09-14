@@ -137,7 +137,7 @@ return;
 }
 RemoveCompanionControls(now);
 }
-private decimal EffectiveArcherResourceRegenPerSecond(
+private static decimal EffectiveArcherResourceRegenPerSecond(
 decimal regen,
 DateTimeOffset now) =>
 regen;
