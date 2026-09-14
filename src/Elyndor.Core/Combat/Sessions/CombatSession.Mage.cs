@@ -633,7 +633,7 @@ public sealed partial class CombatSession
     private void ActivateIceBlock(DateTimeOffset now)
     {
         ApplyMageEffect(_player.Actor, new EffectDefinition(
-            IceBlockEffectId, EffectKind.Buff, TimeSpan.FromSeconds(3), 1,
+            IceBlockEffectId, EffectKind.Stun, TimeSpan.FromSeconds(3), 1,
             EffectStackPolicy.Replace, 0), now);
         ApplyMageEffect(_player.Actor, new EffectDefinition(
             IceBlockImmunityEffectId, EffectKind.StatModifier, TimeSpan.FromSeconds(3), 1,
@@ -642,7 +642,9 @@ public sealed partial class CombatSession
             ModifierMode: EffectModifierMode.Multiplicative), now);
 
         foreach (ActiveEffect effect in _player.Actor.ActiveEffects
-                     .Where(effect => effect.Definition.Kind is EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence)
+                     .Where(effect =>
+                         !string.Equals(effect.Definition.Id, IceBlockEffectId, StringComparison.Ordinal)
+                         && effect.Definition.Kind is EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence)
                      .ToArray())
         {
             ApplyKernelEvents(
