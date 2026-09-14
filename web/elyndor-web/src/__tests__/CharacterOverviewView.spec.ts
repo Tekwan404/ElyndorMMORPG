@@ -72,6 +72,100 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     expect(wrapper.text()).toContain('Итого: 1.13 уд/с')
   })
 
+  it('shows raw and effective combat stats and opens the full stats view', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot({})
+    session.snapshot.character!.stats.armor = 291.5
+    session.snapshot.character!.statBreakdown = {
+      armorDamageReductionPercent: { finalValue: 34.8, contributions: [] },
+      blockChance: { finalValue: 18.4, contributions: [] },
+      blockValueMin: { finalValue: 63, contributions: [] },
+      blockValueMax: { finalValue: 63, contributions: [] },
+    } as never
+
+    const wrapper = mount(CharacterOverviewView)
+
+    const armor = wrapper.get('[data-combat-stat="armor"]')
+    expect(armor.text()).toContain('291.5')
+    expect(armor.text()).toContain('34.8% физ. защиты')
+    expect(wrapper.get('[data-combat-stat="blockChance"]').text()).toContain('18.4%')
+    expect(wrapper.get('[data-combat-stat="blockValue"]').text()).toContain('63')
+
+    await wrapper.get('[data-open-all-stats]').trigger('click')
+    expect(wrapper.emitted('open-stats')).toHaveLength(1)
+  })
+
+  it('shows required level, item level, full defensive stats and current effective protection for equipped gear', async () => {
+    const session = useGameSessionStore()
+    const shield = {
+      ...equipment('DEEP_GUARD', 'Оплот Хранителя Глубин', 'OffHand'),
+      rarity: 'Legendary' as const,
+      requiredLevel: 16,
+      armorCategory: 'HEAVY',
+      allowedClassIds: ['WARRIOR'],
+      stats: {
+        ...equipment('BASE', 'Base', 'OffHand').stats,
+        stamina: 18,
+        armor: 148,
+      },
+      generatedItem: {
+        itemLevel: 36,
+        itemPower: 482,
+        maxItemPower: 520,
+        rollQuality: 92.7,
+        stars: 3,
+        isPerfect: false,
+        perfectOrigin: null,
+        generatedPrefixId: null,
+        generatedSuffixId: null,
+        displayName: 'Оплот Хранителя Глубин',
+        affixes: [],
+      },
+      blockChancePercent: 4.5,
+      blockValueMin: 27,
+      blockValueMax: 27,
+    } as InventoryItem & {
+      blockChancePercent: number
+      blockValueMin: number
+      blockValueMax: number
+    }
+
+    session.snapshot = snapshot({ offHand: shield })
+    session.snapshot.character!.stats.armor = 439
+    session.snapshot.character!.statBreakdown = {
+      armorDamageReductionPercent: { finalValue: 42.1, contributions: [] },
+      blockChance: { finalValue: 22.9, contributions: [] },
+      blockValueMin: { finalValue: 63, contributions: [] },
+      blockValueMax: { finalValue: 63, contributions: [] },
+    } as never
+
+    const wrapper = mount(CharacterOverviewView)
+    await wrapper.get('[data-equipment-slot="offHand"]').trigger('click')
+
+    const body = document.body
+    expect(body.querySelector('[data-item-level]')?.textContent).toContain('36')
+    expect(body.querySelector('[data-required-level]')?.textContent).toContain('16')
+    expect(body.querySelector('[data-item-stat="armor"]')?.textContent).toContain('+148')
+    expect(body.querySelector('[data-item-stat="blockChance"]')?.textContent).toContain('+4.5%')
+    expect(body.querySelector('[data-item-stat="blockValue"]')?.textContent).toContain('+27')
+    expect(body.querySelector('[data-current-stat="armor"]')?.textContent).toContain('42.1% снижения физ. урона')
+    expect(body.querySelector('[data-current-stat="blockChance"]')?.textContent).toContain('22.9%')
+  })
+
+  it('does not fake item level from Required Level for legacy items', async () => {
+    const session = useGameSessionStore()
+    const chest = { ...equipment('LEGACY_CHEST', 'Старая кираса', 'Chest'), requiredLevel: 25 }
+    session.snapshot = snapshot({ chest })
+
+    const wrapper = mount(CharacterOverviewView)
+    await wrapper.get('[data-equipment-slot="chest"]').trigger('click')
+
+    const body = document.body
+    expect(body.querySelector('[data-item-level]')?.textContent).toContain('—')
+    expect(body.querySelector('[data-required-level]')?.textContent).toContain('25')
+    expect(body.textContent).toContain('Required Level показан отдельно')
+  })
+
   it('unequips an equipped legacy accessory through its canonical amulet slot', async () => {
     const session = useGameSessionStore()
     const legacyAccessory = equipment('LEGACY_AMULET', 'Амулет Следопыта', 'Accessory')
@@ -234,11 +328,11 @@ function snapshot(
         displayName: 'Starter Town',
         dangerLevel: 'SAFE',
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
       version: 1,
       outgoingTransitions: [],
