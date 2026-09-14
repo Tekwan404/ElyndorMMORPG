@@ -60,8 +60,11 @@ public static class HealingPipeline
                 Origin: request.Origin);
         }
 
-        DateTimeOffset occurredAtUtc = request.OccurredAtUtc == default
+        DateTimeOffset calculationTimeUtc = request.OccurredAtUtc == default
             ? DateTimeOffset.MaxValue
+            : request.OccurredAtUtc;
+        DateTimeOffset eventTimeUtc = request.OccurredAtUtc == default
+            ? DateTimeOffset.UnixEpoch
             : request.OccurredAtUtc;
 
         decimal spellPower = request.Source is null
@@ -70,11 +73,11 @@ public static class HealingPipeline
                 request.Source,
                 EffectStat.SpellPower,
                 request.Source.Stats.SpellPower,
-                occurredAtUtc);
+                calculationTimeUtc);
         decimal scaledBase = request.BaseAmount
             + Math.Max(0, spellPower) * request.SpellPowerCoefficient;
 
-        bool critical = ResolveCritical(request, random, occurredAtUtc);
+        bool critical = ResolveCritical(request, random, calculationTimeUtc);
         decimal criticalBonus = request.Source is null
             ? 0
             : Math.Max(
@@ -87,7 +90,7 @@ public static class HealingPipeline
             request.Target,
             EffectStat.HealingReceivedMultiplier,
             1,
-            occurredAtUtc);
+            calculationTimeUtc);
         decimal modified = decimal.Round(
             raw
                 * Math.Max(0, request.HealingMultiplier)
@@ -99,13 +102,15 @@ public static class HealingPipeline
 
         CombatEvent healingEvent = new(
             CombatEventType.HealingApplied,
-            occurredAtUtc,
+            eventTimeUtc,
             request.Target.ActorId,
             request.DefinitionId,
             effective,
             SourceActorId: request.Source?.ActorId,
             TargetActorId: request.Target.ActorId,
-            IsPeriodic: request.Origin == HealingOrigin.Periodic);
+            IsPeriodic: request.Origin == HealingOrigin.Periodic,
+            IsCritical: critical,
+            HealingOrigin: request.Origin);
 
         return new HealingResult(
             request.BaseAmount,
