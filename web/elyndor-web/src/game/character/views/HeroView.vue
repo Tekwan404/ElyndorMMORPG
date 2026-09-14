@@ -40,6 +40,11 @@ function openSlotInventory(slot: EquipmentSlot): void {
   requestedSlot.value = slot
   activeTab.value = 'inventory'
 }
+
+function openStats(): void {
+  requestedSlot.value = null
+  activeTab.value = 'stats'
+}
 </script>
 
 <template>
@@ -58,7 +63,11 @@ function openSlotInventory(slot: EquipmentSlot): void {
         {{ tab.label }}
       </button>
     </nav>
-    <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" />
+    <CharacterOverviewView
+      v-if="activeTab === 'character'"
+      @select-empty-slot="openSlotInventory"
+      @open-stats="openStats"
+    />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
     <CompanionView v-else-if="activeTab === 'companion' && hasCompanion" />
     <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
