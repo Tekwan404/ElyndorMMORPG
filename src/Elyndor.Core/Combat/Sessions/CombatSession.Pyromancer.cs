@@ -28,6 +28,9 @@ public sealed partial class CombatSession
     private const string PyromaniacEffectId = "MAGE_PYROMANIAC";
     private const string PyroclasmEffectId = "MAGE_PYROCLASM";
     private const string HotStreakEffectId = "MAGE_HOT_STREAK";
+    private const string PyroblastBurnEffectId = "MAGE_PYROBLAST_BURN";
+    private const string FlamestrikeBurnEffectId = "MAGE_FLAMESTRIKE_BURN";
+    private const string CombustionPulseEffectId = "MAGE_COMBUSTION_PULSE";
 
     private int _fireDirectCritStreak;
     private DateTimeOffset _lastFireDirectCritAt;
@@ -35,7 +38,16 @@ public sealed partial class CombatSession
 
     private static readonly HashSet<string> FireDamageDefinitionIds = new(StringComparer.Ordinal)
     {
-        FireballId, FireBlastId, ScorchId, PyroblastId, FlamestrikeId, BlastWaveId, IgniteEffectId
+        FireballId,
+        FireBlastId,
+        ScorchId,
+        PyroblastId,
+        FlamestrikeId,
+        BlastWaveId,
+        IgniteEffectId,
+        PyroblastBurnEffectId,
+        FlamestrikeBurnEffectId,
+        CombustionPulseEffectId
     };
 
     private bool IsMage => string.Equals(_player.DefinitionId, "MAGE", StringComparison.Ordinal);
@@ -67,6 +79,13 @@ public sealed partial class CombatSession
             criticalChanceBonus += criticalMass.Value;
         if (TryGetPyromancerHook("F-9-1", out ResolvedTalentEventHook embodiment))
             damageMultiplier *= 1 + embodiment.Value / 100m;
+
+        if ((string.Equals(ability.Id, FlamestrikeId, StringComparison.Ordinal)
+             || string.Equals(ability.Id, BlastWaveId, StringComparison.Ordinal))
+            && TryGetPyromancerHook("F-7-3", out ResolvedTalentEventHook worldInFlames))
+        {
+            criticalChanceBonus += worldInFlames.Value;
+        }
 
         if (string.Equals(ability.Id, FireballId, StringComparison.Ordinal))
         {
@@ -223,6 +242,10 @@ public sealed partial class CombatSession
         }
 
         IReadOnlyList<CombatActorState> hitTargets = HitFireTargets(execution).ToArray();
+        HashSet<Guid> criticalTargetIds = execution.Events
+            .Where(item => item.Type == CombatEventType.CriticalHit && item.TargetActorId.HasValue)
+            .Select(item => item.TargetActorId!.Value)
+            .ToHashSet();
 
         if (string.Equals(ability.Id, ScorchId, StringComparison.Ordinal)
             && TryGetPyromancerHook("F-3-2", out ResolvedTalentEventHook scorch))
@@ -260,11 +283,33 @@ public sealed partial class CombatSession
                 HeatDiscountEffectId, EffectKind.Buff, heat.Duration, 1,
                 EffectStackPolicy.Replace, heat.Value), now);
 
-        if (string.Equals(ability.Id, PyroblastId, StringComparison.Ordinal)
-            && TryGetPyromancerHook("F-4-2", out ResolvedTalentEventHook pyroBurn))
+        if (string.Equals(ability.Id, PyroblastId, StringComparison.Ordinal))
         {
+            decimal burnMultiplier = 1m;
+            if (TryGetPyromancerHook("F-4-2", out ResolvedTalentEventHook empoweredPyro))
+                burnMultiplier += empoweredPyro.SecondaryValue / 100m;
+
             foreach (CombatActorState target in hitTargets)
-                ApplySimpleFireDot(target, "MAGE_PYROBLAST_BURN", EffectiveFireSpellPower(now) * (0.06m * (1 + pyroBurn.SecondaryValue / 100m)), 4, now);
+                ApplySimpleFireDot(
+                    target,
+                    PyroblastBurnEffectId,
+                    EffectiveFireSpellPower(now) * 0.06m * burnMultiplier,
+                    4,
+                    now);
+        }
+
+        if (string.Equals(ability.Id, FlamestrikeId, StringComparison.Ordinal))
+        {
+            // The design requires a short baseline burn but does not specify an exact
+            // coefficient. Keep the isolated follow-up deliberately small until that
+            // tuning value moves into content.
+            foreach (CombatActorState target in hitTargets)
+                ApplySimpleFireDot(
+                    target,
+                    FlamestrikeBurnEffectId,
+                    EffectiveFireSpellPower(now) * 0.04m,
+                    3,
+                    now);
         }
 
         if (critical && string.Equals(ability.Id, PyroblastId, StringComparison.Ordinal)
@@ -280,19 +325,25 @@ public sealed partial class CombatSession
             || string.Equals(ability.Id, BlastWaveId, StringComparison.Ordinal);
         if (critical && TryGetPyromancerHook("F-2-1", out ResolvedTalentEventHook ignite))
         {
-            decimal igniteScale = 1m;
+            decimal igniteScale = aoe ? 0m : 1m;
+            if (string.Equals(ability.Id, FlamestrikeId, StringComparison.Ordinal)
+                && HasPyromancerTalent("F-4-4"))
+            {
+                igniteScale = 1m;
+            }
+
             if (aoe && TryGetPyromancerHook("F-7-3", out ResolvedTalentEventHook worldInFlames))
-                igniteScale = worldInFlames.SecondaryValue / 100m;
-            else if (aoe && !string.Equals(ability.Id, FlamestrikeId, StringComparison.Ordinal))
-                igniteScale = 0;
+                igniteScale = Math.Max(igniteScale, worldInFlames.SecondaryValue / 100m);
 
             if (igniteScale > 0)
             {
-                foreach (CombatActorState target in hitTargets)
+                foreach (CombatActorState target in hitTargets.Where(target =>
+                             criticalTargetIds.Contains(target.ActorId)))
                 {
                     decimal direct = execution.Events
-                        .Where(e => e.Type == CombatEventType.DamageDealt && e.TargetActorId == target.ActorId)
-                        .Sum(e => e.Amount);
+                        .Where(item => item.Type == CombatEventType.DamageDealt
+                            && item.TargetActorId == target.ActorId)
+                        .Sum(item => item.Amount);
                     ApplyRollingIgnite(target, direct * ignite.Value / 100m * igniteScale, now);
                 }
             }
@@ -310,7 +361,7 @@ public sealed partial class CombatSession
         }
 
         UpdateFireCritChains(ability, critical, now);
-        UpdateCombustionState(ability, critical, now);
+        UpdateCombustionState(ability, execution, critical, now);
     }
 
     private static void ApplyPyromancerCriticalHooks(CombatEvent combatEvent)
@@ -370,7 +421,11 @@ public sealed partial class CombatSession
         }
     }
 
-    private void UpdateCombustionState(AbilityDefinition ability, bool critical, DateTimeOffset now)
+    private void UpdateCombustionState(
+        AbilityDefinition ability,
+        AbilityExecutionResult execution,
+        bool critical,
+        DateTimeOffset now)
     {
         if (!IsCombustionActive(now) || !IsDirectFireAbility(ability)) return;
         if (critical)
@@ -379,6 +434,31 @@ public sealed partial class CombatSession
             RemovePyroEffect(_player.Actor, CombustionCritStackEffectId, now);
             if (TryGetPyromancerHook("F-6-4", out ResolvedTalentEventHook mana))
                 AddResource(_player.Actor, mana.Value, now, mana.TalentId);
+
+            if (_combustionCritCount == 3
+                && TryGetPyromancerHook("F-6-2", out ResolvedTalentEventHook powerfulCombustion))
+            {
+                CombatActorState? target = ResolveExecutionEnemyTarget(execution);
+                if (target is not null)
+                {
+                    decimal directDamage = execution.Events
+                        .Where(item => item.Type == CombatEventType.DamageDealt
+                            && item.TargetActorId == target.ActorId)
+                        .Sum(item => item.Amount);
+                    if (directDamage > 0)
+                    {
+                        // The design specifies a small third-crit pulse without a separate
+                        // magnitude. Reuse the talent's 10/20 value as the pulse percentage
+                        // instead of inventing another hidden tuning number.
+                        ApplyDelayedMageDamage(
+                            target,
+                            CombustionPulseEffectId,
+                            directDamage * powerfulCombustion.Value / 100m,
+                            TimeSpan.FromMilliseconds(1),
+                            now);
+                    }
+                }
+            }
 
             int limit = HasPyromancerTalent("F-9-1") ? 4 : 3;
             if (_combustionCritCount >= limit)
