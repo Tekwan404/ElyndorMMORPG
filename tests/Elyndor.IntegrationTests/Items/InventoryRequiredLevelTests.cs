@@ -25,11 +25,12 @@ public sealed class InventoryRequiredLevelTests(PostgresFixture postgres) : IAsy
             Path.GetFullPath("content/package.json"));
         IReadOnlyList<ItemDefinition> items = content.Items
             ?? throw new InvalidOperationException("Item content is required for inventory tests.");
-        ItemDefinition source = items.Single(item => item.Id == "RECRUIT_IRON_SWORD");
+        ItemDefinition source = items.Single(item =>
+            item.Id == "WARRIOR_COMMON_BORDER_STEEL_CHEST");
         ItemDefinition gated = source with
         {
-            Id = "TEST_REQUIRED_LEVEL_SWORD",
-            Name = "Test Required Level Sword",
+            Id = "TEST_REQUIRED_LEVEL_CHEST",
+            Name = "Test Required Level Chest",
             RequiredLevel = 20
         };
         content = content with { Items = items.Concat([gated]).ToArray() };
