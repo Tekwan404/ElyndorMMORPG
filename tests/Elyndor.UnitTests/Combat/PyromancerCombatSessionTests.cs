@@ -160,6 +160,148 @@ public sealed class PyromancerCombatSessionTests
     }
 
     [Fact]
+    public void PyroblastAlwaysAppliesItsBaselineBurn()
+    {
+        TestFight fight = CreateFight(
+            ResolvedTalentModifiers.Empty,
+            enemyHp: 10_000);
+        DateTimeOffset startedAt = Now.AddMilliseconds(1);
+
+        Assert.True(fight.Session.Handle(
+            new UseAbilityCommand("base-pyro-burn", "MAGE_PYROBLAST", EnemyId),
+            startedAt).Succeeded);
+        CombatCommandResult completed = fight.Session.AdvanceTo(startedAt.AddSeconds(2.5));
+
+        Assert.Contains(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_PYROBLAST_BURN");
+    }
+
+    [Fact]
+    public void FlamestrikeBurnsButDoesNotIgniteWithoutItsIgniteTalent()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook("F-2-1", TalentModifierKeys.OnAbilityUsed, 1, 40));
+        TestFight fight = CreateFight(
+            talents,
+            playerCriticalChance: 100,
+            playerCriticalDamage: 0,
+            enemyHp: 10_000);
+        DateTimeOffset startedAt = Now.AddMilliseconds(1);
+
+        Assert.True(fight.Session.Handle(
+            new UseAbilityCommand("flamestrike-base", "MAGE_FLAMESTRIKE", EnemyId),
+            startedAt).Succeeded);
+        CombatCommandResult completed = fight.Session.AdvanceTo(startedAt.AddSeconds(2));
+
+        Assert.Contains(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FLAMESTRIKE_BURN");
+        Assert.DoesNotContain(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FIRE_IGNITE");
+    }
+
+    [Fact]
+    public void ImprovedFlamestrikeAllowsItsCriticalHitToTriggerIgnite()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook("F-2-1", TalentModifierKeys.OnAbilityUsed, 1, 40),
+            Hook("F-4-4", TalentModifierKeys.OnAbilityUsed, 1, 8));
+        TestFight fight = CreateFight(
+            talents,
+            playerCriticalChance: 100,
+            playerCriticalDamage: 0,
+            enemyHp: 10_000);
+        DateTimeOffset startedAt = Now.AddMilliseconds(1);
+
+        Assert.True(fight.Session.Handle(
+            new UseAbilityCommand("flamestrike-ignite", "MAGE_FLAMESTRIKE", EnemyId),
+            startedAt).Succeeded);
+        CombatCommandResult completed = fight.Session.AdvanceTo(startedAt.AddSeconds(2));
+
+        Assert.Contains(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FIRE_IGNITE");
+    }
+
+    [Fact]
+    public void WorldInFlamesAddsAoeCritChanceAndEnablesScaledIgnite()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook("F-2-1", TalentModifierKeys.OnAbilityUsed, 1, 40),
+            Hook(
+                "F-7-3",
+                TalentModifierKeys.OnAbilityUsed,
+                3,
+                9,
+                secondaryValue: 100));
+        TestFight fight = CreateFight(
+            talents,
+            playerCriticalChance: 0,
+            playerCriticalDamage: 0,
+            enemyHp: 10_000,
+            randomValue: 0.05m);
+
+        CombatCommandResult result = fight.Session.Handle(
+            new UseAbilityCommand("world-in-flames", "MAGE_BLAST_WAVE", EnemyId),
+            Now.AddMilliseconds(1));
+
+        Assert.True(result.Succeeded);
+        Assert.Contains(result.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.CriticalHit
+            && combatEvent.TargetActorId == EnemyId);
+        Assert.Contains(
+            result.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FIRE_IGNITE");
+    }
+
+    [Fact]
+    public void PowerfulCombustionThirdCritCreatesFirePulse()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(
+                "F-6-1",
+                TalentModifierKeys.OnAbilityUsed,
+                1,
+                8,
+                duration: TimeSpan.FromSeconds(12)),
+            Hook("F-6-2", TalentModifierKeys.OnAbilityUsed, 2, 20));
+        TestFight fight = CreateFight(
+            talents,
+            playerCriticalChance: 100,
+            playerCriticalDamage: 0,
+            enemyHp: 10_000);
+
+        DateTimeOffset cursor = Now.AddMilliseconds(1);
+        Assert.True(fight.Session.Handle(
+            new UseAbilityCommand("combustion-pulse-start", "MAGE_COMBUSTION", PlayerId),
+            cursor).Succeeded);
+        cursor += TimeSpan.FromMilliseconds(1);
+
+        CombatCommandResult completion = null!;
+        for (var index = 0; index < 3; index++)
+        {
+            Assert.True(fight.Session.Handle(
+                new UseAbilityCommand($"combustion-pulse-fireball-{index}", "MAGE_FIREBALL", EnemyId),
+                cursor).Succeeded);
+            cursor += TimeSpan.FromSeconds(1.8);
+            completion = fight.Session.AdvanceTo(cursor);
+            cursor += TimeSpan.FromMilliseconds(1);
+        }
+
+        CombatCommandResult pulse = fight.Session.AdvanceTo(cursor);
+
+        Assert.Contains(pulse.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.DefinitionId == "MAGE_COMBUSTION_PULSE"
+            && combatEvent.DamageType == DamageType.Magical);
+        Assert.DoesNotContain(
+            completion.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_COMBUSTION_ACTIVE");
+    }
+
+    [Fact]
     public void PerfectCombustionResetsFireCooldownsAndEmbodimentExtendsWindow()
     {
         ResolvedTalentModifiers talents = Talents(
@@ -232,7 +374,8 @@ public sealed class PyromancerCombatSessionTests
         decimal playerSpellPower = 40,
         decimal playerCriticalChance = 0,
         decimal playerCriticalDamage = 0,
-        decimal enemyHp = 1_000)
+        decimal enemyHp = 1_000,
+        decimal randomValue = 0.5m)
     {
         CombatActorState playerActor = Actor(
             PlayerId,
@@ -254,6 +397,7 @@ public sealed class PyromancerCombatSessionTests
                     "MAGE_FIREBALL",
                     "MAGE_FIRE_BLAST",
                     "MAGE_PYROBLAST",
+                    "MAGE_FLAMESTRIKE",
                     "MAGE_BLAST_WAVE",
                     "MAGE_COMBUSTION",
                     "MAGE_ARCANE_SPARK",
@@ -276,7 +420,7 @@ public sealed class PyromancerCombatSessionTests
             Abilities(),
             new MonsterAiProfile("PASSIVE", []),
             talents,
-            Random(500),
+            Random(500, randomValue),
             Now);
         return new TestFight(session, playerActor, enemyActor);
     }
@@ -315,6 +459,24 @@ public sealed class PyromancerCombatSessionTests
                 "MAGE_FIRE_BLAST", AbilityType.Instant, "FIRE", 18, 8, 0, 0.95m),
             ["MAGE_PYROBLAST"] = DamageAbility(
                 "MAGE_PYROBLAST", AbilityType.Casted, "FIRE", 30, 0, 2.5, 2.20m),
+            ["MAGE_FLAMESTRIKE"] = new(
+                "MAGE_FLAMESTRIKE",
+                AbilityType.Casted,
+                AbilityTargetType.AllEnemiesInCombat,
+                28,
+                TimeSpan.FromSeconds(6),
+                TimeSpan.FromSeconds(2),
+                true,
+                GlobalCooldownCategory.Standard,
+                true,
+                "FIRE",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        DamageType: DamageType.Magical,
+                        SpellPowerCoefficient: 1.05m)
+                ]),
             ["MAGE_BLAST_WAVE"] = new(
                 "MAGE_BLAST_WAVE",
                 AbilityType.Instant,
@@ -381,8 +543,8 @@ public sealed class PyromancerCombatSessionTests
                     SpellPowerCoefficient: coefficient)
             ]);
 
-    private static SequenceGameRandom Random(int count = 20) =>
-        new(Enumerable.Repeat(0.5m, count).ToArray());
+    private static SequenceGameRandom Random(int count = 20, decimal value = 0.5m) =>
+        new(Enumerable.Repeat(value, count).ToArray());
 
     private sealed record TestFight(
         CombatSession Session,
