@@ -419,6 +419,7 @@ export interface InventoryItem {
   type: ItemType
   rarity: ItemRarity
   requiredLevel: number
+  itemLevel?: number | null
   quantity: number
   slot: EquipmentSlot | null
   equippedSlot: EquipmentSlot | null
@@ -431,6 +432,11 @@ export interface InventoryItem {
   weaponBaseAttackIntervalSeconds: number | null
   attackSpeedPercent: number
   dodgePercent: number
+  blockChancePercent?: number
+  blockValueMin?: number
+  blockValueMax?: number
+  weaponDamageMin?: number | null
+  weaponDamageMax?: number | null
   consumableActions: ConsumableAction[]
   consumableCooldownCategoryId: string | null
   consumableCooldownSeconds: number
@@ -677,158 +683,4 @@ export interface CombatEffectSnapshot {
   id: string
   stacks: number
   expiresAtUtc: string
-}
-
-export interface CombatAbility {
-  id: string
-  displayName: string
-  description: string
-  iconId: string | null
-  resourceCost: number
-  cooldownSeconds: number
-  isUnblockable?: boolean
-  targetType?: CombatAbilityTargetType
-}
-
-export type CombatAbilityTargetType =
-  | 'Self'
-  | 'SingleAlly'
-  | 'SingleEnemy'
-  | 'AllEnemiesInCombat'
-  | 'NEnemiesInCombat'
-  | 'SelfAndPartyMembersInCombat'
-  | 'ActiveCompanion'
-  | 'Owner'
-
-export interface CombatCastSnapshot {
-  abilityId: string
-  startedAtUtc: string
-  resolvesAtUtc: string
-}
-
-export interface CombatActorSnapshot {
-  actorId: string
-  kind: 'Player' | 'Companion' | 'Monster'
-  definitionId: string
-  name: string
-  hp: number
-  maxHp: number
-  resourceType: string
-  resource: number
-  maxResource: number
-  autoAttackEnabled: boolean
-  autoAttackIntervalSeconds?: number | null
-  nextAutoAttackAtUtc?: string | null
-  cooldowns: Record<string, string>
-  knownAbilityIds: string[]
-  abilities: CombatAbility[]
-  effects: CombatEffectSnapshot[]
-  activeCast?: CombatCastSnapshot | null
-  consumableCooldowns?: Record<string, string> | null
-  level?: number
-  artId?: string | null
-  currentAggroTargetActorId?: string | null
-}
-
-export interface CombatContributionSnapshot {
-  characterId: string
-  qualifyingActions: number
-  damageDealt: number
-  effectiveHealing: number
-  supportContribution: number
-  tankingContribution: number
-  joinedAtUtc: string
-  fledAtUtc?: string | null
-  diedAtUtc?: string | null
-}
-
-export interface CombatParticipantSnapshot {
-  accountId: string
-  characterId: string
-  actorId: string
-  status: 'Rostered' | 'Active' | 'Fled' | 'Dead' | 'Completed'
-  rosteredAtUtc: string
-  joinedAtUtc?: string | null
-  fledAtUtc?: string | null
-  diedAtUtc?: string | null
-}
-
-export interface CombatParticipantContributionSnapshot {
-  contribution: CombatContributionSnapshot
-  isEligible: boolean
-  reason: string
-  contributionScore: number
-}
-
-export interface CombatSnapshot {
-  sessionId: string
-  sequence: number
-  status: 'Active' | 'Victory' | 'Defeat' | 'Cancelled'
-  serverTimeUtc: string
-  contentVersion: string
-  balanceVersion: string
-  player: CombatActorSnapshot
-  enemy: CombatActorSnapshot
-  enemies?: CombatActorSnapshot[]
-  selectedTargetActorId?: string | null
-  companion?: CombatActorSnapshot | null
-  playerContribution?: CombatContributionSnapshot | null
-  players?: CombatActorSnapshot[] | null
-  participantRoster?: CombatParticipantSnapshot[] | null
-  playerContributionEligible?: boolean | null
-  participantContributions?: CombatParticipantContributionSnapshot[] | null
-}
-
-export interface CombatEvent {
-  sequence: number
-  type: string
-  actorId: string
-  sourceActorId: string | null
-  targetActorId: string | null
-  definitionId: string | null
-  amount: number
-  amountBeforeShields: number
-  serverTimeUtc: string
-  weaponHand?: 'MainHand' | 'OffHand' | null
-  weaponDefinitionId?: string | null
-  rawDamage?: number
-  damageAfterMitigation?: number
-  damageBeforeBlock?: number
-  isUnblockable?: boolean
-}
-
-export interface CombatUpdate {
-  succeeded: boolean
-  errorCode: string | null
-  snapshot: CombatSnapshot | null
-  events: CombatEvent[]
-  reward: CombatReward | null
-}
-
-export interface CombatReward {
-  xpEarned: number
-  goldEarned: number
-  leveledUp: boolean
-  previousLevel: number
-  currentLevel: number
-  items: {
-    itemId: string
-    name: string
-    type: ItemType
-    rarity: ItemRarity
-    quantity: number
-  }[]
-  completedContractIds?: string[] | null
-  lootRolls?: CombatLootRoll[] | null
-}
-
-export interface CombatLootRoll {
-  lootRollId: string
-  itemId: string
-  name: string
-  rarity: ItemRarity
-  quantity: number
-  endsAtUtc: string
-  eligibleCharacterIds: string[]
-  canNeed: boolean
 }
