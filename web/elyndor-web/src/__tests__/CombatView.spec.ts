@@ -156,10 +156,12 @@ describe('CombatView', () => {
     expect(roster.text()).toContain('Союзники · 2')
     expect(roster.text()).toContain('Выбери цель для поддержки')
     expect(wrapper.findAll('.combat-ally-roster__member')).toHaveLength(2)
+    expect(wrapper.findAll('.combat-ally-roster__portrait img')).toHaveLength(2)
     expect(wrapper.text()).toContain('Вы · Воин')
     expect(wrapper.text()).toContain('Маг')
     expect(wrapper.find('.combat-ally-roster__member--selected').exists()).toBe(false)
     expect(wrapper.get('.combat-frontline').text()).toContain('Маг')
+    expect(wrapper.get('.combat-frontline__portrait').attributes('src')).toBeTruthy()
     expect(wrapper.find('.party-formation').exists()).toBe(false)
   })
 
@@ -179,7 +181,7 @@ describe('CombatView', () => {
     expect(wrapper.get('[data-combat-battlefield]').find('[data-combat-party-roster]').exists()).toBe(true)
   })
 
-  it('keeps consumables in the compact combat utility strip', () => {
+  it('renders consumables as entries of the universal twelve-slot hotbar', () => {
     const store = useCombatSessionStore()
     const session = useGameSessionStore()
     session.snapshot = {
@@ -194,7 +196,8 @@ describe('CombatView', () => {
 
     const wrapper = mount(CombatView)
 
-    expect(wrapper.get('[data-combat-utility-strip]').find('[data-combat-consumable="HEALING_POTION"]').exists()).toBe(true)
+    expect(wrapper.get('[data-combat-hotbar]').find('[data-combat-consumable="HEALING_POTION"]').exists()).toBe(true)
+    expect(wrapper.get('[data-combat-utility-strip]').find('[data-combat-consumable]').exists()).toBe(false)
     expect(wrapper.find('.consumable-row').exists()).toBe(false)
   })
 
@@ -238,7 +241,7 @@ describe('CombatView', () => {
     expect(row.text()).not.toContain('ВЫ')
     expect(wrapper.get('[data-autoattack-toggle]').text()).toContain('Выключена')
   })
-  it('renders a live AA cast bar from authoritative autoattack timing', () => {
+  it('keeps autoattack as a fixed action outside the twelve-slot hotbar', () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'ARCHER', 'Archer', 120, 120, 100, 100, [])
     const enemy = actor('Monster', 'WOLF', 'Волк', 180, 180, 0, 0, [], 3, 'wolf')
@@ -254,11 +257,12 @@ describe('CombatView', () => {
     }
 
     const wrapper = mount(CombatView)
-    const bar = wrapper.get('[data-autoattack-cast]')
+    const button = wrapper.get('[data-autoattack-toggle]')
 
-    expect(bar.text()).toContain('Автоатака')
-    expect(bar.text()).not.toContain('ВЫКЛ')
-    expect(bar.get('i > span').attributes('style')).toContain('width:')
+    expect(button.classes()).toContain('active')
+    expect(button.text()).toContain('Автоатака')
+    expect(wrapper.get('[data-combat-hotbar]').find('[data-autoattack-toggle]').exists()).toBe(false)
+    expect(wrapper.find('[data-autoattack-cast]').exists()).toBe(false)
   })
 
   it('renders authoritative player and enemy cast bars', () => {

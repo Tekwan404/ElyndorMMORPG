@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import type { CombatAbility } from '@/api/contracts'
+import { computed } from 'vue'
+
+import type { CombatAbility, InventoryItem } from '@/api/contracts'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{
   slots: Array<CombatAbility | null>
+  consumables: InventoryItem[]
   queuedAbilityIds: string[]
   fireballStreak: number
   heatActive: boolean
@@ -13,11 +16,45 @@ const props = defineProps<{
   abilityIcon: (ability: CombatAbility) => string | undefined
   abilityGlyph: (ability: CombatAbility) => GlyphName
   cooldownRemaining: (abilityId: string) => number
+  consumableCooldownRemaining: (item: InventoryItem) => number
+  consumableCanAffect: (item: InventoryItem) => boolean
+  consumableGlyph: (item: InventoryItem) => GlyphName
 }>()
 
 const emit = defineEmits<{
   use: [ability: CombatAbility]
+  useConsumable: [item: InventoryItem]
 }>()
+
+type HotbarEntry =
+  | { kind: 'ability'; ability: CombatAbility }
+  | { kind: 'consumable'; item: InventoryItem }
+
+const displaySlots = computed<Array<HotbarEntry | null>>(() => {
+  let consumableIndex = 0
+  return props.slots.map((ability) => {
+    if (ability) return { kind: 'ability', ability }
+    const item = props.consumables[consumableIndex++]
+    return item ? { kind: 'consumable', item } : null
+  })
+})
+
+function slotState(entry: HotbarEntry | null): string {
+  if (!entry) return 'empty'
+  if (entry.kind === 'ability') return props.abilityState(entry.ability)
+  if (props.consumableCooldownRemaining(entry.item) > 0) return 'cooldown'
+  return props.consumableCanAffect(entry.item) ? 'ready' : 'disabled'
+}
+
+function slotDisabled(entry: HotbarEntry | null): boolean {
+  return !entry || slotState(entry) !== 'ready'
+}
+
+function activate(entry: HotbarEntry | null): void {
+  if (!entry || slotDisabled(entry)) return
+  if (entry.kind === 'ability') emit('use', entry.ability)
+  else emit('useConsumable', entry.item)
+}
 
 function isQueued(abilityId: string): boolean {
   return props.queuedAbilityIds.includes(abilityId)
@@ -31,46 +68,56 @@ function queuePosition(abilityId: string): number {
 <template>
   <div class="combat-ability-hotbar" aria-label="Боевые способности" data-combat-hotbar>
     <button
-      v-for="(ability, index) in slots"
-      :key="ability?.id ?? `empty-${index}`"
+      v-for="(entry, index) in displaySlots"
+      :key="entry?.kind === 'ability' ? entry.ability.id : entry?.kind === 'consumable' ? entry.item.definitionId : `empty-${index}`"
       type="button"
       class="combat-ability-hotbar__slot"
       :class="{
-        'combat-ability-hotbar__slot--empty': !ability,
-        'combat-ability-hotbar__slot--comet': ability?.id === 'FIRE_COMET',
-        'combat-ability-hotbar__slot--queued': ability && isQueued(ability.id),
+        'combat-ability-hotbar__slot--empty': !entry,
+        'combat-ability-hotbar__slot--comet': entry?.kind === 'ability' && entry.ability.id === 'FIRE_COMET',
+        'combat-ability-hotbar__slot--queued': entry?.kind === 'ability' && isQueued(entry.ability.id),
+        'combat-ability-hotbar__slot--consumable': entry?.kind === 'consumable',
       }"
-      :data-ability-slot="ability?.id ?? ''"
-      :data-state="ability ? abilityState(ability) : 'empty'"
-      :disabled="!ability || abilityState(ability) !== 'ready'"
-      :aria-label="ability?.displayName ?? 'Пустой слот способности'"
-      @click="ability && emit('use', ability)"
+      :data-ability-slot="entry?.kind === 'ability' ? entry.ability.id : ''"
+      :data-combat-consumable="entry?.kind === 'consumable' ? entry.item.definitionId : undefined"
+      :data-state="slotState(entry)"
+      :disabled="slotDisabled(entry)"
+      :aria-label="entry?.kind === 'ability' ? entry.ability.displayName : entry?.kind === 'consumable' ? `${entry.item.name}, ${entry.item.quantity}` : 'Пустой слот'"
+      @click="activate(entry)"
     >
       <span class="combat-ability-hotbar__icon">
-        <img v-if="ability && abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
+        <img v-if="entry?.kind === 'ability' && abilityIcon(entry.ability)" :src="abilityIcon(entry.ability)" alt="" />
         <IconGenerator
-          v-else-if="ability"
-          :config="{ id: `ability-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
+          v-else-if="entry?.kind === 'ability'"
+          :config="{ id: `ability-${entry.ability.id}`, glyph: abilityGlyph(entry.ability), category: 'skill' }"
+        />
+        <IconGenerator
+          v-else-if="entry?.kind === 'consumable'"
+          :config="{ id: `consumable-${entry.item.definitionId}`, glyph: consumableGlyph(entry.item), category: 'consumable' }"
         />
         <i v-else />
       </span>
       <span
-        v-if="ability?.id === 'MAGE_FIREBALL'"
+        v-if="entry?.kind === 'ability' && entry.ability.id === 'MAGE_FIREBALL'"
         class="combat-ability-hotbar__markers"
         :aria-label="`Криты Огненного шара: ${fireballStreak} из 3`"
       >
         <i v-for="marker in 3" :key="marker" :data-filled="marker <= fireballStreak" />
       </span>
-      <span v-if="ability?.id === 'FIRE_COMET' && heatActive" class="combat-ability-hotbar__proc">ЖАР</span>
-      <span v-if="ability?.id === 'COMBUSTION' && combustionActive" class="combat-ability-hotbar__proc">АКТ.</span>
-      <span v-if="ability && isQueued(ability.id)" class="combat-ability-hotbar__queue">{{ queuePosition(ability.id) }}</span>
-      <small v-if="ability">{{ ability.displayName }}</small>
-      <b v-if="ability && cooldownRemaining(ability.id) > 0" class="combat-ability-hotbar__cooldown">
-        {{ Math.ceil(cooldownRemaining(ability.id)) }}
+      <span v-if="entry?.kind === 'ability' && entry.ability.id === 'FIRE_COMET' && heatActive" class="combat-ability-hotbar__proc">ЖАР</span>
+      <span v-if="entry?.kind === 'ability' && entry.ability.id === 'COMBUSTION' && combustionActive" class="combat-ability-hotbar__proc">АКТ.</span>
+      <span v-if="entry?.kind === 'ability' && isQueued(entry.ability.id)" class="combat-ability-hotbar__queue">{{ queuePosition(entry.ability.id) }}</span>
+      <small v-if="entry">{{ entry.kind === 'ability' ? entry.ability.displayName : entry.item.name }}</small>
+      <b v-if="entry?.kind === 'ability' && cooldownRemaining(entry.ability.id) > 0" class="combat-ability-hotbar__cooldown">
+        {{ Math.ceil(cooldownRemaining(entry.ability.id)) }}
       </b>
-      <span v-else-if="ability && ability.resourceCost > 0" class="combat-ability-hotbar__cost">
-        {{ Math.round(ability.resourceCost) }}
+      <b v-else-if="entry?.kind === 'consumable' && consumableCooldownRemaining(entry.item) > 0" class="combat-ability-hotbar__cooldown">
+        {{ Math.ceil(consumableCooldownRemaining(entry.item) / 1000) }}
+      </b>
+      <span v-else-if="entry?.kind === 'ability' && entry.ability.resourceCost > 0" class="combat-ability-hotbar__cost">
+        {{ Math.round(entry.ability.resourceCost) }}
       </span>
+      <span v-else-if="entry?.kind === 'consumable'" class="combat-ability-hotbar__count">×{{ entry.item.quantity }}</span>
     </button>
   </div>
 </template>
@@ -80,6 +127,7 @@ function queuePosition(abilityId: string): number {
 .combat-ability-hotbar__slot { position: relative; display: grid; min-width: 0; min-height: clamp(43px, 13vw, 56px); place-items: center; align-content: center; gap: 2px; padding: 3px 2px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%)); color: var(--ui-color-text-primary); font: inherit; }
 .combat-ability-hotbar__slot[data-state='ready'] { border-color: rgb(146 136 255 / 36%); box-shadow: inset 0 0 0 1px rgb(146 136 255 / 4%); }
 .combat-ability-hotbar__slot[data-state='cooldown'], .combat-ability-hotbar__slot[data-state='resource'] { opacity: .46; }
+.combat-ability-hotbar__slot[data-state='disabled'] { opacity: .38; }
 .combat-ability-hotbar__slot--empty { opacity: .2; }
 .combat-ability-hotbar__slot--comet { border-color: color-mix(in srgb, var(--ui-modifier-fire) 65%, var(--ui-color-border)); }
 .combat-ability-hotbar__icon { display: grid; width: min(38px, 9vw); height: min(38px, 9vw); place-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 7%); border-radius: 8px; background: rgb(3 5 10 / 90%); color: #aaa3ff; }
@@ -94,4 +142,6 @@ function queuePosition(abilityId: string): number {
 .combat-ability-hotbar__markers i { width: 4px; height: 4px; border-radius: 50%; background: rgb(255 255 255 / 20%); }
 .combat-ability-hotbar__markers i[data-filled='true'] { background: #f08b63; }
 .combat-ability-hotbar__proc { position: absolute; top: 3px; right: 3px; border-radius: 4px; padding: 1px 2px; background: rgb(241 123 70 / 85%); color: #fff4de; font-size: .38rem; font-weight: 900; }
+.combat-ability-hotbar__slot--consumable { border-color: rgb(79 185 150 / 34%); }
+.combat-ability-hotbar__count { position: absolute; right: 2px; bottom: 14px; padding: 1px 3px; border-radius: 4px; background: rgb(2 4 8 / 84%); color: #9be2c9; font-size: .42rem; font-weight: 900; }
 </style>

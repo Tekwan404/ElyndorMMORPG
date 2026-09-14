@@ -257,19 +257,6 @@ function castProgress(cast: CombatCastSnapshot | null): number {
   return Math.min(100, Math.max(0, ((now.value - started) / duration) * 100))
 }
 
-const autoAttackRemaining = computed(() => {
-  const player = snapshot.value?.player
-  if (!player?.autoAttackEnabled || !player.nextAutoAttackAtUtc) return 0
-  return Math.max(0, (Date.parse(player.nextAutoAttackAtUtc) - now.value) / 1_000)
-})
-
-const autoAttackProgress = computed(() => {
-  const player = snapshot.value?.player
-  const interval = player?.autoAttackIntervalSeconds ?? 0
-  if (!player?.autoAttackEnabled || interval <= 0 || !player.nextAutoAttackAtUtc) return 0
-  return Math.min(100, Math.max(0, (1 - autoAttackRemaining.value / interval) * 100))
-})
-
 function abilityName(id: string | null | undefined): string {
   if (!id) return ''
   const ability = abilityById.value.get(id)
@@ -683,8 +670,7 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <section v-if="isParticipantActive" class="combat-actions">
-        <div class="player-state-row">
-          <div class="effect-strip effect-strip--player">
+        <div v-if="playerEffects.length" class="effect-strip effect-strip--player">
             <span
               v-for="effect in playerEffects"
               :key="effect.id"
@@ -693,15 +679,6 @@ onUnmounted(() => window.clearInterval(timer))
               <b>{{ effect.stacks }}</b>
               <small>{{ effectRemaining(effect.expiresAtUtc).toFixed(1) }}</small>
             </span>
-            <small v-if="playerEffects.length === 0" class="effect-strip__empty">Нет активных эффектов</small>
-          </div>
-
-          <span
-            class="autoattack-state"
-            :class="{ active: snapshot.player.autoAttackEnabled }"
-          >
-            {{ snapshot.player.autoAttackEnabled ? 'Автоатака · ВКЛ' : 'Автоатака · ВЫКЛ' }}
-          </span>
         </div>
 
         <div v-if="isMage" class="pyro-state" aria-label="Состояние пироманта">
@@ -715,6 +692,7 @@ onUnmounted(() => window.clearInterval(timer))
 
         <CombatAbilityHotbar
           :slots="abilitySlots"
+          :consumables="isTraining ? [] : combatConsumables"
           :queued-ability-ids="combat.abilityQueue.map((queued) => queued.abilityId)"
           :fireball-streak="fireballStreak"
           :heat-active="Boolean(heatLimit)"
@@ -723,7 +701,11 @@ onUnmounted(() => window.clearInterval(timer))
           :ability-icon="abilityIcon"
           :ability-glyph="abilityGlyph"
           :cooldown-remaining="cooldownRemaining"
+          :consumable-cooldown-remaining="consumableCooldownRemaining"
+          :consumable-can-affect="consumableCanAffect"
+          :consumable-glyph="consumableGlyph"
           @use="(ability) => combat.useAbility(ability.id)"
+          @use-consumable="useConsumable"
         />
 
         <div v-if="playerCast" class="cast-bar cast-bar--player" data-player-cast>
@@ -734,44 +716,7 @@ onUnmounted(() => window.clearInterval(timer))
           <i><span :style="{ width: `${castProgress(playerCast)}%` }" /></i>
         </div>
 
-        <div
-          class="cast-bar cast-bar--autoattack"
-          :class="{ inactive: !snapshot.player.autoAttackEnabled }"
-          data-autoattack-cast
-        >
-          <div>
-            <strong>Автоатака</strong>
-            <small v-if="snapshot.player.autoAttackEnabled">
-              {{ playerCast ? 'ПАУЗА' : `${autoAttackRemaining.toFixed(1)}с` }}
-            </small>
-            <small v-else>ВЫКЛ</small>
-          </div>
-          <i>
-            <span :style="{ width: `${autoAttackProgress}%` }" />
-          </i>
-        </div>
-
         <div class="combat-utility-strip" aria-label="Быстрые боевые действия" data-combat-utility-strip>
-          <button
-            v-for="item in !isTraining ? combatConsumables : []"
-            :key="item.id"
-            type="button"
-            class="utility-action utility-action--consumable"
-            :data-combat-consumable="item.definitionId"
-            :disabled="combat.pending || consumableCooldownRemaining(item) > 0 || !consumableCanAffect(item)"
-            @click="useConsumable(item)"
-          >
-            <span class="utility-action__icon">
-              <IconGenerator :config="{ id: `consumable-${item.definitionId}`, glyph: consumableGlyph(item), category: 'consumable' }" />
-            </span>
-            <div>
-              <strong>{{ item.name }}</strong>
-              <small v-if="consumableCooldownRemaining(item) > 0">
-                {{ (consumableCooldownRemaining(item) / 1000).toFixed(1) }}с
-              </small>
-              <small v-else>×{{ item.quantity }}</small>
-            </div>
-          </button>
           <button
             type="button"
             class="utility-action"
@@ -1289,35 +1234,6 @@ onUnmounted(() => window.clearInterval(timer))
   background: linear-gradient(90deg, #655bc6, #aba3ff);
 }
 
-.cast-bar--autoattack {
-  padding: 6px 8px;
-  border: 1px solid rgb(79 185 150 / 28%);
-  border-radius: var(--ui-radius-sm);
-  background: rgb(10 24 22 / 54%);
-}
-
-.cast-bar--autoattack > div strong {
-  color: #9be2c9;
-}
-
-.cast-bar--autoattack > i > span {
-  background: linear-gradient(90deg, #3d8f76, #84d5bb);
-}
-
-.cast-bar--autoattack.inactive {
-  border-color: var(--ui-color-border);
-  background: rgb(4 7 12 / 52%);
-  opacity: .58;
-}
-
-.cast-bar--autoattack.inactive > div strong {
-  color: var(--ui-color-text-muted);
-}
-
-.cast-bar--autoattack.inactive > i > span {
-  width: 0 !important;
-}
-
 .combat-feedback {
   position: absolute;
   right: 8%;
@@ -1417,29 +1333,6 @@ onUnmounted(() => window.clearInterval(timer))
   font-weight: 800;
 }
 
-.player-state-row {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 7px;
-}
-
-.autoattack-state {
-  flex: 0 0 auto;
-  padding: 4px 6px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-text-muted);
-  font-size: .46rem;
-  font-weight: 800;
-}
-
-.autoattack-state.active {
-  border-color: rgb(79 185 150 / 28%);
-  color: #84d5bb;
-}
-
 .pyro-state {
   display: flex;
   flex-wrap: wrap;
@@ -1459,7 +1352,7 @@ onUnmounted(() => window.clearInterval(timer))
 
 .combat-utility-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
   gap: 5px;
 }
 
@@ -1525,10 +1418,9 @@ onUnmounted(() => window.clearInterval(timer))
 .combat-utility-strip .utility-action {
   position: relative;
   min-height: 42px;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  padding: 3px;
-  text-align: center;
+  grid-template-columns: 28px minmax(0, 1fr);
+  padding: 4px 6px;
+  text-align: left;
 }
 
 .combat-utility-strip .utility-action__icon {
@@ -1536,7 +1428,7 @@ onUnmounted(() => window.clearInterval(timer))
   height: 28px;
 }
 
-.combat-utility-strip .utility-action > div { display: none; }
+.combat-utility-strip .utility-action > div { display: grid; }
 
 .utility-action__count {
   position: absolute;
@@ -1878,14 +1770,6 @@ onUnmounted(() => window.clearInterval(timer))
 
 .ability-row {
   gap: 3px;
-}
-
-.combat-actions .player-state-row {
-  min-height: 20px;
-}
-
-.combat-actions .autoattack-state {
-  display: none;
 }
 
 .combat-actions .effect-strip {
