@@ -55,14 +55,26 @@ public sealed class CharacterTalentState
         string? mutationId = null)
     {
         EnsureUtc(changedAtUtc);
-        string json = JsonSerializer.Serialize(
-            selectedRanks.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
-            JsonOptions);
+        string json = Serialize(selectedRanks);
         if (loadoutId == TalentLoadoutIds.Loadout1) Loadout1RanksJson = json;
         else if (loadoutId == TalentLoadoutIds.Loadout2) Loadout2RanksJson = json;
         else throw new ArgumentOutOfRangeException(nameof(loadoutId));
         Touch(changedAtUtc, mutationId);
+    }
+
+    public void NormalizeForTreeVersion(
+        int talentVersion,
+        IReadOnlyDictionary<string, int> loadout1Ranks,
+        IReadOnlyDictionary<string, int> loadout2Ranks,
+        DateTimeOffset changedAtUtc)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(talentVersion);
+        EnsureUtc(changedAtUtc);
+
+        Loadout1RanksJson = Serialize(loadout1Ranks);
+        Loadout2RanksJson = Serialize(loadout2Ranks);
+        TalentVersion = talentVersion;
+        Touch(changedAtUtc, mutationId: null);
     }
 
     public void SwitchLoadout(
@@ -111,6 +123,12 @@ public sealed class CharacterTalentState
         TalentLoadoutIds.Loadout2 => Loadout2RanksJson,
         _ => throw new ArgumentOutOfRangeException(nameof(loadoutId))
     };
+
+    private static string Serialize(IReadOnlyDictionary<string, int> selectedRanks) =>
+        JsonSerializer.Serialize(
+            selectedRanks.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
+            JsonOptions);
 
     private static Dictionary<string, int> Deserialize(string json) =>
         JsonSerializer.Deserialize<Dictionary<string, int>>(json, JsonOptions)
