@@ -56,7 +56,7 @@ public sealed class GameContentPackageLoaderTests
                 32,
                 mageTree.Nodes.Count(node => node.BranchId == branch.Id)));
         Assert.Equal(96, mageTree.Nodes.Count);
-        Assert.Equal(207, mageTree.Nodes.Sum(node => node.MaxRank));
+        Assert.Equal(208, mageTree.Nodes.Sum(node => node.MaxRank));
         Assert.Contains(
             mageTree.Nodes,
             node => node.Id == "A-3-1"
