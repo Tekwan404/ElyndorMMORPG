@@ -77,6 +77,12 @@ public sealed class CharacterTalentState
         Touch(changedAtUtc, mutationId: null);
     }
 
+    public void AlignTreeVersion(int talentVersion)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(talentVersion);
+        TalentVersion = talentVersion;
+    }
+
     public void SwitchLoadout(
         string loadoutId,
         DateTimeOffset changedAtUtc,
