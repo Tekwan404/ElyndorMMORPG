@@ -77,15 +77,22 @@ function openStats(): void {
 
 <style scoped>
 .hero-view {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 100%;
+  overflow-x: clip;
 }
 
 .hero-tabs {
   position: sticky;
   z-index: var(--ui-z-sticky);
   top: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(max-content, 1fr));
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   gap: 2px;
   overflow-x: auto;
   padding: 6px var(--ui-space-3);
@@ -94,9 +101,8 @@ function openStats(): void {
   box-shadow: 0 8px 20px rgb(0 0 0 / 15%);
   backdrop-filter: blur(14px);
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
 }
-
-.hero-tabs--with-companion { grid-template-columns: repeat(5, minmax(max-content, 1fr)); }
 
 .hero-tabs::-webkit-scrollbar {
   display: none;
@@ -104,6 +110,7 @@ function openStats(): void {
 
 .hero-tabs button {
   position: relative;
+  flex: 0 0 auto;
   min-width: max-content;
   min-height: var(--ui-touch-target);
   padding: 6px var(--ui-space-2);
