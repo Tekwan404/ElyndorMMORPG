@@ -7,7 +7,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 // The existing generated snapshot is the frozen model before professions. Keep it as the
 // historical base and extend it with the two profession entities introduced by this migration.
 // The abstract modifier keeps EF from selecting the base snapshot itself.
-abstract partial class GameDbContextModelSnapshot;
+abstract partial class GameDbContextModelSnapshot
+{
+}
 
 [DbContext(typeof(GameDbContext))]
 internal sealed class GameDbContextProfessionModelSnapshot : GameDbContextModelSnapshot
