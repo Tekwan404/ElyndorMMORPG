@@ -88,6 +88,32 @@ public sealed class MageCombatSessionTests
     }
 
     [Fact]
+    public void CounterspellInterruptsActiveEnemyCast()
+    {
+        CombatSession session = CreateSession(
+            ResolvedTalentModifiers.Empty,
+            new HashSet<string>(["MAGE_COUNTERSPELL"], StringComparer.Ordinal),
+            enemyAbilityIds: new HashSet<string>(["TEST_ENEMY_CAST"], StringComparer.Ordinal),
+            enemyPriorityAbilityIds: ["TEST_ENEMY_CAST"],
+            enemyActionInterval: TimeSpan.FromSeconds(1));
+
+        CombatCommandResult enemyStarted = session.AdvanceTo(Now.AddSeconds(1));
+        CombatCastSnapshot activeCast = Assert.IsType<CombatCastSnapshot>(enemyStarted.Snapshot.Enemy.ActiveCast);
+        Assert.Equal("TEST_ENEMY_CAST", activeCast.AbilityId);
+
+        DateTimeOffset interruptAt = Now.AddSeconds(1).AddMilliseconds(1);
+        CombatCommandResult interrupted = session.Handle(
+            new UseAbilityCommand("counterspell", "MAGE_COUNTERSPELL", EnemyId),
+            interruptAt);
+
+        Assert.True(interrupted.Succeeded);
+        Assert.Null(interrupted.Snapshot.Enemy.ActiveCast);
+        Assert.Contains(interrupted.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.AbilityInterrupted
+            && combatEvent.SourceActorId == EnemyId);
+    }
+
+    [Fact]
     public void FrostNovaFreezesNormalEnemyAndIceLanceDealsTripleDamage()
     {
         CombatSession session = CreateSession(
@@ -141,6 +167,42 @@ public sealed class MageCombatSessionTests
             effect => effect.Id == "MAGE_FREEZE");
     }
 
+    [Fact]
+    public void ColdBloodAppearsAfterIceBlockAndDiscountsNextFrostSpell()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
+            Hook(
+                "I-7-3",
+                TalentModifierKeys.OnAbilityUsed,
+                2,
+                20,
+                secondaryValue: 50,
+                duration: TimeSpan.FromSeconds(6)));
+        CombatSession session = CreateSession(
+            talents,
+            new HashSet<string>(["MAGE_ICE_BLOCK", "MAGE_ICE_SHARD"], StringComparer.Ordinal),
+            enemyActionInterval: TimeSpan.FromSeconds(1));
+
+        CombatCommandResult blocked = session.Handle(
+            new UseAbilityCommand("ice-block", "MAGE_ICE_BLOCK", PlayerId),
+            Now);
+        Assert.True(blocked.Succeeded);
+        Assert.Contains(blocked.Snapshot.Player.Effects, effect => effect.Id == "MAGE_ICE_BLOCK_ACTIVE");
+
+        CombatCommandResult ready = session.AdvanceTo(Now.AddSeconds(3));
+        Assert.Contains(ready.Snapshot.Player.Effects, effect => effect.Id == "MAGE_COLD_BLOOD");
+
+        DateTimeOffset shardAt = Now.AddSeconds(3).AddMilliseconds(1);
+        CombatCommandResult shard = session.Handle(
+            new UseAbilityCommand("cold-blood-shard", "MAGE_ICE_SHARD", EnemyId),
+            shardAt);
+
+        Assert.True(shard.Succeeded);
+        Assert.Equal(91, shard.Snapshot.Player.Resource);
+        Assert.DoesNotContain(shard.Snapshot.Player.Effects, effect => effect.Id == "MAGE_COLD_BLOOD");
+    }
+
     private static ResolvedTalentEventHook Hook(
         string talentId,
         string key,
@@ -187,7 +249,10 @@ public sealed class MageCombatSessionTests
         IReadOnlySet<string> knownAbilityIds,
         decimal playerResource = 100,
         decimal maxResource = 100,
-        MonsterRank? enemyRank = null)
+        MonsterRank? enemyRank = null,
+        IReadOnlySet<string>? enemyAbilityIds = null,
+        IReadOnlyList<string>? enemyPriorityAbilityIds = null,
+        TimeSpan? enemyActionInterval = null)
     {
         CombatActorState playerActor = Actor(
             PlayerId,
@@ -219,8 +284,8 @@ public sealed class MageCombatSessionTests
             "TEST_ENEMY",
             "Enemy",
             "NONE",
-            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
-            new HashSet<string>(StringComparer.Ordinal),
+            new AutoAttackProfile(enemyActionInterval ?? TimeSpan.FromHours(1), 0, 0, 0),
+            enemyAbilityIds ?? new HashSet<string>(StringComparer.Ordinal),
             MonsterRank: enemyRank);
 
         return new CombatSession(
@@ -228,7 +293,7 @@ public sealed class MageCombatSessionTests
             player,
             enemy,
             Abilities(),
-            new MonsterAiProfile("PASSIVE", []),
+            new MonsterAiProfile("TEST_AI", enemyPriorityAbilityIds ?? []),
             talents,
             new SequenceGameRandom(Enumerable.Repeat(0.5m, 200).ToArray()),
             Now);
@@ -267,12 +332,18 @@ public sealed class MageCombatSessionTests
                 "MAGE_ARCANE_SPARK", AbilityType.Instant, "ARCANE", 15, 3, 0, 0.75m),
             ["MAGE_PRESENCE_OF_MIND"] = Utility(
                 "MAGE_PRESENCE_OF_MIND", AbilityTargetType.Self, "ARCANE", 0, 45, usesGlobalCooldown: false),
+            ["MAGE_COUNTERSPELL"] = Utility(
+                "MAGE_COUNTERSPELL", AbilityTargetType.SingleEnemy, "ARCANE", 0, 18, usesGlobalCooldown: false),
             ["MAGE_ICE_SHARD"] = Damage(
                 "MAGE_ICE_SHARD", AbilityType.Casted, "FROST", 18, 0, 1.5, 1.05m),
             ["MAGE_FROST_NOVA"] = Utility(
                 "MAGE_FROST_NOVA", AbilityTargetType.AllEnemiesInCombat, "FROST", 20, 25),
+            ["MAGE_ICE_BLOCK"] = Utility(
+                "MAGE_ICE_BLOCK", AbilityTargetType.Self, "FROST", 0, 90, usesGlobalCooldown: false),
             ["MAGE_ICE_LANCE"] = Damage(
-                "MAGE_ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m)
+                "MAGE_ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m),
+            ["TEST_ENEMY_CAST"] = Damage(
+                "TEST_ENEMY_CAST", AbilityType.Casted, "SHADOW", 0, 0, 5, 0.50m)
         };
 
     private static AbilityDefinition Damage(
