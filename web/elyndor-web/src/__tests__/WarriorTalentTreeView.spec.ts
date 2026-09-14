@@ -89,4 +89,51 @@ describe('WarriorTalentTreeView', () => {
     expect(apiClient.request).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
+
+  it('uses the Guardian presentation row without changing the gameplay tier', async () => {
+    vi.mocked(apiClient.request).mockResolvedValueOnce({
+      ...snapshot,
+      earnedPoints: 30,
+      availablePoints: 30,
+      nodes: [{
+        ...snapshot.nodes[0],
+        id: 'G-6-5',
+        tier: 6,
+        requiredSpentPoints: 25,
+        name: 'НЕПОКОЛЕБИМЫЙ СТРАЖ',
+        maxRank: 1,
+      }],
+    })
+
+    const wrapper = mount(WarriorTalentTreeView)
+    await flushPromises()
+
+    const node = wrapper.get('[data-talent-node]')
+    expect(node.attributes('data-gameplay-tier')).toBe('6')
+    expect(node.attributes('data-visual-row')).toBe('9')
+    expect(node.attributes('style')).toContain('grid-column: 6')
+    wrapper.unmount()
+  })
+
+  it('falls back to gameplay tiers when Guardian content contains an unmapped node', async () => {
+    vi.mocked(apiClient.request).mockResolvedValueOnce({
+      ...snapshot,
+      nodes: [{
+        ...snapshot.nodes[0],
+        id: 'G-FUTURE',
+        tier: 4,
+        requiredSpentPoints: 15,
+        name: 'Будущий талант',
+      }],
+    })
+
+    const wrapper = mount(WarriorTalentTreeView)
+    await flushPromises()
+
+    const node = wrapper.get('[data-talent-node]')
+    expect(node.attributes('data-gameplay-tier')).toBe('4')
+    expect(node.attributes('data-visual-row')).toBe('4')
+    expect(node.attributes('style') ?? '').not.toContain('grid-column')
+    wrapper.unmount()
+  })
 })

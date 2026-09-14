@@ -4,6 +4,11 @@ import { computed, onMounted, ref } from 'vue'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { TalentBranchId, TalentLoadoutId, TalentNode, TalentSnapshot } from '@/api/contracts'
 import { resolveTalentArt } from '@/game/talents/talentArt'
+import {
+  resolveWarriorTalentVisualPosition,
+  WARRIOR_TALENT_VISUAL_COLUMN_COUNT,
+  type TalentVisualPosition,
+} from '@/game/talents/warriorTalentVisualLayout'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -32,6 +37,10 @@ const activeRanks = computed(() => activeLoadout.value?.selectedRanks ?? {})
 const availablePoints = computed(() => Math.max(0, (snapshot.value?.earnedPoints ?? 0) - (activeLoadout.value?.spentPoints ?? 0)))
 const activeBranch = computed(() => warriorTalentBranches.value.find((branch) => branch.id === activeBranchId.value))
 const branchTalents = computed(() => warriorTalents.value.filter((talent) => talent.branchId === activeBranchId.value))
+const usesCustomVisualLayout = computed(() =>
+  branchTalents.value.length > 0
+  && branchTalents.value.every((talent) => resolveWarriorTalentVisualPosition(talent.branchId, talent.id) !== null),
+)
 const canLearnSelected = computed(() => selectedTalent.value !== null && canLearn(selectedTalent.value))
 const connections = computed(() => {
   const talentIds = new Set(branchTalents.value.map((talent) => talent.id))
@@ -46,8 +55,50 @@ const connections = computed(() => {
   )
 })
 
-function talentsInTier(tier: number): readonly TalentNode[] {
-  return branchTalents.value.filter((talent) => talent.tier === tier)
+function visualPositionFor(talent: TalentNode): TalentVisualPosition | null {
+  if (!usesCustomVisualLayout.value) return null
+  return resolveWarriorTalentVisualPosition(talent.branchId, talent.id)
+}
+
+function visualRowFor(talent: TalentNode): number {
+  return visualPositionFor(talent)?.row ?? talent.tier
+}
+
+function talentsInVisualRow(row: number): readonly TalentNode[] {
+  const talents = branchTalents.value.filter((talent) => visualRowFor(talent) === row)
+  if (!usesCustomVisualLayout.value) return talents
+  return [...talents].sort(
+    (left, right) => (visualPositionFor(left)?.column ?? 0) - (visualPositionFor(right)?.column ?? 0),
+  )
+}
+
+function visualGridColumns(row: number): string {
+  if (usesCustomVisualLayout.value) {
+    return `repeat(${WARRIOR_TALENT_VISUAL_COLUMN_COUNT}, minmax(0, 1fr))`
+  }
+  return `repeat(${Math.max(1, talentsInVisualRow(row).length)}, 1fr)`
+}
+
+function talentVisualStyle(talent: TalentNode): Record<string, string> | undefined {
+  const position = visualPositionFor(talent)
+  return position ? { gridColumn: String(position.column) } : undefined
+}
+
+function visualRequirementLabel(row: number): string {
+  if (!usesCustomVisualLayout.value) return `нужно ${(row - 1) * 5} очков`
+  const requirements = [...new Set(talentsInVisualRow(row).map((talent) => talent.requiredSpentPoints))].sort((a, b) => a - b)
+  if (requirements.length === 0) return 'визуальный ряд'
+  if (requirements.length === 1) return `нужно ${requirements[0]} очков`
+  return `нужно ${requirements[0]}–${requirements[requirements.length - 1]} очков`
+}
+
+function isVisualRowLocked(row: number): boolean {
+  if (!activeBranch.value) return false
+  if (!usesCustomVisualLayout.value) return spentInBranch(activeBranch.value.id) < (row - 1) * 5
+  const talents = talentsInVisualRow(row)
+  if (talents.length === 0) return false
+  const minimumRequirement = Math.min(...talents.map((talent) => talent.requiredSpentPoints))
+  return spentInBranch(activeBranch.value.id) < minimumRequirement
 }
 
 function rankFor(talentId: string): number {
@@ -141,7 +192,7 @@ function iconFor(talent: TalentNode): IconConfig {
     glyph: glyphFor(talent),
     category: 'skill',
     modifier: talent.branchId === 'GUARDIAN' ? 'ice' : talent.branchId === 'BERSERKER' ? 'fire' : 'holy',
-    rarity: talent.tier === 9 ? 'legendary' : talent.maxRank === 1 ? 'epic' : 'rare',
+    rarity: visualRowFor(talent) === 9 ? 'legendary' : talent.maxRank === 1 ? 'epic' : 'rare',
   }
 }
 
@@ -155,7 +206,14 @@ function createMutationId(): string {
 
 function nodePoint(talentId: string): { x: number; y: number } {
   const talent = branchTalents.value.find((item) => item.id === talentId)!
-  const row = talentsInTier(talent.tier)
+  const position = visualPositionFor(talent)
+  if (position) {
+    return {
+      x: ((position.column - 0.5) / WARRIOR_TALENT_VISUAL_COLUMN_COUNT) * 400,
+      y: (position.row - 0.5) * rowHeight,
+    }
+  }
+  const row = talentsInVisualRow(talent.tier)
   const index = row.findIndex((item) => item.id === talentId)
   return { x: ((index + 0.5) / row.length) * 400, y: (talent.tier - 0.5) * rowHeight }
 }
@@ -286,13 +344,14 @@ onMounted(loadTalents)
       <svg class="tree__connections" :viewBox="`0 0 400 ${treeHeight}`" preserveAspectRatio="none" aria-hidden="true">
         <path v-for="connection in connections" :key="connection.id" :d="connectionPath(connection)" />
       </svg>
-      <section v-for="tier in tiers" :key="tier" class="tier"
-        :class="{ 'tier--locked': spentInBranch(activeBranch.id) < (tier - 1) * 5 }"
-        :style="{ top: `${(tier - 1) * rowHeight}px`, height: `${rowHeight}px` }">
-        <p class="tier__label"><b>Ряд {{ tier }}</b><span>нужно {{ (tier - 1) * 5 }} очков</span></p>
-        <div class="tier__nodes" :style="{ gridTemplateColumns: `repeat(${talentsInTier(tier).length}, 1fr)` }">
-          <button v-for="talent in talentsInTier(tier)" :key="talent.id" data-talent-node type="button"
-            class="talent-node" :class="`talent-node--${stateFor(talent)}`"
+      <section v-for="row in tiers" :key="row" class="tier" :data-visual-row="row"
+        :class="{ 'tier--locked': isVisualRowLocked(row) }"
+        :style="{ top: `${(row - 1) * rowHeight}px`, height: `${rowHeight}px` }">
+        <p class="tier__label"><b>Ряд {{ row }}</b><span>{{ visualRequirementLabel(row) }}</span></p>
+        <div class="tier__nodes" :style="{ gridTemplateColumns: visualGridColumns(row) }">
+          <button v-for="talent in talentsInVisualRow(row)" :key="talent.id" data-talent-node type="button"
+            class="talent-node" :class="`talent-node--${stateFor(talent)}`" :style="talentVisualStyle(talent)"
+            :data-gameplay-tier="talent.tier" :data-visual-row="visualRowFor(talent)"
             :aria-label="`${talent.name}, ${rankFor(talent.id)} из ${talent.maxRank}`" @click="selectedTalent = talent">
             <img v-if="artFor(talent)" class="talent-node__art" :src="artFor(talent)!" :alt="talent.name" loading="lazy" decoding="async" />
             <IconGenerator v-else :config="iconFor(talent)" :label="talent.name" />
@@ -312,14 +371,15 @@ onMounted(loadTalents)
         <div class="talent-detail__identity">
           <img v-if="artFor(selectedTalent)" class="talent-detail__art" :src="artFor(selectedTalent)!" :alt="selectedTalent.name" decoding="async" />
           <IconGenerator v-else :config="iconFor(selectedTalent)" :label="selectedTalent.name" />
-          <div><p>{{ activeBranch.name }} · ряд {{ selectedTalent.tier }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
+          <div><p>{{ activeBranch.name }} · ряд {{ visualRowFor(selectedTalent) }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
         </div>
         <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
         <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
         <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">Этот эффект пока не участвует в бою. Он подготовлен для одной из следующих игровых систем.</p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
-          <div><dt>Ряд дерева</dt><dd>{{ selectedTalent.tier }}</dd></div>
+          <div><dt>Ряд дерева</dt><dd>{{ visualRowFor(selectedTalent) }}</dd></div>
+          <div v-if="visualRowFor(selectedTalent) !== selectedTalent.tier"><dt>Уровень прогрессии</dt><dd>{{ selectedTalent.tier }}</dd></div>
           <div v-if="selectedTalent.requiredLevel !== null"><dt>Требуемый уровень</dt><dd>{{ selectedTalent.requiredLevel }}</dd></div>
           <div><dt>Нужно очков в ветке</dt><dd>{{ selectedTalent.requiredSpentPoints }}</dd></div>
           <div v-if="selectedTalent.prerequisites.length"><dt>Нужные таланты</dt><dd>{{ selectedTalent.prerequisites.map((item) => talentName(item.talentId)).join(', ') }}</dd></div>
