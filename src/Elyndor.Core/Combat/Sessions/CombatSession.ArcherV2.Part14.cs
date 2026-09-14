@@ -111,11 +111,39 @@ string talentId,
 string targetId,
 out ResolvedTalentEventHook hook)
 {
+string contentTargetId = CanonicalArcherHookTargetId(targetId);
 hook = IsArcher
 ? _playerTalents.EventHooks.FirstOrDefault(item =>
 string.Equals(item.TalentId, talentId, StringComparison.Ordinal)
-&& string.Equals(item.TargetId, targetId, StringComparison.Ordinal))!
+&& string.Equals(item.TargetId, contentTargetId, StringComparison.Ordinal))!
 : null!;
 return hook is not null;
 }
+private static string CanonicalArcherHookTargetId(string targetId) => targetId switch
+{
+"AIMED_SHOT_AIM" => "AIMED_ACCURACY_CRIT",
+"PERFECT_SHOT" => "PERFECT_AIMED_SHOT",
+"BOW_DAMAGE" => "BOW_PHYSICAL_DAMAGE",
+"JOINT_HUNT" => "SHARED_TARGET_DAMAGE",
+"MISS_REFUND" => "PHYSICAL_MISS_REFUND",
+"EXPOSED_DEFENSE" => "PIERCING_EXPOSED_DEFENSE",
+"COMMANDING_VOICE" => "COMMAND_PET_DAMAGE",
+"COORDINATION" => "COMMAND_OWNER_SHOT",
+"IMPROVED_MEND" => "MEND_PET_BONUS",
+"UNSTOPPABLE_PACK" => "BESTIAL_WRATH_UNSTOPPABLE",
+"TOXICOLOGY_CARRY" => "TOXICOLOGY",
+"TRAP_CONTROL_DURATION" => "CLEVER_TRAPS",
+"SURVIVAL_MASTER_PREP" => "SURVIVAL_MASTER_TRAPS",
+"TRAP_ENTRAPMENT" => "TRAP_ATTACK_SPEED_REDUCTION",
+"PRECISE_TEMPO" => "MARKED_AIMED_COOLDOWN",
+"MASTER_ARROW_FOCUS" => "MASTER_ARROW_FOCUS_CD",
+"OWNER_CRIT_PET_NEXT" => "BLOOD_AND_FANG",
+"PET_CRIT_OWNER_NEXT" => "BLOOD_AND_FANG",
+"FRENZY" => "PET_FRENZY",
+"DETERRENCE_COUNTER" => "DETERRENCE_COUNTERSHOT",
+"PET_FOCUS" => "PET_FOCUS_PROC",
+"COMBAT_RHYTHM" => "PHYSICAL_SHOT_RHYTHM",
+"TRUESHOT_AURA_GROUP" => "TRUESHOT_AURA",
+_ => targetId
+};
 }
