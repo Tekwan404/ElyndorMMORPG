@@ -23,14 +23,16 @@ public sealed class InventoryRequiredLevelTests(PostgresFixture postgres) : IAsy
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        ItemDefinition source = content.Items!.Single(item => item.Id == "RECRUIT_IRON_SWORD");
+        IReadOnlyList<ItemDefinition> items = content.Items
+            ?? throw new InvalidOperationException("Item content is required for inventory tests.");
+        ItemDefinition source = items.Single(item => item.Id == "RECRUIT_IRON_SWORD");
         ItemDefinition gated = source with
         {
             Id = "TEST_REQUIRED_LEVEL_SWORD",
             Name = "Test Required Level Sword",
             RequiredLevel = 20
         };
-        content = content with { Items = content.Items.Concat([gated]).ToArray() };
+        content = content with { Items = items.Concat([gated]).ToArray() };
 
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(level: 10);
         Guid itemId = await AddItemAsync(characterId, gated.Id);
