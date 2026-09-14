@@ -1,3 +1,5 @@
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Talents;
@@ -113,7 +115,7 @@ public sealed partial class CombatSession
 
     private decimal ResolveMageThreatMultiplier(CombatEvent combatEvent)
     {
-        if (combatEvent.DamageType != Damage.DamageType.Magical)
+        if (combatEvent.DamageType != DamageType.Magical)
             return 1m;
 
         decimal multiplier = 1m;
@@ -140,7 +142,7 @@ public sealed partial class CombatSession
         if (string.IsNullOrWhiteSpace(definitionId))
             return null;
 
-        if (_abilities.TryGetValue(definitionId, out Abilities.AbilityDefinition? ability)
+        if (_abilities.TryGetValue(definitionId, out AbilityDefinition? ability)
             && ability.IsSpell)
         {
             return ability.School;
