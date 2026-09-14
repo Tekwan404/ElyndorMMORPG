@@ -87,7 +87,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-ef --version 10.0.11
           rm src/Elyndor.Infrastructure/Persistence/Migrations/20260914203000_AddSkinningAndLeatherworking.cs
-          dotnet ef migrations add AddSkinningAndLeatherworking \
+          dotnet-ef migrations add AddSkinningAndLeatherworking \
             --project src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj \
             --startup-project src/Elyndor.Server/Elyndor.Server.csproj \
             --output-dir Persistence/Migrations
