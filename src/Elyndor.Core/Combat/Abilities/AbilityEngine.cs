@@ -299,9 +299,20 @@ public static class AbilityEngine
                         break;
                     case AbilityActionType.Healing:
                         HealingResult healing = HealingPipeline.Resolve(
-                            new HealingRequest(target, action.Amount, OccurredAtUtc: now));
-                        events.AddRange(healing.Events.Select(
-                            combatEvent => combatEvent with { OccurredAtUtc = now }));
+                            new HealingRequest(
+                                target,
+                                action.Amount,
+                                OccurredAtUtc: now,
+                                Source: runtime.Actor,
+                                CanCrit: action.CanCrit,
+                                CriticalChanceBonus: ability.CriticalChanceBonus
+                                    + targetModifier.CriticalChanceBonus,
+                                CriticalDamageBonus: ability.CriticalDamageBonus
+                                    + targetModifier.CriticalDamageBonus,
+                                SpellPowerCoefficient: action.SpellPowerCoefficient,
+                                DefinitionId: ability.Id),
+                            random);
+                        events.AddRange(healing.Events);
                         break;
                     case AbilityActionType.ApplyEffect:
                         if (action.Effect is null)
@@ -377,10 +388,13 @@ public static class AbilityEngine
     {
         ArgumentOutOfRangeException.ThrowIfNegative(ability.ResourceCost);
         ArgumentOutOfRangeException.ThrowIfNegative(ability.DamageMultiplier);
-        if (ability.Actions?.Any(action => action.Type == AbilityActionType.Damage) == true
-            && random is null)
+        bool requiresRandom = ability.Actions?.Any(action =>
+            action.Type == AbilityActionType.Damage
+            || action.Type == AbilityActionType.Healing && action.CanCrit) == true;
+        if (requiresRandom && random is null)
         {
-            throw new InvalidOperationException("Damage actions require an injected game RNG.");
+            throw new InvalidOperationException(
+                "Damage actions and critical healing actions require an injected game RNG.");
         }
     }
 
