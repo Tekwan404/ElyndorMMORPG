@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 
-import type { CombatActorSnapshot, CombatLootRoll } from '@/api/contracts'
+import type { CombatActorSnapshot, CombatLootRoll, InventoryItem } from '@/api/contracts'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -30,6 +30,7 @@ vi.mock('@microsoft/signalr', () => ({
 
 import CombatView from '@/game/combat/views/CombatView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
+import { useGameSessionStore } from '@/stores/gameSession'
 
 describe('CombatView', () => {
   beforeEach(() => setActivePinia(createPinia()))
@@ -160,6 +161,41 @@ describe('CombatView', () => {
     expect(wrapper.find('.combat-ally-roster__member--selected').exists()).toBe(false)
     expect(wrapper.get('.combat-frontline').text()).toContain('Маг')
     expect(wrapper.find('.party-formation').exists()).toBe(false)
+  })
+
+  it('keeps the party roster visible inside the battlefield', () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Warrior', 160, 180, 40, 100, [])
+    const ally = actor('Player', 'MAGE', 'Mage', 100, 120, 60, 100, [])
+    const enemy = actor('Monster', 'WOLF', 'Wolf', 180, 180, 0, 0, [], 3, 'wolf')
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
+      serverTimeUtc: '2026-09-06T16:00:00Z', contentVersion: '0.10.1', balanceVersion: '0.8.0',
+      player, enemy, players: [player, ally],
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('[data-combat-battlefield]').find('[data-combat-party-roster]').exists()).toBe(true)
+  })
+
+  it('keeps consumables in the compact combat utility strip', () => {
+    const store = useCombatSessionStore()
+    const session = useGameSessionStore()
+    session.snapshot = {
+      character: { inventory: { items: [consumable('HEALING_POTION')] } },
+    } as never
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
+      serverTimeUtc: '2026-09-06T16:00:00Z', contentVersion: '0.10.1', balanceVersion: '0.8.0',
+      player: actor('Player', 'WARRIOR', 'Warrior', 160, 180, 40, 100, []),
+      enemy: actor('Monster', 'WOLF', 'Wolf', 180, 180, 0, 0, [], 3, 'wolf'),
+    }
+
+    const wrapper = mount(CombatView)
+
+    expect(wrapper.get('[data-combat-utility-strip]').find('[data-combat-consumable="HEALING_POTION"]').exists()).toBe(true)
+    expect(wrapper.find('.consumable-row').exists()).toBe(false)
   })
 
   it('attributes monster damage to the server-provided monster name while player auto attack is disabled', async () => {
@@ -318,6 +354,22 @@ function lootRoll(canNeed: boolean): CombatLootRoll {
     endsAtUtc: new Date(Date.now() + 20_000).toISOString(),
     eligibleCharacterIds: [],
     canNeed,
+  }
+}
+
+function consumable(definitionId: string): InventoryItem {
+  return {
+    id: crypto.randomUUID(), definitionId, name: 'Healing Potion', type: 'Consumable', rarity: 'Common',
+    requiredLevel: 1, quantity: 3, slot: null, equippedSlot: null, stats: {
+      strength: 0, agility: 0, intellect: 0, stamina: 0, maxHp: 0, attackPower: 0, spellPower: 0,
+      criticalChance: 0, criticalDamage: 0, accuracy: 0, armor: 0, magicResistance: 0, dodge: 0,
+      armorPenetration: 0, magicPenetration: 0, attackSpeed: 0, maxResource: 0,
+    },
+    description: 'Restores health.', setId: null, weaponCategory: null, armorCategory: null,
+    allowedClassIds: [], weaponBaseAttackIntervalSeconds: null, attackSpeedPercent: 0, dodgePercent: 0,
+    consumableActions: [{ type: 'RestoreHp', amount: 50, resourceType: null, effectId: null, dispelCategory: null }],
+    consumableCooldownCategoryId: 'POTION', consumableCooldownSeconds: 30, buyPriceGold: 1, sellPriceGold: 1,
+    isLocked: false, iconId: null, appearanceProfileId: null,
   }
 }
 

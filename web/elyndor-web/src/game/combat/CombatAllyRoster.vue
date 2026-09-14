@@ -93,5 +93,31 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
 .combat-ally-roster__bar { display: block; height: 4px; overflow: hidden; border-radius: var(--ui-radius-round); background: rgb(255 255 255 / 9%); }
 .combat-ally-roster__bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #5f9fe0, #9be2c9); }
 .combat-ally-roster__state { display: grid; color: var(--ui-color-gold-muted); }
+
+.combat-ally-roster--battlefield {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  left: 8px;
+  width: min(48%, 13rem);
+  gap: 4px;
+  padding: 4px;
+  border-color: rgb(170 163 255 / 20%);
+  background: rgb(5 8 13 / 72%);
+  backdrop-filter: blur(4px);
+}
+
+.combat-ally-roster--battlefield .combat-ally-roster__header { display: none; }
+.combat-ally-roster--battlefield .combat-ally-roster__grid { grid-template-columns: 1fr; gap: 3px; }
+.combat-ally-roster--battlefield .combat-ally-roster__member { min-height: 34px; grid-template-columns: 1.45rem minmax(0, 1fr) auto; gap: 4px; padding: 3px 4px; }
+.combat-ally-roster--battlefield .combat-ally-roster__crest { width: 1.45rem; height: 1.45rem; font-size: .58rem; }
+.combat-ally-roster--battlefield .combat-ally-roster__identity { display: flex; align-items: center; gap: 3px; }
+.combat-ally-roster--battlefield .combat-ally-roster__identity strong { font-size: .52rem; }
+.combat-ally-roster--battlefield .combat-ally-roster__identity small,
+.combat-ally-roster--battlefield .combat-ally-roster__vitals,
+.combat-ally-roster--battlefield .combat-ally-roster__state { display: none; }
+.combat-ally-roster--battlefield .combat-ally-roster__identity b { font-size: .34rem; }
+.combat-ally-roster--battlefield .combat-ally-roster__bar { height: 3px; }
+
 @media (max-width: 380px) { .combat-ally-roster__grid { grid-template-columns: 1fr; } }
 </style>
