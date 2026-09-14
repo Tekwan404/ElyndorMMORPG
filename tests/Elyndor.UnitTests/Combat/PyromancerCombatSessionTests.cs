@@ -83,12 +83,15 @@ public sealed class PyromancerCombatSessionTests
     }
 
     [Fact]
-    public void ThreeCriticalFireballsUnlockCometAndCastingItConsumesHeatLimit()
+    public void TwoDirectFireCritsGrantHotStreakAndPyroblastConsumesIt()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook(
-                "F-6-1", TalentModifierKeys.OnCriticalHit, 1, 3, "MAGE_FIREBALL",
-                duration: TimeSpan.FromSeconds(8)));
+                "F-8-1",
+                TalentModifierKeys.OnAbilityUsed,
+                1,
+                1,
+                duration: TimeSpan.FromSeconds(10)));
         TestFight fight = CreateFight(
             talents,
             playerCriticalChance: 100,
@@ -96,7 +99,7 @@ public sealed class PyromancerCombatSessionTests
             enemyHp: 10_000);
 
         DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 3; index++)
+        for (var index = 0; index < 2; index++)
         {
             CombatCommandResult started = fight.Session.Handle(
                 new UseAbilityCommand($"fireball-{index}", "MAGE_FIREBALL", EnemyId),
@@ -107,34 +110,34 @@ public sealed class PyromancerCombatSessionTests
             cursor += TimeSpan.FromMilliseconds(1);
         }
 
-        CombatSessionSnapshot heated = fight.Session.Snapshot();
-        Assert.Contains(heated.Player.Effects, effect => effect.Id == "PYRO_HEAT_LIMIT");
-        Assert.Contains("FIRE_COMET", heated.Player.KnownAbilityIds);
-        Assert.Contains(heated.Player.Abilities, ability => ability.Id == "FIRE_COMET");
+        Assert.Contains(
+            fight.Session.Snapshot().Player.Effects,
+            effect => effect.Id == "MAGE_HOT_STREAK");
 
-        CombatCommandResult comet = fight.Session.Handle(
-            new UseAbilityCommand("comet", "FIRE_COMET", EnemyId),
+        CombatCommandResult pyro = fight.Session.Handle(
+            new UseAbilityCommand("hot-pyro", "MAGE_PYROBLAST", EnemyId),
             cursor);
 
-        Assert.True(comet.Succeeded);
-        Assert.DoesNotContain(comet.Snapshot.Player.Effects, effect => effect.Id == "PYRO_HEAT_LIMIT");
-        Assert.DoesNotContain("FIRE_COMET", comet.Snapshot.Player.KnownAbilityIds);
+        Assert.True(pyro.Succeeded);
+        Assert.Equal(45, pyro.Snapshot.Player.Resource);
+        CombatCastSnapshot cast = Assert.IsType<CombatCastSnapshot>(pyro.Snapshot.Player.ActiveCast);
+        Assert.Equal(cursor, cast.ResolvesAtUtc);
+        Assert.DoesNotContain(
+            pyro.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_HOT_STREAK");
     }
 
     [Fact]
-    public void CriticalFireballBurnCanKillThroughNormalCombatDeathPipeline()
+    public void CriticalFireballAppliesRollingIgniteThatTicksAsMagicalDamage()
     {
         ResolvedTalentModifiers talents = Talents(
-            Hook(
-                "F-2-2", TalentModifierKeys.OnCriticalHit, 2, 7, "MAGE_FIREBALL",
-                duration: TimeSpan.FromSeconds(4),
-                tickInterval: TimeSpan.FromSeconds(1)));
+            Hook("F-2-1", TalentModifierKeys.OnAbilityUsed, 1, 40));
         TestFight fight = CreateFight(
             talents,
-            playerSpellPower: 10,
+            playerSpellPower: 40,
             playerCriticalChance: 100,
             playerCriticalDamage: 0,
-            enemyHp: 14);
+            enemyHp: 1_000);
 
         DateTimeOffset startedAt = Now.AddMilliseconds(1);
         Assert.True(fight.Session.Handle(
@@ -143,54 +146,53 @@ public sealed class PyromancerCombatSessionTests
         DateTimeOffset completedAt = startedAt.AddSeconds(1.8);
         CombatCommandResult completed = fight.Session.AdvanceTo(completedAt);
 
-        Assert.Contains(completed.Snapshot.Enemy.Effects, effect => effect.Id == "PYRO_BURN");
+        Assert.Contains(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FIRE_IGNITE");
 
         CombatCommandResult ticked = fight.Session.AdvanceTo(completedAt.AddSeconds(1));
 
-        Assert.Equal(CombatSessionStatus.Victory, ticked.Snapshot.Status);
-        Assert.Contains(ticked.Events, combatEvent =>
-            combatEvent.Type == CombatEventType.EnemyKilled && combatEvent.IsPeriodic);
         Assert.Contains(ticked.Events, combatEvent =>
             combatEvent.Type == CombatEventType.DamageDealt
-            && combatEvent.DefinitionId == "PYRO_BURN"
-            && combatEvent.DamageType == DamageType.Magical);
+            && combatEvent.DefinitionId == "MAGE_FIRE_IGNITE"
+            && combatEvent.DamageType == DamageType.Magical
+            && combatEvent.IsPeriodic);
     }
 
     [Fact]
-    public void AvatarExtendsCombustionAndPerfectCombustionResetsFireCooldowns()
+    public void PerfectCombustionResetsFireCooldownsAndEmbodimentExtendsWindow()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook(
-                "F-5-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "COMBUSTION",
-                secondaryValue: 8,
+                "F-6-1",
+                TalentModifierKeys.OnAbilityUsed,
+                1,
+                10,
                 duration: TimeSpan.FromSeconds(10)),
-            Hook("F-8-1", TalentModifierKeys.OnAbilityUsed, 1, 15, "COMBUSTION"),
-            Hook(
-                "F-9-1", TalentModifierKeys.OnAbilityUsed, 1, 8, "FIRE",
-                internalCooldown: TimeSpan.FromSeconds(6),
-                secondaryValue: 3));
+            Hook("F-8-3", TalentModifierKeys.OnAbilityUsed, 1, 15),
+            Hook("F-9-1", TalentModifierKeys.OnAbilityUsed, 1, 5));
         TestFight fight = CreateFight(talents, enemyHp: 10_000);
 
         DateTimeOffset cursor = Now.AddMilliseconds(1);
         Assert.True(fight.Session.Handle(
-            new UseAbilityCommand("flash", "FLAME_FLASH", EnemyId), cursor).Succeeded);
+            new UseAbilityCommand("blast", "MAGE_FIRE_BLAST", EnemyId), cursor).Succeeded);
         cursor += TimeSpan.FromSeconds(1.501);
         Assert.True(fight.Session.Handle(
-            new UseAbilityCommand("wave", "FIRE_WAVE", EnemyId), cursor).Succeeded);
-        Assert.Contains("FLAME_FLASH", fight.Session.Snapshot().Player.Cooldowns.Keys);
-        Assert.Contains("FIRE_WAVE", fight.Session.Snapshot().Player.Cooldowns.Keys);
+            new UseAbilityCommand("wave", "MAGE_BLAST_WAVE", EnemyId), cursor).Succeeded);
+        Assert.Contains("MAGE_FIRE_BLAST", fight.Session.Snapshot().Player.Cooldowns.Keys);
+        Assert.Contains("MAGE_BLAST_WAVE", fight.Session.Snapshot().Player.Cooldowns.Keys);
 
         cursor += TimeSpan.FromMilliseconds(1);
         CombatCommandResult combustion = fight.Session.Handle(
-            new UseAbilityCommand("combustion", "COMBUSTION", PlayerId),
+            new UseAbilityCommand("combustion", "MAGE_COMBUSTION", PlayerId),
             cursor);
 
         Assert.True(combustion.Succeeded);
-        Assert.DoesNotContain("FLAME_FLASH", combustion.Snapshot.Player.Cooldowns.Keys);
-        Assert.DoesNotContain("FIRE_WAVE", combustion.Snapshot.Player.Cooldowns.Keys);
+        Assert.DoesNotContain("MAGE_FIRE_BLAST", combustion.Snapshot.Player.Cooldowns.Keys);
+        Assert.DoesNotContain("MAGE_BLAST_WAVE", combustion.Snapshot.Player.Cooldowns.Keys);
         CombatEffectSnapshot effect = Assert.Single(combustion.Snapshot.Player.Effects, item =>
-            item.Id == "PYRO_COMBUSTION");
-        Assert.Equal(TimeSpan.FromSeconds(13), effect.ExpiresAtUtc - cursor);
+            item.Id == "MAGE_COMBUSTION_ACTIVE");
+        Assert.Equal(TimeSpan.FromSeconds(15), effect.ExpiresAtUtc - cursor);
     }
 
     private static ResolvedTalentEventHook Hook(
@@ -250,11 +252,12 @@ public sealed class PyromancerCombatSessionTests
             new HashSet<string>(
                 [
                     "MAGE_FIREBALL",
+                    "MAGE_FIRE_BLAST",
+                    "MAGE_PYROBLAST",
+                    "MAGE_BLAST_WAVE",
+                    "MAGE_COMBUSTION",
                     "MAGE_ARCANE_SPARK",
-                    "MAGE_ICE_SHARD",
-                    "FLAME_FLASH",
-                    "FIRE_WAVE",
-                    "COMBUSTION"
+                    "MAGE_ICE_SHARD"
                 ],
                 StringComparer.Ordinal),
             resourceRegenPerSecond);
@@ -308,18 +311,16 @@ public sealed class PyromancerCombatSessionTests
         new(StringComparer.Ordinal)
         {
             ["MAGE_FIREBALL"] = Fireball(),
-            ["MAGE_ARCANE_SPARK"] = DamageAbility(
-                "MAGE_ARCANE_SPARK", AbilityType.Instant, "ARCANE", 15, 3, 0, 0.75m),
-            ["MAGE_ICE_SHARD"] = DamageAbility(
-                "MAGE_ICE_SHARD", AbilityType.Casted, "FROST", 18, 0, 1.5, 1.05m),
-            ["FLAME_FLASH"] = DamageAbility(
-                "FLAME_FLASH", AbilityType.Instant, "FIRE", 18, 8, 0, 0.95m),
-            ["FIRE_WAVE"] = new(
-                "FIRE_WAVE",
+            ["MAGE_FIRE_BLAST"] = DamageAbility(
+                "MAGE_FIRE_BLAST", AbilityType.Instant, "FIRE", 18, 8, 0, 0.95m),
+            ["MAGE_PYROBLAST"] = DamageAbility(
+                "MAGE_PYROBLAST", AbilityType.Casted, "FIRE", 30, 0, 2.5, 2.20m),
+            ["MAGE_BLAST_WAVE"] = new(
+                "MAGE_BLAST_WAVE",
                 AbilityType.Instant,
                 AbilityTargetType.AllEnemiesInCombat,
                 30,
-                TimeSpan.FromSeconds(10),
+                TimeSpan.FromSeconds(12),
                 TimeSpan.Zero,
                 true,
                 GlobalCooldownCategory.Standard,
@@ -330,22 +331,24 @@ public sealed class PyromancerCombatSessionTests
                     new AbilityActionDefinition(
                         AbilityActionType.Damage,
                         DamageType: DamageType.Magical,
-                        SpellPowerCoefficient: 0.75m)
+                        SpellPowerCoefficient: 0.80m)
                 ]),
-            ["COMBUSTION"] = new(
-                "COMBUSTION",
+            ["MAGE_COMBUSTION"] = new(
+                "MAGE_COMBUSTION",
                 AbilityType.Instant,
                 AbilityTargetType.Self,
                 0,
-                TimeSpan.FromSeconds(100),
+                TimeSpan.FromSeconds(36),
                 TimeSpan.Zero,
                 false,
                 GlobalCooldownCategory.None,
                 true,
                 "FIRE",
                 Actions: []),
-            ["FIRE_COMET"] = DamageAbility(
-                "FIRE_COMET", AbilityType.Casted, "FIRE", 0, 0, 0.5, 2.40m)
+            ["MAGE_ARCANE_SPARK"] = DamageAbility(
+                "MAGE_ARCANE_SPARK", AbilityType.Instant, "ARCANE", 15, 3, 0, 0.75m),
+            ["MAGE_ICE_SHARD"] = DamageAbility(
+                "MAGE_ICE_SHARD", AbilityType.Casted, "FROST", 18, 0, 1.5, 1.05m)
         };
 
     private static AbilityDefinition Fireball() =>
