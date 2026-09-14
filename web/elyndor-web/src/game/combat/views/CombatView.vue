@@ -17,7 +17,7 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
-import { UIButton, UIHealthBar } from '@/ui/components'
+import { UIButton, UIHealthBar, UIModal } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const combat = useCombatSessionStore()
@@ -34,6 +34,7 @@ const combatErrorMessage = computed(() => {
 const session = useGameSessionStore()
 const now = ref(Date.now())
 const logOpen = ref(false)
+const fleeConfirmationOpen = ref(false)
 const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
@@ -60,6 +61,9 @@ const frontlineAlly = computed(() => {
     ? combatAllies.value.find(ally => ally.actorId === actorId) ?? null
     : null
 })
+const aggroedAllyActorIds = computed(() => combatEnemies.value
+  .map(enemy => enemy.currentAggroTargetActorId)
+  .filter((actorId): actorId is string => Boolean(actorId)))
 const companionArt = computed(() => monsterArtUrl(companion.value?.artId))
 const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
@@ -452,7 +456,13 @@ async function leaveCombat(): Promise<void> {
 
 async function fleeCombat(): Promise<void> {
   if (isTraining.value || combat.pending) return
+  fleeConfirmationOpen.value = false
   await combat.flee()
+}
+
+function requestFleeCombat(): void {
+  if (isTraining.value || combat.pending) return
+  fleeConfirmationOpen.value = true
 }
 
 function combatParticipantStatus(actorId: string): string {
@@ -548,6 +558,7 @@ onUnmounted(() => window.clearInterval(timer))
       <CombatAllyRoster
         :allies="combatAllies"
         :player-actor-id="snapshot.player.actorId"
+        :aggroed-actor-ids="aggroedAllyActorIds"
         :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
         :participant-status="combatParticipantStatus"
         :participant-glyph="combatParticipantGlyph"
@@ -801,7 +812,7 @@ onUnmounted(() => window.clearInterval(timer))
             class="utility-action utility-action--flee"
             data-flee-combat
             :disabled="combat.pending"
-            @click="fleeCombat"
+            @click="requestFleeCombat"
           >
             <span class="utility-action__icon">
               <IconGenerator :config="{ id: 'combat-flee', glyph: 'boots', category: 'utility' }" />
@@ -830,6 +841,14 @@ onUnmounted(() => window.clearInterval(timer))
           </button>
         </div>
       </section>
+
+      <UIModal :open="fleeConfirmationOpen" title="Сбежать из боя?" @close="fleeConfirmationOpen = false">
+        <p class="combat-flee-confirmation">Ты покинешь этот бой и не сможешь вернуться в него.</p>
+        <template #actions>
+          <UIButton variant="ghost" @click="fleeConfirmationOpen = false">Остаться</UIButton>
+          <UIButton variant="danger" data-flee-confirm :loading="combat.pending" @click="fleeCombat">Сбежать</UIButton>
+        </template>
+      </UIModal>
 
       <section
         v-if="lootRolls.length"
