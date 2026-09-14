@@ -188,7 +188,7 @@ public static class DamagePipeline
             MidpointRounding.AwayFromZero);
         decimal blocked = ResolveBlock(request, rounded, random, occurredAtUtc);
         decimal afterBlock = Math.Max(0, rounded - blocked);
-        IReadOnlyList<ShieldAbsorption> shieldAbsorptions = request.IgnoreShields
+        List<ShieldAbsorption> shieldAbsorptions = request.IgnoreShields
             ? []
             : AbsorbShields(request.Target, afterBlock);
         decimal absorbed = shieldAbsorptions.Sum(item => item.Amount);
@@ -424,7 +424,7 @@ public static class DamagePipeline
             request.Source.Stats.Level);
     }
 
-    private static IReadOnlyList<ShieldAbsorption> AbsorbShields(
+    private static List<ShieldAbsorption> AbsorbShields(
         CombatActorState target,
         decimal incoming)
     {
