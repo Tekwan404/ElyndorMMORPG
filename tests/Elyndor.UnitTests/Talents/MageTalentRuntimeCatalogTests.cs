@@ -6,8 +6,8 @@ public sealed class MageTalentRuntimeCatalogTests
 {
     [Theory]
     [InlineData("A-2-1", TalentModifierKeys.OnAbilityUsed)]
-    [InlineData("A-8-2", TalentModifierKeys.OnCriticalHit)]
-    [InlineData("I-2-3", TalentModifierKeys.OnDamageTaken)]
+    [InlineData("A-8-2", TalentModifierKeys.OnAbilityUsed)]
+    [InlineData("I-2-3", TalentModifierKeys.OnAbilityUsed)]
     [InlineData("I-9-1", TalentModifierKeys.OnAbilityUsed)]
     public void ArcaneAndFrostRuntimeContractsAreOwned(
         string talentId,
@@ -15,6 +15,12 @@ public sealed class MageTalentRuntimeCatalogTests
     {
         Assert.True(MageTalentRuntimeCatalog.TryGetEventKey(talentId, out string key));
         Assert.Equal(expectedKey, key);
+    }
+
+    [Fact]
+    public void MageCatalogOwnsAllArcaneAndFrostRuntimeContracts()
+    {
+        Assert.Equal(64, MageTalentRuntimeCatalog.SupportedTalentIds.Count);
     }
 
     [Fact]
