@@ -74,51 +74,8 @@ jobs:
       - name: Build backend
         run: dotnet build Elyndor.slnx --configuration Release --no-restore
 
-      - name: Scaffold profession migration metadata
-        env:
-          ASPNETCORE_ENVIRONMENT: Development
-          ConnectionStrings__game: Host=127.0.0.1;Port=5432;Database=elyndor_e2e;Username=postgres;Password=postgres
-          Authentication__Issuer: Elyndor.CI
-          Authentication__Audience: Elyndor.CI.Client
-          Authentication__SigningKey: ci-migration-signing-key-with-more-than-thirty-two-bytes
-          Authentication__Telegram__BotToken: 123456:CI_MIGRATION_TOKEN
-          Authentication__Development__Enabled: "true"
-          Authentication__Development__TelegramUserId: "9000001"
-        run: |
-          dotnet tool install --global dotnet-ef --version 10.0.11
-          rm src/Elyndor.Infrastructure/Persistence/Migrations/20260914203000_AddSkinningAndLeatherworking.cs
-          dotnet-ef migrations add AddSkinningAndLeatherworking \
-            --project src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj \
-            --startup-project src/Elyndor.Server/Elyndor.Server.csproj \
-            --output-dir Persistence/Migrations
-          rm -rf .artifacts/profession-migration
-          mkdir -p .artifacts/profession-migration
-          cp src/Elyndor.Infrastructure/Persistence/Migrations/*AddSkinningAndLeatherworking* .artifacts/profession-migration/
-          cp src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextModelSnapshot.cs .artifacts/profession-migration/
-          dotnet build Elyndor.slnx --configuration Release --no-restore
-
-      - name: Upload profession migration metadata
-        uses: actions/upload-artifact@v4
-        with:
-          name: profession-migration-sync
-          path: .artifacts/profession-migration
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Test backend
-        shell: bash
-        run: |
-          set +e
-          dotnet test Elyndor.slnx --configuration Release --no-build --logger "console;verbosity=normal" > /tmp/elyndor-backend-tests.log 2>&1
-          status=$?
-          if [ "$status" -ne 0 ]; then
-            echo "===== backend test failure diagnostics ====="
-            grep -n -E "Failed|Error Message:|Stack Trace:|Assert\.|Expected:|Actual:|Test Run Failed|Exception" /tmp/elyndor-backend-tests.log | tail -n 200 || true
-            echo "===== tail ====="
-            tail -n 300 /tmp/elyndor-backend-tests.log
-            exit "$status"
-          fi
-          tail -n 80 /tmp/elyndor-backend-tests.log
+        run: dotnet test Elyndor.slnx --configuration Release --no-build
 
       - name: Validate game content
         run: dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- content/package.json
