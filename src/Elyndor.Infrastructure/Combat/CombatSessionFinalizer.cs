@@ -6,6 +6,7 @@ using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Infrastructure.Dungeons;
+using Elyndor.Infrastructure.Professions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -96,6 +97,19 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             }
 
             return null;
+        }
+
+        // Skinning eligibility is durable combat aftermath. Record corpses before the reward
+        // replay shortcut so reconnect/retry can heal a crash between reward and corpse writes.
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
+        {
+            ProfessionCorpseService corpseService =
+                scope.ServiceProvider.GetRequiredService<ProfessionCorpseService>();
+            await corpseService.RecordEligibleCorpsesAsync(
+                characterId,
+                snapshot,
+                contentSnapshot,
+                cancellationToken);
         }
 
         CharacterAbilityCooldownStore cooldownStore =
