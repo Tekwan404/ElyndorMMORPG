@@ -292,6 +292,43 @@ describe('combatSession realtime authentication', () => {
     expect(signalRMock.invoke).not.toHaveBeenCalled()
   })
 
+  it('uses the selected friendly target for a single-ally ability command', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const sessionId = '00000000-0000-0000-0000-000000000151'
+    const playerId = '00000000-0000-0000-0000-000000000251'
+    const allyId = '00000000-0000-0000-0000-000000000252'
+    const enemyId = '00000000-0000-0000-0000-000000000351'
+    const snapshot = {
+      sessionId, status: 'Active', sequence: 1, serverTimeUtc: '2026-09-14T12:00:00Z',
+      contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: {
+        actorId: playerId, hp: 100, autoAttackEnabled: true, cooldowns: {},
+        abilities: [{ id: 'ALLY_HEAL', targetType: 'SingleAlly' }],
+      },
+      players: [
+        { actorId: playerId, hp: 100, autoAttackEnabled: true },
+        { actorId: allyId, hp: 80, autoAttackEnabled: true },
+      ],
+      enemy: { actorId: enemyId, definitionId: 'WOLF' },
+      selectedTargetActorId: enemyId,
+    }
+    signalRMock.invoke.mockResolvedValue({ succeeded: true, errorCode: null, snapshot, events: [], reward: null })
+
+    const store = useCombatSessionStore()
+    expect(await store.startTraining()).toBe(true)
+    store.selectFriendlyTarget(allyId)
+
+    await store.useAbility('ALLY_HEAL')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    })
+
+    const useAbilityCall = signalRMock.invoke.mock.calls.find(([method]) => method === 'UseAbility')
+    expect(useAbilityCall?.[1]).toBe(sessionId)
+    expect(useAbilityCall?.[2]).toBe('ALLY_HEAL')
+    expect(useAbilityCall?.[3]).toBe(allyId)
+  })
+
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     signalRMock.startError = new Error('Failed to complete negotiation with the server')
