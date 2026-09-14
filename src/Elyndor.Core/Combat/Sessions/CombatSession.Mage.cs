@@ -7,48 +7,56 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private const string ArcaneBurstId = "ARCANE_BURST";
-    private const string ManaOverloadId = "MANA_OVERLOAD";
-    private const string ArcaneCascadeId = "ARCANE_CASCADE";
-    private const string ArcaneSealId = "ARCANE_SEAL";
-    private const string IceLanceId = "ICE_LANCE";
-    private const string IceFractureId = "ICE_FRACTURE";
-    private const string HeartOfWinterId = "HEART_OF_WINTER";
-    private const string FrostSealId = "FROST_SEAL";
+    private const string ArcaneMissilesId = "MAGE_ARCANE_MISSILES";
+    private const string ArcaneExplosionId = "MAGE_ARCANE_EXPLOSION";
+    private const string ManaShieldId = "MAGE_MANA_SHIELD";
+    private const string CounterspellId = "MAGE_COUNTERSPELL";
+    private const string PresenceOfMindId = "MAGE_PRESENCE_OF_MIND";
+    private const string ArcanePowerId = "MAGE_ARCANE_POWER";
+    private const string EvocationId = "MAGE_EVOCATION";
 
-    private const string ArcaneChargeEffectId = "MAGE_ARCANE_CHARGE";
-    private const string ManaOverloadEffectId = "MAGE_MANA_OVERLOAD";
-    private const string ArcaneResidualEffectId = "MAGE_ARCANE_RESIDUAL";
-    private const string ArcaneSavedTimeEffectId = "MAGE_ARCANE_SAVED_TIME";
-    private const string ArcaneFormulaFractureEffectId = "MAGE_ARCANE_FORMULA_FRACTURE";
-    private const string ArcaneReadyEffectId = "MAGE_RESONANCE_ARCANE_READY";
-    private const string ElementalReadyEffectId = "MAGE_RESONANCE_ELEMENTAL_READY";
+    private const string FrostNovaId = "MAGE_FROST_NOVA";
+    private const string BlizzardId = "MAGE_BLIZZARD";
+    private const string ColdSnapId = "MAGE_COLD_SNAP";
+    private const string IceBlockId = "MAGE_ICE_BLOCK";
+    private const string ConeOfColdId = "MAGE_CONE_OF_COLD";
+    private const string IceBarrierId = "MAGE_ICE_BARRIER";
+    private const string IceLanceId = "MAGE_ICE_LANCE";
+
+    private const string ClearcastingEffectId = "MAGE_CLEARCASTING";
+    private const string ClearcastingRegenEffectId = "MAGE_CLEARCASTING_REGEN";
+    private const string PresenceOfMindEffectId = "MAGE_PRESENCE_OF_MIND_ACTIVE";
+    private const string ArcanePowerEffectId = "MAGE_ARCANE_POWER_ACTIVE";
+    private const string ArcanePowerFreeCostEffectId = "MAGE_ARCANE_POWER_FREE_COST";
+    private const string ArcaneFortitudeEffectId = "MAGE_ARCANE_FORTITUDE";
+    private const string ManaShieldEffectId = "MAGE_MANA_SHIELD_EFFECT";
+    private const string ManaShieldEfficiencyEffectId = "MAGE_MANA_SHIELD_EFFICIENCY";
     private const string ArcaneEchoEffectId = "MAGE_ARCANE_ECHO";
-    private const string ArchmageEchoEffectId = "MAGE_ARCHMAGE_ECHO";
-    private const string ArcaneOverflowShieldEffectId = "MAGE_ARCANE_OVERFLOW_SHIELD";
 
-    private const string FrostbiteEffectId = "MAGE_FROSTBITE";
-    private const string FrostbiteAttackSpeedEffectId = "MAGE_FROSTBITE_ATTACK_SPEED";
-    private const string FrostbiteAccuracyEffectId = "MAGE_FROSTBITE_ACCURACY";
-    private const string FrostbitePressureEffectId = "MAGE_FROSTBITE_PRESSURE";
-    private const string BrittleEffectId = "MAGE_BRITTLE";
-    private const string CrystalShieldEffectId = "MAGE_CRYSTAL_SHIELD";
-    private const string FrostCleanSnowEffectId = "MAGE_CLEAN_SNOW";
-    private const string FrostResponseEffectId = "MAGE_FROST_RESPONSE";
-    private const string FrostCrackedIceEffectId = "MAGE_CRACKED_ICE";
-    private const string FrostSequenceEffectId = "MAGE_COLD_SEQUENCE";
-    private const string HeartOfWinterEffectId = "MAGE_HEART_OF_WINTER";
-    private const string FrostSealAttackSpeedEffectId = "MAGE_FROST_SEAL_ATTACK_SPEED";
-    private const string FrostControlDefenseEffectId = "MAGE_CONTROL_DEFENSE";
-    private const string FrostEmergencyShieldEffectId = "MAGE_EMERGENCY_ICE";
+    private const string ChillEffectId = "MAGE_CHILL";
+    private const string FreezeEffectId = "MAGE_FREEZE";
+    private const string DeepChillEffectId = "MAGE_DEEP_CHILL";
+    private const string WinterChillEffectId = "MAGE_WINTERS_CHILL";
+    private const string FrostExtendedEffectId = "MAGE_FROST_EXTENDED";
+    private const string IceBlockEffectId = "MAGE_ICE_BLOCK_ACTIVE";
+    private const string IceBlockImmunityEffectId = "MAGE_ICE_BLOCK_IMMUNITY";
+    private const string ColdBloodEffectId = "MAGE_COLD_BLOOD";
+    private const string IceBarrierEffectId = "MAGE_ICE_BARRIER_EFFECT";
+    private const string FrostArmorEffectId = "MAGE_FROST_ARMOR";
+    private const string EmergencyIceEffectId = "MAGE_EMERGENCY_ICE";
+    private const string ColdSnapLanceEffectId = "MAGE_COLD_SNAP_LANCE";
 
-    private int _frostSequence;
-    private bool _frostEmergencyShieldUsed;
+    private DateTimeOffset? _lastMageManaSpendAtUtc;
+    private int _arcanePowerManaSpendCount;
     private readonly Dictionary<Guid, DateTimeOffset> _deepFreezeReadyAt = [];
+    private readonly List<PendingMageResourceRefund> _pendingMageResourceRefunds = [];
 
-    private AbilityDefinition ResolveMageAbility(
-        AbilityDefinition ability,
-        DateTimeOffset now)
+    private sealed record PendingMageResourceRefund(
+        DateTimeOffset DueAtUtc,
+        decimal Amount,
+        string TalentId);
+
+    private AbilityDefinition ResolveMageAbility(AbilityDefinition ability, DateTimeOffset now)
     {
         if (!IsMage || !ability.IsSpell)
             return ability;
@@ -58,9 +66,7 @@ public sealed partial class CombatSession
         return ability;
     }
 
-    private AbilityDefinition ResolveArcaneMageAbility(
-        AbilityDefinition ability,
-        DateTimeOffset now)
+    private AbilityDefinition ResolveArcaneMageAbility(AbilityDefinition ability, DateTimeOffset now)
     {
         decimal resourceCost = ability.ResourceCost;
         decimal damageMultiplier = ability.DamageMultiplier;
@@ -71,220 +77,152 @@ public sealed partial class CombatSession
         TimeSpan cooldown = ability.Cooldown;
         IReadOnlyList<AbilityActionDefinition>? actions = ability.Actions;
 
-        if (TryGetMageHook("A-1-4", out ResolvedTalentEventHook economy))
-            resourceCost *= Math.Max(0, 1 - economy.Value / 100m);
+        if (string.Equals(ability.School, "ARCANE", StringComparison.Ordinal)
+            && TryGetMageHook("A-1-1", out ResolvedTalentEventHook focus))
+            accuracyBonus += focus.Value;
 
-        decimal manaPercent = ResourcePercent();
-        if (TryGetMageHook("A-2-3", out ResolvedTalentEventHook conduit)
-            && manaPercent > conduit.Threshold)
+        if (TryGetMageHook("A-4-3", out ResolvedTalentEventHook instability))
         {
-            magicPenetrationBonus += conduit.Value / 100m;
+            damageMultiplier *= 1 + instability.Value / 100m;
+            criticalChanceBonus += instability.SecondaryValue;
         }
-        if (TryGetMageHook("A-4-3", out ResolvedTalentEventHook overflow)
-            && manaPercent > overflow.Threshold)
-        {
+
+        if (TryGetMageHook("A-5-3", out ResolvedTalentEventHook overflow)
+            && ResourcePercent() > overflow.Threshold)
             actions = ScaleSpellPower(actions, 1 + overflow.Value / 100m);
-        }
 
-        if (IsManaOverloadActive(now)
-            && TryGetMageHook("A-5-1", out ResolvedTalentEventHook overload))
+        bool clearcasting = ability.ResourceCost > 0
+            && HasOwnEffect(_player.Actor, ClearcastingEffectId, now);
+        if (clearcasting)
         {
-            actions = ScaleSpellPower(actions, 1 + overload.Value / 100m);
-            magicPenetrationBonus += overload.SecondaryValue / 100m;
-            resourceCost *= 1.10m;
-        }
-
-        ActiveEffect? savedTime = FindOwnEffect(
-            _player.Actor,
-            ArcaneSavedTimeEffectId,
-            now);
-        if (savedTime is not null && ability.Type == AbilityType.Casted)
-            castTime = ClampCastTime(
-                castTime - TimeSpan.FromSeconds((double)savedTime.Definition.Magnitude));
-
-        if (HasOwnEffect(_player.Actor, ArcaneReadyEffectId, now)
-            && string.Equals(ability.School, "ARCANE", StringComparison.Ordinal)
-            && TryGetMageHook("A-7-3", out ResolvedTalentEventHook resonanceArcane))
-        {
-            damageMultiplier *= 1 + resonanceArcane.Value / 100m;
-        }
-        if (HasOwnEffect(_player.Actor, ElementalReadyEffectId, now)
-            && ability.School is "FIRE" or "FROST"
-            && TryGetMageHook("A-7-3", out ResolvedTalentEventHook resonanceElemental))
-        {
-            damageMultiplier *= 1 + resonanceElemental.SecondaryValue / 100m;
-        }
-
-        int charges = ArcaneCharges(now);
-        if (string.Equals(ability.Id, ArcaneSparkId, StringComparison.Ordinal))
-        {
-            if (TryGetMageHook("A-2-2", out ResolvedTalentEventHook storedPower)
-                && charges > 0)
+            resourceCost = 0;
+            if (TryGetMageHook("A-5-2", out ResolvedTalentEventHook potency))
+                criticalChanceBonus += potency.Value;
+            if (TryGetMageHook("A-7-3", out ResolvedTalentEventHook perfectClarity))
             {
-                damageMultiplier *= 1 + charges * storedPower.Value / 100m;
-            }
-
-            ActiveEffect? residual = FindOwnEffect(
-                _player.Actor,
-                ArcaneResidualEffectId,
-                now);
-            if (residual is not null)
-            {
-                damageMultiplier *= 1 + residual.Definition.Magnitude / 100m;
-                resourceCost *= Math.Max(
-                    0,
-                    1 - residual.RemainingMagnitude / 100m);
+                criticalChanceBonus += perfectClarity.Value;
+                damageMultiplier *= 1 + perfectClarity.SecondaryValue / 100m;
             }
         }
-        else if (string.Equals(ability.Id, ArcaneBurstId, StringComparison.Ordinal))
+
+        bool presenceApplies = HasOwnEffect(_player.Actor, PresenceOfMindEffectId, now)
+            && ability.Type == AbilityType.Casted
+            && ability.CastTime > TimeSpan.Zero
+            && ability.CastTime <= TimeSpan.FromSeconds(3);
+        if (presenceApplies)
         {
-            actions = AddSpellPowerCoefficient(actions, charges * 0.35m);
-            if (charges >= 4
-                && TryGetMageHook("A-3-2", out ResolvedTalentEventHook empowered))
-                criticalChanceBonus += empowered.Value;
-            if (charges >= 4
-                && TryGetMageHook("A-5-2", out ResolvedTalentEventHook controlled))
-                damageMultiplier *= 1 + controlled.Value / 100m;
-            if (TryGetMageHook("A-7-1", out ResolvedTalentEventHook perfect))
+            castTime = TimeSpan.Zero;
+            if (TryGetMageHook("A-6-1", out ResolvedTalentEventHook mindPower))
+                damageMultiplier *= 1 + mindPower.Value / 100m;
+            if (TryGetMageHook("A-8-2", out ResolvedTalentEventHook absolutePresence))
+                resourceCost *= Math.Max(0, 1 - absolutePresence.Value / 100m);
+            if (IsArcanePowerActive(now) && HasMageTalent("A-9-1"))
+                damageMultiplier *= 1.10m;
+        }
+
+        if (string.Equals(ability.Id, ArcaneMissilesId, StringComparison.Ordinal)
+            && TryGetMageHook("A-2-3", out ResolvedTalentEventHook improvedMissiles))
+        {
+            damageMultiplier *= 1 + improvedMissiles.Value / 100m;
+            resourceCost *= Math.Max(0, 1 - improvedMissiles.SecondaryValue / 100m);
+        }
+        else if (string.Equals(ability.Id, ArcaneExplosionId, StringComparison.Ordinal)
+            && TryGetMageHook("A-3-1", out ResolvedTalentEventHook improvedExplosion))
+        {
+            resourceCost *= Math.Max(0, 1 - improvedExplosion.Value / 100m);
+            damageMultiplier *= 1 + improvedExplosion.SecondaryValue / 100m;
+        }
+        else if (string.Equals(ability.Id, PresenceOfMindId, StringComparison.Ordinal)
+            && TryGetMageHook("A-7-2", out ResolvedTalentEventHook quickThinking))
+        {
+            cooldown = TimeSpan.FromSeconds(Math.Max(0, cooldown.TotalSeconds - (double)quickThinking.Value));
+        }
+
+        if (IsArcanePowerActive(now) && IsOffensiveMageAbility(ability))
+        {
+            damageMultiplier *= 1.20m;
+            ActiveEffect? freeCost = FindOwnEffect(_player.Actor, ArcanePowerFreeCostEffectId, now);
+            if (freeCost is null)
             {
-                damageMultiplier *= 1 + perfect.Value / 100m;
-                castTime = ClampCastTime(
-                    castTime - TimeSpan.FromSeconds((double)perfect.SecondaryValue));
-            }
-            if (charges >= 4
-                && TryGetMageHook("A-8-1", out ResolvedTalentEventHook absolute))
-            {
-                criticalChanceBonus += absolute.Value;
-                actions = SetDamageCanMiss(actions, false);
+                decimal extraCostPercent = 20m;
+                if (TryGetMageHook("A-7-1", out ResolvedTalentEventHook controlPower))
+                    extraCostPercent = controlPower.Value;
+                resourceCost *= 1 + extraCostPercent / 100m;
             }
         }
 
         return ability with
         {
             ResourceCost = Math.Max(0, resourceCost),
-            Cooldown = cooldown < TimeSpan.Zero ? TimeSpan.Zero : cooldown,
-            CastTime = castTime,
-            Actions = actions,
             DamageMultiplier = damageMultiplier,
             AccuracyBonus = accuracyBonus,
             CriticalChanceBonus = criticalChanceBonus,
-            MagicPenetrationBonus = magicPenetrationBonus
+            MagicPenetrationBonus = magicPenetrationBonus,
+            CastTime = castTime,
+            Cooldown = cooldown,
+            Actions = actions
         };
     }
 
-    private AbilityDefinition ResolveFrostMageAbility(
-        AbilityDefinition ability,
-        DateTimeOffset now)
+    private AbilityDefinition ResolveFrostMageAbility(AbilityDefinition ability, DateTimeOffset now)
     {
         if (!string.Equals(ability.School, "FROST", StringComparison.Ordinal))
-        {
-            if (HasOwnEffect(_player.Actor, FrostCleanSnowEffectId, now))
-            {
-                ActiveEffect? cleanSnow =
-                    FindOwnEffect(_player.Actor, FrostCleanSnowEffectId, now);
-                if (cleanSnow is not null)
-                    return ability with
-                    {
-                        AccuracyBonus = ability.AccuracyBonus
-                            + cleanSnow.Definition.Magnitude
-                    };
-            }
             return ability;
-        }
 
         decimal resourceCost = ability.ResourceCost;
         decimal damageMultiplier = ability.DamageMultiplier;
         decimal accuracyBonus = ability.AccuracyBonus;
         decimal criticalChanceBonus = ability.CriticalChanceBonus;
-        decimal magicPenetrationBonus = ability.MagicPenetrationBonus;
+        decimal criticalDamageBonus = ability.CriticalDamageBonus;
         TimeSpan castTime = ability.CastTime;
         TimeSpan cooldown = ability.Cooldown;
 
-        if (TryGetMageHook("I-1-1", out ResolvedTalentEventHook precision))
+        if (TryGetMageHook("I-1-2", out ResolvedTalentEventHook precision))
+        {
             accuracyBonus += precision.Value;
-        if (TryGetMageHook("I-1-2", out ResolvedTalentEventHook sharpIce))
-            criticalChanceBonus += sharpIce.Value;
-        if (TryGetMageHook("I-1-4", out ResolvedTalentEventHook coldEconomy))
-            resourceCost *= Math.Max(0, 1 - coldEconomy.Value / 100m);
-        if (TryGetMageHook("I-3-4", out ResolvedTalentEventHook frostPen))
-            magicPenetrationBonus += frostPen.Value / 100m;
-        if (TryGetMageHook("I-9-1", out ResolvedTalentEventHook lordOfFrost))
-            damageMultiplier *= 1 + lordOfFrost.Value / 100m;
-
-        ActiveEffect? cleanSnowEffect =
-            FindOwnEffect(_player.Actor, FrostCleanSnowEffectId, now);
-        if (cleanSnowEffect is not null)
-            accuracyBonus += cleanSnowEffect.Definition.Magnitude;
-
-        ActiveEffect? frostResponse =
-            FindOwnEffect(_player.Actor, FrostResponseEffectId, now);
-        if (frostResponse is not null)
-            damageMultiplier *= 1 + frostResponse.Definition.Magnitude / 100m;
-
-        ActiveEffect? sequence =
-            FindOwnEffect(_player.Actor, FrostSequenceEffectId, now);
-        if (sequence is not null)
-        {
-            damageMultiplier *= 1 + sequence.Definition.Magnitude / 100m;
-            resourceCost *= Math.Max(0, 1 - sequence.RemainingMagnitude / 100m);
+            resourceCost *= Math.Max(0, 1 - precision.SecondaryValue / 100m);
         }
+        if (TryGetMageHook("I-1-3", out ResolvedTalentEventHook piercing))
+            damageMultiplier *= 1 + piercing.Value / 100m;
+        if (TryGetMageHook("I-1-4", out ResolvedTalentEventHook iceShards))
+            criticalDamageBonus += iceShards.Value;
+        if (TryGetMageHook("I-3-4", out ResolvedTalentEventHook focusedIce))
+            resourceCost *= Math.Max(0, 1 - focusedIce.Value / 100m);
+        if (TryGetMageHook("I-9-1", out ResolvedTalentEventHook lordOfCold))
+            damageMultiplier *= 1 + lordOfCold.Value / 100m;
 
-        bool heart = IsHeartOfWinterActive(now);
-        if (heart && TryGetMageHook("I-5-1", out ResolvedTalentEventHook winter))
+        if (string.Equals(ability.Id, IceShardId, StringComparison.Ordinal)
+            && TryGetMageHook("I-1-1", out ResolvedTalentEventHook improvedShard))
+            castTime = ClampCastTime(castTime - TimeSpan.FromSeconds((double)improvedShard.Value));
+
+        if (string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal)
+            && TryGetMageHook("I-3-3", out ResolvedTalentEventHook improvedBlizzard))
+            damageMultiplier *= 1 + improvedBlizzard.Value / 100m;
+
+        if (string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal)
+            && TryGetMageHook("I-4-4", out ResolvedTalentEventHook improvedCone))
+            damageMultiplier *= 1 + improvedCone.Value / 100m;
+
+        if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal)
+            && TryGetMageHook("I-6-2", out ResolvedTalentEventHook perfectLance))
+            cooldown = TimeSpan.FromSeconds(Math.Max(0, cooldown.TotalSeconds - (double)perfectLance.Value));
+
+        ActiveEffect? coldBlood = FindOwnEffect(_player.Actor, ColdBloodEffectId, now);
+        if (coldBlood is not null)
         {
-            damageMultiplier *= 1 + winter.Value / 100m;
-            resourceCost *= Math.Max(0, 1 - winter.SecondaryValue / 100m);
-            if (string.Equals(ability.Id, IceShardId, StringComparison.Ordinal))
-                castTime = ClampCastTime(
-                    castTime - TimeSpan.FromSeconds((double)winter.CastTimeSeconds));
-        }
-
-        if (heart
-            && TryGetMageHook("I-8-2", out ResolvedTalentEventHook perfectHeart))
-        {
-            criticalChanceBonus += perfectHeart.Value;
-            if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal))
-            {
-                cooldown = TimeSpan.FromSeconds(
-                    cooldown.TotalSeconds
-                    / (1 + (double)perfectHeart.SecondaryValue / 100d));
-            }
-        }
-
-        if (string.Equals(ability.Id, IceShardId, StringComparison.Ordinal))
-        {
-            if (TryGetMageHook("I-4-4", out ResolvedTalentEventHook steadyCold))
-                castTime = ClampCastTime(
-                    castTime - TimeSpan.FromSeconds((double)steadyCold.Value));
-
-            ActiveEffect? cracked =
-                FindOwnEffect(_player.Actor, FrostCrackedIceEffectId, now);
-            if (cracked is not null)
-                criticalChanceBonus += cracked.Definition.Magnitude;
-
-            if (heart
-                && TryGetMageHook("I-9-1", out _)
-                && SelectedTargetFrostbiteStacks(now) >= 3)
-            {
-                castTime = ClampCastTime(castTime - TimeSpan.FromSeconds(0.15));
-            }
-        }
-        else if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal)
-            && TryGetMageHook("I-7-1", out ResolvedTalentEventHook perfectLance))
-        {
-            cooldown -= TimeSpan.FromSeconds((double)perfectLance.SecondaryValue);
-            if (cooldown < TimeSpan.Zero) cooldown = TimeSpan.Zero;
+            criticalChanceBonus += coldBlood.Definition.Magnitude;
+            resourceCost *= Math.Max(0, 1 - coldBlood.RemainingMagnitude / 100m);
         }
 
         return ability with
         {
             ResourceCost = Math.Max(0, resourceCost),
-            Cooldown = cooldown,
-            CastTime = castTime,
             DamageMultiplier = damageMultiplier,
             AccuracyBonus = accuracyBonus,
             CriticalChanceBonus = criticalChanceBonus,
-            MagicPenetrationBonus = magicPenetrationBonus
+            CriticalDamageBonus = criticalDamageBonus,
+            CastTime = castTime,
+            Cooldown = cooldown
         };
     }
 
@@ -298,66 +236,51 @@ public sealed partial class CombatSession
             return modifier;
 
         decimal damageMultiplier = modifier.DamageMultiplier;
-        decimal accuracyBonus = modifier.AccuracyBonus;
         decimal criticalChanceBonus = modifier.CriticalChanceBonus;
-        decimal criticalDamageBonus = modifier.CriticalDamageBonus;
-        decimal magicPenetrationBonus = modifier.MagicPenetrationBonus;
-
-        if (HasOwnEffect(target, ArcaneFormulaFractureEffectId, now)
-            && TryGetMageHook("A-5-4", out ResolvedTalentEventHook fracture))
-        {
-            magicPenetrationBonus += fracture.Value / 100m;
-        }
 
         if (string.Equals(ability.School, "FROST", StringComparison.Ordinal))
         {
-            int stacks = FrostbiteStacks(target, now);
-            if (stacks >= 3
-                && TryGetMageHook("I-2-2", out ResolvedTalentEventHook iceCrack))
-                damageMultiplier *= 1 + iceCrack.Value / 100m;
+            bool frozen = HasOwnEffect(target, FreezeEffectId, now);
+            bool deepChill = HasOwnEffect(target, DeepChillEffectId, now);
 
-            ActiveEffect? brittle = FindOwnEffect(target, BrittleEffectId, now);
-            if (brittle is not null)
-                criticalDamageBonus += brittle.Definition.Magnitude;
+            if ((frozen || deepChill) && TryGetMageHook("I-3-1", out ResolvedTalentEventHook shatter))
+                criticalChanceBonus += frozen ? shatter.Value : shatter.SecondaryValue;
 
-            if (TryGetMageHook("I-5-4", out ResolvedTalentEventHook coldAim)
-                && HpPercent(target) < coldAim.Threshold)
+            if (deepChill && TryGetMageHook("I-8-2", out ResolvedTalentEventHook absoluteZero))
+                criticalChanceBonus += absoluteZero.Value;
+
+            if ((frozen || deepChill) && TryGetMageHook("I-7-2", out ResolvedTalentEventHook glassIce))
+                damageMultiplier *= 1 + glassIce.Value / 100m;
+
+            ActiveEffect? winter = FindAnyActiveEffect(target, WinterChillEffectId, now);
+            if (winter is not null)
             {
-                accuracyBonus += coldAim.Value;
-                criticalChanceBonus += coldAim.Value;
+                criticalChanceBonus += winter.Stacks;
+                if (winter.Stacks >= 5 && HasMageTalent("I-8-1"))
+                    damageMultiplier *= 1.05m;
             }
 
             if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal))
             {
-                if (stacks >= 4 && TryGetMageHook("I-9-1", out ResolvedTalentEventHook lord))
-                {
-                    damageMultiplier *= 1 + lord.SecondaryValue / 100m;
-                }
-                else if (stacks >= 3)
-                {
-                    decimal bonus = TryGetMageHook(
-                        "I-3-1",
-                        out ResolvedTalentEventHook iceLance)
-                            ? iceLance.Value
-                            : 25;
-                    if (TryGetMageHook("I-7-1", out ResolvedTalentEventHook perfectLance))
-                        bonus = perfectLance.Value;
-                    damageMultiplier *= 1 + bonus / 100m;
-                }
+                if (frozen)
+                    damageMultiplier *= 3m;
+                else if (deepChill)
+                    damageMultiplier *= 1.75m;
 
-                if (brittle is not null
-                    && TryGetMageHook("I-5-2", out ResolvedTalentEventHook shattered))
-                    damageMultiplier *= 1 + shattered.Value / 100m;
+                if ((frozen || deepChill)
+                    && TryGetMageHook("I-6-2", out ResolvedTalentEventHook perfectLance))
+                    criticalChanceBonus += perfectLance.SecondaryValue;
+
+                if ((frozen || deepChill)
+                    && HasOwnEffect(_player.Actor, ColdSnapLanceEffectId, now))
+                    criticalChanceBonus += 100m;
             }
         }
 
         return modifier with
         {
             DamageMultiplier = damageMultiplier,
-            AccuracyBonus = accuracyBonus,
-            CriticalChanceBonus = criticalChanceBonus,
-            CriticalDamageBonus = criticalDamageBonus,
-            MagicPenetrationBonus = magicPenetrationBonus
+            CriticalChanceBonus = criticalChanceBonus
         };
     }
 
@@ -365,26 +288,37 @@ public sealed partial class CombatSession
     {
         if (!IsMage || !ability.IsSpell) return;
 
-        if (ability.Type == AbilityType.Casted)
-            RemoveMageEffect(_player.Actor, ArcaneSavedTimeEffectId, now);
-
-        if (string.Equals(ability.Id, ArcaneSparkId, StringComparison.Ordinal))
-            RemoveMageEffect(_player.Actor, ArcaneResidualEffectId, now);
-
-        RemoveMageEffect(_player.Actor, FrostCleanSnowEffectId, now);
-
-        if (string.Equals(ability.School, "FROST", StringComparison.Ordinal))
+        bool baseManaSpell = ability.ResourceCost > 0;
+        ActiveEffect? clearcasting = FindOwnEffect(_player.Actor, ClearcastingEffectId, now);
+        if (baseManaSpell && clearcasting is not null)
         {
-            RemoveMageEffect(_player.Actor, FrostResponseEffectId, now);
-            RemoveMageEffect(_player.Actor, FrostSequenceEffectId, now);
-            if (string.Equals(ability.Id, IceShardId, StringComparison.Ordinal))
-                RemoveMageEffect(_player.Actor, FrostCrackedIceEffectId, now);
+            ConsumeEffectStack(_player.Actor, clearcasting, ClearcastingEffectId, now);
+            if (TryGetMageHook("A-6-2", out ResolvedTalentEventHook afterglow))
+                ApplyMageEffect(_player.Actor, new EffectDefinition(
+                    ClearcastingRegenEffectId, EffectKind.Buff, afterglow.Duration, 1,
+                    EffectStackPolicy.Replace, afterglow.Value), now);
         }
 
-        if (string.Equals(ability.School, "ARCANE", StringComparison.Ordinal))
-            RemoveMageEffect(_player.Actor, ArcaneReadyEffectId, now);
-        else if (ability.School is "FIRE" or "FROST")
-            RemoveMageEffect(_player.Actor, ElementalReadyEffectId, now);
+        bool presenceApplies = HasOwnEffect(_player.Actor, PresenceOfMindEffectId, now)
+            && ability.Type == AbilityType.Casted
+            && ability.CastTime <= TimeSpan.FromSeconds(3);
+        if (presenceApplies)
+            RemoveMageEffect(_player.Actor, PresenceOfMindEffectId, now);
+
+        ActiveEffect? freeCost = FindOwnEffect(_player.Actor, ArcanePowerFreeCostEffectId, now);
+        if (baseManaSpell && freeCost is not null && IsArcanePowerActive(now))
+            ConsumeEffectStack(_player.Actor, freeCost, ArcanePowerFreeCostEffectId, now);
+
+        if (ability.ResourceCost > 0)
+            _lastMageManaSpendAtUtc = now;
+
+        if (string.Equals(ability.School, "FROST", StringComparison.Ordinal)
+            && HasOwnEffect(_player.Actor, ColdBloodEffectId, now))
+            RemoveMageEffect(_player.Actor, ColdBloodEffectId, now);
+
+        if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal)
+            && HasOwnEffect(_player.Actor, ColdSnapLanceEffectId, now))
+            RemoveMageEffect(_player.Actor, ColdSnapLanceEffectId, now);
     }
 
     private void OnMageAbilityResolved(
@@ -395,181 +329,80 @@ public sealed partial class CombatSession
         if (!IsMage || Status != CombatSessionStatus.Active || !ability.IsSpell)
             return;
 
+        if (string.Equals(ability.Id, PresenceOfMindId, StringComparison.Ordinal))
+        {
+            ApplyMageEffect(_player.Actor, new EffectDefinition(
+                PresenceOfMindEffectId, EffectKind.Buff, TimeSpan.FromSeconds(20), 1,
+                EffectStackPolicy.Replace, 0), now);
+            return;
+        }
+        if (string.Equals(ability.Id, ArcanePowerId, StringComparison.Ordinal))
+        {
+            ActivateArcanePower(now);
+            return;
+        }
+        if (string.Equals(ability.Id, ManaShieldId, StringComparison.Ordinal))
+        {
+            ActivateManaShield(now);
+            return;
+        }
+        if (string.Equals(ability.Id, EvocationId, StringComparison.Ordinal))
+        {
+            decimal percent = TryGetMageHook("A-6-4", out ResolvedTalentEventHook evocation)
+                ? evocation.Value
+                : 40m;
+            AddResource(_player.Actor, _player.Actor.MaxResource * percent / 100m, now, "A-6-4");
+            return;
+        }
+        if (string.Equals(ability.Id, CounterspellId, StringComparison.Ordinal))
+        {
+            ApplyCounterspell(now);
+            return;
+        }
+        if (string.Equals(ability.Id, FrostNovaId, StringComparison.Ordinal))
+        {
+            ApplyFrostNova(now);
+            return;
+        }
+        if (string.Equals(ability.Id, ColdSnapId, StringComparison.Ordinal))
+        {
+            ActivateColdSnap(now);
+            return;
+        }
+        if (string.Equals(ability.Id, IceBlockId, StringComparison.Ordinal))
+        {
+            ActivateIceBlock(now);
+            return;
+        }
+        if (string.Equals(ability.Id, IceBarrierId, StringComparison.Ordinal))
+        {
+            ActivateIceBarrier(now);
+            return;
+        }
+
         bool hit = DidHit(execution);
         bool critical = DidCrit(execution);
 
-        if (string.Equals(ability.Id, ManaOverloadId, StringComparison.Ordinal))
+        if (hit)
         {
-            ActivateManaOverload(now);
-            return;
-        }
-        if (string.Equals(ability.Id, HeartOfWinterId, StringComparison.Ordinal))
-        {
-            ActivateHeartOfWinter(now);
-            return;
-        }
-
-        ApplyArcaneResolvedHooks(ability, execution, hit, critical, now);
-        ApplyFrostResolvedHooks(ability, execution, hit, critical, now);
-
-        if (hit && TryGetMageHook("A-7-3", out ResolvedTalentEventHook resonance))
-        {
-            if (string.Equals(ability.School, "ARCANE", StringComparison.Ordinal))
+            TryProcClearcasting(now);
+            if (IsArcanePowerActive(now))
             {
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        ElementalReadyEffectId,
-                        EffectKind.Buff,
-                        resonance.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        resonance.SecondaryValue),
-                    now);
-            }
-            else if (ability.School is "FIRE" or "FROST")
-            {
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        ArcaneReadyEffectId,
-                        EffectKind.Buff,
-                        resonance.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        resonance.Value),
-                    now);
+                TryApplyArcanePowerEcho(ability, execution, now);
+                if (ability.ResourceCost > 0 && HasMageTalent("A-9-1"))
+                {
+                    _arcanePowerManaSpendCount++;
+                    if (_arcanePowerManaSpendCount >= 3)
+                    {
+                        _arcanePowerManaSpendCount = 0;
+                        GrantClearcasting(now);
+                    }
+                }
             }
         }
 
-        if (ability.Type == AbilityType.Casted
-            && TryGetMageHook("A-2-4", out ResolvedTalentEventHook weaving)
-            && TalentCooldownReady(weaving.TalentId, now))
-        {
-            RestoreMageResource(weaving.Value, now, weaving.TalentId);
-            StartTalentCooldown(weaving, now);
-        }
-
-        if (IsOffensiveMageAbility(ability)
-            && !hit
-            && ability.ResourceCost > 0
-            && TryGetMageHook("A-4-4", out ResolvedTalentEventHook calculation))
-        {
-            RestoreMageResource(
-                ability.ResourceCost * calculation.Value / 100m,
-                now,
-                calculation.TalentId);
-        }
-
-        TryApplySpellEcho(ability, execution, hit, now);
-    }
-
-    private void ApplyArcaneResolvedHooks(
-        AbilityDefinition ability,
-        AbilityExecutionResult execution,
-        bool hit,
-        bool critical,
-        DateTimeOffset now)
-    {
-        if (string.Equals(ability.Id, ArcaneSparkId, StringComparison.Ordinal)
-            && hit
-            && TryGetMageHook("A-2-1", out ResolvedTalentEventHook chargeHook))
-        {
-            int count = IsManaOverloadActive(now) ? 2 : 1;
-            AddArcaneCharges(count, chargeHook.Duration, now);
-        }
-
-        if (string.Equals(ability.Id, ArcaneCascadeId, StringComparison.Ordinal))
-        {
-            ConsumeArcaneCharges(2, now);
-        }
-
-        if (string.Equals(ability.Id, ArcaneSealId, StringComparison.Ordinal)
-            && hit)
-        {
-            foreach (CombatActorState sealedTarget in HitTargets(execution))
-            {
-                ApplyMageEffect(
-                    sealedTarget,
-                    new EffectDefinition(
-                        "MAGE_ARCANE_SEAL_SILENCE",
-                        EffectKind.Silence,
-                        TimeSpan.FromSeconds(2),
-                        1,
-                        EffectStackPolicy.Replace,
-                        0,
-                        SourceSpecific: true),
-                    now);
-            }
-        }
-
-        if (!string.Equals(ability.Id, ArcaneBurstId, StringComparison.Ordinal))
-            return;
-
-        int consumed = ArcaneCharges(now);
-        if (consumed <= 0) return;
-
-        decimal directDamage = execution.Events
-            .Where(item => item.Type == CombatEventType.DamageDealt)
-            .Sum(item => item.Amount);
-        CombatActorState? target = ResolveExecutionEnemyTarget(execution);
-
-        ConsumeArcaneCharges(consumed, now);
-
-        if (consumed >= 3
-            && TryGetMageHook("A-3-4", out ResolvedTalentEventHook residual))
-        {
-            ApplyMageEffect(
-                _player.Actor,
-                new EffectDefinition(
-                    ArcaneResidualEffectId,
-                    EffectKind.Buff,
-                    residual.Duration,
-                    1,
-                    EffectStackPolicy.Replace,
-                    residual.Value),
-                now);
-            ActiveEffect? effect = FindOwnEffect(
-                _player.Actor,
-                ArcaneResidualEffectId,
-                now);
-            if (effect is not null)
-                effect.RemainingMagnitude = residual.SecondaryValue;
-        }
-
-        if (TryGetMageHook("A-5-3", out ResolvedTalentEventHook energyReturn))
-            RestoreMageResource(consumed * energyReturn.Value, now, energyReturn.TalentId);
-
-        if (TryGetMageHook("A-6-2", out ResolvedTalentEventHook savedTime))
-        {
-            ApplyMageEffect(
-                _player.Actor,
-                new EffectDefinition(
-                    ArcaneSavedTimeEffectId,
-                    EffectKind.Buff,
-                    savedTime.Duration,
-                    1,
-                    EffectStackPolicy.Replace,
-                    savedTime.Value),
-                now);
-        }
-
-        if (critical && consumed >= 4
-            && TryGetMageHook("A-8-2", out ResolvedTalentEventHook chain))
-            AddArcaneCharges((int)chain.Value, TimeSpan.FromSeconds(12), now);
-
-        if (consumed >= 5
-            && directDamage > 0
-            && target is not null
-            && TryGetMageHook("A-9-1", out ResolvedTalentEventHook archmage))
-        {
-            ApplyDelayedMageDamage(
-                target,
-                ArchmageEchoEffectId,
-                directDamage * archmage.Value / 100m,
-                archmage.Duration,
-                now);
-        }
+        if (string.Equals(ability.School, "FROST", StringComparison.Ordinal))
+            ApplyFrostResolvedHooks(ability, execution, hit, critical, now);
     }
 
     private void ApplyFrostResolvedHooks(
@@ -579,393 +412,162 @@ public sealed partial class CombatSession
         bool critical,
         DateTimeOffset now)
     {
-        if (!string.Equals(ability.School, "FROST", StringComparison.Ordinal))
-            return;
+        if (!hit) return;
 
-        CombatActorState? primaryTarget = ResolveExecutionEnemyTarget(execution);
+        CombatActorState[] targets = HitTargets(execution).ToArray();
+        bool appliesChill = string.Equals(ability.Id, IceShardId, StringComparison.Ordinal)
+            || string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal)
+            || string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal);
 
-        if (string.Equals(ability.Id, IceShardId, StringComparison.Ordinal)
-            && hit
-            && primaryTarget is not null)
+        if (appliesChill)
+            foreach (CombatActorState target in targets)
+                ApplyChill(target, now, enhanced: string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal));
+
+        bool directFrost = !string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal);
+        if (directFrost && TryGetMageHook("I-2-2", out ResolvedTalentEventHook frostbite))
         {
-            AddFrostbite(primaryTarget, now);
-            if (TryGetMageHook("I-2-4", out ResolvedTalentEventHook cleanSnow))
-            {
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        FrostCleanSnowEffectId,
-                        EffectKind.Buff,
-                        cleanSnow.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        cleanSnow.Value),
-                    now);
-            }
+            foreach (CombatActorState target in targets)
+                if (_random.NextUnit() < frostbite.Value / 100m)
+                    ApplyFreezeOrDeepChill(target, frostbite.Duration, TimeSpan.FromSeconds((double)frostbite.SecondaryValue), now);
+        }
 
-            if (FrostbiteStacks(primaryTarget, now) >= 3
-                && TryGetMageHook("I-6-3", out ResolvedTalentEventHook cracked))
+        if (critical && TryGetMageHook("I-5-1", out ResolvedTalentEventHook winterChill))
+        {
+            foreach (CombatActorState target in targets)
+                ApplyWinterChill(target, (int)Math.Max(1, winterChill.Value), winterChill.Duration, now);
+        }
+
+        if (HasMageTalent("I-9-1"))
+        {
+            foreach (CombatActorState target in targets)
             {
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        FrostCrackedIceEffectId,
-                        EffectKind.Buff,
-                        cracked.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        cracked.Value),
-                    now);
+                ActiveEffect? winter = FindAnyActiveEffect(target, WinterChillEffectId, now);
+                if (winter is not null)
+                    winter.ExpiresAtUtc = now + winter.Definition.Duration;
             }
+        }
+
+        if (critical && TryGetMageHook("I-7-4", out ResolvedTalentEventHook economy)
+            && TalentCooldownReady(economy.TalentId, now))
+        {
+            AddResource(_player.Actor, economy.Value, now, economy.TalentId);
+            StartTalentCooldown(economy, now);
+        }
+
+        if (critical && TryGetMageHook("I-6-3", out ResolvedTalentEventHook boneChill))
+        {
+            foreach (CombatActorState target in targets)
+                ExtendFrozenStateOnce(target, boneChill.Value, now);
         }
 
         if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal)
-            && hit
-            && primaryTarget is not null)
+            && TryGetMageHook("I-7-1", out ResolvedTalentEventHook deepFreeze))
         {
-            int stacks = FrostbiteStacks(primaryTarget, now);
-            if (stacks >= 4 && TryGetMageHook("I-9-1", out ResolvedTalentEventHook lord))
-            {
-                ConsumeFrostbite(primaryTarget, 4, now);
-                if (!_deepFreezeReadyAt.TryGetValue(primaryTarget.ActorId, out DateTimeOffset readyAt)
-                    || readyAt <= now)
-                {
-                    ApplyMageEffect(
-                        primaryTarget,
-                        new EffectDefinition(
-                            "MAGE_DEEP_FREEZE_STUN",
-                            EffectKind.Stun,
-                            lord.Duration,
-                            1,
-                            EffectStackPolicy.Replace,
-                            0,
-                            SourceSpecific: true),
-                        now);
-                    _deepFreezeReadyAt[primaryTarget.ActorId] = now + lord.InternalCooldown;
-                }
-            }
-            else if (stacks >= 3)
-            {
-                ConsumeFrostbite(primaryTarget, 1, now);
-            }
-        }
-
-        if (string.Equals(ability.Id, IceFractureId, StringComparison.Ordinal)
-            && hit)
-        {
-            foreach (CombatActorState target in HitTargets(execution))
-            {
-                if (FrostbiteStacks(target, now) < 3) continue;
-
-                ApplyMageEffect(
-                    target,
-                    new EffectDefinition(
-                        "MAGE_ICE_FRACTURE_STUN",
-                        EffectKind.Stun,
-                        TryGetMageHook("I-4-1", out ResolvedTalentEventHook fracture)
-                            ? fracture.Value > 0
-                                ? TimeSpan.FromSeconds((double)fracture.Value)
-                                : TimeSpan.FromSeconds(1)
-                            : TimeSpan.FromSeconds(1),
-                        1,
-                        EffectStackPolicy.Replace,
-                        0,
-                        SourceSpecific: true),
-                    now);
-
-                if (TryGetMageHook("I-8-1", out ResolvedTalentEventHook absolute))
-                {
-                    ApplyBrittle(
-                        target,
-                        TryGetMageHook("I-3-2", out ResolvedTalentEventHook brittle)
-                            ? brittle.Value
-                            : 0,
-                        absolute.Duration,
-                        now);
-                }
-                ConsumeFrostbite(target, 3, now);
-            }
-        }
-
-        if (string.Equals(ability.Id, FrostSealId, StringComparison.Ordinal)
-            && hit
-            && primaryTarget is not null)
-        {
-            ApplyMageEffect(
-                primaryTarget,
-                new EffectDefinition(
-                    "MAGE_FROST_SEAL_SILENCE",
-                    EffectKind.Silence,
-                    TimeSpan.FromSeconds(2),
-                    1,
-                    EffectStackPolicy.Replace,
-                    0,
-                    SourceSpecific: true),
-                now);
-            if (TryGetMageHook("I-7-4", out ResolvedTalentEventHook whiteSilence))
-            {
-                ApplyMageEffect(
-                    primaryTarget,
-                    new EffectDefinition(
-                        FrostSealAttackSpeedEffectId,
-                        EffectKind.StatModifier,
-                        whiteSilence.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        1 - whiteSilence.Value / 100m,
-                        ModifiedStat: EffectStat.AttackSpeed,
-                        ModifierMode: EffectModifierMode.Multiplicative,
-                        SourceSpecific: true),
-                    now);
-            }
-        }
-
-        if (hit)
-        {
-            _frostSequence++;
-            if (TryGetMageHook("I-7-3", out ResolvedTalentEventHook sequence)
-                && _frostSequence >= Math.Max(1, sequence.TriggerCount))
-            {
-                _frostSequence = 0;
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        FrostSequenceEffectId,
-                        EffectKind.Buff,
-                        sequence.Duration,
-                        1,
-                        EffectStackPolicy.Replace,
-                        sequence.Value),
-                    now);
-                ActiveEffect? effect = FindOwnEffect(
-                    _player.Actor,
-                    FrostSequenceEffectId,
-                    now);
-                if (effect is not null)
-                    effect.RemainingMagnitude = sequence.SecondaryValue;
-            }
-        }
-        else
-        {
-            _frostSequence = 0;
-            RemoveMageEffect(_player.Actor, FrostSequenceEffectId, now);
+            foreach (CombatActorState target in targets)
+                TryApplyDeepFreeze(target, execution, deepFreeze, now);
         }
     }
 
-    private void ApplyMageCriticalHooks(CombatEvent combatEvent)
-    {
-        if (!IsMage
-            || combatEvent.SourceActorId != _player.Actor.ActorId
-            || combatEvent.DefinitionId is null
-            || !_abilities.TryGetValue(
-                combatEvent.DefinitionId,
-                out AbilityDefinition? ability)
-            || !ability.IsSpell)
-            return;
-
-        DateTimeOffset now = combatEvent.OccurredAtUtc;
-        CombatActorState? target =
-            combatEvent.TargetActorId is { } targetId
-            && _enemiesById.TryGetValue(targetId, out CombatParticipantDefinition? enemy)
-                ? enemy.Actor
-                : null;
-
-        if (target is not null
-            && TryGetMageHook("A-5-4", out ResolvedTalentEventHook fracture))
-        {
-            ApplyMageEffect(
-                target,
-                new EffectDefinition(
-                    ArcaneFormulaFractureEffectId,
-                    EffectKind.Debuff,
-                    fracture.Duration,
-                    1,
-                    EffectStackPolicy.Replace,
-                    fracture.Value,
-                    SourceSpecific: true),
-                now);
-        }
-
-        if (!string.Equals(ability.School, "FROST", StringComparison.Ordinal))
-            return;
-
-        if (target is not null
-            && TryGetMageHook("I-3-2", out ResolvedTalentEventHook brittle))
-            ApplyBrittle(target, brittle.Value, brittle.Duration, now);
-
-        if (TryGetMageHook("I-5-3", out ResolvedTalentEventHook economy)
-            && TalentCooldownReady(economy.TalentId, now))
-        {
-            RestoreMageResource(economy.Value, now, economy.TalentId);
-            StartTalentCooldown(economy, now);
-        }
-    }
-
-    private void ApplyMageIncomingCriticalHooks(CombatEvent combatEvent)
-    {
-        if (!IsMage
-            || _player.Actor.IsDead
-            || combatEvent.TargetActorId != _player.Actor.ActorId
-            || !TryGetMageHook("I-2-3", out ResolvedTalentEventHook response)
-            || !TalentCooldownReady(response.TalentId, combatEvent.OccurredAtUtc))
-            return;
-
-        decimal percent = response.Value;
-        TimeSpan duration = response.Duration;
-        if (TryGetMageHook("I-6-2", out ResolvedTalentEventHook upgraded))
-        {
-            percent = upgraded.Value;
-            duration += upgraded.Duration;
-        }
-
-        ApplyMageShield(
-            CrystalShieldEffectId,
-            _player.Actor.MaxHp * percent / 100m,
-            duration,
-            combatEvent.OccurredAtUtc,
-            frostShield: true);
-        StartTalentCooldown(response, combatEvent.OccurredAtUtc);
-    }
-
-    private void ApplyMageDamageTakenHooks(CombatEvent combatEvent)
-    {
-        if (!IsMage
-            || _player.Actor.IsDead
-            || combatEvent.TargetActorId != _player.Actor.ActorId
-            || combatEvent.Amount <= 0)
-            return;
-
-        DateTimeOffset now = combatEvent.OccurredAtUtc;
-        if (!_frostEmergencyShieldUsed
-            && TryGetMageHook("I-8-3", out ResolvedTalentEventHook emergency)
-            && HpPercent(_player.Actor) < emergency.Threshold)
-        {
-            _frostEmergencyShieldUsed = true;
-            ApplyMageShield(
-                FrostEmergencyShieldEffectId,
-                _player.Actor.MaxHp * emergency.Value / 100m,
-                emergency.Duration,
-                now,
-                frostShield: true);
-        }
-    }
+    private void ApplyMageCriticalHooks(CombatEvent combatEvent) { }
+    private void ApplyMageIncomingCriticalHooks(CombatEvent combatEvent) { }
+    private void ApplyMageDamageTakenHooks(CombatEvent combatEvent) { }
+    private void ApplyMageResourceThresholdHooks(CombatEvent combatEvent) { }
 
     private void ApplyMageShieldAbsorbedHooks(CombatEvent combatEvent)
     {
-        if (!IsMage
-            || combatEvent.TargetActorId != _player.Actor.ActorId
-            || combatEvent.Amount <= 0
-            || !TryGetMageHook("I-4-3", out ResolvedTalentEventHook response)
-            || !TalentCooldownReady(response.TalentId, combatEvent.OccurredAtUtc))
+        if (!IsMage || combatEvent.TargetActorId != _player.Actor.ActorId || combatEvent.Amount <= 0)
             return;
 
-        ApplyMageEffect(
-            _player.Actor,
-            new EffectDefinition(
-                FrostResponseEffectId,
-                EffectKind.Buff,
-                response.Duration,
-                1,
-                EffectStackPolicy.Replace,
-                response.Value),
-            combatEvent.OccurredAtUtc);
-        StartTalentCooldown(response, combatEvent.OccurredAtUtc);
+        DateTimeOffset now = combatEvent.OccurredAtUtc;
+        if (string.Equals(combatEvent.DefinitionId, ManaShieldEffectId, StringComparison.Ordinal)
+            || HasOwnEffect(_player.Actor, ManaShieldEffectId, now))
+        {
+            decimal efficiency = TryGetMageHook("A-3-3", out ResolvedTalentEventHook improvedShield)
+                ? improvedShield.Value
+                : 0m;
+            decimal manaSpent = combatEvent.Amount * Math.Max(0, 1 - efficiency / 100m);
+            AddResource(_player.Actor, -manaSpent, now, ManaShieldEffectId);
+
+            if (TryGetMageHook("A-5-4", out ResolvedTalentEventHook absorption) && manaSpent > 0)
+                _pendingMageResourceRefunds.Add(new(
+                    now + absorption.Duration,
+                    manaSpent * absorption.Value / 100m,
+                    absorption.TalentId));
+
+            if (_player.Actor.CurrentResource <= 0)
+                RemoveMageEffect(_player.Actor, ManaShieldEffectId, now);
+        }
+
+        if (string.Equals(combatEvent.DefinitionId, IceBarrierEffectId, StringComparison.Ordinal)
+            && !HasOwnEffect(_player.Actor, IceBarrierEffectId, now))
+            OnIceBarrierBroken(combatEvent, now);
     }
 
-    private void ApplyMageResourceThresholdHooks(CombatEvent combatEvent)
+    private void OnMageAbilityInterrupted(CombatEvent combatEvent) { }
+
+    private void ActivateArcanePower(DateTimeOffset now)
     {
-        if (!IsMage
-            || combatEvent.ActorId != _player.Actor.ActorId
-            || combatEvent.Amount >= 0
-            || !TryGetMageHook("A-7-4", out ResolvedTalentEventHook reserve)
-            || ResourcePercent() >= reserve.Threshold
-            || !TalentCooldownReady(reserve.TalentId, combatEvent.OccurredAtUtc))
+        if (!TryGetMageHook("A-5-1", out ResolvedTalentEventHook arcanePower)) return;
+        TimeSpan duration = arcanePower.Duration;
+        if (TryGetMageHook("A-8-3", out ResolvedTalentEventHook perfectPower))
+            duration += TimeSpan.FromSeconds((double)perfectPower.Value);
+
+        _arcanePowerManaSpendCount = 0;
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            ArcanePowerEffectId, EffectKind.Buff, duration, 1,
+            EffectStackPolicy.Replace, arcanePower.Value), now);
+
+        if (HasMageTalent("A-8-3"))
+            ApplyMageEffect(_player.Actor, new EffectDefinition(
+                ArcanePowerFreeCostEffectId, EffectKind.Buff, duration, 2,
+                EffectStackPolicy.Stack, 0), now);
+    }
+
+    private void ActivateManaShield(DateTimeOffset now)
+    {
+        decimal absorb = Math.Min(_player.Actor.MaxHp * 0.30m, Math.Max(1, _player.Actor.CurrentResource));
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            ManaShieldEffectId, EffectKind.Shield, TimeSpan.FromSeconds(12), 1,
+            EffectStackPolicy.Replace, absorb), now);
+    }
+
+    private void ApplyCounterspell(DateTimeOffset now)
+    {
+        if (!_enemiesById.TryGetValue(_selectedTargetActorId, out CombatParticipantDefinition? target)
+            || target.Actor.IsDead)
             return;
 
-        RestoreMageResource(
-            _player.Actor.MaxResource * reserve.Value / 100m,
-            combatEvent.OccurredAtUtc,
-            reserve.TalentId);
-        StartTalentCooldown(reserve, combatEvent.OccurredAtUtc);
+        if (TryGetMageHook("A-4-1", out ResolvedTalentEventHook improved))
+            ApplyMageEffect(target.Actor, new EffectDefinition(
+                "MAGE_COUNTERSPELL_SILENCE", EffectKind.Silence,
+                TimeSpan.FromSeconds((double)improved.Value), 1,
+                EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
     }
 
-    private void OnMageAbilityInterrupted(CombatEvent combatEvent)
+    private void TryProcClearcasting(DateTimeOffset now)
     {
-        if (!IsMage || combatEvent.ActorId != _player.Actor.ActorId) return;
-
-        if (combatEvent.DefinitionId is not null
-            && _abilities.TryGetValue(combatEvent.DefinitionId, out AbilityDefinition? ability)
-            && string.Equals(ability.School, "FROST", StringComparison.Ordinal))
-        {
-            _frostSequence = 0;
-            RemoveMageEffect(_player.Actor, FrostSequenceEffectId, combatEvent.OccurredAtUtc);
-        }
+        if (!TryGetMageHook("A-1-2", out ResolvedTalentEventHook concentration)) return;
+        if (_random.NextUnit() >= concentration.Value / 100m) return;
+        GrantClearcasting(now);
     }
 
-    private void ActivateManaOverload(DateTimeOffset now)
+    private void GrantClearcasting(DateTimeOffset now)
     {
-        if (!TryGetMageHook("A-5-1", out ResolvedTalentEventHook overload)) return;
-
-        ApplyMageEffect(
-            _player.Actor,
-            new EffectDefinition(
-                ManaOverloadEffectId,
-                EffectKind.Buff,
-                overload.Duration,
-                1,
-                EffectStackPolicy.Replace,
-                0),
-            now);
-
-        if (TryGetMageHook("A-8-3", out ResolvedTalentEventHook perfect))
-        {
-            RestoreMageResource(
-                _player.Actor.MaxResource * perfect.Value / 100m,
-                now,
-                perfect.TalentId);
-            _playerRuntime.Cooldowns.Remove(ArcaneBurstId);
-        }
+        int maxStacks = HasMageTalent("A-8-1") ? 2 : 1;
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            ClearcastingEffectId, EffectKind.Buff, TimeSpan.FromSeconds(30), maxStacks,
+            maxStacks > 1 ? EffectStackPolicy.Stack : EffectStackPolicy.Replace, 0), now);
     }
 
-    private void ActivateHeartOfWinter(DateTimeOffset now)
-    {
-        if (!TryGetMageHook("I-5-1", out ResolvedTalentEventHook winter)) return;
-
-        ApplyMageEffect(
-            _player.Actor,
-            new EffectDefinition(
-                HeartOfWinterEffectId,
-                EffectKind.Buff,
-                winter.Duration,
-                1,
-                EffectStackPolicy.Replace,
-                0),
-            now);
-    }
-
-    private void TryApplySpellEcho(
+    private void TryApplyArcanePowerEcho(
         AbilityDefinition ability,
         AbilityExecutionResult execution,
-        bool hit,
         DateTimeOffset now)
     {
-        if (!hit
-            || ability.Type != AbilityType.Casted
-            || !TryGetMageHook("A-4-1", out ResolvedTalentEventHook echo))
+        if (!IsOffensiveMageAbility(ability)
+            || !TryGetMageHook("A-7-4", out ResolvedTalentEventHook echo)
+            || _random.NextUnit() >= echo.Value / 100m)
             return;
-
-        decimal chance = echo.SecondaryValue;
-        ResolvedTalentEventHook? overloadEchoHook = null;
-        if (IsManaOverloadActive(now)
-            && TryGetMageHook("A-7-2", out ResolvedTalentEventHook resolvedOverloadEcho))
-        {
-            overloadEchoHook = resolvedOverloadEcho;
-            if (!TalentCooldownReady(overloadEchoHook.TalentId, now))
-                return;
-            chance *= 2;
-        }
-
-        if (_random.NextUnit() >= chance / 100m) return;
 
         foreach (IGrouping<Guid?, CombatEvent> group in execution.Events
                      .Where(item => item.Type == CombatEventType.DamageDealt
@@ -978,233 +580,300 @@ public sealed partial class CombatSession
                 || enemy.Actor.IsDead)
                 continue;
 
-            decimal amount = group.Sum(item => item.Amount) * echo.Value / 100m;
-            ApplyDelayedMageDamage(
-                enemy.Actor,
-                ArcaneEchoEffectId,
-                amount,
-                echo.Duration,
-                now);
+            decimal amount = group.Sum(item => item.Amount) * echo.SecondaryValue / 100m;
+            ApplyDelayedMageDamage(enemy.Actor, ArcaneEchoEffectId, amount, echo.Duration, now);
         }
-
-        if (overloadEchoHook is not null)
-            StartTalentCooldown(overloadEchoHook, now);
     }
 
-    private void AddArcaneCharges(int count, TimeSpan duration, DateTimeOffset now)
+    private void ApplyFrostNova(DateTimeOffset now)
     {
-        int maxStacks = HasMageTalent("A-9-1") ? 5 : 4;
-        for (var i = 0; i < count; i++)
+        TimeSpan normalDuration = TimeSpan.FromSeconds(2);
+        TimeSpan bossDuration = TimeSpan.FromSeconds(4);
+        if (TryGetMageHook("I-2-4", out ResolvedTalentEventHook improved))
         {
-            ApplyMageEffect(
-                _player.Actor,
-                new EffectDefinition(
-                    ArcaneChargeEffectId,
-                    EffectKind.Buff,
-                    duration,
-                    maxStacks,
-                    EffectStackPolicy.Stack,
-                    0),
-                now);
+            bossDuration += TimeSpan.FromSeconds((double)improved.SecondaryValue);
+            ReduceCooldown(_playerRuntime, FrostNovaId, TimeSpan.FromSeconds((double)improved.Value), now);
+        }
+
+        foreach (CombatParticipantDefinition enemy in _enemiesById.Values.Where(item => !item.Actor.IsDead))
+            ApplyFreezeOrDeepChill(enemy.Actor, normalDuration, bossDuration, now);
+    }
+
+    private void ActivateColdSnap(DateTimeOffset now)
+    {
+        foreach (string id in new[] { FrostNovaId, BlizzardId, ConeOfColdId, IceBlockId })
+            _playerRuntime.Cooldowns.Remove(id);
+
+        if (HasMageTalent("I-9-1"))
+        {
+            _playerRuntime.Cooldowns.Remove(IceLanceId);
+            _playerRuntime.Cooldowns.Remove(IceBarrierId);
+            ApplyMageEffect(_player.Actor, new EffectDefinition(
+                ColdSnapLanceEffectId, EffectKind.Buff, TimeSpan.FromSeconds(20), 1,
+                EffectStackPolicy.Replace, 0), now);
         }
     }
 
-    private void ConsumeArcaneCharges(int count, DateTimeOffset now)
+    private void ActivateIceBlock(DateTimeOffset now)
     {
-        ActiveEffect? charge = FindOwnEffect(_player.Actor, ArcaneChargeEffectId, now);
-        if (charge is null) return;
-        charge.Stacks = Math.Max(0, charge.Stacks - count);
-        if (charge.Stacks == 0)
-            RemoveMageEffect(_player.Actor, ArcaneChargeEffectId, now);
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            IceBlockEffectId, EffectKind.Buff, TimeSpan.FromSeconds(3), 1,
+            EffectStackPolicy.Replace, 0), now);
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            IceBlockImmunityEffectId, EffectKind.StatModifier, TimeSpan.FromSeconds(3), 1,
+            EffectStackPolicy.Replace, 0,
+            ModifiedStat: EffectStat.IncomingDamageMultiplier,
+            ModifierMode: EffectModifierMode.Multiplicative), now);
+
+        foreach (ActiveEffect effect in _player.Actor.ActiveEffects
+                     .Where(effect => effect.Definition.Kind is EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence)
+                     .ToArray())
+        {
+            ApplyKernelEvents(
+                EffectEngine.Remove(_player.Actor, effect.Definition.Id, now),
+                _player.Actor.ActorId,
+                _player.Actor.ActorId,
+                effect.Definition.Id);
+        }
+
+        if (TryGetMageHook("I-7-3", out ResolvedTalentEventHook coldBlood))
+        {
+            ActiveEffect? block = FindOwnEffect(_player.Actor, IceBlockEffectId, now);
+            if (block is not null)
+                block.RemainingMagnitude = coldBlood.Value;
+        }
     }
 
-    private int ArcaneCharges(DateTimeOffset now) =>
-        FindOwnEffect(_player.Actor, ArcaneChargeEffectId, now)?.Stacks ?? 0;
-
-    private bool IsArcaneCascadeAvailable(DateTimeOffset now) =>
-        HasMageTalent("A-6-1") && ArcaneCharges(now) >= 4;
-
-    private void AddFrostbite(CombatActorState target, DateTimeOffset now)
+    private void ActivateIceBarrier(DateTimeOffset now)
     {
-        if (!TryGetMageHook("I-2-1", out ResolvedTalentEventHook frostbite))
-            return;
+        decimal absorbPercent = 15m;
+        TimeSpan duration = TimeSpan.FromSeconds(8);
+        if (TryGetMageHook("I-5-3", out ResolvedTalentEventHook improved))
+        {
+            absorbPercent *= 1 + improved.Value / 100m;
+            duration += TimeSpan.FromSeconds((double)improved.SecondaryValue);
+        }
 
-        int maxStacks = HasMageTalent("I-9-1") ? 4 : 3;
-        ApplyMageEffect(
-            target,
-            new EffectDefinition(
-                FrostbiteEffectId,
-                EffectKind.Debuff,
-                frostbite.Duration,
-                maxStacks,
-                EffectStackPolicy.Stack,
-                0,
-                SourceSpecific: true),
-            now);
-        SyncFrostbiteDebuffs(target, now);
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            IceBarrierEffectId, EffectKind.Shield, duration, 1,
+            EffectStackPolicy.Replace, _player.Actor.MaxHp * absorbPercent / 100m), now);
     }
 
-    private void ConsumeFrostbite(
+    private void OnIceBarrierBroken(CombatEvent combatEvent, DateTimeOffset now)
+    {
+        if (TryGetMageHook("I-6-4", out ResolvedTalentEventHook reaction))
+        {
+            ReduceCooldown(_playerRuntime, FrostNovaId, TimeSpan.FromSeconds((double)reaction.Value), now);
+            AddResource(_player.Actor, reaction.SecondaryValue, now, reaction.TalentId);
+        }
+
+        if (TryGetMageHook("I-8-3", out ResolvedTalentEventHook emergency)
+            && TalentCooldownReady(emergency.TalentId, now))
+        {
+            ApplyMageShield(EmergencyIceEffectId,
+                _player.Actor.MaxHp * emergency.Value / 100m,
+                emergency.Duration,
+                now);
+            StartTalentCooldown(emergency, now);
+        }
+
+        if (TryGetMageHook("I-5-4", out _)
+            && combatEvent.SourceActorId is { } sourceId
+            && _enemiesById.TryGetValue(sourceId, out CombatParticipantDefinition? attacker))
+            ApplyChill(attacker.Actor, now, enhanced: false);
+    }
+
+    private void ApplyChill(CombatActorState target, DateTimeOffset now, bool enhanced)
+    {
+        decimal slow = enhanced ? 10m : 5m;
+        TimeSpan duration = TimeSpan.FromSeconds(4);
+        if (TryGetMageHook("I-2-1", out ResolvedTalentEventHook permafrost))
+        {
+            slow += permafrost.Value;
+            duration += TimeSpan.FromSeconds(2);
+        }
+        if (string.Equals(BlizzardId, _playerRuntime.ActiveCast?.Ability.Id, StringComparison.Ordinal)
+            && TryGetMageHook("I-3-3", out _))
+            slow += 5m;
+
+        ApplyMageEffect(target, new EffectDefinition(
+            ChillEffectId, EffectKind.StatModifier, duration, 1,
+            EffectStackPolicy.Replace, Math.Max(0.1m, 1 - slow / 100m),
+            ModifiedStat: EffectStat.AttackSpeed,
+            ModifierMode: EffectModifierMode.Multiplicative,
+            SourceSpecific: true), now);
+    }
+
+    private void ApplyFreezeOrDeepChill(
         CombatActorState target,
-        int count,
+        TimeSpan normalDuration,
+        TimeSpan bossDuration,
         DateTimeOffset now)
     {
-        ActiveEffect? frostbite = FindOwnEffect(target, FrostbiteEffectId, now);
-        if (frostbite is null) return;
-        frostbite.Stacks = Math.Max(0, frostbite.Stacks - count);
-        if (frostbite.Stacks == 0)
-            RemoveMageEffect(target, FrostbiteEffectId, now);
-        SyncFrostbiteDebuffs(target, now);
+        if (IsBossEnemy(target))
+        {
+            ApplyMageEffect(target, new EffectDefinition(
+                DeepChillEffectId, EffectKind.Debuff, bossDuration, 1,
+                EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
+            return;
+        }
+
+        ApplyMageEffect(target, new EffectDefinition(
+            FreezeEffectId, EffectKind.Stun, normalDuration, 1,
+            EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
     }
 
-    private void SyncFrostbiteDebuffs(CombatActorState target, DateTimeOffset now)
-    {
-        RemoveMageEffect(target, FrostbiteAttackSpeedEffectId, now);
-        RemoveMageEffect(target, FrostbiteAccuracyEffectId, now);
-        RemoveMageEffect(target, FrostbitePressureEffectId, now);
-
-        ActiveEffect? frostbite = FindOwnEffect(target, FrostbiteEffectId, now);
-        if (frostbite is null) return;
-
-        int effectiveStacks = Math.Min(3, frostbite.Stacks);
-        TimeSpan remaining = frostbite.ExpiresAtUtc - now;
-        if (remaining <= TimeSpan.Zero) return;
-
-        if (TryGetMageHook("I-2-1", out ResolvedTalentEventHook slow))
-        {
-            ApplyMageEffect(
-                target,
-                new EffectDefinition(
-                    FrostbiteAttackSpeedEffectId,
-                    EffectKind.StatModifier,
-                    remaining,
-                    1,
-                    EffectStackPolicy.Replace,
-                    Math.Max(0.1m, 1 - slow.Value * effectiveStacks / 100m),
-                    ModifiedStat: EffectStat.AttackSpeed,
-                    ModifierMode: EffectModifierMode.Multiplicative,
-                    SourceSpecific: true),
-                now);
-        }
-
-        if (TryGetMageHook("I-3-3", out ResolvedTalentEventHook noise))
-        {
-            ApplyMageEffect(
-                target,
-                new EffectDefinition(
-                    FrostbiteAccuracyEffectId,
-                    EffectKind.StatModifier,
-                    remaining,
-                    1,
-                    EffectStackPolicy.Replace,
-                    Math.Max(0.1m, 1 - noise.Value * effectiveStacks / 100m),
-                    ModifiedStat: EffectStat.Accuracy,
-                    ModifierMode: EffectModifierMode.Multiplicative,
-                    SourceSpecific: true),
-                now);
-        }
-
-        if (frostbite.Stacks >= 3
-            && TryGetMageHook("I-7-2", out ResolvedTalentEventHook pressure))
-        {
-            ApplyMageEffect(
-                target,
-                new EffectDefinition(
-                    FrostbitePressureEffectId,
-                    EffectKind.StatModifier,
-                    remaining,
-                    1,
-                    EffectStackPolicy.Replace,
-                    Math.Max(0.1m, 1 - pressure.Value / 100m),
-                    ModifiedStat: EffectStat.OutgoingDamageMultiplier,
-                    ModifierMode: EffectModifierMode.Multiplicative,
-                    SourceSpecific: true),
-                now);
-        }
-    }
-
-    private int FrostbiteStacks(CombatActorState target, DateTimeOffset now) =>
-        FindOwnEffect(target, FrostbiteEffectId, now)?.Stacks ?? 0;
-
-    private int SelectedTargetFrostbiteStacks(DateTimeOffset now) =>
-        _enemiesById.TryGetValue(
-            _selectedTargetActorId,
-            out CombatParticipantDefinition? target)
-            ? FrostbiteStacks(target.Actor, now)
-            : 0;
-
-    private void ApplyBrittle(
+    private void ApplyWinterChill(
         CombatActorState target,
-        decimal magnitude,
+        int maxStacks,
         TimeSpan duration,
         DateTimeOffset now)
     {
-        if (magnitude <= 0 || duration <= TimeSpan.Zero) return;
-        ApplyMageEffect(
-            target,
-            new EffectDefinition(
-                BrittleEffectId,
-                EffectKind.Debuff,
-                duration,
-                1,
-                EffectStackPolicy.Replace,
-                magnitude,
-                SourceSpecific: true),
+        ApplyMageEffect(target, new EffectDefinition(
+            WinterChillEffectId, EffectKind.Debuff, duration, Math.Max(1, maxStacks),
+            EffectStackPolicy.Stack, 1, SourceSpecific: false), now);
+    }
+
+    private void ExtendFrozenStateOnce(CombatActorState target, decimal seconds, DateTimeOffset now)
+    {
+        if (HasOwnEffect(target, FrostExtendedEffectId, now)) return;
+        ActiveEffect? state = FindOwnEffect(target, FreezeEffectId, now)
+            ?? FindOwnEffect(target, DeepChillEffectId, now);
+        if (state is null) return;
+
+        state.ExpiresAtUtc += TimeSpan.FromSeconds((double)seconds);
+        ApplyMageEffect(target, new EffectDefinition(
+            FrostExtendedEffectId, EffectKind.Debuff,
+            state.ExpiresAtUtc - now, 1,
+            EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
+    }
+
+    private void TryApplyDeepFreeze(
+        CombatActorState target,
+        AbilityExecutionResult execution,
+        ResolvedTalentEventHook deepFreeze,
+        DateTimeOffset now)
+    {
+        bool frozen = HasOwnEffect(target, FreezeEffectId, now);
+        bool deep = HasOwnEffect(target, DeepChillEffectId, now);
+        if (!frozen && !deep) return;
+        if (_deepFreezeReadyAt.TryGetValue(target.ActorId, out DateTimeOffset readyAt) && readyAt > now)
+            return;
+
+        decimal directDamage = execution.Events
+            .Where(item => item.Type == CombatEventType.DamageDealt && item.TargetActorId == target.ActorId)
+            .Sum(item => item.Amount);
+        if (directDamage <= 0) return;
+
+        decimal bonus = IsBossEnemy(target) ? deepFreeze.Value : 25m;
+        ApplyDelayedMageDamage(target, "MAGE_DEEP_FREEZE_HIT",
+            directDamage * bonus / 100m,
+            TimeSpan.FromMilliseconds(1), now);
+
+        if (!IsBossEnemy(target))
+            ApplyMageEffect(target, new EffectDefinition(
+                "MAGE_DEEP_FREEZE_STUN", EffectKind.Stun, deepFreeze.Duration, 1,
+                EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
+
+        _deepFreezeReadyAt[target.ActorId] = now + deepFreeze.InternalCooldown;
+    }
+
+    private void SyncMageConditionalEffects(DateTimeOffset now)
+    {
+        if (!IsMage) return;
+
+        foreach (PendingMageResourceRefund pending in _pendingMageResourceRefunds
+                     .Where(item => item.DueAtUtc <= now)
+                     .ToArray())
+        {
+            AddResource(_player.Actor, pending.Amount, now, pending.TalentId);
+            _pendingMageResourceRefunds.Remove(pending);
+        }
+
+        bool arcaneFortitude = TryGetMageHook("A-4-4", out ResolvedTalentEventHook fortitude)
+            && ResourcePercent() > fortitude.Threshold;
+        SyncIncomingDamageReductionEffect(
+            ArcaneFortitudeEffectId,
+            arcaneFortitude ? fortitude.Value : 0,
             now);
+
+        bool frostArmor = HasOwnEffect(_player.Actor, IceBarrierEffectId, now)
+            && TryGetMageHook("I-5-4", out ResolvedTalentEventHook armor);
+        SyncIncomingDamageReductionEffect(
+            FrostArmorEffectId,
+            frostArmor ? armor.Value : 0,
+            now);
+
+        if (!HasOwnEffect(_player.Actor, IceBlockEffectId, now)
+            && HasMageTalent("I-7-3")
+            && !HasOwnEffect(_player.Actor, ColdBloodEffectId, now))
+        {
+            // Ice Block stores the rank's crit bonus in RemainingMagnitude; when the
+            // block expires naturally, EffectEngine no longer exposes it. The explicit
+            // buff is therefore created by the expiry path below when available.
+        }
+    }
+
+    private void SyncIncomingDamageReductionEffect(
+        string effectId,
+        decimal reductionPercent,
+        DateTimeOffset now)
+    {
+        if (reductionPercent <= 0)
+        {
+            RemoveMageEffect(_player.Actor, effectId, now);
+            return;
+        }
+
+        if (HasOwnEffect(_player.Actor, effectId, now)) return;
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            effectId, EffectKind.StatModifier, TimeSpan.FromHours(12), 1,
+            EffectStackPolicy.Replace, Math.Max(0, 1 - reductionPercent / 100m),
+            ModifiedStat: EffectStat.IncomingDamageMultiplier,
+            ModifierMode: EffectModifierMode.Multiplicative), now);
+    }
+
+    private decimal EffectivePlayerResourceRegenPerSecond(DateTimeOffset now)
+    {
+        decimal regen = _player.ResourceRegenPerSecond;
+        if (!IsMage || regen <= 0) return regen;
+
+        if (TryGetMageHook("A-2-1", out ResolvedTalentEventHook meditation))
+            regen *= 1 + meditation.Value / 100m;
+
+        ActiveEffect? afterglow = FindOwnEffect(_player.Actor, ClearcastingRegenEffectId, now);
+        if (afterglow is not null)
+            regen *= 1 + afterglow.Definition.Magnitude / 100m;
+
+        if (TryGetMageHook("A-6-3", out ResolvedTalentEventHook deepMeditation)
+            && _lastMageManaSpendAtUtc is { } spentAt
+            && now - spentAt >= deepMeditation.Duration)
+            regen *= 1 + deepMeditation.Value / 100m;
+
+        return regen;
+    }
+
+    private void ConsumeEffectStack(
+        CombatActorState actor,
+        ActiveEffect effect,
+        string effectId,
+        DateTimeOffset now)
+    {
+        effect.Stacks = Math.Max(0, effect.Stacks - 1);
+        if (effect.Stacks == 0)
+            RemoveMageEffect(actor, effectId, now);
     }
 
     private void ApplyMageShield(
         string effectId,
         decimal amount,
         TimeSpan duration,
-        DateTimeOffset now,
-        bool frostShield)
+        DateTimeOffset now)
     {
         if (amount <= 0 || duration <= TimeSpan.Zero) return;
-        if (frostShield
-            && TryGetMageHook("I-4-2", out ResolvedTalentEventHook shell))
-            amount *= 1 + shell.Value / 100m;
-
-        ApplyMageEffect(
-            _player.Actor,
-            new EffectDefinition(
-                effectId,
-                EffectKind.Shield,
-                duration,
-                1,
-                EffectStackPolicy.Replace,
-                amount),
-            now);
-    }
-
-    private void RestoreMageResource(
-        decimal amount,
-        DateTimeOffset now,
-        string definitionId)
-    {
-        if (amount <= 0) return;
-        decimal overflow = Math.Max(
-            0,
-            _player.Actor.CurrentResource + amount - _player.Actor.MaxResource);
-        AddResource(_player.Actor, amount, now, definitionId);
-
-        if (overflow <= 0
-            || !TryGetMageHook("A-6-3", out ResolvedTalentEventHook shield)
-            || !TalentCooldownReady(shield.TalentId, now))
-            return;
-
-        decimal absorb = Math.Min(
-            _player.Actor.MaxHp * shield.Threshold / 100m,
-            overflow * shield.Value / 100m);
-        if (absorb <= 0) return;
-
-        ApplyMageShield(
-            ArcaneOverflowShieldEffectId,
-            absorb,
-            shield.Duration,
-            now,
-            frostShield: false);
-        StartTalentCooldown(shield, now);
+        ApplyMageEffect(_player.Actor, new EffectDefinition(
+            effectId, EffectKind.Shield, duration, 1,
+            EffectStackPolicy.Replace, amount), now);
     }
 
     private void ApplyDelayedMageDamage(
@@ -1215,19 +884,10 @@ public sealed partial class CombatSession
         DateTimeOffset now)
     {
         if (target.IsDead || amount <= 0 || delay <= TimeSpan.Zero) return;
-        ApplyMageEffect(
-            target,
-            new EffectDefinition(
-                effectId,
-                EffectKind.DamageOverTime,
-                delay,
-                1,
-                EffectStackPolicy.Replace,
-                amount,
-                delay,
-                SourceSpecific: true,
-                PeriodicDamageType: DamageType.Magical),
-            now);
+        ApplyMageEffect(target, new EffectDefinition(
+            effectId, EffectKind.DamageOverTime, delay, 1,
+            EffectStackPolicy.Replace, amount, delay,
+            SourceSpecific: true, PeriodicDamageType: DamageType.Magical), now);
     }
 
     private IEnumerable<CombatActorState> HitTargets(AbilityExecutionResult execution) =>
@@ -1240,71 +900,27 @@ public sealed partial class CombatSession
             .Where(_enemiesById.ContainsKey)
             .Select(id => _enemiesById[id].Actor);
 
-    private void SyncMageConditionalEffects(DateTimeOffset now)
-    {
-        if (!IsMage) return;
-
-        bool controlled = EffectEngine.HasControl(_player.Actor, EffectKind.Stun, now)
-            || EffectEngine.HasControl(_player.Actor, EffectKind.Silence, now);
-        if (controlled
-            && TryGetMageHook("I-6-4", out ResolvedTalentEventHook calm))
-        {
-            if (!HasOwnEffect(_player.Actor, FrostControlDefenseEffectId, now))
-            {
-                ApplyMageEffect(
-                    _player.Actor,
-                    new EffectDefinition(
-                        FrostControlDefenseEffectId,
-                        EffectKind.StatModifier,
-                        TimeSpan.FromHours(12),
-                        1,
-                        EffectStackPolicy.Replace,
-                        Math.Max(0.1m, 1 - calm.Value / 100m),
-                        ModifiedStat: EffectStat.IncomingMagicalDamageMultiplier,
-                        ModifierMode: EffectModifierMode.Multiplicative),
-                    now);
-            }
-        }
-        else
-        {
-            RemoveMageEffect(_player.Actor, FrostControlDefenseEffectId, now);
-        }
-    }
-
-    private decimal EffectivePlayerResourceRegenPerSecond(DateTimeOffset now)
-    {
-        decimal regen = _player.ResourceRegenPerSecond;
-        if (!IsMage || regen <= 0) return regen;
-
-        if (TryGetMageHook("A-4-2", out ResolvedTalentEventHook manaCycle)
-            && ResourcePercent() < manaCycle.Threshold)
-            regen *= 1 + manaCycle.Value / 100m;
-        return regen;
-    }
+    private ActiveEffect? FindAnyActiveEffect(
+        CombatActorState actor,
+        string effectId,
+        DateTimeOffset now) =>
+        actor.ActiveEffects.FirstOrDefault(effect =>
+            string.Equals(effect.Definition.Id, effectId, StringComparison.Ordinal)
+            && effect.ExpiresAtUtc > now);
 
     private decimal ResourcePercent() =>
         _player.Actor.MaxResource <= 0
             ? 0
             : _player.Actor.CurrentResource / _player.Actor.MaxResource * 100m;
 
-    private bool IsManaOverloadActive(DateTimeOffset now) =>
-        HasOwnEffect(_player.Actor, ManaOverloadEffectId, now);
-
-    private bool IsHeartOfWinterActive(DateTimeOffset now) =>
-        HasOwnEffect(_player.Actor, HeartOfWinterEffectId, now);
+    private bool IsArcanePowerActive(DateTimeOffset now) =>
+        HasOwnEffect(_player.Actor, ArcanePowerEffectId, now);
 
     private bool HasMageTalent(string talentId) =>
         _playerTalents.EventHooks.Any(hook =>
-            string.Equals(hook.TalentId, talentId, StringComparison.Ordinal))
-        || talentId switch
-        {
-            "A-6-1" => _playerTalents.UnlockedAbilityIds.Contains(ArcaneCascadeId),
-            _ => false
-        };
+            string.Equals(hook.TalentId, talentId, StringComparison.Ordinal));
 
-    private bool TryGetMageHook(
-        string talentId,
-        out ResolvedTalentEventHook hook)
+    private bool TryGetMageHook(string talentId, out ResolvedTalentEventHook hook)
     {
         hook = _playerTalents.EventHooks.FirstOrDefault(item =>
             string.Equals(item.TalentId, talentId, StringComparison.Ordinal))!;
@@ -1326,26 +942,6 @@ public sealed partial class CombatSession
             effectId,
             _player.Actor.ActorId,
             now));
-
-    private static AbilityActionDefinition[]? AddSpellPowerCoefficient(
-        IReadOnlyList<AbilityActionDefinition>? actions,
-        decimal coefficient) =>
-        actions?.Select(action =>
-            action.Type == AbilityActionType.Damage
-                ? action with
-                {
-                    SpellPowerCoefficient =
-                        action.SpellPowerCoefficient + coefficient
-                }
-                : action).ToArray();
-
-    private static AbilityActionDefinition[]? SetDamageCanMiss(
-        IReadOnlyList<AbilityActionDefinition>? actions,
-        bool canMiss) =>
-        actions?.Select(action =>
-            action.Type == AbilityActionType.Damage
-                ? action with { CanMiss = canMiss }
-                : action).ToArray();
 
     private static bool IsOffensiveMageAbility(AbilityDefinition ability) =>
         ability.IsSpell
