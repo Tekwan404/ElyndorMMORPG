@@ -47,6 +47,7 @@ public sealed partial class CombatSession
     private const string ColdSnapLanceEffectId = "MAGE_COLD_SNAP_LANCE";
 
     private DateTimeOffset? _lastMageManaSpendAtUtc;
+    private DateTimeOffset? _coldBloodReadyAtUtc;
     private int _arcanePowerManaSpendCount;
     private readonly Dictionary<Guid, DateTimeOffset> _deepFreezeReadyAt = [];
     private readonly List<PendingMageResourceRefund> _pendingMageResourceRefunds = [];
@@ -288,7 +289,9 @@ public sealed partial class CombatSession
     {
         if (!IsMage || !ability.IsSpell) return;
 
-        bool baseManaSpell = ability.ResourceCost > 0;
+        bool baseManaSpell = _abilities.TryGetValue(ability.Id, out AbilityDefinition? baseAbility)
+            ? baseAbility.ResourceCost > 0
+            : ability.ResourceCost > 0;
         ActiveEffect? clearcasting = FindOwnEffect(_player.Actor, ClearcastingEffectId, now);
         if (baseManaSpell && clearcasting is not null)
         {
@@ -537,6 +540,19 @@ public sealed partial class CombatSession
             || target.Actor.IsDead)
             return;
 
+        if (_enemyRuntimes.TryGetValue(target.Actor.ActorId, out CombatRuntimeState? runtime))
+        {
+            AbilityExecutionResult interrupted = AbilityEngine.Interrupt(runtime, now, TimeSpan.Zero);
+            if (interrupted.Succeeded)
+            {
+                ApplyKernelEvents(
+                    interrupted.Events,
+                    target.Actor.ActorId,
+                    _player.Actor.ActorId,
+                    CounterspellId);
+            }
+        }
+
         if (TryGetMageHook("A-4-1", out ResolvedTalentEventHook improved))
             ApplyMageEffect(target.Actor, new EffectDefinition(
                 "MAGE_COUNTERSPELL_SILENCE", EffectKind.Silence,
@@ -636,12 +652,9 @@ public sealed partial class CombatSession
                 effect.Definition.Id);
         }
 
-        if (TryGetMageHook("I-7-3", out ResolvedTalentEventHook coldBlood))
-        {
-            ActiveEffect? block = FindOwnEffect(_player.Actor, IceBlockEffectId, now);
-            if (block is not null)
-                block.RemainingMagnitude = coldBlood.Value;
-        }
+        _coldBloodReadyAtUtc = TryGetMageHook("I-7-3", out _)
+            ? now + TimeSpan.FromSeconds(3)
+            : null;
     }
 
     private void ActivateIceBarrier(DateTimeOffset now)
@@ -790,6 +803,25 @@ public sealed partial class CombatSession
             _pendingMageResourceRefunds.Remove(pending);
         }
 
+        if (_coldBloodReadyAtUtc is { } coldBloodReadyAt && now >= coldBloodReadyAt)
+        {
+            _coldBloodReadyAtUtc = null;
+            if (TryGetMageHook("I-7-3", out ResolvedTalentEventHook coldBlood)
+                && !HasOwnEffect(_player.Actor, ColdBloodEffectId, now))
+            {
+                ApplyMageEffect(_player.Actor, new EffectDefinition(
+                    ColdBloodEffectId,
+                    EffectKind.Buff,
+                    coldBlood.Duration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    coldBlood.Value), now);
+                ActiveEffect? activeColdBlood = FindOwnEffect(_player.Actor, ColdBloodEffectId, now);
+                if (activeColdBlood is not null)
+                    activeColdBlood.RemainingMagnitude = coldBlood.SecondaryValue;
+            }
+        }
+
         bool arcaneFortitude = TryGetMageHook("A-4-4", out ResolvedTalentEventHook fortitude)
             && ResourcePercent() > fortitude.Threshold;
         SyncIncomingDamageReductionEffect(
@@ -805,15 +837,6 @@ public sealed partial class CombatSession
             FrostArmorEffectId,
             frostArmorReduction,
             now);
-
-        if (!HasOwnEffect(_player.Actor, IceBlockEffectId, now)
-            && HasMageTalent("I-7-3")
-            && !HasOwnEffect(_player.Actor, ColdBloodEffectId, now))
-        {
-            // Ice Block stores the rank's crit bonus in RemainingMagnitude; when the
-            // block expires naturally, EffectEngine no longer exposes it. The explicit
-            // buff is therefore created by the expiry path below when available.
-        }
     }
 
     private void SyncIncomingDamageReductionEffect(
