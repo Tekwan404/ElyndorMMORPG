@@ -104,8 +104,7 @@ public sealed class SkinnableCorpse
         ArgumentException.ThrowIfNullOrWhiteSpace(monsterDefinitionId);
         if (createdAtUtc.Offset != TimeSpan.Zero || expiresAtUtc.Offset != TimeSpan.Zero)
             throw new ArgumentException("Skinning corpse timestamps must be UTC.");
-        if (expiresAtUtc <= createdAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(expiresAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(expiresAtUtc, createdAtUtc);
 
         CharacterId = characterId;
         CombatSessionId = combatSessionId;
