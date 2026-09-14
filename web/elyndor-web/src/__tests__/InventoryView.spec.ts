@@ -177,7 +177,7 @@ describe('InventoryView', () => {
     expect(modalText).toContain('+7')
   })
 
-  it('keeps an equipment modal open and explains server equip restrictions', async () => {
+  it('does not expose equip actions for class-incompatible equipment', async () => {
     const store = useGameSessionStore()
     const hood = item({
       id: 'RANGER_HOOD',
@@ -188,22 +188,44 @@ describe('InventoryView', () => {
       armorCategory: 'LEATHER',
     })
     store.snapshot = snapshot([hood], currentWeapon())
-    vi.spyOn(store, 'equip').mockImplementation(async () => {
-      store.errorCode = 'inventory_armor_category_restricted'
-    })
+    const equip = vi.spyOn(store, 'equip').mockResolvedValue(undefined)
 
     const wrapper = mount(InventoryView)
     await wrapper.get('[data-item-id="RANGER_HOOD"]').trigger('click')
     await flushPromises()
 
-    const equipAction = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button'))
-      .find(button => button.textContent?.trim() === 'Надеть')
-    expect(equipAction).toBeDefined()
-    equipAction?.click()
+    expect(document.body.querySelector('[data-equip-action]')).toBeNull()
+    expect(document.body.querySelector('[data-equip-target]')).toBeNull()
+    expect(document.body.querySelector('[data-equip-restriction]')?.textContent)
+      .toContain('Воин может носить только тяжёлую броню.')
+    expect(document.body.textContent).toContain('Капюшон Следопыта')
+    expect(equip).not.toHaveBeenCalled()
+  })
+
+  it('keeps level-gated equipment visible but disables equip with a concrete reason', async () => {
+    const store = useGameSessionStore()
+    const helm = item({
+      id: 'VETERAN_HELM',
+      name: 'Шлем ветерана',
+      type: 'Equipment',
+      rarity: 'Epic',
+      requiredLevel: 14,
+      slot: 'Head',
+      armorCategory: 'HEAVY',
+    })
+    store.snapshot = snapshot([helm], currentWeapon())
+    const equip = vi.spyOn(store, 'equip').mockResolvedValue(undefined)
+
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="VETERAN_HELM"]').trigger('click')
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Этот тип брони недоступен вашему классу.')
-    expect(document.body.textContent).toContain('Капюшон Следопыта')
+    const equipAction = document.body.querySelector<HTMLButtonElement>('[data-equip-action]')
+    expect(equipAction).not.toBeNull()
+    expect(equipAction?.disabled).toBe(true)
+    expect(document.body.querySelector('[data-equip-level-requirement]')?.textContent)
+      .toContain('Требуется уровень 14. Текущий уровень: 10.')
+    expect(equip).not.toHaveBeenCalled()
   })
 
   it('lets a one-hand weapon choose main hand or off hand explicitly', async () => {
