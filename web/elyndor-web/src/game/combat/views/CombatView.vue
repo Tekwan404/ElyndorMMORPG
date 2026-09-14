@@ -9,6 +9,7 @@ import { monsterArtUrl } from '@/assets/monsterArt'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
+import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -524,56 +525,15 @@ onUnmounted(() => window.clearInterval(timer))
         </section>
       </header>
 
-      <section
-        v-if="combatAllies.length > 0"
-        class="combat-party-roster"
-        aria-label="Состав группы в бою"
-        data-combat-party-roster
-      >
-        <header class="combat-party-roster__header">
-          <div>
-            <small>СОЮЗНИКИ В БОЮ</small>
-            <strong>Союзники · {{ combatAllies.length }}</strong>
-          </div>
-          <span>Общий фронт</span>
-        </header>
-        <div class="combat-party-roster__grid">
-          <article
-            v-for="player in combatAllies"
-            :key="player.actorId"
-            class="combat-party-roster__member"
-            :class="{
-              'combat-party-roster__member--self': player.actorId === snapshot.player.actorId,
-              'combat-party-roster__member--selected': player.actorId === combat.selectedFriendlyTargetActorId,
-            }"
-            :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
-            role="button"
-            tabindex="0"
-            @click="combat.selectFriendlyTarget(player.actorId)"
-            @keydown.enter.prevent="combat.selectFriendlyTarget(player.actorId)"
-            @keydown.space.prevent="combat.selectFriendlyTarget(player.actorId)"
-          >
-            <span class="combat-party-roster__crest" aria-hidden="true">
-              {{ player.name.slice(0, 1).toUpperCase() }}
-            </span>
-            <span class="combat-party-roster__body">
-              <span class="combat-party-roster__identity">
-                <strong>{{ player.name }}</strong>
-                <small>{{ combatPlayerRole(player) }}</small>
-              </span>
-              <span class="combat-party-roster__bar" aria-hidden="true">
-                <i :style="{ width: `${combatPlayerHealthRatio(player)}%` }" />
-              </span>
-              <span class="combat-party-roster__vitals">
-                {{ Math.ceil(player.hp) }} / {{ Math.ceil(player.maxHp) }} · {{ combatParticipantStatus(player.actorId) }}
-              </span>
-            </span>
-            <b class="combat-party-roster__state" aria-hidden="true">
-              <IconGenerator :config="{ id: `combat-player-state-${player.actorId}`, glyph: combatParticipantGlyph(player.actorId), category: 'utility' }" />
-            </b>
-          </article>
-        </div>
-      </section>
+      <CombatAllyRoster
+        :allies="combatAllies"
+        :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
+        :participant-status="combatParticipantStatus"
+        :participant-glyph="combatParticipantGlyph"
+        :role-label="combatPlayerRole"
+        :health-ratio="combatPlayerHealthRatio"
+        @select="combat.selectFriendlyTarget"
+      />
 
       <section
         v-if="!isTraining && snapshot.status === 'Active' && !isParticipantActive"
