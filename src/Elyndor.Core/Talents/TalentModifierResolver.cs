@@ -19,7 +19,7 @@ public static class TalentModifierResolver
 
         foreach (TalentDefinition node in tree.Nodes)
         {
-            int rank = selectedRanks.GetValueOrDefault(node.Id);
+            int rank = Math.Min(selectedRanks.GetValueOrDefault(node.Id), node.MaxRank);
             if (rank <= 0) continue;
 
             foreach (TalentModifierDefinition modifier in node.Modifiers ?? [])
