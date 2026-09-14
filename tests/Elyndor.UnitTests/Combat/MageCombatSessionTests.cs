@@ -429,7 +429,7 @@ public sealed class MageCombatSessionTests
             maxResource: 100,
             resource: 100,
             spellPower: 100,
-            criticalChance: 0);
+            criticalChance: 50);
         CombatActorState enemy1Actor = Actor(
             EnemyId,
             hp: 100_000,
