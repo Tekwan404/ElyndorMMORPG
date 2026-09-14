@@ -287,7 +287,8 @@ describe('combatSession realtime authentication', () => {
     store.selectFriendlyTarget(allyId)
 
     expect(store.selectedFriendlyTargetActorId).toBe(allyId)
-    expect(store.snapshot?.selectedTargetActorId).toBe(enemyId)
+    expect((store.snapshot as unknown as { selectedTargetActorId?: string } | null)
+      ?.selectedTargetActorId).toBe(enemyId)
     expect(signalRMock.invoke).not.toHaveBeenCalled()
   })
 

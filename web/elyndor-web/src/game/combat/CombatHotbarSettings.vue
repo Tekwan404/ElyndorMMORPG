@@ -80,7 +80,7 @@ function abilityMeta(ability: KnownAbility): string {
     <header class="hotbar-settings__header">
       <small>БОЕВОЙ ИНТЕРФЕЙС</small>
       <h2>Панель способностей</h2>
-      <p>Нажми способность, затем другую — они поменяются местами. Первые 6 слотов отображаются в бою.</p>
+      <p>Нажми способность, затем другую — они поменяются местами. Первые 12 слотов отображаются в бою в двух рядах по шесть.</p>
     </header>
 
     <div v-if="orderedAbilities.length" class="hotbar-settings__slots" role="list" aria-label="Порядок боевых способностей">
@@ -163,6 +163,7 @@ function abilityMeta(ability: KnownAbility): string {
 .hotbar-settings__slots {
   display: grid;
   gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .hotbar-slot {
@@ -252,6 +253,9 @@ function abilityMeta(ability: KnownAbility): string {
 }
 
 @media (max-width: 380px) {
+  .hotbar-settings__slots {
+    grid-template-columns: 1fr;
+  }
   .hotbar-slot {
     grid-template-columns: 1.8rem minmax(0, 1fr);
   }
