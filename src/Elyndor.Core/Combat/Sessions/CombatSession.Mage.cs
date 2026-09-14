@@ -418,15 +418,24 @@ public sealed partial class CombatSession
         if (!hit) return;
 
         CombatActorState[] targets = HitTargets(execution).ToArray();
+        HashSet<Guid> criticalTargetIds = execution.Events
+            .Where(item => item.Type == CombatEventType.CriticalHit && item.TargetActorId.HasValue)
+            .Select(item => item.TargetActorId!.Value)
+            .ToHashSet();
+        bool isBlizzard = string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal);
         bool appliesChill = string.Equals(ability.Id, IceShardId, StringComparison.Ordinal)
-            || string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal)
+            || isBlizzard
             || string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal);
 
         if (appliesChill)
             foreach (CombatActorState target in targets)
-                ApplyChill(target, now, enhanced: string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal));
+                ApplyChill(
+                    target,
+                    now,
+                    enhanced: string.Equals(ability.Id, ConeOfColdId, StringComparison.Ordinal),
+                    improvedBlizzard: isBlizzard);
 
-        bool directFrost = !string.Equals(ability.Id, BlizzardId, StringComparison.Ordinal);
+        bool directFrost = !isBlizzard;
         if (directFrost && TryGetMageHook("I-2-2", out ResolvedTalentEventHook frostbite))
         {
             foreach (CombatActorState target in targets)
@@ -434,9 +443,10 @@ public sealed partial class CombatSession
                     ApplyFreezeOrDeepChill(target, frostbite.Duration, TimeSpan.FromSeconds((double)frostbite.SecondaryValue), now);
         }
 
-        if (critical && TryGetMageHook("I-5-1", out ResolvedTalentEventHook winterChill))
+        if (criticalTargetIds.Count > 0
+            && TryGetMageHook("I-5-1", out ResolvedTalentEventHook winterChill))
         {
-            foreach (CombatActorState target in targets)
+            foreach (CombatActorState target in targets.Where(target => criticalTargetIds.Contains(target.ActorId)))
                 ApplyWinterChill(target, (int)Math.Max(1, winterChill.Value), winterChill.Duration, now);
         }
 
@@ -457,9 +467,10 @@ public sealed partial class CombatSession
             StartTalentCooldown(economy, now);
         }
 
-        if (critical && TryGetMageHook("I-6-3", out ResolvedTalentEventHook boneChill))
+        if (criticalTargetIds.Count > 0
+            && TryGetMageHook("I-6-3", out ResolvedTalentEventHook boneChill))
         {
-            foreach (CombatActorState target in targets)
+            foreach (CombatActorState target in targets.Where(target => criticalTargetIds.Contains(target.ActorId)))
                 ExtendFrozenStateOnce(target, boneChill.Value, now);
         }
 
@@ -540,11 +551,13 @@ public sealed partial class CombatSession
             || target.Actor.IsDead)
             return;
 
+        bool interruptedCast = false;
         if (_enemyRuntimes.TryGetValue(target.Actor.ActorId, out CombatRuntimeState? runtime))
         {
             AbilityExecutionResult interrupted = AbilityEngine.Interrupt(runtime, now, TimeSpan.Zero);
             if (interrupted.Succeeded)
             {
+                interruptedCast = true;
                 ApplyKernelEvents(
                     interrupted.Events,
                     target.Actor.ActorId,
@@ -553,7 +566,7 @@ public sealed partial class CombatSession
             }
         }
 
-        if (TryGetMageHook("A-4-1", out ResolvedTalentEventHook improved))
+        if (interruptedCast && TryGetMageHook("A-4-1", out ResolvedTalentEventHook improved))
             ApplyMageEffect(target.Actor, new EffectDefinition(
                 "MAGE_COUNTERSPELL_SILENCE", EffectKind.Silence,
                 TimeSpan.FromSeconds((double)improved.Value), 1,
@@ -698,7 +711,11 @@ public sealed partial class CombatSession
             ApplyChill(attacker.Actor, now, enhanced: false);
     }
 
-    private void ApplyChill(CombatActorState target, DateTimeOffset now, bool enhanced)
+    private void ApplyChill(
+        CombatActorState target,
+        DateTimeOffset now,
+        bool enhanced,
+        bool improvedBlizzard = false)
     {
         decimal slow = enhanced ? 10m : 5m;
         TimeSpan duration = TimeSpan.FromSeconds(4);
@@ -707,8 +724,7 @@ public sealed partial class CombatSession
             slow += permafrost.Value;
             duration += TimeSpan.FromSeconds(2);
         }
-        if (string.Equals(BlizzardId, _playerRuntime.ActiveCast?.Ability.Id, StringComparison.Ordinal)
-            && TryGetMageHook("I-3-3", out _))
+        if (improvedBlizzard && TryGetMageHook("I-3-3", out _))
             slow += 5m;
 
         ApplyMageEffect(target, new EffectDefinition(
