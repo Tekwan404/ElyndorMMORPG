@@ -493,8 +493,7 @@ public sealed partial class CombatSession
             return;
 
         DateTimeOffset now = combatEvent.OccurredAtUtc;
-        if (string.Equals(combatEvent.DefinitionId, ManaShieldEffectId, StringComparison.Ordinal)
-            || HasOwnEffect(_player.Actor, ManaShieldEffectId, now))
+        if (string.Equals(combatEvent.DefinitionId, ManaShieldEffectId, StringComparison.Ordinal))
         {
             decimal efficiency = TryGetMageHook("A-3-3", out ResolvedTalentEventHook improvedShield)
                 ? improvedShield.Value
