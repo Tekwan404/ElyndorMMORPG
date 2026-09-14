@@ -555,18 +555,6 @@ onUnmounted(() => window.clearInterval(timer))
         </section>
       </header>
 
-      <CombatAllyRoster
-        :allies="combatAllies"
-        :player-actor-id="snapshot.player.actorId"
-        :aggroed-actor-ids="aggroedAllyActorIds"
-        :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
-        :participant-status="combatParticipantStatus"
-        :participant-glyph="combatParticipantGlyph"
-        :role-label="combatPlayerRole"
-        :health-ratio="combatPlayerHealthRatio"
-        @select="combat.selectFriendlyTarget"
-      />
-
       <section
         v-if="!isTraining && snapshot.status === 'Active' && !isParticipantActive"
         class="combat-join"
@@ -579,21 +567,36 @@ onUnmounted(() => window.clearInterval(timer))
         </button>
       </section>
 
-      <CombatEnemyTargetList
-        :enemies="aliveEnemies"
-        :selected-target-actor-id="snapshot.selectedTargetActorId ?? snapshot.enemy.actorId"
-        :disabled="combat.pending"
-        :health-ratio="combatEnemyHealthRatio"
-        :aggro-name="enemyAggroName"
-        @select="selectCombatTarget"
-      />
-
       <section
         class="battlefield"
         data-combat-battlefield
         :style="{ '--battlefield-art': `url(${battlefieldArt})` }"
       >
         <div class="battlefield__vignette" />
+
+        <CombatAllyRoster
+          v-if="combatAllies.length > 1"
+          class="combat-ally-roster--battlefield"
+          :allies="combatAllies"
+          :player-actor-id="snapshot.player.actorId"
+          :aggroed-actor-ids="aggroedAllyActorIds"
+          :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
+          :participant-status="combatParticipantStatus"
+          :participant-glyph="combatParticipantGlyph"
+          :role-label="combatPlayerRole"
+          :health-ratio="combatPlayerHealthRatio"
+          @select="combat.selectFriendlyTarget"
+        />
+
+        <CombatEnemyTargetList
+          class="combat-enemy-targets--battlefield"
+          :enemies="aliveEnemies"
+          :selected-target-actor-id="snapshot.selectedTargetActorId ?? snapshot.enemy.actorId"
+          :disabled="combat.pending"
+          :health-ratio="combatEnemyHealthRatio"
+          :aggro-name="enemyAggroName"
+          @select="selectCombatTarget"
+        />
 
         <div class="enemy-effects effect-strip effect-strip--enemy">
           <span
@@ -748,16 +751,12 @@ onUnmounted(() => window.clearInterval(timer))
           </i>
         </div>
 
-        <div
-          v-if="!isTraining && combatConsumables.length"
-          class="consumable-row"
-          aria-label="Боевые расходники"
-        >
+        <div class="combat-utility-strip" aria-label="Быстрые боевые действия" data-combat-utility-strip>
           <button
-            v-for="item in combatConsumables"
+            v-for="item in !isTraining ? combatConsumables : []"
             :key="item.id"
             type="button"
-            class="utility-action"
+            class="utility-action utility-action--consumable"
             :data-combat-consumable="item.definitionId"
             :disabled="combat.pending || consumableCooldownRemaining(item) > 0 || !consumableCanAffect(item)"
             @click="useConsumable(item)"
@@ -773,9 +772,6 @@ onUnmounted(() => window.clearInterval(timer))
               <small v-else>×{{ item.quantity }}</small>
             </div>
           </button>
-        </div>
-
-        <div class="utility-row" aria-label="Дополнительные боевые действия">
           <button
             type="button"
             class="utility-action"
@@ -1461,15 +1457,10 @@ onUnmounted(() => window.clearInterval(timer))
   color: #f08b63;
 }
 
-.consumable-row,
-.utility-row {
+.combat-utility-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
   gap: 5px;
-}
-
-.consumable-row {
-  margin-bottom: 5px;
 }
 
 .utility-action {
@@ -1529,6 +1520,34 @@ onUnmounted(() => window.clearInterval(timer))
 
 .utility-action:disabled {
   opacity: .4;
+}
+
+.combat-utility-strip .utility-action {
+  position: relative;
+  min-height: 42px;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding: 3px;
+  text-align: center;
+}
+
+.combat-utility-strip .utility-action__icon {
+  width: 28px;
+  height: 28px;
+}
+
+.combat-utility-strip .utility-action > div { display: none; }
+
+.utility-action__count {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: rgb(3 5 9 / 88%);
+  color: var(--ui-color-text-primary);
+  font-size: .42rem;
+  font-weight: 800;
 }
 
 .loot-rolls {
@@ -1806,7 +1825,7 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .battlefield {
-  min-height: 21rem;
+  min-height: 18rem;
   border-color: rgb(205 177 113 / 38%);
   border-radius: var(--ui-radius-md);
   box-shadow:
@@ -1825,14 +1844,14 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 .enemy-figure {
-  top: 3.2rem;
-  height: 13rem;
+  top: 2.8rem;
+  height: 11rem;
 }
 
 .player-figure {
   bottom: -1.1rem;
-  width: 8.2rem;
-  height: 10.5rem;
+  width: 7rem;
+  height: 9rem;
   opacity: .88;
 }
 
@@ -1859,6 +1878,22 @@ onUnmounted(() => window.clearInterval(timer))
 
 .ability-row {
   gap: 3px;
+}
+
+.combat-actions .player-state-row {
+  min-height: 20px;
+}
+
+.combat-actions .autoattack-state {
+  display: none;
+}
+
+.combat-actions .effect-strip {
+  min-height: 20px;
+}
+
+.combat-actions .effect-strip__empty {
+  font-size: .42rem;
 }
 
 .ability-slot {
@@ -1905,11 +1940,11 @@ onUnmounted(() => window.clearInterval(timer))
 
 @media (max-width: 390px) {
   .battlefield {
-    min-height: 19rem;
+    min-height: 17rem;
   }
 
   .enemy-figure {
-    height: 11.5rem;
+    height: 10rem;
   }
 
   .ability-slot {
@@ -1919,7 +1954,7 @@ onUnmounted(() => window.clearInterval(timer))
 
 @media (max-width: 340px) {
   .battlefield {
-    min-height: 18rem;
+    min-height: 16rem;
   }
 }
 

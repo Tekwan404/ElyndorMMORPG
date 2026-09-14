@@ -65,4 +65,29 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
 .combat-enemy-targets__vitals small { font-size: var(--ui-font-size-xs); }
 .combat-enemy-targets__portrait { display: grid; width: 2rem; height: 2rem; grid-column: 1; grid-row: 1 / 4; place-items: center; }
 .combat-enemy-targets__portrait :deep(.icon-generator) { border-color: rgb(216 95 114 / 35%); color: #efa1ae; }
+
+.combat-enemy-targets--battlefield {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  width: min(42%, 11rem);
+}
+
+.combat-enemy-targets--battlefield button {
+  min-height: 34px;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  column-gap: 4px;
+  padding: 3px 4px;
+}
+
+.combat-enemy-targets--battlefield .combat-enemy-targets__portrait {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.combat-enemy-targets--battlefield .combat-enemy-targets__aggro,
+.combat-enemy-targets--battlefield .combat-enemy-targets__selected { font-size: .38rem; }
+.combat-enemy-targets--battlefield .combat-enemy-targets__vitals { gap: 1px; }
+.combat-enemy-targets--battlefield .combat-enemy-targets__vitals small { font-size: .42rem; }
 </style>
