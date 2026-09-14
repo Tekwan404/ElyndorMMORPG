@@ -479,9 +479,9 @@ public sealed class TalentService(
                 state.GetRanks(TalentLoadoutIds.Loadout1);
             IReadOnlyDictionary<string, int> currentLoadout2 =
                 state.GetRanks(TalentLoadoutIds.Loadout2);
-            IReadOnlyDictionary<string, int> normalizedLoadout1 =
+            Dictionary<string, int> normalizedLoadout1 =
                 NormalizePersistedRanks(tree, currentLoadout1);
-            IReadOnlyDictionary<string, int> normalizedLoadout2 =
+            Dictionary<string, int> normalizedLoadout2 =
                 NormalizePersistedRanks(tree, currentLoadout2);
 
             if (state.TalentVersion != tree.Version
@@ -504,7 +504,7 @@ public sealed class TalentService(
             ToSnapshot(character, tree, state));
     }
 
-    private static IReadOnlyDictionary<string, int> NormalizePersistedRanks(
+    private static Dictionary<string, int> NormalizePersistedRanks(
         TalentTreeDefinition tree,
         IReadOnlyDictionary<string, int> persistedRanks)
     {
