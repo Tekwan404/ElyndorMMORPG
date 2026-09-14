@@ -468,10 +468,10 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplyMageCriticalHooks(CombatEvent combatEvent) { }
-    private void ApplyMageIncomingCriticalHooks(CombatEvent combatEvent) { }
-    private void ApplyMageDamageTakenHooks(CombatEvent combatEvent) { }
-    private void ApplyMageResourceThresholdHooks(CombatEvent combatEvent) { }
+    private static void ApplyMageCriticalHooks(CombatEvent combatEvent) { }
+    private static void ApplyMageIncomingCriticalHooks(CombatEvent combatEvent) { }
+    private static void ApplyMageDamageTakenHooks(CombatEvent combatEvent) { }
+    private static void ApplyMageResourceThresholdHooks(CombatEvent combatEvent) { }
 
     private void ApplyMageShieldAbsorbedHooks(CombatEvent combatEvent)
     {
@@ -503,7 +503,7 @@ public sealed partial class CombatSession
             OnIceBarrierBroken(combatEvent, now);
     }
 
-    private void OnMageAbilityInterrupted(CombatEvent combatEvent) { }
+    private static void OnMageAbilityInterrupted(CombatEvent combatEvent) { }
 
     private void ActivateArcanePower(DateTimeOffset now)
     {
@@ -797,11 +797,13 @@ public sealed partial class CombatSession
             arcaneFortitude ? fortitude.Value : 0,
             now);
 
-        bool frostArmor = HasOwnEffect(_player.Actor, IceBarrierEffectId, now)
-            && TryGetMageHook("I-5-4", out ResolvedTalentEventHook armor);
+        decimal frostArmorReduction = 0m;
+        if (HasOwnEffect(_player.Actor, IceBarrierEffectId, now)
+            && TryGetMageHook("I-5-4", out ResolvedTalentEventHook armor))
+            frostArmorReduction = armor.Value;
         SyncIncomingDamageReductionEffect(
             FrostArmorEffectId,
-            frostArmor ? armor.Value : 0,
+            frostArmorReduction,
             now);
 
         if (!HasOwnEffect(_player.Actor, IceBlockEffectId, now)
@@ -900,7 +902,7 @@ public sealed partial class CombatSession
             .Where(_enemiesById.ContainsKey)
             .Select(id => _enemiesById[id].Actor);
 
-    private ActiveEffect? FindAnyActiveEffect(
+    private static ActiveEffect? FindAnyActiveEffect(
         CombatActorState actor,
         string effectId,
         DateTimeOffset now) =>
