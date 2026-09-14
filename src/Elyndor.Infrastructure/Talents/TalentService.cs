@@ -529,7 +529,7 @@ public sealed class TalentService(
 
     private static bool RanksEqual(
         IReadOnlyDictionary<string, int> left,
-        IReadOnlyDictionary<string, int> right) =>
+        Dictionary<string, int> right) =>
         left.Count == right.Count
         && left.All(pair => right.TryGetValue(pair.Key, out int rank) && rank == pair.Value);
 
