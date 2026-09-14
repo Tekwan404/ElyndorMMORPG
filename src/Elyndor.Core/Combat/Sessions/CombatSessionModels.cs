@@ -65,7 +65,11 @@ public sealed record CombatPlayerDefinition(
     bool InitiallyAttached = true);
 
 public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
-public sealed record CombatAbilitySnapshot(string Id, decimal ResourceCost, TimeSpan Cooldown);
+public sealed record CombatAbilitySnapshot(
+    string Id,
+    decimal ResourceCost,
+    TimeSpan Cooldown,
+    AbilityTargetType TargetType = AbilityTargetType.SingleEnemy);
 public sealed record CombatCastSnapshot(
     string AbilityId,
     DateTimeOffset StartedAtUtc,
@@ -90,7 +94,8 @@ public sealed record CombatActorSnapshot(
     CombatCastSnapshot? ActiveCast = null,
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
-    DateTimeOffset? NextAutoAttackAtUtc = null);
+    DateTimeOffset? NextAutoAttackAtUtc = null,
+    Guid? CurrentAggroTargetActorId = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

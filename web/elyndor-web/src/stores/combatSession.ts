@@ -62,6 +62,11 @@ interface InvokeOutcome {
   receivedResponse: boolean
 }
 
+interface QueuedAbility {
+  abilityId: string
+  targetActorId: string
+}
+
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const ABILITY_QUEUE_WINDOW_MS = 250
 const COMBAT_EVENT_BUFFER_LIMIT = 1500
@@ -85,7 +90,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
   const pending = ref(false)
-  const abilityQueue = ref<string[]>([])
+  const abilityQueue = ref<QueuedAbility[]>([])
+  const selectedFriendlyTargetActorId = ref<string | null>(null)
   const latencyMs = ref<number | null>(null)
   const threat = ref<CombatThreatSnapshot | null>(null)
   const trainingStats = ref<TrainingStats>(emptyTrainingStats())
@@ -245,11 +251,12 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return await invoke('ResetTraining')
   }
 
-  async function useAbility(abilityId: string): Promise<void> {
+  async function useAbility(abilityId: string, requestedTargetActorId?: string): Promise<void> {
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
-    if (!current.player.abilities.some((ability) => ability.id === abilityId)) return
-    if (abilitySendingId === abilityId || abilityQueue.value.includes(abilityId)) return
+    const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
+    if (!ability) return
+    if (abilitySendingId === abilityId || abilityQueue.value.some(item => item.abilityId === abilityId)) return
 
     const readyAt = current.player.cooldowns[abilityId]
     if (readyAt) {
@@ -257,7 +264,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (remainingMs > ABILITY_QUEUE_WINDOW_MS) return
     }
 
-    abilityQueue.value = [abilityId]
+    abilityQueue.value = [{
+      abilityId,
+      targetActorId: requestedTargetActorId ?? resolveAbilityTarget(current, ability.targetType),
+    }]
     scheduleAbilityQueueDrain()
   }
 
@@ -286,7 +296,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       return
     }
 
-    const abilityId = abilityQueue.value[0]!
+    const queued = abilityQueue.value[0]!
+    const abilityId = queued.abilityId
     const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
     if (!ability) {
       abilityQueue.value = abilityQueue.value.slice(1)
@@ -313,8 +324,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const sessionId = current.sessionId
     try {
       await invokeRetryableCommand(
-        `UseAbility:${sessionId}:${abilityId}`,
-        commandId => invokeWithOutcome('UseAbility', sessionId, abilityId, commandId),
+        `UseAbility:${sessionId}:${abilityId}:${queued.targetActorId}`,
+        commandId => invokeWithOutcome(
+          'UseAbility', sessionId, abilityId, queued.targetActorId, commandId),
       )
     } finally {
       abilitySending = false
@@ -358,6 +370,27 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       `SelectTarget:${sessionId}:${targetActorId}`,
       commandId => invokeWithOutcome('SelectTarget', sessionId, targetActorId, commandId),
     )
+  }
+
+  function selectFriendlyTarget(targetActorId: string): void {
+    const current = snapshot.value
+    if (!current || current.status !== 'Active') return
+    const activeFriendlies = [current.player, ...(current.players ?? [])]
+      .filter((actor, index, actors) =>
+        actor.hp > 0 && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
+    if (activeFriendlies.some(actor => actor.actorId === targetActorId)) {
+      selectedFriendlyTargetActorId.value = targetActorId
+    }
+  }
+
+  function resolveAbilityTarget(current: CombatSnapshot, targetType?: string): string {
+    if (!targetType || targetType === 'SingleEnemy') {
+      return current.selectedTargetActorId ?? current.enemy.actorId
+    }
+    if (targetType === 'SingleAlly') {
+      return selectedFriendlyTargetActorId.value ?? current.player.actorId
+    }
+    return current.player.actorId
   }
 
   async function resume(): Promise<boolean> {
@@ -568,6 +601,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         && incomingSnapshot
         && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
       snapshot.value = incomingSnapshot
+      normalizeFriendlyTarget(incomingSnapshot)
     }
     if (!isStaleSameSession && incomingSnapshot && incomingSnapshot.status !== 'Active') {
       retryCommandIds.clear()
@@ -599,6 +633,17 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
     if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
+  }
+
+  function normalizeFriendlyTarget(current: CombatSnapshot): void {
+    const activeFriendlies = [current.player, ...(current.players ?? [])]
+      .filter((actor, index, actors) =>
+        actor.hp > 0 && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
+    if (!activeFriendlies.some(actor => actor.actorId === selectedFriendlyTargetActorId.value)) {
+      selectedFriendlyTargetActorId.value = current.player.hp > 0
+        ? current.player.actorId
+        : activeFriendlies[0]?.actorId ?? null
+    }
   }
 
   function mergeLootRolls(incoming: CombatLootRoll[]): void {
@@ -683,6 +728,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic,
     pending,
     abilityQueue,
+    selectedFriendlyTargetActorId,
     latencyMs,
     threat,
     isActive,
@@ -703,6 +749,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     useConsumable,
     toggleAutoAttack,
     selectTarget,
+    selectFriendlyTarget,
     resume,
     leave,
     flee,

@@ -125,14 +125,14 @@ describe('combatSession realtime authentication', () => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(2)
     })
     const abilityCallsAfterRetry = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCallsAfterRetry[1]?.[3]).toBe(firstCall?.[3])
+    expect(abilityCallsAfterRetry[1]?.[4]).toBe(firstCall?.[4])
 
     await store.useAbility('HEROIC_STRIKE')
     await vi.waitFor(() => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(3)
     })
     const abilityCalls = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
-    expect(abilityCalls[2]?.[3]).not.toBe(abilityCalls[1]?.[3])
+    expect(abilityCalls[2]?.[4]).not.toBe(abilityCalls[1]?.[4])
   })
 
   it('deduplicates repeated taps while the same ability is already buffered', async () => {
@@ -165,7 +165,12 @@ describe('combatSession realtime authentication', () => {
 
     await store.useAbility('SHIELD_SLAM')
     await store.useAbility('SHIELD_SLAM')
-    expect(store.abilityQueue).toEqual(['SHIELD_SLAM'])
+    expect(store.abilityQueue).toEqual([
+      {
+        abilityId: 'SHIELD_SLAM',
+        targetActorId: '00000000-0000-0000-0000-000000000321',
+      },
+    ])
 
     await vi.waitFor(() => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
@@ -259,6 +264,69 @@ describe('combatSession realtime authentication', () => {
     expect(call?.[2]).toBe(secondEnemyId)
     expect(typeof call?.[3]).toBe('string')
     expect(call?.[3]).toHaveLength(36)
+  })
+
+  it('keeps friendly target selection local and independent from the enemy target', () => {
+    const store = useCombatSessionStore()
+    const playerId = '00000000-0000-0000-0000-000000000211'
+    const allyId = '00000000-0000-0000-0000-000000000212'
+    const enemyId = '00000000-0000-0000-0000-000000000311'
+    store.snapshot = {
+      sessionId: '00000000-0000-0000-0000-000000000111',
+      status: 'Active', sequence: 1, serverTimeUtc: '2026-09-14T12:00:00Z',
+      contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: { actorId: playerId, hp: 100, autoAttackEnabled: true },
+      players: [
+        { actorId: playerId, hp: 100, autoAttackEnabled: true },
+        { actorId: allyId, hp: 80, autoAttackEnabled: true },
+      ],
+      enemy: { actorId: enemyId, definitionId: 'WOLF' },
+      selectedTargetActorId: enemyId,
+    } as never
+
+    store.selectFriendlyTarget(allyId)
+
+    expect(store.selectedFriendlyTargetActorId).toBe(allyId)
+    expect((store.snapshot as unknown as { selectedTargetActorId?: string } | null)
+      ?.selectedTargetActorId).toBe(enemyId)
+    expect(signalRMock.invoke).not.toHaveBeenCalled()
+  })
+
+  it('uses the selected friendly target for a single-ally ability command', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const sessionId = '00000000-0000-0000-0000-000000000151'
+    const playerId = '00000000-0000-0000-0000-000000000251'
+    const allyId = '00000000-0000-0000-0000-000000000252'
+    const enemyId = '00000000-0000-0000-0000-000000000351'
+    const snapshot = {
+      sessionId, status: 'Active', sequence: 1, serverTimeUtc: '2026-09-14T12:00:00Z',
+      contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: {
+        actorId: playerId, hp: 100, autoAttackEnabled: true, cooldowns: {},
+        abilities: [{ id: 'ALLY_HEAL', targetType: 'SingleAlly' }],
+      },
+      players: [
+        { actorId: playerId, hp: 100, autoAttackEnabled: true },
+        { actorId: allyId, hp: 80, autoAttackEnabled: true },
+      ],
+      enemy: { actorId: enemyId, definitionId: 'WOLF' },
+      selectedTargetActorId: enemyId,
+    }
+    signalRMock.invoke.mockResolvedValue({ succeeded: true, errorCode: null, snapshot, events: [], reward: null })
+
+    const store = useCombatSessionStore()
+    expect(await store.startTraining()).toBe(true)
+    store.selectFriendlyTarget(allyId)
+
+    await store.useAbility('ALLY_HEAL')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    })
+
+    const useAbilityCall = signalRMock.invoke.mock.calls.find(([method]) => method === 'UseAbility')
+    expect(useAbilityCall?.[1]).toBe(sessionId)
+    expect(useAbilityCall?.[2]).toBe('ALLY_HEAL')
+    expect(useAbilityCall?.[3]).toBe(allyId)
   })
 
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {

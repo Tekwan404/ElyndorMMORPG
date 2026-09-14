@@ -6,13 +6,18 @@ import { abilityArtUrl } from '@/assets/abilityArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
+import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
+import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
+import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
+import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
-import { UIButton, UIHealthBar } from '@/ui/components'
+import { UIButton, UIHealthBar, UIModal } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const combat = useCombatSessionStore()
@@ -29,13 +34,36 @@ const combatErrorMessage = computed(() => {
 const session = useGameSessionStore()
 const now = ref(Date.now())
 const logOpen = ref(false)
+const fleeConfirmationOpen = ref(false)
 const timer = window.setInterval(() => (now.value = Date.now()), 100)
 const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
 const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
 const combatPlayers = computed(() => snapshot.value?.players ?? (snapshot.value ? [snapshot.value.player] : []))
-const combatAllies = computed(() => combatPlayers.value.filter((player) => player.actorId !== snapshot.value?.player.actorId))
+const combatAllies = computed(() => {
+  const currentPlayer = snapshot.value?.player
+  if (!currentPlayer) return []
+  const byActorId = new Map(combatPlayers.value.map(player => [player.actorId, player]))
+  byActorId.set(currentPlayer.actorId, currentPlayer)
+  return [
+    currentPlayer,
+    ...[...byActorId.values()].filter(player => player.actorId !== currentPlayer.actorId),
+  ]
+})
 const companion = computed(() => snapshot.value?.companion ?? null)
+const selectedEnemy = computed(() => {
+  const selectedActorId = snapshot.value?.selectedTargetActorId ?? snapshot.value?.enemy.actorId
+  return combatEnemies.value.find(enemy => enemy.actorId === selectedActorId) ?? null
+})
+const frontlineAlly = computed(() => {
+  const actorId = selectedEnemy.value?.currentAggroTargetActorId
+  return actorId
+    ? combatAllies.value.find(ally => ally.actorId === actorId) ?? null
+    : null
+})
+const aggroedAllyActorIds = computed(() => combatEnemies.value
+  .map(enemy => enemy.currentAggroTargetActorId)
+  .filter((actorId): actorId is string => Boolean(actorId)))
 const companionArt = computed(() => monsterArtUrl(companion.value?.artId))
 const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
@@ -76,9 +104,12 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
     art: monsterArtUrl(artId),
   }
 })
-const displayAbilities = computed(() => snapshot.value?.player.abilities.slice(0, 6) ?? [])
+const displayAbilities = computed(() => orderCombatAbilities(
+  session.snapshot?.character?.id ?? '',
+  snapshot.value?.player.abilities ?? [],
+).slice(0, 12))
 const abilitySlots = computed<(CombatAbility | null)[]>(() =>
-  Array.from({ length: 6 }, (_, index) => displayAbilities.value[index] ?? null),
+  Array.from({ length: 12 }, (_, index) => displayAbilities.value[index] ?? null),
 )
 const abilityById = computed(() => new Map<string, CombatAbility>(
   [
@@ -374,6 +405,13 @@ async function selectCombatTarget(targetActorId: string): Promise<void> {
   await combat.selectTarget(targetActorId)
 }
 
+function enemyAggroName(enemy: { currentAggroTargetActorId?: string | null }): string {
+  const actorId = enemy.currentAggroTargetActorId
+  if (!actorId) return '—'
+  return [...combatPlayers.value, ...(companion.value ? [companion.value] : [])]
+    .find(actor => actor.actorId === actorId)?.name ?? '—'
+}
+
 function consumableCooldownRemaining(item: InventoryItem): number {
   const category = item.consumableCooldownCategoryId
   if (!category) return 0
@@ -418,7 +456,13 @@ async function leaveCombat(): Promise<void> {
 
 async function fleeCombat(): Promise<void> {
   if (isTraining.value || combat.pending) return
+  fleeConfirmationOpen.value = false
   await combat.flee()
+}
+
+function requestFleeCombat(): void {
+  if (isTraining.value || combat.pending) return
+  fleeConfirmationOpen.value = true
 }
 
 function combatParticipantStatus(actorId: string): string {
@@ -511,48 +555,17 @@ onUnmounted(() => window.clearInterval(timer))
         </section>
       </header>
 
-      <section
-        v-if="combatAllies.length > 0"
-        class="combat-party-roster"
-        aria-label="Состав группы в бою"
-        data-combat-party-roster
-      >
-        <header class="combat-party-roster__header">
-          <div>
-            <small>СОЮЗНИКИ В БОЮ</small>
-            <strong>Союзники · {{ combatAllies.length }}</strong>
-          </div>
-          <span>Общий фронт</span>
-        </header>
-        <div class="combat-party-roster__grid">
-          <article
-            v-for="player in combatAllies"
-            :key="player.actorId"
-            class="combat-party-roster__member"
-            :class="{ 'combat-party-roster__member--self': player.actorId === snapshot.player.actorId }"
-            :data-status="snapshot.participantRoster?.find((participant) => participant.actorId === player.actorId)?.status"
-          >
-            <span class="combat-party-roster__crest" aria-hidden="true">
-              {{ player.name.slice(0, 1).toUpperCase() }}
-            </span>
-            <span class="combat-party-roster__body">
-              <span class="combat-party-roster__identity">
-                <strong>{{ player.name }}</strong>
-                <small>{{ combatPlayerRole(player) }}</small>
-              </span>
-              <span class="combat-party-roster__bar" aria-hidden="true">
-                <i :style="{ width: `${combatPlayerHealthRatio(player)}%` }" />
-              </span>
-              <span class="combat-party-roster__vitals">
-                {{ Math.ceil(player.hp) }} / {{ Math.ceil(player.maxHp) }} · {{ combatParticipantStatus(player.actorId) }}
-              </span>
-            </span>
-            <b class="combat-party-roster__state" aria-hidden="true">
-              <IconGenerator :config="{ id: `combat-player-state-${player.actorId}`, glyph: combatParticipantGlyph(player.actorId), category: 'utility' }" />
-            </b>
-          </article>
-        </div>
-      </section>
+      <CombatAllyRoster
+        :allies="combatAllies"
+        :player-actor-id="snapshot.player.actorId"
+        :aggroed-actor-ids="aggroedAllyActorIds"
+        :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
+        :participant-status="combatParticipantStatus"
+        :participant-glyph="combatParticipantGlyph"
+        :role-label="combatPlayerRole"
+        :health-ratio="combatPlayerHealthRatio"
+        @select="combat.selectFriendlyTarget"
+      />
 
       <section
         v-if="!isTraining && snapshot.status === 'Active' && !isParticipantActive"
@@ -566,31 +579,14 @@ onUnmounted(() => window.clearInterval(timer))
         </button>
       </section>
 
-      <nav
-        v-if="aliveEnemies.length > 1"
-        class="combat-targets"
-        aria-label="Выбор цели"
-        data-combat-targets
-      >
-        <button
-          v-for="enemy in aliveEnemies"
-          :key="enemy.actorId"
-          type="button"
-          :class="{ active: enemy.actorId === (snapshot.selectedTargetActorId ?? snapshot.enemy.actorId) }"
-          :disabled="combat.pending"
-          :data-target-actor-id="enemy.actorId"
-          @click="selectCombatTarget(enemy.actorId)"
-        >
-          <span>{{ enemy.name }}</span>
-          <div class="combat-targets__vitals">
-            <i aria-hidden="true"><b :style="{ width: `${combatEnemyHealthRatio(enemy)}%` }" /></i>
-            <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(combatEnemyHealthRatio(enemy)) }}%</small>
-          </div>
-          <span class="combat-targets__portrait" aria-hidden="true">
-            <IconGenerator :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
-          </span>
-        </button>
-      </nav>
+      <CombatEnemyTargetList
+        :enemies="aliveEnemies"
+        :selected-target-actor-id="snapshot.selectedTargetActorId ?? snapshot.enemy.actorId"
+        :disabled="combat.pending"
+        :health-ratio="combatEnemyHealthRatio"
+        :aggro-name="enemyAggroName"
+        @select="selectCombatTarget"
+      />
 
       <section
         class="battlefield"
@@ -642,6 +638,8 @@ onUnmounted(() => window.clearInterval(timer))
             <IconGenerator :config="{ id: 'enemy-placeholder', glyph: 'skull', category: 'utility' }" />
           </div>
         </div>
+
+        <CombatFrontlineTarget :ally="frontlineAlly" />
 
         <div
           v-if="recentFeedback"
@@ -712,6 +710,19 @@ onUnmounted(() => window.clearInterval(timer))
           </span>
         </div>
 
+        <CombatAbilityHotbar
+          :slots="abilitySlots"
+          :queued-ability-ids="combat.abilityQueue.map((queued) => queued.abilityId)"
+          :fireball-streak="fireballStreak"
+          :heat-active="Boolean(heatLimit)"
+          :combustion-active="Boolean(combustion)"
+          :ability-state="abilityState"
+          :ability-icon="abilityIcon"
+          :ability-glyph="abilityGlyph"
+          :cooldown-remaining="cooldownRemaining"
+          @use="(ability) => combat.useAbility(ability.id)"
+        />
+
         <div v-if="playerCast" class="cast-bar cast-bar--player" data-player-cast>
           <div>
             <strong>{{ abilityName(playerCast.abilityId) }}</strong>
@@ -735,50 +746,6 @@ onUnmounted(() => window.clearInterval(timer))
           <i>
             <span :style="{ width: `${autoAttackProgress}%` }" />
           </i>
-        </div>
-
-        <div class="ability-row" aria-label="Боевые способности">
-          <button
-            v-for="(ability, index) in abilitySlots"
-            :key="ability?.id ?? `empty-${index}`"
-            type="button"
-            class="ability-slot"
-            :class="{ 'ability-slot--empty': !ability, 'ability-slot--comet': ability?.id === 'FIRE_COMET', 'ability-slot--queued': ability && combat.abilityQueue.includes(ability.id) }"
-            :data-ability-slot="ability?.id ?? ''"
-            :data-state="ability ? abilityState(ability) : 'empty'"
-            :disabled="!ability || abilityState(ability) !== 'ready'"
-            :aria-label="ability?.displayName ?? 'Пустой слот способности'"
-            @click="ability && combat.useAbility(ability.id)"
-          >
-            <span class="ability-slot__icon">
-              <img v-if="ability && abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
-              <IconGenerator
-                v-else-if="ability"
-                :config="{ id: `ability-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
-              />
-              <i v-else />
-            </span>
-            <span
-              v-if="ability?.id === 'MAGE_FIREBALL'"
-              class="ability-slot__markers"
-              :aria-label="`Криты Огненного шара: ${fireballStreak} из 3`"
-            >
-              <i v-for="marker in 3" :key="marker" :data-filled="marker <= fireballStreak" />
-            </span>
-            <span v-if="ability?.id === 'FIRE_COMET' && heatLimit" class="ability-slot__proc" aria-label="Предел жара активен">ЖАР</span>
-            <span v-if="ability?.id === 'COMBUSTION' && combustion" class="ability-slot__proc" aria-label="Возгорание активно">АКТ.</span>
-            <span v-if="ability && combat.abilityQueue.includes(ability.id)" class="ability-slot__queue">{{ combat.abilityQueue.indexOf(ability.id) + 1 }}</span>
-            <small v-if="ability">{{ ability.displayName }}</small>
-            <b v-if="ability && cooldownRemaining(ability.id) > 0" class="ability-slot__cooldown">
-              {{ Math.ceil(cooldownRemaining(ability.id)) }}
-            </b>
-            <span
-              v-else-if="ability && ability.resourceCost > 0"
-              class="ability-slot__cost"
-            >
-              {{ Math.round(ability.resourceCost) }}
-            </span>
-          </button>
         </div>
 
         <div
@@ -845,7 +812,7 @@ onUnmounted(() => window.clearInterval(timer))
             class="utility-action utility-action--flee"
             data-flee-combat
             :disabled="combat.pending"
-            @click="fleeCombat"
+            @click="requestFleeCombat"
           >
             <span class="utility-action__icon">
               <IconGenerator :config="{ id: 'combat-flee', glyph: 'boots', category: 'utility' }" />
@@ -874,6 +841,14 @@ onUnmounted(() => window.clearInterval(timer))
           </button>
         </div>
       </section>
+
+      <UIModal :open="fleeConfirmationOpen" title="Сбежать из боя?" @close="fleeConfirmationOpen = false">
+        <p class="combat-flee-confirmation">Ты покинешь этот бой и не сможешь вернуться в него.</p>
+        <template #actions>
+          <UIButton variant="ghost" @click="fleeConfirmationOpen = false">Остаться</UIButton>
+          <UIButton variant="danger" data-flee-confirm :loading="combat.pending" @click="fleeCombat">Сбежать</UIButton>
+        </template>
+      </UIModal>
 
       <section
         v-if="lootRolls.length"
@@ -1486,106 +1461,6 @@ onUnmounted(() => window.clearInterval(timer))
   color: #f08b63;
 }
 
-.ability-row {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 4px;
-}
-
-.ability-slot {
-  position: relative;
-  display: grid;
-  min-width: 0;
-  min-height: 62px;
-  place-items: center;
-  align-content: center;
-  gap: 2px;
-  padding: 3px 2px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%));
-  color: var(--ui-color-text-primary);
-  font: inherit;
-}
-
-.ability-slot[data-state='ready'] {
-  border-color: rgb(146 136 255 / 36%);
-  box-shadow: inset 0 0 0 1px rgb(146 136 255 / 4%);
-}
-
-.ability-slot[data-state='cooldown'],
-.ability-slot[data-state='resource'] {
-  opacity: .46;
-}
-
-.ability-slot--empty {
-  opacity: .2;
-}
-
-.ability-slot--comet {
-  border-color: color-mix(in srgb, var(--ui-modifier-fire) 65%, var(--ui-color-border));
-}
-
-.ability-slot__icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 8px;
-  background: rgb(3 5 10 / 90%);
-  color: #aaa3ff;
-}
-
-.ability-slot__icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ability-slot__icon > i {
-  width: 11px;
-  height: 11px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: 50%;
-}
-
-.ability-slot > small {
-  width: 100%;
-  overflow: hidden;
-  color: var(--ui-color-text-muted);
-  font-size: .38rem;
-  line-height: 1;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ability-slot__cooldown {
-  position: absolute;
-  inset: 3px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  background: rgb(1 3 7 / 70%);
-  color: white;
-  font-size: .78rem;
-}
-
-.ability-slot__cost {
-  position: absolute;
-  right: 2px;
-  bottom: 15px;
-  padding: 1px 3px;
-  border-radius: 5px;
-  background: rgb(2 4 8 / 80%);
-  color: #bdb7ff;
-  font-size: .38rem;
-  font-weight: 800;
-}
-
 .consumable-row,
 .utility-row {
   display: grid;
@@ -2111,6 +1986,11 @@ onUnmounted(() => window.clearInterval(timer))
   background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%));
 }
 
+.combat-party-roster__member--selected {
+  border-color: rgb(205 177 113 / 72%);
+  box-shadow: inset 0 0 0 1px rgb(205 177 113 / 18%);
+}
+
 .combat-party-roster__member[data-status='Fled'],
 .combat-party-roster__member[data-status='Dead'] {
   opacity: .58;
@@ -2218,6 +2098,16 @@ onUnmounted(() => window.clearInterval(timer))
 .combat-targets button > span:first-child {
   grid-column: 2;
   font-size: var(--ui-font-size-xs);
+}
+
+.combat-targets__aggro {
+  grid-column: 2;
+  overflow: hidden;
+  color: var(--ui-color-gold-muted);
+  font-size: .5rem;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .combat-targets__vitals {

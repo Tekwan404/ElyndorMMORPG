@@ -12,7 +12,8 @@ public sealed record CombatAbilityResponse(
     string? IconId,
     decimal ResourceCost,
     double CooldownSeconds,
-    bool IsUnblockable = false);
+    bool IsUnblockable = false,
+    string TargetType = "SingleEnemy");
 
 public sealed record CombatActorResponse(
     Guid ActorId,
@@ -34,7 +35,8 @@ public sealed record CombatActorResponse(
     CombatCastResponse? ActiveCast = null,
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
-    DateTimeOffset? NextAutoAttackAtUtc = null);
+    DateTimeOffset? NextAutoAttackAtUtc = null,
+    Guid? CurrentAggroTargetActorId = null);
 
 public sealed record CombatContributionResponse(
     Guid CharacterId,

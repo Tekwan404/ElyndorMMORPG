@@ -113,6 +113,9 @@ public sealed class GuardianThreatCombatSessionTests
         Assert.Equal(EnemyId, beforeTaunt.EnemyActorId);
         Assert.Equal(CompanionId, beforeTaunt.CurrentTargetActorId);
         Assert.Null(beforeTaunt.ForcedTargetActorId);
+        Assert.Equal(
+            CompanionId,
+            session.Snapshot().Enemy.CurrentAggroTargetActorId);
         CombatThreatEntrySnapshot playerEntry = Assert.Single(
             beforeTaunt.Entries,
             entry => entry.ActorId == PlayerId);

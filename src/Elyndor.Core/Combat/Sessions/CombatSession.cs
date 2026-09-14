@@ -812,7 +812,7 @@ public sealed partial class CombatSession
                     now),
                 now),
             now);
-        Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability);
+        Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability, command.TargetActorId);
         if (targetActorIds.Length == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         Guid primaryTargetActorId = targetActorIds[0];
@@ -832,6 +832,21 @@ public sealed partial class CombatSession
             _random);
         if (!execution.Succeeded)
             return Result(false, MapAbilityError(execution.ErrorCode), before);
+
+        if (ability.TargetType == AbilityTargetType.SingleEnemy
+            && command.TargetActorId != Guid.Empty
+            && _selectedTargetActorId != primaryTargetActorId)
+        {
+            _selectedTargetActorId = primaryTargetActorId;
+            Append(new CombatEvent(
+                CombatEventType.TargetChanged,
+                now,
+                _player.Actor.ActorId,
+                _enemiesById[primaryTargetActorId].DefinitionId,
+                SourceActorId: _player.Actor.ActorId,
+                TargetActorId: primaryTargetActorId));
+            SyncBerserkerConditionalEffects(now);
+        }
 
         ApplyKernelEvents(
             execution.Events,
@@ -999,7 +1014,8 @@ public sealed partial class CombatSession
     }
 
     private Guid[] ResolvePlayerAbilityTargetIds(
-        AbilityDefinition ability)
+        AbilityDefinition ability,
+        Guid requestedTargetActorId)
     {
         if (ability.TargetType == AbilityTargetType.Self)
             return [_player.Actor.ActorId];
@@ -1023,12 +1039,30 @@ public sealed partial class CombatSession
 
         if (ability.TargetType == AbilityTargetType.SingleEnemy)
         {
+            Guid targetActorId = requestedTargetActorId == Guid.Empty
+                ? _selectedTargetActorId
+                : requestedTargetActorId;
             return _enemiesById.TryGetValue(
-                    _selectedTargetActorId,
+                    targetActorId,
                     out CombatParticipantDefinition? selected)
                 && !selected.Actor.IsDead
-                    ? [_selectedTargetActorId]
+                    ? [targetActorId]
                     : [];
+        }
+
+        if (ability.TargetType == AbilityTargetType.SingleAlly)
+        {
+            if (requestedTargetActorId == Guid.Empty)
+                return [];
+
+            bool isCurrentPlayer = requestedTargetActorId == _player.Actor.ActorId;
+            bool isActiveOtherPlayer = !isCurrentPlayer
+                && ActivePlayerActorIds().Contains(requestedTargetActorId);
+            return (isCurrentPlayer
+                ? ability.AllowSelfTarget
+                : isActiveOtherPlayer)
+                ? [requestedTargetActorId]
+                : [];
         }
 
         if (ability.TargetType is not (AbilityTargetType.AllEnemiesInCombat
@@ -2404,7 +2438,8 @@ public sealed partial class CombatSession
             .Select(ability => new CombatAbilitySnapshot(
                 ability.Id,
                 ability.ResourceCost,
-                ability.Cooldown))
+                ability.Cooldown,
+                ability.TargetType))
             .ToArray();
         return new(
             definition.Actor.ActorId,
@@ -2442,7 +2477,10 @@ public sealed partial class CombatSession
                     StringComparer.Ordinal)
                 : null,
             autoAttackIntervalSeconds,
-            nextAutoAttackAtUtc);
+            nextAutoAttackAtUtc,
+            definition.Kind == CombatActorKind.Monster
+                ? GetEnemyCurrentTargetActorId(definition.Actor.ActorId, CurrentTimeUtc)
+                : null);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()

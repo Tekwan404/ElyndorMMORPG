@@ -1228,19 +1228,33 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
-    public void SingleEnemyAbilityUsesSelectedTargetInsteadOfCallerTarget()
+    public void SingleEnemyAbilityUsesExplicitTargetAndUpdatesPlayerSelection()
     {
-        CombatSession session = CreateTargetingSession(100, 100, 100);
+        CombatSession session = CreateTargetingSession(100, 200, 100);
 
         CombatCommandResult result = session.Handle(
             new UseAbilityCommand("single-authoritative", "STRIKE", EnemyTwoId),
             Now);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(0, result.Snapshot.Enemies!.Single(enemy =>
+        Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy =>
             enemy.ActorId == EnemyId).Hp);
         Assert.Equal(100, result.Snapshot.Enemies!.Single(enemy =>
             enemy.ActorId == EnemyTwoId).Hp);
+        Assert.Equal(EnemyTwoId, result.Snapshot.SelectedTargetActorId);
+    }
+
+    [Fact]
+    public void SingleAllyAbilityRejectsCasterWhenSelfTargetingIsDisabled()
+    {
+        CombatSession session = CreateSingleAllyTargetingSession(allowSelfTarget: false);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("ally-self-rejected", "ALLY_HEAL", PlayerId),
+            Now);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(CombatErrorCodes.InvalidTarget, result.ErrorCode);
     }
 
     [Fact]
@@ -1271,13 +1285,13 @@ public sealed class CombatSessionTests
     {
         CombatSession session = CreateTargetingSession(1, 100, 100);
         CombatCommandResult killed = session.Handle(
-            new UseAbilityCommand("kill-first-for-n", "STRIKE", EnemyThreeId),
+            new UseAbilityCommand("kill-first-for-n", "STRIKE", EnemyId),
             Now);
         Assert.True(killed.Succeeded);
         Assert.Equal(EnemyTwoId, killed.Snapshot.SelectedTargetActorId);
 
         CombatCommandResult result = session.Handle(
-            new UseAbilityCommand("cleave-two", "CLEAVE_TWO", EnemyId),
+            new UseAbilityCommand("cleave-two", "CLEAVE_TWO", Guid.Empty),
             Now.AddMilliseconds(1));
 
         Assert.True(result.Succeeded);
@@ -1718,6 +1732,62 @@ public sealed class CombatSessionTests
             new MonsterAiProfile("PASSIVE_TARGETING_TEST_AI", []),
             ResolvedTalentModifiers.Empty,
             new SequenceGameRandom(Enumerable.Repeat(0.99m, 200).ToArray()),
+            Now);
+    }
+
+    private static CombatSession CreateSingleAllyTargetingSession(bool allowSelfTarget)
+    {
+        CombatStats stats = new(
+            Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
+            CriticalDamage: 1, Armor: 10, MagicResistance: 5,
+            ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 30, SpellPower: 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(PlayerId, 200, 200, 100, 100, stats),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Warrior",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(["ALLY_HEAL"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatParticipantDefinition enemy = new(
+            new CombatActorState(EnemyId, 200, 200, 0, 0, stats),
+            CombatActorKind.Monster,
+            "TEST_ENEMY",
+            "Enemy",
+            "NONE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal));
+        AbilityDefinition heal = new(
+            "ALLY_HEAL",
+            AbilityType.Instant,
+            AbilityTargetType.SingleAlly,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "HOLY",
+            AllowSelfTarget: allowSelfTarget,
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Healing,
+                    Amount: 10)
+            ]);
+
+        return new CombatSession(
+            SessionId,
+            player,
+            enemy,
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                [heal.Id] = heal
+            },
+            new MonsterAiProfile("PASSIVE_ALLY_TARGETING_TEST_AI", []),
+            ResolvedTalentModifiers.Empty,
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 20).ToArray()),
             Now);
     }
 

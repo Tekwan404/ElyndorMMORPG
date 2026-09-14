@@ -10,7 +10,7 @@ import {
 } from '@/game/combat/combatHotbarSettings'
 import { UIButton } from '@/ui/components'
 
-const HOTBAR_SLOT_COUNT = 6
+const HOTBAR_SLOT_COUNT = 12
 
 const props = defineProps<{
   characterId: string
@@ -24,6 +24,9 @@ const abilityById = computed(() => new Map(props.abilities.map(ability => [abili
 const orderedAbilities = computed(() => order.value
   .map(abilityId => abilityById.value.get(abilityId))
   .filter((ability): ability is KnownAbility => ability !== undefined))
+const activeSlots = computed<(KnownAbility | null)[]>(() =>
+  Array.from({ length: HOTBAR_SLOT_COUNT }, (_, index) => orderedAbilities.value[index] ?? null))
+const reserveAbilities = computed(() => orderedAbilities.value.slice(HOTBAR_SLOT_COUNT))
 
 watch(
   [() => props.characterId, () => props.abilities.map(ability => ability.id).join('|')],
@@ -80,34 +83,57 @@ function abilityMeta(ability: KnownAbility): string {
     <header class="hotbar-settings__header">
       <small>БОЕВОЙ ИНТЕРФЕЙС</small>
       <h2>Панель способностей</h2>
-      <p>Нажми способность, затем другую — они поменяются местами. Первые 6 слотов отображаются в бою.</p>
+      <p>Нажми способность, затем другую — они поменяются местами. Первые 12 слотов отображаются в бою в двух рядах по шесть.</p>
     </header>
 
-    <div v-if="orderedAbilities.length" class="hotbar-settings__slots" role="list" aria-label="Порядок боевых способностей">
+    <section v-if="orderedAbilities.length" class="hotbar-settings__active" aria-label="Активная панель">
+      <strong class="hotbar-settings__section-label">АКТИВНАЯ ПАНЕЛЬ · 12</strong>
+      <div class="hotbar-settings__slots" role="list" aria-label="Порядок боевых способностей">
       <button
-        v-for="(ability, index) in orderedAbilities"
-        :key="ability.id"
+        v-for="(ability, index) in activeSlots"
+        :key="ability?.id ?? `empty-${index}`"
         class="hotbar-slot"
         :class="{
-          'hotbar-slot--selected': selectedAbilityId === ability.id,
-          'hotbar-slot--reserve': index >= HOTBAR_SLOT_COUNT,
+          'hotbar-slot--selected': selectedAbilityId === ability?.id,
+          'hotbar-slot--empty': !ability,
         }"
         type="button"
         role="listitem"
-        :aria-pressed="selectedAbilityId === ability.id"
+        :disabled="!ability"
+        :aria-pressed="selectedAbilityId === ability?.id"
         :data-hotbar-slot="index + 1"
-        @click="selectSlot(ability.id)"
+        @click="ability && selectSlot(ability.id)"
       >
-        <span class="hotbar-slot__number">{{ index < HOTBAR_SLOT_COUNT ? index + 1 : 'R' }}</span>
+        <span class="hotbar-slot__number">{{ index + 1 }}</span>
         <span class="hotbar-slot__copy">
-          <strong>{{ ability.displayName }}</strong>
-          <small>{{ abilityMeta(ability) }}</small>
+          <strong>{{ ability?.displayName ?? 'Пустой слот' }}</strong>
+          <small>{{ ability ? abilityMeta(ability) : 'Свободная позиция' }}</small>
         </span>
-        <span class="hotbar-slot__state">
-          {{ selectedAbilityId === ability.id ? 'Выбрано' : index < HOTBAR_SLOT_COUNT ? 'В бою' : 'Резерв' }}
+        <span v-if="ability" class="hotbar-slot__state">
+          {{ selectedAbilityId === ability.id ? 'Выбрано' : 'В бою' }}
         </span>
       </button>
-    </div>
+      </div>
+    </section>
+
+    <section v-if="reserveAbilities.length" class="hotbar-settings__reserve" aria-label="Резерв способностей">
+      <strong class="hotbar-settings__section-label">РЕЗЕРВ</strong>
+      <div class="hotbar-settings__reserve-list">
+        <button
+          v-for="ability in reserveAbilities"
+          :key="ability.id"
+          class="hotbar-slot hotbar-slot--reserve"
+          :class="{ 'hotbar-slot--selected': selectedAbilityId === ability.id }"
+          type="button"
+          :aria-pressed="selectedAbilityId === ability.id"
+          @click="selectSlot(ability.id)"
+        >
+          <span class="hotbar-slot__number">R</span>
+          <span class="hotbar-slot__copy"><strong>{{ ability.displayName }}</strong><small>{{ abilityMeta(ability) }}</small></span>
+          <span class="hotbar-slot__state">{{ selectedAbilityId === ability.id ? 'Выбрано' : 'Резерв' }}</span>
+        </button>
+      </div>
+    </section>
 
     <div v-else class="hotbar-settings__empty">У героя пока нет доступных боевых способностей.</div>
 
@@ -162,6 +188,53 @@ function abilityMeta(ability: KnownAbility): string {
 
 .hotbar-settings__slots {
   display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.hotbar-settings__active,
+.hotbar-settings__reserve {
+  display: grid;
+  gap: 6px;
+}
+
+.hotbar-settings__section-label {
+  color: var(--ui-color-gold-muted);
+  font-size: .52rem;
+  letter-spacing: .1em;
+}
+
+.hotbar-settings__active .hotbar-slot {
+  grid-template-columns: 1fr;
+  min-height: 52px;
+  gap: 2px;
+  padding: 3px 1px;
+  place-items: center;
+  text-align: center;
+}
+
+.hotbar-settings__active .hotbar-slot__number {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: .52rem;
+}
+
+.hotbar-settings__active .hotbar-slot__copy strong {
+  font-size: .42rem;
+}
+
+.hotbar-settings__active .hotbar-slot__copy small,
+.hotbar-settings__active .hotbar-slot__state {
+  display: none;
+}
+
+.hotbar-slot--empty {
+  opacity: .48;
+}
+
+.hotbar-settings__reserve-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -268,6 +341,10 @@ function abilityMeta(ability: KnownAbility): string {
   .hotbar-settings__footer {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .hotbar-settings__reserve-list {
+    grid-template-columns: 1fr;
   }
 }
 </style>

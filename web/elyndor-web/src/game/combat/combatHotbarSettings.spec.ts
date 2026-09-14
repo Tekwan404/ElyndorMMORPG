@@ -1,4 +1,8 @@
+import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it } from 'vitest'
+
+import type { KnownAbility } from '@/api/contracts'
+import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
 
 import {
   loadCombatHotbarOrder,
@@ -41,4 +45,38 @@ describe('combatHotbarSettings', () => {
 
     expect(loadCombatHotbarOrder('hero', ['A', 'B'])).toEqual(['A', 'B'])
   })
+
+  it('renders exactly twelve active slots and swaps a reserve ability with two taps', async () => {
+    const abilities = Array.from({ length: 13 }, (_, index) => ability(`ABILITY_${index + 1}`))
+    const wrapper = mount(CombatHotbarSettings, {
+      props: { characterId: 'hero', abilities },
+    })
+
+    expect(wrapper.findAll('[data-hotbar-slot]')).toHaveLength(12)
+    expect(wrapper.get('[data-hotbar-slot="12"]').text()).toContain('ABILITY_12')
+    expect(wrapper.get('.hotbar-settings__reserve').text()).toContain('ABILITY_13')
+
+    await wrapper.get('[data-hotbar-slot="12"]').trigger('click')
+    await wrapper.get('.hotbar-slot--reserve').trigger('click')
+
+    expect(wrapper.get('[data-hotbar-slot="12"]').text()).toContain('ABILITY_13')
+    expect(wrapper.get('.hotbar-settings__reserve').text()).toContain('ABILITY_12')
+    expect(loadCombatHotbarOrder('hero', abilities.map(item => item.id)).slice(11, 13))
+      .toEqual(['ABILITY_13', 'ABILITY_12'])
+  })
 })
+
+function ability(id: string): KnownAbility {
+  return {
+    id,
+    displayName: id,
+    description: 'Test ability.',
+    iconId: null,
+    resourceCost: 0,
+    cooldownSeconds: 0,
+    type: 'Active',
+    targetType: 'SingleEnemy',
+    sourceTalentId: null,
+    sourceTalentName: null,
+  }
+}

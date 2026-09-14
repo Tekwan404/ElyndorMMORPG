@@ -58,7 +58,7 @@ describe('CombatView', () => {
     expect(wrapper.find('img[alt="Волк"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(3)
     expect(wrapper.find('[data-combat-battlefield]').exists()).toBe(true)
-    expect(wrapper.findAll('.ability-slot')).toHaveLength(6)
+    expect(wrapper.findAll('[data-combat-hotbar] [data-ability-slot]')).toHaveLength(12)
     expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
     expect(wrapper.find('.combat-log li').exists()).toBe(false)
   })
@@ -117,6 +117,7 @@ describe('CombatView', () => {
     const player = actor('Player', 'WARRIOR', 'Воин', 160, 180, 40, 100, [])
     const ally = actor('Player', 'MAGE', 'Маг', 70, 120, 60, 100, [])
     const enemy = actor('Monster', 'WOLF', 'Волк', 180, 180, 0, 0, [], 3, 'wolf')
+    enemy.currentAggroTargetActorId = ally.actorId
     store.snapshot = {
       sessionId: crypto.randomUUID(),
       sequence: 4,
@@ -151,11 +152,13 @@ describe('CombatView', () => {
 
     expect(wrapper.get('.combat-screen').attributes('data-party-size')).toBe('2')
     const roster = wrapper.get('[data-combat-party-roster]')
-    expect(roster.text()).toContain('Союзники · 1')
-    expect(roster.text()).toContain('Общий фронт')
-    expect(wrapper.findAll('.combat-party-roster__member')).toHaveLength(1)
-    expect(wrapper.get('.combat-party-roster__member').text()).toContain('Маг')
-    expect(wrapper.find('.combat-party-roster__member--self').exists()).toBe(false)
+    expect(roster.text()).toContain('Союзники · 2')
+    expect(roster.text()).toContain('Выбери цель для поддержки')
+    expect(wrapper.findAll('.combat-ally-roster__member')).toHaveLength(2)
+    expect(wrapper.text()).toContain('Вы · Воин')
+    expect(wrapper.text()).toContain('Маг')
+    expect(wrapper.find('.combat-ally-roster__member--selected').exists()).toBe(false)
+    expect(wrapper.get('.combat-frontline').text()).toContain('Маг')
     expect(wrapper.find('.party-formation').exists()).toBe(false)
   })
 

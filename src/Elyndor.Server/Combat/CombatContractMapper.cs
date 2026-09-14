@@ -151,7 +151,8 @@ internal static class CombatContractMapper
                     definition?.IconId,
                     ability.ResourceCost,
                     ability.Cooldown.TotalSeconds,
-                    definition?.Actions?.Any(action => action.IsUnblockable) == true);
+                    definition?.Actions?.Any(action => action.IsUnblockable) == true,
+                    ability.TargetType.ToString());
             }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
                 effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray(),
@@ -165,7 +166,8 @@ internal static class CombatContractMapper
                     actor.ActiveCast.ResolvesAtUtc),
             actor.ConsumableCooldowns,
             actor.AutoAttackIntervalSeconds,
-            actor.NextAutoAttackAtUtc);
+            actor.NextAutoAttackAtUtc,
+            actor.CurrentAggroTargetActorId);
     }
 
     private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(
