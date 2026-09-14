@@ -164,6 +164,11 @@ function canEquipNow(item: InventoryItem): boolean {
   return equipmentCompatibilityReason(item) === null
 }
 
+function resolvedItemLevel(item: InventoryItem): number | null {
+  const responseItem = item as InventoryItem & { itemLevel?: number | null }
+  return responseItem.itemLevel ?? item.generatedItem?.itemLevel ?? null
+}
+
 function isOneHandWeapon(item: InventoryItem): boolean {
   return item.type === 'Equipment'
     && item.weaponCategory !== null
@@ -620,6 +625,22 @@ async function toggleSelectedLock(): Promise<void> {
             <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
           </div>
         </div>
+        <section
+          v-if="selectedItem.type === 'Equipment'"
+          class="item-detail__levels"
+          aria-label="Уровни предмета"
+        >
+          <div data-item-level>
+            <small>УРОВЕНЬ ПРЕДМЕТА</small>
+            <strong>{{ resolvedItemLevel(selectedItem) ?? '—' }}</strong>
+            <span>ilvl</span>
+          </div>
+          <div data-required-level>
+            <small>ТРЕБУЕМЫЙ УРОВЕНЬ</small>
+            <strong>{{ selectedItem.requiredLevel }}</strong>
+            <span>для экипировки</span>
+          </div>
+        </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
           Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
@@ -1080,6 +1101,41 @@ async function toggleSelectedLock(): Promise<void> {
   color: #c9c5ff;
   font-size: .62rem;
   line-height: 1.4;
+}
+
+.item-detail__levels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-border);
+}
+
+.item-detail__levels > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px var(--ui-space-3);
+  background: var(--ui-color-surface-2);
+}
+
+.item-detail__levels small {
+  color: var(--ui-color-text-muted);
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.item-detail__levels strong {
+  color: var(--ui-color-text-primary);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-detail__levels span {
+  color: var(--ui-color-text-muted);
+  font-size: .56rem;
 }
 
 .item-quality-summary {
