@@ -483,16 +483,24 @@ public sealed class TalentService(
                 NormalizePersistedRanks(tree, currentLoadout1);
             Dictionary<string, int> normalizedLoadout2 =
                 NormalizePersistedRanks(tree, currentLoadout2);
+            bool ranksChanged =
+                !RanksEqual(currentLoadout1, normalizedLoadout1)
+                || !RanksEqual(currentLoadout2, normalizedLoadout2);
 
-            if (state.TalentVersion != tree.Version
-                || !RanksEqual(currentLoadout1, normalizedLoadout1)
-                || !RanksEqual(currentLoadout2, normalizedLoadout2))
+            if (ranksChanged)
             {
                 state.NormalizeForTreeVersion(
                     tree.Version,
                     normalizedLoadout1,
                     normalizedLoadout2,
                     timeProvider.GetUtcNow());
+                changed = true;
+            }
+            else if (state.TalentVersion != tree.Version)
+            {
+                // A metadata-only tree version bump does not invalidate an otherwise
+                // identical client snapshot. Rank migrations still increment StateVersion.
+                state.AlignTreeVersion(tree.Version);
                 changed = true;
             }
         }
