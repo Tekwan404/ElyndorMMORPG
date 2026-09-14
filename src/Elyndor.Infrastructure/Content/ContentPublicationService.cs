@@ -256,6 +256,10 @@ public sealed class ContentPublicationService(
             Quests = ContentCompositionRules.MergeOptionalByKey(
                 published.Quests,
                 bundled.Quests,
-                item => item.Id)
+                item => item.Id),
+            PromoCodes = ContentCompositionRules.MergeOptionalByKey(
+                published.PromoCodes,
+                bundled.PromoCodes,
+                item => item.Code)
         };
 }

@@ -171,6 +171,37 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Empty(talentState.GetRanks(TalentLoadoutIds.Loadout2));
     }
 
+    [Fact]
+    public async Task GiveItemGeneratesProceduralEquipmentAndIsIdempotentPerUpdate()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GiveItem,
+            732_707_324,
+            "UNIQUE_WARRIOR_BLACKHEART_L25 1 BOSS");
+
+        AdministrationResult first = await ExecuteAsync(9006, operation, content);
+        AdministrationResult retry = await ExecuteAsync(9006, operation, content);
+
+        Assert.True(first.IsSuccess);
+        Assert.True(retry.IsSuccess);
+        Assert.True(retry.IsDuplicate);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterItem item = await context.CharacterItems
+            .Include(candidate => candidate.Affixes)
+            .SingleAsync(candidate => candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+        Assert.Equal(25, item.ItemLevel);
+        Assert.Equal(1, item.GenerationVersion);
+        Assert.Equal("ADMIN_GRANT", item.SourceType);
+        Assert.Equal(5, item.Affixes.Count);
+        Assert.Equal(3, item.Affixes.Count(affix => affix.IsGuaranteed));
+        Assert.Equal(1, await context.CharacterItems.CountAsync(candidate =>
+            candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART_L25"));
+    }
+
     private async Task<AdministrationResult> ExecuteAsync(
         long updateId,
         AdministrationOperation operation,

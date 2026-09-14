@@ -18,10 +18,13 @@ public sealed class TelegramAdminUpdateProcessor(
         rename <telegramId> <new name>
         class <telegramId> WARRIOR|ARCHER|MAGE
         race <telegramId> <raceId>
+        giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS]
+        promocode create <CODE> crystals=<amount> [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
         delete <telegramId> <exact name> CONFIRM
         msg <telegramId> <text>
 
-        Команды также принимаются со слэшем: /help, /char, /level и т.д.
+        item= можно указывать несколько раз. global/per/hours необязательны.
+        Команды также принимаются со слэшем: /help, /char, /giveitem, /promocode и т.д.
         """;
 
     public async Task ProcessAsync(
@@ -60,7 +63,7 @@ public sealed class TelegramAdminUpdateProcessor(
 
         AdministrationOperation operation = new(
             Map(command.Type),
-            command.TargetTelegramUserId!.Value,
+            command.TargetTelegramUserId,
             command.Value,
             command.NumericValue);
         AdministrationResult result = await administrationService.ExecuteAsync(
@@ -86,6 +89,8 @@ public sealed class TelegramAdminUpdateProcessor(
         AdminCommandType.SetRace => AdministrationOperationType.SetRace,
         AdminCommandType.Delete => AdministrationOperationType.Delete,
         AdminCommandType.Message => AdministrationOperationType.Message,
+        AdminCommandType.GiveItem => AdministrationOperationType.GiveItem,
+        AdminCommandType.CreatePromoCode => AdministrationOperationType.CreatePromoCode,
         _ => throw new ArgumentOutOfRangeException(nameof(type))
     };
 }

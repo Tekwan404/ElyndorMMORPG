@@ -74,7 +74,8 @@ public sealed class PromoCodeService(GameDbContext dbContext, IContentSnapshotPr
             GameContentSnapshot content = contentProvider.GetCurrent();
             (ItemDefinition Definition, int Quantity)[] rewards = ResolveItemRewards(content, promo);
             if (!await CanGrantAsync(character.Id, rewards, content, cancellationToken)) return PromoCodeRedemptionResult.Failure(PromoCodeErrorCodes.InventoryFull);
-            foreach ((ItemDefinition definition, int quantity) in rewards) await GrantAsync(character.Id, definition, quantity, cancellationToken);
+            foreach ((ItemDefinition definition, int quantity) in rewards)
+                await GrantAsync(character.Id, definition, quantity, operationId, code, content, cancellationToken);
             long balance = await CreditCrystalsAsync(accountId, operationId, code, promo.CrystalAmount, cancellationToken);
             dbContext.PromoCodeRedemptions.Add(new PromoCodeRedemption(operationId, accountId, character.Id, code, fingerprint, now));
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -129,12 +130,56 @@ public sealed class PromoCodeService(GameDbContext dbContext, IContentSnapshotPr
         return used + needed <= InventoryCapacity.Resolve(content);
     }
 
-    private async Task GrantAsync(Guid characterId, ItemDefinition definition, int quantity, CancellationToken cancellationToken)
+    private async Task GrantAsync(
+        Guid characterId,
+        ItemDefinition definition,
+        int quantity,
+        Guid operationId,
+        string code,
+        GameContentSnapshot content,
+        CancellationToken cancellationToken)
     {
-        CharacterItem[] stacks = await dbContext.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == definition.Id && item.DefinitionVersion == definition.Version && item.Quantity < definition.MaxStack).OrderBy(item => item.AcquiredAtUtc).ToArrayAsync(cancellationToken);
+        if (!definition.Stackable)
+        {
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            for (var ordinal = 0; ordinal < quantity; ordinal++)
+            {
+                dbContext.CharacterItems.Add(ItemInstancePersistenceFactory.CreateCharacterItem(
+                    characterId,
+                    definition,
+                    operationId,
+                    "PROMO_CODE",
+                    code,
+                    ordinal,
+                    now,
+                    content.Package,
+                    "NORMAL"));
+            }
+            return;
+        }
+
+        CharacterItem[] stacks = await dbContext.CharacterItems
+            .Where(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
+                && item.Quantity < definition.MaxStack)
+            .OrderBy(item => item.AcquiredAtUtc)
+            .ToArrayAsync(cancellationToken);
         int remaining = quantity;
-        foreach (CharacterItem stack in stacks) { int added = Math.Min(definition.MaxStack - stack.Quantity, remaining); stack.AddQuantity(added, definition.MaxStack); remaining -= added; if (remaining == 0) return; }
-        while (remaining > 0) { int size = Math.Min(definition.MaxStack, remaining); dbContext.CharacterItems.Add(new CharacterItem(Guid.CreateVersion7(), characterId, definition.Id, size, timeProvider.GetUtcNow(), definition.Version)); remaining -= size; }
+        foreach (CharacterItem stack in stacks)
+        {
+            int added = Math.Min(definition.MaxStack - stack.Quantity, remaining);
+            stack.AddQuantity(added, definition.MaxStack);
+            remaining -= added;
+            if (remaining == 0) return;
+        }
+        while (remaining > 0)
+        {
+            int size = Math.Min(definition.MaxStack, remaining);
+            dbContext.CharacterItems.Add(new CharacterItem(
+                Guid.CreateVersion7(), characterId, definition.Id, size, timeProvider.GetUtcNow(), definition.Version));
+            remaining -= size;
+        }
     }
 
     private async Task<long> BalanceAsync(Guid accountId, CancellationToken cancellationToken) =>
