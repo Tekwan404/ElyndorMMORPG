@@ -6,7 +6,7 @@ using Elyndor.Core.Talents;
 namespace Elyndor.Core.Combat.Sessions;
 public sealed partial class CombatSession
 {
-private void ApplyArcherIncomingCriticalHooks(CombatEvent combatEvent)
+private static void ApplyArcherIncomingCriticalHooks(CombatEvent combatEvent)
 {
 }
 private void ApplyArcherDamageTakenHooks(CombatEvent combatEvent)
@@ -115,10 +115,10 @@ BloodFangPetEffectId,
 _player.Actor.ActorId,
 now);
 }
-private void ApplyArcherEnemyKilledHooks(DateTimeOffset now)
+private static void ApplyArcherEnemyKilledHooks(DateTimeOffset now)
 {
 }
-private void ApplyArcherResourceThresholdHooks(CombatEvent combatEvent)
+private static void ApplyArcherResourceThresholdHooks(CombatEvent combatEvent)
 {
 }
 private void SyncArcherConditionalEffects(DateTimeOffset now)
