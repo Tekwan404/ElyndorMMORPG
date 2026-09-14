@@ -140,8 +140,8 @@ describe('AppShell', () => {
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
-    expect(wrapper.get('main').text()).toContain('Развитие героя')
-    expect(wrapper.get('main').text()).toContain('Надетое снаряжение')
+    expect(wrapper.get('main').text()).toContain('Боевые показатели')
+    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(12)
   })
 
   it('shows the authoritative quest journal on the quest tab', async () => {

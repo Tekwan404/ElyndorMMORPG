@@ -40,8 +40,9 @@ describe('CharacterStatsView', () => {
     expect(document.body.textContent).toContain('Эффективное значение')
     expect(document.body.textContent).toContain('15.97%')
     expect(document.body.textContent).toContain('до учёта пробивания атакующего')
-    expect(document.body.textContent).toContain('Вклад Выносливости')
     expect(document.body.textContent).toContain('Бонус экипировки')
+    expect(document.body.textContent).not.toContain('Вклад Выносливости')
+    expect(document.body.textContent).not.toContain('Вклад Силы')
     wrapper.unmount()
   })
 })
@@ -108,11 +109,7 @@ function snapshot() {
         attackSpeed: { finalValue: 1, contributions: [{ source: 'FORMULA_BASE' as const, value: 1 }] },
         armor: {
           finalValue: 19,
-          contributions: [
-            { source: 'STAMINA' as const, value: 14 },
-            { source: 'STRENGTH' as const, value: 4 },
-            { source: 'EQUIPMENT_BONUS' as const, value: 1 },
-          ],
+          contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 19 }],
         },
         armorDamageReductionPercent: { finalValue: 15.9663865546, contributions: [] },
         magicResistance: { finalValue: 12, contributions: [{ source: 'STAMINA' as const, value: 7 }, { source: 'INTELLECT' as const, value: 5 }] },

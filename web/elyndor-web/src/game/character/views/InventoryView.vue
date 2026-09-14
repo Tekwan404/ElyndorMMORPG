@@ -115,24 +115,58 @@ function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
   return slot
 }
 
+function equipmentCompatibilityReason(item: InventoryItem): string | null {
+  const current = character.value
+  if (!current || item.type !== 'Equipment') return null
+  if (item.allowedClassIds.length > 0 && !item.allowedClassIds.includes(current.classId)) {
+    return 'Этот предмет предназначен для другого класса.'
+  }
+
+  if (current.classId === 'WARRIOR') {
+    if (item.armorCategory && item.armorCategory !== 'HEAVY') return 'Воин может носить только тяжёлую броню.'
+    if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) {
+      return 'Воин не может использовать этот тип оружия.'
+    }
+  } else if (current.classId === 'ARCHER') {
+    if (item.armorCategory && item.armorCategory !== 'LEATHER') return 'Лучник может носить только кожаную броню.'
+    if (item.weaponCategory && item.weaponCategory !== 'BOW') return 'Лучник не может использовать этот тип оружия.'
+  } else if (current.classId === 'MAGE') {
+    if (item.armorCategory && item.armorCategory !== 'CLOTH') return 'Маг может носить только тканевую броню.'
+    if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) {
+      return 'Маг не может использовать этот тип оружия.'
+    }
+  }
+
+  return null
+}
+
+function equipmentLevelReason(item: InventoryItem): string | null {
+  const current = character.value
+  if (!current || item.type !== 'Equipment' || current.level >= item.requiredLevel) return null
+  return `Требуется уровень ${item.requiredLevel}. Текущий уровень: ${current.level}.`
+}
+
+const selectedEquipmentCompatibilityReason = computed(() =>
+  selectedItem.value?.type === 'Equipment'
+    ? equipmentCompatibilityReason(selectedItem.value)
+    : null,
+)
+const selectedEquipmentLevelReason = computed(() =>
+  selectedItem.value?.type === 'Equipment' && selectedEquipmentCompatibilityReason.value === null
+    ? equipmentLevelReason(selectedItem.value)
+    : null,
+)
+
 function canEquipNow(item: InventoryItem): boolean {
   const current = character.value
   if (!current || item.type !== 'Equipment') return false
   if (current.level < item.requiredLevel) return false
-  if (item.allowedClassIds.length > 0 && !item.allowedClassIds.includes(current.classId)) return false
+  return equipmentCompatibilityReason(item) === null
+}
 
-  if (current.classId === 'WARRIOR') {
-    if (item.armorCategory && item.armorCategory !== 'HEAVY') return false
-    if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) return false
-  } else if (current.classId === 'ARCHER') {
-    if (item.armorCategory && item.armorCategory !== 'LEATHER') return false
-    if (item.weaponCategory && item.weaponCategory !== 'BOW') return false
-  } else if (current.classId === 'MAGE') {
-    if (item.armorCategory && item.armorCategory !== 'CLOTH') return false
-    if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) return false
-  }
-
-  return true
+function resolvedItemLevel(item: InventoryItem): number | null {
+  const responseItem = item as InventoryItem & { itemLevel?: number | null }
+  return responseItem.itemLevel ?? item.generatedItem?.itemLevel ?? null
 }
 
 function isOneHandWeapon(item: InventoryItem): boolean {
@@ -591,6 +625,22 @@ async function toggleSelectedLock(): Promise<void> {
             <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
           </div>
         </div>
+        <section
+          v-if="selectedItem.type === 'Equipment'"
+          class="item-detail__levels"
+          aria-label="Уровни предмета"
+        >
+          <div data-item-level>
+            <small>УРОВЕНЬ ПРЕДМЕТА</small>
+            <strong>{{ resolvedItemLevel(selectedItem) ?? '—' }}</strong>
+            <span>ilvl</span>
+          </div>
+          <div data-required-level>
+            <small>ТРЕБУЕМЫЙ УРОВЕНЬ</small>
+            <strong>{{ selectedItem.requiredLevel }}</strong>
+            <span>для экипировки</span>
+          </div>
+        </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
           Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
@@ -638,6 +688,20 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
         <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
         <p
+          v-if="selectedEquipmentCompatibilityReason"
+          class="item-detail__error"
+          data-equip-restriction
+        >
+          {{ selectedEquipmentCompatibilityReason }}
+        </p>
+        <p
+          v-else-if="selectedEquipmentLevelReason"
+          class="item-detail__hint"
+          data-equip-level-requirement
+        >
+          {{ selectedEquipmentLevelReason }}
+        </p>
+        <p
           v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
           class="item-detail__error"
           role="alert"
@@ -646,34 +710,37 @@ async function toggleSelectedLock(): Promise<void> {
         </p>
       </article>
       <template #actions>
-        <template v-if="selectedItem?.type === 'Equipment' && isOneHandWeapon(selectedItem)">
+        <template v-if="selectedItem?.type === 'Equipment' && !selectedEquipmentCompatibilityReason">
+          <template v-if="isOneHandWeapon(selectedItem)">
+            <UIButton
+              v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
+              data-equip-target="MainHand"
+              :loading="session.mutationPending"
+              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+              @click="equipSelected('MainHand')"
+            >
+              В основную руку
+            </UIButton>
+            <UIButton
+              v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
+              data-equip-target="OffHand"
+              :loading="session.mutationPending"
+              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+              @click="equipSelected('OffHand')"
+            >
+              Во вторую руку
+            </UIButton>
+          </template>
           <UIButton
-            v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
-            data-equip-target="MainHand"
+            v-else
+            data-equip-action
             :loading="session.mutationPending"
-            :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
-            @click="equipSelected('MainHand')"
+            :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+            @click="equipSelected()"
           >
-            В основную руку
-          </UIButton>
-          <UIButton
-            v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
-            data-equip-target="OffHand"
-            :loading="session.mutationPending"
-            :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
-            @click="equipSelected('OffHand')"
-          >
-            Во вторую руку
+            Надеть
           </UIButton>
         </template>
-        <UIButton
-          v-else-if="selectedItem?.type === 'Equipment'"
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending || (character?.level ?? 0) < selectedItem.requiredLevel"
-          @click="equipSelected()"
-        >
-          Надеть
-        </UIButton>
         <UIButton
           v-if="selectedItem?.type === 'Consumable'"
           :loading="session.mutationPending"
@@ -1034,6 +1101,41 @@ async function toggleSelectedLock(): Promise<void> {
   color: #c9c5ff;
   font-size: .62rem;
   line-height: 1.4;
+}
+
+.item-detail__levels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-border);
+}
+
+.item-detail__levels > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px var(--ui-space-3);
+  background: var(--ui-color-surface-2);
+}
+
+.item-detail__levels small {
+  color: var(--ui-color-text-muted);
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.item-detail__levels strong {
+  color: var(--ui-color-text-primary);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-detail__levels span {
+  color: var(--ui-color-text-muted);
+  font-size: .56rem;
 }
 
 .item-quality-summary {
