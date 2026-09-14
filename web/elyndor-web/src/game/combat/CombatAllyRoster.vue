@@ -5,6 +5,7 @@ import type { GlyphName } from '@/ui/icons/icon.types'
 
 defineProps<{
   allies: CombatActorSnapshot[]
+  playerActorId: string
   selectedFriendlyTargetActorId: string | null
   participantStatus: (actorId: string) => string
   participantGlyph: (actorId: string) => GlyphName
@@ -37,14 +38,17 @@ const emit = defineEmits<{
         :key="ally.actorId"
         type="button"
         class="combat-ally-roster__member"
-        :class="{ 'combat-ally-roster__member--selected': ally.actorId === selectedFriendlyTargetActorId }"
+        :class="{
+          'combat-ally-roster__member--self': ally.actorId === playerActorId,
+          'combat-ally-roster__member--selected': ally.actorId === selectedFriendlyTargetActorId,
+        }"
         :data-status="participantStatus(ally.actorId)"
         :aria-pressed="ally.actorId === selectedFriendlyTargetActorId"
         @click="emit('select', ally.actorId)"
       >
         <span class="combat-ally-roster__crest" aria-hidden="true">{{ ally.name.slice(0, 1).toUpperCase() }}</span>
         <span class="combat-ally-roster__body">
-          <span class="combat-ally-roster__identity"><strong>{{ ally.name }}</strong><small>{{ roleLabel(ally) }}</small></span>
+          <span class="combat-ally-roster__identity"><strong>{{ ally.actorId === playerActorId ? `Вы · ${ally.name}` : ally.name }}</strong><small>{{ roleLabel(ally) }}</small></span>
           <span class="combat-ally-roster__bar" aria-hidden="true"><i :style="{ width: `${healthRatio(ally)}%` }" /></span>
           <span class="combat-ally-roster__vitals">{{ Math.ceil(ally.hp) }} / {{ Math.ceil(ally.maxHp) }} · {{ participantStatus(ally.actorId) }}</span>
         </span>
@@ -64,6 +68,7 @@ const emit = defineEmits<{
 .combat-ally-roster__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
 .combat-ally-roster__member { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; align-items: center; gap: 6px; min-width: 0; min-height: var(--ui-touch-target); padding: 6px; border: 1px solid rgb(255 255 255 / 8%); border-radius: var(--ui-radius-sm); background: rgb(5 8 13 / 82%); color: var(--ui-color-text-primary); font: inherit; text-align: left; }
 .combat-ally-roster__member--selected { border-color: rgb(205 177 113 / 72%); box-shadow: inset 0 0 0 1px rgb(205 177 113 / 18%); }
+.combat-ally-roster__member--self { border-color: rgb(170 163 255 / 56%); background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%)); }
 .combat-ally-roster__member[data-status='Fled'], .combat-ally-roster__member[data-status='Dead'] { opacity: .58; }
 .combat-ally-roster__crest { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid rgb(205 177 113 / 42%); border-radius: 50%; background: radial-gradient(circle, rgb(205 177 113 / 20%), rgb(9 12 18 / 96%) 68%); color: #ecd797; font-family: var(--ui-font-display); font-size: .8rem; }
 .combat-ally-roster__body { display: grid; min-width: 0; gap: 2px; }

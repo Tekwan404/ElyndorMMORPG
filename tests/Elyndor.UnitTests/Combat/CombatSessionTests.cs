@@ -1285,13 +1285,13 @@ public sealed class CombatSessionTests
     {
         CombatSession session = CreateTargetingSession(1, 100, 100);
         CombatCommandResult killed = session.Handle(
-            new UseAbilityCommand("kill-first-for-n", "STRIKE", EnemyThreeId),
+            new UseAbilityCommand("kill-first-for-n", "STRIKE", EnemyId),
             Now);
         Assert.True(killed.Succeeded);
         Assert.Equal(EnemyTwoId, killed.Snapshot.SelectedTargetActorId);
 
         CombatCommandResult result = session.Handle(
-            new UseAbilityCommand("cleave-two", "CLEAVE_TWO", EnemyId),
+            new UseAbilityCommand("cleave-two", "CLEAVE_TWO", Guid.Empty),
             Now.AddMilliseconds(1));
 
         Assert.True(result.Succeeded);

@@ -10,6 +10,7 @@ import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
 import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
+import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -38,8 +39,27 @@ const snapshot = computed(() => combat.snapshot)
 const combatEnemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
 const aliveEnemies = computed(() => combatEnemies.value.filter((enemy) => enemy.hp > 0))
 const combatPlayers = computed(() => snapshot.value?.players ?? (snapshot.value ? [snapshot.value.player] : []))
-const combatAllies = computed(() => combatPlayers.value.filter((player) => player.actorId !== snapshot.value?.player.actorId))
+const combatAllies = computed(() => {
+  const currentPlayer = snapshot.value?.player
+  if (!currentPlayer) return []
+  const byActorId = new Map(combatPlayers.value.map(player => [player.actorId, player]))
+  byActorId.set(currentPlayer.actorId, currentPlayer)
+  return [
+    currentPlayer,
+    ...[...byActorId.values()].filter(player => player.actorId !== currentPlayer.actorId),
+  ]
+})
 const companion = computed(() => snapshot.value?.companion ?? null)
+const selectedEnemy = computed(() => {
+  const selectedActorId = snapshot.value?.selectedTargetActorId ?? snapshot.value?.enemy.actorId
+  return combatEnemies.value.find(enemy => enemy.actorId === selectedActorId) ?? null
+})
+const frontlineAlly = computed(() => {
+  const actorId = selectedEnemy.value?.currentAggroTargetActorId
+  return actorId
+    ? combatAllies.value.find(ally => ally.actorId === actorId) ?? null
+    : null
+})
 const companionArt = computed(() => monsterArtUrl(companion.value?.artId))
 const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
@@ -527,6 +547,7 @@ onUnmounted(() => window.clearInterval(timer))
 
       <CombatAllyRoster
         :allies="combatAllies"
+        :player-actor-id="snapshot.player.actorId"
         :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
         :participant-status="combatParticipantStatus"
         :participant-glyph="combatParticipantGlyph"
@@ -606,6 +627,8 @@ onUnmounted(() => window.clearInterval(timer))
             <IconGenerator :config="{ id: 'enemy-placeholder', glyph: 'skull', category: 'utility' }" />
           </div>
         </div>
+
+        <CombatFrontlineTarget :ally="frontlineAlly" />
 
         <div
           v-if="recentFeedback"
