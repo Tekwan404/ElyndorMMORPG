@@ -1,2774 +1,45 @@
-{
-  "contentVersion": "0.18.0",
-  "balanceVersion": "0.11.0",
-  "publishedAtUtc": "2026-09-09T17:25:10+00:00",
-  "definitions": [
-    {
-      "type": "TALENT_TREE",
-      "id": "ARCHER_TREE",
-      "references": [
-        {
-          "type": "CLASS",
-          "id": "ARCHER"
-        }
-      ]
-    }
-  ],
-  "talentTrees": [
-    {
-      "id": "ARCHER_TREE",
-      "classId": "ARCHER",
-      "maxSpendablePoints": 59,
-      "version": 1,
-      "branches": [
-        {
-          "id": "MARKSMAN",
-          "name": "–ú–µ—Ç–∫–∞—è —Å—Ç—Ä–µ–ª—å–±–∞",
-          "fantasy": "–¢–æ—á–Ω—ã–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω, –º–µ—Ç–∫–∏ –∏ —Å–∏–ª—å–Ω—ã–µ –æ–¥–∏–Ω–æ—á–Ω—ã–µ –≤—ã—Å—Ç—Ä–µ–ª—ã",
-          "nodeCount": 32
-        },
-        {
-          "id": "BEAST_MASTERY",
-          "name": "–ü–æ–≤–µ–ª–∏—Ç–µ–ª—å –∑–≤–µ—Ä–µ–π",
-          "fantasy": "–•–æ–∑—è–∏–Ω –∏ —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ —Å—Ä–∞–∂–∞—é—Ç—Å—è –∫–∞–∫ –µ–¥–∏–Ω–∞—è —Å–≤—è–∑–∫–∞",
-          "nodeCount": 32
-        },
-        {
-          "id": "ARCANE_ARCHER",
-          "name": "–¢–∞–π–Ω—ã–π —Å—Ç—Ä–µ–ª–æ–∫",
-          "fantasy": "–ú–∞–≥–∏—á–µ—Å–∫–∏–µ —Å—Ç—Ä–µ–ª—ã, –º–∞–Ω–∞ –∏ —ç—Ñ–∏—Ä–Ω—ã–π –¥—É—Ö",
-          "nodeCount": 32
-        }
-      ],
-      "nodes": [
-        {
-          "id": "M-1-1",
-          "iconId": "MARKSMAN_01",
-          "branchId": "MARKSMAN",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–¢–≤—ë—Ä–¥–∞—è –†—É–∫–∞",
-          "englishName": "Steady Hand",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–¢–æ—á–Ω–æ—Å—Ç—å –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 1,5% / 3% / 4,5% / 6%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "ACCURACY_PERCENT",
-              "values": [
-                1.5,
-                3,
-                4.5,
-                6
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-1-2",
-          "iconId": "MARKSMAN_02",
-          "branchId": "MARKSMAN",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–°–º–µ—Ä—Ç–µ–ª—å–Ω–∞—è –¢–æ—á–Ω–æ—Å—Ç—å",
-          "englishName": "Deadly Precision",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–®–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ —Ñ–∏–∑–∏—á–µ—Å–∫–∏—Ö –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 1,5% / 3% / 4,5% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1.5,
-                3,
-                4.5,
-                6
-              ],
-              "targetId": "PHYSICAL_SHOT_CRITICAL",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-1-3",
-          "iconId": "MARKSMAN_03",
-          "branchId": "MARKSMAN",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–ö–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—è –û—Ö–æ—Ç–Ω–∏–∫–∞",
-          "englishName": "Hunter Concentration",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–£—Å–ø–µ—à–Ω—ã–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç 1 / 2 / 3 / 4 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏. –ú–∞–≥–∏—á–µ—Å–∫–∞—è —Å—Ç—Ä–µ–ª–∞ –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç —Å—Ç–æ–ª—å–∫–æ –∂–µ –º–∞–Ω—ã. –°—Ä–∞–±–∞—Ç—ã–≤–∞–µ—Ç –Ω–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ —Å–µ–∫—É–Ω–¥—É.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1,
-                2,
-                3,
-                4
-              ],
-              "targetId": "ARCHER_HIT_RESOURCE",
-              "runtimeStatus": "Supported",
-              "internalCooldownSeconds": 1
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-1-4",
-          "iconId": "MARKSMAN_04",
-          "branchId": "MARKSMAN",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–ù–∞—Ç—è–Ω—É—Ç–∞—è –¢–µ—Ç–∏–≤–∞",
-          "englishName": "Drawn Bowstring",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–°–∫–æ—Ä–æ—Å—Ç—å –∞–≤—Ç–æ–∞—Ç–∞–∫ –∏–∑ –ª—É–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "ATTACK_SPEED_PERCENT",
-              "values": [
-                3,
-                6
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-2-1",
-          "iconId": "MARKSMAN_05",
-          "branchId": "MARKSMAN",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ú–µ—Ç–∫–∞ –û—Ö–æ—Ç–Ω–∏–∫–∞",
-          "englishName": "Hunter Mark",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ú–µ—Ç–∫—É –æ—Ö–æ—Ç–Ω–∏–∫–∞¬ª: –ø–æ–º–µ—á–∞–µ—Ç —Ü–µ–ª—å –Ω–∞ 15 —Å–µ–∫. –§–∏–∑–∏—á–µ—Å–∫–∏–µ –≤—ã—Å—Ç—Ä–µ–ª—ã –Ω–∞–Ω–æ—Å—è—Ç –µ–π +5% —É—Ä–æ–Ω–∞, –º–∞–≥–∏—á–µ—Å–∫–∏–µ —Å—Ç—Ä–µ–ª—ã +3%. –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 20 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "HUNTER_MARK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-2-2",
-          "iconId": "MARKSMAN_06",
-          "branchId": "MARKSMAN",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â–∞—è –°—Ç—Ä–µ–ª–∞",
-          "englishName": "Piercing Arrow",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â—É—é —Å—Ç—Ä–µ–ª—É¬ª: 140% —Å–∏–ª—ã –∞—Ç–∞–∫–∏ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞ –∏ +10% –ø—Ä–æ–±–∏–≤–∞–Ω–∏—è –±—Ä–æ–Ω–∏ –¥–ª—è —ç—Ç–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞. –°—Ç–æ–∏—Ç 25 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 6 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "PIERCING_ARROW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-2-3",
-          "iconId": "MARKSMAN_07",
-          "branchId": "MARKSMAN",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–í–µ—Ä–Ω—ã–π –°–ø—É—Ç–Ω–∏–∫",
-          "englishName": "Faithful Companion",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–§–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 1,5% / 3% / 4,5% / 6% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞ –∏ –ø–æ–ª—É—á–∞–µ—Ç +2% / 4% / 6% / 9% –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–≥–æ –∑–¥–æ—Ä–æ–≤—å—è.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                1.5,
-                3,
-                4.5,
-                6
-              ],
-              "targetId": "PHYSICAL_PET_BASE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-2-4",
-          "iconId": "MARKSMAN_08",
-          "branchId": "MARKSMAN",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–•–æ–ª–æ–¥–Ω—ã–π –†–∞—Å—á—ë—Ç",
-          "englishName": "Cold Calculation",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ —Ü–µ–ª–∏ –≤—ã—à–µ 80% –∑–¥–æ—Ä–æ–≤—å—è —à–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                3,
-                6
-              ],
-              "targetId": "MARKSMAN_HIGH_HP_CRIT",
-              "runtimeStatus": "Supported",
-              "threshold": 80
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-3-1",
-          "iconId": "MARKSMAN_09",
-          "branchId": "MARKSMAN",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –í—ã—Å—Ç—Ä–µ–ª",
-          "englishName": "Aimed Shot",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª: –ø–æ–¥–≥–æ—Ç–æ–≤–∫–∞ 1,5 —Å–µ–∫., 190% —Å–∏–ª—ã –∞—Ç–∞–∫–∏ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞. –°—Ç–æ–∏—Ç 30 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 8 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "AIMED_SHOT"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-3-2",
-          "iconId": "MARKSMAN_10",
-          "branchId": "MARKSMAN",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ì–ª—É–±–æ–∫–∞—è –ú–µ—Ç–∫–∞",
-          "englishName": "Deep Mark",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "M-2-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–ü–æ —Ü–µ–ª–∏ —Å ¬´–ú–µ—Ç–∫–æ–π –æ—Ö–æ—Ç–Ω–∏–∫–∞¬ª –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π —É—Ä–æ–Ω –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏—Ö –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 5% / 10%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "HUNTER_MARK_CRITICAL_DAMAGE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-3-3",
-          "iconId": "MARKSMAN_11",
-          "branchId": "MARKSMAN",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ü—Ä–æ–±–∏–≤–∞—é—â–∏–π –ù–∞–∫–æ–Ω–µ—á–Ω–∏–∫",
-          "englishName": "Piercing Tip",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ü—Ä–æ–±–∏–≤–∞–Ω–∏–µ –±—Ä–æ–Ω–∏ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "ARMOR_PENETRATION_PERCENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-3-4",
-          "iconId": "MARKSMAN_12",
-          "branchId": "MARKSMAN",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–≠–∫–æ–Ω–æ–º–Ω—ã–π –í—ã—Å—Ç—Ä–µ–ª",
-          "englishName": "Efficient Shot",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞ —Å–ª–µ–¥—É—é—â–∞—è —Å–ø–æ—Å–æ–±–Ω–æ—Å—Ç—å, —Ä–∞—Å—Ö–æ–¥—É—é—â–∞—è –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—é, –≤ —Ç–µ—á–µ–Ω–∏–µ 5 —Å–µ–∫. —Å—Ç–æ–∏—Ç –Ω–∞ 10% / 20% –º–µ–Ω—å—à–µ.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                10,
-                20
-              ],
-              "targetId": "PHYSICAL_SHOT_RESOURCE_DISCOUNT",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-4-1",
-          "iconId": "MARKSMAN_13",
-          "branchId": "MARKSMAN",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–î–≤–æ–π–Ω–æ–π –°–ø—É—Å–∫",
-          "englishName": "Double Release",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∞–≤—Ç–æ–∞—Ç–∞–∫–∏ –µ—Å—Ç—å 8% / 14% —à–∞–Ω—Å –Ω–µ–º–µ–¥–ª–µ–Ω–Ω–æ –≤—ã–ø—É—Å—Ç–∏—Ç—å –≤—Ç–æ—Ä—É—é —Å—Ç—Ä–µ–ª—É –∑–∞ 40% —É—Ä–æ–Ω–∞ –ø–µ—Ä–≤–æ–π. –í—Ç–æ—Ä–∞—è —Å—Ç—Ä–µ–ª–∞ –Ω–µ –∫—Ä–∏—Ç—É–µ—Ç –∏ –Ω–µ –∑–∞–ø—É—Å–∫–∞–µ—Ç –Ω–æ–≤—ã–µ —Ü–µ–ø–æ—á–∫–∏.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_AUTO_ATTACK",
-              "values": [
-                40,
-                40
-              ],
-              "targetId": "MARKSMAN_DOUBLE_RELEASE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                8,
-                14
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-4-2",
-          "iconId": "MARKSMAN_14",
-          "branchId": "MARKSMAN",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–ë–µ–∑–æ—à–∏–±–æ—á–Ω—ã–π –ü—Ä–∏—Ü–µ–ª",
-          "englishName": "Flawless Aim",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "M-3-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª –ø–æ–ª—É—á–∞–µ—Ç +5% / +10% –∫ —Ç–æ—á–Ω–æ—Å—Ç–∏ –∏ +4% / +8% –∫ —à–∞–Ω—Å—É –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "AIMED_SHOT_PRECISION",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                4,
-                8
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-4-3",
-          "iconId": "MARKSMAN_15",
-          "branchId": "MARKSMAN",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–†–∞—Å–∫—Ä—ã—Ç–∞—è –ó–∞—â–∏—Ç–∞",
-          "englishName": "Exposed Defense",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "M-2-2",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–ü–æ—Å–ª–µ –ø–æ–ø–∞–¥–∞–Ω–∏—è ¬´–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â–µ–π —Å—Ç—Ä–µ–ª–æ–π¬ª —Å–ª–µ–¥—É—é—â–∏–µ –¥–≤–∞ —Ñ–∏–∑–∏—á–µ—Å–∫–∏—Ö –≤—ã—Å—Ç—Ä–µ–ª–∞ –≤ —Ç–µ—á–µ–Ω–∏–µ 8 —Å–µ–∫. –ø–æ–ª—É—á–∞—é—Ç +5% / +10% –ø—Ä–æ–±–∏–≤–∞–Ω–∏—è –±—Ä–æ–Ω–∏.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "PIERCING_ARROW_EXPOSE",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 8,
-              "triggerCount": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-4-4",
-          "iconId": "MARKSMAN_01",
-          "branchId": "MARKSMAN",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–°–∏–Ω—Ö—Ä–æ–Ω–Ω–∞—è –ê—Ç–∞–∫–∞",
-          "englishName": "Synchronized Attack",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ —Ç–≤–æ–µ–≥–æ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞ —Å–∫–æ—Ä–æ—Å—Ç—å –∞—Ç–∞–∫ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 5% / 10% –Ω–∞ 4 —Å–µ–∫. –°—Ä–∞–±–∞—Ç—ã–≤–∞–µ—Ç –Ω–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "PHYSICAL_PET_ATTACK_SPEED",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 4,
-              "internalCooldownSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-5-1",
-          "iconId": "MARKSMAN_02",
-          "branchId": "MARKSMAN",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–°–Ω–∞–π–ø–µ—Ä—Å–∫–∞—è –ö–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—è",
-          "englishName": "Sniper Focus",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–°–Ω–∞–π–ø–µ—Ä—Å–∫—É—é –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—é¬ª: –Ω–∞ 10 —Å–µ–∫. +10% —Ç–æ—á–Ω–æ—Å—Ç–∏, +8% —à–∞–Ω—Å–∞ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –∏ +10% –ø—Ä–æ–±–∏–≤–∞–Ω–∏—è –±—Ä–æ–Ω–∏. –í–Ω–µ –≥–ª–æ–±–∞–ª—å–Ω–æ–π –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∏, –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ 90 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "SNIPER_FOCUS"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-5-2",
-          "iconId": "MARKSMAN_03",
-          "branchId": "MARKSMAN",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–û—Ç–º–µ—á–µ–Ω–Ω–∞—è –ñ–µ—Ä—Ç–≤–∞",
-          "englishName": "Marked Victim",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "M-2-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–ü–æ –æ—Ç–º–µ—á–µ–Ω–Ω–æ–π —Ü–µ–ª–∏ –∞–≤—Ç–æ–∞—Ç–∞–∫–∞ –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 4% / 8% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞, –∞ ¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª ‚Äî –Ω–∞ 5% / 10% –±–æ–ª—å—à–µ.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                4,
-                8
-              ],
-              "targetId": "MARKED_VICTIM",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                5,
-                10
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-5-3",
-          "iconId": "MARKSMAN_04",
-          "branchId": "MARKSMAN",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ë—ã—Å—Ç—Ä–∞—è –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞",
-          "englishName": "Quick Reload",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ ¬´–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â–µ–π —Å—Ç—Ä–µ–ª—ã¬ª –∏ ¬´–ü—Ä–∏—Ü–µ–ª—å–Ω–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞¬ª —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 0,5 / 0,75 / 1 / 1,5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_COOLDOWN_SECONDS",
-              "values": [
-                0.5,
-                0.75,
-                1,
-                1.5
-              ],
-              "targetId": "PIERCING_ARROW"
-            },
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_COOLDOWN_SECONDS",
-              "values": [
-                0.5,
-                0.75,
-                1,
-                1.5
-              ],
-              "targetId": "AIMED_SHOT"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-5-4",
-          "iconId": "MARKSMAN_05",
-          "branchId": "MARKSMAN",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ë–æ–µ–≤–æ–π –†–∏—Ç–º",
-          "englishName": "Combat Rhythm",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö–∞–∂–¥—ã–π —Ç—Ä–µ—Ç–∏–π —É—Å–ø–µ—à–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª –ø–æ–¥—Ä—è–¥ –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç 5 / 8 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏ –∏–ª–∏ –º–∞–Ω—ã ‚Äî –≤ –∑–∞–≤–∏—Å–∏–º–æ—Å—Ç–∏ –æ—Ç –∞–∫—Ç–∏–≤–Ω–æ–≥–æ —Ä–µ—Å—É—Ä—Å–∞. –ü—Ä–æ–º–∞—Ö —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç —Å–µ—Ä–∏—é.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                5,
-                8
-              ],
-              "targetId": "ARCHER_SHOT_RHYTHM",
-              "runtimeStatus": "Supported",
-              "triggerCount": 3
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-6-1",
-          "iconId": "MARKSMAN_06",
-          "branchId": "MARKSMAN",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–°–º–µ—Ä—Ç–µ–ª—å–Ω–∞—è –°–µ—Ä–∏—è",
-          "englishName": "Deadly Streak",
-          "maxRank": 3,
-          "prerequisites": [],
-          "description": "–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª –¥–∞—ë—Ç –∑–∞—Ä—è–¥ –Ω–∞ 6 —Å–µ–∫., –¥–æ —Ç—Ä—ë—Ö. –ö–∞–∂–¥—ã–π –∑–∞—Ä—è–¥ –ø–æ–≤—ã—à–∞–µ—Ç –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω –Ω–∞ 1,5% / 2,25% / 3%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                1.5,
-                2.25,
-                3
-              ],
-              "targetId": "MARKSMAN_DEADLY_STREAK",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 6,
-              "triggerCount": 3
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-6-2",
-          "iconId": "MARKSMAN_07",
-          "branchId": "MARKSMAN",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–û—Ö–æ—Ç–Ω–∏—á–∏–π –ò–Ω—Å—Ç–∏–Ω–∫—Ç",
-          "englishName": "Hunting Instinct",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ —Ü–µ–ª–∏ –Ω–∏–∂–µ 30% –∑–¥–æ—Ä–æ–≤—å—è —Ç–æ—á–Ω–æ—Å—Ç—å –∏ —à–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞—é—Ç—Å—è –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                3,
-                6
-              ],
-              "targetId": "MARKSMAN_EXECUTE_AIM",
-              "runtimeStatus": "Supported",
-              "threshold": 30
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-6-3",
-          "iconId": "MARKSMAN_08",
-          "branchId": "MARKSMAN",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–¢—è–∂—ë–ª–∞—è –°—Ç—Ä–µ–ª–∞",
-          "englishName": "Heavy Arrow",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–¢—è–∂—ë–ª—É—é —Å—Ç—Ä–µ–ª—É¬ª: —Å–ª–µ–¥—É—é—â–∞—è –∞–≤—Ç–æ–∞—Ç–∞–∫–∞ –Ω–∞–Ω–æ—Å–∏—Ç 175% –æ–±—ã—á–Ω–æ–≥–æ —É—Ä–æ–Ω–∞. –°—Ç–æ–∏—Ç 20 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 12 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "HEAVY_ARROW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-6-4",
-          "iconId": "MARKSMAN_09",
-          "branchId": "MARKSMAN",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–ü—Ä–∏–∫—Ä—ã–≤–∞—é—â–∏–π –°–ø—É—Ç–Ω–∏–∫",
-          "englishName": "Covering Companion",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –ø–æ —Ö–æ–∑—è–∏–Ω—É —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –Ω–µ–º–µ–¥–ª–µ–Ω–Ω–æ –æ—Ç–≤–µ—á–∞–µ—Ç –∞—Ç–∞–∫–æ–π –∑–∞ 40% / 65% —Å–≤–æ–µ–π –æ–±—ã—á–Ω–æ–π –∞–≤—Ç–æ–∞—Ç–∞–∫–∏. –°—Ä–∞–±–∞—Ç—ã–≤–∞–µ—Ç –Ω–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [
-                40,
-                65
-              ],
-              "targetId": "PHYSICAL_PET_COVER",
-              "runtimeStatus": "Supported",
-              "internalCooldownSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-7-1",
-          "iconId": "MARKSMAN_10",
-          "branchId": "MARKSMAN",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ò–¥–µ–∞–ª—å–Ω—ã–π –í—ã—Å—Ç—Ä–µ–ª",
-          "englishName": "Perfect Shot",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "M-3-1",
-              "requiredRank": 1
-            },
-            {
-              "talentId": "M-4-2",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª –ø–æ –æ—Ç–º–µ—á–µ–Ω–Ω–æ–π —Ü–µ–ª–∏ –ø—Ä–æ–∏–∑–Ω–æ—Å–∏—Ç—Å—è –Ω–∞ 0,25 —Å–µ–∫. –±—ã—Å—Ç—Ä–µ–µ –∏ –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 15% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                15
-              ],
-              "targetId": "AIMED_SHOT_MARK",
-              "runtimeStatus": "Supported",
-              "castTimeSeconds": 0.25
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-7-2",
-          "iconId": "MARKSMAN_11",
-          "branchId": "MARKSMAN",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–î—Ä–æ–±—è—â–∏–π –ù–∞–∫–æ–Ω–µ—á–Ω–∏–∫",
-          "englishName": "Crushing Tip",
-          "maxRank": 3,
-          "prerequisites": [],
-          "description": "–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª –Ω–∞ 6 —Å–µ–∫. —Å–æ–∑–¥–∞—ë—Ç –ø–µ—Ä—Å–æ–Ω–∞–ª—å–Ω—É—é ¬´–°–ª–æ–º–∞–Ω–Ω—É—é –±—Ä–æ–Ω—é¬ª: —Ç–≤–æ–∏ –∞—Ç–∞–∫–∏ –ø–æ–ª—É—á–∞—é—Ç +3% / +6% / +10% –ø—Ä–æ–±–∏–≤–∞–Ω–∏—è –±—Ä–æ–Ω–∏ –ø–æ —ç—Ç–æ–π —Ü–µ–ª–∏.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                3,
-                6,
-                10
-              ],
-              "targetId": "BROKEN_ARMOR",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 6
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-7-3",
-          "iconId": "MARKSMAN_12",
-          "branchId": "MARKSMAN",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ë–µ–∑ –ü–æ—Ç–µ—Ä—å",
-          "englishName": "No Waste",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü—Ä–æ–º–∞—Ö —Ñ–∏–∑–∏—á–µ—Å–∫–∏–º –≤—ã—Å—Ç—Ä–µ–ª–æ–º –≤–æ–∑–≤—Ä–∞—â–∞–µ—Ç 40% / 70% –ø–æ—Ç—Ä–∞—á–µ–Ω–Ω–æ–π –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                40,
-                70
-              ],
-              "targetId": "PHYSICAL_MISS_REFUND",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-7-4",
-          "iconId": "MARKSMAN_13",
-          "branchId": "MARKSMAN",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ë—ã—Å—Ç—Ä—ã–π –î–æ–±–æ—Ä",
-          "englishName": "Quick Draw",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ —É–±–∏–π—Å—Ç–≤–∞ —Å–ª–µ–¥—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Å –ø–æ–¥–≥–æ—Ç–æ–≤–∫–æ–π –≤ —Ç–µ—á–µ–Ω–∏–µ 8 —Å–µ–∫. –≥–æ—Ç–æ–≤–∏—Ç—Å—è –Ω–∞ 20% / 40% –±—ã—Å—Ç—Ä–µ–µ –∏ —Å—Ç–æ–∏—Ç –Ω–∞ 10% / 20% –º–µ–Ω—å—à–µ –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ENEMY_KILLED",
-              "values": [
-                20,
-                40
-              ],
-              "targetId": "MARKSMAN_QUICK_DRAW",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                10,
-                20
-              ],
-              "durationSeconds": 8
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-8-1",
-          "iconId": "MARKSMAN_14",
-          "branchId": "MARKSMAN",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–í—ã—Å—Ç—Ä–µ–ª –í –°–µ—Ä–¥—Ü–µ",
-          "englishName": "Heart Shot",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "M-7-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª –ø–æ —Ü–µ–ª–∏ –Ω–∏–∂–µ 25% –∑–¥–æ—Ä–æ–≤—å—è –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 25% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                25
-              ],
-              "targetId": "AIMED_SHOT_EXECUTE",
-              "runtimeStatus": "Supported",
-              "threshold": 25
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-8-2",
-          "iconId": "MARKSMAN_15",
-          "branchId": "MARKSMAN",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–°–æ–≤–µ—Ä—à–µ–Ω–Ω–∞—è –ú–µ—Ç–∫–∞",
-          "englishName": "Perfect Mark",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "M-5-2",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–ú–µ—Ç–∫–∞ –æ—Ö–æ—Ç–Ω–∏–∫–∞¬ª –¥–µ–π—Å—Ç–≤—É–µ—Ç –Ω–∞ 5 / 10 —Å–µ–∫. –¥–æ–ª—å—à–µ, –∞ –µ—ë –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 3 / 6 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "EFFECT_DURATION_SECONDS",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "HUNTER_MARK"
-            },
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_COOLDOWN_SECONDS",
-              "values": [
-                3,
-                6
-              ],
-              "targetId": "HUNTER_MARK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-8-3",
-          "iconId": "MARKSMAN_01",
-          "branchId": "MARKSMAN",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ò–¥–µ–∞–ª—å–Ω—ã–π –ú–æ–º–µ–Ω—Ç",
-          "englishName": "Perfect Moment",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ê–∫—Ç–∏–≤–∞—Ü–∏—è ¬´–°–Ω–∞–π–ø–µ—Ä—Å–∫–æ–π –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏¬ª —Å—Ä–∞–∑—É —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫—É ¬´–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â–µ–π —Å—Ç—Ä–µ–ª—ã¬ª –∏ ¬´–ü—Ä–∏—Ü–µ–ª—å–Ω–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞¬ª.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1
-              ],
-              "targetId": "SNIPER_FOCUS_RESET",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "M-9-1",
-          "iconId": "MARKSMAN_02",
-          "branchId": "MARKSMAN",
-          "tier": 9,
-          "requiredSpentPoints": 40,
-          "name": "–ú–ê–°–¢–ï–† –°–¢–†–ï–õ–´",
-          "englishName": "MASTER OF THE ARROW",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–í–µ—Ä—à–∏–Ω–∞ –ú–µ—Ç–∫–æ–π —Å—Ç—Ä–µ–ª—å–±—ã. –°–∏–ª–∞ –∞—Ç–∞–∫–∏ +8%, —Ç–æ—á–Ω–æ—Å—Ç—å +5%. –ü–æ –æ—Ç–º–µ—á–µ–Ω–Ω–æ–π —Ü–µ–ª–∏ —à–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞ +5%; –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ä–∞–∑ –≤ 2 —Å–µ–∫. —Å–æ–∫—Ä–∞—â–∞–µ—Ç –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ ¬´–°–Ω–∞–π–ø–µ—Ä—Å–∫–æ–π –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏¬ª –Ω–∞ 1 —Å–µ–∫. –ö–∞–∂–¥—ã–π –ø—è—Ç—ã–π —É—Å–ø–µ—à–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª –ø–æ –æ—Ç–º–µ—á–µ–Ω–Ω–æ–π —Ü–µ–ª–∏ –≤—ã–ø—É—Å–∫–∞–µ—Ç –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—É—é —Å—Ç—Ä–µ–ª—É –∑–∞ 60% –æ–±—ã—á–Ω–æ–π –∞–≤—Ç–æ–∞—Ç–∞–∫–∏.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "ATTACK_POWER_PERCENT",
-              "values": [
-                8
-              ]
-            },
-            {
-              "type": "StatModifier",
-              "key": "ACCURACY_PERCENT",
-              "values": [
-                5
-              ]
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                60
-              ],
-              "targetId": "MARKSMAN_MASTER_ARROW",
-              "runtimeStatus": "Supported",
-              "triggerCount": 5,
-              "secondaryValues": [
-                5
-              ]
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                1
-              ],
-              "targetId": "SNIPER_FOCUS",
-              "runtimeStatus": "Supported",
-              "internalCooldownSeconds": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-1-1",
-          "iconId": "BEAST_MASTERY_01",
-          "branchId": "BEAST_MASTERY",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–ö—Ä–µ–ø–∫–∞—è –°–≤—è–∑—å",
-          "englishName": "Strong Bond",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ú–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–µ –∑–¥–æ—Ä–æ–≤—å–µ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 4% / 8% / 12% / 15%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                4,
-                8,
-                12,
-                15
-              ],
-              "targetId": "PHYSICAL_PET_HP",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-1-2",
-          "iconId": "BEAST_MASTERY_02",
-          "branchId": "BEAST_MASTERY",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–û—Å—Ç—Ä—ã–µ –ò–Ω—Å—Ç–∏–Ω–∫—Ç—ã",
-          "englishName": "Sharp Instincts",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–£—Ä–æ–Ω —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ],
-              "targetId": "PHYSICAL_PET_DAMAGE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-1-3",
-          "iconId": "BEAST_MASTERY_03",
-          "branchId": "BEAST_MASTERY",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–û–±—â–∏–π –†–∏—Ç–º",
-          "englishName": "Shared Rhythm",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ê—Ç–∞–∫–∞ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –∏–º–µ–µ—Ç 10% / 15% / 20% / 25% —à–∞–Ω—Å –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–∏—Ç—å —Ö–æ–∑—è–∏–Ω—É 3 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 2 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                10,
-                15,
-                20,
-                25
-              ],
-              "targetId": "PHYSICAL_PET_RESOURCE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                3,
-                3,
-                3,
-                3
-              ],
-              "internalCooldownSeconds": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-1-4",
-          "iconId": "BEAST_MASTERY_04",
-          "branchId": "BEAST_MASTERY",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–£–≤–µ—Ä–µ–Ω–Ω—ã–π –û—Ö–æ—Ç–Ω–∏–∫",
-          "englishName": "Confident Hunter",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–õ–æ–≤–∫–æ—Å—Ç—å –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "AGILITY_PERCENT",
-              "values": [
-                3,
-                6
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-2-1",
-          "iconId": "BEAST_MASTERY_05",
-          "branchId": "BEAST_MASTERY",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ö–æ–º–∞–Ω–¥–∞: –§–∞—Å",
-          "englishName": "Command: Attack",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ö–æ–º–∞–Ω–¥—É: –§–∞—Å¬ª. –ó–∞ 20 –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏ –∞–∫—Ç–∏–≤–Ω—ã–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –ø—Ä–æ–≤–æ–¥–∏—Ç –æ—Å–æ–±—É—é –∞—Ç–∞–∫—É; —ç—Ñ—Ñ–µ–∫—Ç –∑–∞–≤–∏—Å–∏—Ç –æ—Ç –µ–≥–æ –∞—Ä—Ö–µ—Ç–∏–ø–∞. –ë–∞–∑–æ–≤–∞—è –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 10 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "COMMAND_ATTACK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-2-2",
-          "iconId": "BEAST_MASTERY_06",
-          "branchId": "BEAST_MASTERY",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ó–≤–µ—Ä–∏–Ω–∞—è –í—ã–Ω–æ—Å–ª–∏–≤–æ—Å—Ç—å",
-          "englishName": "Bestial Endurance",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ë—Ä–æ–Ω—è –∏ –º–∞–≥–∏—á–µ—Å–∫–æ–µ —Å–æ–ø—Ä–æ—Ç–∏–≤–ª–µ–Ω–∏–µ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞—é—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ],
-              "targetId": "PHYSICAL_PET_DEFENSE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-2-3",
-          "iconId": "BEAST_MASTERY_07",
-          "branchId": "BEAST_MASTERY",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–°–æ–≤–º–µ—Å—Ç–Ω–∞—è –û—Ö–æ—Ç–∞",
-          "englishName": "Joint Hunt",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ–∫–∞ —Ö–æ–∑—è–∏–Ω –∏ —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –∞—Ç–∞–∫—É—é—Ç –æ–¥–Ω—É —Ü–µ–ª—å, –æ–±–∞ –Ω–∞–Ω–æ—Å—è—Ç –Ω–∞ 2% / 4% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4
-              ],
-              "targetId": "BEAST_SHARED_TARGET",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-2-4",
-          "iconId": "BEAST_MASTERY_08",
-          "branchId": "BEAST_MASTERY",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ë—ã—Å—Ç—Ä—ã–π –ü—Ä–∏–∫–∞–∑",
-          "englishName": "Quick Command",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ ¬´–ö–æ–º–∞–Ω–¥—ã: –§–∞—Å¬ª —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 1 / 2 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_COOLDOWN_SECONDS",
-              "values": [
-                1,
-                2
-              ],
-              "targetId": "COMMAND_ATTACK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-3-1",
-          "iconId": "BEAST_MASTERY_09",
-          "branchId": "BEAST_MASTERY",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–•–∏—â–Ω–∏–∫: –ö—Ä–æ–≤–∞–≤—ã–π –£–∫—É—Å",
-          "englishName": "Predator: Bloody Bite",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –•–∏—â–Ω–∏–∫. –ö—Ä–∏—Ç–∏—á–µ—Å–∫–∞—è –∞—Ç–∞–∫–∞ –ø–∏—Ç–æ–º—Ü–∞ –Ω–∞–∫–ª–∞–¥—ã–≤–∞–µ—Ç –∫—Ä–æ–≤–æ—Ç–µ—á–µ–Ω–∏–µ –Ω–∞ 6 —Å–µ–∫. —Å —Å—É–º–º–∞—Ä–Ω—ã–º —É—Ä–æ–Ω–æ–º 24% / 42% —Å–∏–ª—ã –∞—Ç–∞–∫–∏ –ø–∏—Ç–æ–º—Ü–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                24,
-                42
-              ],
-              "targetId": "PREDATOR_BLEED",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 6,
-              "tickIntervalSeconds": 1
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-3-2",
-          "iconId": "BEAST_MASTERY_10",
-          "branchId": "BEAST_MASTERY",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–°—Ç—Ä–∞–∂: –ü–µ—Ä–µ—Ö–≤–∞—Ç",
-          "englishName": "Guardian: Intercept",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –°—Ç—Ä–∞–∂. –ü—Ä–∏ –ø—Ä—è–º–æ–º —É—Ä–æ–Ω–µ –ø–æ —Ö–æ–∑—è–∏–Ω—É –µ—Å—Ç—å 10% / 18% —à–∞–Ω—Å –ø–µ—Ä–µ–Ω–∞–ø—Ä–∞–≤–∏—Ç—å 30% —ç—Ç–æ–≥–æ —É—Ä–æ–Ω–∞ –Ω–∞ –ø–∏—Ç–æ–º—Ü–∞. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 3 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [
-                10,
-                18
-              ],
-              "targetId": "GUARDIAN_INTERCEPT",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                30,
-                30
-              ],
-              "internalCooldownSeconds": 3
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-3-3",
-          "iconId": "BEAST_MASTERY_11",
-          "branchId": "BEAST_MASTERY",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–õ–æ–≤—á–∏–π: –°—Ä—ã–≤ –†–∏—Ç–º–∞",
-          "englishName": "Trapper: Rhythm Break",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –õ–æ–≤—á–∏–π. –ï–≥–æ –æ—Å–æ–±–∞—è –∞—Ç–∞–∫–∞ –Ω–∞ 6 —Å–µ–∫. —Å–Ω–∏–∂–∞–µ—Ç —Å–∫–æ—Ä–æ—Å—Ç—å –∞—Ç–∞–∫ —Ü–µ–ª–∏ –Ω–∞ 5% / 10% –∏ —Ç–æ—á–Ω–æ—Å—Ç—å –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "TRAPPER_RHYTHM_BREAK",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                3,
-                6
-              ],
-              "durationSeconds": 6
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-3-4",
-          "iconId": "BEAST_MASTERY_12",
-          "branchId": "BEAST_MASTERY",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–î—Ä–µ—Å—Å–∏—Ä–æ–≤–∫–∞",
-          "englishName": "Training",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–£—Ä–æ–Ω —Å–ø–æ—Å–æ–±–Ω–æ—Å—Ç–µ–π —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 6% / 9% / 12%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                3,
-                6,
-                9,
-                12
-              ],
-              "targetId": "PHYSICAL_PET_ABILITY_DAMAGE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-4-1",
-          "iconId": "BEAST_MASTERY_13",
-          "branchId": "BEAST_MASTERY",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–ó–≤–µ—Ä–∏–Ω–∞—è –Ø—Ä–æ—Å—Ç—å",
-          "englishName": "Bestial Fury",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ –≤—ã—Å—Ç—Ä–µ–ª–∞ —Å–∫–æ—Ä–æ—Å—Ç—å –∞—Ç–∞–∫ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 6% / 12% –Ω–∞ 5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                6,
-                12
-              ],
-              "targetId": "PHYSICAL_PET_FURY",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-4-2",
-          "iconId": "BEAST_MASTERY_14",
-          "branchId": "BEAST_MASTERY",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–û—Ö–æ—Ç–Ω–∏–∫ –°—Ç–∞–∏",
-          "englishName": "Pack Hunter",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–π –∞—Ç–∞–∫–∏ –ø–∏—Ç–æ–º—Ü–∞ —Å–ª–µ–¥—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –≤ —Ç–µ—á–µ–Ω–∏–µ 5 —Å–µ–∫. –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 5% / 10% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "PET_CRIT_OWNER_SHOT",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-4-3",
-          "iconId": "BEAST_MASTERY_15",
-          "branchId": "BEAST_MASTERY",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–ö—Ä–æ–≤—å –ò –ö–ª—ã–∫",
-          "englishName": "Blood and Fang",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ —Ü–µ–ª–∏, –∫–æ—Ç–æ—Ä–∞—è –∫—Ä–æ–≤–æ—Ç–æ—á–∏—Ç –æ—Ç –•–∏—â–Ω–∏–∫–∞, —Ö–æ–∑—è–∏–Ω –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 3% / 6% –±–æ–ª—å—à–µ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                3,
-                6
-              ],
-              "targetId": "PET_BLEED_OWNER_DAMAGE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-4-4",
-          "iconId": "BEAST_MASTERY_01",
-          "branchId": "BEAST_MASTERY",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–ö–æ–º–∞–Ω–¥–Ω—ã–π –ì–æ–ª–æ—Å",
-          "englishName": "Commanding Voice",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–°—Ç–æ–∏–º–æ—Å—Ç—å —Å–ø–æ—Å–æ–±–Ω–æ—Å—Ç–µ–π-–∫–æ–º–∞–Ω–¥ –ø–∏—Ç–æ–º—Ü—É —Å–Ω–∏–∂–∞–µ—Ç—Å—è –Ω–∞ 4% / 8% / 12% / 15%.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_RESOURCE_COST_PERCENT",
-              "values": [
-                4,
-                8,
-                12,
-                15
-              ],
-              "targetId": "COMMAND_ATTACK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-5-1",
-          "iconId": "BEAST_MASTERY_02",
-          "branchId": "BEAST_MASTERY",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ó–≤–µ—Ä–∏–Ω—ã–π –ù–∞—Ç–∏—Å–∫",
-          "englishName": "Bestial Assault",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ó–≤–µ—Ä–∏–Ω—ã–π –Ω–∞—Ç–∏—Å–∫¬ª: –Ω–∞ 10 —Å–µ–∫. —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –ø–æ–ª—É—á–∞–µ—Ç +20% –∫ —É—Ä–æ–Ω—É –∏ —Å–∫–æ—Ä–æ—Å—Ç–∏ –∞—Ç–∞–∫, –∞ –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ –∫–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏–∏ —Ö–æ–∑—è–∏–Ω–∞ —É—Å–∫–æ—Ä—è–µ—Ç—Å—è –Ω–∞ 15%. –í–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ 100 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "BEAST_SURGE"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-5-2",
-          "iconId": "BEAST_MASTERY_03",
-          "branchId": "BEAST_MASTERY",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ó–∞–∫–∞–ª—ë–Ω–Ω—ã–π –°–ø—É—Ç–Ω–∏–∫",
-          "englishName": "Hardened Companion",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–§–∏–∑–∏—á–µ—Å–∫–∏–π —Å–ø—É—Ç–Ω–∏–∫ –ø–æ–ª—É—á–∞–µ—Ç –Ω–∞ 4% / 8% / 12% / 15% –º–µ–Ω—å—à–µ —É—Ä–æ–Ω–∞ –æ—Ç –∞—Ç–∞–∫, –ø–æ—Ä–∞–∂–∞—é—â–∏—Ö –≤–µ—Å—å –±–æ–π.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [
-                4,
-                8,
-                12,
-                15
-              ],
-              "targetId": "PHYSICAL_PET_AOE_REDUCTION",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-5-3",
-          "iconId": "BEAST_MASTERY_04",
-          "branchId": "BEAST_MASTERY",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ï–¥–∏–Ω—Å—Ç–≤–æ –¶–µ–ª–∏",
-          "englishName": "Unity of Target",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ï—Å–ª–∏ —Ö–æ–∑—è–∏–Ω –∏ –ø–∏—Ç–æ–º–µ—Ü –ø–æ–ø–∞–¥–∞—é—Ç –ø–æ –æ–¥–Ω–æ–π —Ü–µ–ª–∏ –≤ –ø—Ä–µ–¥–µ–ª–∞—Ö 2 —Å–µ–∫., —ç—Ç–∞ —Ü–µ–ª—å –Ω–∞ 4 —Å–µ–∫. –ø–æ–ª—É—á–∞–µ—Ç –æ—Ç –Ω–∏—Ö –Ω–∞ 2% / 4% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4
-              ],
-              "targetId": "BEAST_TARGET_UNITY",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 4,
-              "threshold": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-5-4",
-          "iconId": "BEAST_MASTERY_05",
-          "branchId": "BEAST_MASTERY",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–í–µ—Ä–Ω—É—Ç—å –ö –•–æ–∑—è–∏–Ω—É",
-          "englishName": "Return to Owner",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–í–µ—Ä–Ω—É—Ç—å –∫ —Ö–æ–∑—è–∏–Ω—É¬ª: —Å–Ω–∏–º–∞–µ—Ç —Å–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –Ω–µ–º–æ—Ç—É –∏ –æ–¥–∏–Ω —Å–Ω–∏–º–∞–µ–º—ã–π –æ—Ç—Ä–∏—Ü–∞—Ç–µ–ª—å–Ω—ã–π —ç—Ñ—Ñ–µ–∫—Ç. –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 45 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "RETURN_TO_OWNER"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-6-1",
-          "iconId": "BEAST_MASTERY_06",
-          "branchId": "BEAST_MASTERY",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–•–∏—â–Ω–∏–∫: –î–æ–±–∏–≤–∞–Ω–∏–µ",
-          "englishName": "Predator: Execute",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –•–∏—â–Ω–∏–∫. –ü–æ —Ü–µ–ª–∏ –Ω–∏–∂–µ 20% –∑–¥–æ—Ä–æ–≤—å—è –µ–≥–æ —É—Ä–æ–Ω –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 8% / 15%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                8,
-                15
-              ],
-              "targetId": "PREDATOR_EXECUTE",
-              "runtimeStatus": "Supported",
-              "threshold": 20
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-6-2",
-          "iconId": "BEAST_MASTERY_07",
-          "branchId": "BEAST_MASTERY",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–°—Ç—Ä–∞–∂: –ñ–∏–≤–∞—è –ü—Ä–µ–≥—Ä–∞–¥–∞",
-          "englishName": "Guardian: Living Barrier",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –°—Ç—Ä–∞–∂. –ü–æ–∫–∞ —É –Ω–µ–≥–æ –±–æ–ª—å—à–µ 50% –∑–¥–æ—Ä–æ–≤—å—è, —Ö–æ–∑—è–∏–Ω –ø–æ–ª—É—á–∞–µ—Ç –Ω–∞ 2% / 4% –º–µ–Ω—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4
-              ],
-              "targetId": "GUARDIAN_LIVING_BARRIER",
-              "runtimeStatus": "Supported",
-              "threshold": 50
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-6-3",
-          "iconId": "BEAST_MASTERY_08",
-          "branchId": "BEAST_MASTERY",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–õ–æ–≤—á–∏–π: –ù–µ–º–æ–π –ü—Ä–∏–∫–∞–∑",
-          "englishName": "Trapper: Silent Command",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–¢–æ–ª—å–∫–æ –õ–æ–≤—á–∏–π. ¬´–ö–æ–º–∞–Ω–¥–∞: –§–∞—Å¬ª –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω–æ –Ω–∞–∫–ª–∞–¥—ã–≤–∞–µ—Ç –Ω–µ–º–æ—Ç—É –Ω–∞ 2 —Å–µ–∫. –ù–∞ –æ–¥–Ω—É —Ü–µ–ª—å —ç—Ñ—Ñ–µ–∫—Ç –º–æ–∂–µ—Ç —Å—Ä–∞–±–æ—Ç–∞—Ç—å —Ä–∞–∑ –≤ 20 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                2
-              ],
-              "targetId": "TRAPPER_COMMAND_SILENCE",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 2,
-              "internalCooldownSeconds": 20
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-6-4",
-          "iconId": "BEAST_MASTERY_09",
-          "branchId": "BEAST_MASTERY",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–ë–µ–∑—É—Å–ª–æ–≤–Ω–æ–µ –ü–æ—Å–ª—É—à–∞–Ω–∏–µ",
-          "englishName": "Absolute Obedience",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –æ–∫–æ–Ω—á–∞–Ω–∏—è –æ–≥–ª—É—à–µ–Ω–∏—è –∏–ª–∏ –Ω–µ–º–æ—Ç—ã –ø–∏—Ç–æ–º–µ—Ü –Ω–∞ 5 —Å–µ–∫. –ø–æ–ª—É—á–∞–µ—Ç +5% / +10% —Å–∫–æ—Ä–æ—Å—Ç–∏ –∞—Ç–∞–∫ –∏ +3% / +6% —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "PET_CONTROL_RECOVERY",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                3,
-                6
-              ],
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-7-1",
-          "iconId": "BEAST_MASTERY_10",
-          "branchId": "BEAST_MASTERY",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–°–æ–≤–µ—Ä—à–µ–Ω–Ω—ã–π –•–∏—â–Ω–∏–∫",
-          "englishName": "Perfect Predator",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "B-3-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–ö—Ä–æ–≤–æ—Ç–µ—á–µ–Ω–∏–µ –•–∏—â–Ω–∏–∫–∞ –¥–ª–∏—Ç—Å—è –Ω–∞ 2 —Å–µ–∫. –¥–æ–ª—å—à–µ –∏ –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 15% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                15
-              ],
-              "targetId": "PREDATOR_BLEED_MASTERY",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-7-2",
-          "iconId": "BEAST_MASTERY_11",
-          "branchId": "BEAST_MASTERY",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ù–µ—Å–æ–∫—Ä—É—à–∏–º—ã–π –°—Ç—Ä–∞–∂",
-          "englishName": "Unbreakable Guardian",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "B-3-2",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–†–∞–∑ –≤ 60 —Å–µ–∫. —É–¥–∞—Ä –ø–æ —Ö–æ–∑—è–∏–Ω—É –±–æ–ª—å—à–µ 20% –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–≥–æ –∑–¥–æ—Ä–æ–≤—å—è —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 20%, –∞ –°—Ç—Ä–∞–∂ –ø–æ–ª—É—á–∞–µ—Ç –ø—Ä—è–º–æ–π —É—Ä–æ–Ω –≤ —Ä–∞–∑–º–µ—Ä–µ 10% —Å–≤–æ–µ–≥–æ –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–≥–æ –∑–¥–æ—Ä–æ–≤—å—è.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [
-                20
-              ],
-              "targetId": "GUARDIAN_UNBREAKABLE",
-              "runtimeStatus": "Supported",
-              "threshold": 20,
-              "secondaryValues": [
-                10
-              ],
-              "internalCooldownSeconds": 60
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-7-3",
-          "iconId": "BEAST_MASTERY_12",
-          "branchId": "BEAST_MASTERY",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–°–æ–≤–µ—Ä—à–µ–Ω–Ω—ã–π –õ–æ–≤—á–∏–π",
-          "englishName": "Perfect Trapper",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "B-3-3",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–û—Å–ª–∞–±–ª–µ–Ω–∏–µ –õ–æ–≤—á–µ–≥–æ –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω–æ —Å–Ω–∏–∂–∞–µ—Ç –Ω–∞–Ω–æ—Å–∏–º—ã–π —Ü–µ–ª—å—é —É—Ä–æ–Ω –Ω–∞ 5%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5
-              ],
-              "targetId": "TRAPPER_PERFECT",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-7-4",
-          "iconId": "BEAST_MASTERY_13",
-          "branchId": "BEAST_MASTERY",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–û–¥–Ω–∞ –ö—Ä–æ–≤—å",
-          "englishName": "One Blood",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö–æ–≥–¥–∞ —Ö–æ–∑—è–∏–Ω –ø–æ–ª—É—á–∞–µ—Ç —ç—Ñ—Ñ–µ–∫—Ç–∏–≤–Ω–æ–µ –ª–µ—á–µ–Ω–∏–µ, –ø–∏—Ç–æ–º–µ—Ü –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç –∑–¥–æ—Ä–æ–≤—å–µ –≤ —Ä–∞–∑–º–µ—Ä–µ 5% / 10% –æ—Ç —ç—Ç–æ–≥–æ –ª–µ—á–µ–Ω–∏—è.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "PET_SHARED_HEAL",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-8-1",
-          "iconId": "BEAST_MASTERY_14",
-          "branchId": "BEAST_MASTERY",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ê–ª—å—Ñ–∞-–ò–Ω—Å—Ç–∏–Ω–∫—Ç",
-          "englishName": "Alpha Instinct",
-          "maxRank": 3,
-          "prerequisites": [],
-          "description": "–®–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 5,5% / 8%, –∞ –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω ‚Äî –Ω–∞ 4% / 7% / 10%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                3,
-                5.5,
-                8
-              ],
-              "targetId": "PHYSICAL_PET_CRIT",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                4,
-                7,
-                10
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-8-2",
-          "iconId": "BEAST_MASTERY_15",
-          "branchId": "BEAST_MASTERY",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ë–µ–∑—É–ø—Ä–µ—á–Ω–∞—è –ö–æ–æ—Ä–¥–∏–Ω–∞—Ü–∏—è",
-          "englishName": "Perfect Coordination",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ ¬´–ö–æ–º–∞–Ω–¥—ã: –§–∞—Å¬ª —Å–ª–µ–¥—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –≤ —Ç–µ—á–µ–Ω–∏–µ 5 —Å–µ–∫. –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 15% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞ –∏ —Å—Ç–æ–∏—Ç –Ω–∞ 20% –º–µ–Ω—å—à–µ —Ä–µ—Å—É—Ä—Å–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                15
-              ],
-              "targetId": "COMMAND_COORDINATION",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                20
-              ],
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-8-3",
-          "iconId": "BEAST_MASTERY_01",
-          "branchId": "BEAST_MASTERY",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ù–µ—É–¥–µ—Ä–∂–∏–º–∞—è –°—Ç–∞—è",
-          "englishName": "Unstoppable Pack",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ê–∫—Ç–∏–≤–∞—Ü–∏—è ¬´–ó–≤–µ—Ä–∏–Ω–æ–≥–æ –Ω–∞—Ç–∏—Å–∫–∞¬ª —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫—É ¬´–ö–æ–º–∞–Ω–¥—ã: –§–∞—Å¬ª –∏ –¥–∞—ë—Ç –ø–∏—Ç–æ–º—Ü—É –∏–º–º—É–Ω–∏—Ç–µ—Ç –∫ –Ω–µ–º–æ—Ç–µ –Ω–∞ 3 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1
-              ],
-              "targetId": "BEAST_SURGE_UNSTOPPABLE",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 3
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "B-9-1",
-          "iconId": "BEAST_MASTERY_02",
-          "branchId": "BEAST_MASTERY",
-          "tier": 9,
-          "requiredSpentPoints": 40,
-          "name": "–ü–û–í–ï–õ–ò–¢–ï–õ–¨ –ó–í–ï–†–ï–ô",
-          "englishName": "BEAST MASTER",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–í–µ—Ä—à–∏–Ω–∞ –ü–æ–≤–µ–ª–∏—Ç–µ–ª—è –∑–≤–µ—Ä–µ–π. –£—Ä–æ–Ω –∏ –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–µ –∑–¥–æ—Ä–æ–≤—å–µ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —Å–ø—É—Ç–Ω–∏–∫–∞ –ø–æ–≤—ã—à–∞—é—Ç—Å—è –Ω–∞ 10%. –ö—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –∏–º–µ–µ—Ç 20% —à–∞–Ω—Å –∑–∞—Å—Ç–∞–≤–∏—Ç—å –ø–∏—Ç–æ–º—Ü–∞ –ø—Ä–æ–≤–µ—Å—Ç–∏ –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—É—é –∞–≤—Ç–æ–∞—Ç–∞–∫—É —Ä–∞–∑ –≤ 3 —Å–µ–∫. –ö—Ä–∏—Ç –ø–∏—Ç–æ–º—Ü–∞ —É—Å–∏–ª–∏–≤–∞–µ—Ç —Å–ª–µ–¥—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –Ω–∞ 10% –Ω–∞ 5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                10
-              ],
-              "targetId": "BEAST_MASTER_BASE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                10
-              ]
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                20
-              ],
-              "targetId": "BEAST_MASTER_EXTRA_ATTACK",
-              "runtimeStatus": "Supported",
-              "internalCooldownSeconds": 3
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                10
-              ],
-              "targetId": "BEAST_MASTER_OWNER_SHOT",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-1-1",
-          "iconId": "ARCANE_ARCHER_01",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–¢–∞–π–Ω—ã –ú–∞–≥–∏–∏",
-          "englishName": "Arcane Secrets",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ö–ª—é—á–µ–≤–æ–π —Ç–∞–ª–∞–Ω—Ç –¢–∞–π–Ω–æ–≥–æ —Å—Ç—Ä–µ–ª–∫–∞. –ö–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—è –∑–∞–º–µ–Ω—è–µ—Ç—Å—è –º–∞–Ω–æ–π, —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π –ø–∏—Ç–æ–º–µ—Ü ‚Äî —ç—Ñ–∏—Ä–Ω—ã–º –¥—É—Ö–æ–º. –û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ß–∞—Ä–æ–¥–µ–π—Å–∫—É—é —Å—Ç—Ä–µ–ª—É¬ª: –º–≥–Ω–æ–≤–µ–Ω–Ω–æ –Ω–∞–Ω–æ—Å–∏—Ç 110% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –∏ —Å—Ç–æ–∏—Ç 10 –º–∞–Ω—ã.",
-          "modifiers": [
-            {
-              "type": "ProfileModifier",
-              "key": "RESOURCE_PROFILE_OVERRIDE",
-              "values": [
-                1
-              ],
-              "targetId": "MANA"
-            },
-            {
-              "type": "ProfileModifier",
-              "key": "COMPANION_PROFILE_OVERRIDE",
-              "values": [
-                1
-              ],
-              "targetId": "ARCHER_SPIRIT"
-            },
-            {
-              "type": "ProfileModifier",
-              "key": "PRIMARY_ATTRIBUTE_OVERRIDE",
-              "values": [
-                1
-              ],
-              "targetId": "INTELLECT"
-            },
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "ARCANE_ARROW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-1-2",
-          "iconId": "ARCANE_ARCHER_02",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–ß–∞—Ä–æ–¥–µ–π—Å–∫–∞—è –ú–µ—Ç–∫–æ—Å—Ç—å",
-          "englishName": "Arcane Accuracy",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–¢–æ—á–Ω–æ—Å—Ç—å –º–∞–≥–∏—á–µ—Å–∫–∏—Ö —Å—Ç—Ä–µ–ª –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 1,5% / 3% / 4,5% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1.5,
-                3,
-                4.5,
-                6
-              ],
-              "targetId": "MAGICAL_ARROW_ACCURACY",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-1-3",
-          "iconId": "ARCANE_ARCHER_03",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–≠—Ñ–∏—Ä–Ω–∞—è –°–∏–ª–∞",
-          "englishName": "Ethereal Power",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–°–∏–ª–∞ –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "SPELL_POWER_PERCENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-1-4",
-          "iconId": "ARCANE_ARCHER_04",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 1,
-          "requiredSpentPoints": 0,
-          "name": "–ö–æ–Ω—Ü–µ–Ω—Ç—Ä–∞—Ü–∏—è –†–∞–∑—É–º–∞",
-          "englishName": "Mind Concentration",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–í–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ –º–∞–Ω—ã –≤ –±–æ—é —É—Å–∫–æ—Ä—è–µ—Ç—Å—è –Ω–∞ 4% / 8%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                4,
-                8
-              ],
-              "targetId": "ARCANE_ARCHER_MANA_REGEN",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-2-1",
-          "iconId": "ARCANE_ARCHER_05",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–§–∞–Ω—Ç–æ–º–Ω–∞—è –°—Ç—Ä–µ–ª–∞",
-          "englishName": "Phantom Arrow",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–§–∞–Ω—Ç–æ–º–Ω—É—é —Å—Ç—Ä–µ–ª—É¬ª: 145% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –º–∞–≥–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞. –°—Ç–æ–∏—Ç 18 –º–∞–Ω—ã, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 5 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "PHANTOM_ARROW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-2-2",
-          "iconId": "ARCANE_ARCHER_06",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–≠—Ñ–∏—Ä–Ω–∞—è –°–≤—è–∑—å",
-          "englishName": "Ethereal Bond",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–≠—Ñ–∏—Ä–Ω—ã–π –¥—É—Ö –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 2% / 4% / 6% / 9% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞ –∏ –ø–æ–ª—É—á–∞–µ—Ç —Å—Ç–æ–ª—å–∫–æ –∂–µ –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–≥–æ –∑–¥–æ—Ä–æ–≤—å—è.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ],
-              "targetId": "SPIRIT_PET_BASE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-2-3",
-          "iconId": "ARCANE_ARCHER_07",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–ú–∞–≥–∏—á–µ—Å–∫–∏–π –ù–∞–∫–æ–Ω–µ—á–Ω–∏–∫",
-          "englishName": "Magic Tip",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ú–∞–≥–∏—á–µ—Å–∫–æ–µ –ø—Ä–æ–±–∏–≤–∞–Ω–∏–µ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "MAGIC_PENETRATION_PERCENT",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-2-4",
-          "iconId": "ARCANE_ARCHER_08",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 2,
-          "requiredSpentPoints": 5,
-          "name": "–¢–∞–π–Ω–∞—è –ú–µ—Ç–∫–∞",
-          "englishName": "Arcane Mark",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ —Ü–µ–ª–∏ —Å ¬´–ú–µ—Ç–∫–æ–π –æ—Ö–æ—Ç–Ω–∏–∫–∞¬ª –º–∞–≥–∏—á–µ—Å–∫–∏–µ —Å—Ç—Ä–µ–ª—ã –Ω–∞–Ω–æ—Å—è—Ç –Ω–∞ 2% / 4% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                2,
-                4
-              ],
-              "targetId": "ARCANE_MARK_DAMAGE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-3-1",
-          "iconId": "ARCANE_ARCHER_09",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ü—Ä–∏–∑—Ä–∞—á–Ω—ã–π –ó–∞–ª–ø",
-          "englishName": "Ghost Volley",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ü—Ä–∏–∑—Ä–∞—á–Ω—ã–π –∑–∞–ª–ø¬ª: –ø–æ—Ä–∞–∂–∞–µ—Ç –≤—Å–µ—Ö –ø—Ä–æ—Ç–∏–≤–Ω–∏–∫–æ–≤ –ø–æ 70% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π. –°—Ç–æ–∏—Ç 25 –º–∞–Ω—ã, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 10 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "GHOST_VOLLEY"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-3-2",
-          "iconId": "ARCANE_ARCHER_10",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–î—É—Ö–æ–≤–Ω—ã–π –ò–º–ø—É–ª—å—Å",
-          "englishName": "Spirit Impulse",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–£—Ä–æ–Ω —ç—Ñ–∏—Ä–Ω–æ–≥–æ –¥—É—Ö–∞ –∏–º–µ–µ—Ç 15% / 25% —à–∞–Ω—Å –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–∏—Ç—å —Ö–æ–∑—è–∏–Ω—É 3 –º–∞–Ω—ã. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 2 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                15,
-                25
-              ],
-              "targetId": "SPIRIT_MANA_RETURN",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                3,
-                3
-              ],
-              "internalCooldownSeconds": 2
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-3-3",
-          "iconId": "ARCANE_ARCHER_11",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ß–∞—Ä–æ–¥–µ–π—Å–∫–∏–π –ö—Ä–∏—Ç–∏–∫",
-          "englishName": "Arcane Critical",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–®–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –º–∞–≥–∏—á–µ—Å–∫–∏—Ö —Å—Ç—Ä–µ–ª –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 1,5% / 3% / 4,5% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                1.5,
-                3,
-                4.5,
-                6
-              ],
-              "targetId": "MAGICAL_ARROW_CRITICAL",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-3-4",
-          "iconId": "ARCANE_ARCHER_12",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 3,
-          "requiredSpentPoints": 10,
-          "name": "–ü–µ—Ä–µ–ø–ª–µ—Ç–µ–Ω–∏–µ –≠–Ω–µ—Ä–≥–∏–∏",
-          "englishName": "Energy Weaving",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –º–∞–≥–∏—á–µ—Å–∫–æ–π —Å—Ç—Ä–µ–ª—ã, –ø–æ—Ç—Ä–∞—Ç–∏–≤—à–µ–π –º–∞–Ω—É, —É—Ä–æ–Ω —ç—Ñ–∏—Ä–Ω–æ–≥–æ –¥—É—Ö–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 4% / 8% –Ω–∞ 4 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                4,
-                8
-              ],
-              "targetId": "SPIRIT_AFTER_ARROW",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 4
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-4-1",
-          "iconId": "ARCANE_ARCHER_13",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–ó–∞—á–∞—Ä–æ–≤–∞–Ω–Ω—ã–π –í—ã—Å—Ç—Ä–µ–ª",
-          "englishName": "Enchanted Shot",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ó–∞—á–∞—Ä–æ–≤–∞–Ω–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª: —Å–ª–µ–¥—É—é—â–∞—è –∞–≤—Ç–æ–∞—Ç–∞–∫–∞ –Ω–∞–Ω–æ—Å–∏—Ç 70% –æ–±—ã—á–Ω–æ–≥–æ —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞ –∏ –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω–æ –º–∞–≥–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω –æ—Ç 70% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π. –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 10 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "ENCHANTED_SHOT"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-4-2",
-          "iconId": "ARCANE_ARCHER_14",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–≠—Ñ–∏—Ä–Ω—ã–π –û–∂–æ–≥",
-          "englishName": "Ethereal Burn",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "A-2-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∞—è ¬´–§–∞–Ω—Ç–æ–º–Ω–∞—è —Å—Ç—Ä–µ–ª–∞¬ª –Ω–∞–∫–ª–∞–¥—ã–≤–∞–µ—Ç –º–∞–≥–∏—á–µ—Å–∫–∏–π —ç—Ñ—Ñ–µ–∫—Ç –Ω–∞ 6 —Å–µ–∫. —Å —Å—É–º–º–∞—Ä–Ω—ã–º —É—Ä–æ–Ω–æ–º 30% / 48% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                30,
-                48
-              ],
-              "targetId": "PHANTOM_BURN",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 6,
-              "tickIntervalSeconds": 1
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-4-3",
-          "iconId": "ARCANE_ARCHER_15",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–û—Ç–≤–µ—Ç –î—É—Ö–∞",
-          "englishName": "Spirit Response",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∞—è –º–∞–≥–∏—á–µ—Å–∫–∞—è —Å—Ç—Ä–µ–ª–∞ –∑–∞—Å—Ç–∞–≤–ª—è–µ—Ç —ç—Ñ–∏—Ä–Ω–æ–≥–æ –¥—É—Ö–∞ –Ω–µ–º–µ–¥–ª–µ–Ω–Ω–æ –∞—Ç–∞–∫–æ–≤–∞—Ç—å –∑–∞ 40% / 65% –æ–±—ã—á–Ω–æ–≥–æ —É—Ä–æ–Ω–∞. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 4 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                40,
-                65
-              ],
-              "targetId": "SPIRIT_RESPONSE",
-              "runtimeStatus": "Supported",
-              "internalCooldownSeconds": 4
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-4-4",
-          "iconId": "ARCANE_ARCHER_01",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 4,
-          "requiredSpentPoints": 15,
-          "name": "–≠—Ñ–∏—Ä–Ω–∞—è –ó–∞—â–∏—Ç–∞",
-          "englishName": "Ethereal Defense",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ–∫–∞ —ç—Ñ–∏—Ä–Ω—ã–π –¥—É—Ö –∂–∏–≤, –º–∞–≥–∏—á–µ—Å–∫–æ–µ —Å–æ–ø—Ä–æ—Ç–∏–≤–ª–µ–Ω–∏–µ —Ö–æ–∑—è–∏–Ω–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 3% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                3,
-                6
-              ],
-              "targetId": "SPIRIT_OWNER_RESISTANCE",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-5-1",
-          "iconId": "ARCANE_ARCHER_02",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ß–∞—Ä–æ–¥–µ–π—Å–∫–∏–π –ü–æ—Ç–æ–∫",
-          "englishName": "Arcane Flow",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ß–∞—Ä–æ–¥–µ–π—Å–∫–∏–π –ø–æ—Ç–æ–∫¬ª: –Ω–∞ 10 —Å–µ–∫. +15% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π, +10% –º–∞–≥–∏—á–µ—Å–∫–æ–≥–æ –ø—Ä–æ–±–∏–≤–∞–Ω–∏—è –∏ ‚àí15% —Å—Ç–æ–∏–º–æ—Å—Ç–∏ –º–∞–≥–∏—á–µ—Å–∫–∏—Ö —Å—Ç—Ä–µ–ª. –í–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ 100 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "ARCANE_FLOW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-5-2",
-          "iconId": "ARCANE_ARCHER_03",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ï–¥–∏–Ω—Å—Ç–≤–æ –î—É—Ö–∞",
-          "englishName": "Spirit Unity",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ–∫–∞ —Ö–æ–∑—è–∏–Ω –∏ –¥—É—Ö –∞—Ç–∞–∫—É—é—Ç –æ–¥–Ω—É —Ü–µ–ª—å, –∏—Ö –º–∞–≥–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                2,
-                4
-              ],
-              "targetId": "SPIRIT_SHARED_TARGET",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-5-3",
-          "iconId": "ARCANE_ARCHER_04",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–°—Ç–∞–±–∏–ª—å–Ω—ã–µ –ß–∞—Ä—ã",
-          "englishName": "Stable Enchantments",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–°—Ç–æ–∏–º–æ—Å—Ç—å –º–∞–≥–∏—á–µ—Å–∫–∏—Ö —Å—Ç—Ä–µ–ª —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ],
-              "targetId": "MAGICAL_ARROW_COST",
-              "runtimeStatus": "Supported"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-5-4",
-          "iconId": "ARCANE_ARCHER_05",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 5,
-          "requiredSpentPoints": 20,
-          "name": "–ú–∞–≥–∏—á–µ—Å–∫–∞—è –£—è–∑–≤–∏–º–æ—Å—Ç—å",
-          "englishName": "Magic Vulnerability",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∞—è –º–∞–≥–∏—á–µ—Å–∫–∞—è —Å—Ç—Ä–µ–ª–∞ –Ω–∞ 6 —Å–µ–∫. –ø–æ–≤—ã—à–∞–µ—Ç —Ç–≤–æ—ë –º–∞–≥–∏—á–µ—Å–∫–æ–µ –ø—Ä–æ–±–∏–≤–∞–Ω–∏–µ –ø–æ —ç—Ç–æ–π —Ü–µ–ª–∏ –Ω–∞ 5% / 10%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_CRITICAL_HIT",
-              "values": [
-                5,
-                10
-              ],
-              "targetId": "ARCANE_VULNERABILITY",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 6
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-6-1",
-          "iconId": "ARCANE_ARCHER_06",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–≠—Ñ–∏—Ä–Ω—ã–π –Ø–¥",
-          "englishName": "Ethereal Poison",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ú–∞–≥–∏—á–µ—Å–∫–∞—è —Å—Ç—Ä–µ–ª–∞ –∏–º–µ–µ—Ç 10% / 18% —à–∞–Ω—Å —Ä–∞–∑ –≤ 4 —Å–µ–∫. –Ω–∞–ª–æ–∂–∏—Ç—å —ç—Ñ—Ñ–µ–∫—Ç –Ω–∞ 6 —Å–µ–∫. —Å —Å—É–º–º–∞—Ä–Ω—ã–º —É—Ä–æ–Ω–æ–º 24% / 36% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                24,
-                36
-              ],
-              "targetId": "ETHEREAL_POISON",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                10,
-                18
-              ],
-              "durationSeconds": 6,
-              "tickIntervalSeconds": 1,
-              "internalCooldownSeconds": 4
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-6-2",
-          "iconId": "ARCANE_ARCHER_07",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–î—É—Ö-–•—Ä–∞–Ω–∏—Ç–µ–ª—å",
-          "englishName": "Guardian Spirit",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –ø–æ —Ö–æ–∑—è–∏–Ω—É —ç—Ñ–∏—Ä–Ω—ã–π –¥—É—Ö —Å–æ–∑–¥–∞—ë—Ç —â–∏—Ç –Ω–∞ 3% / 5% –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–≥–æ –∑–¥–æ—Ä–æ–≤—å—è —Ö–æ–∑—è–∏–Ω–∞ –Ω–∞ 5 —Å–µ–∫. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 12 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_DAMAGE_TAKEN",
-              "values": [
-                3,
-                5
-              ],
-              "targetId": "SPIRIT_GUARD_SHIELD",
-              "runtimeStatus": "Supported",
-              "durationSeconds": 5,
-              "internalCooldownSeconds": 12
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-6-3",
-          "iconId": "ARCANE_ARCHER_08",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–ß–∏—Å—Ç–∞—è –ú–∞–Ω–∞",
-          "englishName": "Pure Mana",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö–æ–≥–¥–∞ –º–∞–Ω—ã –º–µ–Ω—å—à–µ 30%, –º–∞–≥–∏—á–µ—Å–∫–∏–µ —Å—Ç—Ä–µ–ª—ã —Å—Ç–æ—è—Ç –Ω–∞ 8% / 15% –º–µ–Ω—å—à–µ.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                8,
-                15
-              ],
-              "targetId": "ARCANE_LOW_MANA_COST",
-              "runtimeStatus": "Supported",
-              "threshold": 30
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-6-4",
-          "iconId": "ARCANE_ARCHER_09",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 6,
-          "requiredSpentPoints": 25,
-          "name": "–†–∞–∑—Ä—ã–≤ –ó–∞–∫–ª–∏–Ω–∞–Ω–∏—è",
-          "englishName": "Spell Break",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–†–∞–∑—Ä—ã–≤ –∑–∞–∫–ª–∏–Ω–∞–Ω–∏—è¬ª: 60% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –º–∞–≥–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞ –∏ –Ω–µ–º–æ—Ç–∞ –Ω–∞ 2 —Å–µ–∫. –°—Ç–æ–∏—Ç 20 –º–∞–Ω—ã, –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 30 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "UNLOCK_ABILITY",
-              "values": [
-                1
-              ],
-              "targetId": "SPELL_BREAK"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-7-1",
-          "iconId": "ARCANE_ARCHER_10",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–°–æ–≤–µ—Ä—à–µ–Ω–Ω–∞—è –§–∞–Ω—Ç–æ–º–Ω–∞—è –°—Ç—Ä–µ–ª–∞",
-          "englishName": "Perfect Phantom Arrow",
-          "maxRank": 2,
-          "prerequisites": [
-            {
-              "talentId": "A-2-1",
-              "requiredRank": 1
-            },
-            {
-              "talentId": "A-4-2",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–§–∞–Ω—Ç–æ–º–Ω–∞—è —Å—Ç—Ä–µ–ª–∞¬ª –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 8% / 15% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞ –∏ –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç—Å—è –Ω–∞ 0,5 / 1 —Å–µ–∫. –±—ã—Å—Ç—Ä–µ–µ.",
-          "modifiers": [
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_DAMAGE_PERCENT",
-              "values": [
-                8,
-                15
-              ],
-              "targetId": "PHANTOM_ARROW"
-            },
-            {
-              "type": "AbilityModifier",
-              "key": "ABILITY_COOLDOWN_SECONDS",
-              "values": [
-                0.5,
-                1
-              ],
-              "targetId": "PHANTOM_ARROW"
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-7-2",
-          "iconId": "ARCANE_ARCHER_11",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–≠—Ö–æ –ó–∞–∫–ª–∏–Ω–∞–Ω–∏—è",
-          "englishName": "Spell Echo",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ü–æ—Å–ª–µ –º–∞–≥–∏—á–µ—Å–∫–æ–π —Å—Ç—Ä–µ–ª—ã –µ—Å—Ç—å 12% —à–∞–Ω—Å –∑–∞—Å—Ç–∞–≤–∏—Ç—å –¥—É—Ö –ø–æ–≤—Ç–æ—Ä–∏—Ç—å 50% –Ω–∞–Ω–µ—Å—ë–Ω–Ω–æ–≥–æ –º–∞–≥–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞. –ù–µ —á–∞—â–µ —Ä–∞–∑–∞ –≤ 5 —Å–µ–∫.; —ç—Ö–æ –Ω–µ –∑–∞–ø—É—Å–∫–∞–µ—Ç –Ω–æ–≤–æ–µ —ç—Ö–æ.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                50
-              ],
-              "targetId": "SPIRIT_SPELL_ECHO",
-              "runtimeStatus": "Supported",
-              "chancePercent": 12,
-              "internalCooldownSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-7-3",
-          "iconId": "ARCANE_ARCHER_12",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ù–∞—Å—ã—â–µ–Ω–∏–µ –≠—Ñ–∏—Ä–æ–º",
-          "englishName": "Ethereal Saturation",
-          "maxRank": 4,
-          "prerequisites": [],
-          "description": "–ü–æ–∫–∞ –º–∞–Ω—ã –±–æ–ª—å—à–µ 70%, —Å–∏–ª–∞ –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 9%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                2,
-                4,
-                6,
-                9
-              ],
-              "targetId": "ARCANE_HIGH_MANA_POWER",
-              "runtimeStatus": "Supported",
-              "threshold": 70
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-7-4",
-          "iconId": "ARCANE_ARCHER_13",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 7,
-          "requiredSpentPoints": 30,
-          "name": "–ü–æ—Å–ª–µ–¥–Ω—è—è –ò—Å–∫—Ä–∞",
-          "englishName": "Last Spark",
-          "maxRank": 2,
-          "prerequisites": [],
-          "description": "–ö–æ–≥–¥–∞ –º–∞–Ω–∞ –ø–∞–¥–∞–µ—Ç –Ω–∏–∂–µ 15%, –º–≥–Ω–æ–≤–µ–Ω–Ω–æ –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç—Å—è 8% / 15% –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–π –º–∞–Ω—ã. –ü–æ–≤—Ç–æ—Ä–Ω–æ–µ —Å—Ä–∞–±–∞—Ç—ã–≤–∞–Ω–∏–µ –≤–æ–∑–º–æ–∂–Ω–æ —á–µ—Ä–µ–∑ 60 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_HP_THRESHOLD",
-              "values": [
-                8,
-                15
-              ],
-              "targetId": "ARCANE_LAST_SPARK",
-              "runtimeStatus": "Supported",
-              "threshold": 15,
-              "internalCooldownSeconds": 60
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-8-1",
-          "iconId": "ARCANE_ARCHER_14",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ü—Ä–∏–∑—Ä–∞—á–Ω—ã–π –õ–∏–≤–µ–Ω—å",
-          "englishName": "Ghost Rain",
-          "maxRank": 1,
-          "prerequisites": [
-            {
-              "talentId": "A-3-1",
-              "requiredRank": 1
-            }
-          ],
-          "description": "¬´–ü—Ä–∏–∑—Ä–∞—á–Ω—ã–π –∑–∞–ª–ø¬ª –Ω–∞–Ω–æ—Å–∏—Ç –Ω–∞ 15% –±–æ–ª—å—à–µ —É—Ä–æ–Ω–∞ –∏ –Ω–∞ 5 —Å–µ–∫. —Å–æ–∑–¥–∞—ë—Ç –Ω–∞ –ø–æ—Ä–∞–∂—ë–Ω–Ω—ã—Ö —Ü–µ–ª—è—Ö ¬´–≠—Ñ–∏—Ä–Ω—É—é —É—è–∑–≤–∏–º–æ—Å—Ç—å¬ª: —Å–ª–µ–¥—É—é—â–∏–µ –º–∞–≥–∏—á–µ—Å–∫–∏–µ —Å—Ç—Ä–µ–ª—ã –ø–æ –Ω–∏–º –Ω–∞–Ω–æ—Å—è—Ç +5% —É—Ä–æ–Ω–∞.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                15
-              ],
-              "targetId": "GHOST_VOLLEY_EXPOSURE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                5
-              ],
-              "durationSeconds": 5
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-8-2",
-          "iconId": "ARCANE_ARCHER_15",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–ò—Å—Ç–∏–Ω–Ω–∞—è –§–æ—Ä–º–∞ –î—É—Ö–∞",
-          "englishName": "True Spirit Form",
-          "maxRank": 3,
-          "prerequisites": [],
-          "description": "–ú–∞—Å—à—Ç–∞–±–∏—Ä–æ–≤–∞–Ω–∏–µ —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π —ç—Ñ–∏—Ä–Ω–æ–≥–æ –¥—É—Ö–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 5% / 10% / 15%, –∞ –µ–≥–æ —à–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ ‚Äî –Ω–∞ 2% / 4% / 6%.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_PARTY_EVENT",
-              "values": [
-                5,
-                10,
-                15
-              ],
-              "targetId": "SPIRIT_TRUE_FORM",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                2,
-                4,
-                6
-              ]
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-8-3",
-          "iconId": "ARCANE_ARCHER_01",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 8,
-          "requiredSpentPoints": 35,
-          "name": "–°–æ–≤–µ—Ä—à–µ–Ω–Ω—ã–π –ü–æ—Ç–æ–∫",
-          "englishName": "Perfect Flow",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–ê–∫—Ç–∏–≤–∞—Ü–∏—è ¬´–ß–∞—Ä–æ–¥–µ–π—Å–∫–æ–≥–æ –ø–æ—Ç–æ–∫–∞¬ª –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç 15% –º–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–π –º–∞–Ω—ã, —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫—É ¬´–§–∞–Ω—Ç–æ–º–Ω–æ–π —Å—Ç—Ä–µ–ª—ã¬ª –∏ –ø–æ–≤—ã—à–∞–µ—Ç —É—Ä–æ–Ω –¥—É—Ö–∞ –Ω–∞ 15% –Ω–∞ 10 —Å–µ–∫.",
-          "modifiers": [
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                15
-              ],
-              "targetId": "ARCANE_FLOW_PERFECT",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                15
-              ],
-              "durationSeconds": 10
-            }
-          ],
-          "version": 1
-        },
-        {
-          "id": "A-9-1",
-          "iconId": "ARCANE_ARCHER_02",
-          "branchId": "ARCANE_ARCHER",
-          "tier": 9,
-          "requiredSpentPoints": 40,
-          "name": "–¢–ê–ô–ù–´–ô –°–¢–†–ï–õ–û–ö",
-          "englishName": "ARCANE ARCHER",
-          "maxRank": 1,
-          "prerequisites": [],
-          "description": "–í–µ—Ä—à–∏–Ω–∞ –¢–∞–π–Ω–æ–≥–æ —Å—Ç—Ä–µ–ª–∫–∞. –°–∏–ª–∞ –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π +8%, –º–∞–≥–∏—á–µ—Å–∫–æ–µ –ø—Ä–æ–±–∏–≤–∞–Ω–∏–µ +5%. –ö–∞–∂–¥—ã–π —á–µ—Ç–≤—ë—Ä—Ç—ã–π —É—Å–ø–µ—à–Ω—ã–π –º–∞–≥–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª –Ω–∞–Ω–æ—Å–∏—Ç –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π —É—Ä–æ–Ω –≤ —Ä–∞–∑–º–µ—Ä–µ 55% —Å–∏–ª—ã –∑–∞–∫–ª–∏–Ω–∞–Ω–∏–π –∏ –∑–∞—Å—Ç–∞–≤–ª—è–µ—Ç –¥—É—Ö –Ω–µ–º–µ–¥–ª–µ–Ω–Ω–æ –∞—Ç–∞–∫–æ–≤–∞—Ç—å –∑–∞ 40% –æ–±—ã—á–Ω–æ–≥–æ —É—Ä–æ–Ω–∞. –í–æ –≤—Ä–µ–º—è ¬´–ß–∞—Ä–æ–¥–µ–π—Å–∫–æ–≥–æ –ø–æ—Ç–æ–∫–∞¬ª —à–∞–Ω—Å –∫—Ä–∏—Ç–∞ –º–∞–≥–∏—á–µ—Å–∫–∏—Ö —Å—Ç—Ä–µ–ª +5%, —Å–∫–æ—Ä–æ—Å—Ç—å –∞—Ç–∞–∫ –¥—É—Ö–∞ +15%.",
-          "modifiers": [
-            {
-              "type": "StatModifier",
-              "key": "SPELL_POWER_PERCENT",
-              "values": [
-                8
-              ]
-            },
-            {
-              "type": "StatModifier",
-              "key": "MAGIC_PENETRATION_PERCENT",
-              "values": [
-                5
-              ]
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                55
-              ],
-              "targetId": "ARCANE_ARCHER_CAPSTONE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                40
-              ],
-              "triggerCount": 4
-            },
-            {
-              "type": "EventTriggered",
-              "key": "ON_ABILITY_USED",
-              "values": [
-                5
-              ],
-              "targetId": "ARCANE_FLOW_CAPSTONE",
-              "runtimeStatus": "Supported",
-              "secondaryValues": [
-                15
-              ]
-            }
-          ],
-          "version": 1
-        }
-      ]
-    }
-  ]
-}
+{"contentVersion":"0.22.0","balanceVersion":"0.17.0","publishedAtUtc":"2026-09-14T19:00:00+00:00","definitions":[{"type":"TALENT_TREE","id":"ARCHER_TREE","references":[{"type":"CLASS","id":"ARCHER"}]}],"talentTrees":[{"id":"ARCHER_TREE","classId":"ARCHER","maxSpendablePoints":59,"version":2,"branches":[{"id":"MARKSMAN","name":"–ú–µ—Ç–∫–∞—è —Å—Ç—Ä–µ–ª—å–±–∞","fantasy":"–¢–æ—á–Ω—ã–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π ranged DPS —á–µ—Ä–µ–∑ Hunter's Mark, Aimed Shot, –∫—Ä–∏—Ç –∏ –ø—Ä–æ–±–∏–≤–∞–Ω–∏–µ –±—Ä–æ–Ω–∏","nodeCount":32},{"id":"BEAST_MASTERY","name":"–ü–æ–≤–µ–ª–∏—Ç–µ–ª—å –∑–≤–µ—Ä–µ–π","fantasy":"–•–æ–∑—è–∏–Ω –∏ –ø–∏—Ç–æ–º–µ—Ü —Å—Ä–∞–∂–∞—é—Ç—Å—è –∫–∞–∫ –µ–¥–∏–Ω–∞—è —Å–≤—è–∑–∫–∞; —Ä–∞–∑–≤–∏—Ç–∏–µ –ø–æ–ª–µ–∑–Ω–æ –ª—é–±–æ–º—É –∑–≤–µ—Ä—é","nodeCount":32},{"id":"SURVIVAL","name":"–í—ã–∂–∏–≤–∞–Ω–∏–µ","fantasy":"Agility, —è–¥—ã, –ª–æ–≤—É—à–∫–∏, –∫–æ–Ω—Ç—Ä–æ–ª—å, –∑–∞—â–∏—Ç–Ω—ã–µ cooldown'—ã –∏ —Ç–∞–∫—Ç–∏—á–µ—Å–∫–∏–µ proc'–∏","nodeCount":32}],"nodes":[{"id":"M-1-1","iconId":"MARKSMAN_1_1","branchId":"MARKSMAN","tier":1,"requiredSpentPoints":0,"name":"–°—Ç—Ä–µ–ª—å–±–∞ –Ω–∞ –ø–æ—Ä–∞–∂–µ–Ω–∏–µ","englishName":"Killing Shot","maxRank":5,"prerequisites":[],"description":"–®–∞–Ω—Å –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ —Ñ–∏–∑–∏—á–µ—Å–∫–∏—Ö –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 1% / 2% / 3% / 4% / 5%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[1,2,3,4,5],"targetId":"PHYSICAL_SHOT_CRIT","runtimeStatus":"Supported"}],"version":2},{"id":"M-1-2","iconId":"MARKSMAN_1_2","branchId":"MARKSMAN","tier":1,"requiredSpentPoints":0,"name":"–≠—Ñ—Ñ–µ–∫—Ç–∏–≤–Ω–æ—Å—Ç—å","englishName":"Efficiency","maxRank":5,"prerequisites":[],"description":"–°—Ç–æ–∏–º–æ—Å—Ç—å —Ñ–∏–∑–∏—á–µ—Å–∫–∏—Ö —Å–ø–æ—Å–æ–±–Ω–æ—Å—Ç–µ–π, —Ä–∞—Å—Ö–æ–¥—É—é—â–∏—Ö Focus, —Å–Ω–∏–∂–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6% / 8% / 10%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[2,4,6,8,10],"targetId":"PHYSICAL_FOCUS_COST","runtimeStatus":"Supported"}],"version":2},{"id":"M-1-3","iconId":"MARKSMAN_1_3","branchId":"MARKSMAN","tier":1,"requiredSpentPoints":0,"name":"–¢–≤—ë—Ä–¥–∞—è —Ä—É–∫–∞","englishName":"Steady Hand","maxRank":3,"prerequisites":[],"description":"–°–∫–æ—Ä–æ—Å—Ç—å –∞–≤—Ç–æ–∞—Ç–∞–∫ –∏–∑ –ª—É–∫–∞ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 2% / 4% / 6%.","modifiers":[{"type":"StatModifier","key":"ATTACK_SPEED_PERCENT","values":[2,4,6]}],"version":2},{"id":"M-1-4","iconId":"MARKSMAN_1_4","branchId":"MARKSMAN","tier":1,"requiredSpentPoints":0,"name":"–®–æ–∫–∏—Ä—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª","englishName":"Concussive Shot","maxRank":1,"prerequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–®–æ–∫–∏—Ä—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª¬ª: –Ω–µ–±–æ–ª—å—à–æ–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω, ‚àí15% —Å–∫–æ—Ä–æ—Å—Ç–∏ –∞—Ç–∞–∫ —Ü–µ–ª–∏ –Ω–∞ 4 —Å–µ–∫.; –æ–±—ã—á–Ω–æ–≥–æ –ø—Ä–æ—Ç–∏–≤–Ω–∏–∫–∞ –º–æ–∂–µ—Ç –∫—Ä–∞—Ç–∫–æ –æ–≥–ª—É—à–∏—Ç—å. –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 12 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"SHOCKING_SHOT"}],"version":2},{"id":"M-2-1","iconId":"MARKSMAN_2_1","branchId":"MARKSMAN","tier":2,"requiredSpentPoints":5,"name":"–ú–µ—Ç–∫–∞ –æ—Ö–æ—Ç–Ω–∏–∫–∞","englishName":"Hunter's Mark","maxRank":1,"prerequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ú–µ—Ç–∫—É –æ—Ö–æ—Ç–Ω–∏–∫–∞¬ª: –æ—Ç–º–µ—á–∞–µ—Ç —Ü–µ–ª—å –Ω–∞ 20 —Å–µ–∫.; —Ñ–∏–∑–∏—á–µ—Å–∫–∏–µ –≤—ã—Å—Ç—Ä–µ–ª—ã –Ω–∞–Ω–æ—Å—è—Ç –µ–π +5% —É—Ä–æ–Ω–∞. –ü–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞ 15 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"HUNTER_MARK"}],"version":2},{"id":"M-2-2","iconId":"MARKSMAN_2_2","branchId":"MARKSMAN","tier":2,"requiredSpentPoints":5,"name":"–£–ª—É—á—à–µ–Ω–Ω–∞—è –ú–µ—Ç–∫–∞ –æ—Ö–æ—Ç–Ω–∏–∫–∞","englishName":"Improved Hunter's Mark","maxRank":3,"prerequisites":[{"talentId":"M-2-1","requiredRank":1}],"description":"–ë–æ–Ω—É—Å —Ñ–∏–∑–∏—á–µ—Å–∫–æ–≥–æ —É—Ä–æ–Ω–∞ –ú–µ—Ç–∫–∏ —É–≤–µ–ª–∏—á–∏–≤–∞–µ—Ç—Å—è –µ—â—ë –Ω–∞ 1% / 2% / 3%, –¥–ª–∏—Ç–µ–ª—å–Ω–æ—Å—Ç—å ‚Äî –Ω–∞ 3 / 6 / 9 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"EFFECT_MAGNITUDE_PERCENT","values":[20,40,60],"targetId":"HUNTER_MARK"},{"type":"AbilityModifier","key":"EFFECT_DURATION_SECONDS","values":[3,6,9],"targetId":"HUNTER_MARK"}],"version":2},{"id":"M-2-3","iconId":"MARKSMAN_2_3","branchId":"MARKSMAN","tier":2,"requiredSpentPoints":5,"name":"–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â–∞—è —Å—Ç—Ä–µ–ª–∞","englishName":"Piercing Arrow","maxRank":1,"prerequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ü—Ä–æ–Ω–∏–∑—ã–≤–∞—é—â—É—é —Å—Ç—Ä–µ–ª—É¬ª: 140% Attack Power, 25 Focus, 6 —Å–µ–∫. –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞, +10% Armor Penetration.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"PIERCING_ARROW"}],"version":2},{"id":"M-2-4","iconId":"MARKSMAN_2_4","branchId":"MARKSMAN","tier":2,"requiredSpentPoints":5,"name":"–î—É—Ö —è—Å—Ç—Ä–µ–±–∞","englishName":"Hawk Spirit","maxRank":3,"prerequisites":[],"description":"–ê–≤—Ç–æ–∞—Ç–∞–∫–∞ –∏–∑ –ª—É–∫–∞ –∏–º–µ–µ—Ç 5% —à–∞–Ω—Å –ø–æ–≤—ã—Å–∏—Ç—å —Å–∫–æ—Ä–æ—Å—Ç—å –∞–≤—Ç–æ–∞—Ç–∞–∫ –Ω–∞ 10% / 20% / 30% –Ω–∞ 6 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_AUTO_ATTACK","values":[10,20,30],"targetId":"HAWK_SPIRIT","runtimeStatus":"Supported","chancePercent":5,"durationSeconds":6}],"version":2},{"id":"M-3-1","iconId":"MARKSMAN_3_1","branchId":"MARKSMAN","tier":3,"requiredSpentPoints":10,"name":"–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª","englishName":"Aimed Shot","maxRank":1,"prerequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç ¬´–ü—Ä–∏—Ü–µ–ª—å–Ω—ã–π –≤—ã—Å—Ç—Ä–µ–ª¬ª: –ø–æ–¥–≥–æ—Ç–æ–≤–∫–∞ 1,5 —Å–µ–∫., 190% Attack Power, 30 Focus, 8 —Å–µ–∫. –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"AIMED_SHOT"}],"version":2},{"id":"M-3-2","iconId":"MARKSMAN_3_2","branchId":"MARKSMAN","tier":3,"requiredSpentPoints":10,"name":"–°–º–µ—Ä—Ç–æ–Ω–æ—Å–Ω—ã–µ –≤—ã—Å—Ç—Ä–µ–ª—ã","englishName":"Mortal Shots","maxRank":5,"prerequisites":[],"description":"–î–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω —Ñ–∏–∑–∏—á–µ—Å–∫–∏—Ö –≤—ã—Å—Ç—Ä–µ–ª–æ–≤ –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 6% / 12% / 18% / 24% / 30%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[6,12,18,24,30],"targetId":"PHYSICAL_SHOT_CRIT_DAMAGE","runtimeStatus":"Supported"}],"version":2},{"id":"M-3-3","iconId":"MARKSMAN_3_3","branchId":"MARKSMAN","tier":3,"requiredSpentPoints":10,"name":"–ó–∞–ª–ø–æ–≤—ã–π –≤—ã—Å—Ç—Ä–µ–ª","englishName":"Multi-Shot","maxRank":1,"prequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç Multi-Shot: –¥–æ 3 –ø—Ä–æ—Ç–∏–≤–Ω–∏–∫–æ–≤, –ø–æ 85% Attack Power, 25 Focus, 8 —Å–µ–∫. –ø–µ—Ä–µ–∑–∞—Ä—è–¥–∫–∞.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"MULTI_SHOT"}],"version":2},{"id":"M-3-4","iconId":"MARKSMAN_3_3","branchId":"MARKSMAN","tier":3,"requiredSpentPoints":10,"name":"–ó–∞–≥—Ä–∞–¥–∏—Ç–µ–ª—å–Ω—ã–π –æ–≥–æ–Ω—å","englishName":"Barrage","maxRank":3,"prerequisites":[{"talentId":"M-3-3","requiredRank":1}],"description":"–£—Ä–æ–Ω Multi-Shot –∏ ¬´–ó–∞–ª–º¬ª –ø–æ–≤—ã—à–∞–µ—Ç—Å—è –Ω–∞ 5% / 10% / 15%.","modifiers":[{"type":"AbilityModifier","key":"ABILITY_DAMAGE_PERCENT","values":[5,10,15],"targetId":"MULTI_SHOT"},{"type":"AbilityModifier","key":"ABILITY_DAMAGE_PERCENT","values":[5,10,15],"targetId":"VOLLEY"}],"version":2},{"id":"M-4-1","iconId":"MARKSMAN_4_1","branchId":"MARKSMAN","tier":4,"requiredSpentPoints":15,"name":"–î–µ–∑–æ—Ä–∏–µ–Ω—Ç–∏—Ä—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª–∞à∞âïπù±•Õ°9ÖµîàËâ•ÕΩ…•ïπ—•πúÅM°Ω–à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBÎB˚B˜FFB˚BÔF3B˜F/B‰ÉBÀF/FFFB◊BÏËÉB˜B◊B«B˚BÔF3F#B˚B‰ÉFB„BﬂB„FB◊FBÎB„B‰ÉFFB˚BÙ∞ÉBˇFB◊FF/BÀB√B˜B„B‘ÉFB◊BÎFF'B◊BœB¯ÉBˇFB˚B„BﬂB˜B◊FB◊B˜B„F<ÉB‡Éä"Hƒ‘îÅçç’…Öç‰ÉB˜B¿ÄÃÉFB◊BË∏ÉBB◊FB◊BﬂB√FF?B”BÎB¿Ä»¿ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ%M=I%9Q%9}M!=Pâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥–¥»à∞â•çΩπ%êàËâ5I-M59|—|»à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãBGB◊BﬂB˚F#B„B«B˚FB˜F/B‰ÉBˇFB„FB◊BÏà∞âïπù±•Õ°9ÖµîàËâ±Ö›±ïÕÃÅ•¥à∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥Ã¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBFB„FB◊BÔF3B˜F/B‰ÉBÀF/FFFB◊BÏÉBˇB˚BÔFFB√B◊FÄ¨‘îÄºÄ¨ƒ¿îÅçç’…Öç‰ÉB‡Ä¨–îÄºÄ¨‡îÅ…•–∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl‘∞ƒ¡t∞â—Ö…ùï—%êàËâ%5}UIe}I%Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âÕïçΩπëÖ…ÂYÖ±’ïÃàÈl–∞·uıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥–¥Ãà∞â•çΩπ%êàËâ5I-M59|—|Ãà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãJB√BáBÎFF/FB√F<ÉBﬂB√F'B„FB¿à∞âïπù±•Õ°9ÖµîàËâ·¡ΩÕïêÅïôïπÕîà∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥»¥Ãà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBB˚FBÔB‘ÉBˇB˚BˇB√B”B√B˜B„F<ÉBFB˚B˜B„BﬂF/BÀB√F;F'B◊B‰ÉFFFB◊BÔB˚B‰ÉFBÔB◊B”FF;F'B„B‘ÉB”BÀB¿ÉFB„BﬂB„FB◊FBÎB„FÉBÀF/FFFB◊BÔB¿ÉBﬂB¿Ä‡ÉFB◊BË∏ÉBˇB˚BÔFFB√F;FÄ¨‘îÄºÄ¨ƒ¿îÅ…µΩ»ÅAïπï—…Ö—•Ω∏∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl‘∞ƒ¡t∞â—Ö…ùï—%êàËâA%I%9}aA=M}9Mà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âë’…Ö—•ΩπMïçΩπëÃàË‡∞â—…•ùùï…Ω’π–àË…ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥–¥–à∞â•çΩπ%êàËâ5I-M59|—|–à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãBGB˚B◊BÀB˚B‰ÉFB„FBà∞âïπù±•Õ°9ÖµîàËâΩµâÖ–ÅI°Â—°¥à∞âµÖ·IÖπ¨àËÃ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBkB√B€B”F/B‰ÉFFB◊FB„B‰ÉFFBˇB◊F#B˜F/B‰ÉFB„BﬂB„FB◊FBÎB„B‰ÉBÀF/FFFB◊BÏÉBˇB˚B”FF?B–ÉBÀB˚FFFB√B˜B√BÀBÔB„BÀB√B◊FÄÃÄºÄ‘ÄºÄ‹ÅΩç’ÃÏÉBˇFB˚BÛB√FÉFB«FB√FF/BÀB√B◊FÉFFFGFFB„BËà∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈlÃ∞‘∞›t∞â—Ö…ùï—%êàËâA!eM%1}M!=Q}I!eQ!4à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â—…•ùùï…Ω’π–àËÕıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‘¥ƒà∞â•çΩπ%êàËâ5I-M59|’|ƒà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãBáB˜B√BÁBˇB◊FFBÎB√F<ÉBÎB˚B˜FB◊B˜FFB√FB„F<à∞âïπù±•Õ°9ÖµîàËâMπ•¡ï»ÅΩç’Ãà∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBáB˜B√BÁBˇB◊FFBÎFF8ÉBÎB˚B˜FB◊B˜FFB√FB„F8ËÄƒ¿ÉFB◊BË∏Ä¨‡îÅ…•–∞Äƒ¿îÅ…µΩ»ÅAïπï—…Ö—•Ω∏∞Ä¨‘îÅçç’…Öç‰ÏÉBÀB˜B‘ÅÏÉBˇB◊FB◊BﬂB√FF?B”BÎB¿Äÿ¿ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâM9%AI}=ULâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‘¥»à∞â•çΩπ%êàËâ5I-M59|’|»à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãBáBˇB◊FB„B√BÔB„BﬂB√FB„F<ÉB˜B¿ÉB”B√BÔF3B˜B◊BÉB˚FFB€B„B‡à∞âïπù±•Õ°9ÖµîàËâIÖπùïêÅ]ïÖ¡Ω∏ÅM¡ïç•Ö±•ÈÖ—•Ω∏à∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBKB◊FF0ÉFB„BﬂB„FB◊FBÎB„B‰ÉFFB˚BÙÉB„B‹ÉBÔFBÎB¿ÉBˇB˚BÀF/F#B√B◊FFF<ÉB˜B¿ÄƒîÄºÄ»îÄºÄÃîÄºÄ–îÄºÄ‘î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈlƒ∞»∞Ã∞–∞’t∞â—Ö…ùï—%êàËâ	=]}A!eM%1}5à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‘¥Ãà∞â•çΩπ%êàËâ5I-M59|’|Ãà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãB{FBÛB◊FB◊B˜B˜B√F<ÉB€B◊FFBÀB¿à∞âïπù±•Õ°9ÖµîàËâ5Ö…≠ïêÅY•ç—•¥à∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥»¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBB¯ÉFB◊BÔB‡ÉFÉBsB◊FBÎB˚B‰ÉB˚FB˚FB˜B„BÎB¿ÉB√BÀFB˚B√FB√BÎB‡ÉB˜B√B˜B˚FF?FÄ¨–îÄºÄ¨‡î∞ÉB¿ÉBFB„FB◊BÔF3B˜F/B‰ÉBÀF/FFFB◊BÔF0Ä¨‘îÄºÄ¨ƒ¿î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl–∞·t∞â—Ö…ùï—%êàËâ5I-}Y%Q%4à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âÕïçΩπëÖ…ÂYÖ±’ïÃàÈl‘∞ƒ¡uıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‘¥–à∞â•çΩπ%êàËâ5I-M59|’|–à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãBGF/FFFB√F<ÉBˇB◊FB◊BﬂB√FF?B”BÎB¿à∞âïπù±•Õ°9ÖµîàËâIÖ¡•êÅIï±ΩÖêà∞âµÖ·IÖπ¨àËÃ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB◊FB◊BﬂB√FF?B”BÎB¿ÉBFB„FB◊BÔF3B˜B˚BœB¯ÉBÀF/FFFB◊BÔB¿ÉB‡ÉBFB˚B˜B„BﬂF/BÀB√F;F'B◊B‰ÉFFFB◊BÔF,∞ÉFB˚BÎFB√F'B√B◊FFF<ÉB˜B¿Ä¿∞‘ÄºÄƒÄºÄƒ∞‘ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâ	%1%Qe}==1=]9}M=9Là∞âŸÖ±’ïÃàÈl¿∏‘∞ƒ∞ƒ∏’t∞â—Ö…ùï—%êàËâ%5}M!=PâÙ±Ïâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâ	%1%Qe}==1=]9}M=9Là∞âŸÖ±’ïÃàÈl¿∏‘∞ƒ∞ƒ∏’t∞â—Ö…ùï—%êàËâA%I%9}II=\âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥ÿ¥ƒà∞â•çΩπ%êàËâ5I-M59|Ÿ|ƒà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àËÿ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»‘∞âπÖµîàËãBCFFB¿ÉBÛB◊FBÎB˚BœB¯ÉBÀF/FFFB◊BÔB¿à∞âïπù±•Õ°9ÖµîàËâQ…’ïÕ°Ω–Å’…Ñà∞âµÖ·IÖπ¨àËƒ∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB˚FFB˚F?B˜B˜B√F<ÉBœFFBˇBˇB˚BÀB√F<ÉB√FFB¿ËÅ…ç°ï»Ä¨‘îÅ——Öç¨ÅAΩ›ï»∞ÉFB„BﬂB„FB◊FBÎB„B‘ÉB«B˚BÁFF,ÉBœFFBˇBˇF,Ä¨ÃîÅ——Öç¨ÅAΩ›ï»ÏÉB˚B”B„B˜B√BÎB˚BÀF/B‘ÉB√FFF,ÉB˜B‘ÉFBÎBÔB√B”F/BÀB√F;FFF<∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl’t∞â—Ö…ùï—%êàËâQIUM!=Q}UIà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âÕïçΩπëÖ…ÂYÖ±’ïÃàÈlÕuıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥ÿ¥»à∞â•çΩπ%êàËâ5I-M59|Ÿ|»à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àËÿ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»‘∞âπÖµîàËãBáBÛB◊FFB◊BÔF3B˜B√F<ÉFB◊FB„F<à∞âïπù±•Õ°9ÖµîàËâïÖë±‰ÅM—…ïÖ¨à∞âµÖ·IÖπ¨àËÃ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBkFB„FB„FB◊FBÎB„B‰ÉFB„BﬂB„FB◊FBÎB„B‰ÉBÀF/FFFB◊BÏÉFB˚BﬂB”B√FGFÉBﬂB√FF?B–ÉB˜B¿ÄÿÉFB◊BË∏∞ÉBÛB√BÎFB„BÛFBÄÃÏÉBÎB√B€B”F/B‰ÉBﬂB√FF?B–ÉB”B√FGFÄ¨»îÄºÄ¨ÃîÄºÄ¨–îÉB”B˚BˇB˚BÔB˜B„FB◊BÔF3B˜B˚BœB¯ÉBÎFB„FB„FB◊FBÎB˚BœB¯ÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}I%Q%1}!%Pà∞âŸÖ±’ïÃàÈl»∞Ã∞—t∞â—Ö…ùï—%êàËâ1e}MQI,à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âë’…Ö—•ΩπMïçΩπëÃàËÿ∞â—…•ùùï…Ω’π–àËÕıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥ÿ¥Ãà∞â•çΩπ%êàËâ5I-M59|Ÿ|Ãà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àËÿ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»‘∞âπÖµîàËãBãF?B€FGBÔB√F<ÉFFFB◊BÔB¿à∞âïπù±•Õ°9ÖµîàËâ!ïÖŸ‰Å……Ω‹à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBãB◊F?B€FGBÔFF8ÉFFFB◊BÔFËÉFBÔB◊B”FF;F'B√F<ÉB√BÀFB˚B√FB√BÎB¿ÉB˜B√B˜B˚FB„FÄƒ‹‘îÉB˚B«F/FB˜B˚BœB¯ÉFFB˚B˜B¿ÏÄ»¿ÅΩç’ÃÏÄƒ»ÉFB◊BË∏ÉBˇB◊FB◊BﬂB√FF?B”BÎB¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ!Ye}II=\âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥ÿ¥–à∞â•çΩπ%êàËâ5I-M59|Ÿ|–à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àËÿ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»‘∞âπÖµîàËãBãB˚FB˜F/B‰ÉFB◊BÛB¸à∞âïπù±•Õ°9ÖµîàËâA…ïç•ÕîÅQïµ¡ºà∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBkFB„FB„FB◊FBÎB„B‰ÉBÀF/FFFB◊BÏÉBˇB¯ÉB˚FBÛB◊FB◊B˜B˜B˚B‰ÉFB◊BÔB‡ÉFBÛB◊B˜F3F#B√B◊FÉB˚FFB√BÀF#B„BÁFF<ÅçΩΩ±ëΩ›∏ÉBFB„FB◊BÔF3B˜B˚BœB¯ÉBÀF/FFFB◊BÔB¿ÉB˜B¿Ä¿∞‘ÄºÄƒÉFB◊BË∏ÏÉB˜B‘ÉFB√F'B‘ÉFB√BﬂB¿ÉB»ÉFB◊BÎFB˜B”F∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}I%Q%1}!%Pà∞âŸÖ±’ïÃàÈl¿∏‘∞≈t∞â—Ö…ùï—%êàËâ5I-}%5}==1=]8à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â•π—ï…πÖ±ΩΩ±ëΩ›πMïçΩπëÃàË≈ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‹¥ƒà∞â•çΩπ%êàËâ5I-M59|›|ƒà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‹∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ¿∞âπÖµîàËãBcB”B◊B√BÔF3B˜F/B‰ÉBÀF/FFFB◊BÏà∞âïπù±•Õ°9ÖµîàËâAï…ôïç–ÅM°Ω–à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥Ã¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈Ù±Ïâ—Ö±ïπ—%êàËâ4¥»¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBFB„FB◊BÔF3B˜F/B‰ÉBÀF/FFFB◊BÏÉBˇB¯ÉB˚FBÛB◊FB◊B˜B˜B˚B‰ÉFB◊BÔB‡ÉBˇB˚B”BœB˚FB√BÀBÔB„BÀB√B◊FFF<ÉB˜B¿Ä¿∞»‘ÉFB◊BË∏ÉB«F/FFFB◊B‘ÉB‡ÉB˜B√B˜B˚FB„FÄ¨ƒ‘îÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈlƒ’t∞â—Ö…ùï—%êàËâAIQ}%5}M!=Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âçÖÕ—Q•µïMïçΩπëÃàË¿∏»’ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‹¥»à∞â•çΩπ%êàËâ5I-M59|›|»à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‹∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ¿∞âπÖµîàËãBSFB˚B«F?F'B„B‰ÉB˜B√BÎB˚B˜B◊FB˜B„BËà∞âïπù±•Õ°9ÖµîàËâM°Ö——ï…•πúÅQ•¿à∞âµÖ·IÖπ¨àËÃ∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBkFB„FB„FB◊FBÎB„B‰ÉFB„BﬂB„FB◊FBÎB„B‰ÉBÀF/FFFB◊BÏÉB˜B√BÎBÔB√B”F/BÀB√B◊FÉBáBÔB˚BÛB√B˜B˜FF8ÉB«FB˚B˜F8ÉB˜B¿ÄÿÉFB◊BË∏ÏÉFBÀB˚B‡ÉB√FB√BÎB‡ÉBˇB˚BÔFFB√F;FÄ¨ÃîÄºÄ¨ÿîÄºÄ¨ƒ¿îÅ…µΩ»ÅAïπï—…Ö—•Ω∏∏à∞âµΩë•ô•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}I%Q%1}!%Pà∞âŸÖ±’ïÃàÈlÃ∞ÿ∞ƒ¡t∞â—Ö…ùï—%êàËâ	I=-9}I5=Hà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âë’…Ö—•ΩπMïçΩπëÃàËŸıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‹¥Ãà∞â•çΩπ%êàËâ5I-M59|›|Ãà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‹∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ¿∞âπÖµîàËãBGB◊B‹ÉBˇB˚FB◊FF0à∞âïπù±•Õ°9ÖµîàËâ9ºÅ]ÖÕ—îà∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBFB˚BÛB√FÉFB„BﬂB„FB◊FBÎB˚B‰ÉFBˇB˚FB˚B«B˜B˚FFF3F8ÉBÀB˚BﬂBÀFB√F'B√B◊FÄ–¿îÄºÄ‹¿îÉBˇB˚FFB√FB◊B˜B˜B˚BœB¯ÅΩç’Ã∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl–¿∞‹¡t∞â—Ö…ùï—%êàËâA!eM%1}5%MM}IU9à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‹¥–à∞â•çΩπ%êàËâ5I-M59|›|–à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‹∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ¿∞âπÖµîàËãB_B√BÔB¸à∞âïπù±•Õ°9ÖµîàËâYΩ±±ï‰à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉB_B√BÔB¸ËÉBÎB˚FB˚FBÎB„B‰ÉBÎB√B˜B√BÏ∞ÉB˜B◊FBÎB˚BÔF3BÎB¯ÉBÀB˚BÔBÙÉBˇB¯ÉBÀFB◊BÉBˇFB˚FB„BÀB˜B„BÎB√B∞ÉBÎB√B€B”B√F<ÉBˇFB„BÛB◊FB˜B¯Ä–‘îÅ——Öç¨ÅAΩ›ï»ÏÄÃ‘ÅΩç’ÃÏÄƒ–ÉFB◊BË∏ÉBˇB◊FB◊BﬂB√FF?B”BÎB¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâY=11dâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‡¥ƒà∞â•çΩπ%êàËâ5I-M59|·|ƒà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‡∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ‘∞âπÖµîàËãBKF/FFFB◊BÏÉB»ÉFB◊FB”FB‘à∞âïπù±•Õ°9ÖµîàËâ!ïÖ…–ÅM°Ω–à∞âµÖ·IÖπ¨àËƒ∞â¡…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥‹¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBFB„FB◊BÔF3B˜F/B‰ÉBÀF/FFFB◊BÏÉBˇB¯ÉFB◊BÔB‡ÉB˜B„B€B‘Ä»‘îÅ!@ÉB˜B√B˜B˚FB„FÄ¨»‘îÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}!A}Q!IM!=1à∞âŸÖ±’ïÃàÈl»’t∞â—Ö…ùï—%êàËâ!IQ}M!=Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â—°…ïÕ°Ω±êàË»’ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‡¥»à∞â•çΩπ%êàËâ5I-M59|·|»à∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‡∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ‘∞âπÖµîàËãBáB˚BÀB◊FF#B◊B˜B˜B√F<ÉFB◊B˚BÎB¿à∞âïπù±•Õ°9ÖµîàËâAï…ôïç–Å5Ö…¨à∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥»¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBsB◊FBÎB¿ÉB˚FB˚FB˜B„BÎB¿ÉB”B◊BÁFFBÀFB◊FÉB˜B¿Ä‘ÄºÄƒ¿ÉFB◊BË∏ÉB”B˚BÔF3F#B‘∞ÉB¿ÉB◊FDÅçΩΩ±ëΩ›∏ÉFBÛB◊B˜F3F#B√B◊FFF<ÉB˜B¿ÄÃÄºÄÿÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâQ}UIQ%=9}M=9Là∞âŸÖ±’ïÃàÈl‘∞ƒ¡t∞â—Ö…ùï—%êàËâ!U9QI}5I,âÙ±Ïâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâ	%1%Qe}==1=]9}M=9Là∞âŸÖ±’ïÃàÈlÃ∞Ÿt∞â—Ö…ùï—%êàËâ!U9QI}5I,âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‡¥Ãà∞â•çΩπ%êàËâ5I-M59|·|Ãà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‡∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËÃ‘∞âπÖµîàËãBcB”B◊B√BÔF3B˜F/B‰ÉBÛB˚BÛB◊B˜Fà∞âïπù±•Õ°9ÖµîàËâAï…ôïç–Å5Ωµïπ–à∞âµÖ·IÖπ¨àËƒ∞â¡…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ4¥‘¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBCBÎFB„BÀB√FB„F<ÉBáB˜B√BÁBˇB◊FFBÎB˚B‰ÉBÎB˚B˜FB◊B˜FFB√FB„B‡ÉBÛBœB˜B˚BÀB◊B˜B˜B¯ÉFB«FB√FF/BÀB√B◊FÅçΩΩ±ëΩ›∏ÉBFB„FB◊BÔF3B˜B˚BœB¯ÉBÀF/FFFB◊BÔB¿ÉB‡ÉBFB˚B˜B„BﬂF/BÀB√F;F'B◊B‰ÉFFFB◊BÔF,∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâM9%AI}=UM}IMPà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ4¥‰¥ƒà∞â•çΩπ%êàËâ5I-M59|Â|ƒà∞ââ…Öπç°%êàËâ5I-M58à∞â—•ï»àË‰∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË–¿∞âπÖµîàËãBsBCBáBãBWBÄÉBáBãBÉBWBoB¨à∞âïπù±•Õ°9ÖµîàËâ5MQHÅ=ÅQ!ÅII=\à∞âµÖ·IÖπ¨àËƒ∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËâ——Öç¨ÅAΩ›ï»Ä¨‘î∞Åçç’…Öç‰Ä¨ÃîÏÉBÎB√B€B”F/B‰ÉBˇF?FF/B‰ÉFFBˇB◊F#B˜F/B‰ÉFB„BﬂB„FB◊FBÎB„B‰ÉBÀF/FFFB◊BÏÉBˇB¯ÉB˚FBÛB◊FB◊B˜B˜B˚B‰ÉFB◊BÔB‡ÉBÀF/BˇFFBÎB√B◊FÉB”B˚BˇB˚BÔB˜B„FB◊BÔF3B˜FF8ÉFFFB◊BÔFÉBﬂB¿Äÿ¿îÉB√BÀFB˚B√FB√BÎB‡ÏÉBÎFB„FÉFB√B‹ÉB»Ä»ÉFB◊BË∏ÉFB˚BÎFB√F'B√B◊FÅçΩΩ±ëΩ›∏ÉBáB˜B√BÁBˇB◊FFBÎB˚B‰ÉBÎB˚B˜FB◊B˜FFB√FB„B‡ÉB˜B¿ÄƒÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâM—Ö—5Ωë•ô•ï»à∞â≠ï‰àËâQQ-}A=]I}AI9Pà∞âŸÖ±’ïÃàÈl’uÙ±Ïâ—Â¡îàËâM—Ö—5Ωë•ô•ï»à∞â≠ï‰àËâUIe}AI9Pà∞âŸÖ±’ïÃàÈlÕuÙ±Ïâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈlÿ¡t∞â—Ö…ùï—%êàËâ5MQI}II=]}aQIà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â—…•ùùï…Ω’π–àË’Ù±Ïâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}I%Q%1}!%Pà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ5MQI}II=]}=UM}à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â•π—ï…πÖ±ΩΩ±ëΩ›πMïçΩπëÃàË…ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥ƒ¥ƒà∞â•çΩπ%êàËâ	MQ}5MQIe|≈|ƒà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËƒ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË¿∞âπÖµîàËãBãFB◊B˜B„FB˚BÀBÎB¿ÉFFB˚BÁBÎB˚FFB‡à∞âïπù±•Õ°9ÖµîàËâπë’…ÖπçîÅQ…Ö•π•πúà∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBsB√BÎFB„BÛB√BÔF3B˜B˚B‘ÉBﬂB”B˚FB˚BÀF3B‘ÉBˇB„FB˚BÛFB¿Ä¨ÃîÄºÄ¨ÿîÄºÄ¨‰îÄºÄ¨ƒ»îÄºÄ¨ƒ‘î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈlÃ∞ÿ∞‰∞ƒ»∞ƒ’t∞â—Ö…ùï—%êàËâAQ}5a}!@à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥ƒ¥»à∞â•çΩπ%êàËâ	MQ}5MQIe|≈|»à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËƒ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË¿∞âπÖµîàËãBwB◊FB”B◊FB€B„BÛB˚B‘ÉB˜B◊B„FFB˚BÀFFBÀB¯à∞âïπù±•Õ°9ÖµîàËâUπ±ïÖÕ°ïêÅ’…‰à∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBKB◊FF0ÉFFB˚BÙÉBˇB„FB˚BÛFB¿Ä¨–îÄºÄ¨‡îÄºÄ¨ƒ»îÄºÄ¨ƒÿîÄºÄ¨»¿î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl–∞‡∞ƒ»∞ƒÿ∞»¡t∞â—Ö…ùï—%êàËâAQ}5à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥ƒ¥Ãà∞â•çΩπ%êàËâ	MQ}5MQIe|≈|Ãà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËƒ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË¿∞âπÖµîàËãBèBÔFFF#B◊B˜B˜F/B‰ÉB”FFÉF?FFFB◊B«B¿à∞âïπù±•Õ°9ÖµîàËâ%µ¡…ΩŸïêÅ!Ö›¨ÅM¡•…•–à∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBCBÀFB˚B√FB√BÎB¿ÉFB˚BﬂF?B„B˜B¿ÉB„BÛB◊B◊FÄ‘îÉF#B√B˜FÉBˇB˚BÀF/FB„FF0ÉFBÎB˚FB˚FFF0ÉB◊BœB¯ÉB√BÀFB˚B√FB√BËÉB˜B¿ÄÿîÄºÄƒ»îÄºÄƒ‡îÄºÄ»–îÄºÄÃ¿îÉB˜B¿ÄÿÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}UQ=}QQ,à∞âŸÖ±’ïÃàÈlÿ∞ƒ»∞ƒ‡∞»–∞Ã¡t∞â—Ö…ùï—%êàËâ=]9I}!]-}MA%I%Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âç°ÖπçïAï…çïπ–àË‘∞âë’…Ö—•ΩπMïçΩπëÃàËŸıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥ƒ¥–à∞â•çΩπ%êàËâ	MQ}5MQIe|≈|–à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËƒ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË¿∞âπÖµîàËãB{B«F'B„B‰ÉFB„FBà∞âïπù±•Õ°9ÖµîàËâM°Ö…ïêÅI°Â—°¥à∞âµÖ·IÖπ¨àËÃ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBCFB√BÎB¿ÉBˇB„FB˚BÛFB¿ÉB„BÛB◊B◊FÄƒ¿îÄºÄƒ‘îÄºÄ»¿îÉF#B√B˜FÉBÀB˚FFFB√B˜B˚BÀB„FF0ÉFB˚BﬂF?B„B˜FÄÃÅΩç’ÃÏÅ•π—ï…πÖ∞ÅçΩΩ±ëΩ›∏Ä»ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈlƒ¿∞ƒ‘∞»¡t∞â—Ö…ùï—%êàËâAQ}=UM}AI=à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âÕïçΩπëÖ…ÂYÖ±’ïÃàÈlÃ∞Ã∞Õt∞â•π—ï…πÖ±ΩΩ±ëΩ›πMïçΩπëÃàË…ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥»¥ƒà∞â•çΩπ%êàËâ	MQ}5MQIe|…|ƒà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË»∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË‘∞âπÖµîàËãBkB˚BÛB√B˜B”B¿ËÉBìB√Fà∞âïπù±•Õ°9ÖµîàËâΩµµÖπêËÅ——Öç¨à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBkB˚BÛB√B˜B”FËÉBìB√FËÉBﬂB¿Ä»¿ÅΩç’ÃÉBˇB„FB˚BÛB◊FÉB˜B◊BÛB◊B”BÔB◊B˜B˜B¯ÉB„FBˇB˚BÔF3BﬂFB◊FÉFBˇB◊FB„B√BÔF3B˜FF8ÉB√FB√BÎFÏÉB«B√BﬂB˚BÀF/B‰ÅçΩΩ±ëΩ›∏Äƒ¿ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ=559}QQ,âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥»¥»à∞â•çΩπ%êàËâ	MQ}5MQIe|…|»à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË»∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË‘∞âπÖµîàËãBBÔB˚FB˜B√F<ÉF#BÎFFB¿à∞âïπù±•Õ°9ÖµîàËâQ°•ç¨Å!•ëîà∞âµÖ·IÖπ¨àËÃ∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB„FB˚BÛB◊FÉBˇB˚BÔFFB√B◊FÉB˜B¿Ä–îÄºÄ‡îÄºÄƒ»îÉBÛB◊B˜F3F#B‘ÉFB„BﬂB„FB◊FBÎB˚BœB¯ÉB‡ÉBÛB√BœB„FB◊FBÎB˚BœB¯ÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl–∞‡∞ƒ…t∞â—Ö…ùï—%êàËâAQ}5}IUQ%=8à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥»¥Ãà∞â•çΩπ%êàËâ	MQ}5MQIe|…|Ãà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË»∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË‘∞âπÖµîàËãBáBÀB„FB◊BˇB˚FFF0à∞âïπù±•Õ°9ÖµîàËâï…Ωç•—‰à∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB£B√B˜FÉBÎFB„FB„FB◊FBÎB˚BœB¯ÉFB”B√FB¿ÉBˇB„FB˚BÛFB¿Ä¨ÃîÄºÄ¨ÿîÄºÄ¨‰îÄºÄ¨ƒ»îÄºÄ¨ƒ‘î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈlÃ∞ÿ∞‰∞ƒ»∞ƒ’t∞â—Ö…ùï—%êàËâAQ}I%Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥»¥–à∞â•çΩπ%êàËâ	MQ}5MQIe|…|–à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË»∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË‘∞âπÖµîàËãBoB◊FB◊B˜B„B‘ÉBˇB„FB˚BÛFB¿à∞âïπù±•Õ°9ÖµîàËâ5ïπêÅAï–à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBoB◊FB◊B˜B„B‘ÉBˇB„FB˚BÛFB¿ËÉBÀB˚FFFB√B˜B√BÀBÔB„BÀB√B◊FÉB˚BÎB˚BÔB¯Ä»¿îÅ5Ö‡Å!@ÉBﬂB¿Ä‘ÉFB◊BË∏ÏÄ»¿ÅΩç’ÃÏÅçΩΩ±ëΩ›∏Ä»¿ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ59}APâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥Ã¥ƒà∞â•çΩπ%êàËâ	MQ}5MQIe|Õ|ƒà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËÃ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ¿∞âπÖµîàËãBèBÔFFF#B◊B˜B˜B˚B‘ÉBÔB◊FB◊B˜B„B‘ÉBˇB„FB˚BÛFB¿à∞âïπù±•Õ°9ÖµîàËâ%µ¡…ΩŸïêÅ5ïπêÅAï–à∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ¥»¥–à∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBoB◊FB◊B˜B„B‘ÉBˇB„FB˚BÛFB¿ÉFFB„BÔB„BÀB√B◊FFF<ÉB˜B¿Ä»¿îÄºÄ–¿îÏÉBˇFB‡ÉBˇB˚BÔB˜B˚BÉBˇFB„BÛB◊B˜B◊B˜B„B‡ÉFB˜B„BÛB√B◊FÉB˚B”B„BÙÉFB˜B„BÛB√B◊BÛF/B‰ÉB˜B◊BœB√FB„BÀB˜F/B‰ÉF7FFB◊BÎF∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈl»¿∞–¡t∞â—Ö…ùï—%êàËâ59}AQ}	=9ULà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥Ã¥»à∞â•çΩπ%êàËâ	MQ}5MQIe|Õ|»à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËÃ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ¿∞âπÖµîàËãBáB˚BÀBÛB◊FFB˜B√F<ÉFFB¿à∞âïπù±•Õ°9ÖµîàËâ)Ω•π–Å!’π–à∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB˚BÎB¿ÉFB˚BﬂF?B„BÙÉB‡ÉBˇB„FB˚BÛB◊FÉB√FB√BÎFF;FÉB˚B”B˜FÉFB◊BÔF0∞ÉB˚B«B¿ÉB˜B√B˜B˚FF?FÄ¨»îÄºÄ¨–îÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl»∞—t∞â—Ö…ùï—%êàËâM!I}QIQ}5à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥Ã¥Ãà∞â•çΩπ%êàËâ	MQ}5MQIe|Õ|Ãà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËÃ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ¿∞âπÖµîàËãBSFB◊FFB„FB˚BÀBÎB¿à∞âïπù±•Õ°9ÖµîàËâQ…Ö•π•πúà∞âµÖ·IÖπ¨àËÃ∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBèFB˚BÙÉFBˇB◊FB„B√BÔF3B˜F/FÉFBˇB˚FB˚B«B˜B˚FFB◊B‰ÉBˇB„FB˚BÛFB¿Ä¨–îÄºÄ¨‡îÄºÄ¨ƒ»î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl–∞‡∞ƒ…t∞â—Ö…ùï—%êàËâAQ}MA%1}5à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥Ã¥–à∞â•çΩπ%êàËâ	MQ}5MQIe|Õ|–à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àËÃ∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ¿∞âπÖµîàËãBGB◊FBˇFB◊BÎB˚FBÔB˚BÀB˜B˚B‘ÉBˇB˚FBÔFF#B√B˜B„B‘à∞âïπù±•Õ°9ÖµîàËâUπ≈’ïÕ—•Ωπ•πúÅ=âïë•ïπçîà∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ¥»¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËãBáFB˚B„BÛB˚FFF0ÉBkB˚BÛB√B˜B”F,ËÉBìB√FÉFB˜B„B€B√B◊FFF<ÉB˜B¿Äƒ¿îÄºÄ»¿î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâ	%1%Qe}IM=UI}=MQ}AI9Pà∞âŸÖ±’ïÃàÈlƒ¿∞»¡t∞â—Ö…ùï—%êàËâ=559}QQ,âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥–¥ƒà∞â•çΩπ%êàËâ	MQ}5MQIe|—|ƒà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãBèFFFB√F#B◊B˜B„B‘à∞âïπù±•Õ°9ÖµîàËâ%π—•µ•ëÖ—•Ω∏à∞âµÖ·IÖπ¨àËƒ∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãB{FBÎFF/BÀB√B◊FÉBèFFFB√F#B◊B˜B„B‘ËÉB˚B«F/FB˜F/B‰ÉBˇFB˚FB„BÀB˜B„BËÉB˚BœBÔFF#B√B◊FFF<ÉB˜B¿Ä»ÉFB◊BË∏ÏÉB«B˚FFÉBˇB˚BÔFFB√B◊FÉä"Hƒ‘îÉFBÎB˚FB˚FFB‡ÉB√FB√BËÉB˜B¿Ä–ÉFB◊BË∏ÏÅçΩΩ±ëΩ›∏ÄÃ¿ÉFB◊BË∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËââ•±•—Â5Ωë•ô•ï»à∞â≠ï‰àËâU91=-}	%1%Qdà∞âŸÖ±’ïÃàÈl≈t∞â—Ö…ùï—%êàËâ%9Q%5%Q%=8âıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥–¥»à∞â•çΩπ%êàËâ	MQ}5MQIe|—|»à∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãBèBﬂF,ÉB”FFB¿à∞âïπù±•Õ°9ÖµîàËâM¡•…•–Å	Ωπêà∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB˚BÎB¿ÉBˇB„FB˚BÛB◊FÉB€B„B»∞ÉBÎB√B€B”F/B‘Äƒ¿ÉFB◊BË∏ÉBÎB˚BﬂF?B„BÙÉB‡ÉBˇB„FB˚BÛB◊FÉBÀB˚FFFB√B˜B√BÀBÔB„BÀB√F;FÄƒîÄºÄ»îÅ5Ö‡Å!@∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈlƒ∞…t∞â—Ö…ùï—%êàËâMA%I%Q}	=9à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞â•π—ï…πÖ±ΩΩ±ëΩ›πMïçΩπëÃàËƒ¡ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâ¥–¥Ãà∞â•çΩπ%êàËâ	MQ}5MQIe|—|Ãà∞ââ…Öπç°%êàËâ	MQ}5MQIdà∞â—•ï»àË–∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàËƒ‘∞âπÖµîàËãBGF/FFFF/B‰ÉBˇFB„BÎB√B‹à∞âïπù±•Õ°9ÖµîàËâIÖ¡•êÅΩµµÖπêà∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmÏâ—Ö±ïπ—%êàËâ¥»¥ƒà∞â…ï≈’•…ïëIÖπ¨àË≈ıt∞âëïÕç…•¡—•Ω∏àËâΩΩ±ëΩ›∏ÉBkB˚BÛB√B˜B”F/: –§–∞—Å —É–º–µ–Ω—å—à–∞–µ—Ç—Å—è –Ω–∞ 1 / 2 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"ABILITY_COOLDOWN_SECONDS","values":[1,2],"targetId":"COMMAND_ATTACK"}],"version":2},{"id":"B-4-4","iconId":"BEAST_MASTERY_4_4","branchId":"BEAST_MASTERY","tier":4,"requiredSpentPoints":15,"name":"–û—Ö–æ—Ç–Ω–∏–∫ —Å—Ç–∞–∏","englishName":"Pack Hunter","maxRank":2,"prerequisites":[],"description":"–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–≥–æ —É–¥–∞—Ä–∞ –ø–∏—Ç–æ–º—Ü–∞ —Å–ª–µ–¥—É—é—â–∏–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –∑–∞ 5 —Å–µ–∫. –Ω–∞–Ω–æ—Å–∏—Ç +5% / +10% —É—Ä–æ–Ω–∞.","modifiers":[{"type":"EventTriggered","key":"ON_CRITICAL_HIT","values":[5,10],"targetId":"PET_CRIT_OWNER_SHOT","runtimeStatus":"Supported","durationSeconds":5}],"version":2},{"id":"B-5-1","iconId":"BEAST_MASTERY_5_1","branchId":"BEAST_MASTERY","tier":5,"requiredSpentPoints":20,"name":"–ë–µ—à–µ–Ω—Å—Ç–≤–æ","englishName":"Frenzy","maxRank":5,"prerequisites":[],"description":"–ü–æ—Å–ª–µ –∫—Ä–∏—Ç–∏—á–µ—Å–∫–æ–π –∞—Ç–∞–∫–∏ –ø–∏—Ç–æ–º—Ü–∞ –æ–Ω –∏–º–µ–µ—Ç 20% / 40% / 60% / 80% / 100% —à–∞–Ω—Å –ø–æ–ª—É—á–∏—Ç—å +30% Attack Speed –Ω–∞ 6 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_CRITICAL_HIT","values":[20,40,60,80,100],"targetId":"PET_FRENZY","runtimeStatus":"Supported","secondaryValues":[30,30,30,30,30],"durationSeconds":6}],"version":2},{"id":"B-5-2","iconId":"BEAST_MASTERY_5_2","branchId":"BEAST_MASTERY","tier":5,"requiredSpentPoints":20,"name":"–ó–≤–µ—Ä–∏–Ω—ã–π –≥–Ω–µ–≤","englishName":"Bestial Wrath","maxRank":1,"prerequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç –í–≤–µ—Ä–∏–Ω—ã–π –≥–Ω–µ–≤: 12 —Å–µ–∫. –ø–∏—Ç–æ–º–µ—Ü –ø–æ–ª—É—á–∞–µ—Ç +35% Damage, +20% Attack Speed –∏ –∏–º–º—É–Ω–∏—Ç–µ—Ç –∫ stun/silence; cooldown 60 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"BESTIAL_WRATH"}],"version":2},{"id":"B-5-3","iconId":"BEAST_MASTERY_5_3","branchId":"BEAST_MASTERY","tier":5,"requiredSpentPoints":20,"name":"–ó–∞–∫–∞–ª—ë–Ω–Ω—ã–π —Å–ø—É—Ç–Ω–∏–∫","englishName":"Hardened Companion","maxRank":3,"prerequisites":[],"description":"–£—Ä–æ–Ω –ø–∏—Ç–æ–º—Ü—É –æ—Ç AoE –∏ –∞—Ç–∞–∫ –ø–æ –≤—Å–µ–º encounter —Å–Ω–∏–∂–∞–µ—Ç—Å—è –Ω–∞ 10% / 20% / 30%.","modifiers":[{"type":"EventTriggered","key":"ON_DAMAGE_TAKEN","values":[10,20,30],"targetId":"PET_AOE_REDUCTION","runtimeStatus":"Supported"}],"version":2},{"id":"B-5-4","iconId":"BEAST_MASTERY_5_4","branchId":"BEAST_MASTERY","tier":5,"requiredSpentPoints":20,"name":"–ö–æ–º–∞–Ω–¥–Ω—ã–π –≥–æ–ª–æ—Å","englishName":"Commanding Voice","maxRank":2,"prerequisites":[],"description":"–ü–æ—Å–ª–µ –ö–æ–º–∞–Ω–¥—ã: –§–∞—Å –ø–∏—Ç–æ–º–µ—Ü –ø–æ–ª—É—á–∞–µ—Ç +5% / +10% Damage –Ω–∞ 4 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[5,10],"targetId":"COMMAND_PET_DAMAGE","runtimeStatus":"Supported","durationSeconds":4}],"version":2},{"id":"B-6-1","iconId":"BEAST_MASTERY_6_1","branchId":"BEAST_MASTERY","tier":6,"requiredSpentPoints":25,"name":"–ò–Ω—Å—Ç–∏–Ω–∫—Ç —Ö–∏—â–Ω–∏–∫–∞","englishName":"Predator Instinct","maxRank":3,"prerequisites":[],"description":"–ü–∏—Ç–æ–º–µ—Ü –Ω–∞–Ω–æ—Å–∏—Ç –ø—Ä–æ—Ç–∏–≤–Ω–∏–∫–∞–º –Ω–∏–∂–µ 30% HP +5% / +10% / +15% —É—Ä–æ–Ω–∞.","modifiers":[{"type":"EventTriggered","key":"ON_HP_THRESHOLD","values":[5,10,15],"targetId":"PET_EXECUTE","runtimeStatus":"Supported","threshold":30}],"version":2},{"id":"B-6-2","iconId":"BEAST_MASTERY_6_2","branchId":"BEAST_MASTERY","tier":6,"requiredSpentPoints":25,"name":"–ó–∞—â–∏—Ç–Ω—ã–π –∏–Ω—Å—Ç–∏–Ω–∫—Ç","englishName":"Protective Instinct","maxRank":2,"prerequisites":[],"description":"–ï—Å–ª–∏ —Ö–æ–∑—è–∏–Ω –ø–æ–ª—É—á–∞–µ—Ç –æ–¥–Ω–∏–º —É–¥–∞—Ä–æ–º –±–æ–ª–µ–µ 15% Max HP, –ø–∏—Ç–æ–º–µ—Ü –ø–µ—Ä–µ—Ö–≤–∞—Ç—ã–≤–∞–µ—Ç 10% / 20% —É—Ä–æ–Ω–∞; internal cooldown 8 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_DAMAGE_TAKEN","values":[10,20],"targetId":"PET_INTERCEPT","runtimeStatus":"Supported","threshold":15,"internalCooldownSeconds":8}],"version":2},{"id":"B-6-3","iconId":"BEAST_MASTERY_6_3","branchId":"BEAST_MASTERY","tier":6,"requiredSpentPoints":25,"name":"–ù–µ—É–º–æ–ª–∏–º–∞—è —Å—Ç–∞—è","englishName":"Relentless Pack","maxRank":2,"prequisites":[],"description":"–ö—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –ø–æ–≤—ã—à–∞–µ—Ç —É—Ä–æ–Ω –ø–∏—Ç–æ–º—Ü–∞ –Ω–∞ 5% / 10% –Ω–∞ 5 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_CRITICAL_HIT","values":[5,10],"targetId":"OWNER_CRIT_PET_DAMAGE","runtimeStatus":"Supported","durationSeconds":5}],"version":2},{"id":"B-6-4","iconId":"BEAST_MASTERY_6_4","branchId":"BEAST_MASTERY","tier":6,"requiredSpentPoints":25,"name":"–í–µ—Ä–Ω—É—Ç—å –∫ —Ö–æ–∑—è–∏–Ω—É","englishName":"Return to Owner","maxRank":1,"prequisites":[],"description":"–û—Ç–∫—Ä—ã–≤–∞–µ—Ç –∫–æ–º–∞–Ω–¥—É –í–µ—Ä–Ω—É—Ç—å –∫ —Ö–æ–∑—è–∏–Ω—É: —Å–Ω–∏–º–∞–µ—Ç —Å –ø–∏—Ç–æ–º—Ü–∞ stun/silence –∏ –æ–¥–∏–Ω —Å–Ω–∏–º–∞–µ–º—ã–π –æ—Ç—Ä–∏—Ü–∞—Ç–µ–ª—å–Ω—ã–π —ç—Ñ—Ñ–µ–∫—Ç; cooldown 45 —Å–µ–∫.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1],"targetId":"RETURN_TO_OWNER"}],"version":2},{"id":"B-7-1","iconId":"BEAST_MASTERY_7_1","branchId":"BEAST_MASTERY","tier":7,"requiredSpentPoints":30,"name":"–°–æ–≤–µ—Ä—à–µ–Ω–Ω–æ–µ –±–µ—à–µ–Ω—Å—Ç–≤–æ","englishName":"Perfect Frenzy","maxRank":2,"prerequisites":[{"talentId":"B-5-1","requiredRank":1}],"description":"–ë–µ—à–µ–Ω—Å—Ç–≤–æ –¥–ª–∏—Ç—Å—è –Ω–∞ 2 / 4 —Å–µ–∫. –¥–æ–ª—å—à–µ, –∞ –±–æ–Ω—É—Å Attack Speed —É–≤–µ–ª–∏—á–∏–≤–∞–µ—Ç—Å—è –µ—â—ë –Ω–∞ 5% / 10%.","modifiers":[{"type":"EventTriggered","key":"ON_PARTY_EVENT","values":[5,10],"targetId":"PERFECT_FRENZY","runtimeStatus":"Supported","secondaryValues":[2,4]}],"version":2},{"id":"B-7-2","iconId":"BEAST_MASTERY_7_2","branchId":"BEAST_MASTERY","tier":7,"requiredSpentPoints":30,"name":"–ü–µ—Ä–≤–æ–±—ã—Ç–Ω—ã–π –ø—Ä–∏–∫–∞–∑","englishName":"Primal Command","maxRank":1,"prerequisites":[{"talentId":"B-5-2","requiredRank":1},{"talentId":"B-2-1","requiredRank":1}],"description":"–ê–∫—Ç–∏–≤–∞—Ü–∏—è –í–≤–µ—Ä–∏–Ω–æ–≥–æ –≥–Ω–µ–≤–∞ —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç cooldown –ö–æ–º–∞–Ω–¥—ã: –§–∞—Å; –ø–µ—Ä–≤–∞—è –ö–æ–º–∞–Ω–¥–∞ –≤–æ –≤—Ä–µ–º—è –≥–Ω–µ–≤–∞ –Ω–∞–Ω–æ—Å–∏—Ç +50% —É—Ä–æ–Ω–∞.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[50],"targetId":"PRIMAL_COMMAND","runtimeStatus":"Supported"}],"version":2},{"id":"B-7-3","iconId":"BEAST_MASTERY_7_3","branchId":"BEAST_MASTERY","tier":7,"requiredSpentPoints":30,"name":"–ö—Ä–æ–≤—å –∏ –∫–ª—ã–∫","englishName":"Blood and Fang","maxRank":2,"prerequisites":[],"description":"–ö—Ä–∏—Ç —Ö–æ–∑—è–∏–Ω–∞ —É—Å–∏–ª–∏–≤–∞–µ—Ç —Å–ª–µ–¥—É—é—â—É—é –∞—Ç–∞–∫—É –ø–∏—Ç–æ–º—Ü–∞ –Ω–∞ 5% / 10%; –∫—Ä–∏—Ç –ø–∏—Ç–æ–º—Ü–∞ —É—Å–∏–ª–∏–≤–∞–µ—Ç —Å–ª–µ–¥—É—é—â–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –Ω–∞ 5% / 10%; –¥–æ 5 —Å–µ–∫.","modifiers":[{"type":"EventTriggered","key":"ON_CRITICAL_HIT","values":[5,10],"targetId":"BLOOD_AND_FANG","runtimeStatus":"Supported","durationSeconds":5}],"version":2},{"id":"B-7-4","iconId":"BEAST_MASTERY_7_4","branchId":"BEAST_MASTERY","tier":7,"requiredSpentPoints":30,"name":"–û–¥–Ω–∞ –∫—Ä–æ–≤—å","englishName":"One Blood","maxRank":2,"prerequisites":[],"description":"–≠—Ñ—Ñ–µ–∫—Ç–∏–≤–Ω–æ–µ –ª–µ—á–µ–Ω–∏–µ —Ö–æ–∑—è–∏–Ω–∞ –≤–æ—Å—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç –ø–∏—Ç–æ–º—Ü—É 5% / 10% –æ—Ç –ø–æ–ª—É—á–µ–Ω–Ω–æ–≥–æ —Ö–æ–∑—è–∏–Ω–æ–º –ª–µ—á–µ–Ω–∏—è.","modifiers":[{"type":"EventTriggered","key":"ON_PARTY_EVENT","values":[5,10],"targetId":"OWNER_HEAL_PET","runtimeStatus":"Supported"}],"version":2},{"id":"B-8-1","iconId":"BEAST_MASTERY_8_1","branchId":"BEAST_MASTERY","tier":8,"requiredSpentPoints":35,"name":"–ê–ª—å—Ñ–∞-–∏–Ω—Å—Ç–∏–Ω–∫—Ç","englishName":"Alpha Instinct","maxRank":3,"prequisites":[],"description":"Crit –ø–∏—Ç–æ–º—Ü–∞ +2% / +4% / +6%; –¥–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π –∫—Ä–∏—Ç–∏—á–µ—Å–∫–∏–π —É—Ä–æ–Ω +4% / +7% / +10%.","modifiers":[{"type":"EventTriggered","key":"ON_PARTY_EVENT","values":[2,4,6],"targetId":"PET_CRIT_MASTERY","runtimeStatus":"Supported","secondaryValues":[4,7,10]}],"version":2},{"id":"B-8-2","iconId":"BEAST_MASTERY_8_2","branchId":"BEAST_MASTERY","tier":8,"requiredSpentPoints":35,"name":"–ë–µ–∑—É–ø—Ä–µ—á–Ω–∞—è –∫–æ–æ—Ä–¥–∏–Ω–∞—Ü–∏—è","englishName":"Perfect Coordination","maxRank":1,"prerequisites":[],"description":"–ü–æ—Å–ª–µ –ö–æ–º–∞–Ω–¥—ã: –§–∞—Å —Å–ª–µ–¥—É—é—â–∏–π —Ñ–∏–∑–∏—á–µ—Å–∫–∏–π –≤—ã—Å—Ç—Ä–µ–ª —Ö–æ–∑—è–∏–Ω–∞ –∑–∞ 5 —Å–µ–∫. –Ω–∞–Ω–æ—Å–∏—Ç +15% Damage –∏ —Ä–∞—Å—Ö–æ–¥—É–µ—Ç 20% –º–µ–Ω—å—à–µ Focus.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[15],"targetId":"COMMAND_OWNER_SHOT","runtimeStatus":"Supported","secondaryValues":[20],"durationSeconds":5}],"version":2},{"id":"B-8-3","iconId":"BEAST_MASTERY_8_3","branchId":"BEAST_MASTERY","tier":8,"requiredSpentPoints":35,"name":"–ù–µ—É–¥–µ—Ä–∂–∏–º–∞—è —Å—Ç–∞—è","englishName":"Unstoppable Pack","maxRank":1,"prequisites":[],"description":"–ê–∫—Ç–∏–≤–∞—Ü–∏—è –ó–≤–µ—Ä–∏–Ω–æ–≥–æ –≥–Ω–µ–≤–∞ —Å–±—Ä–∞—Å—ã–≤–∞–µ—Ç cooldown –ö–æ–º–∞–Ω–¥—ãŒà4)4,4`N»4/Ù.4`¥/¥/4-ta¥b»4/Ù/¥.Ù`ÙaÙ,4-t`à4/Ù/¥.Ù/tbÙ.H4.4/4/4`Ù/t.4`¥-t`à4.à4.¥/¥/t`¥`4/¥.Ùcà4/t,4,¥`4-t/4c»4,Ù/t-t,¥,àãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–PíSUW’T—Qãùò[Y\»éñÃWKù\ôŸ]YéàêëT’PS’‘êU’Sî’‘PìHãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüK»öYéàêãNKLHãöX€€íYéàêëPT’”PT’TñWŒWÃHãòúò[ò⁄YéàêëPT’”PT’TñHãùY\àééKúô\]Z\ôY‹[ù⁄[ù»éçõò[YHéà¥'Ù'¥$¥%t&Ù&4(¥%t&Ù£4%Ù$¥%t(4%t&Hãô[ô€\⁄ò[YHéàêëPT’PT’TàãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(Ù`4/¥/H4/Ù.4`¥/¥/4a¥,
+ÃL	KX^
+ÃL	N»4.¥`4.4`à4/Ù.4`¥/¥/4a¥,4`Hå	H4b4,4/t`t/¥/4-4,4dt`à4/Ù.4`¥/¥/4a¥`»4/4,Ù/t/¥,¥-t/t/t`Ùcà4-4/¥/Ù/¥.Ù/t.4`¥-t.Ùc4/t`Ùcà4,4,¥`¥/¥,4`¥,4.¥`»
+P—»4`t-t.ãäN»4.¥`4.4`à4/Ù.4`¥/¥/4a¥,4`Ù`t.4.Ù.4,¥,4-t`à4`t.Ù-t-4`Ùc¥bt.4.H4,¥bÙ`t`¥`4-t.»4at/¥-ÙcÙ.4/t,4/t,
+ÃL	H4/t,H4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÃLKù\ôŸ]YéàêëPT’”PT’Tó–êT—Hãúù[ù[YT›]\»éàî›\‹ùYãúŸX€€ô\ûUò[Y\»éñÃL_K»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–‘íUP–S“Uãùò[Y\»éñÃåKù\ôŸ]YéàêëPT’”PT’Tó—VêW–UP“»ãúù[ù[YT›]\»éàî›\‹ùYãö[ù\õò[€€€›€îŸX€€ô»éåﬂK»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–‘íUP–S“Uãùò[Y\»éñÃLKù\ôŸ]YéàêëPT’”PT’Tó”’”ëTó‘“’ãúù[ù[YT›]\»éàî›\‹ùYãô\ò][€îŸX€€ô»éç_WKùô\ú⁄[€àéåüK»öYéàîÀLKLHãöX€€íYéàî’TïíUêSÃWÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéåKúô\]Z\ôY‹[ù⁄[ù»éåõò[YHéà¥'¥`t`¥,4`¥c4`tc»4,à4-¥.4,¥bÙaHãô[ô€\⁄ò[YHéàî›\ùö]ò[\›ãõX^ò[ö»éçKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'4,4.¥`t.4/4,4.Ùc4/t/¥-H4-Ù-4/¥`4/¥,¥c4-H\ò⁄\à
+ÃâH»
+Õ	H»
+ÕâH»
+Œ	H»
+ÃL	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàî›][ŸYöY\àãöŸ^HéàìPV“‘Tê—Sïãùò[Y\»éñÃããL_WKùô\ú⁄[€àéåüK»öYéàîÀLKLàãöX€€íYéàî’TïíUêSÃWÃàãòúò[ò⁄Yéàî’TïíUêSãùY\àéåKúô\]Z\ôY‹[ù⁄[ù»éåõò[YHéà¥$¥-t`4/tbÙ.H4b4,4,»ãô[ô€\⁄ò[YHéàî›\ôHõ€›[ô»ãõX^ò[ö»éåÀúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéàêXÿ›\òXﬁH
+ÃIH»
+ÃâH»
+Ã…N»4-4.Ù.4`¥-t.Ùc4/t/¥`t`¥c4/Ù/¥.Ù`ÙaÙ,4-t/4/¥,Ù/à›[ã‹⁄[[òŸH4`Ù/4-t/tc4b4,4-t`¥`tc»4/t,IH»L	H»MIKàãõ[ŸYöY\ú»éñﬁ»ù\Héàî›][ŸYöY\àãöŸ^HéàêP–’TêP÷W‘Tê—Sïãùò[Y\»éñÃKã◊_K»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó—SPQ—W’R—Sàãùò[Y\»éñÕKLMWKù\ôŸ]Yéàê””ïì”—TêUS”ó‘ëQP’S”àãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüK»öYéàîÀLKL»ãöX€€íYéàî’TïíUêSÃWÃ»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéåKúô\]Z\ôY‹[ù⁄[ù»éåõò[YHéà¥(Ù.¥`Ù`H4-Ù/4-t.ãô[ô€\⁄ò[YHéàîŸ\ú[ù›[ô»ãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`àŸ\ú[ù›[ôŒà4cÙ-4/t,4`t-t.ãã4/¥.¥/¥.Ù/àL	H]X⁄»›Ÿ\à4`t`Ù/4/4,4`4/t/ãMHõÿ›\Œ»4/t,4a¥-t.Ù.4`¥/¥.Ùc4.¥/à4/¥-4.4/H4`¥,¥/¥.H4cta4a4-t.¥`ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]Yéàî—TîSï‘’Së»üWKùô\ú⁄[€àéåüK»öYéàîÀLKMãöX€€íYéàî’TïíUêSÃWÕãòúò[ò⁄Yéàî’TïíUêSãùY\àéåKúô\]Z\ôY‹[ù⁄[ù»éåõò[YHéà¥(Ù.Ù`ÙaÙb4-t/t/tbÙ.H4%4.¥`Ù`H4-Ù/4-t.ãô[ô€\⁄ò[YHéàí[\õ›ôYŸ\ú[ù›[ô»ãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñﬁ»ù[[ùYéàîÀLKL»ãúô\]Z\ôYò[ö»éå_WKô\ÿ‹ö\[€àéà¥(Ù`4/¥/HŸ\ú[ù›[ô»
+ÃL	H»
+Ãå	H»
+ÃÃ	N»4/t,»4`4,4/t,Ù-H4-4.Ù.4`¥-t.Ùc4/t/¥`t`¥c
+Ãà4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW—SPQ—W‘Tê—Sïãùò[Y\»éñÃLåÃKù\ôŸ]Yéàî—TîSï‘’Së»üK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàëQëëP’—TêUS”ó‘—P””ë»ãùò[Y\»éñÃóKù\ôŸ]Yéàî—TîSï‘’Së»üWKùô\ú⁄[€àéåüK»öYéàîÀLãLHãöX€€íYéàî’TïíUêSÃóÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéåãúô\]Z\ôY‹[ù⁄[ù»éçKõò[YHéà¥%Ù,4/4/¥`4,4-¥.4,¥,4c¥bt,4c»4.Ù/¥,¥`Ùb4.¥,ãô[ô€\⁄ò[YHéàëúôY^ö[ô»ò\ãõX^ò[ö»éåKúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`à4%Ù,4/4/¥`4,4-¥.4,¥,4c¥bt`Ùcà4.Ù/¥,¥`Ùb4.¥`Œà4`t`4,4,t,4`¥bÙ,¥,4-t`à4/Ù`4.4`t.Ù-t-4`Ùc¥bt-t/4-4-t.t`t`¥,¥.4.4a¥-t.Ù.»4/¥,tbÙaÙ/tbÙ.H4,¥`4,4,»›[àà4`t-t.ãã4,t/¥`t`H8¢$åå	H]X⁄»‹YY4/t,4`t-t.ãé»MHõÿ›\Œ»€€€›€àN4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]YéàëîëQVíSë◊’êTüWKùô\ú⁄[€àéåüK»öYéàîÀLãLàãöX€€íYéàî’TïíUêSÃóÃàãòúò[ò⁄Yéàî’TïíUêSãùY\àéåãúô\]Z\ôY‹[ù⁄[ù»éçKõò[YHéà¥(Ù-4-t`4-¥,4/t.4-Hãô[ô€\⁄ò[YHéàë[ùò\Y[ùãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'Ù/¥`t.Ù-H4`t`4,4,t,4`¥bÙ,¥,4/t.4c»4.Ùc¥,t/¥.H4.Ù/¥,¥`Ùb4.¥.4`t.¥/¥`4/¥`t`¥c4,4`¥,4.à4/Ù/¥`4,4-¥dt/t/t/¥,Ù/à4/Ù`4/¥`¥.4,¥/t.4.¥,4-4/¥/Ù/¥.Ù/t.4`¥-t.Ùc4/t/à4`Ù/4-t/tc4b4,4-t`¥`tc»4/t,IH»L	H»MIH4/t,4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÕKLMWKù\ôŸ]YéàïêT–UP“◊‘‘QQ‘ëQP’S”àãúù[ù[YT›]\»éàî›\‹ùYãô\ò][€îŸX€€ô»éçWKùô\ú⁄[€àéåüK»öYéàîÀLãL»ãöX€€íYéàî’TïíUêSÃóÃ»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéåãúô\]Z\ôY‹[ù⁄[ù»éçKõò[YHéà¥'¥,t-¥.4,Ù,4c¥bt,4c»4.Ù/¥,¥`Ùb4.¥,ãô[ô€\⁄ò[YHéàí[[[€][€àò\ãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`à4'¥,t-¥.4,Ù,4c¥bt`Ùcà4.Ù/¥,¥`Ùb4.¥`Œà4/Ù/¥`t.Ù-H4.¥/¥`4/¥`¥.¥/¥.H4-Ù,4-4-t`4-¥.¥.4/Ù`4cÙ/4/¥.H4`Ù`4/¥/H4.4,Ù/¥`4-t/t.4-K4/¥.¥/¥.Ù/àM	H]X⁄»›Ÿ\à4`t`Ù/4/4,4`4/t/é»€€€›€àLà4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]YéàíSSS”US”ó’êTüWKùô\ú⁄[€àéåüK»öYéàîÀLãMãöX€€íYéàî’TïíUêSÃóÕãòúò[ò⁄Yéàî’TïíUêSãùY\àéåãúô\]Z\ôY‹[ù⁄[ù»éçKõò[YHéà¥)t.4`¥`4bÙ-H4.Ù/¥,¥`Ùb4.¥.ãô[ô€\⁄ò[YHéàê€]ô\àò\»ãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(Ù`4/¥/H4/t,4/t/¥`tcÙbt.4aH4.Ù/¥,¥`Ùb4-t.à
+ÃL	H»
+Ãå	H»
+ÃÃ	N»4-4.Ù.4`¥-t.Ùc4/t/¥`t`¥c4.¥/¥/t`¥`4/¥.Ùc»4.Ù/¥,¥`Ùb4-t.à4/Ù`4/¥`¥.4,à4/¥,tbÙaÙ/tbÙaH4,¥`4,4,Ù/¥,à
+ÃL	H»
+Ãå	H»
+ÃÃ	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÃLåÃKù\ôŸ]Yéàê”UëTó’êT»ãúù[ù[YT›]\»éàî›\‹ùYãúŸX€€ô\ûUò[Y\»éñÃLåÃ_WKùô\ú⁄[€àéåüK»öYéàîÀLÀLHãöX€€íYéàî’TïíUêSÃ◊ÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéåÀúô\]Z\ôY‹[ù⁄[ù»éåLõò[YHéà¥$¥-Ù`4bÙ,¥/t,4c»4.Ù/¥,¥`Ùb4.¥,ãô[ô€\⁄ò[YHéàë^‹⁄]ôHò\ãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`à4$¥-Ù`4bÙ,¥/t`Ùcà4.Ù/¥,¥`Ùb4.¥`Œà4/Ù/¥`t.Ù-H4.¥/¥`4/¥`¥.¥/¥.H4-Ù,4-4-t`4-¥.¥.4/Ù/¥`4,4-¥,4-t`à4,¥`t-taH4,¥`4,4,Ù/¥,à[ò€›[ù\à4/Ù`4cÙ/4bÙ/4`Ù`4/¥/t/¥/4.4.¥/¥`4/¥`¥.¥.4/4,Ù/¥`4-t/t.4-t/4/¥`à]X⁄»›Ÿ\é»çHõÿ›\Œ»€€€›€àLà4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]YéàëV‘“UëW’êTüWKùô\ú⁄[€àéåüK»öYéàîÀLÀLàãöX€€íYéàî’TïíUêSÃ◊Ãàãòúò[ò⁄Yéàî’TïíUêSãùY\àéåÀúô\]Z\ôY‹[ù⁄[ù»éåLõò[YHéà¥'4,4`t`¥-t`4`t`¥,¥/à4,à4`Ù`t`¥,4/t/¥,¥.¥-H4.Ù/¥,¥`Ùb4-t.àãô[ô€\⁄ò[YHéàïò\X\›\ûHãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéàê€€€›€à4,¥`t-taH4.Ù/¥,¥`Ùb4-t.à8¢$åH»8¢$åà»8¢$å»4`t-t.ãé»4`t`¥/¥.4/4/¥`t`¥c4.Ù/¥,¥`Ùb4-t.à8¢$çIH»8¢$åL	H»8¢$åMIKàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW–”””’”ó‘—P””ë»ãùò[Y\»éñÃKã◊Kù\ôŸ]YéàëîëQVíSë◊’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW‘ëT”’Tê—W–”‘’‘Tê—Sïãùò[Y\»éñÕKLMWKù\ôŸ]YéàëîëQVíSë◊’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW–”””’”ó‘—P””ë»ãùò[Y\»éñÃKã◊Kù\ôŸ]YéàíSSS”US”ó’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW‘ëT”’Tê—W–”‘’‘Tê—Sïãùò[Y\»éñÕKLMWKù\ôŸ]YéàíSSS”US”ó’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW–”””’”ó‘—P””ë»ãùò[Y\»éñÃKã◊Kù\ôŸ]YéàëV‘“UëW’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW‘ëT”’Tê—W–”‘’‘Tê—Sïãùò[Y\»éñÕKLMWKù\ôŸ]YéàëV‘“UëW’êTüWKùô\ú⁄[€àéåüK»öYéàîÀLÀL»ãöX€€íYéàî’TïíUêSÃ◊Ã»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéåÀúô\]Z\ôY‹[ù⁄[ù»éåLõò[YHéà¥(¥/¥.¥`t.4.¥/¥.Ù/¥,Ù.4c»ãô[ô€\⁄ò[YHéàïﬁX€€ŸﬁHãõX^ò[ö»éåÀúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(Ù`4/¥/tcÙ-4/¥,à
+Œ	H»
+ÃMâH»
+Ãç	N»4/Ù/¥,¥`¥/¥`4/tbÙ.HŸ\ú[ù›[ô»4`t/¥at`4,4/tcÙ-t`à4-tbtdH4/t-H4/t,4/t-t`tdt/t/tbÙ.H4/¥`t`¥,4`¥/¥.à4`t`¥,4`4/¥,Ù/à4cta4a4-t.¥`¥,àãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–PíSUW’T—Qãùò[Y\»éñŒMãçKù\ôŸ]Yéàï÷P””—÷Hãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüK»öYéàîÀLÀMãöX€€íYéàî’TïíUêSÃ◊Õãòúò[ò⁄Yéàî’TïíUêSãùY\àéåÀúô\]Z\ôY‹[ù⁄[ù»éåLõò[YHéà¥'t,4at/¥-4aÙ.4,¥bÙ.H4/¥at/¥`¥/t.4.àãô[ô€\⁄ò[YHéàîô\€›\òŸYù[[ù\àãõX^ò[ö»éåãúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(t`4,4,t,4`¥bÙ,¥,4/t.4-H4.Ù/¥,¥`Ùb4.¥.4,¥/¥`t`t`¥,4/t,4,¥.Ù.4,¥,4-t`à»õÿ›\Œ»[ù\õò[€€€›€à»4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÕKù\ôŸ]YéàïêT—ì–’T»ãúù[ù[YT›]\»éàî›\‹ùYãö[ù\õò[€€€›€îŸX€€ô»éåﬂWKùô\ú⁄[€àéåüK»öYéàîÀMLHãöX€€íYéàî’TïíUêSÕÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéçúô\]Z\ôY‹[ù⁄[ù»éåMKõò[YHéà¥(t-4-t`4-¥.4,¥,4/t.4-Hãô[ô€\⁄ò[YHéàë]\úô[òŸHãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`à]\úô[òŸNàH4`t-t.ãà4/Ù/¥.Ù`ÙaÙ,4-t/4bÙ.H4`Ù`4/¥/H8¢$åÃ	N»4,¥/t-H–—»€€€›€àå4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]YéàëUTîëSê—HüWKùô\ú⁄[€àéåüK»öYéàîÀMLàãöX€€íYéàî’TïíUêSÕÃàãòúò[ò⁄Yéàî’TïíUêSãùY\àéçúô\]Z\ôY‹[ù⁄[ù»éåMKõò[YHéà¥(Ù`Ù.Ù`ÙaÙb4-t/t/t/¥-H4(t-4-t`4-¥.4,¥,4/t.4-Hãô[ô€\⁄ò[YHéàí[\õ›ôY]\úô[òŸHãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñﬁ»ù[[ùYéàîÀMLHãúô\]Z\ôYò[ö»éå_WKô\ÿ‹ö\[€àéàê€€€›€à]\úô[òŸH4`Ù/4-t/tc4b4,4-t`¥`tc»4/t,ÀH»MH4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW–”””’”ó‘—P””ë»ãùò[Y\»éñÕÀçKMWKù\ôŸ]YéàëUTîëSê—HüWKùô\ú⁄[€àéåüK»öYéàîÀML»ãöX€€íYéàî’TïíUêSÕÃ»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéçúô\]Z\ôY‹[ù⁄[ù»éåMKõò[YHéà¥&4/t`t`¥.4/t.¥`à4`Ù,t.4.ta¥bÀô[ô€\⁄ò[YHéàí⁄[\à[ú›[ò›ãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥*4,4/t`H4.¥`4.4`¥.4aÙ-t`t.¥/¥,Ù/à4`Ù-4,4`4,4,¥`t-taH4a4.4-Ù.4aÙ-t`t.¥.4aH4,4`¥,4.à
+ÃIH»
+ÃâH»
+Ã…Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàî›][ŸYöY\àãöŸ^Héàê‘íUP–S–“Sê—W‘Tê—Sïãùò[Y\»éñÃKã◊_WKùô\ú⁄[€àéåüK»öYéàîÀMMãöX€€íYéàî’TïíUêSÕÕãòúò[ò⁄Yéàî’TïíUêSãùY\àéçúô\]Z\ôY‹[ù⁄[ù»éåMKõò[YHéà¥'¥`¥,¥-t`¥/tbÙ.H4,¥bÙ`t`¥`4-t.»ãô[ô€\⁄ò[YHéàê€›[ù\ú⁄›ãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñﬁ»ù[[ùYéàîÀMLHãúô\]Z\ôYò[ö»éå_WKô\ÿ‹ö\[€àéà¥'Ù/¥`t.Ù-H4/Ù/¥.Ù`ÙaÙ-t/t.4c»4`Ù`4/¥/t,4,¥/à4,¥`4-t/4c»]\úô[òŸH4`t.Ù-t-4`Ùc¥bt.4.H4a4.4-Ù.4aÙ-t`t.¥.4.H4,¥bÙ`t`¥`4-t.»4-Ù,H4`t-t.ãà4/t,4/t/¥`t.4`à
+ÃL	H»
+Ãå	H4`Ù`4/¥/t,»4/t-H4`t.¥.Ù,4-4bÙ,¥,4-t`¥`tcÀàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó—SPQ—W’R—Sàãùò[Y\»éñÃLåKù\ôŸ]YéàëUTîëSê—W–”’SïTî“’ãúù[ù[YT›]\»éàî›\‹ùYãô\ò][€îŸX€€ô»éç_WKùô\ú⁄[€àéåüK»öYéàîÀMKLHãöX€€íYéàî’TïíUÖ1|’|ƒà∞ââ…Öπç°%êàËâMUIY%Y0à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãBsB˚BÔB˜B„B◊B˜B˚FB˜F/B‘ÉFB◊FBÔB◊BÎFF,∞∞âïπù±•Õ°9ÖµîàËâ1•ù°—π•πúÅIïô±ï·ïÃà∞âµÖ·IÖπ¨àË‘∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËâù•±•—‰Ä¨ÃîÄºÄ¨ÿîÄºÄ¨‰îÄºÄ¨ƒ»îÄºÄ¨ƒ‘î∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâM—Ö—5Ωë•ô•ï»à∞â≠ï‰àËâ%1%Qe}AI9Pà∞âŸÖ±’ïÃàÈlÃ∞ÿ∞‰∞ƒ»∞ƒ’uıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâL¥‘¥»à∞â•çΩπ%êàËâMUIY%Y1|’|»à∞ââ…Öπç°%êàËâMUIY%Y0à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãBãB√BÎFB„FB◊FBÎB√F<ÉFB˚B”BœB˚FB˚BÀBÎB¿à∞âïπù±•Õ°9ÖµîàËâQÖç—•çÖ∞ÅA…ï¡Ö…Ö—•Ω∏à∞âµÖ·IÖπ¨àË»∞â¡…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBB˚FBÔB‘ÉFFB√B«B√FF/BÀB√B˜B„F<ÉBÔF;B«B˚B‰ÉBÔB˚BÀFF#BÎB‡ÉFBÔB◊B”FF;F'B„B‰ÉBÀF/FFFB◊BÏÉBﬂB¿Ä‘ÉFB◊BË∏ÉBˇB˚BÔFFB√B◊FÄ¨‘îÄºÄ¨ƒ¿îÅ…•–ÉB‡Ä¨‘îÄºÄ¨ƒ¿îÅÖµÖùî∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}AIQe}Y9Pà∞âŸÖ±’ïÃàÈl‘∞ƒ¡t∞â—Ö…ùï—%êàËâQIA}9aQ}M!=Pà∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêà∞âÕïçΩπëÖ…ÂYÖ±’ïÃàÈl‘∞ƒ¡t∞âë’…Ö—•ΩπMïçΩπëÃàË’ıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâL¥‘¥Ãà∞â•çΩπ%êàËâMUIY%Y1|’|Ãà∞ââ…Öπç°%êàËâMUIY%Y0à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãB∑B”B˚BÀB„FF/B‘ÉB€B√BÔB¿à∞âïπù±•Õ°9ÖµîàËâYïπΩµΩ’ÃÅM—•πùÃà∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBãF,ÉB˜B√B˜B˚FB„F#F0ÉFB◊BÔB‡ÉBˇB˚B–ÉFBÀB˚B„BÅMï…¡ïπ–ÅM—•πúÉB„BÔB‡Å]ÂŸï…∏ÅM—•πúÄ¨ÃîÄºÄ¨ÿîÉFFB˚B˜B¿∏à∞âµΩë•ô•ï…ÃàÈmÏâ—Â¡îàËâŸïπ—Q…•ùùï…ïêà∞â≠ï‰àËâ=9}	%1%Qe}UMà∞âŸÖ±’ïÃàÈlÃ∞Ÿt∞â—Ö…ùï—%êàËâA=%M=9}QIQ}5à∞â…’π—•µïM—Ö—’ÃàËâM’¡¡Ω…—ïêâıt∞âŸï…Õ•Ω∏àË…Ù±Ïâ•êàËâL¥‘¥–à∞â•çΩπ%êàËâMUIY%Y1|’|–à∞ââ…Öπç°%êàËâMUIY%Y0à∞â—•ï»àË‘∞â…ï≈’•…ïëM¡ïπ—AΩ•π—ÃàË»¿∞âπÖµîàËãB[B◊BÔB◊BﬂB˜B√F<ÉBÀB˚BÔF<à∞âïπù±•Õ°9ÖµîàËâ%…Ω∏Å]•±∞à∞âµÖ·IÖπ¨àË»∞â¡…ï…ï≈’•Õ•—ïÃàÈmt∞âëïÕç…•¡—•Ω∏àËãBSBÔB„FB◊BÔF3B˜B˚FFF0ÉG7GV‚˜6ñ∆VÊ6R›&6ÜW"=Õ]›Õç]-Ú]ù4/t,L	H»å	N»4/Ù/¥.¥,\ò⁄\à4/Ù/¥-4.¥/¥/t`¥`4/¥.Ù-t/4,¥at/¥-4cÙbt.4.H4`Ù`4/¥/H4`t/t.4-¥,4-t`¥`tc»4/t,IH»L	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó—SPQ—W’R—Sàãùò[Y\»éñÃLåKù\ôŸ]YéàíTì”ó’“Sãúù[ù[YT›]\»éàî›\‹ùYãúŸX€€ô\ûUò[Y\»éñÕKL_WKùô\ú⁄[€àéåüK»öYéàîÀMãLHãöX€€íYéàî’TïíUêSÕóÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéçãúô\]Z\ôY‹[ù⁄[ù»éåçKõò[YHéà¥%¥,4.Ù/à4,¥.4,¥-t`4/tb»ãô[ô€\⁄ò[YHéàïﬁ]ô\õà›[ô»ãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`àﬁ]ô\õà›[ôŒà4`t.4.Ùc4/tbÙ.H4cÙ-4/t,4`t-t.ãã4/¥.¥/¥.Ù/àMå	H]X⁄»›Ÿ\é»4a¥-t.Ùc4/t,4/t/¥`t.4`à8¢$åL	H[XYŸH4/t,à4`t-t.ãé»çHõÿ›\Œ»€€€›€àÃ4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]Yéàï÷UëTìó‘’Së»üWKùô\ú⁄[€àéåüK»öYéàîÀMãLàãöX€€íYéàî’TïíUêSÕóÃàãòúò[ò⁄Yéàî’TïíUêSãùY\àéçãúô\]Z\ôY‹[ù⁄[ù»éåçKõò[YHéà¥(t/4-t`4`¥-t.Ùc4/tbÙ.H4cÙ-ãô[ô€\⁄ò[YHéàëXYH⁄\€€àãõX^ò[ö»éåÀúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(Ù`4/¥/HŸ\ú[ù›[ô»4.ﬁ]ô\õà›[ô»
+ÃL	H»
+Ãå	H»
+ÃÃ	Kàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW—SPQ—W‘Tê—Sïãùò[Y\»éñÃLåÃKù\ôŸ]Yéàî—TîSï‘’Së»üK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW—SPQ—W‘Tê—Sïãùò[Y\»éñÃLåÃKù\ôŸ]Yéàï÷UëTìó‘’Së»üWKùô\ú⁄[€àéåüK»öYéàîÀMãL»ãöX€€íYéàî’TïíUêSÕóÃ»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéçãúô\]Z\ôY‹[ù⁄[ù»éåçKõò[YHéà¥)¥-t/Ùc4`t/¥,¥`Ùb4-t.àãô[ô€\⁄ò[YHéàïò\⁄Z[àãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(t`4,4,t,4`¥bÙ,¥,4/t.4-H4.Ù/¥,¥`Ùb4.¥.4`Ù/4-t/tc4b4,4-t`à4/¥`t`¥,4,¥b4.4.t`tc»€€€›€à4/¥`t`¥,4.Ùc4/tbÙaH4.Ù/¥,¥`Ùb4-t.à4/t,H»à4`t-t.ãé»[ù\õò[€€€›€àà4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÃKóKù\ôŸ]YéàïêT–“RSàãúù[ù[YT›]\»éàî›\‹ùYãö[ù\õò[€€€›€îŸX€€ô»éåüWKùô\ú⁄[€àéåüK»öYéàîÀMãMãöX€€íYéàî’TïíUêSÕóÕãòúò[ò⁄Yéàî’TïíUêSãùY\àéçãúô\]Z\ôY‹[ù⁄[ù»éåçKõò[YHéà¥&4/t`t`¥.4/t.¥`à4,¥bÙ-¥.4,¥,4/t.4c»ãô[ô€\⁄ò[YHéàî›\ùö]ò[[ú›[ò›ãõX^ò[ö»éåãúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥&¥/¥,Ù-4,4-Ù-4/¥`4/¥,¥c4-H\ò⁄\à4/t.4-¥-HÃ	K4,¥at/¥-4cÙbt.4.H4`Ù`4/¥/H4`Ù/4-t/tc4b4,4-t`¥`tc»4/t,IH»L	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó“’ëT“”ãùò[Y\»éñÕKLKù\ôŸ]Yéàì’◊“‘ëQP’S”àãúù[ù[YT›]\»éàî›\‹ùYãùô\⁄€éåÃWKùô\ú⁄[€àéåüK»öYéàîÀMÀLHãöX€€íYéàî’TïíUêSÕ◊ÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àéçÀúô\]Z\ôY‹[ù⁄[ù»éåÃõò[YHéà¥(¥,4.¥`¥.4aÙ-t`t.¥.4.H4`t,t`4/¥`Hãô[ô€\⁄ò[YHéàîô\\ò][€àãõX^ò[ö»éåKúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'¥`¥.¥`4bÙ,¥,4-t`àô\\ò][€éà4/4,Ù/t/¥,¥-t/t/t/à4`t,t`4,4`tbÙ,¥,4-t`à€€€›€à4%Ù,4/4/¥`4,4-¥.4,¥,4c¥bt-t.K4'¥,t-¥.4,Ù,4c¥bt-t.H4.4$¥-Ù`4bÙ,¥/t/¥.H4.Ù/¥,¥`Ùb4-t.é»€€€›€àå4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàïSì–“◊–PíSUHãùò[Y\»éñÃWKù\ôŸ]YéàîëTTêUS”àüWKùô\ú⁄[€àéåüK»öYéàîÀMÀLàãöX€€íYéàî’TïíUêSÕ◊Ãàãòúò[ò⁄Yéàî’TïíUêSãùY\àéçÀúô\]Z\ôY‹[ù⁄[ù»éåÃõò[YHéà¥(t/4-t`4`¥-t.Ùc4/tbÙ-H4.Ù/¥,¥`Ùb4.¥.ãô[ô€\⁄ò[YHéàëXYHò\»ãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥(Ù`4/¥/H4'¥,t-¥.4,Ù,4c¥bt-t.H4.4$¥-Ù`4bÙ,¥/t/¥.H4.Ù/¥,¥`Ùb4-t.à
+ÃMIH»
+ÃÃ	Kàãõ[ŸYöY\ú»éñﬁ»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW—SPQ—W‘Tê—Sïãùò[Y\»éñÃMKÃKù\ôŸ]YéàíSSS”US”ó’êTüK»ù\HéàêXö[]S[ŸYöY\àãöŸ^HéàêPíSUW—SPQ—W‘Tê—Sïãùò[Y\»éñÃMKÃKù\ôŸ]YéàëV‘“UëW’êTüWKùô\ú⁄[€àéåüK»öYéàîÀMÀL»ãöX€€íYéàî’TïíUêSÕ◊Ã»ãòúò[ò⁄Yéàî’TïíUêSãùY\àéçÀúô\]Z\ôY‹[ù⁄[ù»éåÃõò[YHéà¥+Ù-4.4`t`¥,4.Ùcãô[ô€\⁄ò[YHéàî⁄\€€à[ô›Y[ãõX^ò[ö»éåãúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥*4,4/t`H4.¥`4.4`¥.4aÙ-t`t.¥/¥,Ù/à4`Ù-4,4`4,4a4.4-Ù.4aÙ-t`t.¥.4aH4,¥bÙ`t`¥`4-t.Ù/¥,à4/Ù`4/¥`¥.4,à4/¥`¥`4,4,¥.Ù-t/t/t/¥.H4`¥/¥,t/¥.H4a¥-t.Ù.
+Ã…H»
+ÕâKàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–PíSUW’T—Qãùò[Y\»éñÃÀóKù\ôŸ]Yéàî“T””ëQ’Të—U–‘íUãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüK»öYéàîÀMÀMãöX€€íYéàî’TïíUêSÕ◊Õãòúò[ò⁄Yéàî’TïíUêSãùY\àéçÀúô\]Z\ôY‹[ù⁄[ù»éåÃõò[YHéà¥$4-4,4/Ù`¥,4a¥.4c»ãô[ô€\⁄ò[YHéàêY\][€àãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'Ù/¥`t.Ù-H4`t`4,4,t,4`¥bÙ,¥,4/t.4c»4.Ùc¥,t/¥.H4.Ù/¥,¥`Ùb4.¥.\ò⁄\à4/Ù/¥.Ù`ÙaÙ,4-t`àIH»L	H4`t/t.4-¥-t/t.4c»4,¥at/¥-4cÙbt-t,Ù/à4`Ù`4/¥/t,4/t,4`t-t.ãàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÕKLKù\ôŸ]YéàïêT–QTUS”àãúù[ù[YT›]\»éàî›\‹ùYãô\ò][€îŸX€€ô»éçWKùô\ú⁄[€àéåüK»öYéàîÀNLHãöX€€íYéàî’TïíUêSŒÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àééúô\]Z\ôY‹[ù⁄[ù»éåÕKõò[YHéà¥(t/¥,¥-t`4b4-t/t/tbÙ-H4`4-ta4.Ù-t.¥`tbÀô[ô€\⁄ò[YHéàî\ôôX›ôYõ^\»ãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñﬁ»ù[[ùYéàîÀMKLHãúô\]Z\ôYò[ö»éå_WKô\ÿ‹ö\[€àéà¥'4/¥.Ù/t.4-t/t/¥`t/tbÙ-H4`4-ta4.Ù-t.¥`tb»4-4/¥/Ù/¥.Ù/t.4`¥-t.Ùc4/t/à4-4,4c¥`à
+ÕIH]X⁄»‹YYàãõ[ŸYöY\ú»éñﬁ»ù\Héàî›][ŸYöY\àãöŸ^HéàêUP“◊‘‘QQ‘Tê—Sïãùò[Y\»éñÕW_WKùô\ú⁄[€àéåüK»öYéàîÀNLàãöX€€íYéàî’TïíUêSŒÃàãòúò[ò⁄Yéàî’TïíUêSãùY\àééúô\]Z\ôY‹[ù⁄[ù»éåÕKõò[YHéà¥'4,4`t`¥-t`t`¥,4.¥`¥.4.àãô[ô€\⁄ò[YHéàìX\›\àX›X⁄X[àãõX^ò[ö»éåãúô\ô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéà¥'Ù/¥`t.Ù-H4`t`4,4,t,4`¥bÙ,¥,4/t.4c»4.Ù/¥,¥`Ùb4.¥.4`t.Ù-t-4`Ùc¥bt,4c»4`t/Ù/¥`t/¥,t/t/¥`t`¥c4-Ù,H4`t-t.ãéà4`4,4/t,»H8†%4`t`¥/¥.4/4/¥`t`¥c8¢$çL	K[XYŸH
+ÃL	N»4`4,4/t,»à8†%4,t-t`t/Ù.Ù,4`¥/t/ã[XYŸH
+Ãå	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÃLåKù\ôŸ]YéàìPT’Tó’P’P“PSàãúù[ù[YT›]\»éàî›\‹ùYãúŸX€€ô\ûUò[Y\»éñÕLLKô\ò][€îŸX€€ô»éç_WKùô\ú⁄[€àéåüK»öYéàîÀNL»ãöX€€íYéàî’TïíUêSŒÃ»ãòúò[ò⁄Yéàî’TïíUêSãùY\àééúô\]Z\ôY‹[ù⁄[ù»éåÕKõò[YHéà¥(t/¥,¥-t`4b4-t/t/t/¥-H4(t-4-t`4-¥.4,¥,4/t.4-Hãô[ô€\⁄ò[YHéàî\ôôX›]\úô[òŸHãõX^ò[ö»éåKúô\ô\]Z\⁄]\»éñﬁ»ù[[ùYéàîÀMLHãúô\]Z\ôYò[ö»éå_WKô\ÿ‹ö\[€àéà¥$4.¥`¥.4,¥,4a¥.4c»]\úô[òŸH4`t/t.4/4,4-t`à4`H\ò⁄\à›[à4.4.Ù.⁄[[òŸH4.4`t,t`4,4`tbÙ,¥,4-t`à€€€›€à4%Ù,4/4/¥`4,4-¥.4,¥,4c¥bt-t.H4.Ù/¥,¥`Ùb4.¥.àãõ[ŸYöY\ú»éñﬁ»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–PíSUW’T—Qãùò[Y\»éñÃWKù\ôŸ]YéàîTëëP’—UTîëSê—Hãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüK»öYéàîÀNKLHãöX€€íYéàî’TïíUêSŒWÃHãòúò[ò⁄Yéàî’TïíUêSãùY\àééKúô\]Z\ôY‹[ù⁄[ù»éçõò[YHéà¥'4$4(t(¥%t(4$¥*Ù%¥&4(¥$4't&4+»ãô[ô€\⁄ò[YHéàî’TïíUêSPT’TàãõX^ò[ö»éåKúô\]Z\⁄]\»éñ◊Kô\ÿ‹ö\[€àéàêY⁄[]H
+ÕIK4`Ù`4/¥/H4.Ù/¥,¥`Ùb4-t.à
+ÃMIN»4/Ù/à4a¥-t.Ù.4/Ù/¥-4`¥,¥/¥.4/4cÙ-4/¥/4.4.Ù.4/t-t-4,4,¥/t-t.H4.Ù/¥,¥`Ùb4.¥/¥.H‹ö]4a4.4-Ù.4aÙ-t`t.¥.4aH4,¥bÙ`t`¥`4-t.Ù/¥,à
+ÕIN»4/Ù-t`4,¥/¥-H4`t`4,4,t,4`¥bÙ,¥,4/t.4-H4.Ù/¥,¥`Ùb4.¥.4/Ù/¥`t.Ù-Hô\\ò][€à4,¥/¥`t`t`¥,4/t,4,¥.Ù.4,¥,4-t`àMHõÿ›\»4.4`Ù`t.4.Ù.4,¥,4-t`à4`t.Ù-t-4`Ùc¥bt.4.H4a4.4-Ù.4aÙ-t`t.¥.4.H4,¥bÙ`t`¥`4-t.»4/t,
+Ãå	Kàãõ[ŸYöY\ú»éñﬁ»ù\Héàî›][ŸYöY\àãöŸ^HéàêQ“SUW‘Tê—Sïãùò[Y\»éñÕW_K»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó‘TïW—UëSïãùò[Y\»éñÃMWKù\ôŸ]Yéàî’TïíUêS”PT’Tó’êT»ãúù[ù[YT›]\»éàî›\‹ùYãúŸX€€ô\ûUò[Y\»éñÃå_K»ù\Héàë]ô[ùöYŸŸ\ôYãöŸ^Héàì”ó–PíSUW’T—Qãùò[Y\»éñÕWKù\ôŸ]Yéàî’TïíUêS”PT’Tó–‘íUãúù[ù[YT›]\»éàî›\‹ùYüWKùô\ú⁄[€àéåüW_W_B
