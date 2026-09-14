@@ -144,6 +144,7 @@ private static string CanonicalArcherHookTargetId(string targetId) => targetId s
 "PET_FOCUS" => "PET_FOCUS_PROC",
 "COMBAT_RHYTHM" => "PHYSICAL_SHOT_RHYTHM",
 "TRUESHOT_AURA_GROUP" => "TRUESHOT_AURA",
+"BEAST_MASTER_OWNER_SHOT" => "BEST_MASTER_OWNER_SHOT",
 _ => targetId
 };
 }
