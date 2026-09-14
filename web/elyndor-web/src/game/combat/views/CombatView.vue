@@ -8,6 +8,7 @@ import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
+import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -586,32 +587,14 @@ onUnmounted(() => window.clearInterval(timer))
         </button>
       </section>
 
-      <nav
-        v-if="aliveEnemies.length > 1"
-        class="combat-targets"
-        aria-label="Выбор цели"
-        data-combat-targets
-      >
-        <button
-          v-for="enemy in aliveEnemies"
-          :key="enemy.actorId"
-          type="button"
-          :class="{ active: enemy.actorId === (snapshot.selectedTargetActorId ?? snapshot.enemy.actorId) }"
-          :disabled="combat.pending"
-          :data-target-actor-id="enemy.actorId"
-          @click="selectCombatTarget(enemy.actorId)"
-        >
-          <span>{{ enemy.name }}</span>
-          <em v-if="enemy.currentAggroTargetActorId" class="combat-targets__aggro">Агро: {{ enemyAggroName(enemy) }}</em>
-          <div class="combat-targets__vitals">
-            <i aria-hidden="true"><b :style="{ width: `${combatEnemyHealthRatio(enemy)}%` }" /></i>
-            <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(combatEnemyHealthRatio(enemy)) }}%</small>
-          </div>
-          <span class="combat-targets__portrait" aria-hidden="true">
-            <IconGenerator :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
-          </span>
-        </button>
-      </nav>
+      <CombatEnemyTargetList
+        :enemies="aliveEnemies"
+        :selected-target-actor-id="snapshot.selectedTargetActorId ?? snapshot.enemy.actorId"
+        :disabled="combat.pending"
+        :health-ratio="combatEnemyHealthRatio"
+        :aggro-name="enemyAggroName"
+        @select="selectCombatTarget"
+      />
 
       <section
         class="battlefield"
