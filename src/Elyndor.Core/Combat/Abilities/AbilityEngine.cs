@@ -304,7 +304,7 @@ public static class AbilityEngine
                                 action.Amount,
                                 OccurredAtUtc: now,
                                 Source: runtime.Actor,
-                                CanCrit: action.CanCrit,
+                                CanCrit: action.HealingCanCrit,
                                 CriticalChanceBonus: ability.CriticalChanceBonus
                                     + targetModifier.CriticalChanceBonus,
                                 CriticalDamageBonus: ability.CriticalDamageBonus
@@ -390,7 +390,7 @@ public static class AbilityEngine
         ArgumentOutOfRangeException.ThrowIfNegative(ability.DamageMultiplier);
         bool requiresRandom = ability.Actions?.Any(action =>
             action.Type == AbilityActionType.Damage
-            || action.Type == AbilityActionType.Healing && action.CanCrit) == true;
+            || action.Type == AbilityActionType.Healing && action.HealingCanCrit) == true;
         if (requiresRandom && random is null)
         {
             throw new InvalidOperationException(
