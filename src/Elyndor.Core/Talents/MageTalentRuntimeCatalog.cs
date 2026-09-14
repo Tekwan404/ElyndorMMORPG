@@ -4,7 +4,7 @@ public static class MageTalentRuntimeCatalog
 {
     private static readonly IReadOnlyDictionary<string, string> EventKeys = BuildEventKeys();
 
-    private static IReadOnlyDictionary<string, string> BuildEventKeys()
+    private static Dictionary<string, string> BuildEventKeys()
     {
         Dictionary<string, string> keys = new(StringComparer.Ordinal);
         for (var tier = 1; tier <= 9; tier++)
