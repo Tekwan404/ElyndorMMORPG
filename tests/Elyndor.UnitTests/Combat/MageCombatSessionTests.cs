@@ -18,236 +18,127 @@ public sealed class MageCombatSessionTests
         Guid.Parse("72000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public void FourArcaneSparksExposeCascadeAndCascadeConsumesTwoCharges()
-    {
-        ResolvedTalentModifiers talents = Talents(
-            unlocked: new HashSet<string>(["ARCANE_CASCADE"], StringComparer.Ordinal),
-            Hook("A-2-1", TalentModifierKeys.OnAbilityUsed, 1, 1, duration: TimeSpan.FromSeconds(12)),
-            Hook("A-6-1", TalentModifierKeys.OnAbilityUsed, 1, 2));
-        CombatSession session = CreateSession(
-            talents,
-            new HashSet<string>(["MAGE_ARCANE_SPARK", "ARCANE_CASCADE"], StringComparer.Ordinal));
-
-        Assert.DoesNotContain("ARCANE_CASCADE", session.Snapshot().Player.KnownAbilityIds);
-
-        DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 4; index++)
-        {
-            CombatCommandResult spark = session.Handle(
-                new UseAbilityCommand($"spark-{index}", "MAGE_ARCANE_SPARK", EnemyId),
-                cursor);
-            Assert.True(spark.Succeeded);
-            cursor += TimeSpan.FromSeconds(3.001);
-        }
-
-        CombatSessionSnapshot charged = session.Snapshot();
-        CombatEffectSnapshot charge = Assert.Single(
-            charged.Player.Effects,
-            effect => effect.Id == "MAGE_ARCANE_CHARGE");
-        Assert.Equal(4, charge.Stacks);
-        Assert.Contains("ARCANE_CASCADE", charged.Player.KnownAbilityIds);
-
-        CombatCommandResult cascade = session.Handle(
-            new UseAbilityCommand("cascade", "ARCANE_CASCADE", EnemyId),
-            cursor);
-
-        Assert.True(cascade.Succeeded);
-        CombatEffectSnapshot remaining = Assert.Single(
-            cascade.Snapshot.Player.Effects,
-            effect => effect.Id == "MAGE_ARCANE_CHARGE");
-        Assert.Equal(2, remaining.Stacks);
-        Assert.DoesNotContain("ARCANE_CASCADE", cascade.Snapshot.Player.KnownAbilityIds);
-    }
-
-    [Fact]
-    public void ArcaneBurstScalesWithChargesConsumesThemAndReturnsMana()
+    public void ClearcastingMakesNextManaSpellFreeAndConsumesItsCharge()
     {
         ResolvedTalentModifiers talents = Talents(
             unlocked: new HashSet<string>(StringComparer.Ordinal),
-            Hook("A-2-1", TalentModifierKeys.OnAbilityUsed, 1, 1, duration: TimeSpan.FromSeconds(12)),
-            Hook("A-5-3", TalentModifierKeys.OnAbilityUsed, 4, 5));
+            Hook("A-1-2", TalentModifierKeys.OnAbilityUsed, 1, 100));
         CombatSession session = CreateSession(
             talents,
-            new HashSet<string>(["MAGE_ARCANE_SPARK", "ARCANE_BURST"], StringComparer.Ordinal),
-            playerResource: 200,
-            maxResource: 200);
+            new HashSet<string>(["MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD"], StringComparer.Ordinal));
 
-        DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 3; index++)
-        {
-            Assert.True(session.Handle(
-                new UseAbilityCommand($"charge-{index}", "MAGE_ARCANE_SPARK", EnemyId),
-                cursor).Succeeded);
-            cursor += TimeSpan.FromSeconds(3.001);
-        }
+        DateTimeOffset firstCastAt = Now.AddMilliseconds(1);
+        CombatCommandResult spark = session.Handle(
+            new UseAbilityCommand("spark", "MAGE_ARCANE_SPARK", EnemyId),
+            firstCastAt);
 
-        decimal beforeHp = session.Snapshot().Enemy.Hp;
-        decimal beforeMana = session.Snapshot().Player.Resource;
-        CombatCommandResult started = session.Handle(
-            new UseAbilityCommand("burst", "ARCANE_BURST", EnemyId),
-            cursor);
-        Assert.True(started.Succeeded);
-
-        CombatCastSnapshot activeCast = Assert.IsType<CombatCastSnapshot>(
-            started.Snapshot.Player.ActiveCast);
-        CombatCommandResult completed = session.AdvanceTo(activeCast.ResolvesAtUtc);
-
-        Assert.Null(completed.Snapshot.Player.ActiveCast);
-        Assert.DoesNotContain(
-            completed.Snapshot.Player.Effects,
-            effect => effect.Id == "MAGE_ARCANE_CHARGE");
-        Assert.True(beforeHp - completed.Snapshot.Enemy.Hp > 110);
-        Assert.Equal(beforeMana - 25 + 15, completed.Snapshot.Player.Resource);
-    }
-
-    [Fact]
-    public void FrostbiteBuildsToThreeStacksAndIceLanceConsumesOne()
-    {
-        ResolvedTalentModifiers talents = Talents(
-            unlocked: new HashSet<string>(StringComparer.Ordinal),
-            Hook(
-                "I-2-1",
-                TalentModifierKeys.OnAbilityUsed,
-                4,
-                4,
-                duration: TimeSpan.FromSeconds(6)));
-        CombatSession session = CreateSession(
-            talents,
-            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_LANCE"], StringComparer.Ordinal));
-
-        DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 3; index++)
-        {
-            Assert.True(session.Handle(
-                new UseAbilityCommand($"shard-{index}", "MAGE_ICE_SHARD", EnemyId),
-                cursor).Succeeded);
-            cursor += TimeSpan.FromSeconds(1.5);
-            session.AdvanceTo(cursor);
-            cursor += TimeSpan.FromMilliseconds(1);
-        }
-
-        CombatEffectSnapshot frostbite = Assert.Single(
-            session.Snapshot().Enemy.Effects,
-            effect => effect.Id == "MAGE_FROSTBITE");
-        Assert.Equal(3, frostbite.Stacks);
+        Assert.True(spark.Succeeded);
+        Assert.Equal(85, spark.Snapshot.Player.Resource);
         Assert.Contains(
-            session.Snapshot().Enemy.Effects,
-            effect => effect.Id == "MAGE_FROSTBITE_ATTACK_SPEED");
+            spark.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_CLEARCASTING");
 
+        DateTimeOffset shardAt = firstCastAt.AddSeconds(1.501);
+        CombatCommandResult shard = session.Handle(
+            new UseAbilityCommand("free-shard", "MAGE_ICE_SHARD", EnemyId),
+            shardAt);
+
+        Assert.True(shard.Succeeded);
+        Assert.Equal(85, shard.Snapshot.Player.Resource);
+        Assert.DoesNotContain(
+            shard.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_CLEARCASTING");
+    }
+
+    [Fact]
+    public void AbsolutePresenceMakesNextShortCastInstantAndHalfCost()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            unlocked: new HashSet<string>(StringComparer.Ordinal),
+            Hook("A-8-2", TalentModifierKeys.OnAbilityUsed, 1, 50));
+        CombatSession session = CreateSession(
+            talents,
+            new HashSet<string>(["MAGE_PRESENCE_OF_MIND", "MAGE_ICE_SHARD"], StringComparer.Ordinal));
+
+        DateTimeOffset presenceAt = Now.AddMilliseconds(1);
+        CombatCommandResult presence = session.Handle(
+            new UseAbilityCommand("presence", "MAGE_PRESENCE_OF_MIND", PlayerId),
+            presenceAt);
+        Assert.True(presence.Succeeded);
+        Assert.Contains(
+            presence.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_PRESENCE_OF_MIND_ACTIVE");
+
+        DateTimeOffset shardAt = presenceAt.AddMilliseconds(1);
+        CombatCommandResult shard = session.Handle(
+            new UseAbilityCommand("instant-shard", "MAGE_ICE_SHARD", EnemyId),
+            shardAt);
+
+        Assert.True(shard.Succeeded);
+        Assert.Equal(91, shard.Snapshot.Player.Resource);
+        CombatCastSnapshot cast = Assert.IsType<CombatCastSnapshot>(shard.Snapshot.Player.ActiveCast);
+        Assert.Equal(shardAt, cast.ResolvesAtUtc);
+        Assert.DoesNotContain(
+            shard.Snapshot.Player.Effects,
+            effect => effect.Id == "MAGE_PRESENCE_OF_MIND_ACTIVE");
+
+        CombatCommandResult completed = session.AdvanceTo(shardAt);
+        Assert.Null(completed.Snapshot.Player.ActiveCast);
+        Assert.True(completed.Snapshot.Enemy.Hp < 100_000);
+    }
+
+    [Fact]
+    public void FrostNovaFreezesNormalEnemyAndIceLanceDealsTripleDamage()
+    {
+        CombatSession session = CreateSession(
+            ResolvedTalentModifiers.Empty,
+            new HashSet<string>(["MAGE_FROST_NOVA", "MAGE_ICE_LANCE"], StringComparer.Ordinal));
+
+        DateTimeOffset novaAt = Now.AddMilliseconds(1);
+        CombatCommandResult nova = session.Handle(
+            new UseAbilityCommand("nova", "MAGE_FROST_NOVA", EnemyId),
+            novaAt);
+
+        Assert.True(nova.Succeeded);
+        Assert.Contains(
+            nova.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FREEZE");
+        Assert.DoesNotContain(
+            nova.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_DEEP_CHILL");
+
+        DateTimeOffset lanceAt = novaAt.AddSeconds(1.501);
         CombatCommandResult lance = session.Handle(
-            new UseAbilityCommand("lance", "ICE_LANCE", EnemyId),
-            cursor);
+            new UseAbilityCommand("lance", "MAGE_ICE_LANCE", EnemyId),
+            lanceAt);
 
         Assert.True(lance.Succeeded);
-        CombatEffectSnapshot remaining = Assert.Single(
-            lance.Snapshot.Enemy.Effects,
-            effect => effect.Id == "MAGE_FROSTBITE");
-        Assert.Equal(2, remaining.Stacks);
-    }
-
-    [Fact]
-    public void IceLanceUsesTalentBonusWhenItConsumesThreeFrostbiteStacks()
-    {
-        ResolvedTalentModifiers talents = Talents(
-            unlocked: new HashSet<string>(StringComparer.Ordinal),
-            Hook(
-                "I-2-1",
-                TalentModifierKeys.OnAbilityUsed,
-                4,
-                4,
-                duration: TimeSpan.FromSeconds(6)),
-            Hook("I-3-1", TalentModifierKeys.OnAbilityUsed, 1, 40));
-        CombatSession session = CreateSession(
-            talents,
-            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_LANCE"], StringComparer.Ordinal));
-
-        DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 3; index++)
-        {
-            Assert.True(session.Handle(
-                new UseAbilityCommand($"shard-{index}", "MAGE_ICE_SHARD", EnemyId),
-                cursor).Succeeded);
-            cursor += TimeSpan.FromSeconds(1.5);
-            session.AdvanceTo(cursor);
-            cursor += TimeSpan.FromMilliseconds(1);
-        }
-
-        decimal beforeHp = session.Snapshot().Enemy.Hp;
-        CombatCommandResult result = session.Handle(
-            new UseAbilityCommand("lance", "ICE_LANCE", EnemyId),
-            cursor);
-
-        Assert.True(result.Succeeded);
         CombatEvent damage = Assert.Single(
-            result.Events,
+            lance.Events,
             combatEvent => combatEvent.Type == CombatEventType.DamageDealt
-                && combatEvent.DefinitionId == "ICE_LANCE");
-        Assert.Equal(133m, damage.Amount);
-        Assert.Equal(beforeHp - damage.Amount, result.Snapshot.Enemy.Hp);
+                && combatEvent.DefinitionId == "MAGE_ICE_LANCE");
+        Assert.Equal(285m, damage.Amount);
     }
 
     [Fact]
-    public void IceFractureUsesTalentHookForItsFrostbiteStunDuration()
+    public void FrostNovaUsesDeepChillOnBossWithoutFreezeStun()
     {
-        ResolvedTalentModifiers talents = Talents(
-            unlocked: new HashSet<string>(StringComparer.Ordinal),
-            Hook(
-                "I-2-1",
-                TalentModifierKeys.OnAbilityUsed,
-                4,
-                4,
-                duration: TimeSpan.FromSeconds(6)),
-            Hook("I-4-1", TalentModifierKeys.OnAbilityUsed, 1, 2));
         CombatSession session = CreateSession(
-            talents,
-            new HashSet<string>(["MAGE_ICE_SHARD", "ICE_FRACTURE"], StringComparer.Ordinal));
-
-        DateTimeOffset cursor = Now.AddMilliseconds(1);
-        for (var index = 0; index < 3; index++)
-        {
-            Assert.True(session.Handle(
-                new UseAbilityCommand($"shard-{index}", "MAGE_ICE_SHARD", EnemyId),
-                cursor).Succeeded);
-            cursor += TimeSpan.FromSeconds(1.5);
-            session.AdvanceTo(cursor);
-            cursor += TimeSpan.FromMilliseconds(1);
-        }
+            ResolvedTalentModifiers.Empty,
+            new HashSet<string>(["MAGE_FROST_NOVA"], StringComparer.Ordinal),
+            enemyRank: MonsterRank.Boss);
 
         CombatCommandResult result = session.Handle(
-            new UseAbilityCommand("fracture", "ICE_FRACTURE", EnemyId),
-            cursor);
+            new UseAbilityCommand("boss-nova", "MAGE_FROST_NOVA", EnemyId),
+            Now.AddMilliseconds(1));
 
         Assert.True(result.Succeeded);
-        CombatEffectSnapshot stun = Assert.Single(
-            result.Snapshot.Enemy.Effects,
-            effect => effect.Id == "MAGE_ICE_FRACTURE_STUN");
-        Assert.Equal(cursor.AddSeconds(2), stun.ExpiresAtUtc);
-    }
-
-    [Fact]
-    public void IncomingCriticalCreatesCrystalShield()
-    {
-        ResolvedTalentModifiers talents = Talents(
-            unlocked: new HashSet<string>(StringComparer.Ordinal),
-            Hook(
-                "I-2-3",
-                TalentModifierKeys.OnDamageTaken,
-                2,
-                4,
-                internalCooldown: TimeSpan.FromSeconds(12),
-                duration: TimeSpan.FromSeconds(5)));
-        CombatSession session = CreateSession(
-            talents,
-            new HashSet<string>(["MAGE_ICE_SHARD"], StringComparer.Ordinal),
-            enemyCriticalChance: 100,
-            enemyAutoAttackDamage: 10,
-            enemyAutoAttackInterval: TimeSpan.FromSeconds(1));
-
-        CombatCommandResult result = session.AdvanceTo(Now.AddSeconds(1));
-
         Assert.Contains(
-            result.Snapshot.Player.Effects,
-            effect => effect.Id == "MAGE_CRYSTAL_SHIELD");
+            result.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_DEEP_CHILL");
+        Assert.DoesNotContain(
+            result.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FREEZE");
     }
 
     private static ResolvedTalentEventHook Hook(
@@ -296,9 +187,7 @@ public sealed class MageCombatSessionTests
         IReadOnlySet<string> knownAbilityIds,
         decimal playerResource = 100,
         decimal maxResource = 100,
-        decimal enemyCriticalChance = 0,
-        decimal enemyAutoAttackDamage = 0,
-        TimeSpan? enemyAutoAttackInterval = null)
+        MonsterRank? enemyRank = null)
     {
         CombatActorState playerActor = Actor(
             PlayerId,
@@ -313,7 +202,7 @@ public sealed class MageCombatSessionTests
             maxResource: 0,
             resource: 0,
             spellPower: 0,
-            criticalChance: enemyCriticalChance);
+            criticalChance: 0);
 
         CombatParticipantDefinition player = new(
             playerActor,
@@ -330,12 +219,9 @@ public sealed class MageCombatSessionTests
             "TEST_ENEMY",
             "Enemy",
             "NONE",
-            new AutoAttackProfile(
-                enemyAutoAttackInterval ?? TimeSpan.FromHours(1),
-                enemyAutoAttackDamage,
-                0,
-                0),
-            new HashSet<string>(StringComparer.Ordinal));
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            MonsterRank: enemyRank);
 
         return new CombatSession(
             Guid.NewGuid(),
@@ -379,16 +265,14 @@ public sealed class MageCombatSessionTests
         {
             ["MAGE_ARCANE_SPARK"] = Damage(
                 "MAGE_ARCANE_SPARK", AbilityType.Instant, "ARCANE", 15, 3, 0, 0.75m),
-            ["ARCANE_BURST"] = Damage(
-                "ARCANE_BURST", AbilityType.Casted, "ARCANE", 25, 6, 1.2, 1.10m),
-            ["ARCANE_CASCADE"] = Damage(
-                "ARCANE_CASCADE", AbilityType.Instant, "ARCANE", 20, 8, 0, 1.50m),
+            ["MAGE_PRESENCE_OF_MIND"] = Utility(
+                "MAGE_PRESENCE_OF_MIND", AbilityTargetType.Self, "ARCANE", 0, 45, usesGlobalCooldown: false),
             ["MAGE_ICE_SHARD"] = Damage(
                 "MAGE_ICE_SHARD", AbilityType.Casted, "FROST", 18, 0, 1.5, 1.05m),
-            ["ICE_LANCE"] = Damage(
-                "ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m),
-            ["ICE_FRACTURE"] = Damage(
-                "ICE_FRACTURE", AbilityType.Instant, "FROST", 28, 12, 0, 0.70m)
+            ["MAGE_FROST_NOVA"] = Utility(
+                "MAGE_FROST_NOVA", AbilityTargetType.AllEnemiesInCombat, "FROST", 20, 25),
+            ["MAGE_ICE_LANCE"] = Damage(
+                "MAGE_ICE_LANCE", AbilityType.Instant, "FROST", 18, 6, 0, 0.95m)
         };
 
     private static AbilityDefinition Damage(
@@ -417,4 +301,24 @@ public sealed class MageCombatSessionTests
                     DamageType: DamageType.Magical,
                     SpellPowerCoefficient: coefficient)
             ]);
+
+    private static AbilityDefinition Utility(
+        string id,
+        AbilityTargetType targetType,
+        string school,
+        decimal mana,
+        double cooldownSeconds,
+        bool usesGlobalCooldown = true) =>
+        new(
+            id,
+            AbilityType.Instant,
+            targetType,
+            mana,
+            TimeSpan.FromSeconds(cooldownSeconds),
+            TimeSpan.Zero,
+            usesGlobalCooldown,
+            usesGlobalCooldown ? GlobalCooldownCategory.Standard : GlobalCooldownCategory.None,
+            true,
+            school,
+            Actions: []);
 }
