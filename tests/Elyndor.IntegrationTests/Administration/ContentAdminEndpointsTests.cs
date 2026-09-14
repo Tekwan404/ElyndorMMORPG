@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using Elyndor.Contracts.Administration;
 using Elyndor.Contracts.Identity;
+using Elyndor.Infrastructure.Administration;
+using Elyndor.Infrastructure.Content;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -117,6 +119,44 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
                 "/api/v1/admin/content/history?limit=10"))!;
         Assert.Contains(history.Revisions, item => item.Id == revision.Id);
         Assert.Contains(history.Releases, item => item.RevisionId == revision.Id);
+    }
+
+    [Fact]
+    public async Task TelegramAdminCanCreateAndHotPublishPromoCodeIdempotently()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+        using IServiceScope scope = factory.Services.CreateScope();
+        TelegramAdministrationService administration =
+            scope.ServiceProvider.GetRequiredService<TelegramAdministrationService>();
+        ContentAdministrationService contentAdmin =
+            scope.ServiceProvider.GetRequiredService<ContentAdministrationService>();
+
+        AdministrationOperation operation = new(
+            AdministrationOperationType.CreatePromoCode,
+            Value: "BLACKHEART_TEST crystals=125 global=10 per=1 hours=24");
+        AdministrationResult first = await administration.ExecuteAsync(
+            45_001,
+            777,
+            operation,
+            CancellationToken.None);
+        AdministrationResult replay = await administration.ExecuteAsync(
+            45_001,
+            777,
+            operation,
+            CancellationToken.None);
+
+        Assert.True(first.IsSuccess, $"{first.Code}: {first.Message}");
+        Assert.True(replay.IsSuccess, $"{replay.Code}: {replay.Message}");
+        Assert.True(replay.IsDuplicate);
+        var promo = contentAdmin.GetCurrent().Package.PromoCodes!
+            .Single(candidate => candidate.Code == "BLACKHEART_TEST");
+        Assert.Equal(125, promo.CrystalAmount);
+        Assert.Equal(10, promo.GlobalRedemptionLimit);
+        Assert.Equal(1, promo.PerAccountRedemptionLimit);
+        Assert.Equal(Now.AddHours(24), promo.ExpiresAtUtc);
+        Assert.Empty(promo.ItemRewards ?? []);
     }
 
     [Fact]

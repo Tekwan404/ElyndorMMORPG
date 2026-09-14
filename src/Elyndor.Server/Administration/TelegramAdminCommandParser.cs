@@ -31,6 +31,11 @@ public static class TelegramAdminCommandParser
             return AdminCommandParseResult.Success(new(AdminCommandType.Help));
         }
 
+        if (name is "promocode" or "promo")
+        {
+            return ParsePromoCode(arguments);
+        }
+
         if (!TryTakeTarget(arguments, out long targetId, out string remainder))
         {
             return AdminCommandParseResult.Failure("admin_target_invalid");
@@ -48,9 +53,25 @@ public static class TelegramAdminCommandParser
                 AdminCommandParseResult.Success(new(AdminCommandType.Rename, targetId, remainder)),
             "msg" when remainder is { Length: > 0 and <= 4096 } =>
                 AdminCommandParseResult.Success(new(AdminCommandType.Message, targetId, remainder)),
+            "giveitem" when remainder.Length > 0 =>
+                AdminCommandParseResult.Success(new(AdminCommandType.GiveItem, targetId, remainder)),
             "delete" => ParseDelete(targetId, remainder),
             _ => AdminCommandParseResult.Failure("admin_command_unknown")
         };
+    }
+
+    private static AdminCommandParseResult ParsePromoCode(string arguments)
+    {
+        const string prefix = "create ";
+        if (!arguments.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return AdminCommandParseResult.Failure("admin_promo_command_invalid");
+        }
+
+        string spec = arguments[prefix.Length..].Trim();
+        return spec.Length > 0
+            ? AdminCommandParseResult.Success(new(AdminCommandType.CreatePromoCode, Value: spec))
+            : AdminCommandParseResult.Failure("admin_promo_command_invalid");
     }
 
     private static AdminCommandParseResult ParseLevel(long targetId, string value) =>
