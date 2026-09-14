@@ -77,12 +77,12 @@ function queuePosition(abilityId: string): number {
 
 <style scoped>
 .combat-ability-hotbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
-.combat-ability-hotbar__slot { position: relative; display: grid; min-width: 0; min-height: 52px; place-items: center; align-content: center; gap: 2px; padding: 3px 2px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%)); color: var(--ui-color-text-primary); font: inherit; }
+.combat-ability-hotbar__slot { position: relative; display: grid; min-width: 0; min-height: clamp(43px, 13vw, 56px); place-items: center; align-content: center; gap: 2px; padding: 3px 2px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%)); color: var(--ui-color-text-primary); font: inherit; }
 .combat-ability-hotbar__slot[data-state='ready'] { border-color: rgb(146 136 255 / 36%); box-shadow: inset 0 0 0 1px rgb(146 136 255 / 4%); }
 .combat-ability-hotbar__slot[data-state='cooldown'], .combat-ability-hotbar__slot[data-state='resource'] { opacity: .46; }
 .combat-ability-hotbar__slot--empty { opacity: .2; }
 .combat-ability-hotbar__slot--comet { border-color: color-mix(in srgb, var(--ui-modifier-fire) 65%, var(--ui-color-border)); }
-.combat-ability-hotbar__icon { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 7%); border-radius: 8px; background: rgb(3 5 10 / 90%); color: #aaa3ff; }
+.combat-ability-hotbar__icon { display: grid; width: min(38px, 9vw); height: min(38px, 9vw); place-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 7%); border-radius: 8px; background: rgb(3 5 10 / 90%); color: #aaa3ff; }
 .combat-ability-hotbar__icon img { width: 100%; height: 100%; object-fit: cover; }
 .combat-ability-hotbar__icon > i { width: 11px; height: 11px; border: 1px solid var(--ui-color-border); border-radius: 50%; }
 .combat-ability-hotbar__slot > small { width: 100%; overflow: hidden; color: var(--ui-color-text-muted); font-size: .38rem; line-height: 1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
@@ -94,5 +94,4 @@ function queuePosition(abilityId: string): number {
 .combat-ability-hotbar__markers i { width: 4px; height: 4px; border-radius: 50%; background: rgb(255 255 255 / 20%); }
 .combat-ability-hotbar__markers i[data-filled='true'] { background: #f08b63; }
 .combat-ability-hotbar__proc { position: absolute; top: 3px; right: 3px; border-radius: 4px; padding: 1px 2px; background: rgb(241 123 70 / 85%); color: #fff4de; font-size: .38rem; font-weight: 900; }
-@media (max-width: 360px) { .combat-ability-hotbar__slot { min-height: 48px; } .combat-ability-hotbar__icon { width: 34px; height: 34px; } }
 </style>
