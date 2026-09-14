@@ -1,8 +1,8 @@
 namespace Elyndor.Core.Talents;
 public static class ArcherTalentRuntimeCatalog
 {
-private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> EventKeysByTalentId =
-new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal)
+private static readonly Dictionary<string, IReadOnlySet<string>> EventKeysByTalentId =
+new(StringComparer.Ordinal)
 {
 ["M-1-1"] = Keys(TalentModifierKeys.OnAbilityUsed),
 ["M-1-2"] = Keys(TalentModifierKeys.OnAbilityUsed),
@@ -88,6 +88,6 @@ node.BranchId is "MARKSMAN" or "BEAST_MASTERY" or "SURVIVAL"
 && modifier.Type == TalentModifierType.EventTriggered
 && EventKeysByTalentId.TryGetValue(node.Id, out IReadOnlySet<string>? keys)
 && keys.Contains(modifier.Key);
-private static IReadOnlySet<string> Keys(params string[] keys) =>
-new HashSet<string>(keys, StringComparer.Ordinal);
+private static HashSet<string> Keys(params string[] keys) =>
+new(keys, StringComparer.Ordinal);
 }
