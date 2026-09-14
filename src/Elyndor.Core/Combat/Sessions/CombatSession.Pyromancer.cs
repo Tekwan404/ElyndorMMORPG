@@ -313,13 +313,13 @@ public sealed partial class CombatSession
         UpdateCombustionState(ability, critical, now);
     }
 
-    private void ApplyPyromancerCriticalHooks(CombatEvent combatEvent)
+    private static void ApplyPyromancerCriticalHooks(CombatEvent combatEvent)
     {
         // Critical-dependent Fire mechanics are resolved from AbilityExecutionResult so
         // multi-target casts cannot double-trigger shared player state.
     }
 
-    private void ApplyPyromancerIncomingCriticalHooks(CombatEvent combatEvent) { }
+    private static void ApplyPyromancerIncomingCriticalHooks(CombatEvent combatEvent) { }
 
     private void ApplyPyromancerEnemyKilledHooks(CombatEvent death)
     {
