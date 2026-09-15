@@ -116,7 +116,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
-    public async Task BootstrapExposesArcaneArcherEffectiveManaResource()
+    public async Task BootstrapKeepsArcherOnThePhysicalFocusProfileWhenLegacyArcaneRanksExist()
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -175,9 +175,9 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         BootstrapSnapshot snapshot =
             await service.GetAsync(accountId, CancellationToken.None);
 
-        Assert.Equal("MANA", snapshot.Character!.Vitals.ResourceType);
-        Assert.Contains("ARCANE_ARROW", snapshot.Character.KnownAbilityIds);
-        Assert.Equal("INTELLECT", snapshot.Character.PrimaryAttribute);
+        Assert.Equal("FOCUS", snapshot.Character!.Vitals.ResourceType);
+        Assert.DoesNotContain("ARCANE_ARROW", snapshot.Character.KnownAbilityIds);
+        Assert.Equal("AGILITY", snapshot.Character.PrimaryAttribute);
     }
 
     [Fact]

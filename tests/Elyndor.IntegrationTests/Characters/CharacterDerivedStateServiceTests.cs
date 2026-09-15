@@ -167,7 +167,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
     }
 
     [Fact]
-    public async Task ArcaneArcherTalentOverridesResourcePrimaryAttributeCompanionAndAbility()
+    public async Task LegacyArcaneArcherTalentDoesNotOverridePhysicalArcherProfile()
     {
         GameContentPackage content = await LoadContentAsync();
         (Guid characterId, _) = await CreateCharacterAsync("ARCHER", 60);
@@ -194,14 +194,13 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
         CharacterDerivedState resolved = await service.ResolveAsync(
             characterId, "ARCHER", 60, CancellationToken.None);
 
-        Assert.Equal("MANA", resolved.EffectiveResourceProfile.Id);
-        Assert.Equal("INTELLECT", resolved.EffectivePrimaryAttribute);
-        Assert.Equal("ARCHER_SPIRIT", resolved.ActiveCompanionProfile?.Id);
-        Assert.Contains("ARCANE_ARROW", resolved.KnownAbilityIds);
+        Assert.Equal("FOCUS", resolved.EffectiveResourceProfile.Id);
+        Assert.Equal("AGILITY", resolved.EffectivePrimaryAttribute);
+        Assert.DoesNotContain("ARCANE_ARROW", resolved.KnownAbilityIds);
     }
 
     [Fact]
-    public async Task SelectedPhysicalCompanionIsUsedUnlessArcaneTalentsOverrideIt()
+    public async Task SelectedPhysicalCompanionRemainsActiveWhenLegacyArcaneRanksArePresent()
     {
         GameContentPackage content = await LoadContentAsync();
         (Guid characterId, _) = await CreateCharacterAsync("ARCHER", 60);
@@ -232,7 +231,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             characterId, "ARCHER", 60, CancellationToken.None);
 
         Assert.Equal("ARCHER_GUARDIAN", resolved.SelectedPhysicalCompanionProfile?.Id);
-        Assert.Equal("ARCHER_SPIRIT", resolved.ActiveCompanionProfile?.Id);
+        Assert.Equal("ARCHER_GUARDIAN", resolved.ActiveCompanionProfile?.Id);
     }
 
     [Fact]

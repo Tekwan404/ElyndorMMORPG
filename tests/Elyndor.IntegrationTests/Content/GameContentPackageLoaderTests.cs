@@ -21,8 +21,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.21.0", package.ContentVersion);
-        Assert.Equal("0.16.1", package.BalanceVersion);
+        Assert.Equal("0.22.0", package.ContentVersion);
+        Assert.Equal("0.17.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -96,28 +96,18 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("MAGE_FIREBALL", indexes.AbilitiesById["MAGE_FIREBALL"].Id);
 
         AbilityDefinition hunterMark = indexes.AbilitiesById["HUNTER_MARK"];
-        Assert.Equal(
-            1.05m,
-            hunterMark.RuntimeParameters!["physicalDamageMultiplier"]);
-        Assert.Equal(
-            1.03m,
-            hunterMark.RuntimeParameters["magicalDamageMultiplier"]);
+        AbilityActionDefinition hunterMarkAction = Assert.Single(hunterMark.Actions!);
+        Assert.Equal(AbilityActionType.ApplyEffect, hunterMarkAction.Type);
+        Assert.Equal("ARCHER_HUNTER_MARK", hunterMarkAction.Effect!.Id);
+        Assert.Equal(5m, hunterMarkAction.Effect.Magnitude);
+        Assert.Equal(TimeSpan.FromSeconds(20), hunterMarkAction.Effect.Duration);
         AbilityDefinition heavyArrow = indexes.AbilitiesById["HEAVY_ARROW"];
         Assert.Equal(
             1.75m,
             heavyArrow.RuntimeParameters!["autoAttackDamageMultiplier"]);
-        AbilityDefinition beastSurge = indexes.AbilitiesById["BEAST_SURGE"];
-        Assert.Equal(
-            1.20m,
-            beastSurge.RuntimeParameters!["companionDamageMultiplier"]);
-        AbilityDefinition enchantedShot = indexes.AbilitiesById["ENCHANTED_SHOT"];
-        Assert.Equal(
-            0.70m,
-            enchantedShot.RuntimeParameters!["spellPowerCoefficient"]);
-        AbilityDefinition arcaneFlow = indexes.AbilitiesById["ARCANE_FLOW"];
-        Assert.Equal(
-            1.15m,
-            arcaneFlow.RuntimeParameters!["damageMultiplier"]);
+        Assert.Equal("COMMAND_ATTACK", indexes.AbilitiesById["COMMAND_ATTACK"].Id);
+        Assert.Equal("BESTIAL_WRATH", indexes.AbilitiesById["BESTIAL_WRATH"].Id);
+        Assert.Equal("FREEZING_TRAP", indexes.AbilitiesById["FREEZING_TRAP"].Id);
         Assert.Equal("FOREST_WOLF_L1", indexes.MonstersById["FOREST_WOLF_L1"].Id);
         Assert.Equal("WHISPERING_FOREST", indexes.LocationsById["WHISPERING_FOREST"].Id);
 
