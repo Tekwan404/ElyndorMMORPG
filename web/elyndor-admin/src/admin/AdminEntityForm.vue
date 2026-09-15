@@ -133,13 +133,6 @@ function setOptionalSelection(path: JsonPath, event: Event): void {
   update(path, value || null)
 }
 
-function toggleString(path: JsonPath, value: string): void {
-  const current = stringArray(path)
-  update(path, current.includes(value)
-    ? current.filter(entry => entry !== value)
-    : [...current, value])
-}
-
 function addRelation(path: JsonPath, event: Event): void {
   const select = event.target as HTMLSelectElement
   const value = select.value
