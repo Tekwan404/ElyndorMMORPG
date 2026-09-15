@@ -5,21 +5,27 @@ namespace Elyndor.Infrastructure.Professions;
 
 public static class ProfessionCorpsePersistence
 {
-    public static Task<int> DiscardPendingAsync(
+    public static async Task<int> DiscardPendingAsync(
         GameDbContext dbContext,
         Guid characterId,
         CancellationToken cancellationToken)
     {
         if (characterId == Guid.Empty)
-            return Task.FromResult(0);
+            return 0;
 
-        return dbContext.SkinnableCorpses
+        var corpses = await dbContext.SkinnableCorpses
             .Where(corpse => corpse.CharacterId == characterId
                 && corpse.SkinnedAtUtc == null)
-            .ExecuteDeleteAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
+        if (corpses.Length == 0)
+            return 0;
+
+        dbContext.SkinnableCorpses.RemoveRange(corpses);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return corpses.Length;
     }
 
-    public static Task<int> DiscardSupersededAsync(
+    public static async Task<int> DiscardSupersededAsync(
         GameDbContext dbContext,
         Guid characterId,
         Guid currentCombatSessionId,
@@ -27,13 +33,19 @@ public static class ProfessionCorpsePersistence
         CancellationToken cancellationToken)
     {
         if (characterId == Guid.Empty || currentCombatSessionId == Guid.Empty)
-            return Task.FromResult(0);
+            return 0;
 
-        return dbContext.SkinnableCorpses
+        var corpses = await dbContext.SkinnableCorpses
             .Where(corpse => corpse.CharacterId == characterId
                 && corpse.SkinnedAtUtc == null
                 && corpse.CombatSessionId != currentCombatSessionId
                 && corpse.CreatedAtUtc <= currentServerTimeUtc)
-            .ExecuteDeleteAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
+        if (corpses.Length == 0)
+            return 0;
+
+        dbContext.SkinnableCorpses.RemoveRange(corpses);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return corpses.Length;
     }
 }
