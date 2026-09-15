@@ -57,7 +57,8 @@ public sealed class CombatSessionFactory(
     {
         "WARRIOR",
         "ARCHER",
-        "MAGE"
+        "MAGE",
+        "PALADIN"
     };
 
     public async Task<CombatSessionCreationResult> CreateAsync(
