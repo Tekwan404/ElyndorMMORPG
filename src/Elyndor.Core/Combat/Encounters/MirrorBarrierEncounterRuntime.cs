@@ -89,7 +89,7 @@ public sealed class MirrorBarrierEncounterRuntime
     public decimal ReflectionRatio => !BarrierActive
         ? 0
         : _definition.BaseReflectionRatio
-            + (_activeAdds.Values.Contains(MirrorEncounterAddRole.Guardian)
+            + (_activeAdds.ContainsValue(MirrorEncounterAddRole.Guardian)
                 ? _definition.GuardianReflectionBonusRatio
                 : 0);
 
@@ -164,9 +164,9 @@ public sealed class MirrorBarrierEncounterRuntime
 
     private static void ValidateHp(decimal currentHp, decimal maxHp)
     {
-        if (maxHp <= 0)
-            throw new ArgumentOutOfRangeException(nameof(maxHp));
-        if (currentHp < 0 || currentHp > maxHp)
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHp);
+        ArgumentOutOfRangeException.ThrowIfNegative(currentHp);
+        if (currentHp > maxHp)
             throw new ArgumentOutOfRangeException(nameof(currentHp));
     }
 }
