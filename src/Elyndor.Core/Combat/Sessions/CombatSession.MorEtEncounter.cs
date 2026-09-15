@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Encounters;
+using Elyndor.Core.Combat.Participants;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -85,7 +86,7 @@ public sealed partial class CombatSession
 
         CombatActorState boss = _enemiesById[bossActorId].Actor;
         Guid[] eligibleOwners = _participantRoster.Participants
-            .Where(item => item.Status == Participants.CombatParticipantStatus.Active)
+            .Where(item => item.Status == CombatParticipantStatus.Active)
             .Select(item => item.ActorId)
             .Where(actorId =>
                 _playerStatesByActorId.TryGetValue(actorId, out CombatPlayerRuntimeState? state)
