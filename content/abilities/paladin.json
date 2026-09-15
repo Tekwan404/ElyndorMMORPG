@@ -1,0 +1,855 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-15T05:35:00+00:00",
+  "definitions": [
+    {
+      "type": "CLASS",
+      "id": "PALADIN",
+      "references": [
+        { "type": "ABILITY", "id": "HOLY_LIGHT" },
+        { "type": "ABILITY", "id": "FLASH_OF_LIGHT" },
+        { "type": "ABILITY", "id": "JUDGEMENT" },
+        { "type": "ABILITY", "id": "SEAL_OF_RIGHTEOUSNESS" },
+        { "type": "ABILITY", "id": "DEVOTION_AURA" },
+        { "type": "ABILITY", "id": "LAY_ON_HANDS" }
+      ]
+    },
+    { "type": "ABILITY", "id": "HOLY_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "FLASH_OF_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "JUDGEMENT", "references": [] },
+    { "type": "ABILITY", "id": "SEAL_OF_RIGHTEOUSNESS", "references": [] },
+    { "type": "ABILITY", "id": "DEVOTION_AURA", "references": [] },
+    { "type": "ABILITY", "id": "LAY_ON_HANDS", "references": [] },
+    { "type": "ABILITY", "id": "BLESSING_OF_WISDOM", "references": [] },
+    { "type": "ABILITY", "id": "CLEANSE", "references": [] },
+    { "type": "ABILITY", "id": "DIVINE_FAVOR", "references": [] },
+    { "type": "ABILITY", "id": "HOLY_SHOCK", "references": [] },
+    { "type": "ABILITY", "id": "HOLY_SHOCK_OFFENSIVE", "references": [] },
+    { "type": "ABILITY", "id": "BEACON_OF_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "CONCENTRATION_AURA", "references": [] },
+    { "type": "ABILITY", "id": "DIVINE_REPLENISHMENT", "references": [] },
+    { "type": "ABILITY", "id": "BLESSING_OF_PROTECTION", "references": [] },
+    { "type": "ABILITY", "id": "AURA_MASTERY", "references": [] },
+    { "type": "ABILITY", "id": "CONSECRATION", "references": [] },
+    { "type": "ABILITY", "id": "HOLY_SHIELD", "references": [] },
+    { "type": "ABILITY", "id": "BLESSING_OF_SANCTUARY", "references": [] },
+    { "type": "ABILITY", "id": "AVENGERS_SHIELD", "references": [] },
+    { "type": "ABILITY", "id": "HAMMER_OF_THE_RIGHTEOUS", "references": [] },
+    { "type": "ABILITY", "id": "DIVINE_PROTECTION", "references": [] },
+    { "type": "ABILITY", "id": "INTERCESSION", "references": [] },
+    { "type": "ABILITY", "id": "HAMMER_OF_JUSTICE", "references": [] },
+    { "type": "ABILITY", "id": "SEAL_OF_COMMAND", "references": [] },
+    { "type": "ABILITY", "id": "CRUSADER_STRIKE", "references": [] },
+    { "type": "ABILITY", "id": "SANCTITY_AURA", "references": [] },
+    { "type": "ABILITY", "id": "REPENTANCE", "references": [] },
+    { "type": "ABILITY", "id": "TEMPLARS_VERDICT", "references": [] },
+    { "type": "ABILITY", "id": "BLESSING_OF_MIGHT", "references": [] },
+    { "type": "ABILITY", "id": "DIVINE_STORM", "references": [] },
+    { "type": "ABILITY", "id": "AVENGING_WRATH", "references": [] }
+  ],
+  "abilities": [
+    {
+      "id": "HOLY_LIGHT",
+      "type": "Casted",
+      "targetType": "SingleAlly",
+      "resourceCost": 28,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:02.2000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        { "type": "Healing", "amount": 115, "spellPowerCoefficient": 1.35, "healingCanCrit": true }
+      ],
+      "displayName": "Свет небес",
+      "description": "Мощное прямое лечение союзника."
+    },
+    {
+      "id": "FLASH_OF_LIGHT",
+      "type": "Casted",
+      "targetType": "SingleAlly",
+      "resourceCost": 20,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:01.3000000",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        { "type": "Healing", "amount": 72, "spellPowerCoefficient": 0.82, "healingCanCrit": true }
+      ],
+      "displayName": "Вспышка Света",
+      "description": "Быстрое прямое лечение союзника."
+    },
+    {
+      "id": "JUDGEMENT",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 14,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        { "type": "Damage", "amount": 34, "damageType": "Magical", "attackPowerCoefficient": 0.30, "spellPowerCoefficient": 0.35 }
+      ],
+      "displayName": "Правосудие",
+      "description": "Высвобождает силу активной печати и наносит святой урон, не расходуя печать."
+    },
+    {
+      "id": "SEAL_OF_RIGHTEOUSNESS",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 8,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_SEAL_RIGHTEOUSNESS",
+            "kind": "Buff",
+            "duration": "00:30:00",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1,
+            "dispelCategory": "PALADIN_SEAL"
+          }
+        }
+      ],
+      "displayName": "Печать праведности",
+      "description": "Активирует печать праведности. У Паладина может быть только одна печать."
+    },
+    {
+      "id": "DEVOTION_AURA",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_DEVOTION_AURA",
+            "kind": "StatModifier",
+            "duration": "00:30:00",
+            "maxStacks": 1,
+            "stackPolicy": "StrongestWins",
+            "magnitude": 0.10,
+            "modifiedStat": "Armor",
+            "modifierMode": "Percent",
+            "sourceSpecific": false,
+            "dispelCategory": "PALADIN_AURA"
+          }
+        }
+      ],
+      "displayName": "Аура благочестия",
+      "description": "Повышает броню группы. Одинаковые ауры не складываются."
+    },
+    {
+      "id": "LAY_ON_HANDS",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 0,
+      "cooldown": "00:10:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        { "type": "Healing", "amount": 650, "spellPowerCoefficient": 3.50, "healingCanCrit": false }
+      ],
+      "displayName": "Возложение рук",
+      "description": "Экстренно восстанавливает большой объём здоровья союзнику."
+    },
+    {
+      "id": "BLESSING_OF_WISDOM",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 12,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_BLESSING_WISDOM",
+            "kind": "Buff",
+            "duration": "00:00:10",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1,
+            "dispelCategory": "PALADIN_BLESSING"
+          }
+        }
+      ],
+      "displayName": "Благословение мудрости",
+      "description": "Кратковременно усиливает восстановление маны союзника."
+    },
+    {
+      "id": "CLEANSE",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 10,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_CLEANSE_CAST",
+            "kind": "Buff",
+            "duration": "00:00:00.1000000",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1
+          }
+        }
+      ],
+      "displayName": "Очищение",
+      "description": "Снимает один подходящий отрицательный эффект с союзника."
+    },
+    {
+      "id": "DIVINE_FAVOR",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:45",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_DIVINE_FAVOR_READY",
+            "kind": "Buff",
+            "duration": "00:00:20",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1
+          }
+        }
+      ],
+      "displayName": "Божественное одобрение",
+      "description": "Следующее прямое лечение гарантированно критует."
+    },
+    {
+      "id": "HOLY_SHOCK",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 18,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        { "type": "Healing", "amount": 92, "spellPowerCoefficient": 0.95, "healingCanCrit": true }
+      ],
+      "freeResourceCostWhileEffectId": "PALADIN_HERALD_HOLY_SHOCK_FREE",
+      "consumeEffectId": "PALADIN_HERALD_HOLY_SHOCK_FREE",
+      "displayName": "Шок небес",
+      "description": "Мгновенно исцеляет союзника. Offensive-вариант доступен отдельной целью."
+    },
+    {
+      "id": "HOLY_SHOCK_OFFENSIVE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        { "type": "Damage", "amount": 76, "damageType": "Magical", "spellPowerCoefficient": 0.75, "attackPowerCoefficient": 0.25 }
+      ],
+      "displayName": "Шок небес: кара",
+      "description": "Мгновенно наносит святой урон противнику."
+    },
+    {
+      "id": "BEACON_OF_LIGHT",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 16,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_BEACON_OF_LIGHT",
+            "kind": "Buff",
+            "duration": "00:05:00",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.35,
+            "sourceSpecific": true,
+            "dispelCategory": "PALADIN_BEACON"
+          }
+        }
+      ],
+      "displayName": "Светоч Света",
+      "description": "Отмечает союзника Светочем для копирования части прямого лечения."
+    },
+    {
+      "id": "CONCENTRATION_AURA",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_CONCENTRATION_AURA",
+            "kind": "Buff",
+            "duration": "00:30:00",
+            "maxStacks": 1,
+            "stackPolicy": "StrongestWins",
+            "magnitude": 0.08,
+            "dispelCategory": "PALADIN_AURA"
+          }
+        }
+      ],
+      "displayName": "Аура сосредоточенности",
+      "description": "Ускоряет применение заклинаний группы через Paladin runtime."
+    },
+    {
+      "id": "DIVINE_REPLENISHMENT",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        { "type": "ResourceChange", "amount": 30 },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_DIVINE_REPLENISHMENT_PENALTY",
+            "kind": "Buff",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.90
+          }
+        }
+      ],
+      "displayName": "Божественное восполнение",
+      "description": "Восстанавливает ману ценой кратковременного снижения лечения."
+    },
+    {
+      "id": "BLESSING_OF_PROTECTION",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 16,
+      "cooldown": "00:01:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_BLESSING_PROTECTION",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.50,
+            "modifiedStat": "IncomingPhysicalDamageMultiplier",
+            "modifierMode": "Multiplicative",
+            "dispelCategory": "PALADIN_BLESSING"
+          }
+        }
+      ],
+      "displayName": "Благословение защиты",
+      "description": "На несколько секунд сильно уменьшает входящий физический урон."
+    },
+    {
+      "id": "AURA_MASTERY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_AURA_MASTERY_DEFENSE",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "StrongestWins",
+            "magnitude": 0.90,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Мастерство аур",
+      "description": "Временно усиливает активную ауру и защищает группу."
+    },
+    {
+      "id": "CONSECRATION",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 24,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "targetSelectorProfile": "EncounterOrder",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_CONSECRATION_DAMAGE",
+            "kind": "DamageOverTime",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 18,
+            "tickInterval": "00:00:01",
+            "periodicDamageType": "Magical",
+            "sourceSpecific": true
+          }
+        }
+      ],
+      "displayName": "Освящение",
+      "description": "Освящает всё столкновение и наносит периодический святой урон противникам."
+    },
+    {
+      "id": "HOLY_SHIELD",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 20,
+      "cooldown": "00:00:16",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_HOLY_SHIELD_BLOCK",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 30,
+            "modifiedStat": "BlockChance",
+            "modifierMode": "Flat"
+          }
+        }
+      ],
+      "displayName": "Щит небес",
+      "description": "Повышает шанс блока; блоки вызывают святое возмездие."
+    },
+    {
+      "id": "BLESSING_OF_SANCTUARY",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 16,
+      "cooldown": "00:00:45",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_BLESSING_SANCTUARY",
+            "kind": "StatModifier",
+            "duration": "00:00:10",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.85,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative",
+            "dispelCategory": "PALADIN_BLESSING"
+          }
+        }
+      ],
+      "displayName": "Благословение неприкосновенности",
+      "description": "Кратковременно снижает весь входящий урон выбранного союзника."
+    },
+    {
+      "id": "AVENGERS_SHIELD",
+      "type": "Instant",
+      "targetType": "NEnemiesInCombat",
+      "resourceCost": 22,
+      "cooldown": "00:00:12",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "targetCount": 3,
+      "targetSelectorProfile": "EncounterOrder",
+      "actions": [
+        { "type": "Damage", "amount": 74, "damageType": "Magical", "attackPowerCoefficient": 0.45, "blockValueCoefficient": 0.65 }
+      ],
+      "displayName": "Щит мстителя",
+      "description": "Поражает до трёх противников святым уроном и создаёт высокий Threat."
+    },
+    {
+      "id": "HAMMER_OF_THE_RIGHTEOUS",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 16,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "HOLY",
+      "actions": [
+        { "type": "Damage", "amount": 38, "damageType": "Magical", "attackPowerCoefficient": 0.35, "blockValueCoefficient": 0.80 }
+      ],
+      "displayName": "Молот праведника",
+      "description": "Щитовая атака святым уроном, масштабируемая защитой."
+    },
+    {
+      "id": "DIVINE_PROTECTION",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_DIVINE_PROTECTION",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.50,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Божественная защита",
+      "description": "На короткое время значительно уменьшает весь входящий урон."
+    },
+    {
+      "id": "INTERCESSION",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 12,
+      "cooldown": "00:01:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": false,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_INTERCESSION",
+            "kind": "Buff",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.30,
+            "sourceSpecific": true
+          }
+        }
+      ],
+      "displayName": "Заступничество",
+      "description": "Перенаправляет часть уже уменьшенного урона союзника в Паладина."
+    },
+    {
+      "id": "HAMMER_OF_JUSTICE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 14,
+      "cooldown": "00:00:35",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_HAMMER_OF_JUSTICE_MARKER",
+            "kind": "Debuff",
+            "duration": "00:00:03",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1,
+            "dispelCategory": "CONTROL"
+          }
+        }
+      ],
+      "displayName": "Молот правосудия",
+      "description": "Прерывает противника и оглушает обычные цели; боссы получают boss-safe вариант."
+    },
+    {
+      "id": "SEAL_OF_COMMAND",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 8,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_SEAL_COMMAND",
+            "kind": "Buff",
+            "duration": "00:30:00",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1,
+            "dispelCategory": "PALADIN_SEAL"
+          }
+        }
+      ],
+      "displayName": "Печать повиновения",
+      "description": "Автоатаки могут вызвать дополнительный сильный святой удар."
+    },
+    {
+      "id": "CRUSADER_STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 14,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        { "type": "Damage", "amount": 46, "damageType": "Physical", "attackPowerCoefficient": 0.80 }
+      ],
+      "displayName": "Удар воина Света",
+      "description": "Основная быстрая оружейная атака Воздаяния."
+    },
+    {
+      "id": "SANCTITY_AURA",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:00:01",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_SANCTITY_AURA",
+            "kind": "StatModifier",
+            "duration": "00:30:00",
+            "maxStacks": 1,
+            "stackPolicy": "StrongestWins",
+            "magnitude": 1.05,
+            "modifiedStat": "OutgoingDamageMultiplier",
+            "modifierMode": "Multiplicative",
+            "sourceSpecific": false,
+            "dispelCategory": "PALADIN_AURA"
+          }
+        }
+      ],
+      "displayName": "Аура святости",
+      "description": "Усиливает урон Паладина и немного повышает урон группы."
+    },
+    {
+      "id": "REPENTANCE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 18,
+      "cooldown": "00:00:45",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_REPENTANCE_MARKER",
+            "kind": "Debuff",
+            "duration": "00:00:04",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1,
+            "dispelCategory": "CONTROL"
+          }
+        }
+      ],
+      "displayName": "Покаяние",
+      "description": "Контролирует обычную цель; для босса Paladin runtime применяет безопасное снижение урона."
+    },
+    {
+      "id": "TEMPLARS_VERDICT",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 30,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "HOLY",
+      "actions": [
+        { "type": "Damage", "amount": 92, "damageType": "Physical", "attackPowerCoefficient": 1.25 }
+      ],
+      "displayName": "Вердикт храмовника",
+      "description": "Тяжёлый завершающий удар двуручным оружием."
+    },
+    {
+      "id": "BLESSING_OF_MIGHT",
+      "type": "Instant",
+      "targetType": "SingleAlly",
+      "resourceCost": 12,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "allowSelfTarget": true,
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_BLESSING_MIGHT",
+            "kind": "StatModifier",
+            "duration": "00:00:10",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.20,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent",
+            "dispelCategory": "PALADIN_BLESSING"
+          }
+        }
+      ],
+      "displayName": "Благословение могущества",
+      "description": "Кратковременно увеличивает силу атаки союзника."
+    },
+    {
+      "id": "DIVINE_STORM",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 24,
+      "cooldown": "00:00:12",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "HOLY",
+      "targetSelectorProfile": "EncounterOrder",
+      "actions": [
+        { "type": "Damage", "amount": 58, "damageType": "Magical", "attackPowerCoefficient": 0.65 }
+      ],
+      "displayName": "Божественная буря",
+      "description": "Поражает всех противников и через Paladin runtime конвертирует часть урона в групповое лечение."
+    },
+    {
+      "id": "AVENGING_WRATH",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "isSpell": true,
+      "school": "HOLY",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "PALADIN_AVENGING_WRATH",
+            "kind": "StatModifier",
+            "duration": "00:00:12",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 1.20,
+            "modifiedStat": "OutgoingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Гнев карателя",
+      "description": "Сильно увеличивает урон на короткое время."
+    }
+  ]
+}
