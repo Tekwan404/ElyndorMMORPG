@@ -427,7 +427,8 @@ export interface InventoryItem {
   setId: string | null
   weaponCategory: string | null
   armorCategory: string | null
-  allowedClassIds: string[]
+  /** @deprecated Item definitions no longer carry class restrictions. */
+  allowedClassIds?: string[]
   weaponBaseAttackIntervalSeconds: number | null
   attackSpeedPercent: number
   dodgePercent: number

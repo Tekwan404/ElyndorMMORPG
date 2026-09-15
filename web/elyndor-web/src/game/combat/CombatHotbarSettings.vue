@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import type { KnownAbility } from '@/api/contracts'
+import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import {
   loadCombatHotbarOrder,
   normalizeCombatHotbarOrder,
@@ -20,7 +21,8 @@ const props = defineProps<{
 const selectedAbilityId = ref<string | null>(null)
 const order = ref<string[]>([])
 
-const abilityById = computed(() => new Map(props.abilities.map(ability => [ability.id, ability])))
+const hotbarAbilities = computed(() => props.abilities.filter((ability) => !isAuraAbility(ability.id)))
+const abilityById = computed(() => new Map(hotbarAbilities.value.map(ability => [ability.id, ability])))
 const orderedAbilities = computed(() => order.value
   .map(abilityId => abilityById.value.get(abilityId))
   .filter((ability): ability is KnownAbility => ability !== undefined))
@@ -31,7 +33,7 @@ const reserveAbilities = computed(() => orderedAbilities.value.slice(HOTBAR_SLOT
 watch(
   [() => props.characterId, () => props.abilities.map(ability => ability.id).join('|')],
   () => {
-    order.value = loadCombatHotbarOrder(props.characterId, props.abilities.map(ability => ability.id))
+    order.value = loadCombatHotbarOrder(props.characterId, hotbarAbilities.value.map(ability => ability.id))
     selectedAbilityId.value = null
   },
   { immediate: true },
@@ -66,7 +68,7 @@ function selectSlot(abilityId: string): void {
 
 function resetOrder(): void {
   resetCombatHotbarOrder(props.characterId)
-  order.value = normalizeCombatHotbarOrder(props.abilities.map(ability => ability.id), [])
+  order.value = normalizeCombatHotbarOrder(hotbarAbilities.value.map(ability => ability.id), [])
   selectedAbilityId.value = null
 }
 

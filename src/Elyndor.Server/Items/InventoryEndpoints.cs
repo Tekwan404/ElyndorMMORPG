@@ -662,7 +662,7 @@ public static class InventoryEndpoints
             item.Definition.SetId,
             item.Definition.WeaponCategory,
             item.Definition.ArmorCategory,
-            item.Definition.AllowedClassIds ?? [],
+            [],
             item.Definition.WeaponBaseAttackIntervalSeconds,
             item.Definition.AttackSpeedPercent,
             item.Definition.DodgePercent,

@@ -20,9 +20,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 28,
       "itemLevelMin": 2,
@@ -54,9 +51,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 12.5,
       "itemLevelMin": 2,
@@ -88,9 +82,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 13.5,
       "itemLevelMin": 2,
@@ -122,9 +113,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 18,
       "itemLevelMin": 2,
@@ -156,9 +144,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 24.5,
       "itemLevelMin": 2,
@@ -190,9 +175,6 @@
       },
       "description": "Щит прогрессии «Сталь Пограничника».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 21,
       "blockChancePercent": 1.3,
@@ -227,9 +209,6 @@
       },
       "description": "Сталь Пограничника: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorFlat": 15.5,
       "armorCategory": "HEAVY",
       "itemLevelMin": 2,
@@ -261,9 +240,6 @@
       },
       "description": "Тематическое оружие прогрессии «Сталь Пограничника». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 7,
       "weaponDamageMax": 12,
@@ -296,9 +272,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 48,
       "itemLevelMin": 6,
@@ -330,9 +303,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 21.5,
       "itemLevelMin": 6,
@@ -364,9 +334,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 23,
       "itemLevelMin": 6,
@@ -398,9 +365,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 30.5,
       "itemLevelMin": 6,
@@ -432,9 +396,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 42,
       "itemLevelMin": 6,
@@ -466,9 +427,6 @@
       },
       "description": "Щит прогрессии «Железный Дозор».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 36,
       "blockChancePercent": 1.6,
@@ -503,9 +461,6 @@
       },
       "description": "Железный Дозор: процедурно генерируемая экипировка для WARRIOR ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorFlat": 26.5,
       "armorCategory": "HEAVY",
       "itemLevelMin": 6,
@@ -537,9 +492,6 @@
       },
       "description": "Тематическое оружие прогрессии «Железный Дозор». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 13,
       "weaponDamageMax": 21,
@@ -573,9 +525,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
       "armorFlat": 73,
@@ -610,9 +559,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
       "armorFlat": 32.5,
@@ -647,9 +593,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
       "armorFlat": 35,
@@ -684,9 +627,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
       "armorFlat": 46.5,
@@ -721,9 +661,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorCategory": "HEAVY",
       "armorFlat": 64,
@@ -758,9 +695,6 @@
       },
       "description": "Щит прогрессии «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 55,
       "blockChancePercent": 1.9,
@@ -797,9 +731,6 @@
       },
       "description": "Часть комплекта «Клык Серого Волка».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_GREY_FANG",
       "armorFlat": 40.5,
       "armorCategory": "HEAVY",
@@ -834,9 +765,6 @@
       },
       "description": "Тематическое оружие прогрессии «Клык Серого Волка». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 22,
       "weaponDamageMax": 34,
@@ -871,9 +799,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
       "armorFlat": 109,
@@ -909,9 +834,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
       "armorFlat": 48,
@@ -946,9 +868,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
       "armorFlat": 52,
@@ -983,9 +902,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
       "armorFlat": 69.5,
@@ -1020,9 +936,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorCategory": "HEAVY",
       "armorFlat": 96,
@@ -1058,9 +971,6 @@
       },
       "description": "Часть комплекта «Клятва Багровой Ярости».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_CRIMSON_FURY",
       "armorFlat": 61,
       "armorCategory": "HEAVY",
@@ -1095,9 +1005,6 @@
       },
       "description": "Тематическое оружие прогрессии «Клятва Багровой Ярости». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "TWO_HAND_SWORD",
       "weaponDamageMin": 34,
       "weaponDamageMax": 52,
@@ -1132,9 +1039,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
       "armorFlat": 157,
@@ -1170,9 +1074,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
       "armorFlat": 69,
@@ -1208,9 +1109,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
       "armorFlat": 75,
@@ -1246,9 +1144,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
       "armorFlat": 100.5,
@@ -1284,9 +1179,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorCategory": "HEAVY",
       "armorFlat": 138,
@@ -1322,9 +1214,6 @@
       },
       "description": "Щит прогрессии «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 117.5,
       "blockChancePercent": 2.5,
@@ -1362,9 +1251,6 @@
       },
       "description": "Часть комплекта «Наследие Первого Стража».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "setId": "SET_WARRIOR_FIRST_GUARD",
       "armorFlat": 88,
       "armorCategory": "HEAVY",
@@ -1400,9 +1286,6 @@
       },
       "description": "Тематическое оружие прогрессии «Наследие Первого Стража». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 49,
       "weaponDamageMax": 76,
@@ -1439,9 +1322,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 217,
       "itemLevelMin": 22,
@@ -1477,9 +1357,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 95.5,
       "itemLevelMin": 22,
@@ -1515,9 +1392,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 104,
       "itemLevelMin": 22,
@@ -1553,9 +1427,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 139,
       "itemLevelMin": 22,
@@ -1591,9 +1462,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 191,
       "itemLevelMin": 22,
@@ -1628,9 +1496,6 @@
       },
       "description": "Щит прогрессии «Доспехи Чёрного Бастиона».",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 163,
       "blockChancePercent": 2.94,
@@ -1669,9 +1534,6 @@
       "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
       "version": 1,
       "setId": "SET_WARRIOR_BLACK_BASTION",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 121.5,
       "itemLevelMin": 22,
@@ -1706,9 +1568,6 @@
       },
       "description": "Тематическое оружие прогрессии «Доспехи Чёрного Бастиона». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "TWO_HAND_SWORD",
       "weaponDamageMin": 68,
       "weaponDamageMax": 102,
@@ -1743,9 +1602,6 @@
       },
       "description": "Именное оружие 25 уровня. Unique не является отдельным сетовым тиром.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "TWO_HAND_SWORD",
       "weaponDamageMin": 96,
       "weaponDamageMax": 128,

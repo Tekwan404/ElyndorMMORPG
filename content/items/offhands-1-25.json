@@ -21,9 +21,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Синей Свечи».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 1,
       "itemLevelMax": 4,
@@ -57,9 +54,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Руны Забытого Ученика».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 5,
       "itemLevelMax": 8,
@@ -91,9 +85,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 9,
       "itemLevelMax": 12,
@@ -126,9 +117,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 13,
       "itemLevelMax": 16,
@@ -161,9 +149,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 17,
       "itemLevelMax": 20,
@@ -197,9 +182,6 @@
       },
       "description": "Экипировка второй руки: фокус прогрессии «Одеяния Затмённого Оракула».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "offHandCategory": "FOCUS",
       "itemLevelMin": 22,
       "itemLevelMax": 25,
@@ -233,9 +215,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Следопыт Шепчущего Леса».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 1,
       "itemLevelMax": 4,
@@ -269,9 +248,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Серая Тропа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 5,
       "itemLevelMax": 8,
@@ -303,9 +279,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 9,
       "itemLevelMax": 12,
@@ -338,9 +311,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 13,
       "itemLevelMax": 16,
@@ -373,9 +343,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 17,
       "itemLevelMax": 20,
@@ -409,9 +376,6 @@
       },
       "description": "Экипировка второй руки: колчан прогрессии «Охота Чёрного Созвездия».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "offHandCategory": "QUIVER",
       "itemLevelMin": 22,
       "itemLevelMax": 25,

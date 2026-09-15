@@ -150,7 +150,6 @@ function equipment(
     setId: null,
     weaponCategory: null,
     armorCategory: null,
-    allowedClassIds: [],
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,

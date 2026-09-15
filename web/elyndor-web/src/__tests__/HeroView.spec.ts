@@ -136,7 +136,6 @@ function equipment(id: string, name: string, slot: InventoryItem['slot']): Inven
     setId: null,
     weaponCategory: null,
     armorCategory: null,
-    allowedClassIds: [],
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,

@@ -260,7 +260,6 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
             "Starter weapon",
             WeaponBaseAttackIntervalSeconds: 2,
             WeaponCategory: weaponCategory,
-            AllowedClassIds: [classId],
             WeaponDamageMin: 5,
             WeaponDamageMax: 8);
 

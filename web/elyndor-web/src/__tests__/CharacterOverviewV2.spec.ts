@@ -45,7 +45,6 @@ describe('CharacterOverviewV2', () => {
       rarity: 'Legendary',
       requiredLevel: 16,
       armorCategory: 'HEAVY',
-      allowedClassIds: ['WARRIOR'],
       blockChancePercent: 12.5,
       blockValueMin: 38,
       blockValueMax: 65,
@@ -80,7 +79,6 @@ describe('CharacterOverviewV2', () => {
     expect(text).toContain('24')
     expect(text).toContain('Требуется уровень')
     expect(text).toContain('16')
-    expect(text).toContain('Воин')
     expect(text).toContain('Броня')
     expect(text).toContain('+148')
     expect(text).toContain('Шанс блока')
@@ -139,7 +137,6 @@ function equipment(id: string, name: string, slot: InventoryItem['slot']): Inven
     setId: null,
     weaponCategory: null,
     armorCategory: null,
-    allowedClassIds: [],
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,

@@ -21,9 +21,6 @@
       },
       "description": "Тематическое оружие прогрессии «Клятва Багровой Ярости». Не входит в 2/4/6 счётчик брони.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 34,
       "weaponDamageMax": 52,

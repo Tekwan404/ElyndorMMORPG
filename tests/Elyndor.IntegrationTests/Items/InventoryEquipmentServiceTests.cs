@@ -305,8 +305,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             EquipmentSlot.Weapon,
             new PrimaryStats(0, 0, 10, 0),
             "D2 equipment lifecycle integration test staff.",
-            WeaponCategory: EquipmentCategoryIds.Staff,
-            AllowedClassIds: ["MAGE"]);
+            WeaponCategory: EquipmentCategoryIds.Staff);
         content = content with
         {
             Items = (content.Items ?? []).Concat([staff]).ToArray()
@@ -389,29 +388,22 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
-    public async Task ExplicitAllowedClassRestrictionIsEnforced()
+    public async Task PaladinCanEquipHeavyWarriorArmor()
     {
-        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
-        Guid itemId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "PALADIN");
+        Guid itemId = await AddItemAsync(characterId, "RECRUIT_HEAVY_CHEST", 1);
         await using GameDbContext context = postgres.CreateDbContext();
-
-        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
-            Path.GetFullPath("content/package.json"));
-        content = content with
-        {
-            Items = content.Items!.Select(item =>
-                item.Id == "RANGER_FANG_BLADE"
-                    ? item with { AllowedClassIds = ["ARCHER"] }
-                    : item).ToArray()
-        };
-        InventoryEquipmentService service =
-            new(context, content, new FixedTimeProvider(Now));
+        InventoryEquipmentService service = await CreateServiceAsync(context);
 
         InventoryOperationResult result = await service.EquipAsync(
             accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
 
-        Assert.False(result.IsSuccess);
-        Assert.Equal(InventoryErrorCodes.ClassRestricted, result.ErrorCode);
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Contains(
+            await verify.CharacterEquipment.Where(equipment => equipment.CharacterId == characterId).ToArrayAsync(),
+            equipment => equipment.Slot == EquipmentSlot.Chest && equipment.CharacterItemId == itemId);
     }
 
     [Fact]
@@ -476,7 +468,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         Assert.True(warriorResult.IsSuccess);
         Assert.False(mageResult.IsSuccess);
-        Assert.Equal(InventoryErrorCodes.ClassRestricted, mageResult.ErrorCode);
+        Assert.Equal(InventoryErrorCodes.OffHandCategoryRestricted, mageResult.ErrorCode);
         Assert.Contains(
             EquipmentSlot.OffHand,
             warriorResult.Snapshot!.Equipped.Keys);
