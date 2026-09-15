@@ -2,8 +2,8 @@ namespace Elyndor.Core.Talents;
 
 public static class PaladinTalentRuntimeCatalog
 {
-    private static readonly IReadOnlyDictionary<string, string[]> UnlockedAbilities =
-        new Dictionary<string, string[]>(StringComparer.Ordinal)
+    private static readonly Dictionary<string, string[]> UnlockedAbilities =
+        new(StringComparer.Ordinal)
         {
             ["H-1-4"] = ["BLESSING_OF_WISDOM"],
             ["H-2-4"] = ["CLEANSE"],
