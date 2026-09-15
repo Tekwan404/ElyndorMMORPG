@@ -21,7 +21,9 @@ Talent contract:
 - hybrid builds are allowed;
 - no artificial cross-tree prerequisites.
 
-The data contract lives in `content/talents/paladin.json`.
+The draft data contract lives in `content/drafts/paladin.json`.
+
+It is intentionally excluded from production content composition while any Paladin modifier remains `runtimeStatus: Deferred`. This keeps the published package free of tooltip-only mechanics and avoids advancing the production content version for a class that is not yet merge-ready. Once all Paladin hooks are executable and the merge gates below are satisfied, the contract can be promoted back into `content/talents/`.
 
 ## Runtime classification rule
 
@@ -40,14 +42,15 @@ Until a deferred mechanic is implemented end to end, the Paladin talent content 
 The following runtime foundation is already present in code and covered by focused unit tests:
 
 - `HealingPipeline` now carries source actor, effective healing, overheal, Spell Power scaling, opt-in healing criticals resolved through injected server RNG, forced criticals and healing origin metadata;
-- `AbilityEngine` now routes healing actions through that source-aware pipeline, including `SpellPowerCoefficient`, `CanCrit` and ability/target critical modifiers;
+- `AbilityEngine` now routes healing actions through that source-aware pipeline, including `SpellPowerCoefficient`, explicit `HealingCanCrit` and ability/target critical modifiers;
 - `CombatEvent` exposes healing `IsCritical` and `HealingOrigin` so class runtimes can distinguish direct healing from periodic, copied and secondary healing;
+- existing `CombatSession` healing threat already uses effective healing with a 0.5 coefficient against living enemies, so Paladin reuses the shared threat layer rather than introducing a parallel engine;
 - `PaladinCombatState` enforces one active Seal, one active Aura and one Beacon target per Paladin;
 - Beacon eligibility accepts only effective `Direct` healing applied to another target, so copied, periodic and secondary healing cannot recursively feed Beacon;
 - `PaladinHealingRuntime` provides one-shot Divine Favor state, Illumination refund calculation from Mana actually spent, Afterglow calculation from effective direct critical healing and the Herald of Light every-third-direct-heal counter;
 - `PaladinProtectionRuntime` provides Holy Shield / Consecration windows, the exact Ardent Defender `<35% HP` gate, Consecrated Protection eligibility and post-mitigation Intercession redirect calculation;
 - `PaladinRetributionRuntime` provides Vengeance state capped at three stacks with duration refresh, Zeal arming, Divine Purpose every-third-Judgement state and one-shot Incarnation of Retribution effects inside Avenging Wrath;
-- content validation now enforces the Paladin tree shape: exactly 96 nodes, three branches and 32 nodes per branch.
+- content validation enforces the Paladin tree shape whenever the draft contract is explicitly validated: exactly 96 nodes, three branches and 32 nodes per branch.
 
 These primitives intentionally do not invent missing balance values. They become `SUPPORTED` only after they are connected to actual Paladin ability execution and talent hooks.
 
@@ -92,7 +95,7 @@ Paladin-specific retaliation, Holy Shield block consequences, cooldown reduction
 - `Direct / Periodic / Copied / Secondary` origin;
 - critical/origin metadata on the emitted `HealingApplied` event.
 
-Remaining shared extension: healing threat has not yet been added to the threat layer, and CombatSession still needs Paladin-specific processing of those healing events.
+The shared threat layer already converts effective `HealingApplied` amounts into healing threat. Remaining work is Paladin-specific processing of those healing events inside CombatSession.
 
 ### Effects / shields / threat — EXTEND_EXISTING
 
@@ -126,7 +129,7 @@ The design document does not define production-ready numerical contracts for eve
 
 | Mechanic | Classification | Notes |
 | --- | --- | --- |
-| Holy/Flash direct-heal modifiers | `FOUNDATION_READY` / `EXTEND_EXISTING` | Generic healing actions now support source Spell Power and crit; ability-specific modifiers still need Paladin wiring. |
+| Holy/Flash direct-heal modifiers | `FOUNDATION_READY` / `EXTEND_EXISTING` | Generic healing actions now support source Spell Power and explicit opt-in crit; ability-specific modifiers still need Paladin wiring. |
 | Healing critical strikes | `FOUNDATION_READY` | Server-authoritative opt-in crit path exists and emits crit metadata. |
 | Illumination Mana refund | `FOUNDATION_READY` | Runtime calculation uses Mana actually spent and only accepts direct critical healing; CombatSession refund hook remains. |
 | Divine Favor | `FOUNDATION_READY` + `NEW_ABILITY` | One-shot forced-crit state exists; the actual off-GCD ability and consumption hook remain. |
@@ -206,7 +209,7 @@ The Paladin change is ready to merge only when all of the following are true:
 
 1. `PALADIN` class profile exists with approved stats, equipment permissions, resource profile and base ability grants.
 2. Required Paladin abilities exist in content and pass content validation.
-3. Every one of the 96 talents has an executable gameplay modifier; no `Deferred` modifier remains.
+3. Every one of the 96 talents has an executable gameplay modifier; no `Deferred` modifier remains, and the tree has been promoted from `content/drafts/paladin.json` into published `content/talents/`.
 4. Holy crit/effective-heal/overheal/Mana-refund tests pass in CI and the primitives are wired to CombatSession.
 5. Beacon actual copied healing passes recursion/copy-of-copy/HoT recursion tests.
 6. Seal switching and Judgement resolution pass end-to-end tests.
