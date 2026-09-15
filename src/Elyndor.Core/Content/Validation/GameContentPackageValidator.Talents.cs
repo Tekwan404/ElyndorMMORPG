@@ -188,6 +188,14 @@ public static partial class GameContentPackageValidator
                         "Mage tree must contain exactly 96 nodes across 3 branches."));
                 }
 
+                if (string.Equals(tree.Id, "PALADIN_TREE", StringComparison.Ordinal)
+                    && (tree.Nodes.Count != 96 || tree.Branches.Count != 3
+                        || tree.Branches.Any(branch => branch.NodeCount != 32)))
+                {
+                    errors.Add(new("INVALID_PALADIN_TREE_SIZE", path,
+                        "Paladin tree must contain exactly 96 nodes across 3 branches of 32 nodes each."));
+                }
+
                 if (HasTalentCycle(nodes))
                 {
                     errors.Add(new("CIRCULAR_TALENT_PREREQUISITE", path,

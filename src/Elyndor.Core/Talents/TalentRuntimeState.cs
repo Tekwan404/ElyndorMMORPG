@@ -66,6 +66,7 @@ public sealed class TalentRuntimeState
         List<TalentRuntimeAction> actions = [];
         foreach (ResolvedTalentEventHook hook in modifiers.EventHooks
                      .Where(item => string.Equals(item.Key, key, StringComparison.Ordinal))
+                     .Where(item => !PaladinTalentRuntimeCatalog.OwnsTalentId(item.TalentId))
                      .Where(item => hookFilter is null || hookFilter(item))
                      .OrderBy(item => item.TalentId, StringComparer.Ordinal))
         {

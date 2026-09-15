@@ -197,4 +197,6 @@ public sealed record CombatEvent(
     decimal RawDamage = 0,
     decimal DamageAfterMitigation = 0,
     decimal DamageBeforeBlock = 0,
-    bool IsUnblockable = false);
+    bool IsUnblockable = false,
+    bool IsCritical = false,
+    HealingOrigin? HealingOrigin = null);

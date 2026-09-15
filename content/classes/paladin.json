@@ -1,0 +1,50 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-15T05:30:00+00:00",
+  "classProfiles": [
+    {
+      "id": "PALADIN",
+      "primaryAttribute": "STRENGTH",
+      "resourceProfileId": "MANA",
+      "baseStats": {
+        "strength": 10,
+        "agility": 4,
+        "intellect": 9,
+        "stamina": 10
+      },
+      "levelGrowth": {
+        "strength": 2.2,
+        "agility": 0.7,
+        "intellect": 2.0,
+        "stamina": 2.2
+      },
+      "allowedWeaponCategories": [
+        "ONE_HAND_SWORD",
+        "TWO_HAND_SWORD",
+        "MACE"
+      ],
+      "allowedArmorCategories": [
+        "HEAVY"
+      ],
+      "prototypeIdentity": "Holy warrior using Mana who can heal allies, tank with a shield, or deal two-handed melee damage.",
+      "startingAbilityIds": [],
+      "startingEquipmentItemIds": [
+        "RECRUIT_IRON_SWORD"
+      ],
+      "abilityUnlocks": [],
+      "combatAutoAttack": {
+        "interval": "00:00:02.4000000",
+        "baseDamage": 0,
+        "attackPowerCoefficient": 0.60,
+        "resourceOnHit": 0,
+        "baseDamageMin": 1,
+        "baseDamageMax": 2
+      },
+      "allowedOffHandCategories": [
+        "SHIELD"
+      ],
+      "allowUnarmed": true
+    }
+  ]
+}

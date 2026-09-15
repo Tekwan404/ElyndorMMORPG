@@ -14,11 +14,11 @@ public sealed class TalentAuditReportTests
 
         TalentAuditReport report = TalentAuditReport.Create(package);
 
-        Assert.Equal(3, report.TreeCount);
-        Assert.Equal(288, report.NodeCount);
-        Assert.Equal(344, report.ModifierCount);
-        Assert.Equal(0, report.DeferredModifierCount);
-        Assert.Equal(0, report.FullyDeferredNodeCount);
+        Assert.Equal(4, report.TreeCount);
+        Assert.Equal(384, report.NodeCount);
+        Assert.Equal(442, report.ModifierCount);
+        Assert.Equal(90, report.DeferredModifierCount);
+        Assert.Equal(88, report.FullyDeferredNodeCount);
         Assert.True(
             report.RuntimeUnmappedModifierCount == 0,
             string.Join(

@@ -22,6 +22,9 @@ public static class TalentModifierResolver
             int rank = Math.Min(selectedRanks.GetValueOrDefault(node.Id), node.MaxRank);
             if (rank <= 0) continue;
 
+            foreach (string abilityId in PaladinTalentRuntimeCatalog.ResolveUnlockedAbilityIds(node.Id))
+                abilities.Add(abilityId);
+
             foreach (TalentModifierDefinition modifier in node.Modifiers ?? [])
             {
                 if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
@@ -32,7 +35,8 @@ public static class TalentModifierResolver
                         || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                         || GuardianTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                         || WarlordTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-                        || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+                        || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                        || PaladinTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
                     if (!runtimeOwned || modifier.Values.Count < rank)
                     {
                         deferredHooks.Add(modifier);

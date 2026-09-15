@@ -62,7 +62,8 @@ public static class TalentRuntimeAvailability
                 || MageTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                 || ArcherTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
                 || GuardianTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
-                || WarlordTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
+                || WarlordTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier)
+                || PaladinTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier);
         }
 
         if (modifier.RuntimeStatus != TalentModifierRuntimeStatus.Supported)
@@ -87,7 +88,8 @@ public static class TalentRuntimeAvailability
                 || MageTalentRuntimeCatalog.SupportsRuntime(node, modifier)
                 || ArcherTalentRuntimeCatalog.SupportsRuntime(node, modifier)
                 || GuardianTalentRuntimeCatalog.SupportsRuntime(node, modifier)
-                || WarlordTalentRuntimeCatalog.SupportsRuntime(node, modifier),
+                || WarlordTalentRuntimeCatalog.SupportsRuntime(node, modifier)
+                || PaladinTalentRuntimeCatalog.SupportsRuntime(node, modifier),
             _ => false
         };
     }

@@ -414,7 +414,8 @@
       "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
       "allowedClassIds": [
-        "WARRIOR"
+        "WARRIOR",
+        "PALADIN"
       ],
       "stats": {
         "strength": 0,
