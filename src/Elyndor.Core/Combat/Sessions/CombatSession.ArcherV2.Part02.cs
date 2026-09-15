@@ -185,6 +185,12 @@ target,
 1m * specialMultiplier,
 "COMMAND_ATTACK",
 now);
+_enemyForcedTargets[target.ActorId].Set(
+_companion.Actor.ActorId,
+now,
+ArcherRuntimeDuration(
+"COMMAND_ATTACK",
+"guardianTauntDurationSeconds"));
 break;
 case "TRAPPER":
 ResolveCompanionExtraAttack(
