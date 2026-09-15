@@ -1,0 +1,66 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-16T00:00:00+00:00",
+  "dungeons": [
+    {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "displayName": "Цитадель Расколотого Ордена · тест",
+      "description": "Изолированное тестовое подземелье для проверки новых босс-механик. Награды, лут, золото и опыт намеренно отключены.",
+      "minimumLevel": 25,
+      "maximumLevel": 25,
+      "entryLocationId": "ECLIPSED_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_MIRROR_CASTELLAN",
+          "monsterId": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
+          "checkpointId": "MIRROR_HALL",
+          "isBoss": true,
+          "mechanicId": "MIRROR_BARRIER",
+          "adds": [
+            { "role": "GUARDIAN", "monsterId": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25" },
+            { "role": "PRIEST", "monsterId": "SHATTERED_ORDER_MIRROR_PRIEST_L25" },
+            { "role": "EXECUTIONER", "monsterId": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25" }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_VELARIUS",
+          "monsterId": "SHATTERED_ORDER_VELARIUS_L25",
+          "checkpointId": "ARCANE_SANCTUM",
+          "isBoss": true,
+          "mechanicId": "VELARIUS_MANA",
+          "adds": [
+            { "role": "MANA_FEEDER", "monsterId": "SHATTERED_ORDER_MANA_FEEDER_L25" }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_MOR_ET",
+          "monsterId": "SHATTERED_ORDER_MOR_ET_L25",
+          "checkpointId": "SOUL_VAULT",
+          "isBoss": true,
+          "mechanicId": "MOR_ET_SOULS",
+          "adds": [
+            { "role": "SOUL_WARRIOR", "monsterId": "SHATTERED_ORDER_SOUL_WARRIOR_L25" },
+            { "role": "SOUL_MAGE", "monsterId": "SHATTERED_ORDER_SOUL_MAGE_L25" },
+            { "role": "SOUL_ARCHER", "monsterId": "SHATTERED_ORDER_SOUL_ARCHER_L25" },
+            { "role": "SOUL_PALADIN", "monsterId": "SHATTERED_ORDER_SOUL_PALADIN_L25" }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_AZRAEL",
+          "monsterId": "SHATTERED_ORDER_AZRAEL_L25",
+          "checkpointId": "TRIUNE_THRONE",
+          "isBoss": true,
+          "mechanicId": "AZRAEL_TRIUNE",
+          "adds": [
+            { "role": "FIRE", "monsterId": "SHATTERED_ORDER_AZRAEL_FIRE_L25" },
+            { "role": "FROST", "monsterId": "SHATTERED_ORDER_AZRAEL_FROST_L25" },
+            { "role": "VOID", "monsterId": "SHATTERED_ORDER_AZRAEL_VOID_L25" }
+          ]
+        }
+      ]
+    }
+  ]
+}

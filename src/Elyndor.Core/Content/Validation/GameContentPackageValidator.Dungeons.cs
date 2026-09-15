@@ -63,7 +63,94 @@ public static partial class GameContentPackageValidator
                         encounterPath,
                         $"Dungeon '{dungeon.Id}' contains an invalid encounter reference."));
                 }
+
+                ValidateEncounterMechanic(
+                    dungeon,
+                    encounter,
+                    encounterPath,
+                    monsterIds,
+                    errors);
             }
+        }
+    }
+
+    private static void ValidateEncounterMechanic(
+        DungeonDefinition dungeon,
+        DungeonEncounterDefinition encounter,
+        string encounterPath,
+        HashSet<string> monsterIds,
+        List<ContentValidationError> errors)
+    {
+        IReadOnlyList<DungeonEncounterAddDefinition> adds = encounter.Adds ?? [];
+        if (string.IsNullOrWhiteSpace(encounter.MechanicId))
+        {
+            if (adds.Count > 0)
+            {
+                errors.Add(new ContentValidationError(
+                    "INVALID_DUNGEON_ENCOUNTER_MECHANIC",
+                    $"{encounterPath}.adds",
+                    $"Dungeon '{dungeon.Id}' encounter '{encounter.Id}' defines adds without a mechanic id."));
+            }
+            return;
+        }
+
+        string[]? requiredRoles = encounter.MechanicId switch
+        {
+            DungeonEncounterMechanicIds.MirrorBarrier =>
+            [
+                DungeonEncounterAddRoles.Guardian,
+                DungeonEncounterAddRoles.Priest,
+                DungeonEncounterAddRoles.Executioner
+            ],
+            DungeonEncounterMechanicIds.VelariusMana =>
+            [
+                DungeonEncounterAddRoles.ManaFeeder
+            ],
+            DungeonEncounterMechanicIds.MorEtSouls =>
+            [
+                DungeonEncounterAddRoles.SoulWarrior,
+                DungeonEncounterAddRoles.SoulMage,
+                DungeonEncounterAddRoles.SoulArcher,
+                DungeonEncounterAddRoles.SoulPaladin
+            ],
+            DungeonEncounterMechanicIds.AzraelTriune =>
+            [
+                DungeonEncounterAddRoles.Fire,
+                DungeonEncounterAddRoles.Frost,
+                DungeonEncounterAddRoles.Void
+            ],
+            _ => null
+        };
+
+        if (requiredRoles is null)
+        {
+            errors.Add(new ContentValidationError(
+                "INVALID_DUNGEON_ENCOUNTER_MECHANIC",
+                $"{encounterPath}.mechanicId",
+                $"Dungeon '{dungeon.Id}' encounter '{encounter.Id}' references unknown mechanic '{encounter.MechanicId}'."));
+            return;
+        }
+
+        HashSet<string> seenRoles = new(StringComparer.Ordinal);
+        bool invalidAdd = adds.Count != requiredRoles.Length;
+        foreach (DungeonEncounterAddDefinition add in adds)
+        {
+            if (!requiredRoles.Contains(add.Role, StringComparer.Ordinal)
+                || !seenRoles.Add(add.Role)
+                || !monsterIds.Contains(add.MonsterId))
+            {
+                invalidAdd = true;
+            }
+        }
+        if (requiredRoles.Any(role => !seenRoles.Contains(role)))
+            invalidAdd = true;
+
+        if (invalidAdd)
+        {
+            errors.Add(new ContentValidationError(
+                "INVALID_DUNGEON_ENCOUNTER_ADD",
+                $"{encounterPath}.adds",
+                $"Encounter '{encounter.Id}' requires exactly one valid add profile for each role: {string.Join(", ", requiredRoles)}."));
         }
     }
 }

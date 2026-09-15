@@ -1,0 +1,359 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-16T00:00:00+00:00",
+  "definitions": [
+    { "type": "ABILITY", "id": "MIRROR_PRIEST_HEAL", "references": [] },
+    { "type": "ABILITY", "id": "MIRROR_EXECUTIONER_PRESSURE", "references": [] },
+    { "type": "ABILITY", "id": "VELARIUS_SHADOW_BOLT", "references": [] },
+    { "type": "ABILITY", "id": "VELARIUS_VOID_SURGE", "references": [] },
+    { "type": "ABILITY", "id": "VELARIUS_DRAIN_LIFE", "references": [] },
+    { "type": "ABILITY", "id": "VELARIUS_CATACLYSM", "references": [] },
+    { "type": "ABILITY", "id": "VELARIUS_MANA_FEED", "references": [] },
+    { "type": "ABILITY", "id": "MOR_ET_SOUL_WARRIOR_STRIKE", "references": [] },
+    { "type": "ABILITY", "id": "MOR_ET_SOUL_MAGE_BOLT", "references": [] },
+    { "type": "ABILITY", "id": "MOR_ET_SOUL_ARCHER_BLEED", "references": [] },
+    { "type": "ABILITY", "id": "MOR_ET_SOUL_PALADIN_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_FIRE_BRAND", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_FROST_LANCE", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_VOID_PULSE", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_FIRE_PRESSURE", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_FROST_WARD", "references": [] },
+    { "type": "ABILITY", "id": "AZRAEL_VOID_MEND", "references": [] }
+  ],
+  "abilities": [
+    {
+      "id": "MIRROR_PRIEST_HEAL",
+      "type": "Casted",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:01",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "HOLY",
+      "interruptible": true,
+      "actions": [
+        { "type": "Healing", "amount": 650, "healingCanCrit": false }
+      ],
+      "displayName": "Зеркальное восстановление",
+      "description": "Прерываемое восстановление Жреца Зеркала."
+    },
+    {
+      "id": "MIRROR_EXECUTIONER_PRESSURE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "MIRROR_EXECUTIONER_PRESSURE",
+            "kind": "StatModifier",
+            "duration": "00:00:10",
+            "maxStacks": 5,
+            "stackPolicy": "Stack",
+            "magnitude": 0.05,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Давление палача",
+      "description": "Наращивает входящий урон по текущей цели."
+    },
+    {
+      "id": "VELARIUS_SHADOW_BOLT",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 5,
+      "cooldown": "00:00:02.5000000",
+      "castTime": "00:00:01.2000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "SHADOW",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 130, "damageType": "Magical", "spellPowerCoefficient": 0.55, "canDodge": false }
+      ],
+      "displayName": "Теневая стрела",
+      "description": "Базовый прерываемый расход маны Веллариуса."
+    },
+    {
+      "id": "VELARIUS_VOID_SURGE",
+      "type": "Casted",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 12,
+      "cooldown": "00:00:07",
+      "castTime": "00:00:01.5000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "SHADOW",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 85, "damageType": "Magical", "spellPowerCoefficient": 0.30, "canDodge": false }
+      ],
+      "displayName": "Всплеск Бездны",
+      "description": "Прерываемая атака по всей группе."
+    },
+    {
+      "id": "VELARIUS_DRAIN_LIFE",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:02",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "SHADOW",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 95, "damageType": "Magical", "spellPowerCoefficient": 0.35, "canDodge": false }
+      ],
+      "displayName": "Похищение жизни",
+      "description": "Наносит урон и после успешного завершения восстанавливает здоровье Веллариуса."
+    },
+    {
+      "id": "VELARIUS_CATACLYSM",
+      "type": "Casted",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 25,
+      "cooldown": "00:00:15",
+      "castTime": "00:00:03",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "ARCANE",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 190, "damageType": "Magical", "spellPowerCoefficient": 0.50, "canDodge": false }
+      ],
+      "displayName": "Катаклизм пустоты",
+      "description": "Дорогой и опасный прерываемый каст по всей группе."
+    },
+    {
+      "id": "VELARIUS_MANA_FEED",
+      "type": "Casted",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:02",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "ARCANE",
+      "interruptible": true,
+      "actions": [],
+      "displayName": "Подпитка маны",
+      "description": "После успешного каста передаёт Веллариусу 5 маны."
+    },
+    {
+      "id": "MOR_ET_SOUL_WARRIOR_STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:03",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        { "type": "Damage", "amount": 110, "damageType": "Physical", "attackPowerCoefficient": 0.55 }
+      ],
+      "displayName": "Удар похищенной души",
+      "description": "Тяжёлый удар души воина."
+    },
+    {
+      "id": "MOR_ET_SOUL_MAGE_BOLT",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:03",
+      "castTime": "00:00:01.3000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "ARCANE",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 125, "damageType": "Magical", "spellPowerCoefficient": 0.65, "canDodge": false }
+      ],
+      "displayName": "Эхо тайного знания",
+      "description": "Сильный прерываемый каст души мага."
+    },
+    {
+      "id": "MOR_ET_SOUL_ARCHER_BLEED",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        { "type": "Damage", "amount": 80, "damageType": "Physical", "attackPowerCoefficient": 0.35 },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "MOR_ET_SOUL_ARCHER_BLEED",
+            "kind": "DamageOverTime",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 24,
+            "tickInterval": "00:00:02",
+            "periodicDamageType": "Physical"
+          }
+        }
+      ],
+      "displayName": "Призрачное кровотечение",
+      "description": "Быстрый выстрел души лучника с кровотечением."
+    },
+    {
+      "id": "MOR_ET_SOUL_PALADIN_LIGHT",
+      "type": "Casted",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:07",
+      "castTime": "00:00:01.5000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "HOLY",
+      "interruptible": true,
+      "actions": [
+        { "type": "Healing", "amount": 350, "spellPowerCoefficient": 0.35 }
+      ],
+      "displayName": "Искажённый Свет",
+      "description": "Душа паладина пытается восстановить себя."
+    },
+    {
+      "id": "AZRAEL_FIRE_BRAND",
+      "type": "Casted",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:05",
+      "castTime": "00:00:01.2000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FIRE",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 125, "damageType": "Magical", "spellPowerCoefficient": 0.45, "canDodge": false }
+      ],
+      "displayName": "Клеймо Пламени",
+      "description": "Одна из трёх школ Азраэля."
+    },
+    {
+      "id": "AZRAEL_FROST_LANCE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FROST",
+      "actions": [
+        { "type": "Damage", "amount": 115, "damageType": "Magical", "spellPowerCoefficient": 0.40, "canDodge": false }
+      ],
+      "displayName": "Копьё Холода",
+      "description": "Одна из трёх школ Азраэля."
+    },
+    {
+      "id": "AZRAEL_VOID_PULSE",
+      "type": "Casted",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:01.6000000",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "SHADOW",
+      "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 90, "damageType": "Magical", "spellPowerCoefficient": 0.30, "canDodge": false }
+      ],
+      "displayName": "Импульс Бездны",
+      "description": "Одна из трёх школ Азраэля."
+    },
+    {
+      "id": "AZRAEL_FIRE_PRESSURE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:02.5000000",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FIRE",
+      "actions": [
+        { "type": "Damage", "amount": 95, "damageType": "Magical", "spellPowerCoefficient": 0.35, "canDodge": false },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "AZRAEL_FIRE_PRESSURE",
+            "kind": "StatModifier",
+            "duration": "00:00:10",
+            "maxStacks": 5,
+            "stackPolicy": "Stack",
+            "magnitude": 0.03,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Нарастающий жар",
+      "description": "Аспект Пламени постепенно усиливает давление на цель."
+    },
+    {
+      "id": "AZRAEL_FROST_WARD",
+      "type": "Casted",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:01",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "FROST",
+      "interruptible": true,
+      "actions": [],
+      "displayName": "Ледяной покров",
+      "description": "После завершения даёт щит самому ослабленному аспекту."
+    },
+    {
+      "id": "AZRAEL_VOID_MEND",
+      "type": "Casted",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:07",
+      "castTime": "00:00:02",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": true,
+      "school": "SHADOW",
+      "interruptible": true,
+      "actions": [],
+      "displayName": "Сшивание Бездной",
+      "description": "После завершения лечит все живые аспекты; прерывание полностью отменяет лечение."
+    }
+  ]
+}
