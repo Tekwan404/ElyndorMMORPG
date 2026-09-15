@@ -97,6 +97,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy release to VPS
+        id: deploy_release
         if: >-
           steps.deploy.outputs.enabled == 'true' &&
           (github.event_name == 'workflow_run' || github.ref == 'refs/heads/main')
@@ -120,3 +121,76 @@ jobs:
             "set +e; chmod 700 '$remote_installer'; if [ \"\$(id -u)\" -eq 0 ]; then bash '$remote_installer' '$remote_archive'; else sudo -n bash '$remote_installer' '$remote_archive'; fi; status=\$?; if [ \$status -eq 0 ]; then test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'; status=\$?; fi; rm -f '$remote_archive' '$remote_installer'; exit \$status"
 
           echo "Deployed Elyndor revision $revision to $DEPLOY_HOST"
+
+      - name: Notify Telegram about deployment
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.ELYNDOR_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_IDS: ${{ secrets.ELYNDOR_TELEGRAM_CHAT_IDS }}
+          DEPLOY_OUTCOME: ${{ steps.deploy_release.outcome }}
+          JOB_STATUS: ${{ job.status }}
+          FALLBACK_REVISION: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -uo pipefail
+
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_IDS:-}" ]]; then
+            echo "::notice::Telegram deploy notifications are not configured. Add ELYNDOR_TELEGRAM_BOT_TOKEN and ELYNDOR_TELEGRAM_CHAT_IDS repository secrets."
+            exit 0
+          fi
+
+          revision="$(git rev-parse HEAD 2>/dev/null || printf '%s' "$FALLBACK_REVISION")"
+          short_revision="${revision:0:7}"
+          subject="$(git log -1 --pretty=%s 2>/dev/null || printf '%s' 'Unknown revision')"
+          actions_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          if [[ "${DEPLOY_OUTCOME:-}" == "success" ]]; then
+            message=$'🟢 Elyndor обновлён\n'
+            message+="Версия: ${short_revision}"$'\n'
+            message+="${subject}"$'\n'
+            message+=$'Сервер: ✅ ready'
+          elif [[ "${JOB_STATUS:-}" == "failure" ]]; then
+            message=$'🔴 Elyndor: ошибка обновления\n'
+            message+="Версия: ${short_revision}"$'\n'
+            message+="${subject}"$'\n'
+            message+="GitHub Actions: ${actions_url}"
+          else
+            echo "::notice::Deployment was not attempted; Telegram notification skipped."
+            exit 0
+          fi
+
+          failed=0
+          recipients=0
+          IFS=',' read -ra chat_ids <<< "$TELEGRAM_CHAT_IDS"
+          for raw_chat_id in "${chat_ids[@]}"; do
+            chat_id="$(printf '%s' "$raw_chat_id" | tr -d '[:space:]')"
+            [[ -z "$chat_id" ]] && continue
+            recipients=$((recipients + 1))
+
+            response_file="$(mktemp)"
+            http_code="$(curl --silent --show-error \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
+              -X POST \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${chat_id}" \
+              --data-urlencode "text=${message}")" || http_code="000"
+
+            if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+              echo "::warning::Telegram notification failed for one recipient (HTTP ${http_code})."
+              failed=1
+            fi
+            rm -f "$response_file"
+          done
+
+          if [[ "$recipients" -eq 0 ]]; then
+            echo "::warning::ELYNDOR_TELEGRAM_CHAT_IDS does not contain any usable chat IDs."
+            exit 1
+          fi
+
+          if [[ "$failed" -ne 0 ]]; then
+            exit 1
+          fi
+
+          echo "Telegram deployment notification sent to ${recipients} recipient(s)."
