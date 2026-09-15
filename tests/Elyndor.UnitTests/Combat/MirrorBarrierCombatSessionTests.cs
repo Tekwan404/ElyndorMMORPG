@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
@@ -147,6 +148,55 @@ public sealed class MirrorBarrierCombatSessionTests
             effect => effect.Id == "MIRROR_PHASE_GUARD");
     }
 
+    [Fact]
+    public void PriestHealIsARealInterruptibleEnemyCast()
+    {
+        CombatSession session = CreateSession();
+        CombatCommandResult threshold = session.Handle(
+            new UseAbilityCommand("threshold-hit", "THRESHOLD_HIT", BossId),
+            Now);
+        Assert.True(threshold.Succeeded, threshold.ErrorCode);
+        Guid priestId = Enemy(threshold.Snapshot, "MIRROR_PRIEST").ActorId;
+
+        CombatCommandResult castStarted = session.AdvanceTo(Now.AddMilliseconds(100));
+        CombatActorSnapshot castingPriest = Enemy(castStarted.Snapshot, "MIRROR_PRIEST");
+        Assert.NotNull(castingPriest.ActiveCast);
+        Assert.Equal("MIRROR_PRIEST_HEAL", castingPriest.ActiveCast.AbilityId);
+
+        CombatCommandResult interrupted = session.Handle(
+            new UseAbilityCommand("interrupt-priest", "TEST_INTERRUPT", priestId),
+            Now.AddMilliseconds(200));
+
+        Assert.True(interrupted.Succeeded, interrupted.ErrorCode);
+        CombatEvent interruptEvent = Assert.Single(interrupted.Events, item =>
+            item.Type == CombatEventType.AbilityInterrupted
+            && item.ActorId == priestId);
+        Assert.Equal("MIRROR_PRIEST_HEAL", interruptEvent.DefinitionId);
+        Assert.Null(Enemy(interrupted.Snapshot, "MIRROR_PRIEST").ActiveCast);
+    }
+
+    [Fact]
+    public void ExecutionerBuildsPressureStacksOverTime()
+    {
+        CombatSession session = CreateSession();
+        CombatCommandResult threshold = session.Handle(
+            new UseAbilityCommand("threshold-hit", "THRESHOLD_HIT", BossId),
+            Now);
+        Assert.True(threshold.Succeeded, threshold.ErrorCode);
+
+        CombatCommandResult firstPressure = session.AdvanceTo(Now.AddSeconds(2));
+        CombatEffectSnapshot pressure = Assert.Single(
+            firstPressure.Snapshot.Player.Effects,
+            effect => effect.Id == "MIRROR_EXECUTIONER_PRESSURE");
+        Assert.Equal(1, pressure.Stacks);
+
+        CombatCommandResult secondPressure = session.AdvanceTo(Now.AddSeconds(4));
+        pressure = Assert.Single(
+            secondPressure.Snapshot.Player.Effects,
+            effect => effect.Id == "MIRROR_EXECUTIONER_PRESSURE");
+        Assert.Equal(2, pressure.Stacks);
+    }
+
     private static CombatSession CreateSession()
     {
         CombatStats playerStats = new(
@@ -168,14 +218,14 @@ public sealed class MirrorBarrierCombatSessionTests
             "RAGE",
             new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
             new HashSet<string>(
-                ["THRESHOLD_HIT", "PING", "NUKE"],
+                ["THRESHOLD_HIT", "PING", "NUKE", "TEST_INTERRUPT"],
                 StringComparer.Ordinal),
             CanAutoAttack: false);
         CombatParticipantDefinition boss = new(
             new CombatActorState(BossId, 1_000, 1_000, 0, 0, bossStats),
             CombatActorKind.Monster,
             "MIRROR_BOSS",
-            "Зеркальный Кастелян",
+            "Зеркальный Кастелан",
             "NONE",
             new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
             new HashSet<string>(StringComparer.Ordinal),
@@ -185,7 +235,10 @@ public sealed class MirrorBarrierCombatSessionTests
         {
             ["THRESHOLD_HIT"] = DamageAbility("THRESHOLD_HIT", 300),
             ["PING"] = DamageAbility("PING", 100),
-            ["NUKE"] = DamageAbility("NUKE", 5_000)
+            ["NUKE"] = DamageAbility("NUKE", 5_000),
+            ["TEST_INTERRUPT"] = InterruptAbility(),
+            ["MIRROR_PRIEST_HEAL"] = PriestHealAbility(),
+            ["MIRROR_EXECUTIONER_PRESSURE"] = ExecutionerPressureAbility()
         };
         CombatSession session = new(
             Guid.Parse("90000000-0000-0000-0000-000000000001"),
@@ -194,7 +247,7 @@ public sealed class MirrorBarrierCombatSessionTests
             abilities,
             new MonsterAiProfile("MIRROR_BOSS_PASSIVE", []),
             ResolvedTalentModifiers.Empty,
-            new SequenceGameRandom(Enumerable.Repeat(0.99m, 200).ToArray()),
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 500).ToArray()),
             Now);
         session.ConfigureMirrorEncounter(CreateMirrorProfile(bossStats));
         return session;
@@ -213,6 +266,18 @@ public sealed class MirrorBarrierCombatSessionTests
         string id,
         CombatStats stats)
     {
+        string[] abilityIds = role switch
+        {
+            MirrorEncounterAddRole.Priest => ["MIRROR_PRIEST_HEAL"],
+            MirrorEncounterAddRole.Executioner => ["MIRROR_EXECUTIONER_PRESSURE"],
+            _ => []
+        };
+        TimeSpan interval = role switch
+        {
+            MirrorEncounterAddRole.Priest => TimeSpan.FromMilliseconds(100),
+            MirrorEncounterAddRole.Executioner => TimeSpan.FromSeconds(2),
+            _ => TimeSpan.FromHours(1)
+        };
         MonsterDefinition monster = new(
             id,
             id,
@@ -220,14 +285,14 @@ public sealed class MirrorBarrierCombatSessionTests
             20,
             100,
             stats,
-            TimeSpan.FromHours(1),
+            interval,
             0,
-            [],
+            abilityIds,
             $"{id}_AI");
         return new MirrorEncounterAddProfile(
             role,
             monster,
-            new MonsterAiProfile($"{id}_AI", []));
+            new MonsterAiProfile($"{id}_AI", abilityIds));
     }
 
     private static AbilityDefinition DamageAbility(string id, decimal amount) =>
@@ -251,6 +316,72 @@ public sealed class MirrorBarrierCombatSessionTests
                     CanMiss: false,
                     CanCrit: false,
                     CanDodge: false)
+            ]);
+
+    private static AbilityDefinition InterruptAbility() =>
+        new(
+            "TEST_INTERRUPT",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            Actions: [],
+            RuntimeParameters: new Dictionary<string, decimal>(StringComparer.Ordinal)
+            {
+                [CombatSession.InterruptTargetCastParameter] = 1,
+                [CombatSession.InterruptLockoutSecondsParameter] = 2
+            });
+
+    private static AbilityDefinition PriestHealAbility() =>
+        new(
+            "MIRROR_PRIEST_HEAL",
+            AbilityType.Casted,
+            AbilityTargetType.Self,
+            0,
+            TimeSpan.FromSeconds(4),
+            TimeSpan.FromSeconds(1),
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "HOLY",
+            Interruptible: true,
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Healing,
+                    Amount: 60)
+            ]);
+
+    private static AbilityDefinition ExecutionerPressureAbility() =>
+        new(
+            "MIRROR_EXECUTIONER_PRESSURE",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ApplyEffect,
+                    Effect: new EffectDefinition(
+                        "MIRROR_EXECUTIONER_PRESSURE",
+                        EffectKind.StatModifier,
+                        TimeSpan.FromSeconds(10),
+                        5,
+                        EffectStackPolicy.Stack,
+                        0.05m,
+                        ModifiedStat: EffectStat.IncomingDamageMultiplier,
+                        ModifierMode: EffectModifierMode.Percent))
             ]);
 
     private static CombatActorSnapshot Enemy(
