@@ -140,7 +140,7 @@ public sealed partial class CombatSession
             case "HOLY_SHIELD":
                 state.Protection.ActivateHolyShield(
                     now,
-                    TimeSpan.FromSeconds(ResolveHolyShieldDurationSeconds()));
+                    TimeSpan.FromSeconds((double)ResolveHolyShieldDurationSeconds()));
                 break;
             case "JUDGEMENT":
                 ApplyPaladinJudgement(state, combatEvent, now);
