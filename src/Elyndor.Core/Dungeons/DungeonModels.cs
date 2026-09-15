@@ -5,6 +5,9 @@ namespace Elyndor.Core.Dungeons;
 public static class DungeonEncounterMechanicIds
 {
     public const string MirrorBarrier = "MIRROR_BARRIER";
+    public const string VelariusMana = "VELARIUS_MANA";
+    public const string MorEtSouls = "MOR_ET_SOULS";
+    public const string AzraelTriune = "AZRAEL_TRIUNE";
 }
 
 public static class DungeonEncounterAddRoles
@@ -12,6 +15,14 @@ public static class DungeonEncounterAddRoles
     public const string Guardian = "GUARDIAN";
     public const string Priest = "PRIEST";
     public const string Executioner = "EXECUTIONER";
+    public const string ManaFeeder = "MANA_FEEDER";
+    public const string SoulWarrior = "SOUL_WARRIOR";
+    public const string SoulMage = "SOUL_MAGE";
+    public const string SoulArcher = "SOUL_ARCHER";
+    public const string SoulPaladin = "SOUL_PALADIN";
+    public const string Fire = "FIRE";
+    public const string Frost = "FROST";
+    public const string Void = "VOID";
 }
 
 public sealed record DungeonEncounterAddDefinition(
