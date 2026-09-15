@@ -47,6 +47,7 @@ const canLearnSelected = computed(() => selectedTalent.value !== null && canLear
 const classLabel = computed(() => {
   if (snapshot.value?.classId === 'MAGE') return 'Маг'
   if (snapshot.value?.classId === 'ARCHER') return 'Лучник'
+  if (snapshot.value?.classId === 'PALADIN') return 'Паладин'
   return 'Воин'
 })
 const connections = computed(() => {

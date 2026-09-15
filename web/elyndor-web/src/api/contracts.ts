@@ -323,7 +323,7 @@ export interface CharacterSnapshot {
   publicCode?: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
-  classId: 'WARRIOR' | 'ARCHER' | 'MAGE'
+  classId: 'WARRIOR' | 'ARCHER' | 'MAGE' | 'PALADIN'
   level: number
   experience: number
   xpToNextLevel: number
@@ -637,7 +637,7 @@ export interface CreateCharacterRequest {
   name: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
-  classId: 'WARRIOR' | 'ARCHER' | 'MAGE'
+  classId: 'WARRIOR' | 'ARCHER' | 'MAGE' | 'PALADIN'
 }
 
 export interface TravelResponse {

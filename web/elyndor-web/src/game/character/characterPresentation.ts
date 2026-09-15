@@ -4,6 +4,7 @@ export function classLabel(classId: string): string {
   if (classId === 'WARRIOR') return 'Воин'
   if (classId === 'ARCHER') return 'Лучник'
   if (classId === 'MAGE') return 'Маг'
+  if (classId === 'PALADIN') return 'Паладин'
   return classId
 }
 
