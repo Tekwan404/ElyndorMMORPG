@@ -473,6 +473,37 @@ public sealed class TalentService(
             state.Reinitialize(tree.Id, tree.Version, timeProvider.GetUtcNow());
             changed = true;
         }
+        else
+        {
+            IReadOnlyDictionary<string, int> currentLoadout1 =
+                state.GetRanks(TalentLoadoutIds.Loadout1);
+            IReadOnlyDictionary<string, int> currentLoadout2 =
+                state.GetRanks(TalentLoadoutIds.Loadout2);
+            Dictionary<string, int> normalizedLoadout1 =
+                NormalizePersistedRanks(tree, currentLoadout1);
+            Dictionary<string, int> normalizedLoadout2 =
+                NormalizePersistedRanks(tree, currentLoadout2);
+            bool ranksChanged =
+                !RanksEqual(currentLoadout1, normalizedLoadout1)
+                || !RanksEqual(currentLoadout2, normalizedLoadout2);
+
+            if (ranksChanged)
+            {
+                state.NormalizeForTreeVersion(
+                    tree.Version,
+                    normalizedLoadout1,
+                    normalizedLoadout2,
+                    timeProvider.GetUtcNow());
+                changed = true;
+            }
+            else if (state.TalentVersion != tree.Version)
+            {
+                // A metadata-only tree version bump does not invalidate an otherwise
+                // identical client snapshot. Rank migrations still increment StateVersion.
+                state.AlignTreeVersion(tree.Version);
+                changed = true;
+            }
+        }
 
         if (changed && saveCreated)
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -480,6 +511,35 @@ public sealed class TalentService(
         return TalentOperationResult.Success(
             ToSnapshot(character, tree, state));
     }
+
+    private static Dictionary<string, int> NormalizePersistedRanks(
+        TalentTreeDefinition tree,
+        IReadOnlyDictionary<string, int> persistedRanks)
+    {
+        Dictionary<string, TalentDefinition> nodes = tree.Nodes.ToDictionary(
+            node => node.Id,
+            StringComparer.Ordinal);
+        Dictionary<string, int> normalized = new(StringComparer.Ordinal);
+
+        foreach ((string talentId, int persistedRank) in persistedRanks)
+        {
+            if (persistedRank <= 0
+                || !nodes.TryGetValue(talentId, out TalentDefinition? talent))
+            {
+                continue;
+            }
+
+            normalized[talentId] = Math.Min(persistedRank, talent.MaxRank);
+        }
+
+        return normalized;
+    }
+
+    private static bool RanksEqual(
+        IReadOnlyDictionary<string, int> left,
+        Dictionary<string, int> right) =>
+        left.Count == right.Count
+        && left.All(pair => right.TryGetValue(pair.Key, out int rank) && rank == pair.Value);
 
     private Task<Character?> LockCharacterAsync(
         Guid accountId,

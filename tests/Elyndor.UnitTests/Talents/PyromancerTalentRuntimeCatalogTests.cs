@@ -56,8 +56,8 @@ public sealed class PyromancerTalentRuntimeCatalogTests
     }
 
     [Fact]
-    public void FireCatalogOwnsThirtyRuntimeContracts()
+    public void FireCatalogOwnsAllThirtyTwoRuntimeContracts()
     {
-        Assert.Equal(30, PyromancerTalentRuntimeCatalog.SupportedTalentIds.Count);
+        Assert.Equal(32, PyromancerTalentRuntimeCatalog.SupportedTalentIds.Count);
     }
 }

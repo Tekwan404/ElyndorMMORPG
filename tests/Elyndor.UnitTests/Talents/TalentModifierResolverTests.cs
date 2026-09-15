@@ -36,6 +36,24 @@ public sealed class TalentModifierResolverTests
     }
 
     [Fact]
+    public void ResolveClampsLegacyRankToCurrentMaxRank()
+    {
+        TalentTreeDefinition tree = CreateTree(
+            new TalentDefinition(
+                "B-1-1", "BERSERKER", 1, 0, "Боевое Безумие", "Battle Frenzy", 2, [], "",
+                Modifiers:
+                [
+                    new(TalentModifierType.StatModifier, TalentModifierKeys.AttackPowerPercent, [2, 4])
+                ]));
+
+        ResolvedTalentModifiers result = TalentModifierResolver.Resolve(
+            tree,
+            new Dictionary<string, int> { ["B-1-1"] = 5 });
+
+        Assert.Equal(4, result.Stats.AttackPowerPercent);
+    }
+
+    [Fact]
     public void ApplyToAbilityClampsCostAndChangesCooldownAndDamageCoefficient()
     {
         TalentTreeDefinition tree = CreateTree(

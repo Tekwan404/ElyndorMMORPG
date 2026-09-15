@@ -47,6 +47,65 @@ public sealed class TalentServiceIdempotencyTests(PostgresFixture postgres) : IA
     }
 
     [Fact]
+    public async Task LegacyMageRanksAreClampedAndRemovedIdsAreDroppedOnLoad()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        TalentTreeDefinition mageTree = content.TalentTrees!
+            .Single(tree => tree.ClassId == "MAGE");
+        TalentDefinition arcaneSubtlety = mageTree.Nodes
+            .Single(talent => talent.Id == "A-1-4");
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync("MAGE");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterTalentState legacy = new(
+                characterId,
+                mageTree.Id,
+                talentVersion: Math.Max(1, mageTree.Version - 1),
+                Now.AddMinutes(-2));
+            legacy.ReplaceRanks(
+                TalentLoadoutIds.Loadout1,
+                new Dictionary<string, int>(StringComparer.Ordinal)
+                {
+                    [arcaneSubtlety.Id] = arcaneSubtlety.MaxRank + 3,
+                    ["REMOVED_LEGACY_TALENT"] = 2
+                },
+                Now.AddMinutes(-1));
+            setup.CharacterTalentStates.Add(legacy);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TalentService service = new(context, content, new FixedTimeProvider(Now));
+        TalentOperationResult result = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.ErrorCode);
+        Assert.Equal(mageTree.Version, result.Snapshot!.State.TalentVersion);
+        Assert.Equal(
+            arcaneSubtlety.MaxRank,
+            result.Snapshot.Loadout1Ranks[arcaneSubtlety.Id]);
+        Assert.DoesNotContain("REMOVED_LEGACY_TALENT", result.Snapshot.Loadout1Ranks.Keys);
+        Assert.Empty(TalentRules.ValidateBuild(
+            mageTree,
+            result.Snapshot.Character.Level,
+            result.Snapshot.Loadout1Ranks));
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterTalentState persisted = await verify.CharacterTalentStates
+            .AsNoTracking()
+            .SingleAsync(state => state.CharacterId == characterId);
+        Assert.Equal(mageTree.Version, persisted.TalentVersion);
+        Assert.Equal(
+            arcaneSubtlety.MaxRank,
+            persisted.GetRanks(TalentLoadoutIds.Loadout1)[arcaneSubtlety.Id]);
+        Assert.DoesNotContain(
+            "REMOVED_LEGACY_TALENT",
+            persisted.GetRanks(TalentLoadoutIds.Loadout1).Keys);
+    }
+
+    [Fact]
     public async Task OldExactMutationReplaysAfterLaterTalentChangesAndPayloadReuseIsRejected()
     {
         GameContentPackage content = await LoadContentAsync();

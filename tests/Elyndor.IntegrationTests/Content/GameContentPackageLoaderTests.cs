@@ -56,19 +56,19 @@ public sealed class GameContentPackageLoaderTests
                 32,
                 mageTree.Nodes.Count(node => node.BranchId == branch.Id)));
         Assert.Equal(96, mageTree.Nodes.Count);
-        Assert.Equal(207, mageTree.Nodes.Sum(node => node.MaxRank));
+        Assert.Equal(208, mageTree.Nodes.Sum(node => node.MaxRank));
         Assert.Contains(
             mageTree.Nodes,
-            node => node.Id == "A-3-1"
+            node => node.Id == "A-3-4"
                 && node.Modifiers!.Any(modifier =>
                     modifier.Key == TalentModifierKeys.UnlockAbility
-                    && modifier.TargetId == "ARCANE_BURST"));
+                    && modifier.TargetId == "MAGE_COUNTERSPELL"));
         Assert.Contains(
             mageTree.Nodes,
-            node => node.Id == "I-3-1"
+            node => node.Id == "I-6-1"
                 && node.Modifiers!.Any(modifier =>
                     modifier.Key == TalentModifierKeys.UnlockAbility
-                    && modifier.TargetId == "ICE_LANCE"));
+                    && modifier.TargetId == "MAGE_ICE_LANCE"));
 
         LocationDefinition forest = Assert.Single(
             package.Locations,

@@ -1,117 +1,147 @@
-# Phase 4B — Mage Foundation & Pyromancer Vertical Slice
+# Phase 4B — Mage Foundation & Talent Runtime
 
 ## Status
 
-Active implementation slice.
+**Implemented and superseded by the full Mage Fire / Arcane / Frost rework.**
 
-## Source contracts
+The original Phase 4B Pyromancer vertical slice introduced Mage combat support, but its old Fire Comet / Heat Limit, Arcane Charges and Frostbite-stack assumptions are no longer authoritative.
+
+Current gameplay source of truth:
 
 - `docs/source-of-truth/gameplay/25_MAGE_TALENT_TREE.md`
+- `content/talents/mage-pyromancer.json`
+- `content/abilities/mage-pyromancer.json`
+
+Related engine contracts remain:
+
 - `docs/source-of-truth/gameplay/02_COMBAT_SYSTEM.md`
 - `docs/source-of-truth/gameplay/07_RESOURCE_SYSTEM.md`
 - `docs/source-of-truth/gameplay/08_EFFECT_SYSTEM.md`
 - `docs/source-of-truth/gameplay/09_DAMAGE_AND_HEALING_SYSTEM.md`
 - `docs/source-of-truth/gameplay/10_ABILITY_SYSTEM.md`
-- `docs/source-of-truth/phases/PHASE_04A_FIRST_PLAYABLE_COMBAT.md`
 
-## Goal
+## Goal retained from Phase 4B
 
-Make `MAGE` the second fully playable prototype class in the existing single-player `CombatSession`, with the Fire/Pyromancer branch implemented end to end and without creating a parallel combat or talent system.
+`MAGE` remains a fully playable class inside the same authoritative `CombatSession`; the rework does not create a parallel combat, effect, resource or talent engine.
 
-## Playable Mage baseline
-
-The class uses:
+Class baseline:
 
 ```text
 Primary Attribute = INTELLECT
 Resource = MANA
-Armor = LIGHT
+Armor = CLOTH
 Weapons = STAFF / WAND
 ```
 
-Phase 4B starts the Mage with the three base abilities from the Mage Source of Truth:
+Mana regeneration, cast timing, resource spending, damage, critical hits, effects, cooldowns, control and outcomes remain server authoritative.
+
+## Current tree contract
+
+`MAGE_TREE` now contains all three production branches:
 
 ```text
-MAGE_FIREBALL
-MAGE_ARCANE_SPARK
-MAGE_ICE_SHARD
+FIRE   = 32 talents
+ARCANE = 32 talents
+FROST  = 32 talents
+TOTAL  = 96 talents
 ```
 
-Mana regenerates during combat from the authoritative resource profile. Cast timing, resource spending, damage, critical hits, effects, cooldowns and outcomes remain server authoritative.
-
-## Fire/Pyromancer tree
-
-`MAGE_TREE` exposes the `FIRE` branch in this slice. The branch contains exactly 32 nodes and 69 possible rank-points. All 32 nodes participate in the single-player runtime when learned.
-
-Talent-unlocked abilities:
+The tree uses 9 progression rows with branch-spend thresholds:
 
 ```text
-F-3-1 -> FLAME_FLASH
-F-4-1 -> FIRE_WAVE
-F-5-1 -> COMBUSTION
-F-6-1 -> FIRE_COMET while HEAT_LIMIT is active
+0 / 5 / 10 / 15 / 20 / 25 / 30 / 35 / 40
 ```
 
-The implementation follows the exact values, prerequisites, thresholds, durations and internal cooldowns defined in `25_MAGE_TALENT_TREE.md`.
+A level-60 character can spend 59 points and hybrid builds are allowed.
 
-## Runtime mechanics included
+Stable IDs `F-*`, `A-*`, `I-*` are preserved across the rework.
 
-- FIRE-specific Accuracy, CriticalChance, CriticalDamage, SpellPower scaling and MagicPenetration.
-- Fireball damage, target HP threshold bonuses and Burn synergy.
-- `BURN` as a source-specific Magical periodic effect using snapshot SpellPower.
-- Quick Kindling, Hot Blood, Fire Rhythm and Flame Trail next-cast windows.
-- `COMBUSTION` burst window and its Pyromancer upgrades.
-- `HEAT_LIMIT`, three-critical-Fireball streak tracking and dynamic `FIRE_COMET` availability.
-- Comet Burn, Comet aftershock, execute bonus and Avatar cooldown interaction.
-- Inferno stacks during Combustion.
-- Magical-critical reactive damage buff.
-- FIRE kill Mana restore and Flame Flash reset.
-- Avatar of Flame passive and next-Fireball reward after consuming Heat Limit.
-- Proc-created damage remains non-recursive according to the Mage Source of Truth.
+## Current branch loops
 
-## Engine extensions
+### Fire
 
-Phase 4B extends existing generic engine contracts rather than adding a Mage-only damage engine:
+```text
+Crit → Ignite → Scorch → Pyroblast → Combustion
+```
 
-- ability damage can scale from SpellPower as well as AttackPower;
-- an ability can carry temporary accuracy/critical/critical-damage/magic-penetration bonuses;
-- periodic damage can specify its `DamageType` and resolve through the authoritative damage pipeline;
-- `CombatSession` supports class resource regeneration and dynamic ability availability.
+The old Heat Limit / Fire Comet loop is removed from the authoritative design.
 
-These extensions are reusable by later Arcane and Frost slices.
+### Arcane
 
-## UI
+```text
+Mana → Clearcasting → free casts → Presence of Mind → Arcane Power
+```
 
-The combat UI must:
+Arcane Charges are no longer the core loop.
 
-- label and render Mana instead of hard-coded Rage for Mage;
-- show learned Mage/Pyromancer abilities;
-- surface Fireball critical streak, Heat Limit, Burn and Combustion state;
-- expose `FIRE_COMET` only while Heat Limit is active.
+### Frost
 
-The talent UI is class-driven and can render both Warrior and Mage trees from the same talent API.
+```text
+Chill → Freeze / Deep Chill → Shatter → Ice Lance → Winter's Chill
+```
 
-## Non-goals
+Normal enemies can be Frozen. Bosses receive Deep Chill instead of forbidden hard Freeze control.
 
-Phase 4B does not implement:
+## Runtime mechanics now included
 
-- Arcane talent runtime;
-- Frost talent runtime;
-- party, raid or guild combat;
-- a second combat engine;
-- elites or bosses;
-- new economy systems.
+- SpellPower-based Magical damage through the shared damage pipeline.
+- Talent-driven ability unlocks rather than automatic Mage starter spells.
+- Fire rolling Ignite with residual damage preservation.
+- Scorch Fire Vulnerability stacks.
+- Pyroblast, Blast Wave and Combustion runtime.
+- Hot Streak / Pyromaniac-style Fire sequencing.
+- Clearcasting charge creation and consumption.
+- Presence of Mind instant-cast window.
+- Arcane Power burst and cost behavior.
+- Mana Shield resource-backed absorption.
+- Counterspell using the generic `AbilityEngine.Interrupt` path.
+- Chill, Freeze, Deep Chill, Shatter and Winter's Chill.
+- Ice Lance frozen/deep-chilled target multipliers.
+- Cold Snap, Ice Barrier and Deep Freeze behavior.
+- Ice Block immunity, cleanse and 3-second action lockout.
+- Cold Blood after Ice Block expiry.
+- Fire / Arcane / Frost threat reductions through the shared threat pipeline.
+- Generic persisted talent-rank normalization when a published tree changes rank boundaries.
 
-## Definition of Done
+## Engine limitation: channels
 
-- A newly created Mage receives the intended Mage class profile and Mana resource.
-- Mage can start normal Whispering Forest combat through the existing combat API.
-- Fireball, Arcane Spark and Ice Shard use SpellPower and Magical mitigation.
-- Combat Mana regeneration is deterministic and server authoritative.
-- The Fire tree exposes 32 nodes with the documented ranks and prerequisites.
-- Every Fire node is reported as runtime-supported when its behavior is implemented.
-- Talent-unlocked Pyromancer abilities appear in bootstrap/combat snapshots.
-- Heat Limit dynamically exposes and consumes Fire Comet.
-- Burn and other periodic Fire damage can kill a target and finish combat through the normal damage/death pipeline.
-- Warrior/Berserker behavior remains supported by the same engine.
-- Relevant unit/integration/frontend checks are green before merge.
+The generic combat kernel does not yet expose a `Channelled` ability type.
+
+Until that exists, the intended channels are represented as 4-second casted abilities:
+
+```text
+MAGE_ARCANE_MISSILES
+MAGE_BLIZZARD
+MAGE_EVOCATION
+```
+
+This is a representation limitation only. It does not change talent IDs or the intended branch loops.
+
+## Persistence compatibility
+
+When an existing character loads a talent state created against an older tree version:
+
+- known IDs remain;
+- ranks above current `MaxRank` are clamped;
+- removed IDs are discarded;
+- normalized loadouts and the current talent-tree version are persisted;
+- normal new talent spending still uses strict `TalentRules` validation.
+
+This protects existing Mage characters from rank-boundary changes without weakening the live allocation rules.
+
+## Definition of Done for the full rework
+
+- `MAGE_TREE` contains exactly 32 Fire, 32 Arcane and 32 Frost talents.
+- All intended active abilities are content-defined and talent-unlocked.
+- Fire, Arcane and Frost runtime mechanics use existing authoritative combat systems.
+- Boss Frost control uses Deep Chill instead of hard Freeze.
+- Counterspell interrupts an actual active cast.
+- Ice Block prevents actions during immunity and can lead into Cold Blood.
+- Legacy saved ranks normalize safely to the published tree.
+- Content validation is green.
+- Backend unit/integration tests are green.
+- Web and admin checks are green.
+- Production publish-layout validation is green.
+- Real Browser → Server → PostgreSQL E2E is green.
+
+The phase is not considered merge-ready if any of those checks fail.
