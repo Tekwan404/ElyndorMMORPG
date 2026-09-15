@@ -56,13 +56,13 @@ public sealed partial class CombatSession
         }
 
         if (combatEvent.Type == CombatEventType.DamageDealt
-            && combatEvent.TargetActorId == bossActorId
-            && combatEvent.Amount > 0)
+            && combatEvent.TargetActorId == bossActorId)
         {
             bool barrierWasActive = runtime.BarrierActive;
             decimal reflectionRatio = runtime.ReflectionRatio;
 
             if (barrierWasActive
+                && combatEvent.Amount > 0
                 && !combatEvent.IsPeriodic
                 && combatEvent.SourceActorId is { } sourceActorId)
             {
