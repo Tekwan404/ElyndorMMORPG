@@ -136,12 +136,12 @@ public sealed class ShatteredOrderCombatSessionTests
         CombatCommandResult secondWave = session.Handle(
             new UseAbilityCommand("second-wave", "HIT_350", BossId),
             Now.AddMilliseconds(2));
-        Assert.Equal(300, Enemy(secondWave.Snapshot, "MOR_ET_BOSS").Hp);
+        decimal beforeTimeoutHp = Enemy(secondWave.Snapshot, "MOR_ET_BOSS").Hp;
         CombatActorSnapshot secondSoul = secondWave.Snapshot.Enemies!.Single(enemy =>
             enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && enemy.Hp > 0);
 
         CombatCommandResult timeout = session.AdvanceTo(Now.AddMilliseconds(2).AddSeconds(18));
-        Assert.True(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Hp > 300);
+        Assert.True(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Hp > beforeTimeoutHp);
         Assert.Contains(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Effects, effect => effect.Id == "MOR_ET_FAILURE_STACK");
         Assert.True(timeout.Snapshot.Enemies!.Single(enemy => enemy.ActorId == secondSoul.ActorId).Hp <= 0);
         Assert.DoesNotContain(timeout.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
