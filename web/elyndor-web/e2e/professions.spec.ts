@@ -19,7 +19,13 @@ test('learns and restores Skinning and Leatherworking against the real database'
   const skinningCard = page.locator('.profession-card').filter({ hasText: 'Снятие шкур' })
   const leatherworkingCard = page.locator('.profession-card').filter({ hasText: 'Кожевничество' })
 
-  if (await skinningCard.getByRole('button', { name: 'Изучить профессию' }).isVisible().catch(() => false)) {
+  // The profession list is loaded asynchronously. Wait for the real cards before
+  // deciding whether a profession has already been learned; Locator.isVisible()
+  // itself does not wait and can otherwise race the initial API response on CI.
+  await expect(skinningCard).toBeVisible()
+  await expect(leatherworkingCard).toBeVisible()
+
+  if (await skinningCard.getByRole('button', { name: 'Изучить профессию' }).isVisible()) {
     await expect(skinningCard.getByRole('button', { name: 'Изучить профессию' })).toBeEnabled()
     const learnResponse = page.waitForResponse(response =>
       response.url().endsWith('/api/v1/professions/learn')
@@ -31,7 +37,7 @@ test('learns and restores Skinning and Leatherworking against the real database'
   }
   await expect(skinningCard).toContainText('Навык 1 / 300')
 
-  if (await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).isVisible().catch(() => false)) {
+  if (await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).isVisible()) {
     await expect(leatherworkingCard.getByRole('button', { name: 'Изучить профессию' })).toBeEnabled()
     const learnResponse = page.waitForResponse(response =>
       response.url().endsWith('/api/v1/professions/learn')
