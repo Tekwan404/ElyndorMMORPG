@@ -25,7 +25,7 @@ public sealed class PaladinHealingRuntime
         return true;
     }
 
-    public decimal CalculateIlluminationRefund(
+    public static decimal CalculateIlluminationRefund(
         HealingResult healing,
         decimal actualManaSpent,
         decimal refundPercent)
@@ -44,7 +44,7 @@ public sealed class PaladinHealingRuntime
             MidpointRounding.AwayFromZero);
     }
 
-    public decimal CalculateAfterglowTotalHealing(
+    public static decimal CalculateAfterglowTotalHealing(
         HealingResult healing,
         decimal percentOfEffectiveHealing)
     {
