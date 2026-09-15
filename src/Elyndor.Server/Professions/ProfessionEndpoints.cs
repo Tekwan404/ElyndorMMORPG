@@ -47,18 +47,23 @@ public static class ProfessionEndpoints
         if (!TryGetAccountId(user, out Guid accountId))
             return Results.Unauthorized();
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        string lockKey = accountId.ToString("N");
-        await dbContext.Database.ExecuteSqlInterpolatedAsync(
-            $"SELECT pg_advisory_xact_lock(hashtextextended({lockKey}, 0))",
-            cancellationToken);
+        ProfessionMutationResult result = await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+            string lockKey = accountId.ToString("N");
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(hashtextextended({lockKey}, 0))",
+                cancellationToken);
 
-        ProfessionMutationResult result = await service.LearnAsync(
-            accountId,
-            request.ProfessionId,
-            request.MutationId,
-            cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+            ProfessionMutationResult learnResult = await service.LearnAsync(
+                accountId,
+                request.ProfessionId,
+                request.MutationId,
+                cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return learnResult;
+        });
+
         return ToResult(result, httpContext);
     }
 
