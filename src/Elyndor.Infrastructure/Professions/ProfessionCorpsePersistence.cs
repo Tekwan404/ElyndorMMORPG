@@ -21,7 +21,6 @@ public static class ProfessionCorpsePersistence
             return 0;
 
         dbContext.SkinnableCorpses.RemoveRange(corpses);
-        await dbContext.SaveChangesAsync(cancellationToken);
         return corpses.Length;
     }
 
@@ -45,7 +44,6 @@ public static class ProfessionCorpsePersistence
             return 0;
 
         dbContext.SkinnableCorpses.RemoveRange(corpses);
-        await dbContext.SaveChangesAsync(cancellationToken);
         return corpses.Length;
     }
 }
