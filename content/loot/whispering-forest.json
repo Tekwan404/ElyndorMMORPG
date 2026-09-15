@@ -8,12 +8,6 @@
       "version": 1,
       "entries": [
         {
-          "itemId": "WOLF_HIDE",
-          "dropChance": 1,
-          "minQuantity": 1,
-          "maxQuantity": 2
-        },
-        {
           "itemId": "WOLF_FANG",
           "dropChance": 0.45,
           "minQuantity": 1,
@@ -103,12 +97,6 @@
       "id": "WHISPERING_FOREST_BOAR",
       "version": 1,
       "entries": [
-        {
-          "itemId": "BOAR_HIDE",
-          "dropChance": 1,
-          "minQuantity": 1,
-          "maxQuantity": 2
-        },
         {
           "itemId": "BOAR_TUSK",
           "dropChance": 0.45,
@@ -283,12 +271,6 @@
       "id": "DEEP_FOREST_COMMON",
       "version": 1,
       "entries": [
-        {
-          "itemId": "WOLF_HIDE",
-          "dropChance": 0.9,
-          "minQuantity": 1,
-          "maxQuantity": 3
-        },
         {
           "itemId": "SPIDER_VENOM_SAC",
           "dropChance": 0.3,
