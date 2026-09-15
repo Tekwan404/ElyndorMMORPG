@@ -123,7 +123,7 @@ public sealed class ShatteredOrderCombatSessionTests
             new UseAbilityCommand("first-wave", "HIT_350", BossId),
             Now);
         CombatActorSnapshot firstSoul = firstWave.Snapshot.Enemies!.Single(enemy =>
-            enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && !enemy.IsDead);
+            enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && enemy.Hp > 0);
         Assert.Contains(firstWave.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
         Assert.Contains(firstWave.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DOT");
 
@@ -138,12 +138,12 @@ public sealed class ShatteredOrderCombatSessionTests
             Now.AddMilliseconds(2));
         Assert.Equal(300, Enemy(secondWave.Snapshot, "MOR_ET_BOSS").Hp);
         CombatActorSnapshot secondSoul = secondWave.Snapshot.Enemies!.Single(enemy =>
-            enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && !enemy.IsDead);
+            enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && enemy.Hp > 0);
 
         CombatCommandResult timeout = session.AdvanceTo(Now.AddMilliseconds(2).AddSeconds(18));
         Assert.True(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Hp > 300);
         Assert.Contains(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Effects, effect => effect.Id == "MOR_ET_FAILURE_STACK");
-        Assert.True(timeout.Snapshot.Enemies!.Single(enemy => enemy.ActorId == secondSoul.ActorId).IsDead);
+        Assert.True(timeout.Snapshot.Enemies!.Single(enemy => enemy.ActorId == secondSoul.ActorId).Hp <= 0);
         Assert.DoesNotContain(timeout.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
         Assert.DoesNotContain(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Effects, effect => effect.Id == "MOR_ET_PHASE_GUARD");
     }
@@ -177,11 +177,11 @@ public sealed class ShatteredOrderCombatSessionTests
         CombatCommandResult fireKilled = session.Handle(
             new UseAbilityCommand("fire-kill", "PING", fireId),
             Now.AddMilliseconds(1));
-        Assert.True(Enemy(fireKilled.Snapshot, "AZRAEL_FIRE").IsDead);
+        Assert.True(Enemy(fireKilled.Snapshot, "AZRAEL_FIRE").Hp <= 0);
         Assert.Contains(Enemy(fireKilled.Snapshot, "AZRAEL_BOSS").Effects, effect => effect.Id == "AZRAEL_REVIVE_WINDOW");
 
         CombatCommandResult revived = session.AdvanceTo(Now.AddSeconds(10).AddMilliseconds(1));
-        Assert.False(Enemy(revived.Snapshot, "AZRAEL_FIRE").IsDead);
+        Assert.True(Enemy(revived.Snapshot, "AZRAEL_FIRE").Hp > 0);
         Assert.Equal(35, Enemy(revived.Snapshot, "AZRAEL_FIRE").Hp);
         Assert.Contains(Enemy(revived.Snapshot, "AZRAEL_BOSS").Effects, effect => effect.Id == "AZRAEL_REVIVAL_POWER");
 
