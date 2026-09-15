@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Encounters;
