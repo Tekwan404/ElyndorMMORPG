@@ -24,7 +24,6 @@ const notice = ref<string | null>(null)
 
 const skinning = computed(() => state.value?.learned.find(item => item.id === 'SKINNING') ?? null)
 const leatherworking = computed(() => state.value?.learned.find(item => item.id === 'LEATHERWORKING') ?? null)
-const learnedIds = computed(() => new Set(state.value?.learned.map(item => item.id) ?? []))
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? null)
 const inventoryQuantities = computed(() => {
   const quantities = new Map<string, number>()
@@ -47,7 +46,7 @@ async function load(): Promise<void> {
 }
 
 async function learn(id: 'SKINNING' | 'LEATHERWORKING'): Promise<void> {
-  await mutate(`learn:${id}`, () => learnProfession(id), result => {
+  await mutate(`learn:${id}`, () => learnProfession(id), () => {
     const name = id === 'SKINNING' ? 'Снятие шкур' : 'Кожевничество'
     return `${name} изучено. Навык начинается с 1.`
   })
