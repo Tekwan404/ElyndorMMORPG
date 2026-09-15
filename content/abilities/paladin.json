@@ -169,6 +169,7 @@
       "cooldown": "00:10:00",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "allowSelfTarget": true,
@@ -243,6 +244,7 @@
       "cooldown": "00:00:45",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "actions": [
@@ -364,6 +366,7 @@
       "cooldown": "00:02:00",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "actions": [
@@ -422,6 +425,7 @@
       "cooldown": "00:02:00",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "actions": [
@@ -577,6 +581,7 @@
       "cooldown": "00:01:30",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "actions": [
@@ -605,6 +610,7 @@
       "cooldown": "00:01:00",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "allowSelfTarget": false,
@@ -831,6 +837,7 @@
       "cooldown": "00:02:00",
       "castTime": "00:00:00",
       "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
       "isSpell": true,
       "school": "HOLY",
       "actions": [
