@@ -40,7 +40,7 @@ public sealed class PaladinHealingAbilityEngineTests
                 new AbilityActionDefinition(
                     AbilityActionType.Healing,
                     Amount: 10,
-                    CanCrit: true,
+                    HealingCanCrit: true,
                     SpellPowerCoefficient: 1)
             ]);
 
@@ -122,6 +122,6 @@ public sealed class PaladinHealingAbilityEngineTests
                 new AbilityActionDefinition(
                     AbilityActionType.Healing,
                     Amount: 10,
-                    CanCrit: canCrit)
+                    HealingCanCrit: canCrit)
             ]);
 }
