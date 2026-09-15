@@ -25,7 +25,9 @@ test('learns and restores Skinning and Leatherworking against the real database'
       response.url().endsWith('/api/v1/professions/learn')
       && response.request().method() === 'POST')
     await skinningCard.getByRole('button', { name: 'Изучить профессию' }).click()
-    expect((await learnResponse).status()).toBe(200)
+    const response = await learnResponse
+    expect(response.status()).toBe(200)
+    await expectLearnedProfession(response, 'SKINNING')
   }
   await expect(skinningCard).toContainText('Навык 1 / 300')
 
@@ -35,7 +37,9 @@ test('learns and restores Skinning and Leatherworking against the real database'
       response.url().endsWith('/api/v1/professions/learn')
       && response.request().method() === 'POST')
     await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).click()
-    expect((await learnResponse).status()).toBe(200)
+    const response = await learnResponse
+    expect(response.status()).toBe(200)
+    await expectLearnedProfession(response, 'LEATHERWORKING')
   }
   await expect(leatherworkingCard).toContainText('Навык 1 / 300')
   await expect(page.locator('.professions-hero > span')).toHaveText('2 / 2')
@@ -53,6 +57,21 @@ async function openProfessions(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
   await page.getByRole('button', { name: 'Профессии Сбор и ремесло' }).click()
   await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
+}
+
+async function expectLearnedProfession(
+  response: Awaited<ReturnType<Page['waitForResponse']>>,
+  professionId: 'SKINNING' | 'LEATHERWORKING',
+): Promise<void> {
+  const payload = (await response.json()) as {
+    isSuccess?: boolean
+    state?: { learned?: Array<{ id?: string; skill?: number; maxSkill?: number }> }
+  }
+
+  expect(payload.isSuccess).toBe(true)
+  expect(payload.state?.learned).toEqual(expect.arrayContaining([
+    expect.objectContaining({ id: professionId, skill: 1, maxSkill: 300 }),
+  ]))
 }
 
 async function installTelegramBridge(page: Page): Promise<void> {
