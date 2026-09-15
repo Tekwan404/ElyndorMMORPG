@@ -14,7 +14,7 @@ type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion'
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
 const requestedSlot = ref<EquipmentSlot | null>(null)
-const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER'].includes(session.snapshot?.character?.classId ?? ''))
+const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER', 'PALADIN'].includes(session.snapshot?.character?.classId ?? ''))
 const hasCompanion = computed(() => session.snapshot?.character?.classId === 'ARCHER')
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' | 'companion' }[] = [
   { id: 'character', label: 'Персонаж', available: true },

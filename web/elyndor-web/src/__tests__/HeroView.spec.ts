@@ -33,6 +33,30 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-archer-talent-tree]').exists()).toBe(true)
   })
 
+  it('enables and opens the talents tab for Paladin', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([], 'PALADIN')
+
+    const wrapper = mount(HeroView, {
+      global: {
+        stubs: {
+          CharacterOverviewView: true,
+          CharacterStatsView: true,
+          InventoryView: true,
+          TalentTreeView: { template: '<div data-paladin-talent-tree />' },
+        },
+      },
+    })
+
+    const talentsTab = wrapper.get('[data-hero-tab="talents"]')
+    expect(talentsTab.attributes('disabled')).toBeUndefined()
+
+    await talentsTab.trigger('click')
+
+    expect(talentsTab.attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-paladin-talent-tree]').exists()).toBe(true)
+  })
+
   it('shows the companion tab only for Archer', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([], 'ARCHER')
