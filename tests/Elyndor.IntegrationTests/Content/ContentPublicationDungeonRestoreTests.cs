@@ -20,7 +20,7 @@ public sealed class ContentPublicationDungeonRestoreTests(PostgresFixture postgr
     {
         GameContentPackage bundled = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        Assert.Equal("0.21.0", bundled.ContentVersion);
+        Assert.Equal("0.22.0", bundled.ContentVersion);
         Assert.Contains(
             bundled.Dungeons ?? [],
             dungeon => dungeon.Id == "ECLIPSED_CITADEL");
