@@ -8,32 +8,29 @@ public sealed class PaladinHealingProcRuntimeTests
     [Fact]
     public void IlluminationRefundUsesManaActuallySpentAndOnlyDirectCriticalHealing()
     {
-        PaladinHealingRuntime runtime = new();
         HealingResult directCritical = Healing(
             HealingOrigin.Direct,
             effective: 120,
             critical: true);
 
-        decimal refund = runtime.CalculateIlluminationRefund(
+        decimal refund = PaladinHealingRuntime.CalculateIlluminationRefund(
             directCritical,
             actualManaSpent: 80,
             refundPercent: 75);
 
         Assert.Equal(60, refund);
-        Assert.Equal(0, runtime.CalculateIlluminationRefund(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateIlluminationRefund(
             Healing(HealingOrigin.Direct, 120, critical: false), 80, 75));
-        Assert.Equal(0, runtime.CalculateIlluminationRefund(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateIlluminationRefund(
             Healing(HealingOrigin.Copied, 120, critical: true), 80, 75));
-        Assert.Equal(0, runtime.CalculateIlluminationRefund(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateIlluminationRefund(
             Healing(HealingOrigin.Periodic, 120, critical: true), 80, 75));
     }
 
     [Fact]
     public void PerfectIlluminationCanUseTheApprovedNinetyPercentCapWithoutSpecialCaseCode()
     {
-        PaladinHealingRuntime runtime = new();
-
-        decimal refund = runtime.CalculateIlluminationRefund(
+        decimal refund = PaladinHealingRuntime.CalculateIlluminationRefund(
             Healing(HealingOrigin.Direct, 100, critical: true),
             actualManaSpent: 100,
             refundPercent: 90);
@@ -58,15 +55,13 @@ public sealed class PaladinHealingProcRuntimeTests
     [Fact]
     public void AfterglowUsesEffectiveCriticalHealingAndRejectsCopiedOrPeriodicSources()
     {
-        PaladinHealingRuntime runtime = new();
-
-        Assert.Equal(8, runtime.CalculateAfterglowTotalHealing(
+        Assert.Equal(8, PaladinHealingRuntime.CalculateAfterglowTotalHealing(
             Healing(HealingOrigin.Direct, 100, critical: true), 8));
-        Assert.Equal(0, runtime.CalculateAfterglowTotalHealing(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateAfterglowTotalHealing(
             Healing(HealingOrigin.Direct, 0, critical: true), 8));
-        Assert.Equal(0, runtime.CalculateAfterglowTotalHealing(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateAfterglowTotalHealing(
             Healing(HealingOrigin.Copied, 100, critical: true), 8));
-        Assert.Equal(0, runtime.CalculateAfterglowTotalHealing(
+        Assert.Equal(0, PaladinHealingRuntime.CalculateAfterglowTotalHealing(
             Healing(HealingOrigin.Periodic, 100, critical: true), 8));
     }
 
@@ -103,13 +98,12 @@ public sealed class PaladinHealingProcRuntimeTests
     [InlineData(101)]
     public void PercentageBasedHolyMechanicsRejectInvalidValues(decimal percent)
     {
-        PaladinHealingRuntime runtime = new();
         HealingResult healing = Healing(HealingOrigin.Direct, 100, critical: true);
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            runtime.CalculateIlluminationRefund(healing, 10, percent));
+            PaladinHealingRuntime.CalculateIlluminationRefund(healing, 10, percent));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            runtime.CalculateAfterglowTotalHealing(healing, percent));
+            PaladinHealingRuntime.CalculateAfterglowTotalHealing(healing, percent));
     }
 
     private static HealingResult Healing(
