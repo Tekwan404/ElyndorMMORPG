@@ -1,0 +1,49 @@
+{
+  "contentVersion": "0.19.0",
+  "balanceVersion": "0.15.0",
+  "publishedAtUtc": "2026-09-14T20:00:00+00:00",
+  "items": [
+    {
+      "id": "ROUGH_LEATHER",
+      "name": "Грубая кожа",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Грубая кожа, снятая с зверей стартовых территорий. Базовый материал кожевничества.",
+      "version": 1,
+      "iconId": "leather"
+    },
+    {
+      "id": "LIGHT_LEATHER",
+      "name": "Лёгкая кожа",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Более качественная кожа молодых и сильных зверей. Используется в продвинутых ранних рецептах.",
+      "version": 1,
+      "iconId": "leather"
+    },
+    {
+      "id": "CHITIN_FRAGMENT",
+      "name": "Обломок хитина",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Прочный фрагмент панциря подходящего существа. Используется кожевниками для усиления экипировки.",
+      "version": 1,
+      "iconId": "leather"
+    }
+  ]
+}

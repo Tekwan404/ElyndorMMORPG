@@ -13,6 +13,7 @@ using Elyndor.Core.Parties;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Quests;
+using Elyndor.Core.Professions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.Persistence;
@@ -26,6 +27,10 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<CharacterVitals> CharacterVitals => Set<CharacterVitals>();
 
     public DbSet<CharacterMutation> CharacterMutations => Set<CharacterMutation>();
+
+    public DbSet<CharacterProfession> CharacterProfessions => Set<CharacterProfession>();
+
+    public DbSet<SkinnableCorpse> SkinnableCorpses => Set<SkinnableCorpse>();
 
     public DbSet<CrystalWallet> CrystalWallets => Set<CrystalWallet>();
 

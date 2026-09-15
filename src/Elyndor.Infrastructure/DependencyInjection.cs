@@ -14,6 +14,7 @@ using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Dungeons;
 using Elyndor.Infrastructure.Quests;
 using Elyndor.Infrastructure.Economy;
+using Elyndor.Infrastructure.Professions;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -51,6 +52,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<PremiumStoreService>();
         builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
+        builder.Services.AddScoped<ProfessionService>();
+        builder.Services.AddScoped<ProfessionCorpseService>();
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();
         builder.Services.AddScoped<ContentPublicationService>();

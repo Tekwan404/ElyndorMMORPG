@@ -22,6 +22,10 @@ public static class GameContentPackageLoader
                 path,
                 package,
                 cancellationToken);
+            package = await ProfessionContentComposer.ComposeAsync(
+                path,
+                package,
+                cancellationToken);
 
             IReadOnlyList<ContentValidationError> errors =
                 ContentValidationPipeline.Default.Validate(package);

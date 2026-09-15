@@ -1,0 +1,110 @@
+{
+  "contentVersion": "0.19.0",
+  "balanceVersion": "0.15.0",
+  "publishedAtUtc": "2026-09-14T20:00:00+00:00",
+  "professions": [
+    {
+      "id": "SKINNING",
+      "name": "Снятие шкур",
+      "category": "Gathering",
+      "maxSkill": 300,
+      "requiredLocationId": null
+    },
+    {
+      "id": "LEATHERWORKING",
+      "name": "Кожевничество",
+      "category": "Production",
+      "maxSkill": 300,
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ],
+  "skinningSources": [
+    {
+      "id": "SKIN_FOREST_WOLF_L1",
+      "monsterId": "FOREST_WOLF_L1",
+      "requiredSkill": 1,
+      "skillUpUntil": 45,
+      "itemId": "ROUGH_LEATHER",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_FOREST_BOAR_L2",
+      "monsterId": "FOREST_BOAR_L2",
+      "requiredSkill": 10,
+      "skillUpUntil": 55,
+      "itemId": "ROUGH_LEATHER",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_GIANT_SPIDER_L3",
+      "monsterId": "GIANT_SPIDER_L3",
+      "requiredSkill": 20,
+      "skillUpUntil": 70,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_FOREST_WOLF_L4",
+      "monsterId": "FOREST_WOLF_L4",
+      "requiredSkill": 35,
+      "skillUpUntil": 85,
+      "itemId": "LIGHT_LEATHER",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_ALPHA_WOLF_L5",
+      "monsterId": "ALPHA_WOLF_L5",
+      "requiredSkill": 50,
+      "skillUpUntil": 100,
+      "itemId": "LIGHT_LEATHER",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    }
+  ],
+  "professionRecipes": [
+    {
+      "id": "LW_WHISPER_TRACKER_FEET",
+      "professionId": "LEATHERWORKING",
+      "name": "Сапоги Шепчущего Леса",
+      "requiredSkill": 1,
+      "skillUpUntil": 35,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "ROUGH_LEATHER", "quantity": 4 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_WHISPER_TRACKER_HANDS",
+      "professionId": "LEATHERWORKING",
+      "name": "Перчатки Шепчущего Леса",
+      "requiredSkill": 5,
+      "skillUpUntil": 40,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "ROUGH_LEATHER", "quantity": 5 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_WHISPER_TRACKER_CHEST",
+      "professionId": "LEATHERWORKING",
+      "name": "Куртка Шепчущего Леса",
+      "requiredSkill": 10,
+      "skillUpUntil": 50,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "ROUGH_LEATHER", "quantity": 8 },
+        { "itemId": "CHITIN_FRAGMENT", "quantity": 2 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ]
+}

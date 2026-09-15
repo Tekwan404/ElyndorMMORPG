@@ -9,6 +9,7 @@ using Elyndor.Core.Progression;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Economy;
+using Elyndor.Core.Professions;
 
 namespace Elyndor.Core.Content;
 
@@ -39,7 +40,10 @@ public sealed record GameContentPackage(
     ItemizationDefinition? Itemization = null,
     IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null,
     IReadOnlyList<PromoCodeDefinition>? PromoCodes = null,
-    AfkFarmRewardProfile? AfkFarm = null);
+    AfkFarmRewardProfile? AfkFarm = null,
+    IReadOnlyList<ProfessionDefinition>? Professions = null,
+    IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
+    IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
