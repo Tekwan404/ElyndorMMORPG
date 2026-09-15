@@ -36,7 +36,7 @@ public sealed class PaladinProtectionRuntime
         return currentHp / maximumHp < 0.35m;
     }
 
-    public decimal ResolveArdentDefenderReductionPercent(
+    public static decimal ResolveArdentDefenderReductionPercent(
         decimal currentHp,
         decimal maximumHp,
         decimal configuredReductionPercent)
