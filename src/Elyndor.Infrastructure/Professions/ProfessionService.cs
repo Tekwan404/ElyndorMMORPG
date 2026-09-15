@@ -10,6 +10,7 @@ using Elyndor.Core.Professions;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Elyndor.Infrastructure.Professions;
 
@@ -164,57 +165,61 @@ public sealed class ProfessionService(
         if (combatSessionId == Guid.Empty || enemyActorId == Guid.Empty || mutationId == Guid.Empty)
             return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
-        var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
-        if (character is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
-
-        CharacterProfession? profession = await dbContext.CharacterProfessions
-            .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.ProfessionId == ProfessionIds.Skinning, cancellationToken);
-        if (profession is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.ProfessionNotLearned);
-
-        SkinnableCorpse? corpse = await dbContext.SkinnableCorpses
-            .SingleOrDefaultAsync(item => item.CharacterId == character.Id
-                && item.CombatSessionId == combatSessionId
-                && item.EnemyActorId == enemyActorId, cancellationToken);
-        if (corpse is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
-
-        if (corpse.SkinnedAtUtc.HasValue)
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            if (corpse.SkinningMutationId == mutationId)
-                return new ProfessionMutationResult(true, null, ItemId: corpse.YieldItemId, Quantity: corpse.YieldQuantity ?? 0, SkillIncreased: corpse.SkillIncreased, Replayed: true);
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseAlreadySkinned);
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+            var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
+            if (character is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
 
-        DateTimeOffset now = timeProvider.GetUtcNow();
-        if (corpse.ExpiresAtUtc <= now)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseExpired);
+            CharacterProfession? profession = await dbContext.CharacterProfessions
+                .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.ProfessionId == ProfessionIds.Skinning, cancellationToken);
+            if (profession is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.ProfessionNotLearned);
 
-        GameContentPackage package = contentProvider.GetCurrent().Package;
-        SkinningSourceDefinition? source = (package.SkinningSources ?? [])
-            .SingleOrDefault(item => item.MonsterId == corpse.MonsterDefinitionId);
-        if (source is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
-        if (profession.Skill < source.RequiredSkill)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.SkillTooLow);
+            SkinnableCorpse? corpse = await dbContext.SkinnableCorpses
+                .SingleOrDefaultAsync(item => item.CharacterId == character.Id
+                    && item.CombatSessionId == combatSessionId
+                    && item.EnemyActorId == enemyActorId, cancellationToken);
+            if (corpse is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
 
-        ItemDefinition? itemDefinition = (package.Items ?? []).SingleOrDefault(item => item.Id == source.ItemId);
-        if (itemDefinition is null)
-            throw new InvalidDataException($"Skinning source '{source.Id}' references missing item '{source.ItemId}'.");
+            if (corpse.SkinnedAtUtc.HasValue)
+            {
+                if (corpse.SkinningMutationId == mutationId)
+                    return new ProfessionMutationResult(true, null, ItemId: corpse.YieldItemId, Quantity: corpse.YieldQuantity ?? 0, SkillIncreased: corpse.SkillIncreased, Replayed: true);
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseAlreadySkinned);
+            }
 
-        int quantity = DeterministicRange(mutationId, $"SKIN|{combatSessionId}|{enemyActorId}", source.MinQuantity, source.MaxQuantity);
-        ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, package, cancellationToken);
-        if (inventoryFailure is not null)
-            return inventoryFailure;
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            if (corpse.ExpiresAtUtc <= now)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseExpired);
 
-        bool skillIncreased = ShouldIncreaseSkill(mutationId, $"SKIN_SKILL|{source.Id}", profession.Skill, source.RequiredSkill, source.SkillUpUntil)
-            && profession.TryIncreaseSkill(MaxProfessionSkill, now);
-        corpse.MarkSkinned(mutationId, itemDefinition.Id, quantity, skillIncreased, now);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return new ProfessionMutationResult(true, null, ItemId: itemDefinition.Id, Quantity: quantity, SkillIncreased: skillIncreased);
+            GameContentPackage package = contentProvider.GetCurrent().Package;
+            SkinningSourceDefinition? source = (package.SkinningSources ?? [])
+                .SingleOrDefault(item => item.MonsterId == corpse.MonsterDefinitionId);
+            if (source is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
+            if (profession.Skill < source.RequiredSkill)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.SkillTooLow);
+
+            ItemDefinition? itemDefinition = (package.Items ?? []).SingleOrDefault(item => item.Id == source.ItemId);
+            if (itemDefinition is null)
+                throw new InvalidDataException($"Skinning source '{source.Id}' references missing item '{source.ItemId}'.");
+
+            int quantity = DeterministicRange(mutationId, $"SKIN|{combatSessionId}|{enemyActorId}", source.MinQuantity, source.MaxQuantity);
+            ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, package, cancellationToken);
+            if (inventoryFailure is not null)
+                return inventoryFailure;
+
+            bool skillIncreased = ShouldIncreaseSkill(mutationId, $"SKIN_SKILL|{source.Id}", profession.Skill, source.RequiredSkill, source.SkillUpUntil)
+                && profession.TryIncreaseSkill(MaxProfessionSkill, now);
+            corpse.MarkSkinned(mutationId, itemDefinition.Id, quantity, skillIncreased, now);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return new ProfessionMutationResult(true, null, ItemId: itemDefinition.Id, Quantity: quantity, SkillIncreased: skillIncreased);
+        });
     }
 
     public async Task<ProfessionMutationResult> CraftAsync(
@@ -226,107 +231,111 @@ public sealed class ProfessionService(
         if (mutationId == Guid.Empty || string.IsNullOrWhiteSpace(recipeId))
             return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
-        var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
-        if (character is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
-
-        GameContentPackage package = contentProvider.GetCurrent().Package;
-        ProfessionRecipeDefinition? recipe = (package.ProfessionRecipes ?? []).SingleOrDefault(item => item.Id == recipeId);
-        if (recipe is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
-
-        CharacterProfession? profession = await dbContext.CharacterProfessions
-            .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.ProfessionId == recipe.ProfessionId, cancellationToken);
-        if (profession is null)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.ProfessionNotLearned);
-        if (profession.Skill < recipe.RequiredSkill)
-            return new ProfessionMutationResult(false, ProfessionErrorCodes.SkillTooLow);
-
-        string fingerprint = Fingerprint($"CRAFT|{recipeId}");
-        CharacterMutation? previous = await dbContext.CharacterMutations.AsNoTracking()
-            .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.MutationId == mutationId, cancellationToken);
-        if (previous is not null)
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            if (!string.Equals(previous.OperationType, "PROFESSION_CRAFT", StringComparison.Ordinal)
-                || !string.Equals(previous.RequestFingerprint, fingerprint, StringComparison.Ordinal))
-                return new ProfessionMutationResult(false, ProfessionErrorCodes.IdempotencyConflict);
-            return new ProfessionMutationResult(true, null, ItemId: recipe.OutputItemId, Quantity: recipe.OutputQuantity, Replayed: true);
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+            var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
+            if (character is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
 
-        if (!string.IsNullOrWhiteSpace(recipe.RequiredLocationId))
-        {
-            string? locationId = await dbContext.CharacterLocations.AsNoTracking()
+            GameContentPackage package = contentProvider.GetCurrent().Package;
+            ProfessionRecipeDefinition? recipe = (package.ProfessionRecipes ?? []).SingleOrDefault(item => item.Id == recipeId);
+            if (recipe is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
+
+            CharacterProfession? profession = await dbContext.CharacterProfessions
+                .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.ProfessionId == recipe.ProfessionId, cancellationToken);
+            if (profession is null)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.ProfessionNotLearned);
+            if (profession.Skill < recipe.RequiredSkill)
+                return new ProfessionMutationResult(false, ProfessionErrorCodes.SkillTooLow);
+
+            string fingerprint = Fingerprint($"CRAFT|{recipeId}");
+            CharacterMutation? previous = await dbContext.CharacterMutations.AsNoTracking()
+                .SingleOrDefaultAsync(item => item.CharacterId == character.Id && item.MutationId == mutationId, cancellationToken);
+            if (previous is not null)
+            {
+                if (!string.Equals(previous.OperationType, "PROFESSION_CRAFT", StringComparison.Ordinal)
+                    || !string.Equals(previous.RequestFingerprint, fingerprint, StringComparison.Ordinal))
+                    return new ProfessionMutationResult(false, ProfessionErrorCodes.IdempotencyConflict);
+                return new ProfessionMutationResult(true, null, ItemId: recipe.OutputItemId, Quantity: recipe.OutputQuantity, Replayed: true);
+            }
+
+            if (!string.IsNullOrWhiteSpace(recipe.RequiredLocationId))
+            {
+                string? locationId = await dbContext.CharacterLocations.AsNoTracking()
+                    .Where(item => item.CharacterId == character.Id)
+                    .Select(item => item.LocationId)
+                    .SingleOrDefaultAsync(cancellationToken);
+                if (!string.Equals(locationId, recipe.RequiredLocationId, StringComparison.Ordinal))
+                    return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
+            }
+
+            CharacterItem[] inventory = await dbContext.CharacterItems
                 .Where(item => item.CharacterId == character.Id)
-                .Select(item => item.LocationId)
-                .SingleOrDefaultAsync(cancellationToken);
-            if (!string.Equals(locationId, recipe.RequiredLocationId, StringComparison.Ordinal))
-                return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
-        }
-
-        CharacterItem[] inventory = await dbContext.CharacterItems
-            .Where(item => item.CharacterId == character.Id)
-            .OrderBy(item => item.AcquiredAtUtc)
-            .ToArrayAsync(cancellationToken);
-        foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
-        {
-            int available = inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null).Sum(item => item.Quantity);
-            if (available < ingredient.Quantity)
-                return new ProfessionMutationResult(false, ProfessionErrorCodes.MissingIngredients);
-        }
-
-        foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
-        {
-            int remaining = ingredient.Quantity;
-            foreach (CharacterItem item in inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null))
+                .OrderBy(item => item.AcquiredAtUtc)
+                .ToArrayAsync(cancellationToken);
+            foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
             {
-                if (remaining == 0)
-                    break;
-                int consume = Math.Min(item.Quantity, remaining);
-                item.RemoveQuantity(consume);
-                remaining -= consume;
-                if (item.Quantity == 0)
-                    dbContext.CharacterItems.Remove(item);
+                int available = inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null).Sum(item => item.Quantity);
+                if (available < ingredient.Quantity)
+                    return new ProfessionMutationResult(false, ProfessionErrorCodes.MissingIngredients);
             }
-        }
 
-        ItemDefinition output = (package.Items ?? []).SingleOrDefault(item => item.Id == recipe.OutputItemId)
-            ?? throw new InvalidDataException($"Profession recipe '{recipe.Id}' references missing output '{recipe.OutputItemId}'.");
-        if (output.Stackable)
-        {
-            ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, output, recipe.OutputQuantity, timeProvider.GetUtcNow(), package, cancellationToken);
-            if (inventoryFailure is not null)
-                return inventoryFailure;
-        }
-        else
-        {
-            int capacity = package.InventoryProfile?.DefaultCapacity ?? 30;
-            int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0);
-            if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
-                return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
-            DateTimeOffset now = timeProvider.GetUtcNow();
-            for (int ordinal = 0; ordinal < recipe.OutputQuantity; ordinal++)
+            foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
             {
-                CharacterItem crafted = ItemInstancePersistenceFactory.CreateCharacterItem(
-                    character.Id,
-                    output,
-                    mutationId,
-                    "PROFESSION_CRAFT",
-                    recipe.Id,
-                    ordinal,
-                    now,
-                    package);
-                dbContext.CharacterItems.Add(crafted);
+                int remaining = ingredient.Quantity;
+                foreach (CharacterItem item in inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null))
+                {
+                    if (remaining == 0)
+                        break;
+                    int consume = Math.Min(item.Quantity, remaining);
+                    item.RemoveQuantity(consume);
+                    remaining -= consume;
+                    if (item.Quantity == 0)
+                        dbContext.CharacterItems.Remove(item);
+                }
             }
-        }
 
-        DateTimeOffset committedAt = timeProvider.GetUtcNow();
-        bool skillIncreased = ShouldIncreaseSkill(mutationId, $"CRAFT_SKILL|{recipe.Id}", profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil)
-            && profession.TryIncreaseSkill(MaxProfessionSkill, committedAt);
-        dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, "PROFESSION_CRAFT", fingerprint, committedAt));
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return new ProfessionMutationResult(true, null, ItemId: output.Id, Quantity: recipe.OutputQuantity, SkillIncreased: skillIncreased);
+            ItemDefinition output = (package.Items ?? []).SingleOrDefault(item => item.Id == recipe.OutputItemId)
+                ?? throw new InvalidDataException($"Profession recipe '{recipe.Id}' references missing output '{recipe.OutputItemId}'.");
+            if (output.Stackable)
+            {
+                ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, output, recipe.OutputQuantity, timeProvider.GetUtcNow(), package, cancellationToken);
+                if (inventoryFailure is not null)
+                    return inventoryFailure;
+            }
+            else
+            {
+                int capacity = package.InventoryProfile?.DefaultCapacity ?? 30;
+                int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0);
+                if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
+                    return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
+                DateTimeOffset now = timeProvider.GetUtcNow();
+                for (int ordinal = 0; ordinal < recipe.OutputQuantity; ordinal++)
+                {
+                    CharacterItem crafted = ItemInstancePersistenceFactory.CreateCharacterItem(
+                        character.Id,
+                        output,
+                        mutationId,
+                        "PROFESSION_CRAFT",
+                        recipe.Id,
+                        ordinal,
+                        now,
+                        package);
+                    dbContext.CharacterItems.Add(crafted);
+                }
+            }
+
+            DateTimeOffset committedAt = timeProvider.GetUtcNow();
+            bool skillIncreased = ShouldIncreaseSkill(mutationId, $"CRAFT_SKILL|{recipe.Id}", profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil)
+                && profession.TryIncreaseSkill(MaxProfessionSkill, committedAt);
+            dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, "PROFESSION_CRAFT", fingerprint, committedAt));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return new ProfessionMutationResult(true, null, ItemId: output.Id, Quantity: recipe.OutputQuantity, SkillIncreased: skillIncreased);
+        });
     }
 
     private async Task<ProfessionMutationResult?> AddStackableAsync(
