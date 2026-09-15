@@ -167,10 +167,10 @@ public sealed class ProfessionService(
         if (combatSessionId == Guid.Empty || enemyActorId == Guid.Empty || mutationId == Guid.Empty)
             return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseNotFound);
 
-        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(async () =>
+        return await dbContext.Database.CreateExecutionStrategy().ExecuteInTransactionAsync(
+            async _ =>
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+            dbContext.ChangeTracker.Clear();
             var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
             if (character is null)
                 return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
@@ -219,9 +219,11 @@ public sealed class ProfessionService(
                 && profession.TryIncreaseSkill(MaxProfessionSkill, now);
             corpse.MarkSkinned(mutationId, itemDefinition.Id, quantity, skillIncreased, now);
             await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
             return new ProfessionMutationResult(true, null, ItemId: itemDefinition.Id, Quantity: quantity, SkillIncreased: skillIncreased);
-        });
+        },
+            _ => Task.FromResult(false),
+            IsolationLevel.Serializable,
+            cancellationToken);
     }
 
     public async Task<ProfessionMutationResult> CraftAsync(
@@ -233,10 +235,10 @@ public sealed class ProfessionService(
         if (mutationId == Guid.Empty || string.IsNullOrWhiteSpace(recipeId))
             return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
 
-        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(async () =>
+        return await dbContext.Database.CreateExecutionStrategy().ExecuteInTransactionAsync(
+            async _ =>
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+            dbContext.ChangeTracker.Clear();
             var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
             if (character is null)
                 return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
@@ -335,9 +337,11 @@ public sealed class ProfessionService(
                 && profession.TryIncreaseSkill(MaxProfessionSkill, committedAt);
             dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, "PROFESSION_CRAFT", fingerprint, committedAt));
             await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
             return new ProfessionMutationResult(true, null, ItemId: output.Id, Quantity: recipe.OutputQuantity, SkillIncreased: skillIncreased);
-        });
+        },
+            _ => Task.FromResult(false),
+            IsolationLevel.Serializable,
+            cancellationToken);
     }
 
     private async Task<ProfessionMutationResult?> AddStackableAsync(
