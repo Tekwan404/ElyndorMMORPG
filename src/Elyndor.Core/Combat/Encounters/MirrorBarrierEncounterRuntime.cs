@@ -166,7 +166,6 @@ public sealed class MirrorBarrierEncounterRuntime
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHp);
         ArgumentOutOfRangeException.ThrowIfNegative(currentHp);
-        if (currentHp > maxHp)
-            throw new ArgumentOutOfRangeException(nameof(currentHp));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(currentHp, maxHp);
     }
 }
