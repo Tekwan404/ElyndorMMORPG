@@ -8,11 +8,9 @@ import {
   craftProfessionRecipe,
   getProfessionState,
   learnProfession,
-  skinCorpse,
   type ProfessionMutationResult,
   type ProfessionRecipeState,
   type ProfessionStateSnapshot,
-  type SkinnableCorpseState,
 } from '@/game/professions/professionApi'
 
 const session = useGameSessionStore()
@@ -50,15 +48,6 @@ async function learn(id: 'SKINNING' | 'LEATHERWORKING'): Promise<void> {
     const name = id === 'SKINNING' ? 'Снятие шкур' : 'Кожевничество'
     return `${name} изучено. Навык начинается с 1.`
   })
-}
-
-async function skin(corpse: SkinnableCorpseState): Promise<void> {
-  await mutate(
-    `skin:${corpse.combatSessionId}:${corpse.enemyActorId}`,
-    () => skinCorpse(corpse.combatSessionId, corpse.enemyActorId),
-    result => `Получено: ${itemLabel(result.itemId)} ×${result.quantity}${result.skillIncreased ? ' · навык +1' : ''}`,
-    true,
-  )
 }
 
 async function craft(recipe: ProfessionRecipeState): Promise<void> {
@@ -105,13 +94,6 @@ function canCraft(recipe: ProfessionRecipeState): boolean {
 
 function ingredientOwned(itemId: string): number {
   return inventoryQuantities.value.get(itemId) ?? 0
-}
-
-function expiryLabel(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime())
-    ? 'ограниченное время'
-    : `до ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
 }
 
 function locationLabel(id: string | null): string {
@@ -208,27 +190,6 @@ onMounted(load)
             :loading="pendingKey === 'learn:LEATHERWORKING'"
             @click="learn('LEATHERWORKING')"
           >Изучить профессию</UIButton>
-        </article>
-      </section>
-
-      <section v-if="skinning" class="profession-panel">
-        <header>
-          <div><small>СНЯТИЕ ШКУР</small><h3>Доступные туши</h3></div>
-          <span>{{ state.skinnableCorpses.length }}</span>
-        </header>
-        <p v-if="state.skinnableCorpses.length === 0" class="profession-empty">
-          Подходящих туш сейчас нет. Убей зверя из мира — если он пригоден для снятия шкуры, он появится здесь.
-        </p>
-        <article v-for="corpse in state.skinnableCorpses" :key="`${corpse.combatSessionId}:${corpse.enemyActorId}`" class="corpse-row">
-          <div>
-            <strong>{{ corpse.monsterName }}</strong>
-            <small>Нужно: {{ corpse.requiredSkill }} навыка · {{ expiryLabel(corpse.expiresAtUtc) }}</small>
-          </div>
-          <UIButton
-            :disabled="skinning.skill < corpse.requiredSkill || pendingKey !== null"
-            :loading="pendingKey === `skin:${corpse.combatSessionId}:${corpse.enemyActorId}`"
-            @click="skin(corpse)"
-          >Снять шкуру</UIButton>
         </article>
       </section>
 

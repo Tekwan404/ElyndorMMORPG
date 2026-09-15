@@ -62,18 +62,20 @@ public sealed class ProfessionService(
             .OrderBy(item => item.ProfessionId)
             .ToArrayAsync(cancellationToken);
 
-        DateTimeOffset now = timeProvider.GetUtcNow();
-        SkinnableCorpse[] corpses = await dbContext.SkinnableCorpses.AsNoTracking()
-            .Where(item => item.CharacterId == character.Id && item.SkinnedAtUtc == null && item.ExpiresAtUtc > now)
-            .OrderBy(item => item.ExpiresAtUtc)
-            .ToArrayAsync(cancellationToken);
-
         Dictionary<string, SkinningSourceDefinition> skinningByMonster = (package.SkinningSources ?? [])
             .GroupBy(item => item.MonsterId, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         Dictionary<string, string> monsterNames = (package.Monsters ?? [])
             .ToDictionary(item => item.Id, item => item.Name, StringComparer.Ordinal);
         HashSet<string> learnedIds = learned.Select(item => item.ProfessionId).ToHashSet(StringComparer.Ordinal);
+        SkinnableCorpse[] corpses = learnedIds.Contains(ProfessionIds.Skinning)
+            ? await dbContext.SkinnableCorpses.AsNoTracking()
+                .Where(item => item.CharacterId == character.Id
+                    && item.SkinnedAtUtc == null
+                    && item.ExpiresAtUtc > timeProvider.GetUtcNow())
+                .OrderBy(item => item.ExpiresAtUtc)
+                .ToArrayAsync(cancellationToken)
+            : [];
 
         return new ProfessionStateSnapshot(
             learned.Select(item =>

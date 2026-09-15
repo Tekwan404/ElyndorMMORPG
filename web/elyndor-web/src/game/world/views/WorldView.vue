@@ -5,6 +5,7 @@ import { gameArt } from '@/assets/gameArt'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
+import SkinningAftermath from '@/game/professions/components/SkinningAftermath.vue'
 import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -396,6 +397,8 @@ onMounted(() => {
       <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
       <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult">Закрыть</UIButton>
     </UICard>
+
+    <SkinningAftermath />
 
     <UICard v-if="combat.lootRolls.length" class="loot-roll-card">
       <div class="reward-card__heading">
