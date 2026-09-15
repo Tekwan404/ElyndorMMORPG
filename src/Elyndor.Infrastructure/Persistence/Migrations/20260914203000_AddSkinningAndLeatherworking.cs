@@ -34,7 +34,7 @@ public partial class AddSkinningAndLeatherworking : Migration
                     column: x => x.character_id,
                     principalSchema: "game",
                     principalTable: "characters",
-                    principalColumn: "id",
+                    principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
             });
 
@@ -63,7 +63,7 @@ public partial class AddSkinningAndLeatherworking : Migration
                     column: x => x.character_id,
                     principalSchema: "game",
                     principalTable: "characters",
-                    principalColumn: "id",
+                    principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
             });
 
