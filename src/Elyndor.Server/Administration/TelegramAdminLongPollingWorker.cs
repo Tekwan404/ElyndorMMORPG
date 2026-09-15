@@ -46,11 +46,26 @@ public sealed class TelegramAdminLongPollingWorker(
 
                 foreach (TelegramUpdate update in response.Result.OrderBy(item => item.UpdateId))
                 {
-                    await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-                    TelegramAdminUpdateProcessor processor =
-                        scope.ServiceProvider.GetRequiredService<TelegramAdminUpdateProcessor>();
-                    await processor.ProcessAsync(update, stoppingToken);
-                    offset = Math.Max(offset, update.UpdateId + 1);
+                    try
+                    {
+                        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+                        TelegramAdminUpdateProcessor processor =
+                            scope.ServiceProvider.GetRequiredService<TelegramAdminUpdateProcessor>();
+                        await processor.ProcessAsync(update, stoppingToken);
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        TelegramPollingLogMessages.UpdateFailed(logger, update.UpdateId, exception);
+                    }
+                    finally
+                    {
+                        // A malformed/poison update must never block all later Telegram commands.
+                        offset = Math.Max(offset, update.UpdateId + 1);
+                    }
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -119,6 +134,12 @@ internal static class TelegramPollingLogMessages
             new EventId(1111, nameof(PollingStarted)),
             "Telegram admin long polling started; webhook removed.");
 
+    private static readonly Action<ILogger, long, Exception?> UpdateProcessingFailed =
+        LoggerMessage.Define<long>(
+            LogLevel.Warning,
+            new EventId(1112, nameof(UpdateProcessingFailed)),
+            "Telegram admin update {UpdateId} failed; skipping it so later updates can continue.");
+
     private static readonly Action<ILogger, Exception?> PollingFailed =
         LoggerMessage.Define(
             LogLevel.Warning,
@@ -127,6 +148,9 @@ internal static class TelegramPollingLogMessages
 
     public static void Started(ILogger logger) =>
         PollingStarted(logger, null);
+
+    public static void UpdateFailed(ILogger logger, long updateId, Exception exception) =>
+        UpdateProcessingFailed(logger, updateId, exception);
 
     public static void PollFailed(ILogger logger, Exception exception) =>
         PollingFailed(logger, exception);
