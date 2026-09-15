@@ -3,6 +3,7 @@ using System;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915134618_AddReleaseAdminNotifications")]
+    partial class AddReleaseAdminNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1544,6 +1547,92 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("party_members", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("character_id");
+
+                    b.Property<string>("ProfessionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("profession_id");
+
+                    b.Property<DateTimeOffset>("LearnedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("learned_at_utc");
+
+                    b.Property<int>("Skill")
+                        .HasColumnType("integer")
+                        .HasColumnName("skill");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("CharacterId", "ProfessionId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("character_professions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.SkinnableCorpse", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("character_id");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("combat_session_id");
+
+                    b.Property<Guid>("EnemyActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("enemy_actor_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at_utc");
+
+                    b.Property<string>("MonsterDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("monster_definition_id");
+
+                    b.Property<bool>("SkillIncreased")
+                        .HasColumnType("boolean")
+                        .HasColumnName("skill_increased");
+
+                    b.Property<DateTimeOffset?>("SkinnedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("skinned_at_utc");
+
+                    b.Property<Guid?>("SkinningMutationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("skinning_mutation_id");
+
+                    b.Property<string>("YieldItemId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("yield_item_id");
+
+                    b.Property<int?>("YieldQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("yield_quantity");
+
+                    b.HasKey("CharacterId", "CombatSessionId", "EnemyActorId");
+
+                    b.HasIndex("CharacterId", "ExpiresAtUtc");
+
+                    b.ToTable("character_skinnable_corpses", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.Property<Guid>("CombatSessionId")
@@ -1698,6 +1787,27 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_account_release_acknowledgements_acknowledged_at_utc");
 
                     b.ToTable("account_release_acknowledgements", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Releases.ReleaseAdminNotification", b =>
+                {
+                    b.Property<string>("ReleaseId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("TelegramUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("SentAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReleaseId", "TelegramUserId")
+                        .HasName("pk_release_admin_notifications");
+
+                    b.HasIndex("SentAtUtc")
+                        .HasDatabaseName("ix_release_admin_notifications_sent_at_utc");
+
+                    b.ToTable("release_admin_notifications", "game");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Social.FriendRequest", b =>
@@ -2231,6 +2341,24 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_party_members_parties_party_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.SkinnableCorpse", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>

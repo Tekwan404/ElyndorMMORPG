@@ -14,6 +14,7 @@ using Elyndor.Core.Dungeons;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Professions;
+using Elyndor.Core.Releases;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.Persistence;
@@ -21,6 +22,12 @@ namespace Elyndor.Infrastructure.Persistence;
 public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(options)
 {
     public DbSet<Account> Accounts => Set<Account>();
+
+    public DbSet<AccountReleaseAcknowledgement> AccountReleaseAcknowledgements =>
+        Set<AccountReleaseAcknowledgement>();
+
+    public DbSet<ReleaseAdminNotification> ReleaseAdminNotifications =>
+        Set<ReleaseAdminNotification>();
 
     public DbSet<Character> Characters => Set<Character>();
 

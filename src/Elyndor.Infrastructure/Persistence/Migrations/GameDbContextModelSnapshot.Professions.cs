@@ -100,6 +100,27 @@ internal sealed class GameDbContextProfessionModelSnapshot : GameDbContextModelS
             builder.ToTable("character_skinnable_corpses", "game");
         });
 
+        modelBuilder.Entity("Elyndor.Core.Releases.ReleaseAdminNotification", builder =>
+        {
+            builder.Property<string>("ReleaseId")
+                .HasMaxLength(64)
+                .HasColumnType("character varying(64)");
+
+            builder.Property<long>("TelegramUserId")
+                .HasColumnType("bigint");
+
+            builder.Property<DateTimeOffset>("SentAtUtc")
+                .HasColumnType("timestamp with time zone");
+
+            builder.HasKey("ReleaseId", "TelegramUserId")
+                .HasName("pk_release_admin_notifications");
+
+            builder.HasIndex("SentAtUtc")
+                .HasDatabaseName("ix_release_admin_notifications_sent_at_utc");
+
+            builder.ToTable("release_admin_notifications", "game");
+        });
+
         modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", builder =>
         {
             builder.HasOne("Elyndor.Core.Characters.Character", null)

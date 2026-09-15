@@ -116,7 +116,16 @@ describe('AppShell', () => {
     vi.spyOn(store, 'start').mockResolvedValue(undefined)
     store.state = 'world'
     store.snapshot = worldSnapshot()
-    const wrapper = mount(AppShell)
+    const wrapper = mount(AppShell, {
+      global: {
+        stubs: {
+          UIModal: {
+            props: ['open'],
+            template: '<div v-if="open"><slot /><slot name="actions" /></div>',
+          },
+        },
+      },
+    })
     expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
     expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('main').text()).toContain('Стартовый город')
@@ -142,6 +151,41 @@ describe('AppShell', () => {
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Боевые показатели')
     expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(12)
+  })
+
+  it('shows an unseen release after bootstrap and acknowledges it once', async () => {
+    const store = useGameSessionStore()
+    vi.spyOn(store, 'start').mockResolvedValue(undefined)
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    store.state = 'world'
+    store.snapshot = {
+      ...worldSnapshot(),
+      releaseUpdate: {
+        id: '0.23.1',
+        title: 'Игра обновлена',
+        publishedAtUtc: '2026-09-15T12:00:00Z',
+        entries: [{ kind: 'Fixed', text: 'Исправлен важный сбой.' }],
+      },
+    }
+
+    const wrapper = mount(AppShell, {
+      global: {
+        stubs: {
+          UIModal: {
+            props: ['open'],
+            template: '<div v-if="open"><slot /><slot name="actions" /></div>',
+          },
+        },
+      },
+    })
+
+    expect(wrapper.get('[data-release-update]').text()).toContain('Исправлен важный сбой.')
+    await wrapper.get('[data-release-acknowledge]').trigger('click')
+    await flushPromises()
+
+    expect(apiClient.request).toHaveBeenCalledWith('/api/v1/releases/0.23.1/acknowledge', {
+      method: 'POST',
+    })
   })
 
   it('shows the authoritative quest journal on the quest tab', async () => {

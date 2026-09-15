@@ -8,6 +8,7 @@ using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Releases;
 using Elyndor.Core.Talents;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
@@ -54,6 +55,36 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Equal(
             ["WHISPERING_FOREST"],
             snapshot.World.OutgoingTransitions.Select(location => location.Id));
+    }
+
+    [Fact]
+    public async Task BootstrapIncludesOnlyTheLatestUnacknowledgedRelease()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        ReleaseNotesCatalog catalog = new(new ReleaseNotesDocument(
+        [
+            new ReleaseNoteDefinition(
+                "0.23.1",
+                "Игра обновлена",
+                Now,
+                true,
+                [new ReleaseNoteEntry(ReleaseNoteEntryKind.Fixed, "Исправлен важный сбой.")])
+        ]));
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService inventory = new(context, Content, new FixedTimeProvider(Now));
+        CharacterDerivedStateService derived = new(context, Content, inventory);
+        BootstrapService service = new(
+            context,
+            Content,
+            Map,
+            derived,
+            new FixedTimeProvider(Now),
+            catalog);
+
+        BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal("0.23.1", snapshot.ReleaseUpdate!.Id);
     }
 
     [Fact]

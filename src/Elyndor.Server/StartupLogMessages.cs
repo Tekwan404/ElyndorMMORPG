@@ -17,6 +17,18 @@ internal static class StartupLogMessages
                 new EventId(1002, nameof(UnhandledRequestException)),
                 "Unhandled request failure {Method} {Path}; correlationId={CorrelationId}.");
 
+    private static readonly Action<ILogger, string, Exception?> ReleaseNotesLoadFailed =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(1003, nameof(ReleaseNotesLoadFailed)),
+            "Release notes file {ReleaseNotesPath} could not be loaded. Continuing without an update notice.");
+
+    private static readonly Action<ILogger, Exception?> ReleaseAdminNotificationFailed =
+        LoggerMessage.Define(
+            LogLevel.Warning,
+            new EventId(1004, nameof(ReleaseAdminNotificationFailed)),
+            "Release update notification failed. Server startup continues normally.");
+
     public static void LogPublishedContentFallback(
         ILogger logger,
         string contentVersion,
@@ -39,5 +51,16 @@ internal static class StartupLogMessages
             path,
             correlationId,
             exception);
+
+    public static void LogReleaseNotesLoadFailed(
+        ILogger logger,
+        string releaseNotesPath,
+        Exception exception) =>
+        ReleaseNotesLoadFailed(logger, releaseNotesPath, exception);
+
+    public static void LogReleaseAdminNotificationFailed(
+        ILogger logger,
+        Exception exception) =>
+        ReleaseAdminNotificationFailed(logger, exception);
 
 }
