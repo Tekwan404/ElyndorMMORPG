@@ -20,12 +20,10 @@ public sealed class PaladinProtectionRuntimeTests
     [Fact]
     public void ArdentDefenderUsesTheApprovedBelowThirtyFivePercentThreshold()
     {
-        PaladinProtectionRuntime runtime = new();
-
         Assert.True(PaladinProtectionRuntime.IsArdentDefenderActive(34, 100));
         Assert.False(PaladinProtectionRuntime.IsArdentDefenderActive(35, 100));
-        Assert.Equal(15, runtime.ResolveArdentDefenderReductionPercent(34, 100, 15));
-        Assert.Equal(0, runtime.ResolveArdentDefenderReductionPercent(35, 100, 15));
+        Assert.Equal(15, PaladinProtectionRuntime.ResolveArdentDefenderReductionPercent(34, 100, 15));
+        Assert.Equal(0, PaladinProtectionRuntime.ResolveArdentDefenderReductionPercent(35, 100, 15));
     }
 
     [Fact]
@@ -57,7 +55,7 @@ public sealed class PaladinProtectionRuntimeTests
         PaladinProtectionRuntime runtime = new();
 
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            runtime.ResolveArdentDefenderReductionPercent(10, 100, percent));
+            PaladinProtectionRuntime.ResolveArdentDefenderReductionPercent(10, 100, percent));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             runtime.ResolveConsecratedProtectionReductionPercent(DateTimeOffset.UnixEpoch, percent));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
