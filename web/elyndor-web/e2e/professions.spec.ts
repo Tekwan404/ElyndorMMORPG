@@ -20,12 +20,22 @@ test('learns and restores Skinning and Leatherworking against the real database'
   const leatherworkingCard = page.locator('.profession-card').filter({ hasText: 'Кожевничество' })
 
   if (await skinningCard.getByRole('button', { name: 'Изучить профессию' }).isVisible().catch(() => false)) {
+    await expect(skinningCard.getByRole('button', { name: 'Изучить профессию' })).toBeEnabled()
+    const learnResponse = page.waitForResponse(response =>
+      response.url().endsWith('/api/v1/professions/learn')
+      && response.request().method() === 'POST')
     await skinningCard.getByRole('button', { name: 'Изучить профессию' }).click()
+    expect((await learnResponse).status()).toBe(200)
   }
   await expect(skinningCard).toContainText('Навык 1 / 300')
 
   if (await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).isVisible().catch(() => false)) {
+    await expect(leatherworkingCard.getByRole('button', { name: 'Изучить профессию' })).toBeEnabled()
+    const learnResponse = page.waitForResponse(response =>
+      response.url().endsWith('/api/v1/professions/learn')
+      && response.request().method() === 'POST')
     await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).click()
+    expect((await learnResponse).status()).toBe(200)
   }
   await expect(leatherworkingCard).toContainText('Навык 1 / 300')
   await expect(page.locator('.professions-hero > span')).toHaveText('2 / 2')
