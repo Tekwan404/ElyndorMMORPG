@@ -21,6 +21,8 @@ public sealed partial class CombatSession
 
     private void RegisterThreat(CombatEvent combatEvent)
     {
+        ProcessPaladinKernelEvent(combatEvent);
+
         if (combatEvent.SourceActorId is not { } sourceActorId
             || !IsPartyActor(sourceActorId)
             || combatEvent.Amount <= 0)
@@ -76,7 +78,7 @@ public sealed partial class CombatSession
                 continue;
 
             decimal multiplier = sourceActorId == _player.Actor.ActorId
-                ? GuardianThreatMultiplierForTarget(enemy.Actor.ActorId, now)
+                ? ResolvePlayerThreatMultiplier(enemy.Actor.ActorId, now)
                 : 1m;
             threatTable.AddThreat(
                 sourceActorId,
@@ -103,7 +105,7 @@ public sealed partial class CombatSession
         if (sourceActorId != _player.Actor.ActorId)
             return 1m;
 
-        decimal multiplier = GuardianThreatMultiplierForTarget(
+        decimal multiplier = ResolvePlayerThreatMultiplier(
             combatEvent.TargetActorId,
             combatEvent.OccurredAtUtc);
 
@@ -161,6 +163,23 @@ public sealed partial class CombatSession
             return "FROST";
 
         return null;
+    }
+
+    private decimal ResolvePlayerThreatMultiplier(
+        Guid? targetActorId,
+        DateTimeOffset now)
+    {
+        decimal multiplier = targetActorId is { } targetId
+            ? GuardianThreatMultiplierForTarget(targetId, now)
+            : 1m;
+
+        if (IsActivePaladin
+            && TryGetPaladinHook("P-1-3", out ResolvedTalentEventHook righteousFury))
+        {
+            multiplier *= 1m + 0.35m * righteousFury.Rank;
+        }
+
+        return multiplier;
     }
 
     private static void RaiseTaunterToTopThreat(
