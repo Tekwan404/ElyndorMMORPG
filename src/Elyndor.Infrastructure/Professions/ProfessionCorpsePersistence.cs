@@ -18,4 +18,22 @@ public static class ProfessionCorpsePersistence
                 && corpse.SkinnedAtUtc == null)
             .ExecuteDeleteAsync(cancellationToken);
     }
+
+    public static Task<int> DiscardSupersededAsync(
+        GameDbContext dbContext,
+        Guid characterId,
+        Guid currentCombatSessionId,
+        DateTimeOffset currentServerTimeUtc,
+        CancellationToken cancellationToken)
+    {
+        if (characterId == Guid.Empty || currentCombatSessionId == Guid.Empty)
+            return Task.FromResult(0);
+
+        return dbContext.SkinnableCorpses
+            .Where(corpse => corpse.CharacterId == characterId
+                && corpse.SkinnedAtUtc == null
+                && corpse.CombatSessionId != currentCombatSessionId
+                && corpse.CreatedAtUtc <= currentServerTimeUtc)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
 }
