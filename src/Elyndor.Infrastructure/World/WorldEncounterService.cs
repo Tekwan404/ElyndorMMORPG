@@ -5,6 +5,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Professions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.World;
@@ -175,6 +176,13 @@ public sealed class WorldEncounterService(
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
         if (character is null)
             return (null, WorldEncounterErrorCodes.CharacterNotFound);
+
+        // A corpse belongs only to the combat aftermath currently in front of the player.
+        // Looking for another encounter abandons that aftermath permanently.
+        await ProfessionCorpsePersistence.DiscardPendingAsync(
+            dbContext,
+            character.Id,
+            cancellationToken);
 
         if (await TravelPersistence.IsTravellingAsync(
                 dbContext,

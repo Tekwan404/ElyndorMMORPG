@@ -78,6 +78,16 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         DungeonService? dungeonService = scope.ServiceProvider.GetService<DungeonService>();
 
+        // A corpse only belongs to the most recent combat aftermath. Completing or fleeing
+        // another real combat abandons any older unskinned corpse. The time/session guard keeps
+        // replay of an older finalizer from deleting a newer corpse after reconnect.
+        await ProfessionCorpsePersistence.DiscardSupersededAsync(
+            dbContext,
+            characterId,
+            snapshot.SessionId,
+            snapshot.ServerTimeUtc,
+            cancellationToken);
+
         if (snapshot.Status == CombatSessionStatus.Victory
             && snapshot.PlayerContributionEligible == false)
         {

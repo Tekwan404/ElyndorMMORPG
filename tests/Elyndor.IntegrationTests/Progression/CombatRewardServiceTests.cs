@@ -96,8 +96,8 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(9, result.GoldEarned);
         Assert.Equal(100, character.Experience);
         Assert.Equal(9, character.Gold);
-        Assert.Contains(result.Items, item => item.ItemId == "WOLF_HIDE");
-        Assert.Contains(result.Items, item => item.ItemId == "BOAR_HIDE");
+        Assert.DoesNotContain(result.Items, item => item.ItemId == "WOLF_HIDE");
+        Assert.DoesNotContain(result.Items, item => item.ItemId == "BOAR_HIDE");
         Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
         Assert.Contains(result.Items, item => item.ItemId == "BOAR_TUSK");
         Assert.Equal(2, sources.Length);
@@ -250,7 +250,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         Assert.Contains(result.Items, item => item.ItemId == "HUNTER_SHORTBOW");
         Assert.Contains(result.Items, item => item.ItemId == "RANGER_TRAIL_LEGGINGS");
-        Assert.Contains(result.Items, item => item.ItemId == "WOLF_HIDE");
+        Assert.DoesNotContain(result.Items, item => item.ItemId == "WOLF_HIDE");
         Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
     }
 

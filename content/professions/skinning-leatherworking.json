@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.19.0",
-  "balanceVersion": "0.15.0",
-  "publishedAtUtc": "2026-09-14T20:00:00+00:00",
+  "contentVersion": "0.19.1",
+  "balanceVersion": "0.15.1",
+  "publishedAtUtc": "2026-09-15T16:05:00+00:00",
   "professions": [
     {
       "id": "SKINNING",
@@ -24,7 +24,7 @@
       "monsterId": "FOREST_WOLF_L1",
       "requiredSkill": 1,
       "skillUpUntil": 45,
-      "itemId": "ROUGH_LEATHER",
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
@@ -33,7 +33,7 @@
       "monsterId": "FOREST_BOAR_L2",
       "requiredSkill": 10,
       "skillUpUntil": 55,
-      "itemId": "ROUGH_LEATHER",
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
@@ -51,7 +51,7 @@
       "monsterId": "FOREST_WOLF_L4",
       "requiredSkill": 35,
       "skillUpUntil": 85,
-      "itemId": "LIGHT_LEATHER",
+      "itemId": "LIGHT_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
@@ -60,12 +60,122 @@
       "monsterId": "ALPHA_WOLF_L5",
       "requiredSkill": 50,
       "skillUpUntil": 100,
-      "itemId": "LIGHT_LEATHER",
+      "itemId": "LIGHT_HIDE",
       "minQuantity": 2,
       "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_DEEP_WOLF_L6",
+      "monsterId": "DEEP_WOLF_L6",
+      "requiredSkill": 65,
+      "skillUpUntil": 120,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_CORRUPTED_BOAR_L7",
+      "monsterId": "CORRUPTED_BOAR_L7",
+      "requiredSkill": 80,
+      "skillUpUntil": 140,
+      "itemId": "THICK_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_DEEP_SPIDER_L8",
+      "monsterId": "DEEP_SPIDER_L8",
+      "requiredSkill": 95,
+      "skillUpUntil": 155,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_DEEP_WOLF_L10",
+      "monsterId": "DEEP_WOLF_L10",
+      "requiredSkill": 120,
+      "skillUpUntil": 180,
+      "itemId": "THICK_HIDE",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_ALPHA_WOLF_L11",
+      "monsterId": "ALPHA_WOLF_L11",
+      "requiredSkill": 145,
+      "skillUpUntil": 210,
+      "itemId": "THICK_HIDE",
+      "minQuantity": 2,
+      "maxQuantity": 4
     }
   ],
   "professionRecipes": [
+    {
+      "id": "LW_PROCESS_ROUGH_HIDE",
+      "professionId": "LEATHERWORKING",
+      "name": "Выделка грубой кожи",
+      "requiredSkill": 1,
+      "skillUpUntil": 50,
+      "outputItemId": "ROUGH_LEATHER",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "ROUGH_HIDE", "quantity": 1 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_PROCESS_LIGHT_HIDE",
+      "professionId": "LEATHERWORKING",
+      "name": "Выделка лёгкой кожи",
+      "requiredSkill": 35,
+      "skillUpUntil": 100,
+      "outputItemId": "LIGHT_LEATHER",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "LIGHT_HIDE", "quantity": 1 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_PROCESS_THICK_HIDE",
+      "professionId": "LEATHERWORKING",
+      "name": "Выделка толстой кожи",
+      "requiredSkill": 80,
+      "skillUpUntil": 180,
+      "outputItemId": "THICK_LEATHER",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "THICK_HIDE", "quantity": 1 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_PROCESS_LEGACY_WOLF_HIDE",
+      "professionId": "LEATHERWORKING",
+      "name": "Переработка старой волчьей шкуры",
+      "requiredSkill": 1,
+      "skillUpUntil": 1,
+      "outputItemId": "ROUGH_LEATHER",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "WOLF_HIDE", "quantity": 1 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_PROCESS_LEGACY_BOAR_HIDE",
+      "professionId": "LEATHERWORKING",
+      "name": "Переработка старой кабаньей шкуры",
+      "requiredSkill": 1,
+      "skillUpUntil": 1,
+      "outputItemId": "ROUGH_LEATHER",
+      "outputQuantity": 1,
+      "ingredients": [
+        { "itemId": "BOAR_HIDE", "quantity": 1 }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
     {
       "id": "LW_WHISPER_TRACKER_FEET",
       "professionId": "LEATHERWORKING",

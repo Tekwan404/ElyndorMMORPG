@@ -5,6 +5,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Afk;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Professions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -253,6 +254,13 @@ public sealed class TravelService
                 return TravelResult.Failure(TravelErrorCodes.ContractRequired);
             }
         }
+
+        // A successful departure abandons the current combat aftermath. Once travel starts,
+        // no pending corpse from the previous fight may be skinned later.
+        await ProfessionCorpsePersistence.DiscardPendingAsync(
+            dbContext,
+            character.Id,
+            cancellationToken);
 
         if (target.TravelDurationSeconds == 0)
         {
