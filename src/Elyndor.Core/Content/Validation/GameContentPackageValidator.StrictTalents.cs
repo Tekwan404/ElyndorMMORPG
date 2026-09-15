@@ -31,7 +31,8 @@ public static partial class GameContentPackageValidator
                     TalentModifierDefinition modifier = modifiers[modifierIndex];
                     string modifierPath = $"{path}.modifiers[{modifierIndex}]";
 
-                    if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred)
+                    if (modifier.RuntimeStatus == TalentModifierRuntimeStatus.Deferred
+                        && !PaladinTalentRuntimeCatalog.SupportsLegacyDeferred(node, modifier))
                     {
                         errors.Add(new(
                             "TALENT_RUNTIME_DEFERRED",
