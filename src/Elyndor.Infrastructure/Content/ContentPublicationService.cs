@@ -150,9 +150,9 @@ public sealed class ContentPublicationService(
                     $"Published content revision '{release.RevisionId}' is missing.");
             }
 
-            GameContentPackage package = IsNewerContentVersion(
-                    bundledPackage.ContentVersion,
-                    revision.ContentVersion)
+            GameContentPackage package = IsBundledPackageNewer(
+                    bundledPackage,
+                    revision)
                 ? MergePublishedExtensions(
                     publishedPackage,
                     bundledPackage)
@@ -181,12 +181,24 @@ public sealed class ContentPublicationService(
         }
     }
 
-    private static bool IsNewerContentVersion(
-        string bundledContentVersion,
-        string publishedContentVersion) =>
-        Version.TryParse(bundledContentVersion, out Version? bundled)
-        && Version.TryParse(publishedContentVersion, out Version? published)
-        && bundled > published;
+    private static bool IsBundledPackageNewer(
+        GameContentPackage bundled,
+        ContentRevision publishedRevision)
+    {
+        if (!Version.TryParse(bundled.ContentVersion, out Version? bundledContent)
+            || !Version.TryParse(publishedRevision.ContentVersion, out Version? publishedContent))
+        {
+            return false;
+        }
+
+        int contentComparison = bundledContent.CompareTo(publishedContent);
+        if (contentComparison != 0)
+            return contentComparison > 0;
+
+        return Version.TryParse(bundled.BalanceVersion, out Version? bundledBalance)
+            && Version.TryParse(publishedRevision.BalanceVersion, out Version? publishedBalance)
+            && bundledBalance > publishedBalance;
+    }
 
     private static GameContentPackage MergePublishedExtensions(
         GameContentPackage published,
