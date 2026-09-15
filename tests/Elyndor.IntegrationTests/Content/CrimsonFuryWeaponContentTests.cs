@@ -23,6 +23,5 @@ public sealed class CrimsonFuryWeaponContentTests
         Assert.Equal(52m, weapon.WeaponDamageMax);
         Assert.Equal(14, weapon.ItemLevelMin);
         Assert.Equal(14, weapon.ItemLevelMax);
-        Assert.Contains("WARRIOR", weapon.AllowedClassIds!);
     }
 }

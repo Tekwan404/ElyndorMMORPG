@@ -156,9 +156,7 @@ public static partial class GameContentPackageValidator
                     bool validStartingItem = item is not null
                         && item.Type == ItemType.Equipment
                         && item.Slot is not null
-                        && item.RequiredLevel <= 1
-                        && (item.AllowedClassIds is null
-                            || item.AllowedClassIds.Contains(profile.Id, StringComparer.Ordinal));
+                        && item.RequiredLevel <= 1;
                     if (!validStartingItem)
                     {
                         errors.Add(new ContentValidationError(
@@ -188,14 +186,25 @@ public static partial class GameContentPackageValidator
                         $"Class profile '{profile.Id}' contains an invalid combat auto attack."));
                 }
 
-                if ((profile.StartingAbilityIds?.Count ?? 0) > 0
-                    || (profile.AbilityUnlocks?.Count ?? 0) > 0)
+                IReadOnlyList<string> startingAbilityIds = profile.StartingAbilityIds ?? [];
+                IReadOnlyList<AbilityUnlockDefinition> abilityUnlocks = profile.AbilityUnlocks ?? [];
+                bool invalidStartingAbilities = startingAbilityIds.Any(string.IsNullOrWhiteSpace)
+                    || startingAbilityIds.Distinct(StringComparer.Ordinal).Count() != startingAbilityIds.Count
+                    || startingAbilityIds.Any(abilityId => package.Abilities?.Any(ability =>
+                        string.Equals(ability.Id, abilityId, StringComparison.Ordinal)) != true);
+                bool invalidAbilityUnlocks = abilityUnlocks.Any(unlock =>
+                        string.IsNullOrWhiteSpace(unlock.AbilityId)
+                        || unlock.UnlockLevel < 1
+                        || package.Abilities?.Any(ability =>
+                            string.Equals(ability.Id, unlock.AbilityId, StringComparison.Ordinal)) != true)
+                    || abilityUnlocks.Select(unlock => unlock.AbilityId)
+                        .Distinct(StringComparer.Ordinal).Count() != abilityUnlocks.Count;
+                if (invalidStartingAbilities || invalidAbilityUnlocks)
                 {
                     errors.Add(new ContentValidationError(
-                        "CLASS_ABILITY_GRANT_FORBIDDEN",
+                        "INVALID_CLASS_ABILITY_GRANT",
                         path,
-                        $"Class profile '{profile.Id}' cannot grant active abilities. "
-                        + "Active skills must be unlocked through talent modifiers."));
+                        $"Class profile '{profile.Id}' contains an invalid starting ability or level unlock."));
                 }
             }
 

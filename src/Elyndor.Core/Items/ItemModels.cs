@@ -156,7 +156,6 @@ public sealed record ItemDefinition(
     int SellPriceGold = 0,
     string? WeaponCategory = null,
     string? ArmorCategory = null,
-    IReadOnlyList<string>? AllowedClassIds = null,
     decimal MaxHpFlat = 0,
     decimal AttackPowerFlat = 0,
     decimal SpellPowerFlat = 0,

@@ -20,9 +20,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 13.5,
       "itemLevelMin": 2,
@@ -54,9 +51,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 5.5,
       "itemLevelMin": 2,
@@ -88,9 +82,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 6.5,
       "itemLevelMin": 2,
@@ -122,9 +113,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 8.5,
       "itemLevelMin": 2,
@@ -156,9 +144,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 12,
       "itemLevelMin": 2,
@@ -190,9 +175,6 @@
       },
       "description": "Одеяния Синей Свечи: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorFlat": 8,
       "armorCategory": "CLOTH",
       "itemLevelMin": 2,
@@ -224,9 +206,6 @@
       },
       "description": "Двуручный посох прогрессии «Одеяния Синей Свечи».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 7,
       "weaponDamageMax": 12,
@@ -259,9 +238,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Синей Свечи».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 5,
       "weaponDamageMax": 8,
@@ -294,9 +270,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 22.5,
       "itemLevelMin": 6,
@@ -328,9 +301,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 9.5,
       "itemLevelMin": 6,
@@ -362,9 +332,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 10.5,
       "itemLevelMin": 6,
@@ -396,9 +363,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 14.5,
       "itemLevelMin": 6,
@@ -430,9 +394,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 20,
       "itemLevelMin": 6,
@@ -464,9 +425,6 @@
       },
       "description": "Руны Забытого Ученика: процедурно генерируемая экипировка для MAGE ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorFlat": 13,
       "armorCategory": "CLOTH",
       "itemLevelMin": 6,
@@ -498,9 +456,6 @@
       },
       "description": "Двуручный посох прогрессии «Руны Забытого Ученика».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 13,
       "weaponDamageMax": 21,
@@ -533,9 +488,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Руны Забытого Ученика».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 9,
       "weaponDamageMax": 15,
@@ -569,9 +521,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
       "armorFlat": 34,
@@ -606,9 +555,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
       "armorFlat": 14.5,
@@ -643,9 +589,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
       "armorFlat": 16,
@@ -680,9 +623,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
       "armorFlat": 22,
@@ -717,9 +657,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorCategory": "CLOTH",
       "armorFlat": 30,
@@ -754,9 +691,6 @@
       },
       "description": "Часть комплекта «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_THREE_ELEMENTS",
       "armorFlat": 19.5,
       "armorCategory": "CLOTH",
@@ -791,9 +725,6 @@
       },
       "description": "Двуручный посох прогрессии «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 22,
       "weaponDamageMax": 34,
@@ -828,9 +759,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Сердце Трёх Стихий».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 15,
       "weaponDamageMax": 24,
@@ -865,9 +793,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
       "armorFlat": 51.5,
@@ -903,9 +828,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
       "armorFlat": 22.5,
@@ -940,9 +862,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
       "armorFlat": 25,
@@ -977,9 +896,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
       "armorFlat": 33,
@@ -1014,9 +930,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorCategory": "CLOTH",
       "armorFlat": 45,
@@ -1052,9 +965,6 @@
       },
       "description": "Часть комплекта «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SHATTERED_STAR",
       "armorFlat": 29,
       "armorCategory": "CLOTH",
@@ -1089,9 +999,6 @@
       },
       "description": "Двуручный посох прогрессии «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 34,
       "weaponDamageMax": 52,
@@ -1126,9 +1033,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Расколотой Звезды».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 24,
       "weaponDamageMax": 37,
@@ -1163,9 +1067,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
       "armorFlat": 73,
@@ -1201,9 +1102,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
       "armorFlat": 32.5,
@@ -1239,9 +1137,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
       "armorFlat": 35,
@@ -1277,9 +1172,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
       "armorFlat": 46.5,
@@ -1315,9 +1207,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorCategory": "CLOTH",
       "armorFlat": 64,
@@ -1353,9 +1242,6 @@
       },
       "description": "Часть комплекта «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "setId": "SET_MAGE_SILENT_ARCHON",
       "armorFlat": 40.5,
       "armorCategory": "CLOTH",
@@ -1391,9 +1277,6 @@
       },
       "description": "Двуручный посох прогрессии «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 49,
       "weaponDamageMax": 76,
@@ -1429,9 +1312,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Регалии Безмолвного Архонта».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 35,
       "weaponDamageMax": 54,
@@ -1468,9 +1348,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 102,
       "itemLevelMin": 22,
@@ -1506,9 +1383,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 45,
       "itemLevelMin": 22,
@@ -1544,9 +1418,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 49,
       "itemLevelMin": 22,
@@ -1582,9 +1453,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 65,
       "itemLevelMin": 22,
@@ -1620,9 +1488,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 89.5,
       "itemLevelMin": 22,
@@ -1658,9 +1523,6 @@
       "description": "Часть комплекта «Одеяния Затмённого Оракула».",
       "version": 1,
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 57,
       "itemLevelMin": 22,
@@ -1695,9 +1557,6 @@
       },
       "description": "Двуручный посох прогрессии «Одеяния Затмённого Оракула».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 68,
       "weaponDamageMax": 102,
@@ -1733,9 +1592,6 @@
       },
       "description": "Одноручный магический жезл прогрессии «Одеяния Затмённого Оракула».",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "WAND",
       "weaponDamageMin": 48,
       "weaponDamageMax": 73,
@@ -1770,9 +1626,6 @@
       },
       "description": "Именной посох 25 уровня. Unique не является отдельным сетовым тиром.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 88,
       "weaponDamageMax": 118,

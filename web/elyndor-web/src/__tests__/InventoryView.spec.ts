@@ -482,7 +482,6 @@ function item(overrides: InventoryItemOverrides): InventoryItem {
     setId: overrides.setId ?? null,
     weaponCategory: overrides.weaponCategory ?? null,
     armorCategory: overrides.armorCategory ?? null,
-    allowedClassIds: overrides.allowedClassIds ?? [],
     weaponBaseAttackIntervalSeconds: overrides.weaponBaseAttackIntervalSeconds ?? null,
     attackSpeedPercent: overrides.attackSpeedPercent ?? 0,
     dodgePercent: overrides.dodgePercent ?? 0,

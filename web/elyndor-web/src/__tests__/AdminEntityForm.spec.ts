@@ -133,7 +133,6 @@ describe('AdminEntityForm', () => {
           slot: 'Accessory',
           weaponCategory: null,
           armorCategory: null,
-          allowedClassIds: [],
           stats: { strength: 1, agility: 0, intellect: 0, stamina: 0 },
         },
         classIds: ['WARRIOR', 'MAGE'],

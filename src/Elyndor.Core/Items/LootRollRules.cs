@@ -37,9 +37,6 @@ public static class LootRollRules
             || item.Slot is null
             || level < item.RequiredLevel)
             return false;
-        if (item.AllowedClassIds is { Count: > 0 }
-            && !item.AllowedClassIds.Contains(classId, StringComparer.Ordinal))
-            return false;
         if (item.WeaponCategory is not null
             && !classProfile.AllowedWeaponCategories.Contains(
                 item.WeaponCategory,

@@ -7,6 +7,7 @@ import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{
   slots: Array<CombatAbility | null>
+  auraAbilities: CombatAbility[]
   consumables: InventoryItem[]
   queuedAbilityIds: string[]
   fireballStreak: number
@@ -120,10 +121,38 @@ function queuePosition(abilityId: string): number {
       <span v-else-if="entry?.kind === 'consumable'" class="combat-ability-hotbar__count">×{{ entry.item.quantity }}</span>
     </button>
   </div>
+  <section v-if="auraAbilities.length" class="combat-ability-hotbar__auras" aria-label="Ауры" data-combat-auras>
+    <span>Ауры</span>
+    <button
+      v-for="ability in auraAbilities"
+      :key="ability.id"
+      type="button"
+      class="combat-ability-hotbar__aura"
+      :data-aura-ability="ability.id"
+      :disabled="abilityState(ability) !== 'ready'"
+      :aria-label="ability.displayName"
+      @click="emit('use', ability)"
+    >
+      <img v-if="abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
+      <IconGenerator
+        v-else
+        :config="{ id: `aura-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
+      />
+      <small>{{ ability.displayName }}</small>
+      <b v-if="cooldownRemaining(ability.id) > 0">{{ Math.ceil(cooldownRemaining(ability.id)) }}</b>
+    </button>
+  </section>
 </template>
 
 <style scoped>
 .combat-ability-hotbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.combat-ability-hotbar__auras { display: flex; align-items: center; gap: 5px; margin-top: 5px; padding: 5px; border: 1px solid rgb(205 177 113 / 28%); border-radius: var(--ui-radius-sm); background: rgb(205 177 113 / 6%); }
+.combat-ability-hotbar__auras > span { flex: none; color: var(--ui-color-gold-muted); font-size: .5rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.combat-ability-hotbar__aura { position: relative; display: inline-flex; min-width: 0; min-height: var(--ui-touch-target); flex: 1; align-items: center; justify-content: center; gap: 5px; padding: 4px 7px; border: 1px solid rgb(205 177 113 / 36%); border-radius: var(--ui-radius-sm); background: rgb(4 7 12 / 78%); color: var(--ui-color-text-primary); font: inherit; }
+.combat-ability-hotbar__aura:disabled { opacity: .45; }
+.combat-ability-hotbar__aura img, .combat-ability-hotbar__aura :deep(.icon-generator) { width: 24px; height: 24px; flex: none; }
+.combat-ability-hotbar__aura small { overflow: hidden; font-size: .52rem; text-overflow: ellipsis; white-space: nowrap; }
+.combat-ability-hotbar__aura b { position: absolute; inset: 2px; display: grid; place-items: center; border-radius: inherit; background: rgb(1 3 7 / 72%); color: white; font-size: .72rem; }
 .combat-ability-hotbar__slot { position: relative; display: grid; min-width: 0; min-height: clamp(43px, 13vw, 56px); place-items: center; align-content: center; gap: 2px; padding: 3px 2px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%)); color: var(--ui-color-text-primary); font: inherit; }
 .combat-ability-hotbar__slot[data-state='ready'] { border-color: rgb(146 136 255 / 36%); box-shadow: inset 0 0 0 1px rgb(146 136 255 / 4%); }
 .combat-ability-hotbar__slot[data-state='cooldown'], .combat-ability-hotbar__slot[data-state='resource'] { opacity: .46; }

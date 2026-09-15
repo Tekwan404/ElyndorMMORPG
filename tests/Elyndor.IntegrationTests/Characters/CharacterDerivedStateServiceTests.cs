@@ -36,8 +36,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             EquipmentSlot.Weapon,
             new PrimaryStats(0, 0, 10, 0),
             "Derived-state integration test staff.",
-            WeaponCategory: EquipmentCategoryIds.Staff,
-            AllowedClassIds: ["MAGE"]);
+            WeaponCategory: EquipmentCategoryIds.Staff);
         content = content with
         {
             Items = (content.Items ?? []).Concat([staff]).ToArray()
@@ -81,7 +80,6 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             new PrimaryStats(2, 0, 0, 0),
             "Main hand derived-state test weapon.",
             WeaponCategory: EquipmentCategoryIds.OneHandSword,
-            AllowedClassIds: ["WARRIOR"],
             WeaponDamageMin: 8,
             WeaponDamageMax: 12,
             WeaponBaseAttackIntervalSeconds: 2.2m);
@@ -97,7 +95,6 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             new PrimaryStats(3, 0, 0, 0),
             "Off hand derived-state test weapon.",
             WeaponCategory: EquipmentCategoryIds.OneHandSword,
-            AllowedClassIds: ["WARRIOR"],
             WeaponDamageMin: 5,
             WeaponDamageMax: 7,
             WeaponBaseAttackIntervalSeconds: 1.8m);

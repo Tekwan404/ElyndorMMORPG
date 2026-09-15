@@ -623,11 +623,7 @@ public sealed class BootstrapService(
                 && definition.WeaponCategory is not null
                 && classProfile.AllowedWeaponCategories.Contains(
                     definition.WeaponCategory,
-                    StringComparer.Ordinal)
-                && (definition.AllowedClassIds is null
-                    || definition.AllowedClassIds.Contains(
-                        character.ClassId,
-                        StringComparer.Ordinal)));
+                    StringComparer.Ordinal));
 
             bool granted = false;
             if (!hasValidMainHand)

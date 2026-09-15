@@ -1,3 +1,4 @@
+using Elyndor.Core.Characters;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Content;
 
@@ -5,6 +6,33 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class PaladinTalentContentTests
 {
+    [Fact]
+    public async Task PaladinStartsWithItsBaselineHealingAndAuraAbilities()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        var paladin = Assert.Single(package.ClassProfiles!, profile => profile.Id == "PALADIN");
+
+        Assert.Equal(
+            ["DEVOTION_AURA", "FLASH_OF_LIGHT", "HOLY_LIGHT", "JUDGEMENT", "LAY_ON_HANDS", "SEAL_OF_RIGHTEOUSNESS"],
+            CharacterKnownAbilityResolver.Resolve(paladin, level: 1));
+    }
+
+    [Fact]
+    public async Task PaladinTalentPlayerFacingTextIsRussian()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        var tree = Assert.Single(package.TalentTrees!, tree => tree.ClassId == "PALADIN");
+
+        Assert.All(tree.Branches, branch => Assert.DoesNotMatch("[A-Za-z]{2,}", branch.Fantasy));
+        Assert.All(tree.Nodes, node =>
+        {
+            Assert.DoesNotMatch("[A-Za-z]{2,}", node.Name);
+            Assert.DoesNotMatch("[A-Za-z]{2,}", node.Description);
+        });
+    }
+
     [Fact]
     public async Task ComposedPackageContainsPlayablePaladinTalentTree()
     {

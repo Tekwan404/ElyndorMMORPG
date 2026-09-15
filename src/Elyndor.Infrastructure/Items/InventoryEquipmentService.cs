@@ -24,7 +24,6 @@ public static class InventoryErrorCodes
     public const string ConsumableUnavailable = "inventory_consumable_unavailable";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
-    public const string ClassRestricted = "inventory_class_restricted";
     public const string WeaponCategoryRestricted = "inventory_weapon_category_restricted";
     public const string ArmorCategoryRestricted = "inventory_armor_category_restricted";
     public const string OffHandCategoryRestricted = "inventory_off_hand_category_restricted";
@@ -249,12 +248,6 @@ public sealed class InventoryEquipmentService(
                 {
                     throw new InvalidOperationException(
                         $"Class profile '{character.ClassId}' is missing from game content.");
-                }
-
-                if (definition.AllowedClassIds is { Count: > 0 }
-                    && !definition.AllowedClassIds.Contains(character.ClassId, StringComparer.Ordinal))
-                {
-                    return InventoryOperationResult.Failure(InventoryErrorCodes.ClassRestricted);
                 }
 
                 if (definition.WeaponCategory is not null

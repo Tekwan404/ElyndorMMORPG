@@ -20,9 +20,6 @@
       },
       "description": "Лук прогрессии «Следопыт Шепчущего Леса».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 7,
       "weaponDamageMax": 12,
@@ -55,9 +52,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 19.5,
       "itemLevelMin": 2,
@@ -89,9 +83,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 9,
       "itemLevelMin": 2,
@@ -123,9 +114,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 9.5,
       "itemLevelMin": 2,
@@ -157,9 +145,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 12.5,
       "itemLevelMin": 2,
@@ -191,9 +176,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 17,
       "itemLevelMin": 2,
@@ -225,9 +207,6 @@
       },
       "description": "Следопыт Шепчущего Леса: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 10.5,
       "armorCategory": "LEATHER",
       "itemLevelMin": 2,
@@ -259,9 +238,6 @@
       },
       "description": "Лук прогрессии «Серая Тропа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 13,
       "weaponDamageMax": 21,
@@ -294,9 +270,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 32.5,
       "itemLevelMin": 6,
@@ -328,9 +301,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 14.5,
       "itemLevelMin": 6,
@@ -362,9 +332,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 15.5,
       "itemLevelMin": 6,
@@ -396,9 +363,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 21,
       "itemLevelMin": 6,
@@ -430,9 +394,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 28.5,
       "itemLevelMin": 6,
@@ -464,9 +425,6 @@
       },
       "description": "Серая Тропа: процедурно генерируемая экипировка для ARCHER ранней прогрессии.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorFlat": 18,
       "armorCategory": "LEATHER",
       "itemLevelMin": 6,
@@ -498,9 +456,6 @@
       },
       "description": "Лук прогрессии «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 22,
       "weaponDamageMax": 34,
@@ -534,9 +489,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
       "armorFlat": 49,
@@ -570,9 +522,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
       "armorFlat": 21.5,
@@ -606,9 +555,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
       "armorFlat": 23.5,
@@ -642,9 +588,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
       "armorFlat": 31,
@@ -678,9 +621,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorCategory": "LEATHER",
       "armorFlat": 43,
@@ -714,9 +654,6 @@
       },
       "description": "Часть комплекта «Клятва Тернового Следа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_THORN_TRAIL",
       "armorFlat": 27.5,
       "armorCategory": "LEATHER",
@@ -750,9 +687,6 @@
       },
       "description": "Лук прогрессии «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 34,
       "weaponDamageMax": 52,
@@ -786,9 +720,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
       "armorFlat": 73.5,
@@ -823,9 +754,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
       "armorFlat": 32.5,
@@ -859,9 +787,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
       "armorFlat": 35,
@@ -895,9 +820,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
       "armorFlat": 47,
@@ -931,9 +853,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorCategory": "LEATHER",
       "armorFlat": 64.5,
@@ -968,9 +887,6 @@
       },
       "description": "Часть комплекта «Тень Лунного Листа».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_MOONLEAF_SHADOW",
       "armorFlat": 41,
       "armorCategory": "LEATHER",
@@ -1004,9 +920,6 @@
       },
       "description": "Лук прогрессии «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 49,
       "weaponDamageMax": 76,
@@ -1041,9 +954,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
       "armorFlat": 104,
@@ -1078,9 +988,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
       "armorFlat": 46,
@@ -1115,9 +1022,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
       "armorFlat": 50,
@@ -1152,9 +1056,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
       "armorFlat": 66.5,
@@ -1189,9 +1090,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorCategory": "LEATHER",
       "armorFlat": 91.5,
@@ -1226,9 +1124,6 @@
       },
       "description": "Часть комплекта «Наследие Звёздного Зверобоя».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "setId": "SET_ARCHER_STAR_HUNTER",
       "armorFlat": 58,
       "armorCategory": "LEATHER",
@@ -1263,9 +1158,6 @@
       },
       "description": "Лук прогрессии «Охота Чёрного Созвездия».",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 68,
       "weaponDamageMax": 102,
@@ -1301,9 +1193,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 145,
       "itemLevelMin": 22,
@@ -1338,9 +1227,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 64,
       "itemLevelMin": 22,
@@ -1375,9 +1261,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 70,
       "itemLevelMin": 22,
@@ -1412,9 +1295,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 93,
       "itemLevelMin": 22,
@@ -1449,9 +1329,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 127.5,
       "itemLevelMin": 22,
@@ -1486,9 +1363,6 @@
       "description": "Часть комплекта «Охота Чёрного Созвездия».",
       "version": 1,
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 81,
       "itemLevelMin": 22,
@@ -1522,9 +1396,6 @@
       },
       "description": "Именной лук 25 уровня. Unique не является отдельным сетовым тиром.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 92,
       "weaponDamageMax": 124,

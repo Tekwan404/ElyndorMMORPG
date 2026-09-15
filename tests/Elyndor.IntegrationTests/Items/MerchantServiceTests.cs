@@ -177,7 +177,6 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
             Version: 7,
             BuyPriceGold: 10,
             WeaponCategory: EquipmentCategoryIds.OneHandSword,
-            AllowedClassIds: ["WARRIOR"],
             PrimaryStatRanges: new PrimaryStatRanges(
                 Strength: new ItemStatRange(2, 4),
                 Agility: new ItemStatRange(10, 12),

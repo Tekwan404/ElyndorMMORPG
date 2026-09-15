@@ -165,7 +165,6 @@ function createItem(id: string, name: string, type: NewItemType): JsonRecord {
     sellPriceGold: 0,
     weaponCategory: null,
     armorCategory: null,
-    allowedClassIds: [],
   }
 
   if (type === 'Equipment') {

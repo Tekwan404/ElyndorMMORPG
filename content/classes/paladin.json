@@ -28,7 +28,14 @@
         "HEAVY"
       ],
       "prototypeIdentity": "Holy warrior using Mana who can heal allies, tank with a shield, or deal two-handed melee damage.",
-      "startingAbilityIds": [],
+      "startingAbilityIds": [
+        "HOLY_LIGHT",
+        "FLASH_OF_LIGHT",
+        "JUDGEMENT",
+        "SEAL_OF_RIGHTEOUSNESS",
+        "DEVOTION_AURA",
+        "LAY_ON_HANDS"
+      ],
       "startingEquipmentItemIds": [
         "RECRUIT_IRON_SWORD"
       ],

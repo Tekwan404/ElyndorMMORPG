@@ -270,16 +270,6 @@ function slotLabel(slot: EquipmentSlot | null): string {
   return labels[slot] ?? slot
 }
 
-function className(id: string): string {
-  if (id === 'WARRIOR' || id === 'ARCHER' || id === 'MAGE') return classLabel(id)
-  return id
-}
-
-function classRestriction(item: InventoryItem): string {
-  if (!item.allowedClassIds.length) return 'Все классы'
-  return item.allowedClassIds.map(className).join(', ')
-}
-
 function categoryLabel(item: InventoryItem): string | null {
   const value = item.weaponCategory ?? item.armorCategory
   if (!value) return null
@@ -537,10 +527,6 @@ function affixValue(statId: string, value: number): string {
           <div>
             <span>Требуется уровень</span>
             <strong :class="{ danger: character.level < selectedItem.requiredLevel }">{{ selectedItem.requiredLevel }}</strong>
-          </div>
-          <div>
-            <span>Класс</span>
-            <strong>{{ classRestriction(selectedItem) }}</strong>
           </div>
           <div v-if="bindLabel(selectedItem)">
             <span>Состояние</span>

@@ -181,7 +181,6 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
             Version: 1,
             WeaponBaseAttackIntervalSeconds: 2.2m,
             WeaponCategory: EquipmentCategoryIds.OneHandSword,
-            AllowedClassIds: ["WARRIOR"],
             WeaponDamageMin: 10,
             WeaponDamageMax: 16);
 
