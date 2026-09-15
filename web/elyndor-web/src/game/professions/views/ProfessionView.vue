@@ -84,6 +84,7 @@ async function mutate(
     const result = await action()
     if (result.state) state.value = result.state
     else state.value = await getProfessionState()
+    await load()
     if (refreshCharacter) await session.refreshSnapshot()
     notice.value = successMessage(result)
   } catch (caught) {
