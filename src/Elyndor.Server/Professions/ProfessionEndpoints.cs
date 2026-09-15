@@ -1,6 +1,9 @@
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Professions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Professions;
 
@@ -38,11 +41,24 @@ public static class ProfessionEndpoints
         ClaimsPrincipal user,
         HttpContext httpContext,
         ProfessionService service,
+        GameDbContext dbContext,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
             return Results.Unauthorized();
-        ProfessionMutationResult result = await service.LearnAsync(accountId, request.ProfessionId, request.MutationId, cancellationToken);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        string lockKey = accountId.ToString("N");
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtextextended({lockKey}, 0))",
+            cancellationToken);
+
+        ProfessionMutationResult result = await service.LearnAsync(
+            accountId,
+            request.ProfessionId,
+            request.MutationId,
+            cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return ToResult(result, httpContext);
     }
 
