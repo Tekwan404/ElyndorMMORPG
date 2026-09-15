@@ -15,7 +15,7 @@ import { locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
-import { UIButton, UIHealthBar, UILoadingState } from '@/ui/components'
+import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
 type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu'
 
@@ -28,6 +28,8 @@ const menuSection = ref<MenuSection>('profile')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
+const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
+const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
   character.value
     ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent')
@@ -121,6 +123,18 @@ function openMenu(section: MenuSection): void {
 
 function openHero(): void {
   showView('hero')
+}
+
+async function acknowledgeRelease(): Promise<void> {
+  const release = releaseUpdate.value
+  if (!release || acknowledgingRelease.value) return
+
+  acknowledgingRelease.value = true
+  try {
+    await session.acknowledgeRelease(release.id)
+  } finally {
+    acknowledgingRelease.value = false
+  }
 }
 
 watch(() => session.state, async state => {
@@ -258,6 +272,25 @@ onMounted(() => {
         <small>{{ item.label }}</small>
       </button>
     </nav>
+
+    <UIModal
+      :open="session.state === 'world' && releaseUpdate !== null && !combat.isActive"
+      :title="releaseUpdate?.title ?? 'Игра обновлена'"
+      @close="acknowledgeRelease"
+    >
+      <section v-if="releaseUpdate" class="release-update" data-release-update>
+        <p class="release-update__version">Версия {{ releaseUpdate.id }}</p>
+        <ul>
+          <li v-for="entry in releaseUpdate.entries" :key="`${entry.kind}-${entry.text}`">
+            <b :data-kind="entry.kind">{{ entry.kind === 'Added' ? 'Добавлено' : entry.kind === 'Changed' ? 'Изменено' : 'Исправлено' }}</b>
+            <span>{{ entry.text }}</span>
+          </li>
+        </ul>
+      </section>
+      <template #actions>
+        <UIButton data-release-acknowledge :loading="acknowledgingRelease" @click="acknowledgeRelease">Понятно</UIButton>
+      </template>
+    </UIModal>
   </div>
 </template>
 
@@ -653,6 +686,15 @@ onMounted(() => {
 .hud--combat .hud__context {
   display: none;
 }
+
+.release-update { display: grid; gap: 10px; }
+.release-update__version { margin: 0; color: var(--ui-color-gold); font-size: var(--ui-font-size-xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.release-update ul { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.release-update li { display: grid; gap: 2px; }
+.release-update li b { color: var(--ui-color-gold); font-size: var(--ui-font-size-xs); letter-spacing: .06em; text-transform: uppercase; }
+.release-update li b[data-kind='Fixed'] { color: var(--ui-color-success); }
+.release-update li b[data-kind='Changed'] { color: #b9a5f6; }
+.release-update li span { color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); line-height: 1.4; }
 
 @media (max-width: 360px) {
   .hud {

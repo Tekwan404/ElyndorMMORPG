@@ -616,6 +616,22 @@ export interface AfkFarmTarget {
   displayName: string
 }
 
+export interface ReleaseNoteEntry {
+  kind: 'Added' | 'Changed' | 'Fixed'
+  text: string
+}
+
+export interface ReleaseUpdate {
+  id: string
+  title: string
+  publishedAtUtc: string
+  entries: ReleaseNoteEntry[]
+}
+
+export interface ReleaseNotesHistory {
+  releases: ReleaseUpdate[]
+}
+
 export interface BootstrapSnapshot {
   accountId: string
   character: CharacterSnapshot | null
@@ -630,6 +646,7 @@ export interface BootstrapSnapshot {
   balanceVersion: string
   serverTimeUtc: string
   afkFarm?: AfkFarmState | null
+  releaseUpdate?: ReleaseUpdate | null
 }
 
 export interface CreateCharacterRequest {

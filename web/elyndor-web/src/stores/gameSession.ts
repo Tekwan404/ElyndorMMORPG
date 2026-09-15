@@ -19,6 +19,8 @@ import type {
   MerchantSnapshot,
   PremiumStoreSnapshot,
   PremiumStorePurchaseResponse,
+  ReleaseNotesHistory,
+  ReleaseUpdate,
   PromoCodeRedemptionResponse,
   ItemReforgeResponse,
   ItemReforgePreview,
@@ -45,6 +47,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
   const questJournal = ref<QuestJournalResponse | null>(null)
+  const releaseHistory = ref<ReleaseUpdate[]>([])
   const errorCode = ref<string | null>(null)
   const errorCorrelationId = ref<string | null>(null)
   const roles = ref<string[]>([])
@@ -95,6 +98,22 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   async function refreshSnapshot(): Promise<void> {
     snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
     scheduleTravelCompletionRefresh()
+  }
+
+  async function acknowledgeRelease(releaseId: string): Promise<void> {
+    await apiClient.request<void>(`/api/v1/releases/${encodeURIComponent(releaseId)}/acknowledge`, {
+      method: 'POST',
+    })
+
+    if (snapshot.value?.releaseUpdate?.id === releaseId) {
+      snapshot.value = { ...snapshot.value, releaseUpdate: null }
+    }
+  }
+
+  async function loadReleaseHistory(): Promise<ReleaseUpdate[]> {
+    const response = await apiClient.request<ReleaseNotesHistory>('/api/v1/releases')
+    releaseHistory.value = response.releases
+    return releaseHistory.value
   }
 
   function scheduleTravelCompletionRefresh(): void {
@@ -682,6 +701,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     state,
     snapshot,
     questJournal,
+    releaseHistory,
     errorCode,
     errorCorrelationId,
     roles,
@@ -690,6 +710,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     isAdmin,
     authenticate,
     refreshSnapshot,
+    acknowledgeRelease,
+    loadReleaseHistory,
     bootstrap,
     start,
     createCharacter,

@@ -142,7 +142,21 @@ public sealed record BootstrapResponse(
     string ContentVersion,
     string BalanceVersion,
     DateTimeOffset ServerTimeUtc,
-    BootstrapAfkFarmResponse? AfkFarm = null);
+    BootstrapAfkFarmResponse? AfkFarm = null,
+    BootstrapReleaseUpdateResponse? ReleaseUpdate = null);
+
+public sealed record BootstrapReleaseUpdateResponse(
+    string Id,
+    string Title,
+    DateTimeOffset PublishedAtUtc,
+    IReadOnlyList<ReleaseNoteEntryResponse> Entries);
+
+public sealed record ReleaseNoteEntryResponse(
+    string Kind,
+    string Text);
+
+public sealed record ReleaseNotesHistoryResponse(
+    IReadOnlyList<BootstrapReleaseUpdateResponse> Releases);
 
 public sealed record TravelRequest(Guid RequestId, string TargetLocationId);
 

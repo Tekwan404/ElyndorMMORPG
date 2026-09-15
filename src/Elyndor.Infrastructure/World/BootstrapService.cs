@@ -8,6 +8,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.Items;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Afk;
+using Elyndor.Core.Releases;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Items;
@@ -106,7 +107,18 @@ public sealed record BootstrapSnapshot(
     string ContentVersion,
     string BalanceVersion,
     DateTimeOffset ServerTimeUtc,
-    BootstrapAfkFarm? AfkFarm = null);
+    BootstrapAfkFarm? AfkFarm = null,
+    BootstrapReleaseUpdate? ReleaseUpdate = null);
+
+public sealed record BootstrapReleaseUpdate(
+    string Id,
+    string Title,
+    DateTimeOffset PublishedAtUtc,
+    IReadOnlyList<BootstrapReleaseNoteEntry> Entries);
+
+public sealed record BootstrapReleaseNoteEntry(
+    ReleaseNoteEntryKind Kind,
+    string Text);
 
 public sealed record BootstrapAfkFarm(
     Guid SessionId,
@@ -132,7 +144,8 @@ public sealed class BootstrapService(
     ILogger<BootstrapService>? logger = null,
     ICombatActivityReader? combatActivity = null,
     IOptions<OutOfCombatRecoveryOptions>? recoveryOptions = null,
-    AfkFarmProgressService? afkFarmProgress = null)
+    AfkFarmProgressService? afkFarmProgress = null,
+    IReleaseNotesCatalog? releaseNotesCatalog = null)
 {
     public BootstrapService(
         GameDbContext dbContext,
@@ -147,7 +160,28 @@ public sealed class BootstrapService(
             timeProvider,
             null,
             null,
+            null,
             null)
+    {
+    }
+
+    public BootstrapService(
+        GameDbContext dbContext,
+        GameContentPackage contentPackage,
+        WorldMap worldMap,
+        CharacterDerivedStateService derivedStateService,
+        TimeProvider timeProvider,
+        IReleaseNotesCatalog releaseNotesCatalog)
+        : this(
+            dbContext,
+            new StaticContentSnapshotProvider(contentPackage),
+            derivedStateService,
+            timeProvider,
+            null,
+            null,
+            null,
+            null,
+            releaseNotesCatalog)
     {
     }
 
@@ -206,6 +240,9 @@ public sealed class BootstrapService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
+        BootstrapReleaseUpdate? releaseUpdate = await GetReleaseUpdateAsync(
+            accountId,
+            cancellationToken);
         if (await EnsureStartingEquipmentAsync(
                 character,
                 contentSnapshot,
@@ -492,7 +529,29 @@ public sealed class BootstrapService(
             contentPackage.ContentVersion,
             contentPackage.BalanceVersion,
             now,
-            afkFarm);
+            afkFarm,
+            releaseUpdate);
+    }
+
+    private async Task<BootstrapReleaseUpdate?> GetReleaseUpdateAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        ReleaseNoteDefinition? release = releaseNotesCatalog?.Current;
+        if (release is null
+            || await dbContext.AccountReleaseAcknowledgements.AsNoTracking().AnyAsync(
+                acknowledgement => acknowledgement.AccountId == accountId
+                    && acknowledgement.ReleaseId == release.Id,
+                cancellationToken))
+        {
+            return null;
+        }
+
+        return new BootstrapReleaseUpdate(
+            release.Id,
+            release.Title,
+            release.PublishedAtUtc,
+            release.Entries.Select(entry => new BootstrapReleaseNoteEntry(entry.Kind, entry.Text)).ToArray());
     }
 
     private async Task<bool> EnsureStartingEquipmentAsync(

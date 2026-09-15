@@ -2,9 +2,11 @@ using System.Text;
 using Elyndor.Contracts.System;
 using Elyndor.Core.Content;
 using Elyndor.Core.World;
+using Elyndor.Core.Releases;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Identity.Telegram;
+using Elyndor.Infrastructure.Releases;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server;
 using Elyndor.Server.Characters;
@@ -21,6 +23,7 @@ using Elyndor.Server.Dungeons;
 using Elyndor.Server.Economy;
 using Elyndor.Server.Afk;
 using Elyndor.Server.Professions;
+using Elyndor.Server.Releases;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
@@ -35,6 +38,19 @@ string contentPackagePath = builder.Configuration["Content:PackagePath"]
     ?? Path.Combine(AppContext.BaseDirectory, "content", "package.json");
 GameContentPackage gameContentPackage =
     await GameContentPackageLoader.LoadAsync(contentPackagePath);
+string releaseNotesPath = builder.Configuration["Releases:NotesPath"]
+    ?? Path.Combine(Path.GetDirectoryName(contentPackagePath)!, "release-notes.json");
+IReleaseNotesCatalog releaseNotesCatalog;
+Exception? releaseNotesLoadFailure = null;
+try
+{
+    releaseNotesCatalog = await ReleaseNotesFileLoader.LoadAsync(releaseNotesPath);
+}
+catch (Exception exception)
+{
+    releaseNotesLoadFailure = exception;
+    releaseNotesCatalog = new ReleaseNotesCatalog(new ReleaseNotesDocument([]));
+}
 
 string frontendDistPath = FrontendDistPathResolver.Resolve(
     builder.Configuration["Frontend:DistPath"],
@@ -77,6 +93,9 @@ MutableContentSnapshotProvider contentSnapshotProvider =
 builder.Services.AddSingleton(contentSnapshotProvider);
 builder.Services.AddSingleton<IContentSnapshotProvider>(
     services => services.GetRequiredService<MutableContentSnapshotProvider>());
+builder.Services.AddSingleton(releaseNotesCatalog);
+builder.Services.AddScoped<ReleaseAcknowledgementService>();
+builder.Services.AddScoped<ReleaseAdminNotificationService>();
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddSingleton<JwtTokenIssuer>();
 builder.Services.AddSingleton(new HttpClient());
@@ -157,6 +176,14 @@ builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublish
 
 WebApplication app = builder.Build();
 
+if (releaseNotesLoadFailure is not null)
+{
+    StartupLogMessages.LogReleaseNotesLoadFailed(
+        app.Logger,
+        releaseNotesPath,
+        releaseNotesLoadFailure);
+}
+
 bool migrateOnStartup =
     app.Configuration.GetValue<bool>("Database:MigrateOnStartup");
 bool restorePublishedOnStartup =
@@ -210,6 +237,18 @@ if (migrateOnStartup)
         combatRecoveryScope.ServiceProvider
             .GetRequiredService<CombatDurabilityService>();
     await durability.RecoverInterruptedAsync(CancellationToken.None);
+}
+
+try
+{
+    await using AsyncServiceScope releaseNotificationScope = app.Services.CreateAsyncScope();
+    ReleaseAdminNotificationService releaseNotifier = releaseNotificationScope.ServiceProvider
+        .GetRequiredService<ReleaseAdminNotificationService>();
+    await releaseNotifier.NotifyCurrentReleaseAsync(CancellationToken.None);
+}
+catch (Exception exception)
+{
+    StartupLogMessages.LogReleaseAdminNotificationFailed(app.Logger, exception);
 }
 
 app.UseExceptionHandler(errorApp =>
@@ -309,6 +348,7 @@ app.MapItemStarUpgradePreviewEndpoints();
 app.MapEconomyEndpoints();
 app.MapProfessionEndpoints();
 app.MapAfkFarmEndpoints();
+app.MapReleaseNotesEndpoints();
 app.MapSocialEndpoints();
 app.MapPartyEndpoints();
 app.MapDungeonEndpoints();

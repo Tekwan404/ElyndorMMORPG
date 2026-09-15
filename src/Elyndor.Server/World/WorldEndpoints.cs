@@ -328,7 +328,18 @@ public static class WorldEndpoints
                     snapshot.AfkFarm.XpEarned,
                     snapshot.AfkFarm.GoldEarned,
                     snapshot.AfkFarm.ItemsCount,
-                    snapshot.AfkFarm.EfficiencyPercent));
+                    snapshot.AfkFarm.EfficiencyPercent),
+            snapshot.ReleaseUpdate is null
+                ? null
+                : new BootstrapReleaseUpdateResponse(
+                    snapshot.ReleaseUpdate.Id,
+                    snapshot.ReleaseUpdate.Title,
+                    snapshot.ReleaseUpdate.PublishedAtUtc,
+                    snapshot.ReleaseUpdate.Entries
+                        .Select(entry => new ReleaseNoteEntryResponse(
+                            entry.Kind.ToString(),
+                            entry.Text))
+                        .ToArray()));
 
     private static WorldLocationResponse ToLocation(BootstrapLocation location) =>
         new(
