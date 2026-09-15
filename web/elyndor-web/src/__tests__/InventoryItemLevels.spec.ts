@@ -108,7 +108,6 @@ function equipment(overrides: {
     setId: null,
     weaponCategory: 'ONE_HAND_SWORD',
     armorCategory: null,
-    allowedClassIds: ['WARRIOR'],
     weaponBaseAttackIntervalSeconds: 2,
     attackSpeedPercent: 0,
     dodgePercent: 0,

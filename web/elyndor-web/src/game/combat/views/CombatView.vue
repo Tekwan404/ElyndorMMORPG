@@ -6,6 +6,7 @@ import { abilityArtUrl } from '@/assets/abilityArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
@@ -106,10 +107,13 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
 })
 const displayAbilities = computed(() => orderCombatAbilities(
   session.snapshot?.character?.id ?? '',
-  snapshot.value?.player.abilities ?? [],
+  (snapshot.value?.player.abilities ?? []).filter((ability) => !isAuraAbility(ability.id)),
 ).slice(0, 12))
 const abilitySlots = computed<(CombatAbility | null)[]>(() =>
   Array.from({ length: 12 }, (_, index) => displayAbilities.value[index] ?? null),
+)
+const auraAbilities = computed(() =>
+  (snapshot.value?.player.abilities ?? []).filter((ability) => isAuraAbility(ability.id)),
 )
 const abilityById = computed(() => new Map<string, CombatAbility>(
   [
@@ -692,6 +696,7 @@ onUnmounted(() => window.clearInterval(timer))
 
         <CombatAbilityHotbar
           :slots="abilitySlots"
+          :aura-abilities="auraAbilities"
           :consumables="isTraining ? [] : combatConsumables"
           :queued-ability-ids="combat.abilityQueue.map((queued) => queued.abilityId)"
           :fireball-streak="fireballStreak"

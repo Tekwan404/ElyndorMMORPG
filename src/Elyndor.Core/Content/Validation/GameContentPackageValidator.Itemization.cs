@@ -254,11 +254,6 @@ public static partial class GameContentPackageValidator
             int minimumLevel = item.ItemLevelMin ?? item.RequiredLevel;
             int maximumLevel = item.ItemLevelMax ?? minimumLevel;
             string[] guaranteed = (item.GuaranteedAffixStatIds ?? []).ToArray();
-            bool forbiddenSetStat = item.SetId is not null
-                && item.AllowedClassIds is { Count: 1 }
-                && guaranteed.Concat(pool.StatIds).Any(statId =>
-                    IsForbiddenForClass(item.AllowedClassIds[0], statId));
-
             if (minimumLevel < 1
                 || maximumLevel < minimumLevel
                 || guaranteed.Length != countProfile.GuaranteedCount
@@ -267,13 +262,12 @@ public static partial class GameContentPackageValidator
                     !ItemStatIds.ApprovedV1.Contains(statId)
                     || !itemization.StatPowerWeights.ContainsKey(statId))
                 || pool.StatIds.Concat(guaranteed).Distinct(StringComparer.Ordinal).Count()
-                    < countProfile.GuaranteedCount + countProfile.MaximumBonusCount
-                || forbiddenSetStat)
+                    < countProfile.GuaranteedCount + countProfile.MaximumBonusCount)
             {
                 errors.Add(new(
                     "INVALID_PROCEDURAL_ITEM_AFFIX_POLICY",
                     path,
-                    $"Item '{item.Id}' has impossible, duplicate, unsupported, or class-incompatible affix rules."));
+                    $"Item '{item.Id}' has impossible, duplicate, or unsupported affix rules."));
             }
 
             decimal allowedExtraCap = item.Rarity switch
@@ -305,15 +299,4 @@ public static partial class GameContentPackageValidator
         || item.TradePolicyId is not null
         || item.GenerationVersion != 1;
 
-    private static bool IsForbiddenForClass(string classId, string statId) =>
-        classId switch
-        {
-            "WARRIOR" => statId is ItemStatIds.Intellect or ItemStatIds.SpellPower
-                or ItemStatIds.MagicPenetration,
-            "MAGE" => statId is ItemStatIds.Strength or ItemStatIds.Agility
-                or ItemStatIds.AttackPower or ItemStatIds.ArmorPenetration,
-            "ARCHER" => statId is ItemStatIds.Strength or ItemStatIds.Intellect
-                or ItemStatIds.SpellPower or ItemStatIds.MagicPenetration,
-            _ => false
-        };
 }

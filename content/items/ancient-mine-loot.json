@@ -20,9 +20,6 @@
       },
       "description": "Тяжёлый шлем старого шахтного гарнизона, усиленный пластинами вокруг лба и висков.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 64,
       "iconId": "dungeon_mines_warrior_helm_rare",
@@ -56,9 +53,6 @@
       },
       "description": "Тяжёлые рукавицы, рассчитанные на бой в тесных штреках и удары о камень.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "armorCategory": "HEAVY",
       "armorFlat": 53,
       "iconId": "dungeon_mines_warrior_gauntlets_epic",
@@ -92,9 +86,6 @@
       },
       "description": "Массивный щит Хранителя Глубин из чёрного шахтного железа.",
       "version": 1,
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "offHandCategory": "SHIELD",
       "armorFlat": 128,
       "blockChancePercent": 4,
@@ -131,9 +122,6 @@
       },
       "description": "Капюшон из пропитанной минералами ткани, откликающийся на магию древних шахт.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 25.5,
       "iconId": "dungeon_mines_mage_hood_rare",
@@ -167,9 +155,6 @@
       },
       "description": "Лёгкие сапоги с древними рунами движения нижних уровней шахты.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "armorCategory": "CLOTH",
       "armorFlat": 23,
       "iconId": "dungeon_mines_mage_boots_epic",
@@ -203,9 +188,6 @@
       },
       "description": "Древний посох с кристаллом, продолжающим пульсировать магией после столетий под землёй.",
       "version": 1,
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "weaponCategory": "STAFF",
       "weaponDamageMin": 44,
       "weaponDamageMax": 62,
@@ -240,9 +222,6 @@
       },
       "description": "Гибкие поножи следопытов, исследовавших шахты задолго до нынешних искателей приключений.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 48,
       "iconId": "dungeon_mines_archer_legs_rare",
@@ -276,9 +255,6 @@
       },
       "description": "Тонкие перчатки с усиленной ладонью и пальцами, удобные для стрельбы в тесных тоннелях.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "armorCategory": "LEATHER",
       "armorFlat": 38.5,
       "iconId": "dungeon_mines_archer_gloves_epic",
@@ -312,9 +288,6 @@
       },
       "description": "Лук из тёмного шахтного дерева и редкой металлической жилы; на плечах мерцают точки, похожие на звёзды.",
       "version": 1,
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "weaponCategory": "BOW",
       "weaponDamageMin": 46,
       "weaponDamageMax": 65,

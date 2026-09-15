@@ -859,30 +859,6 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
-    public void ValidateRejectsUnknownItemClassRestriction()
-    {
-        GameContentPackage package = CreatePackage() with
-        {
-            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
-            Items =
-            [
-                new ItemDefinition(
-                    "TEST_SWORD", "Test Sword", ItemType.Equipment, ItemRarity.Common,
-                    1, false, 1, EquipmentSlot.Weapon,
-                    new PrimaryStats(1, 0, 0, 0), "Test",
-                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
-                    AllowedClassIds: ["MISSING_CLASS"])
-            ],
-            LootTables = []
-        };
-
-        IReadOnlyList<ContentValidationError> errors =
-            GameContentPackageValidator.Validate(package);
-
-        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_CLASS_RESTRICTION");
-    }
-
-    [Fact]
     public void ValidateRejectsMerchantWithMissingLocationAndItem()
     {
         GameContentPackage package = CreatePackage() with

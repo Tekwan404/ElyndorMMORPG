@@ -166,7 +166,6 @@ function setItemType(event: Event): void {
     next.slot = null
     next.weaponCategory = null
     next.armorCategory = null
-    next.allowedClassIds = []
     next.setId = null
     next.weaponBaseAttackIntervalSeconds = null
     next.attackSpeedPercent = 0
@@ -387,20 +386,6 @@ function isRecord(value: unknown): value is JsonRecord {
       <label><span>Agility</span><input type="number" :value="numberValue(['stats', 'agility'])" @input="setNumber(['stats', 'agility'], $event)" /></label>
       <label><span>Intellect</span><input type="number" :value="numberValue(['stats', 'intellect'])" @input="setNumber(['stats', 'intellect'], $event)" /></label>
       <label><span>Stamina</span><input type="number" :value="numberValue(['stats', 'stamina'])" @input="setNumber(['stats', 'stamina'], $event)" /></label>
-    </fieldset>
-
-    <fieldset v-if="text(['type']) === 'Equipment'">
-      <legend>Class restrictions</legend>
-      <label v-for="id in classIds" :key="id" class="check">
-        <input
-          data-testid="item-class-restriction"
-          type="checkbox"
-          :checked="stringArray(['allowedClassIds']).includes(id)"
-          @change="toggleString(['allowedClassIds'], id)"
-        />
-        <span>{{ id }}</span>
-      </label>
-      <p class="wide relation-hint">Пустой список = предмет не ограничен конкретным классом.</p>
     </fieldset>
 
     <fieldset>

@@ -261,7 +261,6 @@ function setItemType(event: Event): void {
     next.slot = null
     next.weaponCategory = null
     next.armorCategory = null
-    next.allowedClassIds = []
     next.setId = null
     next.weaponBaseAttackIntervalSeconds = null
     next.attackSpeedPercent = 0
@@ -577,20 +576,6 @@ function isRecord(value: unknown): value is JsonRecord {
         <button type="button" :disabled="!newItemModifierKey" @click="addItemModifier">+ Add modifier</button>
       </div>
       <p class="wide relation-hint">Нулевые модификаторы скрываются. Все значения проходят через authoritative equipment stat pipeline.</p>
-    </fieldset>
-
-    <fieldset v-if="text(['type']) === 'Equipment'">
-      <legend>Class restrictions</legend>
-      <label v-for="id in classIds" :key="id" class="check">
-        <input
-          data-testid="item-class-restriction"
-          type="checkbox"
-          :checked="stringArray(['allowedClassIds']).includes(id)"
-          @change="toggleString(['allowedClassIds'], id)"
-        />
-        <span>{{ id }}</span>
-      </label>
-      <p class="wide relation-hint">Пустой список = предмет не ограничен конкретным классом.</p>
     </fieldset>
 
     <fieldset v-if="text(['type']) === 'Consumable'" data-testid="consumable-editor">

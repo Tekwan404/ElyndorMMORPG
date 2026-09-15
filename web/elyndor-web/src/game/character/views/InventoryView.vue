@@ -118,10 +118,6 @@ function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
 function equipmentCompatibilityReason(item: InventoryItem): string | null {
   const current = character.value
   if (!current || item.type !== 'Equipment') return null
-  if (item.allowedClassIds.length > 0 && !item.allowedClassIds.includes(current.classId)) {
-    return 'Этот предмет предназначен для другого класса.'
-  }
-
   if (current.classId === 'WARRIOR') {
     if (item.armorCategory && item.armorCategory !== 'HEAVY') return 'Воин может носить только тяжёлую броню.'
     if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) {

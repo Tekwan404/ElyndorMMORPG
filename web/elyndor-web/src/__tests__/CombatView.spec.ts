@@ -370,10 +370,10 @@ function consumable(definitionId: string): InventoryItem {
       armorPenetration: 0, magicPenetration: 0, attackSpeed: 0, maxResource: 0,
     },
     description: 'Restores health.', setId: null, weaponCategory: null, armorCategory: null,
-    allowedClassIds: [], weaponBaseAttackIntervalSeconds: null, attackSpeedPercent: 0, dodgePercent: 0,
     consumableActions: [{ type: 'RestoreHp', amount: 50, resourceType: null, effectId: null, dispelCategory: null }],
     consumableCooldownCategoryId: 'POTION', consumableCooldownSeconds: 30, buyPriceGold: 1, sellPriceGold: 1,
     isLocked: false, iconId: null, appearanceProfileId: null,
+    weaponBaseAttackIntervalSeconds: null, attackSpeedPercent: 0, dodgePercent: 0,
   }
 }
 

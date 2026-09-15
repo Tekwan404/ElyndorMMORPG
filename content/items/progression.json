@@ -413,10 +413,6 @@
       "maxStack": 1,
       "slot": "MainHand",
       "weaponCategory": "ONE_HAND_SWORD",
-      "allowedClassIds": [
-        "WARRIOR",
-        "PALADIN"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -450,9 +446,6 @@
       "maxStack": 1,
       "slot": "OffHand",
       "offHandCategory": "SHIELD",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -487,9 +480,6 @@
       "maxStack": 1,
       "slot": "Chest",
       "armorCategory": "HEAVY",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -521,9 +511,6 @@
       "maxStack": 1,
       "slot": "MainHand",
       "weaponCategory": "BOW",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -556,9 +543,6 @@
       "maxStack": 1,
       "slot": "Chest",
       "armorCategory": "LEATHER",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -589,9 +573,6 @@
       "maxStack": 1,
       "slot": "MainHand",
       "weaponCategory": "STAFF",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -624,9 +605,6 @@
       "maxStack": 1,
       "slot": "MainHand",
       "weaponCategory": "WAND",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,
@@ -659,9 +637,6 @@
       "maxStack": 1,
       "slot": "Chest",
       "armorCategory": "CLOTH",
-      "allowedClassIds": [
-        "MAGE"
-      ],
       "stats": {
         "strength": 0,
         "agility": 0,

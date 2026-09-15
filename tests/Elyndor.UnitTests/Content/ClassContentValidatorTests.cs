@@ -28,7 +28,7 @@ public sealed class ClassContentValidatorTests
     }
 
     [Fact]
-    public void ValidateRejectsClassBasedAbilityGrants()
+    public void ValidateRejectsUnknownClassAbilityGrants()
     {
         ClassProfile warrior = CreateProfile(
             "WARRIOR",
@@ -44,7 +44,7 @@ public sealed class ClassContentValidatorTests
         IReadOnlyList<ContentValidationError> errors =
             GameContentPackageValidator.Validate(CreatePackage(warrior));
 
-        Assert.Contains(errors, error => error.Code == "CLASS_ABILITY_GRANT_FORBIDDEN");
+        Assert.Contains(errors, error => error.Code == "INVALID_CLASS_ABILITY_GRANT");
     }
 
     private static GameContentPackage CreatePackage(ClassProfile warrior) =>

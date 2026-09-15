@@ -45,9 +45,6 @@ public static partial class GameContentPackageValidator
                 .Select(set => set.Id)
                 .ToHashSet(StringComparer.Ordinal);
             Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
-            HashSet<string> itemClassIds = (package.ClassProfiles ?? [])
-                .Select(profile => profile.Id)
-                .ToHashSet(StringComparer.Ordinal);
             HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
@@ -65,20 +62,11 @@ public static partial class GameContentPackageValidator
                     errors.Add(new("DUPLICATE_ITEM_ID", path, $"Item '{item.Id}' is duplicated."));
                 }
 
-                IReadOnlyList<string> allowedClassIds = item.AllowedClassIds ?? [];
-                if (allowedClassIds.Count != allowedClassIds.Distinct(StringComparer.Ordinal).Count()
-                    || allowedClassIds.Any(classId => !itemClassIds.Contains(classId)))
-                {
-                    errors.Add(new("INVALID_ITEM_CLASS_RESTRICTION", path,
-                        $"Item '{item.Id}' contains an invalid or unknown class restriction."));
-                }
-
                 bool invalidEquipmentCategory = item.Type == ItemType.Equipment
                     ? !HasValidEquipmentCategoryShape(item)
                     : item.WeaponCategory is not null
                         || item.ArmorCategory is not null
-                        || item.OffHandCategory is not null
-                        || allowedClassIds.Count > 0;
+                        || item.OffHandCategory is not null;
                 if (invalidEquipmentCategory)
                 {
                     errors.Add(new("INVALID_ITEM_EQUIPMENT_CATEGORY", path,
@@ -282,7 +270,6 @@ public static partial class GameContentPackageValidator
             || item.WeaponBaseAttackIntervalSeconds is not null
             || item.AttackSpeedPercent != 0
             || item.DodgePercent != 0
-            || item.AllowedClassIds is { Count: > 0 }
             || item.MaxHpFlat != 0
             || item.AttackPowerFlat != 0
             || item.SpellPowerFlat != 0
