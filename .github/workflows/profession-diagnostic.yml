@@ -1,0 +1,61 @@
+name: profession-diagnostic
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-test-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_DB: elyndor_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elyndor_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore backend
+        run: dotnet restore Elyndor.slnx
+
+      - name: Build backend
+        run: dotnet build Elyndor.slnx --configuration Release --no-restore
+
+      - name: Test backend and capture TRX
+        shell: bash
+        run: |
+          set +e
+          mkdir -p .artifacts/test-results
+          dotnet test Elyndor.slnx --configuration Release --no-build \
+            --logger "trx;LogFileName=profession-diagnostic.trx" \
+            --results-directory .artifacts/test-results
+          status=$?
+          echo "$status" > .artifacts/test-results/exit-code.txt
+          exit 0
+
+      - name: Upload backend test diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: profession-backend-test-diagnostics
+          path: .artifacts/test-results
+          if-no-files-found: error
