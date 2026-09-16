@@ -5,9 +5,7 @@ public static class TelegramAdminCommandParser
     public static AdminCommandParseResult Parse(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
-        {
             return AdminCommandParseResult.Failure("admin_command_empty");
-        }
 
         string input = text.Trim();
         int separator = input.IndexOf(' ');
@@ -15,31 +13,28 @@ public static class TelegramAdminCommandParser
         string arguments = separator < 0 ? string.Empty : input[(separator + 1)..].Trim();
 
         if (name.Contains('@'))
-        {
             name = name[..name.IndexOf('@')];
-        }
-
-        // Private admin chat accepts both Telegram-style slash commands and ordinary
-        // text commands: "/level 123 10" and "level 123 10" are equivalent.
         if (name.StartsWith('/'))
-        {
             name = name[1..];
-        }
 
-        if (name == "help" && arguments.Length == 0)
+        if (arguments.Length == 0)
         {
-            return AdminCommandParseResult.Success(new(AdminCommandType.Help));
+            return name switch
+            {
+                "help" => AdminCommandParseResult.Success(new(AdminCommandType.Help)),
+                "status" => AdminCommandParseResult.Success(new(AdminCommandType.Status)),
+                "health" => AdminCommandParseResult.Success(new(AdminCommandType.Health)),
+                "resources" or "resource" => AdminCommandParseResult.Success(new(AdminCommandType.Resources)),
+                "errors" => AdminCommandParseResult.Success(new(AdminCommandType.Errors)),
+                _ => AdminCommandParseResult.Failure("admin_command_unknown")
+            };
         }
 
         if (name is "promocode" or "promo")
-        {
             return ParsePromoCode(arguments);
-        }
 
         if (!TryTakeTarget(arguments, out long targetId, out string remainder))
-        {
             return AdminCommandParseResult.Failure("admin_target_invalid");
-        }
 
         return name switch
         {
@@ -49,12 +44,9 @@ public static class TelegramAdminCommandParser
             "location" => ParseSingleValue(AdminCommandType.SetLocation, targetId, remainder),
             "class" => ParseSingleValue(AdminCommandType.SetClass, targetId, remainder),
             "race" => ParseSingleValue(AdminCommandType.SetRace, targetId, remainder),
-            "rename" when remainder.Length > 0 =>
-                AdminCommandParseResult.Success(new(AdminCommandType.Rename, targetId, remainder)),
-            "msg" when remainder is { Length: > 0 and <= 4096 } =>
-                AdminCommandParseResult.Success(new(AdminCommandType.Message, targetId, remainder)),
-            "giveitem" when remainder.Length > 0 =>
-                AdminCommandParseResult.Success(new(AdminCommandType.GiveItem, targetId, remainder)),
+            "rename" when remainder.Length > 0 => AdminCommandParseResult.Success(new(AdminCommandType.Rename, targetId, remainder)),
+            "msg" when remainder is { Length: > 0 and <= 4096 } => AdminCommandParseResult.Success(new(AdminCommandType.Message, targetId, remainder)),
+            "giveitem" when remainder.Length > 0 => AdminCommandParseResult.Success(new(AdminCommandType.GiveItem, targetId, remainder)),
             "delete" => ParseDelete(targetId, remainder),
             _ => AdminCommandParseResult.Failure("admin_command_unknown")
         };
@@ -64,10 +56,7 @@ public static class TelegramAdminCommandParser
     {
         const string prefix = "create ";
         if (!arguments.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
             return AdminCommandParseResult.Failure("admin_promo_command_invalid");
-        }
-
         string spec = arguments[prefix.Length..].Trim();
         return spec.Length > 0
             ? AdminCommandParseResult.Success(new(AdminCommandType.CreatePromoCode, Value: spec))
@@ -79,10 +68,7 @@ public static class TelegramAdminCommandParser
             ? AdminCommandParseResult.Success(new(AdminCommandType.SetLevel, targetId, NumericValue: level))
             : AdminCommandParseResult.Failure("admin_level_invalid");
 
-    private static AdminCommandParseResult ParseSingleValue(
-        AdminCommandType type,
-        long targetId,
-        string value) =>
+    private static AdminCommandParseResult ParseSingleValue(AdminCommandType type, long targetId, string value) =>
         value.Length > 0 && !value.Contains(' ')
             ? AdminCommandParseResult.Success(new(type, targetId, value.ToUpperInvariant()))
             : AdminCommandParseResult.Failure("admin_value_invalid");
@@ -90,14 +76,9 @@ public static class TelegramAdminCommandParser
     private static AdminCommandParseResult ParseDelete(long targetId, string value)
     {
         const string confirmation = " CONFIRM";
-        if (!value.EndsWith(confirmation, StringComparison.Ordinal)
-            || value.Length == confirmation.Length)
-        {
+        if (!value.EndsWith(confirmation, StringComparison.Ordinal) || value.Length == confirmation.Length)
             return AdminCommandParseResult.Failure("admin_delete_confirmation_required");
-        }
-
-        return AdminCommandParseResult.Success(
-            new(AdminCommandType.Delete, targetId, value[..^confirmation.Length].TrimEnd()));
+        return AdminCommandParseResult.Success(new(AdminCommandType.Delete, targetId, value[..^confirmation.Length].TrimEnd()));
     }
 
     private static AdminCommandParseResult Success(AdminCommandType type, long targetId) =>
