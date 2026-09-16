@@ -70,6 +70,7 @@ public sealed class MorEtSoulEncounterRuntime
     public int RemainingWaves => _pendingWaves.Count;
     public bool HasActiveWave => _activeSouls.Count > 0;
     public bool IsComplete => _pendingWaves.Count == 0 && _activeSouls.Count == 0;
+    public IReadOnlyCollection<Guid> ActiveSoulActorIds => _activeSouls.Keys;
     public TimeSpan SoulLifetime => _definition.SoulLifetime;
     public decimal FailureHealMaxHpRatio => _definition.FailureHealMaxHpRatio;
     public decimal FailureDamageBonusPercent => _definition.FailureDamageBonusPercent;
