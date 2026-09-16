@@ -69,6 +69,7 @@ public sealed class MorEtRetargetTests
             WarriorId,
             new UseAbilityCommand("wave", "HIT_350", BossId),
             Now);
+        Assert.Equal(WarriorId, wave.Snapshot.Player.ActorId);
         CombatActorSnapshot[] souls = wave.Snapshot.Enemies!
             .Where(enemy => enemy.DefinitionId.StartsWith("MOR_ET_SOUL_", StringComparison.Ordinal))
             .ToArray();
