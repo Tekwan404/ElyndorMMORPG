@@ -119,6 +119,14 @@ public sealed partial class CombatSession
         decimal shieldMagnitude,
         DateTimeOffset now)
     {
+        if (_velariusEncounterRuntime is null)
+            return;
+
+        decimal minimumFinalPhaseHp =
+            boss.MaxHp * _velariusEncounterRuntime.FinalBarrierTriggerHpPercent;
+        if (boss.CurrentHp < minimumFinalPhaseHp)
+            boss.SetCurrentHp(minimumFinalPhaseHp);
+
         decimal remainingMana = boss.CurrentResource;
         if (remainingMana > 0)
         {
