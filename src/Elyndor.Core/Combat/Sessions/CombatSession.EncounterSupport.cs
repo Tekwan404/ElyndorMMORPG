@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Monsters;
 
