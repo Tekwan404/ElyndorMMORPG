@@ -81,6 +81,10 @@ public sealed partial class CombatSession
                 EndAzraelSplit(combatEvent.OccurredAtUtc);
                 return;
             }
+
+            RetargetPlayersToLivingAzraelClone(
+                combatEvent.ActorId,
+                combatEvent.OccurredAtUtc);
             if (death.WindowStarted)
                 StartAzraelReviveWindow(combatEvent.OccurredAtUtc);
             return;
@@ -159,6 +163,32 @@ public sealed partial class CombatSession
                 bossActorId,
                 now);
             _azraelEncounterRuntime.RegisterClone(clone.Actor.ActorId, role);
+        }
+    }
+
+    private void RetargetPlayersToLivingAzraelClone(Guid killedCloneActorId, DateTimeOffset now)
+    {
+        if (_azraelEncounterRuntime is null)
+            return;
+
+        CombatParticipantDefinition? nextClone = _azraelEncounterRuntime.Clones.Keys
+            .Where(actorId => actorId != killedCloneActorId)
+            .Select(actorId => _enemiesById.GetValueOrDefault(actorId))
+            .FirstOrDefault(enemy => enemy is not null && !enemy.Actor.IsDead);
+        if (nextClone is null)
+            return;
+
+        foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values
+                     .Where(state => state.SelectedTargetActorId == killedCloneActorId))
+        {
+            state.SelectedTargetActorId = nextClone.Actor.ActorId;
+            Append(new CombatEvent(
+                CombatEventType.TargetChanged,
+                now,
+                state.Definition.Actor.ActorId,
+                nextClone.DefinitionId,
+                SourceActorId: state.Definition.Actor.ActorId,
+                TargetActorId: nextClone.Actor.ActorId));
         }
     }
 
