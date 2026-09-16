@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test'
 
 test.use({ viewport: { width: 1024, height: 1366 } })
 
-test('requests Telegram fullscreen and uses the iPad canvas without horizontal overflow', async ({ page }) => {
+test('uses the iPad canvas without forcing immersive Telegram fullscreen', async ({ page }) => {
   await page.route('https://telegram.org/js/telegram-web-app.js?63', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
-        window.__elyndorFullscreenRequests = 0;
+        window.__elyndorExpandCalls = 0;
         window.Telegram = {
           WebApp: {
             initData: '',
@@ -16,8 +16,7 @@ test('requests Telegram fullscreen and uses the iPad canvas without horizontal o
             safeAreaInset: { top: 20, right: 0, bottom: 20, left: 0 },
             contentSafeAreaInset: { top: 54, right: 0, bottom: 28, left: 0 },
             ready() {},
-            expand() {},
-            requestFullscreen() { window.__elyndorFullscreenRequests += 1; },
+            expand() { window.__elyndorExpandCalls += 1; },
             onEvent() {},
             offEvent() {},
           },
@@ -31,14 +30,15 @@ test('requests Telegram fullscreen and uses the iPad canvas without horizontal o
   await expect(shell).toBeVisible()
 
   await expect.poll(() => page.evaluate(() => (window as typeof window & {
-    __elyndorFullscreenRequests?: number
-  }).__elyndorFullscreenRequests ?? 0)).toBe(1)
+    __elyndorExpandCalls?: number
+  }).__elyndorExpandCalls ?? 0)).toBe(1)
 
   expect(
     await page.evaluate(() =>
       document.documentElement.style.getPropertyValue('--elyndor-tg-content-safe-area-top'),
     ),
   ).toBe('54px')
+  expect(await page.evaluate(() => document.documentElement.dataset.telegramFullscreen)).toBe('false')
 
   const tabletBox = await shell.boundingBox()
   expect(tabletBox).not.toBeNull()
