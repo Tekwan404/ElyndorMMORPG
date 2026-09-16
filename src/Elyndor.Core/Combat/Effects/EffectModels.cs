@@ -34,6 +34,7 @@ public enum EffectStat
     Accuracy,
     Dodge,
     HealingReceivedMultiplier,
+    OutgoingHealingMultiplier,
     Armor,
     MagicResistance,
     IncomingDamageMultiplier,
