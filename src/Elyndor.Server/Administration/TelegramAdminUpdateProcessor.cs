@@ -185,7 +185,8 @@ public sealed class TelegramAdminUpdateProcessor(
 
     private static bool IsAuthorizedChat(TelegramMessage message, TelegramAdminOptions options) =>
         options.IsAllowedChat(message.Chat.Id)
-        || (options.ChatId == 0 && string.Equals(message.Chat.Type, "private", StringComparison.Ordinal) && message.Chat.Id == message.From!.Id);
+        || (string.Equals(message.Chat.Type, "private", StringComparison.OrdinalIgnoreCase)
+            && message.Chat.Id == message.From!.Id);
 
     private static AdministrationOperationType Map(AdminCommandType type) => type switch
     {
