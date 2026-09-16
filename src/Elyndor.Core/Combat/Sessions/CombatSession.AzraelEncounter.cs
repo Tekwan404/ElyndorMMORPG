@@ -111,9 +111,14 @@ public sealed partial class CombatSession
 
         if (combatEvent.Type != CombatEventType.DamageDealt
             || combatEvent.TargetActorId != bossActorId
-            || combatEvent.IsPeriodic
             || _azraelEncounterRuntime.SplitTriggered)
         {
+            return;
+        }
+
+        if (combatEvent.IsPeriodic)
+        {
+            EnsureAzraelPhaseGuard(combatEvent.OccurredAtUtc);
             return;
         }
 
@@ -346,6 +351,12 @@ public sealed partial class CombatSession
         if (_azraelBossActorId is not { } bossActorId)
             return;
         CombatActorState boss = _enemiesById[bossActorId].Actor;
+        if (boss.ActiveEffects.Any(effect =>
+                string.Equals(effect.Definition.Id, AzraelPhaseGuardEffectId, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
         ApplyKernelEvents(
             EffectEngine.Apply(
                 boss,
