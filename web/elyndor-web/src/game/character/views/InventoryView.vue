@@ -97,15 +97,15 @@ const comparisonStats: readonly {
   { label: 'Ловкость', value: item => item.stats.agility },
   { label: 'Интеллект', value: item => item.stats.intellect },
   { label: 'Выносливость', value: item => item.stats.stamina },
-  { label: 'Макс. здоровье', value: item => item.stats.maxHp },
+  { label: 'Максимум здоровья', value: item => item.stats.maxHp },
   { label: 'Сила атаки', value: item => item.stats.attackPower },
   { label: 'Сила заклинаний', value: item => item.stats.spellPower },
-  { label: 'Крит. шанс', value: item => item.stats.criticalChance },
+  { label: 'Шанс критического удара', value: item => item.stats.criticalChance },
   { label: 'Броня', value: item => item.stats.armor },
   { label: 'Сопротивление магии', value: item => item.stats.magicResistance },
   { label: 'Уклонение', value: item => item.stats.dodge + item.dodgePercent },
   { label: 'Скорость атаки', value: item => item.stats.attackSpeed + item.attackSpeedPercent },
-  { label: 'Макс. ресурс', value: item => item.stats.maxResource },
+  { label: 'Максимум ресурса', value: item => item.stats.maxResource },
 ]
 
 function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
@@ -257,7 +257,6 @@ function openItem(item: InventoryItem | null): void {
   equipmentActionError.value = null
   if (item) markItemSeen(item.id)
 }
-
 function seenStorageKey(): string | null {
   const characterId = character.value?.id
   return characterId ? `elyndor.inventory.seen.${characterId}` : null
@@ -322,11 +321,11 @@ function statRows(item: InventoryItem): string[] {
     item.stats.agility ? `Ловкость +${item.stats.agility}` : '',
     item.stats.intellect ? `Интеллект +${item.stats.intellect}` : '',
     item.stats.stamina ? `Выносливость +${item.stats.stamina}` : '',
-    item.stats.maxHp ? `Макс. здоровье +${item.stats.maxHp}` : '',
+    item.stats.maxHp ? `Максимум здоровья +${item.stats.maxHp}` : '',
     item.stats.attackPower ? `Сила атаки +${item.stats.attackPower}` : '',
     item.stats.spellPower ? `Сила заклинаний +${item.stats.spellPower}` : '',
-    item.stats.criticalChance ? `Крит. шанс +${item.stats.criticalChance}%` : '',
-    item.stats.criticalDamage ? `Крит. урон +${item.stats.criticalDamage}%` : '',
+    item.stats.criticalChance ? `Шанс критического удара +${item.stats.criticalChance}%` : '',
+    item.stats.criticalDamage ? `Критический урон +${item.stats.criticalDamage}%` : '',
     item.stats.accuracy ? `Точность +${item.stats.accuracy}%` : '',
     item.stats.attackSpeed ? `Скорость атаки +${item.stats.attackSpeed}%` : '',
     item.stats.armor ? `Броня +${item.stats.armor}` : '',
@@ -334,7 +333,7 @@ function statRows(item: InventoryItem): string[] {
     item.stats.dodge ? `Уклонение +${item.stats.dodge}%` : '',
     item.stats.armorPenetration ? `Пробивание брони +${item.stats.armorPenetration}%` : '',
     item.stats.magicPenetration ? `Пробивание магии +${item.stats.magicPenetration}%` : '',
-    item.stats.maxResource ? `Макс. ресурс +${item.stats.maxResource}` : '',
+    item.stats.maxResource ? `Максимум ресурса +${item.stats.maxResource}` : '',
   ].filter(Boolean)
 }
 
@@ -352,7 +351,7 @@ function typeLabel(item: InventoryItem): string {
   if (item.type === 'Consumable') return 'Расходник'
   const labels: Record<string, string> = {
     MainHand: 'Основная рука', OffHand: 'Вторая рука', Weapon: 'Оружие',
-    Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Штаны',
+    Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Поножи',
     Feet: 'Обувь', Boots: 'Ботинки', Cloak: 'Плащ', Amulet: 'Амулет',
     Ring1: 'Кольцо', Ring2: 'Кольцо', Accessory: 'Аксессуар',
   }
@@ -399,7 +398,7 @@ function inventoryActionError(code: string | null): string | null {
   if (code === 'inventory_required_level') return 'Недостаточный уровень для этого предмета.'
   if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
   if (code === 'inventory_two_handed_conflict') return 'Двуручное оружие конфликтует со второй рукой.'
-  if (code === 'inventory_dual_wield_permission_required') return 'Второе одноручное оружие требует таланта «Двойной Удар» в активном билде Берсерка.'
+  if (code === 'inventory_dual_wield_permission_required') return 'Второе одноручное оружие требует таланта «Двойной удар» в активной ветке Берсерка.'
   return 'Не удалось изменить снаряжение.'
 }
 
@@ -629,7 +628,7 @@ async function toggleSelectedLock(): Promise<void> {
           <div data-item-level>
             <small>УРОВЕНЬ ПРЕДМЕТА</small>
             <strong>{{ resolvedItemLevel(selectedItem) ?? '—' }}</strong>
-            <span>ilvl</span>
+            <span>сила снаряжения</span>
           </div>
           <div data-required-level>
             <small>ТРЕБУЕМЫЙ УРОВЕНЬ</small>
@@ -639,18 +638,18 @@ async function toggleSelectedLock(): Promise<void> {
         </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
-          Случайные характеристики: эти значения выпали именно этому экземпляру при получении.
+          Характеристики этого экземпляра определились при получении предмета.
         </p>
         <section v-if="selectedItem.generatedItem" class="item-quality-summary" aria-label="Качество предмета">
           <div>
             <small>МОЩЬ ПРЕДМЕТА</small>
-            <strong>Мощь предмета: {{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong>
+            <strong>{{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong>
           </div>
           <div>
             <small>КАЧЕСТВО</small>
-            <strong>Качество: {{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong>
+            <strong>{{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong>
           </div>
-          <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect">ИДЕАЛЬНЫЙ РОЛЛ</span>
+          <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect">ИДЕАЛЬНОЕ КАЧЕСТВО</span>
         </section>
         <dl v-if="statRows(selectedItem).length">
           <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
