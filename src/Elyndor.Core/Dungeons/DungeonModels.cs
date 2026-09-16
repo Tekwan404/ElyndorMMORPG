@@ -2,6 +2,22 @@ using Elyndor.Core.Content;
 
 namespace Elyndor.Core.Dungeons;
 
+public static class DungeonEncounterMechanicIds
+{
+    public const string MirrorBarrier = "MIRROR_BARRIER";
+}
+
+public static class DungeonEncounterAddRoles
+{
+    public const string Guardian = "GUARDIAN";
+    public const string Priest = "PRIEST";
+    public const string Executioner = "EXECUTIONER";
+}
+
+public sealed record DungeonEncounterAddDefinition(
+    string Role,
+    string MonsterId);
+
 public sealed record DungeonDefinition(
     string Id,
     string DisplayName,
@@ -17,7 +33,9 @@ public sealed record DungeonEncounterDefinition(
     string Id,
     string MonsterId,
     string CheckpointId,
-    bool IsBoss = false);
+    bool IsBoss = false,
+    string? MechanicId = null,
+    IReadOnlyList<DungeonEncounterAddDefinition>? Adds = null);
 
 public enum DungeonRunState
 {

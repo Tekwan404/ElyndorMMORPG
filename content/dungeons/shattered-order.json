@@ -1,0 +1,31 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-16T00:00:00+00:00",
+  "dungeons": [
+    {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "displayName": "Цитадель Расколотого Ордена · тест",
+      "description": "Изолированное тестовое подземелье для проверки новых босс-механик. Награды, лут, золото и опыт намеренно отключены.",
+      "minimumLevel": 25,
+      "maximumLevel": 25,
+      "entryLocationId": "ECLIPSED_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_MIRROR_CASTELLAN",
+          "monsterId": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
+          "checkpointId": "MIRROR_HALL",
+          "isBoss": true,
+          "mechanicId": "MIRROR_BARRIER",
+          "adds": [
+            { "role": "GUARDIAN", "monsterId": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25" },
+            { "role": "PRIEST", "monsterId": "SHATTERED_ORDER_MIRROR_PRIEST_L25" },
+            { "role": "EXECUTIONER", "monsterId": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25" }
+          ]
+        }
+      ]
+    }
+  ]
+}

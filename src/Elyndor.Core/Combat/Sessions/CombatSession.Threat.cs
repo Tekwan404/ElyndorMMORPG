@@ -21,6 +21,8 @@ public sealed partial class CombatSession
 
     private void RegisterThreat(CombatEvent combatEvent)
     {
+        ProcessMirrorEncounterEvent(combatEvent);
+        ProcessEnemyInterruptUtilityEvent(combatEvent);
         ProcessPaladinKernelEvent(combatEvent);
 
         if (combatEvent.SourceActorId is not { } sourceActorId

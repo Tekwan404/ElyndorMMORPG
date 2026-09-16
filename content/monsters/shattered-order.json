@@ -1,0 +1,121 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-16T00:00:00+00:00",
+  "monsterAiProfiles": [
+    {
+      "id": "SHATTERED_ORDER_CASTELLAN_AI",
+      "priorityAbilityIds": [],
+      "version": 1
+    },
+    {
+      "id": "SHATTERED_ORDER_GUARDIAN_AI",
+      "priorityAbilityIds": [],
+      "version": 1
+    },
+    {
+      "id": "SHATTERED_ORDER_PRIEST_AI",
+      "priorityAbilityIds": ["MIRROR_PRIEST_HEAL"],
+      "version": 1
+    },
+    {
+      "id": "SHATTERED_ORDER_EXECUTIONER_AI",
+      "priorityAbilityIds": ["MIRROR_EXECUTIONER_PRESSURE"],
+      "version": 1
+    }
+  ],
+  "monsters": [
+    {
+      "id": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
+      "name": "Зеркальный Кастелан",
+      "rank": "Boss",
+      "level": 25,
+      "maxHp": 18000,
+      "stats": { "level": 25, "accuracy": 100, "dodge": 5, "criticalChance": 8, "criticalDamage": 1, "armor": 170, "magicResistance": 150, "armorPenetration": 0.02, "magicPenetration": 0.02, "attackPower": 185, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.3000000",
+      "autoAttackBaseDamage": 112,
+      "autoAttackAttackPowerCoefficient": 0.55,
+      "abilityIds": [],
+      "aiProfileId": "SHATTERED_ORDER_CASTELLAN_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Зеркальный Кастелан",
+      "description": "Тестовый босс Расколотого Ордена. На 70% и 35% здоровья поднимает отражающий барьер и призывает связанную тройку аддов.",
+      "artId": "bandit-rogue",
+      "autoAttackBaseDamageMin": 100,
+      "autoAttackBaseDamageMax": 124
+    },
+    {
+      "id": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25",
+      "name": "Страж Зеркала",
+      "rank": "Elite",
+      "level": 25,
+      "maxHp": 3600,
+      "stats": { "level": 25, "accuracy": 100, "dodge": 2, "criticalChance": 5, "criticalDamage": 1, "armor": 205, "magicResistance": 115, "armorPenetration": 0, "magicPenetration": 0, "attackPower": 135, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.7000000",
+      "autoAttackBaseDamage": 82,
+      "autoAttackAttackPowerCoefficient": 0.50,
+      "abilityIds": [],
+      "aiProfileId": "SHATTERED_ORDER_GUARDIAN_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Страж Зеркала",
+      "description": "Пока жив, усиливает отражение Зеркального Кастеляна с 50% до 70%.",
+      "artId": "corrupted-boar",
+      "autoAttackBaseDamageMin": 73,
+      "autoAttackBaseDamageMax": 91
+    },
+    {
+      "id": "SHATTERED_ORDER_MIRROR_PRIEST_L25",
+      "name": "Жрец Зеркала",
+      "rank": "Elite",
+      "level": 25,
+      "maxHp": 2800,
+      "stats": { "level": 25, "accuracy": 100, "dodge": 5, "criticalChance": 5, "criticalDamage": 1, "armor": 105, "magicResistance": 170, "armorPenetration": 0, "magicPenetration": 0, "attackPower": 90, "spellPower": 150 },
+      "autoAttackInterval": "00:00:02.4000000",
+      "autoAttackBaseDamage": 66,
+      "autoAttackAttackPowerCoefficient": 0.35,
+      "abilityIds": ["MIRROR_PRIEST_HEAL"],
+      "aiProfileId": "SHATTERED_ORDER_PRIEST_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Жрец Зеркала",
+      "description": "Периодически начинает прерываемое восстановление, вынуждая группу использовать interrupt.",
+      "artId": "goblin-scout",
+      "autoAttackBaseDamageMin": 58,
+      "autoAttackBaseDamageMax": 74
+    },
+    {
+      "id": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25",
+      "name": "Палач Зеркала",
+      "rank": "Elite",
+      "level": 25,
+      "maxHp": 3200,
+      "stats": { "level": 25, "accuracy": 100, "dodge": 4, "criticalChance": 8, "criticalDamage": 1, "armor": 140, "magicResistance": 110, "armorPenetration": 0.01, "magicPenetration": 0, "attackPower": 150, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02",
+      "autoAttackBaseDamage": 88,
+      "autoAttackAttackPowerCoefficient": 0.52,
+      "abilityIds": ["MIRROR_EXECUTIONER_PRESSURE"],
+      "aiProfileId": "SHATTERED_ORDER_EXECUTIONER_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Палач Зеркала",
+      "description": "Каждый цикл наращивает давление на текущей цели и становится всё опаснее, если его игнорировать.",
+      "artId": "alpha-wolf",
+      "autoAttackBaseDamageMin": 78,
+      "autoAttackBaseDamageMax": 98
+    }
+  ]
+}
