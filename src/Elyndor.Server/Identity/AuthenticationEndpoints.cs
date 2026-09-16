@@ -212,6 +212,7 @@ public static class AuthenticationEndpoints
         TelegramWebAuthenticationRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Code)
+            || string.IsNullOrWhiteSpace(request.CodeVerifier)
             || request.Code.Length > 4096
             || request.CodeVerifier.Length is < 43 or > 128)
         {
