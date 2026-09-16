@@ -15,40 +15,21 @@ public sealed class TelegramServerErrorReporter(
     TimeProvider timeProvider,
     ILogger<TelegramServerErrorReporter> logger)
 {
-    private static readonly ConcurrentDictionary<string, DateTimeOffset> LastSentByFingerprint =
-        new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> LastSentByFingerprint = new(StringComparer.Ordinal);
     private static readonly TimeSpan DuplicateWindow = TimeSpan.FromMinutes(1);
-    private static readonly Action<ILogger, string, Exception?> CharacterLookupFailed =
-        LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(2301, nameof(CharacterLookupFailed)),
-            "Failed to resolve character while preparing Telegram server error alert for {TraceId}.");
-    private static readonly Action<ILogger, long, string, Exception?> AlertSendFailed =
-        LoggerMessage.Define<long, string>(
-            LogLevel.Warning,
-            new EventId(2302, nameof(AlertSendFailed)),
-            "Failed to send Telegram server error alert to administrator {TelegramUserId} for {TraceId}.");
+    private static readonly Action<ILogger, string, Exception?> CharacterLookupFailed = LoggerMessage.Define<string>(LogLevel.Warning, new EventId(2301, nameof(CharacterLookupFailed)), "Failed to resolve character while preparing Telegram server error alert for {TraceId}.");
+    private static readonly Action<ILogger, long, string, Exception?> AlertSendFailed = LoggerMessage.Define<long, string>(LogLevel.Warning, new EventId(2302, nameof(AlertSendFailed)), "Failed to send Telegram server error alert to administrator {TelegramUserId} for {TraceId}.");
 
-    public async Task ReportAsync(
-        HttpContext context,
-        Exception exception,
-        CancellationToken cancellationToken)
+    public async Task ReportAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
         TelegramAdminOptions options = configuredOptions.Value;
-        if (!options.Enabled || options.AllowedUserIds.Length == 0)
+        if (!options.Enabled || !options.IsConfigured)
             return;
 
-        string fingerprint = string.Join('|',
-            exception.GetType().FullName,
-            context.Request.Method,
-            context.Request.Path.Value ?? string.Empty,
-            ShortMessage(exception.Message, 160));
+        string fingerprint = string.Join('|', exception.GetType().FullName, context.Request.Method, context.Request.Path.Value ?? string.Empty, ShortMessage(exception.Message, 160));
         DateTimeOffset now = timeProvider.GetUtcNow();
-        if (LastSentByFingerprint.TryGetValue(fingerprint, out DateTimeOffset previous)
-            && now - previous < DuplicateWindow)
-        {
+        if (LastSentByFingerprint.TryGetValue(fingerprint, out DateTimeOffset previous) && now - previous < DuplicateWindow)
             return;
-        }
         LastSentByFingerprint[fingerprint] = now;
         PurgeOldFingerprints(now);
 
@@ -58,8 +39,7 @@ public sealed class TelegramServerErrorReporter(
         {
             try
             {
-                characterId = await dbContext.Characters
-                    .AsNoTracking()
+                characterId = await dbContext.Characters.AsNoTracking()
                     .Where(character => character.AccountId == accountId.Value)
                     .Select(character => (Guid?)character.Id)
                     .SingleOrDefaultAsync(cancellationToken);
@@ -71,25 +51,35 @@ public sealed class TelegramServerErrorReporter(
         }
 
         string text = BuildMessage(context, exception, now, accountId, characterId);
-        foreach (long chatId in options.AllowedUserIds.Distinct().Where(id => id > 0))
+        long targetChatId = options.ChatId;
+        if (targetChatId != 0)
         {
             try
             {
-                await messageSender.SendAsync(chatId, text, cancellationToken);
+                await messageSender.SendAsync(targetChatId, text, cancellationToken);
             }
             catch (Exception sendException)
             {
-                AlertSendFailed(logger, chatId, context.TraceIdentifier, sendException);
+                AlertSendFailed(logger, targetChatId, context.TraceIdentifier, sendException);
+            }
+        }
+        else
+        {
+            foreach (long userId in options.AllowedUserIds.Distinct().Where(id => id > 0))
+            {
+                try
+                {
+                    await messageSender.SendAsync(userId, text, cancellationToken);
+                }
+                catch (Exception sendException)
+                {
+                    AlertSendFailed(logger, userId, context.TraceIdentifier, sendException);
+                }
             }
         }
     }
 
-    private static string BuildMessage(
-        HttpContext context,
-        Exception exception,
-        DateTimeOffset now,
-        Guid? accountId,
-        Guid? characterId)
+    private static string BuildMessage(HttpContext context, Exception exception, DateTimeOffset now, Guid? accountId, Guid? characterId)
     {
         string account = accountId?.ToString("N") ?? "—";
         string character = characterId?.ToString("N") ?? "—";
@@ -103,19 +93,14 @@ public sealed class TelegramServerErrorReporter(
     }
 
     private static Guid? TryGetAccountId(ClaimsPrincipal user) =>
-        Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId)
-        && accountId != Guid.Empty
+        Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId) && accountId != Guid.Empty
             ? accountId
             : null;
 
     private static string ShortMessage(string? value, int maxLength)
     {
-        string normalized = string.IsNullOrWhiteSpace(value)
-            ? "No exception message"
-            : value.Replace('\r', ' ').Replace('\n', ' ').Trim();
-        return normalized.Length <= maxLength
-            ? normalized
-            : normalized[..maxLength] + "…";
+        string normalized = string.IsNullOrWhiteSpace(value) ? "No exception message" : value.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        return normalized.Length <= maxLength ? normalized : normalized[..maxLength] + "…";
     }
 
     private static void PurgeOldFingerprints(DateTimeOffset now)
