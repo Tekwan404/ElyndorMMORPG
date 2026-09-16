@@ -95,7 +95,7 @@ function talentVisualStyle(talent: TalentNode): Record<string, string> | undefin
 function visualRequirementLabel(row: number): string {
   if (!usesCustomVisualLayout.value) return `нужно ${(row - 1) * 5} очков`
   const requirements = [...new Set(talentsInVisualRow(row).map((talent) => talent.requiredSpentPoints))].sort((a, b) => a - b)
-  if (requirements.length === 0) return 'визуальный ряд'
+  if (requirements.length === 0) return ''
   if (requirements.length === 1) return `нужно ${requirements[0]} очков`
   return `нужно ${requirements[0]}–${requirements[requirements.length - 1]} очков`
 }
@@ -143,15 +143,11 @@ function stateFor(talent: TalentNode): TalentState {
 function stateLabel(talent: TalentNode): string {
   const state = stateFor(talent)
   if (state === 'level-locked') return `Требуется уровень ${talent.requiredLevel}`
-  if (state === 'runtime-unavailable') {
-    return talent.runtimeStatus === 'PARTIAL'
-      ? 'Талант временно недоступен: часть эффектов ещё не подключена.'
-      : 'Талант временно недоступен: игровой эффект ещё не подключён.'
-  }
+  if (state === 'runtime-unavailable') return 'Талант пока недоступен.'
   return {
-    locked: 'Закрыто: вложите больше очков в ветку',
-    available: 'Доступно для изучения',
-    learned: 'Изучено, можно улучшить',
+    locked: 'Вложите больше очков в эту ветку',
+    available: 'Можно изучить',
+    learned: 'Можно улучшить',
     maxed: 'Изучено полностью',
     prerequisite: 'Сначала изучите предыдущий талант',
     'no-points': 'Нет свободных очков талантов',
@@ -159,19 +155,19 @@ function stateLabel(talent: TalentNode): string {
 }
 
 function loadErrorLabel(code: string | null): string {
-  if (!code || code === 'talent_unavailable') return 'Дерево талантов сейчас недоступно.'
-  if (code === 'network_unavailable') return 'Нет соединения с сервером. Проверьте подключение и попробуйте снова.'
-  return `Не удалось загрузить дерево талантов. Код ошибки: ${code}`
+  if (!code || code === 'talent_unavailable') return 'Таланты сейчас недоступны.'
+  if (code === 'network_unavailable') return 'Нет связи с сервером. Попробуйте ещё раз.'
+  return 'Не удалось загрузить таланты. Попробуйте ещё раз.'
 }
 
 function mutationErrorLabel(code: string): string {
   return {
     talent_insufficient_points: 'Недостаточно очков талантов.',
-    talent_prerequisite_not_met: 'Сначала изучите требуемый предыдущий талант.',
+    talent_prerequisite_not_met: 'Сначала изучите предыдущий талант.',
     talent_tier_locked: 'Нужно вложить больше очков в эту ветку.',
-    talent_level_required: 'Уровень персонажа пока недостаточен.',
-    talent_state_conflict: 'Состояние талантов изменилось. Данные обновлены.',
-  }[code] ?? `Не удалось изменить таланты. Код ошибки: ${code}`
+    talent_level_required: 'Нужен более высокий уровень.',
+    talent_state_conflict: 'Таланты изменились. Данные обновлены.',
+  }[code] ?? 'Не удалось изменить таланты. Попробуйте ещё раз.'
 }
 
 function abilityLabel(abilityId: string): string {
@@ -185,11 +181,11 @@ function abilityLabel(abilityId: string): string {
     ARCANE_CASCADE: 'Арканный каскад', ARCANE_SEAL: 'Тайная печать',
     ICE_LANCE: 'Ледяное копьё', ICE_FRACTURE: 'Ледяной раскол',
     HEART_OF_WINTER: 'Сердце зимы', FROST_SEAL: 'Морозная печать',
-  }[abilityId] ?? abilityId.replace(/_/g, ' ')
+  }[abilityId] ?? 'Способность'
 }
 
 function talentName(talentId: string): string {
-  return talents.value.find((talent) => talent.id === talentId)?.name ?? talentId
+  return talents.value.find((talent) => talent.id === talentId)?.name ?? 'Неизвестный талант'
 }
 
 function glyphFor(talent: TalentNode): GlyphName {
@@ -321,13 +317,13 @@ onMounted(loadTalents)
 </script>
 
 <template>
-  <div v-if="loading" class="talent-status" role="status">Загружаем дерево талантов…</div>
+  <div v-if="loading" class="talent-status" role="status">Загружаем таланты…</div>
   <div v-else-if="loadErrorCode || !activeBranch" class="talent-status talent-status--error" role="alert">
     <p>{{ loadErrorLabel(loadErrorCode) }}</p><UIButton variant="ghost" @click="loadTalents">Повторить</UIButton>
   </div>
   <section v-else class="talents" data-talent-tree :data-tone="activeBranch.id.toLowerCase()">
     <header class="talents__topbar">
-      <div><p class="eyebrow">{{ classLabel }} · дерево развития</p><h1>Таланты</h1></div>
+      <div><p class="eyebrow">{{ classLabel }} · развитие</p><h1>Таланты</h1></div>
       <div class="points"><span>Свободно</span><strong>{{ availablePoints }}</strong></div>
     </header>
     <p v-if="mutationErrorCode" class="mutation-error" role="alert">{{ mutationErrorLabel(mutationErrorCode) }}</p>
@@ -363,7 +359,7 @@ onMounted(loadTalents)
       </section>
     </div>
 
-    <footer class="talents__footer"><div><b>Сбросить сборку</b><small>Сбрасывается только выбранная сборка</small></div><UIButton variant="ghost" :disabled="pending || (activeLoadout?.spentPoints ?? 0) === 0" @click="resetLoadout">Сбросить</UIButton></footer>
+    <footer class="talents__footer"><div><b>Сброс талантов</b><small>Только для текущей сборки</small></div><UIButton variant="ghost" :disabled="pending || (activeLoadout?.spentPoints ?? 0) === 0" @click="resetLoadout">Сбросить</UIButton></footer>
 
     <UIModal :open="selectedTalent !== null" :title="selectedTalent?.name ?? ''" @close="selectedTalent = null">
       <article v-if="selectedTalent" class="talent-detail">
@@ -374,14 +370,11 @@ onMounted(loadTalents)
         </div>
         <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
         <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
-        <p v-if="selectedTalent.runtimeStatus !== 'SUPPORTED'" class="talent-detail__deferred">
-          Этот талант пока нельзя прокачивать: его runtime-эффекты реализованы не полностью.
-        </p>
+        <p v-if="selectedTalent.runtimeStatus !== 'SUPPORTED'" class="talent-detail__deferred">Талант пока недоступен.</p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
-          <div><dt>Ряд дерева</dt><dd>{{ visualRowFor(selectedTalent) }}</dd></div>
-          <div v-if="visualRowFor(selectedTalent) !== selectedTalent.tier"><dt>Уровень прогрессии</dt><dd>{{ selectedTalent.tier }}</dd></div>
-          <div><dt>Нужно очков в ветке</dt><dd>{{ selectedTalent.requiredSpentPoints }}</dd></div>
+          <div><dt>Ряд</dt><dd>{{ visualRowFor(selectedTalent) }}</dd></div>
+          <div><dt>Требуется очков в ветке</dt><dd>{{ selectedTalent.requiredSpentPoints }}</dd></div>
           <div v-if="selectedTalent.prerequisites.length"><dt>Нужные таланты</dt><dd>{{ selectedTalent.prerequisites.map((item) => talentName(item.talentId)).join(', ') }}</dd></div>
         </dl>
       </article>
