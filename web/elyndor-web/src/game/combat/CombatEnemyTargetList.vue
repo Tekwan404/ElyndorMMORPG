@@ -14,16 +14,35 @@ const emit = defineEmits<{
   select: [targetActorId: string]
 }>()
 
+function hasVisibleResource(enemy: CombatActorSnapshot): boolean {
+  return enemy.maxResource > 0 && enemy.resourceType !== 'NONE'
+}
+
+function resourceRatio(enemy: CombatActorSnapshot): number {
+  if (enemy.maxResource <= 0) return 0
+  return Math.min(100, Math.max(0, (enemy.resource / enemy.maxResource) * 100))
+}
+
+function resourceLabel(enemy: CombatActorSnapshot): string {
+  if (enemy.resourceType === 'MANA') return 'Мана'
+  if (enemy.resourceType === 'FOCUS') return 'Фокус'
+  if (enemy.resourceType === 'RAGE') return 'Ярость'
+  return enemy.resourceType
+}
+
 function accessibleLabel(enemy: CombatActorSnapshot): string {
   const selected = enemy.actorId === props.selectedTargetActorId ? ', выбранная цель' : ''
   const aggro = enemy.currentAggroTargetActorId ? `, агро: ${props.aggroName(enemy)}` : ''
-  return `${enemy.name}, здоровье ${Math.round(props.healthRatio(enemy))}%${selected}${aggro}`
+  const resource = hasVisibleResource(enemy)
+    ? `, ${resourceLabel(enemy).toLowerCase()} ${Math.ceil(enemy.resource)} из ${Math.ceil(enemy.maxResource)}`
+    : ''
+  return `${enemy.name}, здоровье ${Math.round(props.healthRatio(enemy))}%${resource}${selected}${aggro}`
 }
 </script>
 
 <template>
   <nav
-    v-if="enemies.length > 1"
+    v-if="enemies.length > 1 || enemies.some(hasVisibleResource)"
     class="combat-enemy-targets"
     aria-label="Выбор цели"
     data-combat-targets
@@ -44,6 +63,14 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
       <div class="combat-enemy-targets__vitals">
         <i aria-hidden="true"><b :style="{ width: `${healthRatio(enemy)}%` }" /></i>
         <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(healthRatio(enemy)) }}%</small>
+        <template v-if="hasVisibleResource(enemy)">
+          <i class="combat-enemy-targets__resource" :data-resource="enemy.resourceType" aria-hidden="true">
+            <b :style="{ width: `${resourceRatio(enemy)}%` }" />
+          </i>
+          <small class="combat-enemy-targets__resource-copy">
+            {{ resourceLabel(enemy) }} · {{ Math.ceil(enemy.resource) }} / {{ Math.ceil(enemy.maxResource) }}
+          </small>
+        </template>
       </div>
       <span class="combat-enemy-targets__portrait" aria-hidden="true">
         <IconGenerator :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
@@ -63,6 +90,11 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
 .combat-enemy-targets__vitals i { display: block; height: 4px; overflow: hidden; border-radius: var(--ui-radius-round); background: rgb(255 255 255 / 9%); }
 .combat-enemy-targets__vitals i b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #a44e62, #e38d98); }
 .combat-enemy-targets__vitals small { font-size: var(--ui-font-size-xs); }
+.combat-enemy-targets__vitals .combat-enemy-targets__resource { margin-top: 1px; }
+.combat-enemy-targets__vitals .combat-enemy-targets__resource b { background: linear-gradient(90deg, #4559aa, #7aa7ff); }
+.combat-enemy-targets__vitals .combat-enemy-targets__resource[data-resource='FOCUS'] b { background: linear-gradient(90deg, #9a6b24, #e0b85d); }
+.combat-enemy-targets__vitals .combat-enemy-targets__resource[data-resource='RAGE'] b { background: linear-gradient(90deg, #8f3434, #df6a5d); }
+.combat-enemy-targets__resource-copy { color: #9fbaf8; }
 .combat-enemy-targets__portrait { display: grid; width: 2rem; height: 2rem; grid-column: 1; grid-row: 1 / 4; place-items: center; }
 .combat-enemy-targets__portrait :deep(.icon-generator) { border-color: rgb(216 95 114 / 35%); color: #efa1ae; }
 
