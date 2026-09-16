@@ -317,9 +317,18 @@ public sealed partial class CombatSession
 
     private void CompleteMorEtIfReady(DateTimeOffset now)
     {
-        if (_morEtEncounterRuntime?.IsComplete != true
-            || _morEtBossActorId is not { } bossActorId)
+        if (_morEtEncounterRuntime is null
+            || _morEtBossActorId is not { } bossActorId
+            || _morEtEncounterRuntime.HasActiveWave)
         {
+            return;
+        }
+
+        if (!_morEtEncounterRuntime.IsComplete)
+        {
+            // Lethal prevention is consumed by DamagePipeline. Re-arm it after the first
+            // soul wave so a large hit cannot skip the required 30% second wave.
+            EnsureMorEtPhaseGuard(now);
             return;
         }
 
