@@ -1,4 +1,5 @@
 import type { ApiProblem } from './contracts'
+import { playerItemDescription } from '@/game/items/itemPresentation'
 
 export class ApiRequestError extends Error {
   constructor(
@@ -46,10 +47,10 @@ export class ApiClient {
       this.accessToken = null
       await this.refreshAccessToken()
       const retry = await this.send(path, init)
-      return this.read<T>(retry)
+      return this.read<T>(retry, path)
     }
 
-    return this.read<T>(response)
+    return this.read<T>(response, path)
   }
 
   private async refreshAccessToken(): Promise<string> {
@@ -81,10 +82,13 @@ export class ApiClient {
     return this.fetchImplementation.call(globalThis, path, { ...init, headers })
   }
 
-  private async read<T>(response: Response): Promise<T> {
+  private async read<T>(response: Response, path: string): Promise<T> {
     if (response.ok) {
       if (response.status === 204) return null as T
-      return (await response.json()) as T
+      const payload = await response.json() as unknown
+      return shouldSanitizePlayerItemDescriptions(path)
+        ? sanitizePlayerItemDescriptions(payload) as T
+        : payload as T
     }
 
     const problem = (await response.json().catch(() => ({}))) as ApiProblem
@@ -94,6 +98,27 @@ export class ApiClient {
       problem.correlationId,
     )
   }
+}
+
+function shouldSanitizePlayerItemDescriptions(path: string): boolean {
+  return path === '/api/v1/bootstrap' || path.startsWith('/api/v1/inventory')
+}
+
+function sanitizePlayerItemDescriptions(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sanitizePlayerItemDescriptions)
+  }
+
+  if (value === null || typeof value !== 'object') return value
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+      key,
+      key === 'description' && typeof entry === 'string'
+        ? playerItemDescription(entry)
+        : sanitizePlayerItemDescriptions(entry),
+    ]),
+  )
 }
 
 function hasJwtValidity(token: string, minValiditySeconds: number): boolean {
