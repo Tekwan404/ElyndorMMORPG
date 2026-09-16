@@ -56,12 +56,13 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
-  it('offers AFK farming only from the eligible current location', async () => {
+  it('offers automatic hunting only from the eligible current location', async () => {
     const forestStore = useGameSessionStore()
     forestStore.snapshot = snapshot('WHISPERING_FOREST')
     const forest = mount(WorldView)
     expect(forest.find('[data-afk-farming]').exists()).toBe(true)
-    expect(forest.get('[data-afk-farming]').text()).toContain('Отправить в AFK-фарм')
+    expect(forest.get('[data-afk-farming]').text()).toContain('Автоматическая охота')
+    expect(forest.get('[data-afk-farming]').text()).not.toContain('AFK')
     forest.unmount()
 
     const townStore = useGameSessionStore()
