@@ -23,13 +23,18 @@ public sealed partial class TelegramServerMonitoringWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         TelegramAdminOptions configured = options.Value;
-        if (!configured.Enabled || !configured.MonitoringEnabled || !configured.IsMonitoringConfigured)
+        if (!environment.IsProduction()
+            || !configured.Enabled
+            || !configured.MonitoringEnabled
+            || !configured.IsMonitoringConfigured)
+        {
             return;
+        }
 
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-            await SendReportAsync(configured, stoppingToken);
+            await SendReportSafelyAsync(configured, stoppingToken);
 
             using PeriodicTimer timer = new(TimeSpan.FromMinutes(configured.ReportIntervalMinutes));
             while (await timer.WaitForNextTickAsync(stoppingToken))
