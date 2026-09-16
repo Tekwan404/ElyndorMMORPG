@@ -46,7 +46,7 @@ function allyArt(ally: CombatActorSnapshot): string | null {
         <small>СОЮЗНИКИ В БОЮ</small>
         <strong>Союзники · {{ allies.length }}</strong>
       </div>
-      <span>Выберите цель для поддержки</span>
+      <span>Выбери цель для поддержки</span>
     </header>
     <div class="combat-ally-roster__grid">
       <button
