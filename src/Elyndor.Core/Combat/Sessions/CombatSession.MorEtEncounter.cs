@@ -16,6 +16,7 @@ public sealed partial class CombatSession
     private const string MorEtEmptiedDamageEffectId = "MOR_ET_EMPTIED_DAMAGE";
     private const string MorEtEmptiedDotEffectId = "MOR_ET_EMPTIED_DOT";
     private const string MorEtReturnedSoulEffectId = "MOR_ET_RETURNED_SOUL";
+    private const string MorEtReturnedSoulHealingEffectId = "MOR_ET_RETURNED_SOUL_HEALING";
     private const string MorEtFailureStackEffectId = "MOR_ET_FAILURE_STACK";
     private static readonly TimeSpan MorEtPersistentEffectDuration = TimeSpan.FromHours(24);
 
@@ -211,6 +212,23 @@ public sealed partial class CombatSession
             soul.OwnerActorId,
             soul.OwnerActorId,
             MorEtReturnedSoulEffectId);
+        ApplyKernelEvents(
+            EffectEngine.Apply(
+                owner.Definition.Actor,
+                soul.OwnerActorId,
+                new EffectDefinition(
+                    MorEtReturnedSoulHealingEffectId,
+                    EffectKind.StatModifier,
+                    _morEtEncounterRuntime.SuccessBuffDuration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    1.25m,
+                    ModifiedStat: EffectStat.OutgoingHealingMultiplier,
+                    ModifierMode: EffectModifierMode.Multiplicative),
+                now),
+            soul.OwnerActorId,
+            soul.OwnerActorId,
+            MorEtReturnedSoulHealingEffectId);
     }
 
     private void ResolveMorEtSoulFailure(MorEtSoulState soul, DateTimeOffset now)
