@@ -3,11 +3,12 @@ using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Server.Monitoring;
 
-public sealed class TelegramServerMonitoringWorker(
+public sealed partial class TelegramServerMonitoringWorker(
     IOptions<TelegramAdminOptions> options,
     IServerMetricsCollector metricsCollector,
     ServerErrorMetrics errors,
@@ -51,7 +52,7 @@ public sealed class TelegramServerMonitoringWorker(
         }
         catch (Exception exception)
         {
-            logger.LogWarning(exception, "Telegram server monitoring report failed.");
+            LogReportFailed(logger, exception);
         }
     }
 
@@ -112,7 +113,7 @@ public sealed class TelegramServerMonitoringWorker(
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             stopwatch.Stop();
-            logger.LogWarning(exception, "Telegram monitoring PostgreSQL health check failed.");
+            LogDatabaseHealthCheckFailed(logger, exception);
             return new HealthData(false, stopwatch.ElapsedMilliseconds);
         }
     }
@@ -146,6 +147,12 @@ public sealed class TelegramServerMonitoringWorker(
     private static string FormatDuration(TimeSpan value) => value.TotalDays >= 1
         ? $"{(int)value.TotalDays}d {value.Hours}h {value.Minutes}m"
         : $"{(int)value.TotalHours}h {value.Minutes}m {value.Seconds}s";
+
+    [LoggerMessage(EventId = 1000, Level = LogLevel.Warning, Message = "Telegram server monitoring report failed.")]
+    private static partial void LogReportFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Warning, Message = "Telegram monitoring PostgreSQL health check failed.")]
+    private static partial void LogDatabaseHealthCheckFailed(ILogger logger, Exception exception);
 
     private readonly record struct HealthData(bool Healthy, long LatencyMs);
 }
