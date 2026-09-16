@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import {
   getTelegramInitData,
@@ -47,30 +47,30 @@ describe('telegramWebApp authentication data', () => {
 
   it('requests fullscreen and mirrors Telegram viewport geometry into CSS variables', () => {
     const handlers = new Map<string, (...args: unknown[]) => void>()
-    const ready = vi.fn()
-    const expand = vi.fn()
-    const requestFullscreen = vi.fn()
+    let readyCalls = 0
+    let expandCalls = 0
+    let fullscreenCalls = 0
     const webApp = {
       initData: 'signed-mini-app-init-data',
       isFullscreen: false,
       viewportStableHeight: 844,
       safeAreaInset: { top: 10, right: 2, bottom: 18, left: 2 },
       contentSafeAreaInset: { top: 54, right: 4, bottom: 24, left: 4 },
-      ready,
-      expand,
-      requestFullscreen,
+      ready: () => { readyCalls += 1 },
+      expand: () => { expandCalls += 1 },
+      requestFullscreen: () => { fullscreenCalls += 1 },
       onEvent: (eventType: string, handler: (...args: unknown[]) => void) => {
         handlers.set(eventType, handler)
       },
-      offEvent: vi.fn(),
+      offEvent: () => {},
     }
     window.Telegram = { WebApp: webApp }
 
     initializeTelegramWebApp()
 
-    expect(ready).toHaveBeenCalledOnce()
-    expect(expand).toHaveBeenCalledOnce()
-    expect(requestFullscreen).toHaveBeenCalledOnce()
+    expect(readyCalls).toBe(1)
+    expect(expandCalls).toBe(1)
+    expect(fullscreenCalls).toBe(1)
     expect(document.documentElement.style.getPropertyValue('--elyndor-tg-viewport-stable-height')).toBe('844px')
     expect(document.documentElement.style.getPropertyValue('--elyndor-tg-safe-area-top')).toBe('10px')
     expect(document.documentElement.style.getPropertyValue('--elyndor-tg-content-safe-area-top')).toBe('54px')
@@ -87,12 +87,12 @@ describe('telegramWebApp authentication data', () => {
   })
 
   it('keeps the expanded Mini App usable when fullscreen is unsupported at runtime', () => {
-    const expand = vi.fn()
+    let expandCalls = 0
     window.Telegram = {
       WebApp: {
         initData: 'signed-mini-app-init-data',
-        ready: vi.fn(),
-        expand,
+        ready: () => {},
+        expand: () => { expandCalls += 1 },
         requestFullscreen: () => {
           throw new Error('UNSUPPORTED')
         },
@@ -100,6 +100,6 @@ describe('telegramWebApp authentication data', () => {
     }
 
     expect(() => initializeTelegramWebApp()).not.toThrow()
-    expect(expand).toHaveBeenCalledTimes(2)
+    expect(expandCalls).toBe(2)
   })
 })
