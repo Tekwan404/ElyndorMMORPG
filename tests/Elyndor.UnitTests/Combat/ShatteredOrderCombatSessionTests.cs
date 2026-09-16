@@ -81,7 +81,7 @@ public sealed class ShatteredOrderCombatSessionTests
         Assert.Null(Enemy(interrupted.Snapshot, "VELARIUS_BOSS").ActiveCast);
 
         CombatCommandResult finalPhase = session.Handle(
-            new UseAbilityCommand("threshold", "HIT_900", BossId),
+            new UseAbilityCommand("threshold-overkill", "NUKE", BossId),
             Now.AddMilliseconds(300));
         CombatActorSnapshot barrierBoss = Enemy(finalPhase.Snapshot, "VELARIUS_BOSS");
         Assert.Equal(100, barrierBoss.Hp);
@@ -125,13 +125,16 @@ public sealed class ShatteredOrderCombatSessionTests
         CombatActorSnapshot firstSoul = firstWave.Snapshot.Enemies!.Single(enemy =>
             enemy.DefinitionId == "MOR_ET_SOUL_WARRIOR" && enemy.Hp > 0);
         Assert.Contains(firstWave.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
+        Assert.Contains(firstWave.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_HEALING");
         Assert.Contains(firstWave.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DOT");
 
         CombatCommandResult soulKilled = session.Handle(
             new UseAbilityCommand("kill-soul", "NUKE", firstSoul.ActorId),
             Now.AddMilliseconds(1));
         Assert.Contains(soulKilled.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_RETURNED_SOUL");
+        Assert.Contains(soulKilled.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_RETURNED_SOUL_HEALING");
         Assert.DoesNotContain(soulKilled.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
+        Assert.DoesNotContain(soulKilled.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_HEALING");
 
         CombatCommandResult secondWave = session.Handle(
             new UseAbilityCommand("second-wave", "HIT_350", BossId),
@@ -145,6 +148,7 @@ public sealed class ShatteredOrderCombatSessionTests
         Assert.Contains(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Effects, effect => effect.Id == "MOR_ET_FAILURE_STACK");
         Assert.True(timeout.Snapshot.Enemies!.Single(enemy => enemy.ActorId == secondSoul.ActorId).Hp <= 0);
         Assert.DoesNotContain(timeout.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_DAMAGE");
+        Assert.DoesNotContain(timeout.Snapshot.Player.Effects, effect => effect.Id == "MOR_ET_EMPTIED_HEALING");
         Assert.DoesNotContain(Enemy(timeout.Snapshot, "MOR_ET_BOSS").Effects, effect => effect.Id == "MOR_ET_PHASE_GUARD");
     }
 
@@ -201,6 +205,7 @@ public sealed class ShatteredOrderCombatSessionTests
         Assert.True(killVoid.Succeeded, killVoid.ErrorCode);
 
         CombatActorSnapshot finalBoss = Enemy(killVoid.Snapshot, "AZRAEL_BOSS");
+        Assert.Equal(300, finalBoss.Hp);
         Assert.Contains(finalBoss.Effects, effect => effect.Id == "AZRAEL_FINAL_PHASE");
         Assert.DoesNotContain(finalBoss.Effects, effect => effect.Id == "AZRAEL_SPLIT_IMMUNITY");
         Assert.DoesNotContain(finalBoss.Effects, effect => effect.Id == "AZRAEL_PHASE_GUARD");
