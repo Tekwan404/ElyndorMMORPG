@@ -56,6 +56,14 @@ public static class AuthenticationEndpoints
 
         if (TelegramWebAuthenticationService.IsWebCredential(request.InitData))
         {
+            if (!options.Telegram.Web.Enabled)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "telegram_web_credential_invalid");
+            }
+
             TelegramWebIdentity? webIdentity =
                 TelegramWebAuthenticationService.ValidateCredential(
                     options,
