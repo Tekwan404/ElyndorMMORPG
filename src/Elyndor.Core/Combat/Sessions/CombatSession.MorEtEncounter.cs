@@ -79,12 +79,20 @@ public sealed partial class CombatSession
         }
 
         if (combatEvent.Type != CombatEventType.DamageDealt
-            || combatEvent.TargetActorId != bossActorId
-            || combatEvent.IsPeriodic
-            || _morEtEncounterRuntime.HasActiveWave)
+            || combatEvent.TargetActorId != bossActorId)
         {
             return;
         }
+
+        if (combatEvent.IsPeriodic)
+        {
+            if (!_morEtEncounterRuntime.IsComplete)
+                EnsureMorEtPhaseGuard(combatEvent.OccurredAtUtc);
+            return;
+        }
+
+        if (_morEtEncounterRuntime.HasActiveWave)
+            return;
 
         CombatActorState boss = _enemiesById[bossActorId].Actor;
         Guid[] eligibleOwners = _participantRoster.Participants
@@ -326,8 +334,6 @@ public sealed partial class CombatSession
 
         if (!_morEtEncounterRuntime.IsComplete)
         {
-            // Lethal prevention is consumed by DamagePipeline. Re-arm it after the first
-            // soul wave so a large hit cannot skip the required 30% second wave.
             EnsureMorEtPhaseGuard(now);
             return;
         }
