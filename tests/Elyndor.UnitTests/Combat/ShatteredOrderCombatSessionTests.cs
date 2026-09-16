@@ -19,7 +19,7 @@ public sealed class ShatteredOrderCombatSessionTests
         Guid.Parse("a2000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public void VelariusShowsManaInterruptKeepsSpentCostAndTenPercentConvertsRemainderToShield()
+    public void VelariusShowsManaInterruptKeepsSpentCostAndRequiresFeederPhaseBeforeBarrier()
     {
         Dictionary<string, AbilityDefinition> abilities = CommonPlayerAbilities();
         abilities["VELARIUS_TEST_CAST"] = new AbilityDefinition(
@@ -80,18 +80,31 @@ public sealed class ShatteredOrderCombatSessionTests
         Assert.Equal(95, Enemy(interrupted.Snapshot, "VELARIUS_BOSS").Resource);
         Assert.Null(Enemy(interrupted.Snapshot, "VELARIUS_BOSS").ActiveCast);
 
+        CombatCommandResult feederPhase = session.Handle(
+            new UseAbilityCommand("feeder-overkill", "NUKE", BossId),
+            Now.AddMilliseconds(300));
+        CombatActorSnapshot feederBoss = Enemy(feederPhase.Snapshot, "VELARIUS_BOSS");
+        Assert.Equal(600, feederBoss.Hp);
+        Assert.Equal(95, feederBoss.Resource);
+        Assert.Contains(feederBoss.Effects, effect => effect.Id == "VELARIUS_PHASE_GUARD");
+        Assert.DoesNotContain(feederBoss.Effects, effect => effect.Id == "VELARIUS_LAST_BARRIER");
+        Assert.Equal(2, feederPhase.Snapshot.Enemies!.Count(enemy =>
+            enemy.DefinitionId == "VELARIUS_FEEDER" && enemy.Hp > 0));
+
         CombatCommandResult finalPhase = session.Handle(
             new UseAbilityCommand("threshold-overkill", "NUKE", BossId),
-            Now.AddMilliseconds(300));
+            Now.AddMilliseconds(400));
         CombatActorSnapshot barrierBoss = Enemy(finalPhase.Snapshot, "VELARIUS_BOSS");
         Assert.Equal(100, barrierBoss.Hp);
         Assert.Equal(0, barrierBoss.Resource);
         Assert.Contains(barrierBoss.Effects, effect => effect.Id == "VELARIUS_LAST_BARRIER");
         Assert.DoesNotContain(barrierBoss.Effects, effect => effect.Id == "VELARIUS_PHASE_GUARD");
+        Assert.DoesNotContain(finalPhase.Snapshot.Enemies!, enemy =>
+            enemy.DefinitionId == "VELARIUS_FEEDER" && enemy.Hp > 0);
 
         CombatCommandResult shieldHit = session.Handle(
             new UseAbilityCommand("shield-hit", "PING", BossId),
-            Now.AddMilliseconds(400));
+            Now.AddMilliseconds(500));
         Assert.Equal(100, Enemy(shieldHit.Snapshot, "VELARIUS_BOSS").Hp);
         Assert.Contains(shieldHit.Events, item =>
             item.Type == CombatEventType.ShieldAbsorbed
