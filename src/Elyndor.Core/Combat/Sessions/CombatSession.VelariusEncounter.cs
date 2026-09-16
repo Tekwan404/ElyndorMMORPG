@@ -95,6 +95,24 @@ public sealed partial class CombatSession
         }
 
         CombatActorState boss = _enemiesById[bossActorId].Actor;
+        if (_velariusEncounterRuntime.TryTriggerFeeders(boss.CurrentHp, boss.MaxHp))
+        {
+            decimal feederPhaseHp =
+                boss.MaxHp * _velariusEncounterRuntime.FeederTriggerHpPercent;
+            if (boss.CurrentHp < feederPhaseHp)
+                boss.SetCurrentHp(feederPhaseHp);
+
+            EnsureVelariusPhaseGuard(combatEvent.OccurredAtUtc);
+            for (var index = 0; index < _velariusEncounterRuntime.FeederCount; index++)
+            {
+                SpawnEncounterEnemy(
+                    _velariusEncounterProfile.ManaFeeder,
+                    bossActorId,
+                    combatEvent.OccurredAtUtc);
+            }
+            return;
+        }
+
         if (_velariusEncounterRuntime.TryTriggerFinalBarrier(
                 boss.CurrentHp,
                 boss.MaxHp,
@@ -105,18 +123,6 @@ public sealed partial class CombatSession
                 boss,
                 shieldMagnitude,
                 combatEvent.OccurredAtUtc);
-            return;
-        }
-
-        if (_velariusEncounterRuntime.TryTriggerFeeders(boss.CurrentHp, boss.MaxHp))
-        {
-            for (var index = 0; index < _velariusEncounterRuntime.FeederCount; index++)
-            {
-                SpawnEncounterEnemy(
-                    _velariusEncounterProfile.ManaFeeder,
-                    bossActorId,
-                    combatEvent.OccurredAtUtc);
-            }
         }
     }
 
