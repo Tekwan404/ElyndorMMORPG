@@ -22,7 +22,6 @@ interface TelegramWebApp {
   readonly contentSafeAreaInset?: Partial<TelegramViewportInsets>
   ready?: () => void
   expand?: () => void
-  requestFullscreen?: () => void
   onEvent?: (eventType: TelegramViewportEvent, eventHandler: TelegramEventHandler) => void
   offEvent?: (eventType: TelegramViewportEvent, eventHandler: TelegramEventHandler) => void
 }
@@ -66,19 +65,16 @@ export function initializeTelegramWebApp(): void {
   if (!webApp) return
 
   webApp.ready?.()
+
+  // Keep Telegram in its normal full-height Mini App mode. BotFather Fullsize and
+  // expand() preserve the native header/back controls on iOS and avoid turning the
+  // desktop client into an immersive fullscreen window. If Telegram is already in
+  // true fullscreen (for example via an explicit launch mode), geometry handling
+  // below still respects its safe/content-safe areas.
   webApp.expand?.()
 
   subscribeToTelegramGeometry(webApp)
   syncTelegramGeometry(webApp)
-
-  if (!webApp.isFullscreen && webApp.requestFullscreen) {
-    try {
-      webApp.requestFullscreen()
-    } catch {
-      // Fullscreen is an enhancement. Older/unsupported Telegram clients stay expanded.
-      webApp.expand?.()
-    }
-  }
 }
 
 function subscribeToTelegramGeometry(webApp: TelegramWebApp): void {
