@@ -11,3 +11,12 @@ The source folders `pic/` and `talant/` are local working assets and are intenti
 The player bundle receives talent, item and non-admin character art. Admin-only artwork is written under `web/elyndor-admin/src/assets/admin` and is never copied into `web/elyndor-web`.
 
 `asset-manifest.json` records the source sheet, grid cell, generated icon and known source limitations. Archer talent sheets contain 15 cells per branch, so cells are intentionally reused for nodes 16–32 until additional source art is supplied.
+
+To import the class talent and spell sheets from `pic/V2`, run:
+
+```powershell
+.\tools\assets\import-v2-class-art.ps1 -SourceRoot 'C:\path\to\ELYNDOR\pic\V2'
+.\tools\assets\validate-pic-assets.ps1
+```
+
+The importer crops each class/branch sheet, converts the crops to WebP, updates the existing talent and ability `iconId` content fields, and writes `v2-art-manifest.json`. Spell art is indexed by the ability's `iconId`; abilities without dedicated spell-sheet art continue to use the existing talent-art fallback. Source sheets remain local/ignored and are not required to build the game.

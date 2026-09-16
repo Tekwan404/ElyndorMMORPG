@@ -38,7 +38,7 @@
       ],
       "displayName": "Последний рубеж",
       "description": "На 8 сек. увеличивает максимальный запас здоровья на 20% и немедленно восстанавливает столько же здоровья. После окончания бонуса максимум здоровья возвращается к исходному значению.",
-      "iconId": "last-stand"
+      "iconId": "warrior-last-stand"
     },
     {
       "id": "REVENGE",
@@ -56,7 +56,7 @@
       ],
       "displayName": "Возмездие",
       "description": "Дешёвая контратака с высокой угрозой. Доступна в течение 5 сек. после успешного блока.",
-      "iconId": "revenge",
+      "iconId": "warrior-revenge",
       "requiredActiveEffectId": "GUARDIAN_REVENGE_WINDOW",
       "freeResourceCostWhileEffectId": "GUARDIAN_CAPSTONE_SHIELD_BLOCK",
       "consumeEffectId": "GUARDIAN_REVENGE_WINDOW"
@@ -115,7 +115,7 @@
       ],
       "displayName": "Блок щитом",
       "description": "На 5 сек. даёт +30 п.п. Block Chance и +25% Block Value. Эффективный Block Chance всё равно ограничен 60%.",
-      "iconId": "shield-block"
+      "iconId": "warrior-shield-block"
     },
     {
       "id": "PROVOKE",
@@ -133,7 +133,7 @@
       ],
       "displayName": "Провокация",
       "description": "Поднимает Threat Стража до текущего лидера +1 и принудительно удерживает выбранного противника на нём 5 сек. Не требует Rage.",
-      "iconId": "provoke"
+      "iconId": "warrior-provoke"
     },
     {
       "id": "SUNDER_ARMOR",
@@ -163,7 +163,7 @@
       ],
       "displayName": "Раскол брони",
       "description": "Создаёт высокую угрозу и снижает Armor цели на 4% на 30 сек. Складывается до 5 раз.",
-      "iconId": "sunder-armor"
+      "iconId": "warrior-sunder-armor"
     },
     {
       "id": "CONCUSSION_BLOW",
@@ -181,7 +181,7 @@
       ],
       "displayName": "Оглушающий удар",
       "description": "Наносит физический урон и оглушает обычного противника на 3 сек. Боссы не оглушаются.",
-      "iconId": "concussion-blow"
+      "iconId": "warrior-concussion-blow"
     },
     {
       "id": "BASTION",
@@ -211,7 +211,7 @@
       ],
       "displayName": "Бастион",
       "description": "На 6 сек. уменьшает получаемый урон на 40%. Стоит 40 Rage.",
-      "iconId": "bastion"
+      "iconId": "warrior-bastion"
     },
     {
       "id": "CHALLENGING_SHOUT",
@@ -227,7 +227,7 @@
       "actions": [],
       "displayName": "Вызывающий клич",
       "description": "На 4 сек. заставляет всех живых противников в текущем бою атаковать Стража. Не изменяет их таблицы Threat.",
-      "iconId": "challenging-shout"
+      "iconId": "warrior-challenging-shout"
     },
     {
       "id": "SHIELD_SLAM",
@@ -245,7 +245,7 @@
       ],
       "displayName": "Сокрушение щитом",
       "description": "Глубокая способность Стража: урон зависит от Attack Power и Block Value и создаёт очень высокую угрозу.",
-      "iconId": "shield-slam"
+      "iconId": "warrior-shield-slam"
     }
   ]
 }

@@ -50,7 +50,7 @@
   ],
   "abilities": [
     {
-      "id": "HOLY_LIGHT",
+      "id": "HOLY_LIGHT", "iconId": "paladin-holy-light",
       "type": "Casted",
       "targetType": "SingleAlly",
       "resourceCost": 28,
@@ -68,7 +68,7 @@
       "description": "Мощное прямое лечение союзника."
     },
     {
-      "id": "FLASH_OF_LIGHT",
+      "id": "FLASH_OF_LIGHT", "iconId": "paladin-flash-of-light",
       "type": "Casted",
       "targetType": "SingleAlly",
       "resourceCost": 20,
@@ -86,7 +86,7 @@
       "description": "Быстрое прямое лечение союзника."
     },
     {
-      "id": "JUDGEMENT",
+      "id": "JUDGEMENT", "iconId": "paladin-judgement",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 14,
@@ -103,7 +103,7 @@
       "description": "Высвобождает силу активной печати и наносит святой урон, не расходуя печать."
     },
     {
-      "id": "SEAL_OF_RIGHTEOUSNESS",
+      "id": "SEAL_OF_RIGHTEOUSNESS", "iconId": "paladin-seal-of-righteousness",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 8,
@@ -131,7 +131,7 @@
       "description": "Активирует печать праведности. У Паладина может быть только одна печать."
     },
     {
-      "id": "DEVOTION_AURA",
+      "id": "DEVOTION_AURA", "iconId": "paladin-devotion-aura",
       "type": "Instant",
       "targetType": "SelfAndPartyMembersInCombat",
       "resourceCost": 0,
@@ -162,7 +162,7 @@
       "description": "Повышает броню группы. Одинаковые ауры не складываются."
     },
     {
-      "id": "LAY_ON_HANDS",
+      "id": "LAY_ON_HANDS", "iconId": "paladin-lay-on-hands",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 0,
@@ -180,7 +180,7 @@
       "description": "Экстренно восстанавливает большой объём здоровья союзнику."
     },
     {
-      "id": "BLESSING_OF_WISDOM",
+      "id": "BLESSING_OF_WISDOM", "iconId": "paladin-blessing-of-wisdom",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 12,
@@ -209,7 +209,7 @@
       "description": "Кратковременно усиливает восстановление маны союзника."
     },
     {
-      "id": "CLEANSE",
+      "id": "CLEANSE", "iconId": "paladin-cleanse",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 10,
@@ -237,7 +237,7 @@
       "description": "Снимает один подходящий отрицательный эффект с союзника."
     },
     {
-      "id": "DIVINE_FAVOR",
+      "id": "DIVINE_FAVOR", "iconId": "paladin-divine-favor",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,
@@ -264,7 +264,7 @@
       "description": "Следующее прямое лечение гарантированно критует."
     },
     {
-      "id": "HOLY_SHOCK",
+      "id": "HOLY_SHOCK", "iconId": "paladin-holy-shock",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 18,
@@ -284,7 +284,7 @@
       "description": "Мгновенно исцеляет союзника. Offensive-вариант доступен отдельной целью."
     },
     {
-      "id": "HOLY_SHOCK_OFFENSIVE",
+      "id": "HOLY_SHOCK_OFFENSIVE", "iconId": "paladin-holy-shock-offensive",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 18,
@@ -301,7 +301,7 @@
       "description": "Мгновенно наносит святой урон противнику."
     },
     {
-      "id": "BEACON_OF_LIGHT",
+      "id": "BEACON_OF_LIGHT", "iconId": "paladin-beacon-of-light",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 16,
@@ -331,7 +331,7 @@
       "description": "Отмечает союзника Светочем для копирования части прямого лечения."
     },
     {
-      "id": "CONCENTRATION_AURA",
+      "id": "CONCENTRATION_AURA", "iconId": "paladin-concentration-aura",
       "type": "Instant",
       "targetType": "SelfAndPartyMembersInCombat",
       "resourceCost": 0,
@@ -359,7 +359,7 @@
       "description": "Ускоряет применение заклинаний группы через Paladin runtime."
     },
     {
-      "id": "DIVINE_REPLENISHMENT",
+      "id": "DIVINE_REPLENISHMENT", "iconId": "paladin-divine-replenishment",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,
@@ -387,7 +387,7 @@
       "description": "Восстанавливает ману ценой кратковременного снижения лечения."
     },
     {
-      "id": "BLESSING_OF_PROTECTION",
+      "id": "BLESSING_OF_PROTECTION", "iconId": "paladin-blessing-of-protection",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 16,
@@ -418,7 +418,7 @@
       "description": "На несколько секунд сильно уменьшает входящий физический урон."
     },
     {
-      "id": "AURA_MASTERY",
+      "id": "AURA_MASTERY", "iconId": "paladin-aura-mastery",
       "type": "Instant",
       "targetType": "SelfAndPartyMembersInCombat",
       "resourceCost": 0,
@@ -447,7 +447,7 @@
       "description": "Временно усиливает активную ауру и защищает группу."
     },
     {
-      "id": "CONSECRATION",
+      "id": "CONSECRATION", "iconId": "paladin-consecration",
       "type": "Instant",
       "targetType": "AllEnemiesInCombat",
       "resourceCost": 24,
@@ -478,7 +478,7 @@
       "description": "Освящает всё столкновение и наносит периодический святой урон противникам."
     },
     {
-      "id": "HOLY_SHIELD",
+      "id": "HOLY_SHIELD", "iconId": "paladin-holy-shield",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 20,
@@ -507,7 +507,7 @@
       "description": "Повышает шанс блока; блоки вызывают святое возмездие."
     },
     {
-      "id": "BLESSING_OF_SANCTUARY",
+      "id": "BLESSING_OF_SANCTUARY", "iconId": "paladin-blessing-of-sanctuary",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 16,
@@ -538,7 +538,7 @@
       "description": "Кратковременно снижает весь входящий урон выбранного союзника."
     },
     {
-      "id": "AVENGERS_SHIELD",
+      "id": "AVENGERS_SHIELD", "iconId": "paladin-avengers-shield",
       "type": "Instant",
       "targetType": "NEnemiesInCombat",
       "resourceCost": 22,
@@ -557,7 +557,7 @@
       "description": "Поражает до трёх противников святым уроном и создаёт высокий Threat."
     },
     {
-      "id": "HAMMER_OF_THE_RIGHTEOUS",
+      "id": "HAMMER_OF_THE_RIGHTEOUS", "iconId": "paladin-hammer-of-the-righteous",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 16,
@@ -574,7 +574,7 @@
       "description": "Щитовая атака святым уроном, масштабируемая защитой."
     },
     {
-      "id": "DIVINE_PROTECTION",
+      "id": "DIVINE_PROTECTION", "iconId": "paladin-divine-protection",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,
@@ -603,7 +603,7 @@
       "description": "На короткое время значительно уменьшает весь входящий урон."
     },
     {
-      "id": "INTERCESSION",
+      "id": "INTERCESSION", "iconId": "paladin-intercession",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 12,
@@ -632,7 +632,7 @@
       "description": "Перенаправляет часть уже уменьшенного урона союзника в Паладина."
     },
     {
-      "id": "HAMMER_OF_JUSTICE",
+      "id": "HAMMER_OF_JUSTICE", "iconId": "paladin-hammer-of-justice",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 14,
@@ -660,7 +660,7 @@
       "description": "Прерывает противника и оглушает обычные цели; боссы получают boss-safe вариант."
     },
     {
-      "id": "SEAL_OF_COMMAND",
+      "id": "SEAL_OF_COMMAND", "iconId": "paladin-seal-of-command",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 8,
@@ -688,7 +688,7 @@
       "description": "Автоатаки могут вызвать дополнительный сильный святой удар."
     },
     {
-      "id": "CRUSADER_STRIKE",
+      "id": "CRUSADER_STRIKE", "iconId": "paladin-crusader-strike",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 14,
@@ -705,7 +705,7 @@
       "description": "Основная быстрая оружейная атака Воздаяния."
     },
     {
-      "id": "SANCTITY_AURA",
+      "id": "SANCTITY_AURA", "iconId": "paladin-sanctity-aura",
       "type": "Instant",
       "targetType": "SelfAndPartyMembersInCombat",
       "resourceCost": 0,
@@ -736,7 +736,7 @@
       "description": "Усиливает урон Паладина и немного повышает урон группы."
     },
     {
-      "id": "REPENTANCE",
+      "id": "REPENTANCE", "iconId": "paladin-repentance",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 18,
@@ -764,7 +764,7 @@
       "description": "Контролирует обычную цель; для босса Paladin runtime применяет безопасное снижение урона."
     },
     {
-      "id": "TEMPLARS_VERDICT",
+      "id": "TEMPLARS_VERDICT", "iconId": "paladin-templars-verdict",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 30,
@@ -781,7 +781,7 @@
       "description": "Тяжёлый завершающий удар двуручным оружием."
     },
     {
-      "id": "BLESSING_OF_MIGHT",
+      "id": "BLESSING_OF_MIGHT", "iconId": "paladin-blessing-of-might",
       "type": "Instant",
       "targetType": "SingleAlly",
       "resourceCost": 12,
@@ -812,7 +812,7 @@
       "description": "Кратковременно увеличивает силу атаки союзника."
     },
     {
-      "id": "DIVINE_STORM",
+      "id": "DIVINE_STORM", "iconId": "paladin-divine-storm",
       "type": "Instant",
       "targetType": "AllEnemiesInCombat",
       "resourceCost": 24,
@@ -830,7 +830,7 @@
       "description": "Поражает всех противников и через Paladin runtime конвертирует часть урона в групповое лечение."
     },
     {
-      "id": "AVENGING_WRATH",
+      "id": "AVENGING_WRATH", "iconId": "paladin-avenging-wrath",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,

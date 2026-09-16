@@ -269,7 +269,7 @@
       ],
       "displayName": "Удар",
       "description": "Базовая атака воина по одной цели.",
-      "iconId": "strike"
+      "iconId": "warrior-strike"
     },
     {
       "id": "SHIELD_BASH",
@@ -302,7 +302,7 @@
       ],
       "displayName": "Удар щитом",
       "description": "Удар щитом, сочетающий урон и контроль.",
-      "iconId": "shield-bash"
+      "iconId": "warrior-shield-bash"
     },
     {
       "id": "PROVOKE",
@@ -323,10 +323,10 @@
       ],
       "displayName": "Провокация",
       "description": "Заставляет противника сосредоточиться на воине.",
-      "iconId": "provoke"
+      "iconId": "warrior-provoke"
     },
     {
-      "id": "HEAVY_BLOW",
+      "id": "HEAVY_BLOW", "iconId": "warrior-heavy-blow",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 30,
@@ -347,7 +347,7 @@
       "description": "Мощный физический удар с повышенным уроном."
     },
     {
-      "id": "BATTLE_FOCUS",
+      "id": "BATTLE_FOCUS", "iconId": "warrior-battle-focus",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 20,
@@ -376,7 +376,7 @@
       "description": "Боевой приём, усиливающий контроль над ресурсом."
     },
     {
-      "id": "BATTLE_SHOUT",
+      "id": "BATTLE_SHOUT", "iconId": "warrior-battle-shout",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,
@@ -423,7 +423,7 @@
       ],
       "displayName": "Бастион",
       "description": "Защитная способность воина.",
-      "iconId": "bastion"
+      "iconId": "warrior-bastion"
     },
     {
       "id": "BATTLE_CRY",
@@ -453,7 +453,7 @@
       ],
       "displayName": "Боевой клич",
       "description": "Усиливает атаку воина и союзников на 20 секунд.",
-      "iconId": "battle-cry"
+      "iconId": "warrior-battle-cry"
     },
     {
       "id": "ENDURANCE_CRY",
@@ -481,7 +481,7 @@
       ],
       "displayName": "Клич стойкости",
       "description": "Повышает запас здоровья воинов отряда на 15 секунд.",
-      "iconId": "endurance-cry"
+      "iconId": "warrior-endurance-cry"
     },
     {
       "id": "WAR_BANNER",
@@ -511,7 +511,7 @@
       ],
       "displayName": "Знамя войны",
       "description": "Устанавливает знамя, усиливающее критические удары отряда.",
-      "iconId": "war-banner"
+      "iconId": "warrior-war-banner"
     },
     {
       "id": "CRY_OF_VENGEANCE",
@@ -539,7 +539,7 @@
       ],
       "displayName": "Клич мести",
       "description": "Накопленная боль союзников усиливает следующую атаку воина.",
-      "iconId": "cry-of-vengeance"
+      "iconId": "warrior-cry-of-vengeance"
     },
     {
       "id": "VICTORY_FLAG",
@@ -569,7 +569,7 @@
       ],
       "displayName": "Флаг победы",
       "description": "Знамя победы увеличивает наносимый урон отряда.",
-      "iconId": "victory-flag"
+      "iconId": "warrior-victory-flag"
     },
     {
       "id": "RALLY_CRY",
@@ -593,7 +593,7 @@
       ],
       "displayName": "Клич исцеления",
       "description": "Воин мгновенно восстанавливает здоровье себе и союзникам.",
-      "iconId": "rally-cry"
+      "iconId": "warrior-rally-cry"
     },
     {
       "id": "BATTLE_STANDARD",
@@ -623,7 +623,7 @@
       ],
       "displayName": "Боевой штандарт",
       "description": "Штандарт усиливает автоатаки воина и союзников.",
-      "iconId": "battle-standard"
+      "iconId": "warrior-battle-standard"
     },
     {
       "id": "WILD_STRIKE",
@@ -645,7 +645,7 @@
       ],
       "displayName": "Дикий удар",
       "description": "Сильный физический удар Берсерка за ярость.",
-      "iconId": "wild-strike"
+      "iconId": "warrior-wild-strike"
     },
     {
       "id": "WHIRLWIND",
@@ -667,10 +667,10 @@
       ],
       "displayName": "Вихрь",
       "description": "Круговая атака, поражающая всех противников в бою.",
-      "iconId": "whirlwind"
+      "iconId": "warrior-whirlwind"
     },
     {
-      "id": "BERSERK",
+      "id": "BERSERK", "iconId": "warrior-berserk",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 50,
@@ -1660,7 +1660,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_01"
         },
         {
           "id": "B-1-2",
@@ -1684,7 +1684,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_BLOOD_RENEWAL"
+          "iconId": "BERSERKER_02"
         },
         {
           "id": "B-1-3",
@@ -1709,7 +1709,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_KEEN_EYE"
+          "iconId": "BERSERKER_03"
         },
         {
           "id": "B-1-4",
@@ -1732,7 +1732,7 @@
           ],
           "branchId": "BERSERKER",
           "version": 1,
-          "iconId": "BERSERKER_CRUSHING_BLOW"
+          "iconId": "BERSERKER_04"
         },
         {
           "id": "B-2-1",
@@ -1761,7 +1761,7 @@
               "threshold": 50
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_05"
         },
         {
           "id": "B-2-2",
@@ -1784,7 +1784,7 @@
               "targetId": "WILD_STRIKE"
             }
           ],
-          "iconId": "BERSERKER_RAGE_SLASH"
+          "iconId": "BERSERKER_06"
         },
         {
           "id": "B-2-3",
@@ -1809,7 +1809,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_KEEN_EYE"
+          "iconId": "BERSERKER_07"
         },
         {
           "id": "B-2-4",
@@ -1836,7 +1836,7 @@
               "durationSeconds": 3
             }
           ],
-          "iconId": "BERSERKER_SUNDERING_BLADE"
+          "iconId": "BERSERKER_08"
         },
         {
           "id": "B-3-1",
@@ -1860,7 +1860,7 @@
               "internalCooldownSeconds": 1
             }
           ],
-          "iconId": "BERSERKER_KEEN_EYE"
+          "iconId": "BERSERKER_09"
         },
         {
           "id": "B-3-2",
@@ -1888,7 +1888,7 @@
               "targetId": "WHIRLWIND"
             }
           ],
-          "iconId": "BERSERKER_BLOOD_BLADES"
+          "iconId": "BERSERKER_10"
         },
         {
           "id": "B-3-3",
@@ -1913,7 +1913,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_SHATTER_GUARD"
+          "iconId": "BERSERKER_11"
         },
         {
           "id": "B-3-4",
@@ -1945,7 +1945,7 @@
               "tickIntervalSeconds": 1
             }
           ],
-          "iconId": "BERSERKER_BLOOD_BLADES"
+          "iconId": "BERSERKER_12"
         },
         {
           "id": "B-4-1",
@@ -1979,7 +1979,7 @@
               "runtimeStatus": "Supported"
             }
           ],
-          "iconId": "BERSERKER_SUNDERING_BLADE"
+          "iconId": "BERSERKER_13"
         },
         {
           "id": "B-4-2",
@@ -2017,7 +2017,7 @@
               "targetId": "WHIRLWIND"
             }
           ],
-          "iconId": "BERSERKER_BLOOD_BLADES"
+          "iconId": "BERSERKER_14"
         },
         {
           "id": "B-4-3",
@@ -2046,7 +2046,7 @@
               "targetId": "WILD_STRIKE"
             }
           ],
-          "iconId": "BERSERKER_SHATTER_GUARD"
+          "iconId": "BERSERKER_15"
         },
         {
           "id": "B-4-4",
@@ -2075,7 +2075,7 @@
               "threshold": 50
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_16"
         },
         {
           "id": "B-5-1",
@@ -2098,7 +2098,7 @@
               "targetId": "BERSERK"
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_17"
         },
         {
           "id": "B-5-2",
@@ -2123,7 +2123,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_RAGE_SLASH"
+          "iconId": "BERSERKER_18"
         },
         {
           "id": "B-5-3",
@@ -2146,7 +2146,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_BLOOD_BLADES"
+          "iconId": "BERSERKER_19"
         },
         {
           "id": "B-5-4",
@@ -2176,7 +2176,7 @@
               "targetId": "BERSERK"
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_20"
         },
         {
           "id": "B-6-1",
@@ -2199,7 +2199,7 @@
               ]
             }
           ],
-          "iconId": "BERSERKER_BLOOD_RENEWAL"
+          "iconId": "BERSERKER_21"
         },
         {
           "id": "B-6-2",
@@ -2224,7 +2224,7 @@
               "durationSeconds": 8
             }
           ],
-          "iconId": "BERSERKER_SHATTER_GUARD"
+          "iconId": "BERSERKER_22"
         },
         {
           "id": "B-6-3",
@@ -2254,7 +2254,7 @@
               "targetId": "BERSERK"
             }
           ],
-          "iconId": "BERSERKER_IRON_WILL"
+          "iconId": "BERSERKER_23"
         },
         {
           "id": "B-6-4",
@@ -2286,7 +2286,7 @@
               "internalCooldownSeconds": 3
             }
           ],
-          "iconId": "BERSERKER_RAGE_SLASH"
+          "iconId": "BERSERKER_24"
         },
         {
           "id": "B-7-1",
@@ -2320,7 +2320,7 @@
               "chancePercent": 100
             }
           ],
-          "iconId": "BERSERKER_SUNDERING_BLADE"
+          "iconId": "BERSERKER_25"
         },
         {
           "id": "B-7-2",
@@ -2347,7 +2347,7 @@
               "threshold": 25
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_26"
         },
         {
           "id": "B-7-3",
@@ -2379,7 +2379,7 @@
               "tickIntervalSeconds": 1
             }
           ],
-          "iconId": "BERSERKER_BLOOD_BLADES"
+          "iconId": "BERSERKER_27"
         },
         {
           "id": "B-7-4",
@@ -2404,7 +2404,7 @@
               "threshold": 20
             }
           ],
-          "iconId": "BERSERKER_KEEN_EYE"
+          "iconId": "BERSERKER_28"
         },
         {
           "id": "B-8-1",
@@ -2437,7 +2437,7 @@
               "targetId": "WHIRLWIND"
             }
           ],
-          "iconId": "BERSERKER_RAGE_SLASH"
+          "iconId": "BERSERKER_29"
         },
         {
           "id": "B-8-2",
@@ -2476,7 +2476,7 @@
               "runtimeStatus": "Supported"
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_30"
         },
         {
           "id": "B-8-3",
@@ -2500,7 +2500,7 @@
               "threshold": 10
             }
           ],
-          "iconId": "BERSERKER_BLADE_GUARD"
+          "iconId": "BERSERKER_31"
         },
         {
           "id": "B-9-1",
@@ -2539,7 +2539,7 @@
               "chancePercent": 20
             }
           ],
-          "iconId": "BERSERKER_WAR_MASK"
+          "iconId": "BERSERKER_32"
         },
         {
           "id": "W-1-1",

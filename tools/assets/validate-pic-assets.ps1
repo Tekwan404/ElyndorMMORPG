@@ -80,6 +80,25 @@ foreach ($file in Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'content') -Fi
             }
         }
     }
+
+}
+
+$v2ManifestPath = Join-Path $RepoRoot 'tools\assets\v2-art-manifest.json'
+if (Test-Path -LiteralPath $v2ManifestPath) {
+    $v2Manifest = Get-Content -LiteralPath $v2ManifestPath -Raw | ConvertFrom-Json
+    Test-ManifestOutputs $v2Manifest.talentIcons
+    Test-ManifestOutputs $v2Manifest.spellIcons
+
+    foreach ($spellGroup in @($v2Manifest.spellIcons | Where-Object { -not [string]::IsNullOrWhiteSpace($_.abilityId) } | Group-Object classId, abilityId)) {
+        if ($spellGroup.Count -gt 1) {
+            throw "V2 spell art maps multiple sheet cells to '$($spellGroup.Name)'."
+        }
+    }
+    foreach ($entry in @($v2Manifest.talentIcons) + @($v2Manifest.spellIcons)) {
+        if ([System.IO.Path]::GetExtension([string]$entry.output) -ne '.webp') {
+            throw "V2 art output must be WebP: $($entry.output)."
+        }
+    }
 }
 
 if ($missing.Count -gt 0) {
@@ -87,3 +106,6 @@ if ($missing.Count -gt 0) {
 }
 
 Write-Host "Asset manifest is valid: $($manifest.talentIcons.Count) talent icons, $($manifest.itemSheetIcons.Count) set icons and $($manifest.adminArt.Count) admin assets."
+if ($null -ne $v2Manifest) {
+    Write-Host "V2 art manifest is valid: $($v2Manifest.talentIcons.Count) talent mappings and $($v2Manifest.spellIcons.Count) spell-sheet crops."
+}
