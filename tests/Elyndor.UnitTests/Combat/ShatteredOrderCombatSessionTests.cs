@@ -253,7 +253,7 @@ public sealed class ShatteredOrderCombatSessionTests
     private static EncounterEnemyProfile Profile(
         string definitionId,
         IReadOnlyList<string> abilityIds,
-        IReadOnlyDictionary<string, AbilityDefinition> abilities,
+        Dictionary<string, AbilityDefinition> abilities,
         decimal hp = 100)
     {
         foreach (string abilityId in abilityIds)
