@@ -58,6 +58,9 @@ public sealed partial class CombatSession
             if (soul is not null)
             {
                 ResolveMorEtSoulSuccess(soul, combatEvent.OccurredAtUtc);
+                RetargetPlayersToLivingMorEtSoul(
+                    combatEvent.ActorId,
+                    combatEvent.OccurredAtUtc);
                 CompleteMorEtIfReady(combatEvent.OccurredAtUtc);
                 return;
             }
@@ -296,7 +299,38 @@ public sealed partial class CombatSession
             soul.SoulActorId,
             bossActorId,
             now,
-            "MOR_ET_SOUL_CONSUMED");
+            "MOR_ET_SOUL_CONSUMED",
+            ResolveNextLivingMorEtSoulActorId(soul.SoulActorId));
+    }
+
+    private void RetargetPlayersToLivingMorEtSoul(Guid removedSoulActorId, DateTimeOffset now)
+    {
+        Guid? nextSoulActorId = ResolveNextLivingMorEtSoulActorId(removedSoulActorId);
+        if (nextSoulActorId is null)
+            return;
+
+        RetargetPlayersFromEncounterEnemy(
+            removedSoulActorId,
+            now,
+            nextSoulActorId);
+    }
+
+    private Guid? ResolveNextLivingMorEtSoulActorId(Guid removedSoulActorId)
+    {
+        if (_morEtEncounterRuntime is null)
+            return null;
+
+        foreach (Guid soulActorId in _morEtEncounterRuntime.ActiveSoulActorIds)
+        {
+            if (soulActorId != removedSoulActorId
+                && _enemiesById.TryGetValue(soulActorId, out CombatParticipantDefinition? soul)
+                && !soul.Actor.IsDead)
+            {
+                return soulActorId;
+            }
+        }
+
+        return null;
     }
 
     private void RemoveMorEtOwnerDebuffs(CombatActorState owner, DateTimeOffset now)
@@ -355,6 +389,12 @@ public sealed partial class CombatSession
         if (_morEtBossActorId is not { } bossActorId)
             return;
         CombatActorState boss = _enemiesById[bossActorId].Actor;
+        if (boss.ActiveEffects.Any(effect =>
+                string.Equals(effect.Definition.Id, MorEtPhaseGuardEffectId, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
         ApplyKernelEvents(
             EffectEngine.Apply(
                 boss,
