@@ -21,12 +21,24 @@ public sealed partial class CombatSession
 
     private void RegisterThreat(CombatEvent combatEvent)
     {
-        ProcessMirrorEncounterEvent(combatEvent);
-        ProcessVelariusEncounterEvent(combatEvent);
-        ProcessMorEtEncounterEvent(combatEvent);
-        ProcessAzraelEncounterEvent(combatEvent);
-        ProcessEnemyInterruptUtilityEvent(combatEvent);
-        ProcessPaladinKernelEvent(combatEvent);
+        CombatPlayerRuntimeState previousActivePlayer = _activePlayerState;
+        try
+        {
+            ProcessMirrorEncounterEvent(combatEvent);
+            ProcessVelariusEncounterEvent(combatEvent);
+            ProcessMorEtEncounterEvent(combatEvent);
+            ProcessAzraelEncounterEvent(combatEvent);
+            ProcessEnemyInterruptUtilityEvent(combatEvent);
+            ProcessPaladinKernelEvent(combatEvent);
+        }
+        finally
+        {
+            // Encounter mechanics can apply effects to another party member. Those nested
+            // kernel events temporarily activate that member so their class/talent context is
+            // resolved correctly, but the outer command/tick must continue as the participant
+            // that was active before the encounter hook ran.
+            _activePlayerState = previousActivePlayer;
+        }
 
         if (combatEvent.SourceActorId is not { } sourceActorId
             || !IsPartyActor(sourceActorId)
