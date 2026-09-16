@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Contracts.Identity;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Identity;
@@ -148,6 +149,13 @@ public static class AuthenticationEndpoints
                 cancellationToken);
         }
         catch (HttpRequestException)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status503ServiceUnavailable,
+                "telegram_web_auth_unavailable");
+        }
+        catch (JsonException)
         {
             return CreateProblem(
                 httpContext,
