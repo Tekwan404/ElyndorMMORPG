@@ -125,7 +125,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
         return (idle, total);
     }
 
-    private static (long Used, long Total) ReadMemory()
+    private (long Used, long Total) ReadMemory()
     {
         try
         {
@@ -136,19 +136,19 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
                 foreach (string line in File.ReadLines("/proc/meminfo"))
                 {
                     if (line.StartsWith("MemTotal:", StringComparison.Ordinal)
-                        && long.TryParse(line[9..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long total))
-                        totalKb = total;
+                        && long.TryParse(line[9..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long memoryTotalKb))
+                        totalKb = memoryTotalKb;
                     else if (line.StartsWith("MemAvailable:", StringComparison.Ordinal)
-                        && long.TryParse(line[13..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long available))
-                        availableKb = available;
+                        && long.TryParse(line[13..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long availableKbValue))
+                        availableKb = availableKbValue;
                 }
 
                 if (totalKb > 0)
                     return (Math.Max(0, totalKb - availableKb) * 1024, totalKb * 1024);
             }
 
-            long total = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
-            return (Math.Max(0, _process.WorkingSet64), total);
+            long availableMemory = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            return (Math.Max(0, _process.WorkingSet64), availableMemory);
         }
         catch
         {
