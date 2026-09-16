@@ -11,12 +11,14 @@ public sealed record AzraelTriuneEncounterDefinition(
     decimal SplitTriggerHpPercent,
     TimeSpan ReviveWindow,
     decimal ReviveHpPercent,
+    decimal FinalPhaseHpPercent,
     decimal FinalDamageBonusPerRevive)
 {
     public static AzraelTriuneEncounterDefinition Default { get; } = new(
         SplitTriggerHpPercent: 0.65m,
         ReviveWindow: TimeSpan.FromSeconds(10),
         ReviveHpPercent: 0.35m,
+        FinalPhaseHpPercent: 0.30m,
         FinalDamageBonusPerRevive: 0.05m);
 
     public void Validate()
@@ -27,6 +29,8 @@ public sealed record AzraelTriuneEncounterDefinition(
             throw new ArgumentOutOfRangeException(nameof(ReviveWindow));
         if (ReviveHpPercent <= 0 || ReviveHpPercent >= 1)
             throw new ArgumentOutOfRangeException(nameof(ReviveHpPercent));
+        if (FinalPhaseHpPercent <= 0 || FinalPhaseHpPercent >= SplitTriggerHpPercent)
+            throw new ArgumentOutOfRangeException(nameof(FinalPhaseHpPercent));
         if (FinalDamageBonusPerRevive < 0)
             throw new ArgumentOutOfRangeException(nameof(FinalDamageBonusPerRevive));
     }
@@ -55,6 +59,7 @@ public sealed class AzraelTriuneEncounterRuntime
     public bool SplitCompleted { get; private set; }
     public DateTimeOffset? WindowExpiresAtUtc { get; private set; }
     public decimal ReviveHpPercent => _definition.ReviveHpPercent;
+    public decimal FinalPhaseHpPercent => _definition.FinalPhaseHpPercent;
     public decimal FinalDamageBonusPerRevive => _definition.FinalDamageBonusPerRevive;
     public TimeSpan ReviveWindow => _definition.ReviveWindow;
     public IReadOnlyDictionary<Guid, AzraelCloneRole> Clones => _clones;
