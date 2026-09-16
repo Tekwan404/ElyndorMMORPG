@@ -5,6 +5,10 @@ namespace Elyndor.Server.Administration;
 public enum AdminCommandType
 {
     Help,
+    Status,
+    Health,
+    Resources,
+    Errors,
     ShowCharacter,
     SetLevel,
     Restore,
@@ -18,16 +22,11 @@ public enum AdminCommandType
     CreatePromoCode
 }
 
-public sealed record AdminCommand(
-    AdminCommandType Type,
-    long? TargetTelegramUserId = null,
-    string? Value = null,
-    int? NumericValue = null);
+public sealed record AdminCommand(AdminCommandType Type, long? TargetTelegramUserId = null, string? Value = null, int? NumericValue = null);
 
 public sealed record AdminCommandParseResult(bool IsSuccess, AdminCommand? Command, string? ErrorCode)
 {
     public static AdminCommandParseResult Success(AdminCommand command) => new(true, command, null);
-
     public static AdminCommandParseResult Failure(string errorCode) => new(false, null, errorCode);
 }
 
