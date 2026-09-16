@@ -82,9 +82,15 @@ public sealed partial class CombatSession
         }
 
         if (combatEvent.Type != CombatEventType.DamageDealt
-            || combatEvent.TargetActorId != bossActorId
-            || combatEvent.IsPeriodic)
+            || combatEvent.TargetActorId != bossActorId)
         {
+            return;
+        }
+
+        if (combatEvent.IsPeriodic)
+        {
+            if (!_velariusEncounterRuntime.FinalPhaseActive)
+                EnsureVelariusPhaseGuard(combatEvent.OccurredAtUtc);
             return;
         }
 
