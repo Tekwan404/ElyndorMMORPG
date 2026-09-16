@@ -14,8 +14,9 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
     private readonly Process _process = Process.GetCurrentProcess();
     private readonly string _contentRoot = environment.ContentRootPath;
     private readonly object _gate = new();
-    private TimeSpan _lastCpu;
+    private TimeSpan _lastProcessCpu;
     private DateTimeOffset _lastCpuAt;
+    private (long Idle, long Total)? _lastHostCpu;
     private long _lastReceived;
     private long _lastSent;
     private DateTimeOffset _lastNetworkAt;
@@ -24,7 +25,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
     {
         cancellationToken.ThrowIfCancellationRequested();
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        double? cpu = null;
+        double? hostCpu = null;
         double? processCpu = null;
         long received = 0;
         long sent = 0;
@@ -34,22 +35,32 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
             _process.Refresh();
             lock (_gate)
             {
-                TimeSpan currentCpu = _process.TotalProcessorTime;
+                TimeSpan currentProcessCpu = _process.TotalProcessorTime;
                 if (_lastCpuAt != default)
                 {
                     double elapsed = (now - _lastCpuAt).TotalSeconds;
                     if (elapsed > 0)
                     {
                         processCpu = Math.Clamp(
-                            (currentCpu - _lastCpu).TotalSeconds / elapsed / Environment.ProcessorCount * 100d,
+                            (currentProcessCpu - _lastProcessCpu).TotalSeconds / elapsed / Environment.ProcessorCount * 100d,
                             0,
                             100);
-                        cpu = processCpu;
                     }
                 }
 
-                _lastCpu = currentCpu;
+                _lastProcessCpu = currentProcessCpu;
                 _lastCpuAt = now;
+
+                (long idle, long total) currentHostCpu = ReadHostCpuTotals();
+                if (_lastHostCpu.HasValue)
+                {
+                    long idleDelta = Math.Max(0, currentHostCpu.idle - _lastHostCpu.Value.Idle);
+                    long totalDelta = Math.Max(0, currentHostCpu.total - _lastHostCpu.Value.Total);
+                    if (totalDelta > 0)
+                        hostCpu = Math.Clamp((1d - idleDelta / (double)totalDelta) * 100d, 0, 100);
+                }
+
+                _lastHostCpu = currentHostCpu;
 
                 (long rx, long tx) = ReadNetworkTotals();
                 if (_lastNetworkAt != default)
@@ -69,7 +80,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
         }
         catch
         {
-            // Resource monitoring must never bring down the game server.
+            // Monitoring must never bring down the game server.
         }
 
         (long memoryUsed, long memoryTotal) = ReadMemory();
@@ -77,7 +88,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
 
         var snapshot = new ServerMetricsSnapshot(
             now,
-            cpu,
+            hostCpu ?? processCpu,
             processCpu,
             memoryUsed,
             memoryTotal,
@@ -92,6 +103,28 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
         return Task.FromResult(snapshot);
     }
 
+    private static (long Idle, long Total) ReadHostCpuTotals()
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/proc/stat"))
+            return (0, 0);
+
+        string? line = File.ReadLines("/proc/stat")
+            .FirstOrDefault(value => value.StartsWith("cpu ", StringComparison.Ordinal));
+        if (line is null)
+            return (0, 0);
+
+        string[] values = line[4..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (values.Length < 4)
+            return (0, 0);
+
+        long[] counters = values.Take(8)
+            .Select(value => long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsed) ? parsed : 0)
+            .ToArray();
+        long total = counters.Sum();
+        long idle = counters[3] + (counters.Length > 4 ? counters[4] : 0);
+        return (idle, total);
+    }
+
     private static (long Used, long Total) ReadMemory()
     {
         try
@@ -103,15 +136,15 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
                 foreach (string line in File.ReadLines("/proc/meminfo"))
                 {
                     if (line.StartsWith("MemTotal:", StringComparison.Ordinal)
-                        && long.TryParse(line[9..].Trim().Split(' ')[0], out long total))
+                        && long.TryParse(line[9..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long total))
                         totalKb = total;
                     else if (line.StartsWith("MemAvailable:", StringComparison.Ordinal)
-                        && long.TryParse(line[13..].Trim().Split(' ')[0], out long available))
+                        && long.TryParse(line[13..].Trim().Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long available))
                         availableKb = available;
                 }
 
                 if (totalKb > 0)
-                    return ((totalKb - availableKb) * 1024, totalKb * 1024);
+                    return (Math.Max(0, totalKb - availableKb) * 1024, totalKb * 1024);
             }
 
             long total = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
@@ -130,10 +163,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
             string root = Path.GetPathRoot(Path.GetFullPath(_contentRoot))
                 ?? Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture);
             DriveInfo drive = new(root);
-            return (
-                drive.TotalSize - drive.AvailableFreeSpace,
-                drive.TotalSize,
-                drive.AvailableFreeSpace);
+            return (drive.TotalSize - drive.AvailableFreeSpace, drive.TotalSize, drive.AvailableFreeSpace);
         }
         catch
         {
@@ -147,7 +177,7 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
         {
             long rx = 0;
             long tx = 0;
-            string proc = "/proc/net/dev";
+            const string proc = "/proc/net/dev";
             if (!File.Exists(proc))
                 return (0, 0);
 
@@ -157,14 +187,13 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
                 if (separator < 0)
                     continue;
 
-                string[] values = line[(separator + 1)..]
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string[] values = line[(separator + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (values.Length < 9)
                     continue;
 
-                if (long.TryParse(values[0], out long interfaceRx))
+                if (long.TryParse(values[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long interfaceRx))
                     rx += interfaceRx;
-                if (long.TryParse(values[8], out long interfaceTx))
+                if (long.TryParse(values[8], NumberStyles.Integer, CultureInfo.InvariantCulture, out long interfaceTx))
                     tx += interfaceTx;
             }
 
