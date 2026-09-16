@@ -87,6 +87,21 @@ public static class EffectEngine
         Func<ActiveEffect, DateTimeOffset, IReadOnlyList<CombatEvent>>? periodicDamageResolver = null)
     {
         List<CombatEvent> events = [];
+
+        // Dead actors must never keep an overdue periodic tick scheduled. CombatSession
+        // uses the next effect tick as a scheduler deadline; leaving NextTickAtUtc in the
+        // past on a dead actor makes AdvanceCore process the same timestamp forever.
+        // Removing periodic effects also prevents missed DoT/HoT ticks from being replayed
+        // if an encounter mechanic later revives the actor.
+        if (target.IsDead)
+        {
+            ActiveEffect[] periodicEffects = target.ActiveEffects
+                .Where(effect => effect.Definition.Kind is
+                    EffectKind.DamageOverTime or EffectKind.HealingOverTime)
+                .ToArray();
+            events.AddRange(RemoveEffects(target, periodicEffects, now));
+        }
+
         ActiveEffect[] snapshot = target.ActiveEffects
             .OrderBy(effect => effect.NextTickAtUtc ?? DateTimeOffset.MaxValue)
             .ThenByDescending(effect => effect.Definition.ApplicationPriority)
