@@ -9,7 +9,7 @@
       "description": "Изолированное тестовое подземелье для проверки новых босс-механик. Награды, лут, золото и опыт намеренно отключены.",
       "minimumLevel": 25,
       "maximumLevel": 25,
-      "entryLocationId": "ECLIPSED_CITADEL",
+      "entryLocationId": "SHATTERED_ORDER_CITADEL_TEST",
       "minimumPartySize": 1,
       "maximumPartySize": 5,
       "encounters": [
