@@ -48,6 +48,7 @@ public sealed class VelariusManaEncounterRuntime
     public bool FinalPhaseActive => FinalBarrierTriggered;
     public int FeederCount => _definition.FeederCount;
     public decimal ManaPerFeed => _definition.ManaPerFeed;
+    public decimal FinalBarrierTriggerHpPercent => _definition.FinalBarrierTriggerHpPercent;
 
     public bool TryTriggerFeeders(decimal currentHp, decimal maxHp)
     {
