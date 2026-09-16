@@ -27,7 +27,7 @@ This phase document owns execution boundaries and API/persistence decisions. The
 
 Phase 1 includes:
 
-- Telegram `initData` exchange and Development-only test authentication;
+- Telegram Mini App `initData` exchange, Telegram browser OIDC login, and Development-only test authentication;
 - idempotent Account resolution;
 - short-lived JWT access tokens and frontend re-authentication after `401`;
 - atomic creation of one character per account;
@@ -40,36 +40,64 @@ Phase 1 excludes stats/resources beyond identity-level class selection, abilitie
 
 ## Authentication and session
 
+Telegram Mini App remains the primary path:
+
 ```text
 Telegram Mini App
 → raw initData
 → POST /api/v1/auth/telegram
 → server validates hash and auth_date
-→ Account lookup/create
+→ Account lookup/create by TelegramUserId
 → short-lived Elyndor JWT
 ```
 
-- Telegram identity is accepted only from validated raw `initData`.
-- The Bot Token exists only in environment variables or .NET user secrets.
+A normal browser uses Telegram OpenID Connect Authorization Code Flow with PKCE and converges on the same Account/JWT boundary:
+
+```text
+Browser /world
+→ Telegram OIDC authorize (code + PKCE)
+→ POST /api/v1/auth/telegram-web { code, codeVerifier }
+→ server exchanges the code with Telegram using Client Secret
+→ server validates Telegram id_token signature, issuer, audience, expiry, and user id
+→ server issues a short-lived Elyndor-signed runtime web credential
+→ POST /api/v1/auth/telegram { initData: "web:..." }
+→ server validates the web credential
+→ Account lookup/create by the same TelegramUserId
+→ short-lived Elyndor JWT
+```
+
+- Telegram identity is accepted only from validated raw Mini App `initData` or from a server-validated Telegram OIDC `id_token` encapsulated in an Elyndor-signed web credential.
+- The browser never submits an authoritative Telegram user ID on its own.
+- The Bot Token and Telegram OIDC Client Secret exist only in environment variables or .NET user secrets. The Client Secret is never returned by an API.
+- Browser OIDC uses `state` and PKCE S256. The PKCE verifier/state may live in `sessionStorage` only for the full-page authorization redirect and are cleared when the callback is consumed.
+- The Elyndor web credential exists only in runtime memory, is scoped to the browser-auth purpose/audience, expires within the configured bounded lifetime, and is rejected immediately when Telegram web authentication is disabled.
 - JWT lifetime is 15 minutes. There is no refresh token in Phase 1.
 - JWT contains the Elyndor Account ID as subject; Telegram profile data is not treated as authorization state.
-- Frontend stores JWT only in runtime memory and never in `localStorage`, `sessionStorage`, cookies, or IndexedDB.
-- A `401` clears the in-memory token, repeats the Telegram exchange, and retries the original safe bootstrap request once. A repeated `401` enters an explicit authentication error state.
+- Frontend stores Elyndor JWTs and web credentials only in runtime memory and never in `localStorage`, `sessionStorage`, cookies, or IndexedDB.
+- A `401` clears the in-memory JWT, repeats the trusted Telegram exchange, and retries the original safe bootstrap request once. A repeated `401` enters an explicit authentication error state.
 - Development authentication is registered only when the environment is `Development` and `Authentication:Development:Enabled` is explicitly true. It is disabled in PublicTest and Production.
+- Telegram browser authentication is opt-in configuration. When `Authentication:Telegram:Web:Enabled` is false, the Mini App path keeps working and all web credentials are rejected.
 
 ### Authentication API
 
 ```text
 POST /api/v1/auth/telegram
 Request:  { initData: string }
-Response: { accessToken: string, expiresAtUtc: string }
+Response: { accessToken: string, expiresAtUtc: string, roles: string[] }
+
+GET /api/v1/auth/telegram-web/config
+Response: { enabled: bool, clientId: string|null, redirectUri: string|null }
+
+POST /api/v1/auth/telegram-web
+Request:  { code: string, codeVerifier: string }
+Response: { webCredential: string, expiresAtUtc: string }
 
 POST /api/v1/auth/development
 Request:  {}
-Response: { accessToken: string, expiresAtUtc: string }
+Response: { accessToken: string, expiresAtUtc: string, roles: string[] }
 ```
 
-The development endpoint uses a configured positive Telegram test ID and never accepts an identity supplied by the browser.
+The browser config endpoint exposes only public OIDC configuration. The development endpoint uses a configured positive Telegram test ID and never accepts an identity supplied by the browser.
 
 ## Account persistence
 
@@ -81,7 +109,7 @@ Account
 - LastSeenAtUtc: timestamptz
 ```
 
-Account resolution uses a PostgreSQL unique constraint on `TelegramUserId`. Concurrent first logins converge on one Account. `LastSeenAtUtc` uses injected `TimeProvider` and is updated inside the resolution transaction.
+Account resolution uses a PostgreSQL unique constraint on `TelegramUserId`. Mini App and browser authentication for the same Telegram user converge on the same Account. Concurrent first logins converge on one Account. `LastSeenAtUtc` uses injected `TimeProvider` and is updated inside the resolution transaction.
 
 ## Character creation
 
@@ -173,7 +201,7 @@ The two-tab case `Starter Town → Forest` racing with `Starter Town → Deep Fo
 GET /api/v1/bootstrap
 ```
 
-The authenticated snapshot contains Account ID, optional Character identity, current location, allowed transitions, server UTC time, and content/balance versions. Reload repeats Telegram authentication, obtains a new JWT, and fetches this snapshot. PostgreSQL is the permanent source of truth.
+The authenticated snapshot contains Account ID, optional Character identity, current location, allowed transitions, server UTC time, and content/balance versions. Mini App reload repeats `initData` authentication. Browser reload repeats the Telegram OIDC entry flow because no Elyndor web credential or JWT is persisted. Both paths obtain a new JWT and fetch the same authoritative snapshot. PostgreSQL is the permanent source of truth.
 
 SignalR may be added only for connection-state and snapshot delivery required by the final reconnect flow; HTTP bootstrap remains the recovery baseline.
 
@@ -183,6 +211,8 @@ The Vue application has explicit states:
 
 ```text
 booting
+browser login required
+browser login redirecting
 authenticating
 authentication error
 character missing
@@ -195,7 +225,7 @@ re-authenticating
 offline/reconnect
 ```
 
-The character-creation screen exposes only the approved race, gender, and class options. The world screen renders current location and server-provided transitions. Controls are disabled while their mutation is pending.
+The browser login gate wraps the existing game shell; successful browser authentication does not create a second game UI. The character-creation screen exposes only the approved race, gender, and class options. The world screen renders current location and server-provided transitions. Controls are disabled while their mutation is pending.
 
 ## Persistence boundary for later combat
 
@@ -209,8 +239,9 @@ Authoritative state does not imply writing HP, Rage, Focus, or Mana to PostgreSQ
 
 ## Failure and security cases
 
-- Invalid, stale, future-dated, duplicated, or malformed Telegram data is rejected with stable error codes.
-- Missing signing configuration fails closed; secrets never appear in logs or API responses.
+- Invalid, stale, future-dated, duplicated, or malformed Mini App Telegram data is rejected with stable error codes.
+- Invalid browser OIDC state, PKCE verifier, authorization code, token signature, issuer, audience, expiry, or Telegram user identity is rejected before Account resolution.
+- Missing signing configuration, enabled web auth without required OIDC configuration, and disabled browser authentication fail closed; secrets never appear in logs or API responses.
 - Expired JWT returns `401` and triggers the bounded re-auth flow.
 - Duplicate Account, character name, account-character, creation request, and travel request races are resolved by database constraints/transactions.
 - Invalid class/race/gender/location identifiers are rejected server-side.
@@ -219,15 +250,15 @@ Authoritative state does not imply writing HP, Rage, Focus, or Mana to PostgreSQ
 
 ## Testing contract
 
-- Unit: character-name policy and content/world transition rules.
+- Unit: character-name policy, content/world transition rules, and frontend Mini App-vs-browser credential precedence.
 - PostgreSQL integration: migrations, unique constraints, concurrent Account resolution, concurrent names, character idempotency, and travel races.
-- API: Telegram/development auth boundaries, JWT authorization/expiry, character creation, bootstrap, and travel errors.
-- Frontend: auth retry, creation validation, loading/disabled/error states, and bootstrap restoration.
-- Playwright: Telegram-like mobile viewport from first boot through character creation, travel, reload, and restored location.
+- API: Mini App/development/browser auth boundaries, disabled web-auth behavior, public-only OIDC config, same-account convergence, JWT authorization/expiry, character creation, bootstrap, and travel errors.
+- Frontend: browser login gate, auth retry, creation validation, loading/disabled/error states, and bootstrap restoration.
+- Playwright: Telegram-like mobile viewport from first boot through character creation, travel, reload, and restored location; browser OIDC itself requires operator-owned Telegram credentials for live verification.
 
 ## Definition of Done
 
-- [x] Telegram auth endpoint validates real protocol fixtures and issues a 15-minute JWT.
+- [x] Telegram Mini App auth endpoint validates real protocol fixtures and issues a 15-minute JWT.
 - [x] Invalid `initData` is rejected and Development auth is absent outside Development.
 - [x] Expired JWT performs one clean Telegram re-authentication attempt without persistent token storage.
 - [x] Account creation is idempotent under concurrency.
@@ -241,3 +272,12 @@ Authoritative state does not imply writing HP, Rage, Focus, or Mana to PostgreSQ
 - [x] Frontend lint/typecheck/unit/build checks pass.
 - [x] The complete mobile flow passes in a real Playwright browser.
 - [x] Diff review finds no secrets, development-auth exposure, or Phase 2 scope creep.
+
+### Browser authentication extension gate
+
+- [ ] Browser `/world` offers Telegram OIDC Authorization Code + PKCE when Mini App `initData` is absent.
+- [ ] Telegram OIDC identity is validated server-side and never accepted as a client-supplied Telegram user ID.
+- [ ] Mini App and browser login for the same Telegram user resolve the same Account and character.
+- [ ] Browser credentials and Elyndor JWTs are not persisted beyond runtime memory; only transient PKCE state survives the authorization redirect.
+- [ ] Telegram web authentication remains disabled until operator-owned Client ID/Secret/Allowed URL configuration is supplied.
+- [ ] Backend, frontend, integration, and browser regression checks are green before merge.
