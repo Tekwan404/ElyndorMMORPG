@@ -1,6 +1,9 @@
+using System.Diagnostics;
 using System.Globalization;
 using Elyndor.Infrastructure.Administration;
+using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Monitoring;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Server.Administration;
@@ -10,7 +13,8 @@ public sealed class TelegramAdminUpdateProcessor(
     TelegramAdministrationService administrationService,
     ITelegramMessageSender messageSender,
     IServerMetricsCollector metricsCollector,
-    ServerErrorMetrics errors)
+    ServerErrorMetrics errors,
+    GameDbContext dbContext)
 {
     internal const string HelpText = """
         Elyndor admin commands:
@@ -95,9 +99,34 @@ public sealed class TelegramAdminUpdateProcessor(
     private async Task SendHealthAsync(long chatId, CancellationToken cancellationToken)
     {
         ServerMetricsSnapshot metrics = await metricsCollector.CollectAsync(cancellationToken);
-        string state = GetState(metrics);
-        string text = $"🩺 Elyndor Health — {state}\n"
-            + $"Process: 🟢 running\n"
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool databaseHealthy;
+        string databaseDetail;
+        try
+        {
+            databaseHealthy = await dbContext.Database.CanConnectAsync(cancellationToken);
+            databaseDetail = databaseHealthy ? "connection ok" : "connection failed";
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            databaseHealthy = false;
+            databaseDetail = exception.GetType().Name;
+        }
+        stopwatch.Stop();
+
+        string processState = "🟢 running";
+        string databaseState = databaseHealthy ? "🟢 OK" : "🔴 DOWN";
+        string resourceState = GetState(metrics);
+        string overall = !databaseHealthy || resourceState == "🔴 CRITICAL"
+            ? "🔴 CRITICAL"
+            : resourceState == "🟡 WARNING"
+                ? "🟡 WARNING"
+                : "🟢 OK";
+
+        string text = $"🩺 Elyndor Health — {overall}\n"
+            + $"Process: {processState}\n"
+            + $"PostgreSQL: {databaseState} ({stopwatch.ElapsedMilliseconds} ms)\n"
+            + $"Detail: {databaseDetail}\n"
             + $"CPU: {FormatPercent(metrics.CpuPercent)}\n"
             + $"RAM: {metrics.MemoryPercent:F0}%\n"
             + $"Disk: {metrics.DiskPercent:F0}%\n"
