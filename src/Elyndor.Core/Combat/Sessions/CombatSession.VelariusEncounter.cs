@@ -119,13 +119,29 @@ public sealed partial class CombatSession
         decimal shieldMagnitude,
         DateTimeOffset now)
     {
-        if (_velariusEncounterRuntime is null)
+        if (_velariusEncounterRuntime is null || _velariusEncounterProfile is null)
             return;
 
         decimal minimumFinalPhaseHp =
             boss.MaxHp * _velariusEncounterRuntime.FinalBarrierTriggerHpPercent;
         if (boss.CurrentHp < minimumFinalPhaseHp)
             boss.SetCurrentHp(minimumFinalPhaseHp);
+
+        foreach (CombatParticipantDefinition feeder in _enemies
+                     .Where(enemy =>
+                         !enemy.Actor.IsDead
+                         && string.Equals(
+                             enemy.DefinitionId,
+                             _velariusEncounterProfile.ManaFeeder.Monster.Id,
+                             StringComparison.Ordinal))
+                     .ToArray())
+        {
+            DeactivateEncounterEnemy(
+                feeder.Actor.ActorId,
+                boss.ActorId,
+                now,
+                "VELARIUS_MANA_FEEDER_DISMISSED");
+        }
 
         decimal remainingMana = boss.CurrentResource;
         if (remainingMana > 0)
