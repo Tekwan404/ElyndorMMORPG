@@ -72,9 +72,8 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
             // Resource monitoring must never bring down the game server.
         }
 
+        (long memoryUsed, long memoryTotal) = ReadMemory();
         (long diskUsed, long diskTotal, long diskFree) = ReadDisk();
-        long memoryTotal = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
-        long memoryUsed = Math.Max(0, memoryTotal - GC.GetGCMemoryInfo().MemoryLoadBytes);
 
         var snapshot = new ServerMetricsSnapshot(
             now,
@@ -91,6 +90,37 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
             Environment.ProcessorCount);
 
         return Task.FromResult(snapshot);
+    }
+
+    private static (long Used, long Total) ReadMemory()
+    {
+        try
+        {
+            if (OperatingSystem.IsLinux() && File.Exists("/proc/meminfo"))
+            {
+                long totalKb = 0;
+                long availableKb = 0;
+                foreach (string line in File.ReadLines("/proc/meminfo"))
+                {
+                    if (line.StartsWith("MemTotal:", StringComparison.Ordinal)
+                        && long.TryParse(line[9..].Trim().Split(' ')[0], out long total))
+                        totalKb = total;
+                    else if (line.StartsWith("MemAvailable:", StringComparison.Ordinal)
+                        && long.TryParse(line[13..].Trim().Split(' ')[0], out long available))
+                        availableKb = available;
+                }
+
+                if (totalKb > 0)
+                    return ((totalKb - availableKb) * 1024, totalKb * 1024);
+            }
+
+            long total = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+            return (Math.Max(0, _process.WorkingSet64), total);
+        }
+        catch
+        {
+            return (0, 0);
+        }
     }
 
     private (long Used, long Total, long Free) ReadDisk()
