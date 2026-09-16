@@ -45,6 +45,7 @@ export const gameArt = {
     DEEP_FOREST: whisperingForest,
     ANCIENT_MINE: ancientRuins,
     ECLIPSED_CITADEL: ancientRuins,
+    SHATTERED_ORDER_CITADEL_TEST: ancientRuins,
     BROODMOTHER_LAIR: ancientRuins,
     BLIGHTED_GROVE: caravanRoad,
   },
