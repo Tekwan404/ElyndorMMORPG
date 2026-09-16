@@ -74,22 +74,22 @@ function resetOrder(): void {
 
 function abilityMeta(ability: KnownAbility): string {
   const parts: string[] = []
-  if (ability.resourceCost > 0) parts.push(`Ресурс ${ability.resourceCost}`)
-  if (ability.cooldownSeconds > 0) parts.push(`КД ${ability.cooldownSeconds}с`)
-  return parts.join(' · ') || 'Без стоимости и перезарядки'
+  if (ability.resourceCost > 0) parts.push(`Стоимость: ${ability.resourceCost}`)
+  if (ability.cooldownSeconds > 0) parts.push(`Перезарядка: ${ability.cooldownSeconds} с`)
+  return parts.join(' · ') || 'Без затрат и перезарядки'
 }
 </script>
 
 <template>
   <section class="hotbar-settings" data-combat-hotbar-settings>
     <header class="hotbar-settings__header">
-      <small>БОЕВОЙ ИНТЕРФЕЙС</small>
-      <h2>Панель способностей</h2>
-      <p>Нажми способность, затем другую — они поменяются местами. Первые 12 слотов отображаются в бою в двух рядах по шесть.</p>
+      <small>ПАНЕЛЬ БОЯ</small>
+      <h2>Порядок способностей</h2>
+      <p>Выберите две способности, чтобы поменять их местами. В бою отображаются первые 12.</p>
     </header>
 
     <section v-if="orderedAbilities.length" class="hotbar-settings__active" aria-label="Активная панель">
-      <strong class="hotbar-settings__section-label">АКТИВНАЯ ПАНЕЛЬ · 12</strong>
+      <strong class="hotbar-settings__section-label">В БОЮ · 12 ЯЧЕЕК</strong>
       <div class="hotbar-settings__slots" role="list" aria-label="Порядок боевых способностей">
       <button
         v-for="(ability, index) in activeSlots"
@@ -108,8 +108,8 @@ function abilityMeta(ability: KnownAbility): string {
       >
         <span class="hotbar-slot__number">{{ index + 1 }}</span>
         <span class="hotbar-slot__copy">
-          <strong>{{ ability?.displayName ?? 'Пустой слот' }}</strong>
-          <small>{{ ability ? abilityMeta(ability) : 'Свободная позиция' }}</small>
+          <strong>{{ ability?.displayName ?? 'Пустая ячейка' }}</strong>
+          <small>{{ ability ? abilityMeta(ability) : 'Свободно' }}</small>
         </span>
         <span v-if="ability" class="hotbar-slot__state">
           {{ selectedAbilityId === ability.id ? 'Выбрано' : 'В бою' }}
@@ -130,22 +130,22 @@ function abilityMeta(ability: KnownAbility): string {
           :aria-pressed="selectedAbilityId === ability.id"
           @click="selectSlot(ability.id)"
         >
-          <span class="hotbar-slot__number">R</span>
+          <span class="hotbar-slot__number">Р</span>
           <span class="hotbar-slot__copy"><strong>{{ ability.displayName }}</strong><small>{{ abilityMeta(ability) }}</small></span>
           <span class="hotbar-slot__state">{{ selectedAbilityId === ability.id ? 'Выбрано' : 'Резерв' }}</span>
         </button>
       </div>
     </section>
 
-    <div v-else class="hotbar-settings__empty">У героя пока нет доступных боевых способностей.</div>
+    <div v-else class="hotbar-settings__empty">У героя пока нет боевых способностей.</div>
 
     <div v-if="selectedAbilityId" class="hotbar-settings__hint" role="status">
-      Теперь выбери второй слот — способности поменяются местами.
+      Теперь выберите вторую способность.
     </div>
 
     <footer class="hotbar-settings__footer">
-      <span>Раскладка сохраняется для этого героя на устройстве.</span>
-      <UIButton variant="ghost" @click="resetOrder">Сбросить порядок</UIButton>
+      <span>Порядок сохраняется для этого героя на устройстве.</span>
+      <UIButton variant="ghost" @click="resetOrder">Сбросить</UIButton>
     </footer>
   </section>
 </template>
