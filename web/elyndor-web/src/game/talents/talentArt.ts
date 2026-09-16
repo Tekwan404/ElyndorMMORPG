@@ -10,6 +10,7 @@ import berserkerSunderingBlade from '@/assets/game/talents/berserker/berserker-s
 import berserkerWarMask from '@/assets/game/talents/berserker/berserker-war-mask.webp'
 
 import { talentAbilityArt } from './talentAbilityArt.generated'
+import { abilityArtUrl } from '@/assets/abilityArt'
 
 const generatedTalentArtModules = import.meta.glob<string>(
   '../../assets/game/talents/**/*.{png,jpg,jpeg,webp,svg}',
@@ -46,6 +47,6 @@ export function resolveTalentArt(iconId: string | null | undefined): string | nu
   return iconId == null ? null : (talentArt[iconId] ?? null)
 }
 
-export function resolveAbilityArt(abilityId: string): string | null {
-  return resolveTalentArt(abilityArt[abilityId] ?? null)
+export function resolveAbilityArt(abilityId: string, iconId?: string | null): string | null {
+  return abilityArtUrl(iconId) ?? resolveTalentArt(abilityArt[abilityId] ?? null)
 }

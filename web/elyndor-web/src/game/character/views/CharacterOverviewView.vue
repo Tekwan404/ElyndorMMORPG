@@ -174,7 +174,7 @@ function itemStats(item: InventoryItem): string[] {
 }
 
 function abilityArt(ability: KnownAbility): string | null {
-  const talentArt = resolveAbilityArt(ability.id)
+  const talentArt = resolveAbilityArt(ability.id, ability.iconId)
   if (talentArt) return talentArt
   if (ability.id === 'STRIKE') return gameArt.warriorAbilities.strike
   if (ability.id === 'SHIELD_BASH') return gameArt.warriorAbilities.shieldBash

@@ -34,151 +34,151 @@
   ],
   "abilities": [
     {
-      "id": "MAGE_FIREBALL", "type": "Casted", "targetType": "SingleEnemy",
+      "id": "MAGE_FIREBALL", "iconId": "mage-fireball", "type": "Casted", "targetType": "SingleEnemy",
       "resourceCost": 20, "cooldown": "00:00:00", "castTime": "00:00:01.8000000",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 70, "damageType": "Magical", "spellPowerCoefficient": 1.25, "damagePerCharacterLevel": 5.5 }],
       "displayName": "Огненный шар", "description": "Основное прямое огненное заклинание."
     },
     {
-      "id": "MAGE_FIRE_BLAST", "type": "Instant", "targetType": "SingleEnemy",
+      "id": "MAGE_FIRE_BLAST", "iconId": "mage-fire-blast", "type": "Instant", "targetType": "SingleEnemy",
       "resourceCost": 18, "cooldown": "00:00:08", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 55, "damageType": "Magical", "spellPowerCoefficient": 0.95, "damagePerCharacterLevel": 4.2 }],
       "displayName": "Огненный взрыв", "description": "Мгновенный прямой Fire-удар."
     },
     {
-      "id": "MAGE_SCORCH", "type": "Casted", "targetType": "SingleEnemy",
+      "id": "MAGE_SCORCH", "iconId": "mage-scorch", "type": "Casted", "targetType": "SingleEnemy",
       "resourceCost": 10, "cooldown": "00:00:00", "castTime": "00:00:01.1000000",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 34, "damageType": "Magical", "spellPowerCoefficient": 0.55, "damagePerCharacterLevel": 2.7 }],
       "displayName": "Ожог", "description": "Быстрый дешёвый Fire-каст, раскрывающийся через Уязвимость к огню."
     },
     {
-      "id": "MAGE_PYROBLAST", "type": "Casted", "targetType": "SingleEnemy",
+      "id": "MAGE_PYROBLAST", "iconId": "mage-pyroblast", "type": "Casted", "targetType": "SingleEnemy",
       "resourceCost": 30, "cooldown": "00:00:00", "castTime": "00:00:02.5000000",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 115, "damageType": "Magical", "spellPowerCoefficient": 2.20, "damagePerCharacterLevel": 8.7 }],
       "displayName": "Огненная глыба", "description": "Тяжёлый Pyroblast с очень высоким прямым уроном."
     },
     {
-      "id": "MAGE_FLAMESTRIKE", "type": "Casted", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_FLAMESTRIKE", "iconId": "mage-flamestrike", "type": "Casted", "targetType": "AllEnemiesInCombat",
       "resourceCost": 28, "cooldown": "00:00:06", "castTime": "00:00:02",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 48, "damageType": "Magical", "spellPowerCoefficient": 1.05, "damagePerCharacterLevel": 3.6 }],
       "displayName": "Огненный столб", "description": "Основной cast-based AoE Fire."
     },
     {
-      "id": "MAGE_BLAST_WAVE", "type": "Instant", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_BLAST_WAVE", "iconId": "mage-blast-wave", "type": "Instant", "targetType": "AllEnemiesInCombat",
       "resourceCost": 30, "cooldown": "00:00:12", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FIRE",
       "actions": [{ "type": "Damage", "amount": 42, "damageType": "Magical", "spellPowerCoefficient": 0.80, "damagePerCharacterLevel": 3.2 }],
       "displayName": "Взрывная волна", "description": "Мгновенная огненная волна по всем врагам encounter."
     },
     {
-      "id": "MAGE_COMBUSTION", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_COMBUSTION", "iconId": "mage-combustion", "type": "Instant", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:00:36", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "FIRE",
       "actions": [], "displayName": "Возгорание", "description": "Открывает критическое burst-окно Fire."
     },
     {
-      "id": "MAGE_ARCANE_SPARK", "type": "Instant", "targetType": "SingleEnemy",
+      "id": "MAGE_ARCANE_SPARK", "iconId": "mage-arcane-spark", "type": "Instant", "targetType": "SingleEnemy",
       "resourceCost": 15, "cooldown": "00:00:03", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "ARCANE",
       "actions": [{ "type": "Damage", "amount": 45, "damageType": "Magical", "spellPowerCoefficient": 0.75, "damagePerCharacterLevel": 3.5 }],
       "displayName": "Тайная искра", "description": "Базовый быстрый Arcane-удар."
     },
     {
-      "id": "MAGE_ARCANE_MISSILES", "type": "Casted", "targetType": "SingleEnemy",
+      "id": "MAGE_ARCANE_MISSILES", "iconId": "mage-arcane-missiles", "type": "Casted", "targetType": "SingleEnemy",
       "resourceCost": 28, "cooldown": "00:00:00", "castTime": "00:00:04",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "ARCANE",
       "actions": [{ "type": "Damage", "amount": 105, "damageType": "Magical", "spellPowerCoefficient": 2.40, "damagePerCharacterLevel": 8.0 }],
       "displayName": "Тайные снаряды", "description": "Канал Arcane-снарядов. Текущий combat kernel разрешает его как единый 4-секундный cast."
     },
     {
-      "id": "MAGE_ARCANE_EXPLOSION", "type": "Instant", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_ARCANE_EXPLOSION", "iconId": "mage-arcane-explosion", "type": "Instant", "targetType": "AllEnemiesInCombat",
       "resourceCost": 32, "cooldown": "00:00:06", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "ARCANE",
       "actions": [{ "type": "Damage", "amount": 50, "damageType": "Magical", "spellPowerCoefficient": 0.90, "damagePerCharacterLevel": 3.8 }],
       "displayName": "Тайный взрыв", "description": "Дорогой мгновенный Arcane AoE."
     },
     {
-      "id": "MAGE_MANA_SHIELD", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_MANA_SHIELD", "iconId": "mage-mana-shield", "type": "Instant", "targetType": "Self",
       "resourceCost": 10, "cooldown": "00:00:20", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "ARCANE",
       "actions": [], "displayName": "Щит маны", "description": "Поглощает входящий урон за счёт Mana."
     },
     {
-      "id": "MAGE_COUNTERSPELL", "type": "Instant", "targetType": "SingleEnemy",
+      "id": "MAGE_COUNTERSPELL", "iconId": "mage-counterspell", "type": "Instant", "targetType": "SingleEnemy",
       "resourceCost": 8, "cooldown": "00:00:18", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "ARCANE",
       "actions": [], "displayName": "Антимагия", "description": "Прерывает активное вражеское заклинание."
     },
     {
-      "id": "MAGE_PRESENCE_OF_MIND", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_PRESENCE_OF_MIND", "iconId": "mage-presence-of-mind", "type": "Instant", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:00:45", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "ARCANE",
       "actions": [], "displayName": "Присутствие разума", "description": "Следующее подходящее casted-заклинание становится мгновенным."
     },
     {
-      "id": "MAGE_ARCANE_POWER", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_ARCANE_POWER", "iconId": "mage-arcane-power", "type": "Instant", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:01:30", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "ARCANE",
       "actions": [], "displayName": "Мощь тайной магии", "description": "Arcane Power: больше урона ценой повышенного расхода Mana."
     },
     {
-      "id": "MAGE_EVOCATION", "type": "Casted", "targetType": "Self",
+      "id": "MAGE_EVOCATION", "iconId": "mage-evocation", "type": "Casted", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:02:00", "castTime": "00:00:04",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "ARCANE",
       "actions": [], "displayName": "Эвокация", "description": "4-секундный канал восстановления Mana."
     },
     {
-      "id": "MAGE_ICE_SHARD", "type": "Casted", "targetType": "SingleEnemy",
+      "id": "MAGE_ICE_SHARD", "iconId": "mage-ice-shard", "type": "Casted", "targetType": "SingleEnemy",
       "resourceCost": 18, "cooldown": "00:00:00", "castTime": "00:00:01.5000000",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [{ "type": "Damage", "amount": 60, "damageType": "Magical", "spellPowerCoefficient": 1.05, "damagePerCharacterLevel": 4.8 }],
       "displayName": "Ледяной осколок", "description": "Базовый Frost-каст, накладывающий Chill."
     },
     {
-      "id": "MAGE_FROST_NOVA", "type": "Instant", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_FROST_NOVA", "iconId": "mage-frost-nova", "type": "Instant", "targetType": "AllEnemiesInCombat",
       "resourceCost": 20, "cooldown": "00:00:25", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [], "displayName": "Кольцо льда", "description": "Замораживает обычных врагов; боссам накладывает Глубокий холод."
     },
     {
-      "id": "MAGE_BLIZZARD", "type": "Casted", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_BLIZZARD", "iconId": "mage-blizzard", "type": "Casted", "targetType": "AllEnemiesInCombat",
       "resourceCost": 30, "cooldown": "00:00:04", "castTime": "00:00:04",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [{ "type": "Damage", "amount": 95, "damageType": "Magical", "spellPowerCoefficient": 2.20, "damagePerCharacterLevel": 7.2 }],
       "displayName": "Снежная буря", "description": "Frost AoE-канал. Текущий kernel разрешает его как единый 4-секундный cast."
     },
     {
-      "id": "MAGE_COLD_SNAP", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_COLD_SNAP", "iconId": "mage-cold-snap", "type": "Instant", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:02:00", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "FROST",
       "actions": [], "displayName": "Холодная хватка", "description": "Сбрасывает основные Frost cooldown'ы."
     },
     {
-      "id": "MAGE_ICE_BLOCK", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_ICE_BLOCK", "iconId": "mage-ice-block", "type": "Instant", "targetType": "Self",
       "resourceCost": 0, "cooldown": "00:01:30", "castTime": "00:00:00",
       "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "FROST",
       "actions": [], "displayName": "Ледяная глыба", "description": "3 секунды неуязвимости; в это время маг не действует."
     },
     {
-      "id": "MAGE_CONE_OF_COLD", "type": "Instant", "targetType": "AllEnemiesInCombat",
+      "id": "MAGE_CONE_OF_COLD", "iconId": "mage-cone-of-cold", "type": "Instant", "targetType": "AllEnemiesInCombat",
       "resourceCost": 22, "cooldown": "00:00:10", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [{ "type": "Damage", "amount": 40, "damageType": "Magical", "spellPowerCoefficient": 0.75, "damagePerCharacterLevel": 3.1 }],
       "displayName": "Конус холода", "description": "Мгновенный Frost AoE с усиленным Chill."
     },
     {
-      "id": "MAGE_ICE_BARRIER", "type": "Instant", "targetType": "Self",
+      "id": "MAGE_ICE_BARRIER", "iconId": "mage-ice-barrier", "type": "Instant", "targetType": "Self",
       "resourceCost": 20, "cooldown": "00:00:30", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [], "displayName": "Ледяная преграда", "description": "Создаёт защитный Frost-щит."
     },
     {
-      "id": "MAGE_ICE_LANCE", "type": "Instant", "targetType": "SingleEnemy",
+      "id": "MAGE_ICE_LANCE", "iconId": "mage-ice-lance", "type": "Instant", "targetType": "SingleEnemy",
       "resourceCost": 18, "cooldown": "00:00:06", "castTime": "00:00:00",
       "usesGlobalCooldown": true, "globalCooldownCategory": "Standard", "isSpell": true, "school": "FROST",
       "actions": [{ "type": "Damage", "amount": 55, "damageType": "Magical", "spellPowerCoefficient": 0.95, "damagePerCharacterLevel": 4.2 }],

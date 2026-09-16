@@ -2,7 +2,6 @@
 import { computed, onUnmounted, ref } from 'vue'
 
 import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapshot, InventoryItem } from '@/api/contracts'
-import { abilityArtUrl } from '@/assets/abilityArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
@@ -278,7 +277,7 @@ function abilityName(id: string | null | undefined): string {
 }
 
 function abilityIcon(ability: CombatAbility): string | undefined {
-  return resolveAbilityArt(ability.id) ?? abilityArtUrl(ability.iconId)
+  return resolveAbilityArt(ability.id, ability.iconId) ?? undefined
 }
 
 function abilityGlyph(ability: CombatAbility): GlyphName {
