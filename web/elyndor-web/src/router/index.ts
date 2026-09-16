@@ -24,7 +24,7 @@ export function createRoutes(isDevelopment: boolean): RouteRecordRaw[] {
     {
       path: '/world',
       name: 'world',
-      component: () => import('@/app/AppShell.vue'),
+      component: () => import('@/app/WebEntryView.vue'),
     },
     {
       path: '/admin',
