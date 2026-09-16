@@ -48,6 +48,7 @@ public sealed class VelariusManaEncounterRuntime
     public bool FinalPhaseActive => FinalBarrierTriggered;
     public int FeederCount => _definition.FeederCount;
     public decimal ManaPerFeed => _definition.ManaPerFeed;
+    public decimal FeederTriggerHpPercent => _definition.FeederTriggerHpPercent;
     public decimal FinalBarrierTriggerHpPercent => _definition.FinalBarrierTriggerHpPercent;
 
     public bool TryTriggerFeeders(decimal currentHp, decimal maxHp)
@@ -56,8 +57,6 @@ public sealed class VelariusManaEncounterRuntime
         if (FeedersTriggered || FinalBarrierTriggered)
             return false;
         if (currentHp / maxHp > _definition.FeederTriggerHpPercent)
-            return false;
-        if (currentHp / maxHp <= _definition.FinalBarrierTriggerHpPercent)
             return false;
 
         FeedersTriggered = true;
@@ -73,7 +72,8 @@ public sealed class VelariusManaEncounterRuntime
         ValidateHp(currentHp, maxHp);
         ArgumentOutOfRangeException.ThrowIfNegative(remainingMana);
         shieldMagnitude = 0;
-        if (FinalBarrierTriggered
+        if (!FeedersTriggered
+            || FinalBarrierTriggered
             || currentHp / maxHp > _definition.FinalBarrierTriggerHpPercent)
         {
             return false;
