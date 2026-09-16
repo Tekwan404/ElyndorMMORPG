@@ -87,7 +87,8 @@ public sealed partial class CombatSession
         Guid actorId,
         Guid sourceActorId,
         DateTimeOffset now,
-        string definitionId)
+        string definitionId,
+        Guid? preferredNextTargetActorId = null)
     {
         if (!_enemiesById.TryGetValue(actorId, out CombatParticipantDefinition? enemy)
             || enemy.Actor.IsDead)
@@ -112,7 +113,7 @@ public sealed partial class CombatSession
             definitionId,
             SourceActorId: sourceActorId,
             TargetActorId: actorId));
-        RetargetPlayersFromEncounterEnemy(actorId, now);
+        RetargetPlayersFromEncounterEnemy(actorId, now, preferredNextTargetActorId);
     }
 
     private void ReviveEncounterEnemy(
@@ -214,10 +215,17 @@ public sealed partial class CombatSession
         }
     }
 
-    private void RetargetPlayersFromEncounterEnemy(Guid removedActorId, DateTimeOffset now)
+    private void RetargetPlayersFromEncounterEnemy(
+        Guid removedActorId,
+        DateTimeOffset now,
+        Guid? preferredNextTargetActorId = null)
     {
-        CombatParticipantDefinition? nextAlive = _enemies
-            .FirstOrDefault(enemy => !enemy.Actor.IsDead && enemy.Actor.ActorId != removedActorId);
+        CombatParticipantDefinition? nextAlive = preferredNextTargetActorId is { } preferredId
+            && _enemiesById.TryGetValue(preferredId, out CombatParticipantDefinition? preferred)
+            && !preferred.Actor.IsDead
+                ? preferred
+                : _enemies.FirstOrDefault(enemy =>
+                    !enemy.Actor.IsDead && enemy.Actor.ActorId != removedActorId);
         if (nextAlive is null)
             return;
 
