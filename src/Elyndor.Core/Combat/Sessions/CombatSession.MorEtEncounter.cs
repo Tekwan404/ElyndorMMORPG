@@ -91,6 +91,7 @@ public sealed partial class CombatSession
             .Where(actorId =>
                 _playerStatesByActorId.TryGetValue(actorId, out CombatPlayerRuntimeState? state)
                 && !state.Definition.Actor.IsDead)
+            .OrderBy(_ => _random.NextUnit())
             .ToArray();
         if (!_morEtEncounterRuntime.TryBeginNextWave(
                 boss.CurrentHp,
