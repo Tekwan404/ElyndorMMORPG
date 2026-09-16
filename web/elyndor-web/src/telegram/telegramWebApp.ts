@@ -12,9 +12,17 @@ declare global {
   }
 }
 
+let webAuthenticationData: string | null = null
+
 export function getTelegramInitData(): string | null {
   const initData = window.Telegram?.WebApp?.initData
-  return initData && initData.length > 0 ? initData : null
+  if (initData && initData.length > 0) return initData
+
+  return webAuthenticationData
+}
+
+export function setWebAuthenticationData(value: string | null): void {
+  webAuthenticationData = value && value.length > 0 ? value : null
 }
 
 export function initializeTelegramWebApp(): void {

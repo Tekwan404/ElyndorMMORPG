@@ -1,10 +1,11 @@
+using System.Text.Json;
 using Elyndor.Contracts.Identity;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Server.Administration;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace Elyndor.Server.Identity;
 
@@ -19,11 +20,24 @@ public static class AuthenticationEndpoints
             .RequireRateLimiting(ServerRateLimitPolicies.Authentication);
 
         group.MapPost("/telegram", AuthenticateTelegramAsync);
+        group.MapGet("/telegram-web/config", GetTelegramWebConfiguration);
+        group.MapPost("/telegram-web", AuthenticateTelegramWebAsync);
 
         if (mapDevelopmentEndpoint)
             group.MapPost("/development", AuthenticateDevelopmentAsync);
 
         return endpoints;
+    }
+
+    private static IResult GetTelegramWebConfiguration(
+        IOptions<AuthenticationOptions> authenticationOptions)
+    {
+        TelegramWebAuthenticationOptions web =
+            authenticationOptions.Value.Telegram.Web;
+        return Results.Ok(new TelegramWebAuthenticationConfigResponse(
+            web.Enabled,
+            web.Enabled ? web.ClientId : null,
+            web.Enabled ? web.RedirectUri : null));
     }
 
     private static async Task<IResult> AuthenticateTelegramAsync(
@@ -34,36 +48,144 @@ public static class AuthenticationEndpoints
         IOptions<TelegramAdminOptions> adminOptions,
         AccountResolver accountResolver,
         JwtTokenIssuer tokenIssuer,
+        TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
         AuthenticationOptions options = authenticationOptions.Value;
-        TelegramInitDataValidationResult validation = validator.Validate(
-            request.InitData,
-            options.Telegram.BotToken,
-            TimeSpan.FromSeconds(options.Telegram.InitDataMaxAgeSeconds),
-            TimeSpan.FromSeconds(options.Telegram.MaxFutureSkewSeconds));
+        long telegramUserId;
+        string? telegramUsername;
 
-        if (!validation.IsValid)
+        if (TelegramWebAuthenticationService.IsWebCredential(request.InitData))
         {
-            return Results.Problem(
-                statusCode: StatusCodes.Status401Unauthorized,
-                extensions: new Dictionary<string, object?>
-                {
-                    ["code"] = validation.ErrorCode!,
-                    ["correlationId"] = httpContext.TraceIdentifier
-                });
+            if (!options.Telegram.Web.Enabled)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "telegram_web_credential_invalid");
+            }
+
+            TelegramWebIdentity? webIdentity =
+                TelegramWebAuthenticationService.ValidateCredential(
+                    options,
+                    timeProvider,
+                    request.InitData);
+            if (webIdentity is null)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "telegram_web_credential_invalid");
+            }
+
+            telegramUserId = webIdentity.TelegramUserId;
+            telegramUsername = webIdentity.TelegramUsername;
+        }
+        else
+        {
+            TelegramInitDataValidationResult validation = validator.Validate(
+                request.InitData,
+                options.Telegram.BotToken,
+                TimeSpan.FromSeconds(options.Telegram.InitDataMaxAgeSeconds),
+                TimeSpan.FromSeconds(options.Telegram.MaxFutureSkewSeconds));
+
+            if (!validation.IsValid)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    validation.ErrorCode!);
+            }
+
+            telegramUserId = validation.Data!.TelegramUserId;
+            telegramUsername = validation.Data.TelegramUsername;
         }
 
-        long telegramUserId = validation.Data!.TelegramUserId;
         Account account = await accountResolver.ResolveAsync(
             telegramUserId,
-            validation.Data.TelegramUsername,
+            telegramUsername,
             cancellationToken);
-        return CreateSuccess(
+        return Results.Ok(CreateAuthenticationResponse(
             account,
             telegramUserId,
             adminOptions.Value,
-            tokenIssuer);
+            tokenIssuer));
+    }
+
+    private static async Task<IResult> AuthenticateTelegramWebAsync(
+        TelegramWebAuthenticationRequest request,
+        HttpContext httpContext,
+        HttpClient httpClient,
+        IOptions<AuthenticationOptions> authenticationOptions,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        AuthenticationOptions options = authenticationOptions.Value;
+        TelegramWebAuthenticationOptions web = options.Telegram.Web;
+        if (!web.Enabled)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status503ServiceUnavailable,
+                "telegram_web_auth_not_configured");
+        }
+
+        if (!IsValidTelegramWebRequest(request))
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status400BadRequest,
+                "telegram_web_request_invalid");
+        }
+
+        TelegramWebIdentity? identity;
+        try
+        {
+            identity = await TelegramWebAuthenticationService.ExchangeCodeAsync(
+                httpClient,
+                web,
+                request.Code,
+                request.CodeVerifier,
+                cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status503ServiceUnavailable,
+                "telegram_web_auth_unavailable");
+        }
+        catch (JsonException)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status503ServiceUnavailable,
+                "telegram_web_auth_unavailable");
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status503ServiceUnavailable,
+                "telegram_web_auth_unavailable");
+        }
+
+        if (identity is null)
+        {
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status401Unauthorized,
+                "telegram_web_auth_invalid");
+        }
+
+        IssuedTelegramWebCredential credential =
+            TelegramWebAuthenticationService.IssueCredential(
+                options,
+                timeProvider,
+                identity);
+        return Results.Ok(new TelegramWebAuthenticationResponse(
+            credential.Value,
+            credential.ExpiresAtUtc));
     }
 
     private static async Task<IResult> AuthenticateDevelopmentAsync(
@@ -78,14 +200,14 @@ public static class AuthenticationEndpoints
         Account account = await accountResolver.ResolveAsync(
             telegramUserId,
             cancellationToken);
-        return CreateSuccess(
+        return Results.Ok(CreateAuthenticationResponse(
             account,
             telegramUserId,
             adminOptions.Value,
-            tokenIssuer);
+            tokenIssuer));
     }
 
-    private static IResult CreateSuccess(
+    private static AuthenticationResponse CreateAuthenticationResponse(
         Account account,
         long telegramUserId,
         TelegramAdminOptions adminOptions,
@@ -96,9 +218,37 @@ public static class AuthenticationEndpoints
             : [];
         IssuedAccessToken token =
             tokenIssuer.Issue(account.Id, telegramUserId, roles);
-        return Results.Ok(new AuthenticationResponse(
+        return new AuthenticationResponse(
             token.AccessToken,
             token.ExpiresAtUtc,
-            roles));
+            roles);
     }
+
+    private static bool IsValidTelegramWebRequest(
+        TelegramWebAuthenticationRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Code)
+            || string.IsNullOrWhiteSpace(request.CodeVerifier)
+            || request.Code.Length > 4096
+            || request.CodeVerifier.Length is < 43 or > 128)
+        {
+            return false;
+        }
+
+        return request.CodeVerifier.All(character =>
+            char.IsAsciiLetterOrDigit(character)
+            || character is '-' or '.' or '_' or '~');
+    }
+
+    private static IResult CreateProblem(
+        HttpContext httpContext,
+        int statusCode,
+        string code) =>
+        Results.Problem(
+            statusCode: statusCode,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = code,
+                ["correlationId"] = httpContext.TraceIdentifier
+            });
 }
