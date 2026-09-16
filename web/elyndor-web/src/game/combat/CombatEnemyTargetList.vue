@@ -25,18 +25,18 @@ function resourceRatio(enemy: CombatActorSnapshot): number {
 
 function resourceLabel(enemy: CombatActorSnapshot): string {
   if (enemy.resourceType === 'MANA') return 'Мана'
-  if (enemy.resourceType === 'FOCUS') return 'Фокус'
+  if (enemy.resourceType === 'FOCUS') return 'Концентрация'
   if (enemy.resourceType === 'RAGE') return 'Ярость'
-  return enemy.resourceType
+  return 'Ресурс'
 }
 
 function accessibleLabel(enemy: CombatActorSnapshot): string {
   const selected = enemy.actorId === props.selectedTargetActorId ? ', выбранная цель' : ''
-  const aggro = enemy.currentAggroTargetActorId ? `, агро: ${props.aggroName(enemy)}` : ''
+  const enemyTarget = enemy.currentAggroTargetActorId ? `, атакует: ${props.aggroName(enemy)}` : ''
   const resource = hasVisibleResource(enemy)
     ? `, ${resourceLabel(enemy).toLowerCase()} ${Math.ceil(enemy.resource)} из ${Math.ceil(enemy.maxResource)}`
     : ''
-  return `${enemy.name}, здоровье ${Math.round(props.healthRatio(enemy))}%${resource}${selected}${aggro}`
+  return `${enemy.name}, здоровье ${Math.round(props.healthRatio(enemy))}%${resource}${selected}${enemyTarget}`
 }
 </script>
 
@@ -59,7 +59,7 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
     >
       <span>{{ enemy.name }}</span>
       <b v-if="enemy.actorId === selectedTargetActorId" class="combat-enemy-targets__selected">ЦЕЛЬ</b>
-      <em v-if="enemy.currentAggroTargetActorId" class="combat-enemy-targets__aggro">Агро: {{ aggroName(enemy) }}</em>
+      <em v-if="enemy.currentAggroTargetActorId" class="combat-enemy-targets__aggro">Атакует: {{ aggroName(enemy) }}</em>
       <div class="combat-enemy-targets__vitals">
         <i aria-hidden="true"><b :style="{ width: `${healthRatio(enemy)}%` }" /></i>
         <small>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }} · {{ Math.round(healthRatio(enemy)) }}%</small>
