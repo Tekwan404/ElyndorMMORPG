@@ -123,22 +123,19 @@ jobs:
           echo "Deployed Elyndor revision $revision to $DEPLOY_HOST"
 
       - name: Notify Telegram about deployment
-        if: always()
+        if: >-
+          always() &&
+          steps.deploy.outputs.enabled == 'true' &&
+          (github.event_name == 'workflow_run' || github.ref == 'refs/heads/main')
         continue-on-error: true
         shell: bash
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.ELYNDOR_TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_IDS: ${{ secrets.ELYNDOR_TELEGRAM_CHAT_IDS }}
+          PORT: ${{ steps.deploy.outputs.port }}
           DEPLOY_OUTCOME: ${{ steps.deploy_release.outcome }}
           JOB_STATUS: ${{ job.status }}
           FALLBACK_REVISION: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -uo pipefail
-
-          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_IDS:-}" ]]; then
-            echo "::notice::Telegram deploy notifications are not configured. Add ELYNDOR_TELEGRAM_BOT_TOKEN and ELYNDOR_TELEGRAM_CHAT_IDS repository secrets."
-            exit 0
-          fi
 
           revision="$(git rev-parse HEAD 2>/dev/null || printf '%s' "$FALLBACK_REVISION")"
           short_revision="${revision:0:7}"
@@ -160,37 +157,83 @@ jobs:
             exit 0
           fi
 
-          failed=0
-          recipients=0
-          IFS=',' read -ra chat_ids <<< "$TELEGRAM_CHAT_IDS"
-          for raw_chat_id in "${chat_ids[@]}"; do
-            chat_id="$(printf '%s' "$raw_chat_id" | tr -d '[:space:]')"
-            [[ -z "$chat_id" ]] && continue
-            recipients=$((recipients + 1))
+          message_b64="$(printf '%s' "$message" | base64 -w0)"
+          ssh_args=(-i ~/.ssh/elyndor_deploy -p "$PORT" -o BatchMode=yes)
 
-            response_file="$(mktemp)"
-            http_code="$(curl --silent --show-error \
-              --output "$response_file" \
-              --write-out '%{http_code}' \
-              -X POST \
-              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-              --data-urlencode "chat_id=${chat_id}" \
-              --data-urlencode "text=${message}")" || http_code="000"
+          ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "$message_b64" <<'REMOTE'
+          set -euo pipefail
 
-            if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
-              echo "::warning::Telegram notification failed for one recipient (HTTP ${http_code})."
-              failed=1
-            fi
-            rm -f "$response_file"
-          done
+          message_b64="$1"
+          env_file="/etc/elyndor/elyndor.env"
+          appsettings_file="/opt/elyndor/current/appsettings.json"
 
-          if [[ "$recipients" -eq 0 ]]; then
-            echo "::warning::ELYNDOR_TELEGRAM_CHAT_IDS does not contain any usable chat IDs."
+          if [[ ! -r "$env_file" ]]; then
+            echo "Elyndor server environment file is not readable: $env_file" >&2
             exit 1
           fi
 
-          if [[ "$failed" -ne 0 ]]; then
+          if [[ ! -r "$appsettings_file" ]]; then
+            echo "Elyndor deployed appsettings is not readable: $appsettings_file" >&2
             exit 1
           fi
 
-          echo "Telegram deployment notification sent to ${recipients} recipient(s)."
+          set -a
+          # shellcheck disable=SC1090
+          . "$env_file"
+          set +a
+
+          bot_token="${Authentication__Telegram__BotToken:-}"
+          if [[ -z "$bot_token" || "$bot_token" == "CHANGE_ME" ]]; then
+            echo "Authentication__Telegram__BotToken is not configured on the VPS." >&2
+            exit 1
+          fi
+
+          chat_id="$(python3 - "$appsettings_file" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], "r", encoding="utf-8") as stream:
+              settings = json.load(stream)
+
+          value = settings.get("Administration", {}).get("Telegram", {}).get("ChatId", 0)
+          print(value if value else "")
+          PY
+          )"
+
+          if [[ -z "$chat_id" || "$chat_id" == "0" ]]; then
+            echo "Administration:Telegram:ChatId is not configured in the deployed appsettings." >&2
+            exit 1
+          fi
+
+          message="$(printf '%s' "$message_b64" | base64 -d)"
+          response_file="$(mktemp)"
+          trap 'rm -f "$response_file"' EXIT
+
+          http_code="$(curl --silent --show-error \
+            --max-time 7 \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            -X POST \
+            "https://api.telegram.org/bot${bot_token}/sendMessage" \
+            --data-urlencode "chat_id=${chat_id}" \
+            --data-urlencode "text=${message}")" || http_code="000"
+
+          if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+            description="$(python3 - "$response_file" <<'PY'
+          import json
+          import sys
+
+          try:
+              with open(sys.argv[1], "r", encoding="utf-8") as stream:
+                  payload = json.load(stream)
+              print(payload.get("description", "unknown Telegram error"))
+          except Exception:
+              print("unknown Telegram error")
+          PY
+          )"
+            echo "Telegram notification failed from VPS runtime config (HTTP ${http_code}): ${description}" >&2
+            exit 1
+          fi
+
+          echo "Telegram deployment notification sent from VPS runtime config to ${chat_id}."
+          REMOTE
