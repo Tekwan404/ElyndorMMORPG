@@ -41,6 +41,12 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
     kind: 'dungeon',
     dangerLabel: 'Подземелье',
   },
+  SHATTERED_ORDER_CITADEL_TEST: {
+    label: 'Цитадель Расколотого Ордена',
+    art: gameArt.locations.SHATTERED_ORDER_CITADEL_TEST,
+    kind: 'dungeon',
+    dangerLabel: 'Тестовое подземелье',
+  },
   BROODMOTHER_LAIR: {
     label: 'Логово Прародительницы',
     art: gameArt.locations.BROODMOTHER_LAIR,
