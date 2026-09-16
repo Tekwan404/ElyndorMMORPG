@@ -54,10 +54,9 @@ describe('PartyView', () => {
     expect(panel.text()).toContain('Цитадель Затмения')
     expect(panel.text()).toContain('Этап 1 / 5')
     expect(panel.text()).toContain('Между боями')
-    expect(panel.text()).toContain('Прогресс группы сохранён')
+    expect(panel.text()).toContain('Прогресс забега сохранён')
 
     await wrapper.get('[data-party-dungeon-return]').trigger('click')
-
     expect(returnToRun).toHaveBeenCalledWith('run-1')
   })
 })
@@ -127,11 +126,7 @@ function dungeonRun(): DungeonRun {
     currentCheckpointId: 'P1',
     encounterCount: 5,
     partyId: 'party-1',
-    members: [{
-      characterId: CHARACTER_ID,
-      state: 'Active',
-      joinedAtUtc: '2026-09-13T00:00:00Z',
-    }],
+    members: [{ characterId: CHARACTER_ID, state: 'Active', joinedAtUtc: '2026-09-13T00:00:00Z' }],
     encounters: [{
       encounterId: 'encounter-1',
       encounterIndex: 0,
