@@ -14,6 +14,7 @@ public sealed partial class CombatSession
     private const string MorEtPhaseGuardEffectId = "MOR_ET_PHASE_GUARD";
     private const string MorEtSoulTimerEffectId = "MOR_ET_SOUL_TIMER";
     private const string MorEtEmptiedDamageEffectId = "MOR_ET_EMPTIED_DAMAGE";
+    private const string MorEtEmptiedHealingEffectId = "MOR_ET_EMPTIED_HEALING";
     private const string MorEtEmptiedDotEffectId = "MOR_ET_EMPTIED_DOT";
     private const string MorEtReturnedSoulEffectId = "MOR_ET_RETURNED_SOUL";
     private const string MorEtReturnedSoulHealingEffectId = "MOR_ET_RETURNED_SOUL_HEALING";
@@ -172,6 +173,23 @@ public sealed partial class CombatSession
                 owner,
                 bossActorId,
                 new EffectDefinition(
+                    MorEtEmptiedHealingEffectId,
+                    EffectKind.StatModifier,
+                    MorEtPersistentEffectDuration,
+                    1,
+                    EffectStackPolicy.Replace,
+                    0.70m,
+                    ModifiedStat: EffectStat.OutgoingHealingMultiplier,
+                    ModifierMode: EffectModifierMode.Multiplicative),
+                now),
+            bossActorId,
+            owner.ActorId,
+            MorEtEmptiedHealingEffectId);
+        ApplyKernelEvents(
+            EffectEngine.Apply(
+                owner,
+                bossActorId,
+                new EffectDefinition(
                     MorEtEmptiedDotEffectId,
                     EffectKind.DamageOverTime,
                     MorEtPersistentEffectDuration,
@@ -277,7 +295,12 @@ public sealed partial class CombatSession
     {
         if (_morEtBossActorId is not { } bossActorId)
             return;
-        foreach (string effectId in new[] { MorEtEmptiedDamageEffectId, MorEtEmptiedDotEffectId })
+        foreach (string effectId in new[]
+                 {
+                     MorEtEmptiedDamageEffectId,
+                     MorEtEmptiedHealingEffectId,
+                     MorEtEmptiedDotEffectId
+                 })
         {
             if (!owner.ActiveEffects.Any(effect =>
                     string.Equals(effect.Definition.Id, effectId, StringComparison.Ordinal)))
