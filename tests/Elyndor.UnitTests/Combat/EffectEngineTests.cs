@@ -52,6 +52,31 @@ public sealed class EffectEngineTests
     }
 
     [Fact]
+    public void DeadActorDropsPeriodicEffectsInsteadOfLeavingAnOverdueTickScheduled()
+    {
+        CombatActorState target = CombatActorState.CreateDummy(100);
+        EffectDefinition definition = new(
+            "TEST_DEAD_TARGET_BURN",
+            EffectKind.DamageOverTime,
+            TimeSpan.FromSeconds(10),
+            1,
+            EffectStackPolicy.Replace,
+            10,
+            TimeSpan.FromSeconds(2));
+        EffectEngine.Apply(target, target.ActorId, definition, Now);
+        target.ApplyDamage(target.CurrentHp);
+
+        IReadOnlyList<CombatEvent> events = EffectEngine.Process(target, Now.AddSeconds(2));
+
+        Assert.True(target.IsDead);
+        Assert.Empty(target.ActiveEffects);
+        Assert.Contains(events, e =>
+            e.Type == CombatEventType.EffectRemoved
+            && e.DefinitionId == definition.Id);
+        Assert.DoesNotContain(events, e => e.Type == CombatEventType.EffectTicked);
+    }
+
+    [Fact]
     public void SourceSpecificActorDebuffsAffectActorStatsButCanStillBeFilteredBySource()
     {
         CombatActorState target = CombatActorState.CreateDummy(100);
