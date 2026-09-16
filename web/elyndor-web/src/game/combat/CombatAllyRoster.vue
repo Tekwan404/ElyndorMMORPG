@@ -25,8 +25,8 @@ function isAggroed(actorId: string): boolean {
 
 function accessibleLabel(ally: CombatActorSnapshot): string {
   const selected = ally.actorId === props.selectedFriendlyTargetActorId ? ', выбранная дружеская цель' : ''
-  const aggro = isAggroed(ally.actorId) ? ', враг атакует этого союзника' : ''
-  return `${ally.name}, ${props.roleLabel(ally)}, здоровье ${Math.round(props.healthRatio(ally))}%${selected}${aggro}`
+  const underAttack = isAggroed(ally.actorId) ? ', противник атакует этого союзника' : ''
+  return `${ally.name}, ${props.roleLabel(ally)}, здоровье ${Math.round(props.healthRatio(ally))}%${selected}${underAttack}`
 }
 
 function allyArt(ally: CombatActorSnapshot): string | null {
@@ -46,7 +46,7 @@ function allyArt(ally: CombatActorSnapshot): string | null {
         <small>СОЮЗНИКИ В БОЮ</small>
         <strong>Союзники · {{ allies.length }}</strong>
       </div>
-      <span>Выбери цель для поддержки</span>
+      <span>Выберите цель для поддержки</span>
     </header>
     <div class="combat-ally-roster__grid">
       <button
@@ -69,7 +69,7 @@ function allyArt(ally: CombatActorSnapshot): string | null {
           <b v-else>{{ ally.name.slice(0, 1).toUpperCase() }}</b>
         </span>
         <span class="combat-ally-roster__body">
-          <span class="combat-ally-roster__identity"><strong>{{ ally.actorId === playerActorId ? `Вы · ${ally.name}` : ally.name }}</strong><small>{{ roleLabel(ally) }}</small><b v-if="ally.actorId === selectedFriendlyTargetActorId">ЦЕЛЬ</b><b v-if="isAggroed(ally.actorId)">АГРО</b></span>
+          <span class="combat-ally-roster__identity"><strong>{{ ally.actorId === playerActorId ? `Вы · ${ally.name}` : ally.name }}</strong><small>{{ roleLabel(ally) }}</small><b v-if="ally.actorId === selectedFriendlyTargetActorId">ЦЕЛЬ</b><b v-if="isAggroed(ally.actorId)">ПОД АТАКОЙ</b></span>
           <span class="combat-ally-roster__bar" aria-hidden="true"><i :style="{ width: `${healthRatio(ally)}%` }" /></span>
           <span class="combat-ally-roster__vitals">{{ Math.ceil(ally.hp) }} / {{ Math.ceil(ally.maxHp) }} · {{ participantStatus(ally.actorId) }}</span>
         </span>
