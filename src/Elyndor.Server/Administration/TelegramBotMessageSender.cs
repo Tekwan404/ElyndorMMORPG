@@ -21,13 +21,18 @@ public sealed class TelegramBotMessageSender(
     HttpClient httpClient,
     IOptions<AuthenticationOptions> authenticationOptions) : ITelegramMessageSender, ITelegramDocumentSender
 {
+    private static readonly TimeSpan SendTimeout = TimeSpan.FromSeconds(7);
+
     public async Task SendAsync(long chatId, string text, CancellationToken cancellationToken)
     {
         string token = authenticationOptions.Value.Telegram.BotToken;
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(SendTimeout);
+
         using HttpResponseMessage response = await httpClient.PostAsJsonAsync(
             $"https://api.telegram.org/bot{token}/sendMessage",
             new { chat_id = chatId, text },
-            cancellationToken);
+            timeout.Token);
         response.EnsureSuccessStatusCode();
     }
 
@@ -39,6 +44,9 @@ public sealed class TelegramBotMessageSender(
         CancellationToken cancellationToken)
     {
         string token = authenticationOptions.Value.Telegram.BotToken;
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(SendTimeout);
+
         using MultipartFormDataContent form = new();
         form.Add(new StringContent(chatId.ToString(System.Globalization.CultureInfo.InvariantCulture)), "chat_id");
         if (!string.IsNullOrWhiteSpace(caption))
@@ -55,7 +63,7 @@ public sealed class TelegramBotMessageSender(
         using HttpResponseMessage response = await httpClient.PostAsync(
             $"https://api.telegram.org/bot{token}/sendDocument",
             form,
-            cancellationToken);
+            timeout.Token);
         response.EnsureSuccessStatusCode();
     }
 }
