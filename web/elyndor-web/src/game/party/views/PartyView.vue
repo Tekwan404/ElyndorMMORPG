@@ -4,6 +4,7 @@ import { classLabel } from '@/game/character/characterPresentation'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal, UIPanel } from '@/ui/components'
 
@@ -77,9 +78,9 @@ const confirmationTitle = computed(() => {
   return 'Покинуть группу?'
 })
 const confirmationMessage = computed(() => {
-  if (pendingAction.value?.type === 'disband') return 'Группа исчезнет для всех участников. Это действие нельзя отменить.'
-  if (pendingAction.value?.type === 'kick') return 'Игрок больше не сможет участвовать в текущем составе группы.'
-  return 'Ты выйдешь из текущей группы и потеряешь место в её составе.'
+  if (pendingAction.value?.type === 'disband') return 'Группа будет распущена для всех участников.'
+  if (pendingAction.value?.type === 'kick') return 'Игрок будет исключён из группы.'
+  return 'Ты выйдешь из текущей группы.'
 })
 
 onMounted(() => {
@@ -95,17 +96,14 @@ onUnmounted(() => {
 })
 
 function locationLabel(locationId?: string | null): string {
-  if (!locationId) return 'локация неизвестна'
+  if (!locationId) return 'Локация неизвестна'
   const world = session.snapshot?.world
-  if (world?.currentLocation.id === locationId) return world.currentLocation.displayName
+  if (world?.currentLocation.id === locationId) {
+    return locationPresentation(locationId, world.currentLocation.displayName).label
+  }
   const known = world?.outgoingTransitions.find((location) => location.id === locationId)
-  if (known) return known.displayName
-  return locationId
-    .toLowerCase()
-    .split('_')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  if (known) return locationPresentation(locationId, known.displayName).label
+  return locationPresentation(locationId).label
 }
 
 async function returnToDungeonRun(): Promise<void> {
@@ -153,7 +151,7 @@ async function confirmPendingAction(): Promise<void> {
   <div class="party-view" :class="{ 'party-view--embedded': props.embedded }">
     <header class="party-view__header">
       <div>
-        <small>СОВМЕСТНЫЙ ПУТЬ</small>
+        <small>СОВМЕСТНАЯ ИГРА</small>
         <h1>Группа</h1>
       </div>
       <div class="party-view__header-actions">
@@ -173,9 +171,7 @@ async function confirmPendingAction(): Promise<void> {
             Этап {{ dungeonStageNumber }} / {{ currentDungeonRun.encounterCount }} · {{ dungeonStateLabel }}
           </small>
         </div>
-        <p v-if="canReturnToDungeonRun">
-          Ты временно вне подземелья, но всё ещё участник этого забега. Прогресс группы сохранён.
-        </p>
+        <p v-if="canReturnToDungeonRun">Ты вне подземелья. Прогресс забега сохранён.</p>
         <UIButton
           v-if="canReturnToDungeonRun"
           data-party-dungeon-return
@@ -204,8 +200,8 @@ async function confirmPendingAction(): Promise<void> {
       <article v-for="invite in party.invites" :key="invite.id" class="invite-row">
         <div><strong>Приглашение в группу</strong><small>от {{ invite.inviterName ?? 'героя' }}</small></div>
         <div class="actions">
-          <UIButton @click="party.acceptInvite(invite.id)">Войти</UIButton>
-          <UIButton variant="secondary" @click="party.declineInvite(invite.id)">Нет</UIButton>
+          <UIButton @click="party.acceptInvite(invite.id)">Принять</UIButton>
+          <UIButton variant="secondary" @click="party.declineInvite(invite.id)">Отклонить</UIButton>
         </div>
       </article>
     </UIPanel>
@@ -214,7 +210,7 @@ async function confirmPendingAction(): Promise<void> {
       <UIButton v-if="isLeader" variant="danger" data-party-disband @click="requestConfirmation({ type: 'disband' })">Распустить группу</UIButton>
       <article v-for="member in party.snapshot.members" :key="member.characterId" class="member-row">
         <div v-if="isLeader && member.characterId !== currentCharacterId" class="member-actions">
-          <UIButton variant="secondary" @click="transferLeadership(member.characterId)">Лидер</UIButton>
+          <UIButton variant="secondary" @click="transferLeadership(member.characterId)">Передать лидерство</UIButton>
           <UIButton variant="danger" :data-party-kick="member.characterId" @click="requestConfirmation({ type: 'kick', characterId: member.characterId })">Исключить</UIButton>
         </div>
         <div class="member-copy">
@@ -238,7 +234,7 @@ async function confirmPendingAction(): Promise<void> {
     </UIPanel>
 
     <UIPanel v-else title="Группа">
-      <p class="empty-state">Создай группу, чтобы пригласить друзей в совместные походы.</p>
+      <p class="empty-state">Создайте группу для совместных походов.</p>
       <UIButton @click="party.create">Создать группу</UIButton>
     </UIPanel>
   </div>
