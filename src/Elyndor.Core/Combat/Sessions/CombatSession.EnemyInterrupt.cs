@@ -6,6 +6,7 @@ public sealed partial class CombatSession
 {
     public const string InterruptTargetCastParameter = "interruptTargetCast";
     public const string InterruptLockoutSecondsParameter = "interruptLockoutSeconds";
+    private const decimal BuiltInControlInterruptLockoutSeconds = 2m;
 
     private void ProcessEnemyInterruptUtilityEvent(CombatEvent combatEvent)
     {
@@ -15,24 +16,27 @@ public sealed partial class CombatSession
             || combatEvent.TargetActorId is not { } targetActorId
             || !_enemyRuntimes.TryGetValue(targetActorId, out CombatRuntimeState? targetRuntime)
             || string.IsNullOrWhiteSpace(combatEvent.DefinitionId)
-            || !_abilities.TryGetValue(combatEvent.DefinitionId, out AbilityDefinition? ability)
-            || ability.RuntimeParameters is null
-            || !ability.RuntimeParameters.TryGetValue(
-                InterruptTargetCastParameter,
-                out decimal interruptEnabled)
-            || interruptEnabled <= 0)
+            || !_abilities.TryGetValue(combatEvent.DefinitionId, out AbilityDefinition? ability))
         {
             return;
         }
 
-        decimal lockoutSeconds = ability.RuntimeParameters.GetValueOrDefault(
-            InterruptLockoutSecondsParameter);
-        TimeSpan lockout = TimeSpan.FromSeconds(
-            (double)Math.Max(0, lockoutSeconds));
+        bool configuredInterrupt = ability.RuntimeParameters?.TryGetValue(
+                InterruptTargetCastParameter,
+                out decimal interruptEnabled) == true
+            && interruptEnabled > 0;
+        bool builtInControlInterrupt = combatEvent.DefinitionId is
+            "CONCUSSION_BLOW" or "HAMMER_OF_JUSTICE";
+        if (!configuredInterrupt && !builtInControlInterrupt)
+            return;
+
+        decimal lockoutSeconds = configuredInterrupt
+            ? ability.RuntimeParameters!.GetValueOrDefault(InterruptLockoutSecondsParameter)
+            : BuiltInControlInterruptLockoutSeconds;
         AbilityExecutionResult interrupted = AbilityEngine.Interrupt(
             targetRuntime,
             combatEvent.OccurredAtUtc,
-            lockout);
+            TimeSpan.FromSeconds((double)Math.Max(0, lockoutSeconds)));
         if (!interrupted.Succeeded)
             return;
 

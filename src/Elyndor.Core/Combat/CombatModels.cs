@@ -55,7 +55,7 @@ public sealed class CombatActorState
     public decimal BaseMaxHp => _baseMaxHp;
     public decimal MaxHp { get; private set; }
     public decimal CurrentHp { get; private set; }
-    public decimal MaxResource { get; }
+    public decimal MaxResource { get; private set; }
     public decimal CurrentResource { get; private set; }
     public CombatStats Stats { get; }
     public TalentCombatModifiers TalentModifiers { get; }
@@ -86,6 +86,13 @@ public sealed class CombatActorState
     public void SetCurrentHp(decimal value) => CurrentHp = ClampHp(value);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
     public void ApplyHealing(decimal value) => SetCurrentHp(CurrentHp + Math.Max(0, value));
+
+    public void ConfigureResource(decimal maxResource, decimal currentResource)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(maxResource);
+        MaxResource = maxResource;
+        CurrentResource = Math.Clamp(currentResource, 0, maxResource);
+    }
 
     public void SetTemporaryMaxHpPercentBonus(
         string sourceId,

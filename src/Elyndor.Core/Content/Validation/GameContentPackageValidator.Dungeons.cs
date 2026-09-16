@@ -91,14 +91,38 @@ public static partial class GameContentPackageValidator
                     $"{encounterPath}.adds",
                     $"Dungeon '{dungeon.Id}' encounter '{encounter.Id}' defines adds without a mechanic id."));
             }
-
             return;
         }
 
-        if (!string.Equals(
-                encounter.MechanicId,
-                DungeonEncounterMechanicIds.MirrorBarrier,
-                StringComparison.Ordinal))
+        string[]? requiredRoles = encounter.MechanicId switch
+        {
+            DungeonEncounterMechanicIds.MirrorBarrier =>
+            [
+                DungeonEncounterAddRoles.Guardian,
+                DungeonEncounterAddRoles.Priest,
+                DungeonEncounterAddRoles.Executioner
+            ],
+            DungeonEncounterMechanicIds.VelariusMana =>
+            [
+                DungeonEncounterAddRoles.ManaFeeder
+            ],
+            DungeonEncounterMechanicIds.MorEtSouls =>
+            [
+                DungeonEncounterAddRoles.SoulWarrior,
+                DungeonEncounterAddRoles.SoulMage,
+                DungeonEncounterAddRoles.SoulArcher,
+                DungeonEncounterAddRoles.SoulPaladin
+            ],
+            DungeonEncounterMechanicIds.AzraelTriune =>
+            [
+                DungeonEncounterAddRoles.Fire,
+                DungeonEncounterAddRoles.Frost,
+                DungeonEncounterAddRoles.Void
+            ],
+            _ => null
+        };
+
+        if (requiredRoles is null)
         {
             errors.Add(new ContentValidationError(
                 "INVALID_DUNGEON_ENCOUNTER_MECHANIC",
@@ -107,12 +131,6 @@ public static partial class GameContentPackageValidator
             return;
         }
 
-        string[] requiredRoles =
-        [
-            DungeonEncounterAddRoles.Guardian,
-            DungeonEncounterAddRoles.Priest,
-            DungeonEncounterAddRoles.Executioner
-        ];
         HashSet<string> seenRoles = new(StringComparer.Ordinal);
         bool invalidAdd = adds.Count != requiredRoles.Length;
         foreach (DungeonEncounterAddDefinition add in adds)
@@ -124,7 +142,6 @@ public static partial class GameContentPackageValidator
                 invalidAdd = true;
             }
         }
-
         if (requiredRoles.Any(role => !seenRoles.Contains(role)))
             invalidAdd = true;
 
@@ -133,7 +150,7 @@ public static partial class GameContentPackageValidator
             errors.Add(new ContentValidationError(
                 "INVALID_DUNGEON_ENCOUNTER_ADD",
                 $"{encounterPath}.adds",
-                $"Mirror encounter '{encounter.Id}' requires exactly one valid Guardian, Priest, and Executioner add."));
+                $"Encounter '{encounter.Id}' requires exactly one valid add profile for each role: {string.Join(", ", requiredRoles)}."));
         }
     }
 }

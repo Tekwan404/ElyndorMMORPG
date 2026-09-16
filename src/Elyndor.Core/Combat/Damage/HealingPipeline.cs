@@ -86,6 +86,13 @@ public static class HealingPipeline
                     + request.CriticalDamageBonus / 100m);
         decimal raw = scaledBase * (critical ? 1 + criticalBonus : 1);
 
+        decimal outgoingMultiplier = request.Source is null
+            ? 1
+            : EffectEngine.CalculateStat(
+                request.Source,
+                EffectStat.OutgoingHealingMultiplier,
+                1,
+                calculationTimeUtc);
         decimal receivedMultiplier = EffectEngine.CalculateStat(
             request.Target,
             EffectStat.HealingReceivedMultiplier,
@@ -94,6 +101,7 @@ public static class HealingPipeline
         decimal modified = decimal.Round(
             raw
                 * Math.Max(0, request.HealingMultiplier)
+                * outgoingMultiplier
                 * receivedMultiplier,
             0,
             MidpointRounding.AwayFromZero);
