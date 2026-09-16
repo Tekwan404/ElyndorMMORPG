@@ -81,7 +81,7 @@ const locationName = computed(() => world.value
   : 'Неизвестная область')
 const locationDescription = computed(() =>
   world.value?.currentLocation.description
-  || 'Исследуйте текущую область. Для путешествия между областями используйте карту мира.',
+  || 'Исследуйте область или откройте карту для путешествия.',
 )
 
 async function acceptQuest(questId: string): Promise<void> {
@@ -115,19 +115,19 @@ const worldErrorMessage = computed(() => {
   if (code === 'travel_conflict') return 'Мир изменился во время перехода. Попробуйте ещё раз.'
   if (code === 'character_in_combat') return 'Сначала завершите текущий бой.'
   if (code === 'afk_locked_location') return 'Сначала откройте эту область через её контракт.'
-  if (code === 'afk_not_allowed') return 'В этой области AFK-фарм пока недоступен.'
+  if (code === 'afk_not_allowed') return 'Автоматическая охота в этой области недоступна.'
   if (code === 'afk_conflict_combat') return 'Сначала завершите текущий бой.'
   if (code === 'afk_conflict_travel') return 'Дождитесь завершения путешествия.'
   if (code === 'afk_conflict_dungeon') return 'Сначала покиньте активный забег в подземелье.'
-  return 'Сервер не подтвердил действие. Проверьте связь и повторите попытку.'
+  return 'Не удалось выполнить действие. Проверьте связь и повторите попытку.'
 })
 const recoveryMessage = computed(() => {
   const vitals = character.value?.vitals
   if (!vitals || combat.isActive || isTravelling.value) return null
   if (vitals.currentHp < vitals.maxHp) {
     return isCityLocation.value
-      ? 'Отдых в городе: здоровье восстанавливается со скоростью 15% от максимального здоровья в секунду.'
-      : 'Вне города здоровье восстанавливается со скоростью 10% от максимального здоровья в секунду.'
+      ? 'В городе: +15% здоровья в секунду.'
+      : 'Вне города: +10% здоровья в секунду.'
   }
   if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) return 'После боя ярость постепенно угасает.'
   return null
@@ -149,6 +149,18 @@ function contractStatusLabel(status: 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'COMPLE
   if (status === 'ACTIVE') return 'ВЗЯТ'
   if (status === 'AVAILABLE') return 'ДОСТУПЕН'
   return 'ЗАКРЫТ'
+}
+
+function rarityLabel(rarity: string): string {
+  const labels: Record<string, string> = {
+    Common: 'Обычный',
+    Uncommon: 'Необычный',
+    Rare: 'Редкий',
+    Epic: 'Эпический',
+    Legendary: 'Легендарный',
+    Unique: 'Уникальный',
+  }
+  return labels[rarity] ?? 'Особый'
 }
 
 async function explore(): Promise<void> {
@@ -341,7 +353,7 @@ onMounted(() => {
             variant="secondary"
             :disabled="session.mutationPending"
             @click="openAfkFarm"
-          >Отправить в AFK-фарм</UIButton>
+          >Автоматическая охота</UIButton>
         </div>
       </div>
     </section>
@@ -358,7 +370,7 @@ onMounted(() => {
 
     <UICard v-if="activeAfkFarm" class="afk-status" data-afk-active>
       <div>
-        <small>AFK-ФАРМ АКТИВЕН</small>
+        <small>АВТОМАТИЧЕСКАЯ ОХОТА</small>
         <strong>{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{ activeAfkFarm.goldEarned }} золота</strong>
         <p>До {{ new Date(activeAfkFarm.endsAtUtc).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }}</p>
       </div>
@@ -370,7 +382,7 @@ onMounted(() => {
         <small>СОВМЕСТНЫЙ БОЙ</small>
         <strong>Группа уже сражается</strong>
       </div>
-      <p>Доберись до локации боя и присоединись к текущему столкновению.</p>
+      <p>Доберитесь до места боя и присоединитесь к группе.</p>
       <UIButton
         :loading="combat.pending"
         :disabled="isTravelling"
@@ -403,12 +415,12 @@ onMounted(() => {
     <UICard v-if="combat.lootRolls.length" class="loot-roll-card">
       <div class="reward-card__heading">
         <small>ЦЕННАЯ ДОБЫЧА</small>
-        <strong>Выберите участие в розыгрыше</strong>
+        <strong>Розыгрыш добычи</strong>
       </div>
       <article v-for="roll in combat.lootRolls" :key="roll.lootRollId" class="loot-roll-row">
         <div>
           <strong>{{ roll.name }} ×{{ roll.quantity }}</strong>
-          <small>{{ roll.rarity }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
+          <small>{{ rarityLabel(roll.rarity) }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
         </div>
         <div class="loot-roll-actions">
           <UIButton
@@ -428,13 +440,12 @@ onMounted(() => {
       title="Герой в пути"
       data-location-travel
     >
-      Путешествие к {{ displayLocationName(activeTravel.targetLocationId) }} уже началось. Боевые,
-      торговые и контрактные действия станут доступны после прибытия.
+      Путь: {{ displayLocationName(activeTravel.targetLocationId) }}. Действия станут доступны после прибытия.
     </UIToast>
 
     <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение" data-combat-result="defeat">
       {{ isDungeonLocation
-        ? 'Вы восстановились у входа в подземелье. Повтор доступен с 50% ресурса.'
+        ? 'Вы у входа в подземелье. Ресурс восстановлен до 50%.'
         : 'Вы очнулись в Стартовом городе.' }}
     </UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
@@ -482,11 +493,11 @@ onMounted(() => {
             <IconGenerator :config="{ id: 'field-guild', glyph: 'sword', category: 'utility' }" />
           </div>
           <div class="activity-card__copy">
-            <small>ПОЛЕВОЙ РЕГИСТРАТОР</small>
-            <strong>Журнал контрактов экспедиции</strong>
-            <p>Здесь регистрируют работу, связанную с угрозами текущего региона.</p>
+            <small>РЕГИСТРАТОР</small>
+            <strong>Контракты региона</strong>
+            <p>Работа против угроз этой области.</p>
           </div>
-          <UIButton data-open-field-guild @click="guildOpen = true">Открыть журнал</UIButton>
+          <UIButton data-open-field-guild @click="guildOpen = true">Открыть контракты</UIButton>
         </article>
     </section>
 
@@ -543,12 +554,12 @@ onMounted(() => {
       <header class="section-heading">
         <div>
           <small>В ГОРОДЕ</small>
-          <strong id="town-services-title">Городские сервисы</strong>
+          <strong id="town-services-title">Места в городе</strong>
         </div>
         <span data-safe>4 МЕСТА</span>
       </header>
 
-      <p class="town-services__hint">Выберите представителя, чтобы открыть его услугу.</p>
+      <p class="town-services__hint">Выберите место.</p>
 
       <div class="service-grid">
         <article class="service-card service-card--training" data-town-service="training">
@@ -556,7 +567,7 @@ onMounted(() => {
           <div class="service-card__copy">
             <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
             <strong>Манекен</strong>
-            <p>Проверьте билд и ротацию без риска, зелий и наград.</p>
+            <p>Проверьте сборку и способности без риска и наград.</p>
           </div>
           <UIButton
             data-start-training
@@ -588,7 +599,7 @@ onMounted(() => {
           <img class="service-card__portrait" :src="gameArt.npc.registrar" alt="Регистратор гильдии" />
           <div class="service-card__copy">
             <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
-            <strong>Представительство Гильдии</strong>
+            <strong>Гильдия авантюристов</strong>
             <p>Селия выдаёт контракты и отмечает новые угрозы.</p>
           </div>
           <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
@@ -598,8 +609,8 @@ onMounted(() => {
           <img class="service-card__portrait" :src="gameArt.npc.innkeeper" alt="Хозяйка постоялого двора" />
           <div class="service-card__copy">
             <small>ПОСТОЯЛЫЙ ДВОР</small>
-            <strong>Отдых на площади</strong>
-            <p>Безопасная зона восстанавливает здоровье героя.</p>
+            <strong>Отдых</strong>
+            <p>В городе здоровье восстанавливается быстрее.</p>
           </div>
           <span class="service-card__status">Активно</span>
         </article>
@@ -612,10 +623,10 @@ onMounted(() => {
       :location-id="currentLocationId ?? ''"
       @close="guildOpen = false"
     />
-    <UIModal :open="afkOpen" title="AFK-фарм" @close="afkOpen = false">
+    <UIModal :open="afkOpen" title="Автоматическая охота" @close="afkOpen = false">
       <div class="afk-modal" data-afk-farm-modal>
-        <p>Герой останется в этой области и будет фармить до завершения выбранного времени.</p>
-        <div class="afk-duration" aria-label="Длительность AFK-фарма">
+        <p>Герой будет сражаться в этой области до окончания выбранного времени.</p>
+        <div class="afk-duration" aria-label="Длительность автоматической охоты">
           <UIButton
             v-for="duration in [15, 60, 240]"
             :key="duration"
@@ -636,10 +647,10 @@ onMounted(() => {
         <div v-if="afkPreview" class="afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
           <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
-          <small>{{ afkPreview.potentialLootRolls }} возможн. лут-роллов · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
+          <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
         </div>
-        <p v-else-if="afkPreviewLoading">Рассчитываем маршрут фарма…</p>
-        <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия локации.</p>
+        <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>
+        <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия области.</p>
       </div>
       <template #actions>
         <UIButton variant="secondary" @click="afkOpen = false">Отмена</UIButton>
