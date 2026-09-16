@@ -45,7 +45,7 @@ public sealed class TelegramAdminOptions
                         && (!RegisterWebhookOnStartup || TryGetWebhookUri(out _))))));
 
     public bool IsMonitoringConfigured =>
-        ChatId != 0
+        (ChatId != 0 || AllowedUserIds.Length > 0)
         && ReportIntervalMinutes is >= 1 and <= 1440
         && CpuWarningPercent is >= 1 and <= 100
         && CpuCriticalPercent is >= 1 and <= 100
