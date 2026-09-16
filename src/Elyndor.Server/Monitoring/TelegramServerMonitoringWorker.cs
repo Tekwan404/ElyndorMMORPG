@@ -101,7 +101,51 @@ public sealed partial class TelegramServerMonitoringWorker(
         if (!health.Healthy)
             text = "🚨 PostgreSQL health check failed\n\n" + text;
 
-        await messageSender.SendAsync(configured.ChatId, text, cancellationToken);
+        await SendMonitoringMessageAsync(configured, text, cancellationToken);
+    }
+
+    private async Task SendMonitoringMessageAsync(
+        TelegramAdminOptions configured,
+        string text,
+        CancellationToken cancellationToken)
+    {
+        if (configured.ChatId != 0)
+        {
+            try
+            {
+                await messageSender.SendAsync(configured.ChatId, text, cancellationToken);
+                return;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                LogPrimaryChatDeliveryFailed(logger, configured.ChatId, exception);
+            }
+        }
+
+        int delivered = 0;
+        foreach (long telegramUserId in configured.AllowedUserIds.Where(id => id > 0).Distinct())
+        {
+            try
+            {
+                await messageSender.SendAsync(telegramUserId, text, cancellationToken);
+                delivered++;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                LogAdminDeliveryFailed(logger, telegramUserId, exception);
+            }
+        }
+
+        if (delivered == 0)
+            throw new InvalidOperationException("Telegram monitoring report could not be delivered to any configured recipient.");
     }
 
     private async Task<HealthData> CheckDatabaseAsync(CancellationToken cancellationToken)
@@ -158,6 +202,12 @@ public sealed partial class TelegramServerMonitoringWorker(
 
     [LoggerMessage(EventId = 1001, Level = LogLevel.Warning, Message = "Telegram monitoring PostgreSQL health check failed.")]
     private static partial void LogDatabaseHealthCheckFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 1002, Level = LogLevel.Warning, Message = "Telegram monitoring delivery to primary chat {ChatId} failed; falling back to allowed admins.")]
+    private static partial void LogPrimaryChatDeliveryFailed(ILogger logger, long chatId, Exception exception);
+
+    [LoggerMessage(EventId = 1003, Level = LogLevel.Warning, Message = "Telegram monitoring delivery to allowed admin {TelegramUserId} failed.")]
+    private static partial void LogAdminDeliveryFailed(ILogger logger, long telegramUserId, Exception exception);
 
     private readonly record struct HealthData(bool Healthy, long LatencyMs);
 }
