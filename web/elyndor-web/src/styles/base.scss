@@ -36,6 +36,13 @@ body {
   color: var(--ui-color-text-primary);
 }
 
+html[data-telegram-fullscreen='true'],
+html[data-telegram-fullscreen='true'] body,
+html[data-telegram-fullscreen='true'] #app {
+  height: var(--ui-viewport-height);
+  overscroll-behavior: none;
+}
+
 /* Keep the game scrollable, while preventing accidental double-tap zoom on controls. */
 .content,
 .navigation,
@@ -84,6 +91,48 @@ button {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--ui-color-border-strong) transparent;
+}
+
+/* Tablet shell: the Telegram window can use the whole iPad canvas while individual
+   game views stay at a readable width until they opt into a wider layout. */
+@media (min-width: 768px) {
+  .game-shell {
+    --ui-content-width: 760px;
+    width: min(100%, var(--ui-content-width-tablet)) !important;
+  }
+
+  .game-shell .hud,
+  .game-shell .navigation {
+    padding-right: calc(var(--ui-space-5) + var(--ui-safe-area-right)) !important;
+    padding-left: calc(var(--ui-space-5) + var(--ui-safe-area-left)) !important;
+  }
+
+  .game-shell .content {
+    scrollbar-gutter: stable;
+  }
+
+  .game-shell .navigation__item {
+    min-height: 62px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .game-shell {
+    --ui-content-width: 920px;
+  }
+
+  .game-shell .overview-v2 {
+    width: min(100%, 1040px) !important;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+    align-items: start;
+    gap: var(--ui-space-5);
+    padding: var(--ui-space-5);
+  }
+
+  .game-shell .overview-v2 > .hero-card,
+  .game-shell .overview-v2 > .combat-sheet {
+    min-width: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
