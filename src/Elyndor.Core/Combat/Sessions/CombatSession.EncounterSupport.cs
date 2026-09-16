@@ -102,6 +102,8 @@ public sealed partial class CombatSession
             ai.State = MonsterAiState.Dead;
             ai.NextActionAtUtc = null;
         }
+        if (_enemyRuntimes.TryGetValue(actorId, out CombatRuntimeState? runtime))
+            runtime.ActiveCast = null;
 
         Append(new CombatEvent(
             CombatEventType.ActorDied,
@@ -127,6 +129,8 @@ public sealed partial class CombatSession
         decimal restoredHp = Math.Max(1, enemy.Actor.MaxHp * Math.Clamp(hpPercent, 0, 1));
         enemy.Actor.SetCurrentHp(restoredHp);
         _deadActors.Remove(actorId);
+        if (_enemyRuntimes.TryGetValue(actorId, out CombatRuntimeState? runtime))
+            runtime.ActiveCast = null;
         EnemyAiRuntime ai = _enemyAiRuntimes[actorId];
         ai.State = MonsterAiState.InCombat;
         ai.NextActionAtUtc = now + enemy.AutoAttack.Interval;
