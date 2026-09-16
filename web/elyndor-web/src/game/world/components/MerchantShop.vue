@@ -189,7 +189,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <small>ВИТРИНА</small>
             <strong>Припасы для следующего похода</strong>
           </div>
-          <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }} поз.</span>
+          <span>{{ visibleOffers.length }} из {{ merchant?.items.length ?? 0 }}</span>
         </header>
 
         <div class="merchant-filter" aria-label="Фильтр витрины">
@@ -256,7 +256,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <div v-if="selectedOffer.type === 'Consumable' && selectedOffer.consumableActions.length" class="merchant-detail__effect">
               <span>Эффект</span>
               <strong>{{ selectedOffer.consumableActions.map(consumableActionLabel).join(' · ') }}</strong>
-              <small v-if="selectedOffer.consumableCooldownSeconds">Кулдаун категории: {{ selectedOffer.consumableCooldownSeconds }} сек.</small>
+              <small v-if="selectedOffer.consumableCooldownSeconds">Перезарядка: {{ selectedOffer.consumableCooldownSeconds }} сек.</small>
             </div>
 
             <footer class="merchant-detail__purchase">
@@ -287,7 +287,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <small>ПРОДАЖА</small>
             <strong>Предметы из вашего рюкзака</strong>
           </div>
-          <span>{{ sellableItems.length }} поз.</span>
+          <span>{{ sellableItems.length }} предметов</span>
         </header>
 
         <p v-if="protectedItemsCount > 0" class="protected-hint">
