@@ -59,8 +59,8 @@ public sealed class TelegramServerMonitoringWorker(
         ServerMetricsSnapshot metrics = await metricsCollector.CollectAsync(cancellationToken);
         int errors15m = errors.GetCount(TimeSpan.FromMinutes(15));
         int errors1h = errors.GetCount(TimeSpan.FromHours(1));
-        string state = GetState(metrics, configured);
         HealthData health = await CheckDatabaseAsync(cancellationToken);
+        string state = GetState(metrics, health.Healthy, configured);
         string environmentName = environment.EnvironmentName;
         string now = timeProvider.GetUtcNow().ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
 
@@ -85,13 +85,14 @@ public sealed class TelegramServerMonitoringWorker(
             + $"🚨 Errors: {errors15m} / 15m  | {errors1h} / 1h\n"
             + "Команды: /status /health /resources /errors /help";
 
-        if (!health.Healthy)
-            text = "🚨 PostgreSQL health check failed\n\n" + text;
-
         bool stateChanged = _lastState is not null && !string.Equals(_lastState, state, StringComparison.Ordinal);
+        string previousState = _lastState ?? state;
         _lastState = state;
         if (stateChanged)
-            text = $"⚠️ Состояние сервера изменилось: {_lastState}\n\n{text}";
+            text = $"⚠️ Состояние сервера изменилось: {previousState} → {state}\n\n{text}";
+
+        if (!health.Healthy)
+            text = "🚨 PostgreSQL health check failed\n\n" + text;
 
         await messageSender.SendAsync(configured.ChatId, text, cancellationToken);
     }
@@ -115,9 +116,10 @@ public sealed class TelegramServerMonitoringWorker(
         }
     }
 
-    private static string GetState(ServerMetricsSnapshot metrics, TelegramAdminOptions options)
+    private static string GetState(ServerMetricsSnapshot metrics, bool databaseHealthy, TelegramAdminOptions options)
     {
-        if (metrics.CpuPercent >= options.CpuCriticalPercent
+        if (!databaseHealthy
+            || metrics.CpuPercent >= options.CpuCriticalPercent
             || metrics.MemoryPercent >= options.MemoryCriticalPercent
             || metrics.DiskPercent >= options.DiskCriticalPercent)
             return "🔴 CRITICAL";
