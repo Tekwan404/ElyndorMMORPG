@@ -267,8 +267,11 @@ public sealed partial class CombatSession
 
     private void EndAzraelSplit(DateTimeOffset now)
     {
-        if (_azraelBossActorId is not { } bossActorId)
+        if (_azraelEncounterRuntime is null
+            || _azraelBossActorId is not { } bossActorId)
+        {
             return;
+        }
         CombatActorState boss = _enemiesById[bossActorId].Actor;
         foreach (string effectId in new[]
                  {
@@ -289,6 +292,7 @@ public sealed partial class CombatSession
                 effectId);
         }
 
+        boss.SetCurrentHp(boss.MaxHp * _azraelEncounterRuntime.FinalPhaseHpPercent);
         ApplyKernelEvents(
             EffectEngine.Apply(
                 boss,
