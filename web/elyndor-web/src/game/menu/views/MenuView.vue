@@ -49,7 +49,7 @@ function updateBossCombatLogPreference(): void {
   <section class="menu-view">
     <header class="menu-view__header">
       <div>
-        <small>СИСТЕМЫ И СВЯЗИ</small>
+        <small>ИГРОВОЕ МЕНЮ</small>
         <h1>Меню</h1>
       </div>
       <span>ELYNDOR</span>
@@ -66,7 +66,7 @@ function updateBossCombatLogPreference(): void {
         <span>{{ classLabel(character.classId) }} · {{ character.gold }} золота</span>
       </div>
       <div class="menu-profile__code">
-        <small>ELY ID</small>
+        <small>КОД ГЕРОЯ</small>
         <code>{{ character.publicCode ?? '—' }}</code>
         <UIButton
           data-copy-ely-id
@@ -77,7 +77,7 @@ function updateBossCombatLogPreference(): void {
       </div>
     </section>
 
-    <nav v-if="activeSection === 'profile'" class="menu-grid" aria-label="Игровые системы">
+    <nav v-if="activeSection === 'profile'" class="menu-grid" aria-label="Игровое меню">
       <button class="menu-tile menu-tile--gold" type="button" @click="activeSection = 'friends'">
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-friends', glyph: 'scroll', category: 'utility' }" />
@@ -121,22 +121,22 @@ function updateBossCombatLogPreference(): void {
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-admin', glyph: 'shield', category: 'utility' }" />
         </span>
-        <span><strong>Админка</strong><small>Служебные инструменты</small></span>
+        <span><strong>Управление</strong><small>Служебные инструменты</small></span>
         <b aria-hidden="true">›</b>
       </RouterLink>
     </nav>
 
-    <section v-if="activeSection === 'profile'" class="menu-setting" data-boss-log-setting>
+    <section v-if="activeSection === 'profile' && session.isAdmin" class="menu-setting" data-boss-log-setting>
       <div class="menu-setting__copy">
-        <small>ЗАКРЫТАЯ БЕТА · ДИАГНОСТИКА</small>
-        <strong>Логи боёв с боссами</strong>
-        <span>После завершения боя бот отправит технический журнал в этот Telegram-чат.</span>
+        <small>ДИАГНОСТИКА</small>
+        <strong>Отчёты о боях с боссами</strong>
+        <span>После боя технический отчёт будет отправлен в Telegram.</span>
       </div>
       <label class="menu-switch">
         <input
           v-model="sendBossCombatLogs"
           type="checkbox"
-          aria-label="Отправлять логи боёв с боссами в Telegram"
+          aria-label="Отправлять отчёты о боях с боссами в Telegram"
           @change="updateBossCombatLogPreference"
         />
         <span class="menu-switch__track" aria-hidden="true"><i /></span>
@@ -146,13 +146,13 @@ function updateBossCombatLogPreference(): void {
 
     <section v-if="activeSection === 'profile'" class="menu-note">
       <span class="menu-note__mark" aria-hidden="true">i</span>
-      <p>ELY ID нужен, чтобы друзья могли найти тебя и пригласить в группу. Гильдия и контракты находятся в городском представительстве.</p>
+      <p>Код героя нужен для поиска и приглашений в группу.</p>
     </section>
 
     <section v-else class="menu-subsection">
       <button class="menu-back" type="button" @click="activeSection = 'profile'">
         <IconGenerator :config="{ id: 'menu-back', glyph: 'chevronLeft', category: 'utility' }" />
-        Все системы
+        Назад в меню
       </button>
       <FriendsView v-if="activeSection === 'friends'" />
       <PartyView v-else-if="activeSection === 'party'" embedded @open-world="emit('open-world')" />
