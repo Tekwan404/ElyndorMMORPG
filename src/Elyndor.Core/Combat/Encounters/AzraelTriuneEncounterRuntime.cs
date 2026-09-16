@@ -76,7 +76,7 @@ public sealed class AzraelTriuneEncounterRuntime
             throw new InvalidOperationException("Azrael split has not started.");
         if (actorId == Guid.Empty)
             throw new ArgumentException("Clone actor identifier is required.", nameof(actorId));
-        if (_clones.ContainsKey(actorId) || _clones.Values.Contains(role))
+        if (_clones.ContainsKey(actorId) || _clones.ContainsValue(role))
             throw new InvalidOperationException("Azrael clone actor or role is already registered.");
         _clones.Add(actorId, role);
     }
