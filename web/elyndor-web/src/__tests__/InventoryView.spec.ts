@@ -102,7 +102,7 @@ describe('InventoryView', () => {
     await wrapper.get('[data-item-id="ROLLED_SWORD"]').trigger('click')
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Случайные характеристики')
+    expect(document.body.textContent).toContain('Характеристики этого экземпляра определились при получении предмета.')
     expect(document.body.textContent).toContain('Сила +7')
     expect(document.body.textContent).toContain('Выносливость +4')
   })
@@ -138,9 +138,13 @@ describe('InventoryView', () => {
     await wrapper.get('[data-item-id="PERFECT_SWORD"]').trigger('click')
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Мощь предмета: 148.50 / 150')
-    expect(document.body.textContent).toContain('Качество: 99%')
-    expect(document.body.textContent).toContain('ИДЕАЛЬНЫЙ РОЛЛ')
+    const detailText = document.body.textContent ?? ''
+    expect(detailText).toContain('МОЩЬ ПРЕДМЕТА')
+    expect(detailText).toContain('148.50 / 150')
+    expect(detailText).toContain('КАЧЕСТВО')
+    expect(detailText).toContain('99%')
+    expect(detailText).toContain('ИДЕАЛЬНОЕ КАЧЕСТВО')
+    expect(detailText).not.toContain('ИДЕАЛЬНЫЙ РОЛЛ')
     expect(wrapper.findAll('[data-item-quality-stars]')).toHaveLength(1)
     expect(document.body.querySelectorAll('[data-item-quality-stars]')).toHaveLength(1)
   })
@@ -561,11 +565,11 @@ function snapshot(items: InventoryItem[], weapon: InventoryItem): BootstrapSnaps
         displayName: 'Starter Town',
         dangerLevel: 'SAFE',
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
       version: 1,
       outgoingTransitions: [],
