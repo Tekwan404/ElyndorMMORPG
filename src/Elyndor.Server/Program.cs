@@ -232,10 +232,15 @@ if (migrateOnStartup || restorePublishedOnStartup)
 await using (AsyncServiceScope combatRecoveryScope =
     app.Services.CreateAsyncScope())
 {
-    CombatDurabilityService durability =
-        combatRecoveryScope.ServiceProvider
-            .GetRequiredService<CombatDurabilityService>();
-    await durability.RecoverInterruptedAsync(CancellationToken.None);
+    GameDbContext recoveryDbContext =
+        combatRecoveryScope.ServiceProvider.GetRequiredService<GameDbContext>();
+    if (await recoveryDbContext.Database.CanConnectAsync())
+    {
+        CombatDurabilityService durability =
+            combatRecoveryScope.ServiceProvider
+                .GetRequiredService<CombatDurabilityService>();
+        await durability.RecoverInterruptedAsync(CancellationToken.None);
+    }
 }
 
 try
