@@ -47,7 +47,7 @@
       "goldRewardMax": 0,
       "displayName": "Зеркальный Кастелан",
       "description": "На 70% и 35% здоровья поднимает отражающий барьер и призывает связанную тройку аддов.",
-      "artId": "bandit-rogue",
+      "artId": "rytsar-zerkalnogo-iadra",
       "autoAttackBaseDamageMin": 100,
       "autoAttackBaseDamageMax": 124
     },
@@ -70,7 +70,7 @@
       "goldRewardMax": 0,
       "displayName": "Страж Зеркала",
       "description": "Пока жив, усиливает отражение Зеркального Кастеляна с 50% до 70%.",
-      "artId": "corrupted-boar",
+      "artId": "oskolochnyi-strazh",
       "autoAttackBaseDamageMin": 73,
       "autoAttackBaseDamageMax": 91
     },
@@ -93,7 +93,7 @@
       "goldRewardMax": 0,
       "displayName": "Жрец Зеркала",
       "description": "Периодически начинает прерываемое восстановление.",
-      "artId": "goblin-scout",
+      "artId": "zhrets-ugasshego-sveta",
       "autoAttackBaseDamageMin": 58,
       "autoAttackBaseDamageMax": 74
     },
@@ -116,7 +116,7 @@
       "goldRewardMax": 0,
       "displayName": "Палач Зеркала",
       "description": "Наращивает давление на текущей цели.",
-      "artId": "alpha-wolf",
+      "artId": "rytsar-zerkalnogo-iadra",
       "autoAttackBaseDamageMin": 78,
       "autoAttackBaseDamageMax": 98
     },
@@ -139,7 +139,7 @@
       "goldRewardMax": 0,
       "displayName": "Архимаг Веллариус",
       "description": "Тратит настоящую ману на прерываемые заклинания; на 10% превращает весь остаток маны в щит.",
-      "artId": "cultist-mage",
+      "artId": "magistr-razbitogo-ordena",
       "autoAttackBaseDamageMin": 56,
       "autoAttackBaseDamageMax": 72
     },
@@ -162,7 +162,7 @@
       "goldRewardMax": 0,
       "displayName": "Проводник маны",
       "description": "Прерываемым каналом возвращает Веллариусу 5 маны.",
-      "artId": "goblin-scout",
+      "artId": "charodei-raskola",
       "autoAttackBaseDamageMin": 42,
       "autoAttackBaseDamageMax": 54
     },
@@ -185,7 +185,7 @@
       "goldRewardMax": 0,
       "displayName": "Хранитель Душ Мор-Эт",
       "description": "На 65% и 30% вырывает души игроков. Неубитая за 18 секунд душа усиливает и лечит босса.",
-      "artId": "necromancer",
+      "artId": "khranitel-razloma",
       "autoAttackBaseDamageMin": 94,
       "autoAttackBaseDamageMax": 116
     },
@@ -208,7 +208,7 @@
       "goldRewardMax": 0,
       "displayName": "Потерянная душа воина",
       "description": "Тяжёлая и бронированная копия классового профиля воина.",
-      "artId": "bandit-rogue"
+      "artId": "prizrachnyi-palomnik"
     },
     {
       "id": "SHATTERED_ORDER_SOUL_MAGE_L25",
@@ -229,7 +229,7 @@
       "goldRewardMax": 0,
       "displayName": "Потерянная душа мага",
       "description": "Хрупкая копия мага с опасным прерываемым кастом.",
-      "artId": "cultist-mage"
+      "artId": "charodei-raskola"
     },
     {
       "id": "SHATTERED_ORDER_SOUL_ARCHER_L25",
@@ -250,7 +250,7 @@
       "goldRewardMax": 0,
       "displayName": "Потерянная душа лучника",
       "description": "Быстрая копия лучника с кровотечением и повышенным критическим шансом.",
-      "artId": "goblin-scout"
+      "artId": "sumerechnyi-luchnik"
     },
     {
       "id": "SHATTERED_ORDER_SOUL_PALADIN_L25",
@@ -271,7 +271,7 @@
       "goldRewardMax": 0,
       "displayName": "Потерянная душа паладина",
       "description": "Стойкая копия паладина с прерываемым самоисцелением.",
-      "artId": "bandit-rogue"
+      "artId": "prizrachnyi-palomnik"
     },
     {
       "id": "SHATTERED_ORDER_AZRAEL_L25",
@@ -292,7 +292,7 @@
       "goldRewardMax": 0,
       "displayName": "Триединый Магистр Азраэль",
       "description": "На 65% раскалывается на три связанных аспекта, которые нужно добить в одном 10-секундном окне.",
-      "artId": "cultist-mage",
+      "artId": "magistr-razbitogo-ordena",
       "autoAttackBaseDamageMin": 96,
       "autoAttackBaseDamageMax": 120
     },
@@ -315,7 +315,7 @@
       "goldRewardMax": 0,
       "displayName": "Азраэль Пламени",
       "description": "Атакующий аспект, накапливающий давление на цели.",
-      "artId": "cultist-mage"
+      "artId": "zhrets-ugasshego-sveta"
     },
     {
       "id": "SHATTERED_ORDER_AZRAEL_FROST_L25",
@@ -336,7 +336,7 @@
       "goldRewardMax": 0,
       "displayName": "Азраэль Холода",
       "description": "Защитный аспект, закрывающий щитом самого ослабленного клона.",
-      "artId": "cultist-mage"
+      "artId": "charodei-raskola"
     },
     {
       "id": "SHATTERED_ORDER_AZRAEL_VOID_L25",
@@ -357,7 +357,7 @@
       "goldRewardMax": 0,
       "displayName": "Азраэль Бездны",
       "description": "Поддерживающий аспект с прерываемым групповым лечением.",
-      "artId": "cultist-mage"
+      "artId": "khranitel-razloma"
     }
   ]
 }

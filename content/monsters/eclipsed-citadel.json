@@ -34,7 +34,7 @@
       "goldRewardMax": 150,
       "displayName": "Пепельный часовой",
       "description": "Первый элитный страж внешней печати Цитадели Затмения.",
-      "artId": "goblin-scout",
+      "artId": "soldat-zatmeniia",
       "autoAttackBaseDamageMin": 84,
       "autoAttackBaseDamageMax": 104
     },
@@ -69,7 +69,7 @@
       "goldRewardMax": 170,
       "displayName": "Каменный страж Бастиона",
       "description": "Тяжёлый страж внутренних залов, закованный в чёрный камень.",
-      "artId": "corrupted-boar",
+      "artId": "kamennyi-strazh",
       "autoAttackBaseDamageMin": 94,
       "autoAttackBaseDamageMax": 116
     },
@@ -143,7 +143,7 @@
       "goldRewardMax": 200,
       "displayName": "Палач Чёрного Созвездия",
       "description": "Последний страж перед тронным залом Архонта.",
-      "artId": "alpha-wolf",
+      "artId": "alebardshchik-bastiona",
       "autoAttackBaseDamageMin": 101,
       "autoAttackBaseDamageMax": 123
     },
@@ -178,7 +178,7 @@
       "goldRewardMax": 750,
       "displayName": "Архонт Погасшей Звезды",
       "description": "Финальный босс 25 уровня. Источник лучших легендарных предметов и трёх именных Unique-оружий.",
-      "artId": "bandit-rogue",
+      "artId": "namestnik-tsitadeli",
       "autoAttackBaseDamageMin": 124,
       "autoAttackBaseDamageMax": 152
     }

@@ -36,7 +36,7 @@
       "goldRewardMax": 60,
       "displayName": "Шахтный волк",
       "description": "Матёрый волк, приспособившийся к тёмным штрекам Древней шахты.",
-      "artId": "wolf",
+      "artId": "lesnoi-volk",
       "autoAttackBaseDamageMin": 44,
       "autoAttackBaseDamageMax": 52
     },
@@ -71,7 +71,7 @@
       "goldRewardMax": 65,
       "displayName": "Рудный вепрь",
       "description": "Тяжёлый подземный вепрь, покрытый шрамами и каменной пылью.",
-      "artId": "corrupted-boar",
+      "artId": "kaban",
       "autoAttackBaseDamageMin": 48,
       "autoAttackBaseDamageMax": 58
     },
@@ -108,7 +108,7 @@
       "goldRewardMax": 70,
       "displayName": "Глубинный шахтный паук",
       "description": "Быстрый глубинный паук, охраняющий кристальные галереи шахты.",
-      "artId": "giant-spider",
+      "artId": "shakhtnyi-pauk",
       "autoAttackBaseDamageMin": 45,
       "autoAttackBaseDamageMax": 55
     },
@@ -143,7 +143,7 @@
       "goldRewardMax": 80,
       "displayName": "Забытый шахтный караульный",
       "description": "Опытный караульный, занявший старый нижний пост Древней шахты.",
-      "artId": "goblin-scout",
+      "artId": "shakhtnyi-dozornyi",
       "autoAttackBaseDamageMin": 48,
       "autoAttackBaseDamageMax": 60
     },
@@ -219,7 +219,7 @@
       "goldRewardMax": 0,
       "displayName": "Паучок Прародительницы Глубин",
       "description": "Призванный паучок. Не даёт отдельной награды и существует только внутри боя с боссом.",
-      "artId": "giant-spider",
+      "artId": "shakhtnyi-pauk",
       "autoAttackBaseDamageMin": 14,
       "autoAttackBaseDamageMax": 20
     }

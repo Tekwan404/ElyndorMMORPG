@@ -74,7 +74,7 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
         </template>
       </div>
       <span class="combat-enemy-targets__portrait" aria-hidden="true">
-        <img v-if="monsterArtUrl(enemy.artId)" :src="monsterArtUrl(enemy.artId)" alt="">
+        <img v-if="monsterArtUrl(enemy.artId, enemy.definitionId)" :src="monsterArtUrl(enemy.artId, enemy.definitionId)" alt="">
         <IconGenerator v-else :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
       </span>
     </button>
