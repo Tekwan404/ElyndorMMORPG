@@ -93,7 +93,7 @@ interface EnemyPresentation {
 const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 
 const enemyPresentation = computed<EnemyPresentation | null>(() => {
-  const enemy = snapshot.value?.enemy
+  const enemy = selectedEnemy.value ?? snapshot.value?.enemy
   if (!enemy) return null
   const encounter = combat.encounterPresentation
   const matchesEncounter = encounter?.monsterId === enemy.definitionId
@@ -552,8 +552,8 @@ onUnmounted(() => window.clearInterval(timer))
           </div>
           <UIHealthBar
             label="Здоровье"
-            :value="snapshot.enemy.hp"
-            :max="snapshot.enemy.maxHp"
+            :value="selectedEnemy?.hp ?? snapshot.enemy.hp"
+            :max="selectedEnemy?.maxHp ?? snapshot.enemy.maxHp"
           />
         </section>
       </header>

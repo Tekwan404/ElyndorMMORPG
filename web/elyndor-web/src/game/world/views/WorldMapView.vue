@@ -7,6 +7,7 @@ import { gameArt } from '@/assets/gameArt'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
+import { worldMapPosition } from '@/game/world/worldMapLayout'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIToast } from '@/ui/components'
 
@@ -72,7 +73,7 @@ function locationArt(locationId: string | null | undefined): string {
   ).art
 }
 
-const mapArt = computed(() => gameArt.world.worldAtlas)
+const mapArt = computed(() => gameArt.world.worldMap)
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
 const activeContract = computed(() =>
   contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
@@ -88,20 +89,14 @@ const selectedDangerLabel = computed(() => {
   return 'Приключение'
 })
 const routeLines = computed(() => {
-  const currentIndex = visibleLocations.value.findIndex(
+  const currentLocation = visibleLocations.value.find(
     location => location.id === currentLocationId.value,
   )
-  if (currentIndex < 0) return []
+  if (!currentLocation) return []
 
-  const current = nodePosition(
-    currentIndex,
-    visibleLocations.value.length,
-  )
+  const current = nodePosition(currentLocation.id, visibleLocations.value.indexOf(currentLocation))
   return visibleLocations.value
-    .map((location, index) => ({
-      location,
-      target: nodePosition(index, visibleLocations.value.length),
-    }))
+    .map(location => ({ location, target: nodePosition(location.id, visibleLocations.value.indexOf(location)) }))
     .filter(entry => reachableLocationIds.value.has(entry.location.id))
     .map(entry => {
       const midpointX = (current.x + entry.target.x) / 2
@@ -200,21 +195,12 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
   return 'locked'
 }
 
-function nodePosition(
-  index: number,
-  total: number,
-): { x: number; y: number } {
-  const columns = 3
-  const row = Math.floor(index / columns)
-  const rowCount = Math.ceil(total / columns)
-  return {
-    x: [16.67, 50, 83.33][index % columns] ?? 50,
-    y: rowCount <= 1 ? 50 : 20 + (row / (rowCount - 1)) * 66,
-  }
+function nodePosition(locationId: string, fallbackIndex: number): { x: number; y: number } {
+  return worldMapPosition(locationId, fallbackIndex)
 }
 
-function nodeStyle(index: number): Record<string, string> {
-  const position = nodePosition(index, visibleLocations.value.length)
+function nodeStyle(locationId: string, fallbackIndex: number): Record<string, string> {
+  const position = nodePosition(locationId, fallbackIndex)
   return {
     left: `${position.x}%`,
     top: `${position.y}%`,
@@ -223,7 +209,6 @@ function nodeStyle(index: number): Record<string, string> {
 
 const mapCanvasStyle = computed(() => ({
   '--map-art': `url(${mapArt.value})`,
-  '--map-rows': Math.ceil(visibleLocations.value.length / 3),
 }))
 
 watch(currentLocationId, locationId => {
@@ -321,12 +306,10 @@ onMounted(() => {
           v-for="(location, index) in visibleLocations"
           :key="location.id"
           class="map-node"
-          :class="{
-            'map-node--selected': selectedLocation?.id === location.id,
-          }"
+          :class="{ 'map-node--selected': selectedLocation?.id === location.id }"
           :data-state="locationState(location)"
           :data-location-id="location.id"
-          :style="nodeStyle(index)"
+          :style="nodeStyle(location.id, index)"
           type="button"
           :aria-pressed="selectedLocation?.id === location.id"
           :aria-label="`${locationName(location)}, ${levelRangeLabel(location)}`"
@@ -335,10 +318,6 @@ onMounted(() => {
           <span class="map-node__pulse" />
           <span class="map-node__marker" :data-location-kind="locationKind(location.id) === 'dungeon' ? 'dungeon' : 'normal'">
             <i />
-          </span>
-          <span class="map-node__label">
-            <strong>{{ locationName(location) }}</strong>
-            <small>{{ levelRangeLabel(location) }}</small>
           </span>
         </button>
 
@@ -497,16 +476,18 @@ onMounted(() => {
 
 .map-canvas {
   --map-art: none;
-  --map-rows: 1;
 
   position: relative;
-  min-height: max(clamp(26rem, 58dvh, 34rem), calc(var(--map-rows) * 6rem + 4rem));
+  width: min(100%, 34rem, calc(75dvh * 0.707));
+  aspect-ratio: 1055 / 1491;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
-  background:
-    linear-gradient(180deg, rgb(7 10 17 / 20%), rgb(5 8 14 / 78%)),
-    var(--map-art) center / cover;
+  background-color: #162229;
+  background-image: linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)), var(--map-art);
+  background-position: center;
+  background-size: 100% 100%;
   box-shadow: var(--ui-shadow-inset), 0 18px 46px rgb(0 0 0 / 28%);
   isolation: isolate;
 }
@@ -515,30 +496,21 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(circle at 50% 44%, transparent 0 22%, rgb(3 5 10 / 30%) 70%),
-    linear-gradient(180deg, rgb(9 12 21 / 10%), rgb(4 7 12 / 62%));
+  background: linear-gradient(180deg, transparent, rgb(4 7 12 / 8%));
   content: '';
 }
 
 .map-canvas__fog {
   position: absolute;
-  inset: -15%;
-  background:
-    radial-gradient(circle at 22% 18%, rgb(146 136 255 / 10%), transparent 20%),
-    radial-gradient(circle at 75% 70%, rgb(65 123 126 / 12%), transparent 24%);
-  filter: blur(22px);
+  inset: 0;
+  background: linear-gradient(180deg, rgb(4 7 12 / 7%), transparent 25% 75%, rgb(4 7 12 / 7%));
   pointer-events: none;
 }
 
 .map-canvas__grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 2%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 2%) 1px, transparent 1px);
-  background-size: 2.5rem 2.5rem;
-  mask-image: linear-gradient(180deg, rgb(0 0 0 / 55%), transparent 88%);
+  background: linear-gradient(180deg, transparent, rgb(5 8 14 / 7%));
   pointer-events: none;
 }
 
@@ -631,29 +603,6 @@ onMounted(() => {
   height: .48rem;
   border-radius: 50%;
   background: #7c849b;
-}
-
-.map-node__label {
-  display: grid;
-  width: min(6.6rem, calc(33vw - 1rem));
-  box-sizing: border-box;
-  gap: 1px;
-  padding: 3px 6px;
-  border-radius: var(--ui-radius-sm);
-  background: rgb(5 8 14 / 76%);
-  backdrop-filter: blur(6px);
-}
-
-.map-node__label strong {
-  overflow: hidden;
-  font-size: .69rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.map-node__label small {
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-xs);
 }
 
 .map-node[data-state='reachable'] .map-node__marker {
@@ -901,10 +850,6 @@ onMounted(() => {
     width: 100%;
     box-sizing: border-box;
     justify-items: start;
-  }
-
-  .map-node__label {
-    width: min(6.6rem, calc(33vw - 1.25rem));
   }
 
   .map-selection {

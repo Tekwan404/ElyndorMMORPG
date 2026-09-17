@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { monsterArtUrl } from '@/assets/monsterArt'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = defineProps<{
@@ -73,7 +74,8 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
         </template>
       </div>
       <span class="combat-enemy-targets__portrait" aria-hidden="true">
-        <IconGenerator :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
+        <img v-if="monsterArtUrl(enemy.artId)" :src="monsterArtUrl(enemy.artId)" alt="">
+        <IconGenerator v-else :config="{ id: `target-${enemy.actorId}`, glyph: 'skull', category: 'utility' }" />
       </span>
     </button>
   </nav>
@@ -95,7 +97,8 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
 .combat-enemy-targets__vitals .combat-enemy-targets__resource[data-resource='FOCUS'] b { background: linear-gradient(90deg, #9a6b24, #e0b85d); }
 .combat-enemy-targets__vitals .combat-enemy-targets__resource[data-resource='RAGE'] b { background: linear-gradient(90deg, #8f3434, #df6a5d); }
 .combat-enemy-targets__resource-copy { color: #9fbaf8; }
-.combat-enemy-targets__portrait { display: grid; width: 2rem; height: 2rem; grid-column: 1; grid-row: 1 / 4; place-items: center; }
+.combat-enemy-targets__portrait { display: grid; width: 2rem; height: 2rem; grid-column: 1; grid-row: 1 / 4; place-items: center; overflow: hidden; border: 1px solid rgb(216 95 114 / 35%); border-radius: 50%; background: rgb(15 18 24 / 82%); }
+.combat-enemy-targets__portrait img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .combat-enemy-targets__portrait :deep(.icon-generator) { border-color: rgb(216 95 114 / 35%); color: #efa1ae; }
 
 .combat-enemy-targets--battlefield {
