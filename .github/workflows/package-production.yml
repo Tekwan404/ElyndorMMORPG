@@ -108,17 +108,14 @@ jobs:
           set -euo pipefail
           revision="$(git rev-parse HEAD)"
           remote_archive="/tmp/elyndor-${revision}.tar.gz"
-          remote_installer="/tmp/elyndor-install-${revision}.sh"
           ssh_args=(-i ~/.ssh/elyndor_deploy -p "$PORT" -o BatchMode=yes)
           scp_args=(-i ~/.ssh/elyndor_deploy -P "$PORT" -o BatchMode=yes)
 
           scp "${scp_args[@]}" artifacts/elyndor-linux-x64.tar.gz \
             "$DEPLOY_USER@$DEPLOY_HOST:$remote_archive"
-          scp "${scp_args[@]}" deploy/install-release.sh \
-            "$DEPLOY_USER@$DEPLOY_HOST:$remote_installer"
 
           ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "set +e; chmod 700 '$remote_installer'; if [ \"\$(id -u)\" -eq 0 ]; then bash '$remote_installer' '$remote_archive'; else sudo -n bash '$remote_installer' '$remote_archive'; fi; status=\$?; if [ \$status -eq 0 ]; then test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'; status=\$?; fi; rm -f '$remote_archive' '$remote_installer'; exit \$status"
+            "set +e; sudo -n /usr/local/sbin/elyndor-deploy-release '$remote_archive' '$revision'; status=\$?; if [ \$status -eq 0 ]; then test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'; status=\$?; fi; rm -f '$remote_archive'; exit \$status"
 
           echo "Deployed Elyndor revision $revision to $DEPLOY_HOST"
 
