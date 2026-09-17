@@ -32,12 +32,33 @@ const talentArt: Record<string, string> = {
 
 for (const [path, url] of Object.entries(generatedTalentArtModules)) {
   const fileName = path.split('/').pop() ?? path
-  const iconId = fileName.replace(/\.[^.]+$/, '').replace(/-/g, '_').toUpperCase()
+  const iconId = fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/-/g, '_')
+    .toUpperCase()
   talentArt[iconId] ??= url
 }
 
 const abilityArt: Readonly<Record<string, string>> = {
   ...talentAbilityArt,
+  SHOCKING_SHOT: 'MARKSMAN_04',
+  MULTI_SHOT: 'MARKSMAN_26',
+  DISORIENTING_SHOT: 'MARKSMAN_06',
+  VOLLEY: 'MARKSMAN_12',
+  MEND_PET: 'BEAST_MASTERY_14',
+  INTIMIDATION: 'BEAST_MASTERY_02',
+  BESTIAL_WRATH: 'BEAST_MASTERY_28',
+  RETURN_TO_OWNER: 'BEAST_MASTERY_26',
+  SERPENT_STING: 'SURVIVAL_03',
+  FREEZING_TRAP: 'SURVIVAL_05',
+  IMMOLATION_TRAP: 'SURVIVAL_07',
+  EXPLOSIVE_TRAP: 'SURVIVAL_09',
+  DETERRENCE: 'SURVIVAL_28',
+  WYVERN_STING: 'SURVIVAL_04',
+  PREPARATION: 'SURVIVAL_25',
+  PIERCING_ARROW: 'MARKSMAN_07',
+  SPELL_BREAK: 'ARCANE_ARCHER_12',
+  COMMAND_ATTACK: 'BEAST_MASTERY_13',
   BERSERK: 'BERSERKER_WAR_MASK',
   WHIRLWIND: 'BERSERKER_BLOOD_BLADES',
   WILD_STRIKE: 'BERSERKER_RAGE_SLASH',
