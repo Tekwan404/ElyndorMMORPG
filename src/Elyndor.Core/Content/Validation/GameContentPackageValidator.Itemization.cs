@@ -36,7 +36,7 @@ public static partial class GameContentPackageValidator
         string[] requiredSlots =
         [
             "MAIN_HAND", "OFF_HAND", "HEAD", "SHOULDERS", "CHEST", "HANDS",
-            "LEGS", "FEET", "CLOAK", "AMULET", "RING_1", "RING_2"
+            "LEGS", "FEET", "CLOAK", "AMULET", "RING_1", "RING_2", "WAIST", "WRIST"
         ];
         if (requiredSlots.Any(slot =>
                 !itemization.SlotMultipliers.TryGetValue(slot, out decimal multiplier)

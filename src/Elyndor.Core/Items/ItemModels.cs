@@ -53,7 +53,9 @@ public enum EquipmentSlot
     // Legacy slots kept during content migration.
     Weapon,
     Boots,
-    Accessory
+    Accessory,
+    Waist,
+    Wrist
 }
 
 public sealed record ItemStatRange(
@@ -71,9 +73,13 @@ public static class EquipmentCategoryIds
 {
     public const string OneHandSword = "ONE_HAND_SWORD";
     public const string TwoHandSword = "TWO_HAND_SWORD";
+    public const string TwoHandAxe = "TWO_HAND_AXE";
+    public const string TwoHandMace = "TWO_HAND_MACE";
+    public const string Polearm = "POLEARM";
     public const string Axe = "AXE";
     public const string Mace = "MACE";
     public const string Bow = "BOW";
+    public const string Crossbow = "CROSSBOW";
     public const string Dagger = "DAGGER";
     public const string Staff = "STAFF";
     public const string Wand = "WAND";
@@ -95,9 +101,13 @@ public static class EquipmentCategoryIds
     {
         OneHandSword,
         TwoHandSword,
+        TwoHandAxe,
+        TwoHandMace,
+        Polearm,
         Axe,
         Mace,
         Bow,
+        Crossbow,
         Dagger,
         Staff,
         Wand
@@ -127,7 +137,7 @@ public static class EquipmentCategoryIds
         category is not null && OffHandCategories.Contains(category);
 
     public static bool UsesBothHands(string? weaponCategory) =>
-        weaponCategory is TwoHandSword or Bow or Staff;
+        weaponCategory is TwoHandSword or TwoHandAxe or TwoHandMace or Polearm or Bow or Crossbow or Staff;
 
     public static bool IsOneHandedWeapon(string? weaponCategory) =>
         IsWeapon(weaponCategory) && !UsesBothHands(weaponCategory);
@@ -230,7 +240,20 @@ public sealed record LootTableEntry(
     int MinQuantity,
     int MaxQuantity);
 
+public sealed record LootSelectionEntry(
+    string ItemId,
+    decimal Weight,
+    int MinQuantity = 1,
+    int MaxQuantity = 1);
+
+public sealed record LootSelectionGroup(
+    string Id,
+    int Rolls,
+    string SelectionMode,
+    IReadOnlyList<LootSelectionEntry> Entries);
+
 public sealed record LootTableDefinition(
     string Id,
     IReadOnlyList<LootTableEntry> Entries,
-    int Version = 1);
+    int Version = 1,
+    IReadOnlyList<LootSelectionGroup>? SelectionGroups = null);

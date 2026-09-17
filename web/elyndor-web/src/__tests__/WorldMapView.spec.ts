@@ -65,7 +65,7 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-id="DEEP_FOREST"]').attributes('data-state')).toBe('locked')
   })
 
-  it('keeps the selected destination action inside the map surface', async () => {
+  it('keeps the selected destination action outside the map hit area', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
     const session = useGameSessionStore()
@@ -74,8 +74,8 @@ describe('WorldMapView', () => {
     await flushPromises()
 
     await wrapper.get('[data-location-id="WHISPERING_FOREST"]').trigger('click')
-    const map = wrapper.get('.map-canvas')
-    const selection = map.get('[data-map-selection]')
+    const selection = wrapper.get('[data-map-selection]')
+    expect(wrapper.get('.map-canvas').element.contains(selection.element)).toBe(false)
 
     expect(selection.text()).toContain('Шепчущий лес')
     expect(selection.get('[data-map-travel]').text()).toContain('Начать переход')
@@ -140,6 +140,29 @@ describe('WorldMapView', () => {
     expect(wrapper.findAll('[data-location-id]')).toHaveLength(2)
     expect(wrapper.get('[data-location-id="STARTER_TOWN"]')).toBeTruthy()
     expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]')).toBeTruthy()
+  })
+
+  it('keeps a full authored location catalog on distinct map slots', async () => {
+    const authoredLocations = Array.from({ length: 21 }, (_, index): WorldLocation => ({
+      ...LOCATIONS[0]!,
+      id: `AUTHORED_LOCATION_${index}`,
+      displayName: `Authored Location ${index}`,
+      recommendedLevel: index + 1,
+    }))
+    vi.spyOn(apiClient, 'request').mockResolvedValue(authoredLocations)
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    const nodes = wrapper.findAll('[data-location-id]')
+    const slots = nodes.map(node => {
+      const style = node.attributes('style') ?? ''
+      return `${style.match(/left: ([^;]+)/)?.[1]}:${style.match(/top: ([^;]+)/)?.[1]}`
+    })
+    expect(new Set(slots).size).toBe(nodes.length)
+    expect(wrapper.get('.map-canvas').attributes('style')).toContain('--map-rows: 8')
   })
 
   it('resolves any dungeon location through the shared dungeon presentation', async () => {

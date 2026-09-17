@@ -1,0 +1,64 @@
+{
+    "locationId":  "MOON_ASH_MARSHES",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_BOLOTNYI_KLYK_L21",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_LUNNYI_VASILISK_L21",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_TOPIANOI_ROEVIK_L22",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_PIIAVOCHNIK_L22",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_UTONUVSHII_PALOMNIK_L23",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_VEDMA_TRIASINY_L23",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_BOLOTNYI_STRAZH_L23",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_MATER_TOPEI_L25",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_BOLOTNYI_POZHIRATEL_L24",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_VEDMAK_TOPEI_L25",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",
+                           "weight":  1.0
+                       }
+                   ]
+}

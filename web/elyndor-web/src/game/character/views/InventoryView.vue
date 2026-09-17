@@ -198,6 +198,8 @@ function slotLabel(slot: EquipmentSlot | null): string {
     Amulet: 'амулет',
     Ring1: 'первое кольцо',
     Ring2: 'второе кольцо',
+    Waist: 'пояс',
+    Wrist: 'наручи',
     Weapon: 'оружие',
     Boots: 'обувь',
     Accessory: 'амулет',
@@ -238,6 +240,8 @@ function equippedItemAt(slot: EquipmentSlot): InventoryItem | null {
   if (slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
   if (slot === 'Ring1') return equipped.ring1 ?? null
   if (slot === 'Ring2') return equipped.ring2 ?? null
+  if (slot === 'Waist') return equipped.waist ?? null
+  if (slot === 'Wrist') return equipped.wrist ?? null
   if (slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
   return null
 }
@@ -354,7 +358,7 @@ function typeLabel(item: InventoryItem): string {
     MainHand: 'Основная рука', OffHand: 'Вторая рука', Weapon: 'Оружие',
     Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Штаны',
     Feet: 'Обувь', Boots: 'Ботинки', Cloak: 'Плащ', Amulet: 'Амулет',
-    Ring1: 'Кольцо', Ring2: 'Кольцо', Accessory: 'Аксессуар',
+    Ring1: 'Кольцо', Ring2: 'Кольцо', Accessory: 'Аксессуар', Waist: 'Пояс', Wrist: 'Наручи',
   }
   return item.slot ? labels[item.slot] ?? 'Снаряжение' : 'Снаряжение'
 }
@@ -368,7 +372,7 @@ function itemGlyph(item: InventoryItem): GlyphName {
   if (item.type === 'Consumable') return 'potion'
   if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return 'sword'
   if (item.slot === 'Head') return 'helmet'
-  if (item.slot === 'Chest' || item.slot === 'Legs' || item.slot === 'Hands') return 'armor'
+  if (item.slot === 'Chest' || item.slot === 'Legs' || item.slot === 'Hands' || item.slot === 'Waist' || item.slot === 'Wrist') return 'armor'
   if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
   if (item.slot === 'Cloak') return 'scroll'
   if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
