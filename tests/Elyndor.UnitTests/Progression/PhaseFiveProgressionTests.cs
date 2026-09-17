@@ -8,6 +8,19 @@ namespace Elyndor.UnitTests.Progression;
 public sealed class PhaseFiveProgressionTests
 {
     [Fact]
+    public void XpThresholdsAtHighValidLevelsFitInt64()
+    {
+        LevelProgressionDefinition progression =
+            new("DEFAULT_LEVELING", 60, 100, 1.5m);
+
+        long requiredXp = progression.XpToNext(43);
+        long maximumThreshold = progression.XpToNext(59);
+
+        Assert.True(requiredXp > int.MaxValue);
+        Assert.True(maximumThreshold > requiredXp);
+    }
+
+    [Fact]
     public void ExperienceCrossingThresholdLevelsUpAndCarriesRemainder()
     {
         Character character = CreateCharacter();
@@ -21,7 +34,7 @@ public sealed class PhaseFiveProgressionTests
         Assert.True(result.LeveledUp);
         Assert.Equal(2, character.Level);
         Assert.Equal(25, character.Experience);
-        Assert.Equal(150, result.XpToNextLevel);
+        Assert.Equal(150L, result.XpToNextLevel);
     }
 
     [Fact]

@@ -6,7 +6,7 @@ public sealed record LevelProgressionDefinition(
     int BaseXpToNext,
     decimal GrowthFactor)
 {
-    public int XpToNext(int level)
+    public long XpToNext(int level)
     {
         if (level < 1 || level >= MaxLevel)
             return 0;
@@ -15,6 +15,6 @@ public sealed record LevelProgressionDefinition(
         for (var current = 1; current < level; current++)
             value *= GrowthFactor;
 
-        return decimal.ToInt32(decimal.Ceiling(value));
+        return decimal.ToInt64(decimal.Ceiling(value));
     }
 }
