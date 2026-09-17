@@ -30,7 +30,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 
   await page.getByRole('button', { name: 'Меню' }).click()
   await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
-  await expect(page.getByText('ELY ID', { exact: true })).toBeVisible()
+  await expect(page.getByText('КОД ГЕРОЯ', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
   await page.getByRole('button', { name: 'Группа Состав и поход' }).click()
