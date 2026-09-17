@@ -55,7 +55,7 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("ROUGH_LEATHER", result.ItemId);
+        Assert.Equal("ROUGH_HIDE", result.ItemId);
         Assert.InRange(result.Quantity, 1, 2);
         Assert.True(replay.IsSuccess);
         Assert.True(replay.Replayed);
