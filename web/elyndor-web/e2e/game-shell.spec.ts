@@ -99,12 +99,10 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
 
   await page.locator('[data-nav="world"]').click()
   await page.locator('[data-location-id="DEEP_FOREST"]').click()
-  await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
-  await expect(page.locator('[data-map-travel]')).toBeEnabled()
-  await page.locator('[data-map-travel]').click()
-  await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await expect(page.locator('[data-map-travel]')).toContainText('Маршрут закрыт')
+  await expect(page.locator('[data-map-travel]')).toBeDisabled()
   await page.locator('[data-nav="location"]').click()
-  await expect(page.getByRole('heading', { name: 'Глубокий лес' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
@@ -128,7 +126,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
   await page.locator('[data-nav="location"]').click()
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Глубокий лес' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
     false,
@@ -143,7 +141,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   })
   await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
-  await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
+  await page.locator('[data-location-id="STARTER_TOWN"]').click()
   await expect.poll(async () => {
     const travelButton = await page.locator('[data-map-travel]').boundingBox()
     const navigationBox = await page
@@ -373,7 +371,7 @@ const locations = {
     displayName: 'Глубокий лес',
     dangerLevel: 'DANGEROUS',
     recommendedLevel: 9,
-    minimumLevel: 1,
+    minimumLevel: 6,
     maximumLevel: 11,
     requiredContractId: null,
     artId: null,
@@ -386,7 +384,7 @@ function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
     locationId === 'STARTER_TOWN'
       ? [locations.WHISPERING_FOREST]
       : locationId === 'WHISPERING_FOREST'
-        ? [locations.STARTER_TOWN, locations.DEEP_FOREST]
+        ? [locations.STARTER_TOWN]
         : [locations.WHISPERING_FOREST]
   return {
     accountId: '00000000-0000-0000-0000-000000000002',
