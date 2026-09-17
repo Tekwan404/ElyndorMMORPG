@@ -62,6 +62,7 @@ const equipment = computed<PaperdollSlot[]>(() => {
       side: 'left',
     },
     { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: 'armor', side: 'left' },
+    { id: 'wrist', inventorySlot: 'Wrist', label: 'Наручи', item: equipped?.wrist ?? null, glyph: 'armor', side: 'left' },
     { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: 'ring', side: 'left' },
     { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: 'armor', side: 'right' },
     {
@@ -73,6 +74,7 @@ const equipment = computed<PaperdollSlot[]>(() => {
       side: 'right',
     },
     { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: 'shield', side: 'right' },
+    { id: 'waist', inventorySlot: 'Waist', label: 'Пояс', item: equipped?.waist ?? null, glyph: 'armor', side: 'right' },
     { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: 'armor', side: 'right' },
     {
       id: 'feet',

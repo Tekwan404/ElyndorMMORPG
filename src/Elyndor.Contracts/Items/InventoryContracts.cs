@@ -158,7 +158,9 @@ public sealed record EquipmentSlotsResponse(
     InventoryItemResponse? Cloak = null,
     InventoryItemResponse? Amulet = null,
     InventoryItemResponse? Ring1 = null,
-    InventoryItemResponse? Ring2 = null);
+    InventoryItemResponse? Ring2 = null,
+    InventoryItemResponse? Waist = null,
+    InventoryItemResponse? Wrist = null);
 
 public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,

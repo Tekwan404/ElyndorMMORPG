@@ -40,11 +40,16 @@ public sealed class OpenWorldAccessContentTests
             GetLocation("BLIGHTED_GROVE")
         ];
 
-        Assert.All(ordinaryZones, zone => Assert.Equal(1, zone.MinimumLevel));
-        Assert.All(ordinaryZones, zone => Assert.Null(zone.RequiredContractId));
+        Assert.Equal(1, GetLocation("WHISPERING_FOREST").MinimumLevel);
+        Assert.Equal(6, GetLocation("DEEP_FOREST").MinimumLevel);
+        Assert.Equal(1, GetLocation("BROODMOTHER_LAIR").MinimumLevel);
+        Assert.Equal(15, GetLocation("BLIGHTED_GROVE").MinimumLevel);
+        Assert.All(ordinaryZones.Where(zone => zone.Id != "BLIGHTED_GROVE"),
+            zone => Assert.Null(zone.RequiredContractId));
+        Assert.Equal("CONTRACT_BROODMOTHER_GATE", GetLocation("BLIGHTED_GROVE").RequiredContractId);
 
-        Assert.Equal(9, GetLocation("DEEP_FOREST").RecommendedLevel);
+        Assert.Equal(8, GetLocation("DEEP_FOREST").RecommendedLevel);
         Assert.Equal(14, GetLocation("BROODMOTHER_LAIR").RecommendedLevel);
-        Assert.Equal(17, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
+        Assert.Equal(18, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
     }
 }

@@ -147,8 +147,9 @@ public sealed class GameContentPackageLoaderTests
         Assert.Contains(mineBossLoot.Entries, entry => entry.ItemId == "DUNGEON_MINES_ARCHER_LEGENDARY_BOW");
 
         HashSet<string> obtainableItemIds = package.LootTables
-            .SelectMany(table => table.Entries)
-            .Select(entry => entry.ItemId)
+            .SelectMany(table => table.Entries.Select(entry => entry.ItemId)
+                .Concat((table.SelectionGroups ?? []).SelectMany(group => group.Entries)
+                    .Select(entry => entry.ItemId)))
             .ToHashSet(StringComparer.Ordinal);
         ItemDefinition[] proceduralEquipment = package.Items!
             .Where(item => item.Type == ItemType.Equipment)
@@ -165,6 +166,29 @@ public sealed class GameContentPackageLoaderTests
             .ToArray();
         Assert.NotEmpty(currentProgressionItems);
         Assert.All(currentProgressionItems, item => Assert.Contains(item.Id, obtainableItemIds));
+
+        LootTableDefinition[] authoredRaidBossTables = package.LootTables
+            .Where(table => table.Id.StartsWith("LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_", StringComparison.Ordinal)
+                || table.Id.StartsWith("LOOT_SHATTERED_ORDER_CITADEL_BOSS_", StringComparison.Ordinal)
+                || table.Id.StartsWith("LOOT_BLACK_BASTION_BOSS_", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(14, authoredRaidBossTables.Length);
+        Assert.All(authoredRaidBossTables, table =>
+        {
+            Assert.Equal(2, table.SelectionGroups!.Count);
+            Assert.Contains(table.SelectionGroups, group => group.SelectionMode == "EqualWeight");
+            Assert.Contains(table.SelectionGroups, group => group.SelectionMode == "WeightedExclusive");
+            Assert.All(table.SelectionGroups, group => Assert.InRange(group.Rolls, 1, 2));
+            Assert.All(table.SelectionGroups.SelectMany(group => group.Entries), entry =>
+                Assert.Contains(package.Items!, item => item.Id == entry.ItemId && item.Type == ItemType.Equipment));
+        });
+
+        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST"
+            && item.Slot == EquipmentSlot.Waist);
+        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST"
+            && item.Slot == EquipmentSlot.Wrist);
+        Assert.Contains(EquipmentCategoryIds.Crossbow,
+            package.ClassProfiles!.Single(profile => profile.Id == "ARCHER").AllowedWeaponCategories);
 
         DungeonDefinition eclipsedCitadel = Assert.Single(
             package.Dungeons!,

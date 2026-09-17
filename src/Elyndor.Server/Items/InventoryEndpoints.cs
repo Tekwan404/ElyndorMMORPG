@@ -473,7 +473,9 @@ public static class InventoryEndpoints
                 GetEquipped(snapshot, EquipmentSlot.Cloak),
                 GetEquipped(snapshot, EquipmentSlot.Amulet),
                 GetEquipped(snapshot, EquipmentSlot.Ring1),
-                GetEquipped(snapshot, EquipmentSlot.Ring2)));
+                GetEquipped(snapshot, EquipmentSlot.Ring2),
+                GetEquipped(snapshot, EquipmentSlot.Waist),
+                GetEquipped(snapshot, EquipmentSlot.Wrist)));
 
     private static IResult ToResult(InventoryOperationResult result, HttpContext context) =>
         result.IsSuccess

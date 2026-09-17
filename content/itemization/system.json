@@ -18,7 +18,9 @@
       "FEET": 0.44,
       "AMULET": 0.4,
       "RING_1": 0.35,
-      "RING_2": 0.35
+      "RING_2": 0.35,
+      "WAIST": 0.42,
+      "WRIST": 0.38
     },
     "rarityMultipliers": {
       "COMMON": 1,
