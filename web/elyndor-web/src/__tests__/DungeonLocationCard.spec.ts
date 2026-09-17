@@ -62,7 +62,7 @@ describe('DungeonLocationCard', () => {
     expect(status).not.toContain('Pending')
     expect(wrapper.find('[data-dungeon-return]').exists()).toBe(true)
     expect(wrapper.find('[data-dungeon-city-exit]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('остаёшься участником этого забега')
+    expect(wrapper.text()).toContain('Ты вне подземелья. Прогресс забега сохранён.')
   })
 
   it('shows separate city and permanent leave actions inside the dungeon', async () => {
