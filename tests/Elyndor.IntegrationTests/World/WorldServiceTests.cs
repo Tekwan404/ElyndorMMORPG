@@ -58,6 +58,34 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task BootstrapSupportsXpThresholdsAboveInt32ForValidCharacterLevels()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync();
+            character.SetLevel(43);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
+        BootstrapService service = new(
+            context,
+            Content,
+            Map,
+            derived,
+            timeProvider);
+
+        BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal(43, snapshot.Character!.Level);
+        Assert.True(snapshot.Character.XpToNextLevel > int.MaxValue);
+    }
+
+    [Fact]
     public async Task BootstrapIncludesOnlyTheLatestUnacknowledgedRelease()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: true);

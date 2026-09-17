@@ -8,7 +8,7 @@ public sealed record CharacterProgressionResult(
     long PreviousExperience,
     long CurrentExperience,
     int XpEarned,
-    int XpToNextLevel)
+    long XpToNextLevel)
 {
     public bool LeveledUp => CurrentLevel > PreviousLevel;
 }
@@ -42,7 +42,7 @@ public static class CharacterProgression
         character.AddExperience(xpEarned);
         while (character.Level < progression.MaxLevel)
         {
-            int required = progression.XpToNext(character.Level);
+            long required = progression.XpToNext(character.Level);
             if (required <= 0 || character.Experience < required)
                 break;
 

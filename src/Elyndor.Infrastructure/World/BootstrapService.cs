@@ -43,7 +43,7 @@ public sealed record BootstrapCharacter(
     string ClassId,
     int Level,
     long Experience,
-    int XpToNextLevel,
+    long XpToNextLevel,
     long Gold,
     string PrimaryAttribute,
     string ClassProfileVersion,
