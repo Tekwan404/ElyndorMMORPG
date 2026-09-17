@@ -79,38 +79,39 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         WorldLocationResponse[]? locations =
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
         Assert.NotNull(locations);
-        Assert.Equal(8, locations.Length);
+        Assert.Equal(21, locations.Length);
         Assert.Contains(locations, location =>
             string.Equals(location.Id, "SHATTERED_ORDER_CITADEL_TEST", StringComparison.Ordinal));
 
-        HttpResponseMessage recommendedLevelTravel = await client.PostAsJsonAsync(
-            "/api/v1/world/travel",
-            new TravelRequest(Guid.CreateVersion7(), "DEEP_FOREST"));
-        recommendedLevelTravel.EnsureSuccessStatusCode();
-        TravelResponse? deepForestTravel =
-            await recommendedLevelTravel.Content.ReadFromJsonAsync<TravelResponse>();
-        Assert.Equal("DEEP_FOREST", deepForestTravel?.LocationId);
-        Assert.Equal(2, deepForestTravel?.Version);
-        Assert.False(deepForestTravel?.IsTravelling ?? false);
-        Assert.Null(deepForestTravel?.TargetLocationId);
-
-        HttpResponseMessage travelResponse = await client.PostAsJsonAsync(
+        HttpResponseMessage forestTravelResponse = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
             new TravelRequest(Guid.CreateVersion7(), "WHISPERING_FOREST"));
-        travelResponse.EnsureSuccessStatusCode();
-        TravelResponse? travel = await travelResponse.Content.ReadFromJsonAsync<TravelResponse>();
-        Assert.Equal("WHISPERING_FOREST", travel?.LocationId);
-        Assert.Equal(3, travel?.Version);
-        Assert.False(travel?.IsTravelling ?? false);
-        Assert.Null(travel?.TargetLocationId);
+        forestTravelResponse.EnsureSuccessStatusCode();
+        TravelResponse? forestTravel =
+            await forestTravelResponse.Content.ReadFromJsonAsync<TravelResponse>();
+        Assert.Equal("WHISPERING_FOREST", forestTravel?.LocationId);
+        Assert.Equal(2, forestTravel?.Version);
+        Assert.False(forestTravel?.IsTravelling ?? false);
+        Assert.Null(forestTravel?.TargetLocationId);
+
+        HttpResponseMessage returnToTownResponse = await client.PostAsJsonAsync(
+            "/api/v1/world/travel",
+            new TravelRequest(Guid.CreateVersion7(), "STARTER_TOWN"));
+        returnToTownResponse.EnsureSuccessStatusCode();
+        TravelResponse? returnToTown =
+            await returnToTownResponse.Content.ReadFromJsonAsync<TravelResponse>();
+        Assert.Equal("STARTER_TOWN", returnToTown?.LocationId);
+        Assert.Equal(3, returnToTown?.Version);
+        Assert.False(returnToTown?.IsTravelling ?? false);
+        Assert.Null(returnToTown?.TargetLocationId);
 
         BootstrapResponse? reconnected =
             await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap");
-        Assert.Equal("WHISPERING_FOREST", reconnected?.World?.CurrentLocation.Id);
+        Assert.Equal("STARTER_TOWN", reconnected?.World?.CurrentLocation.Id);
 
         await using GameDbContext context = postgres.CreateDbContext();
         Assert.Equal(
-            "WHISPERING_FOREST",
+            "STARTER_TOWN",
             (await context.CharacterLocations.SingleAsync()).LocationId);
     }
 

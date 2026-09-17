@@ -1,0 +1,112 @@
+{
+    "locationId":  "CRIMSON_WASTELAND",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_SHAKAL_L33",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_RYTSAR_L33",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_ISPOLIN_L33",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_BAGROVYI_KULTIST_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_CHUMNOI_ZHRETS_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_TENEVOI_NEKROMANT_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_PADALSHCHIK_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_BAGROVAIA_GARPIIA_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_POZHIRATEL_DUSH_L35",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_BEZYMIANNYI_MARSHAL_L37",
+                           "weight":  0.18
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_VELIKAN_L35",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_PREDVESTNIK_PUSTOSHI_L37",
+                           "weight":  0.18
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KHODIACHII_MERTVETS_L35",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_RAZLOZHIVSHIISIA_PEKHOTINETS_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_SKELET_MECHNIK_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_SKELET_LUCHNIK_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_CHUMNOI_SLUGA_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KLADBISHCHENSKII_AKOLIT_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_PIOS_L37",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_POGREBALNYI_STRAZH_L37",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_MERTVENNYI_RYTSAR_L37",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_KOSTIANOI_NADSMOTRSHCHIK_L37",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_CHUMNOI_MAGISTR_L37",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_MOGILNYI_KOLDUN_L38",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "CRIMSON_WASTELAND_VLADYKA_SKLEPA_L38",
+                           "weight":  0.18
+                       }
+                   ]
+}

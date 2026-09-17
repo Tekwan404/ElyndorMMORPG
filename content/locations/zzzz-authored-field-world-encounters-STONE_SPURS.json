@@ -1,0 +1,44 @@
+{
+    "locationId":  "STONE_SPURS",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "STONE_SPURS_NETOPYR_L12",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_POLZUN_L12",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_RUDNYI_ZHUK_L15",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_OBEZUMEVSHII_SHAKHTIOR_L14",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_GLUBINNYI_LAZUTCHIK_L14",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_RUNNOKAMENNYI_STRAZH_L14",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_KAMNEGLOT_L15",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_KHOZIAIN_ZHIL_L16",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_MOLODOI_KAMNEGLOT_L16",
+                           "weight":  1.0
+                       }
+                   ]
+}

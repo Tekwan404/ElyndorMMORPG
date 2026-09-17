@@ -1,0 +1,259 @@
+{
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "equipmentSets":  [
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_GUARDIAN",
+                              "name":  "Доспех Хранителя Сердца",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_BERSERKER",
+                              "name":  "Клятва Багровой Ярости",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_WARLORD",
+                              "name":  "Регалии Багрового Полководца",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_FIRE",
+                              "name":  "Венец Пылающей Чащи",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_ARCANE",
+                              "name":  "Ризы Корневого Резонанса",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_FROST",
+                              "name":  "Покров Белого Корня",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_MARKSMANSHIP",
+                              "name":  "Клятва Дикого Следа",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_BEAST_MASTERY",
+                              "name":  "Шкуры Вожака Чащи",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_SURVIVAL",
+                              "name":  "Шкуры Ядовитого Следа",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_HOLY",
+                              "name":  "Доспех Рассвета Чащи",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_PROTECTION",
+                              "name":  "Оплот Живого Сердца",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_RETRIBUTION",
+                              "name":  "Латы Очищающего Пламени",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
+                              "name":  "Наследие Первого Стража",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_BERSERKER",
+                              "name":  "Клятва Разбитого Клинка",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
+                              "name":  "Регалии Зеркального Маршала",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
+                              "name":  "Одеяния Пылающего Раскола",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
+                              "name":  "Одеяния Расколотой Звезды",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
+                              "name":  "Покров Зеркального Инея",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
+                              "name":  "Регалии Стрелка Между Мирами",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
+                              "name":  "Клятва Зеркального Зверолова",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_SURVIVAL",
+                              "name":  "Снаряжение Ловчего Раскола",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_HOLY",
+                              "name":  "Клятва Расколотого Рассвета",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
+                              "name":  "Доспех Зеркального Стража",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
+                              "name":  "Латы Триединого Правосудия",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
+                              "name":  "Доспехи Чёрного Бастиона",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER",
+                              "name":  "Наследие Багрового Крушителя",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_WARRIOR_WARLORD",
+                              "name":  "Регалии Пепельного Маршала",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_MAGE_FIRE",
+                              "name":  "Одеяния Пепельной Звезды",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_MAGE_ARCANE",
+                              "name":  "Одеяния Затмённого Оракула",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_MAGE_FROST",
+                              "name":  "Покров Безмолвного Инея",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
+                              "name":  "Наследие Безмолвной Стрелы",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY",
+                              "name":  "Регалии Хозяина Чёрной Гончей",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL",
+                              "name":  "Наследие Последнего Ловчего",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_PALADIN_HOLY",
+                              "name":  "Регалии Последнего Рассвета",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_PALADIN_PROTECTION",
+                              "name":  "Оплот Первого Стража",
+                              "bonuses":  [
+
+                                          ]
+                          },
+                          {
+                              "id":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION",
+                              "name":  "Латы Последнего Суда",
+                              "bonuses":  [
+
+                                          ]
+                          }
+                      ]
+}

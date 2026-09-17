@@ -71,6 +71,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-3-ui-world-map.png', fullPage: true })
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await expect(page.locator('[data-map-travel]')).toContainText('Начать переход')
+  await page.locator('[data-map-travel]').scrollIntoViewIfNeeded()
   await expect.poll(async () => {
     const travelButton = await page.locator('[data-map-travel]').boundingBox()
     const navigationBox = await page
@@ -85,7 +86,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   const travelButton = await page.locator('[data-map-travel]').boundingBox()
   expect(mapCanvas).not.toBeNull()
   expect(travelButton).not.toBeNull()
-  expect((travelButton?.y ?? 0) + (travelButton?.height ?? 0)).toBeLessThanOrEqual(
+  expect((travelButton?.y ?? 0)).toBeGreaterThanOrEqual(
     (mapCanvas?.y ?? 0) + (mapCanvas?.height ?? 0),
   )
   await page.screenshot({ path: '../../output/playwright/session-3b-map-selection.png', fullPage: true })

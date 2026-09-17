@@ -1,0 +1,56 @@
+{
+    "locationId":  "ASHEN_BORDER",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "ASHEN_BORDER_REKRUT_ZATMENIIA_L18",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PEPELNYI_STRELOK_L18",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PALACH_GRANITSY_L22",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_KULTIST_ZATMENIIA_L19",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_ZAKLINATEL_TLEIUSHCHIKH_RUN_L20",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_GLASHATAI_ZATMENIIA_L22",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_OBUGLENNYI_DREVEN_L21",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PEPELNYI_VOLK_L22",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PEPELNYI_NALIOTCHIK_L22",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_DOZORNYI_GRANITSY_L23",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_PEPELNYI_GONCHII_ZVER_L23",
+                           "weight":  1.0
+                       }
+                   ]
+}

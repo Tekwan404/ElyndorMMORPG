@@ -1,0 +1,76 @@
+{
+    "locationId":  "SHATTERED_LANDS",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "SHATTERED_LANDS_FANATIK_RASKOLA_L27",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_RYTSAR_RASKOLA_L27",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_STRELOK_RASKOLA_L28",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_ZHRETS_OTRAZHENII_L28",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_PROVODNIK_MANY_L28",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_PUSTOTNYI_UCHENIK_L29",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_OTRAZHENIE_VOINA_L29",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_OTRAZHENIE_MAGA_L29",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_OTRAZHENIE_LUCHNIKA_L30",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_ZERKALNYI_STRAZH_L30",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_KHRANITEL_RASKOLA_L31",
+                           "weight":  0.18
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_OSKOLOCHNYI_STRAZH_L30",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_CHARODEI_RASKOLA_L31",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+                           "weight":  0.18
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
+                           "weight":  1.0
+                       }
+                   ]
+}

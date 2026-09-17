@@ -75,7 +75,7 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
         PendingWorldEncounter pending = encounterRegistry.Register(
             leaderAccountId,
             "WHISPERING_FOREST",
-            "FOREST_WOLF_L1");
+            "WHISPERING_FOREST_MOLODOI_VOLK_L1");
 
         CombatOperationResult started = await combat.StartAsync(
             leaderAccountId,
@@ -156,7 +156,7 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
         PendingWorldEncounter pending = encounterRegistry.Register(
             leaderAccountId,
             "WHISPERING_FOREST",
-            "FOREST_WOLF_L1");
+            "WHISPERING_FOREST_MOLODOI_VOLK_L1");
 
         IssuedAccessToken leaderToken = IssueToken(factory, leaderAccountId, 9201);
         IssuedAccessToken memberToken = IssueToken(factory, memberAccountId, 9202);
@@ -327,7 +327,7 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
         PendingWorldEncounter pending = encounterRegistry.Register(
             leaderAccountId,
             "WHISPERING_FOREST",
-            "FOREST_WOLF_L1");
+            "WHISPERING_FOREST_MOLODOI_VOLK_L1");
         CombatUpdateResponse started = await leaderHub.InvokeAsync<CombatUpdateResponse>(
             "StartCombat",
             pending.EncounterId.ToString());

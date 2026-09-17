@@ -13,7 +13,22 @@ public sealed class GameContentPackageLoaderTests
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
-        ["FOREST_WOLF_L1", "FOREST_BOAR_L2", "GIANT_SPIDER_L3", "FOREST_WOLF_L4", "ALPHA_WOLF_L5"];
+    [
+        "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+        "WHISPERING_FOREST_SERYI_VOLK_L1",
+        "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+        "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+        "WHISPERING_FOREST_LESNOI_KABAN_L2",
+        "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+        "WHISPERING_FOREST_LESNOI_PAUK_L3",
+        "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+        "WHISPERING_FOREST_LESNOI_VOLK_L3",
+        "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+        "WHISPERING_FOREST_KABAN_L4",
+        "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+        "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+        "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"
+    ];
 
     [Fact]
     public async Task PhaseFiveMageAndLocationEncounterPackageLoadsAndValidates()
@@ -21,8 +36,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.22.0", package.ContentVersion);
-        Assert.Equal("0.18.0", package.BalanceVersion);
+        Assert.Equal("0.23.0", package.ContentVersion);
+        Assert.Equal("0.19.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -132,8 +147,9 @@ public sealed class GameContentPackageLoaderTests
         Assert.Contains(mineBossLoot.Entries, entry => entry.ItemId == "DUNGEON_MINES_ARCHER_LEGENDARY_BOW");
 
         HashSet<string> obtainableItemIds = package.LootTables
-            .SelectMany(table => table.Entries)
-            .Select(entry => entry.ItemId)
+            .SelectMany(table => table.Entries.Select(entry => entry.ItemId)
+                .Concat((table.SelectionGroups ?? []).SelectMany(group => group.Entries)
+                    .Select(entry => entry.ItemId)))
             .ToHashSet(StringComparer.Ordinal);
         ItemDefinition[] proceduralEquipment = package.Items!
             .Where(item => item.Type == ItemType.Equipment)
@@ -150,6 +166,29 @@ public sealed class GameContentPackageLoaderTests
             .ToArray();
         Assert.NotEmpty(currentProgressionItems);
         Assert.All(currentProgressionItems, item => Assert.Contains(item.Id, obtainableItemIds));
+
+        LootTableDefinition[] authoredRaidBossTables = package.LootTables
+            .Where(table => table.Id.StartsWith("LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_", StringComparison.Ordinal)
+                || table.Id.StartsWith("LOOT_SHATTERED_ORDER_CITADEL_BOSS_", StringComparison.Ordinal)
+                || table.Id.StartsWith("LOOT_BLACK_BASTION_BOSS_", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(14, authoredRaidBossTables.Length);
+        Assert.All(authoredRaidBossTables, table =>
+        {
+            Assert.Equal(2, table.SelectionGroups!.Count);
+            Assert.Contains(table.SelectionGroups, group => group.SelectionMode == "EqualWeight");
+            Assert.Contains(table.SelectionGroups, group => group.SelectionMode == "WeightedExclusive");
+            Assert.All(table.SelectionGroups, group => Assert.InRange(group.Rolls, 1, 2));
+            Assert.All(table.SelectionGroups.SelectMany(group => group.Entries), entry =>
+                Assert.Contains(package.Items!, item => item.Id == entry.ItemId && item.Type == ItemType.Equipment));
+        });
+
+        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST"
+            && item.Slot == EquipmentSlot.Waist);
+        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST"
+            && item.Slot == EquipmentSlot.Wrist);
+        Assert.Contains(EquipmentCategoryIds.Crossbow,
+            package.ClassProfiles!.Single(profile => profile.Id == "ARCHER").AllowedWeaponCategories);
 
         DungeonDefinition eclipsedCitadel = Assert.Single(
             package.Dungeons!,

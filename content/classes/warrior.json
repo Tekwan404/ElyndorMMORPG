@@ -22,6 +22,9 @@
       "allowedWeaponCategories": [
         "ONE_HAND_SWORD",
         "TWO_HAND_SWORD",
+        "TWO_HAND_AXE",
+        "TWO_HAND_MACE",
+        "POLEARM",
         "AXE",
         "MACE"
       ],

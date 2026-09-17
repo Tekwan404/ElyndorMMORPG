@@ -48,7 +48,7 @@ public sealed class ContentAdministrationService(
     MutableContentSnapshotProvider snapshotProvider,
     ContentPublicationCoordinator coordinator)
 {
-    public const int MaxPayloadCharacters = 2_000_000;
+    public const int MaxPayloadCharacters = 8 * 1024 * 1024;
 
     public ContentAdminRuntimeState GetCurrent()
     {

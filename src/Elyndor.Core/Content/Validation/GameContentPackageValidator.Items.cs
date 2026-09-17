@@ -136,7 +136,8 @@ public static partial class GameContentPackageValidator
                     continue;
                 if (!lootTableIds.Add(table.Id))
                     errors.Add(new("DUPLICATE_LOOT_TABLE_ID", path, $"Loot table '{table.Id}' is duplicated."));
-                if (table.Version < 1 || table.Entries.Count == 0)
+                IReadOnlyList<LootSelectionGroup> selectionGroups = table.SelectionGroups ?? [];
+                if (table.Version < 1 || table.Entries.Count == 0 && selectionGroups.Count == 0)
                     errors.Add(new("INVALID_LOOT_TABLE", path, $"Loot table '{table.Id}' is invalid."));
 
                 HashSet<string> entryItemIds = new(StringComparer.Ordinal);
@@ -159,6 +160,47 @@ public static partial class GameContentPackageValidator
                     {
                         errors.Add(new("INVALID_LOOT_ENTRY", entryPath,
                             $"Loot entry for '{entry.ItemId}' is invalid."));
+                    }
+                }
+
+                HashSet<string> groupIds = new(StringComparer.Ordinal);
+                for (var groupIndex = 0; groupIndex < selectionGroups.Count; groupIndex++)
+                {
+                    LootSelectionGroup group = selectionGroups[groupIndex];
+                    string groupPath = $"{path}.selectionGroups[{groupIndex}]";
+                    bool isWeighted = string.Equals(group.SelectionMode, "WeightedExclusive", StringComparison.Ordinal);
+                    bool isEqual = string.Equals(group.SelectionMode, "EqualWeight", StringComparison.Ordinal);
+                    if (!ValidateIdentifier(group.Id, "INVALID_LOOT_SELECTION_GROUP_ID", $"{groupPath}.id", errors)
+                        || !groupIds.Add(group.Id)
+                        || group.Rolls < 1
+                        || group.Entries.Count == 0
+                        || !isWeighted && !isEqual)
+                    {
+                        errors.Add(new("INVALID_LOOT_SELECTION_GROUP", groupPath,
+                            $"Loot selection group '{group.Id}' is invalid."));
+                    }
+
+                    HashSet<string> groupItemIds = new(StringComparer.Ordinal);
+                    for (var selectionIndex = 0; selectionIndex < group.Entries.Count; selectionIndex++)
+                    {
+                        LootSelectionEntry entry = group.Entries[selectionIndex];
+                        string entryPath = $"{groupPath}.entries[{selectionIndex}]";
+                        if (!itemsById.TryGetValue(entry.ItemId, out ItemDefinition? item))
+                        {
+                            errors.Add(new("MISSING_LOOT_ITEM_REFERENCE", entryPath,
+                                $"Loot selection references missing item '{entry.ItemId}'."));
+                            continue;
+                        }
+
+                        if (!groupItemIds.Add(entry.ItemId)
+                            || entry.Weight <= 0
+                            || entry.MinQuantity < 1
+                            || entry.MaxQuantity < entry.MinQuantity
+                            || !item.Stackable && entry.MaxQuantity != 1)
+                        {
+                            errors.Add(new("INVALID_LOOT_SELECTION_ENTRY", entryPath,
+                                $"Loot selection entry for '{entry.ItemId}' is invalid."));
+                        }
                     }
                 }
             }
@@ -252,7 +294,8 @@ public static partial class GameContentPackageValidator
                     && (EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                         ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
                 EquipmentSlot.Head or EquipmentSlot.Shoulders or EquipmentSlot.Chest or EquipmentSlot.Hands
-                    or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet =>
+                    or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet
+                    or EquipmentSlot.Waist or EquipmentSlot.Wrist =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
                     && item.WeaponCategory is null
                     && item.OffHandCategory is null,

@@ -24,7 +24,7 @@ public sealed class OpenWorldAccessContentTests
     }
 
     [Fact]
-    public async Task OrdinaryWorldZonesUseRecommendedLevelWithoutLevelOrBossContractGate()
+    public async Task WorldLocationsAreReachableFromLevelOneWhileContractGatesRemain()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -40,11 +40,13 @@ public sealed class OpenWorldAccessContentTests
             GetLocation("BLIGHTED_GROVE")
         ];
 
-        Assert.All(ordinaryZones, zone => Assert.Equal(1, zone.MinimumLevel));
-        Assert.All(ordinaryZones, zone => Assert.Null(zone.RequiredContractId));
+        Assert.All(package.Locations, location => Assert.Equal(1, location.MinimumLevel));
+        Assert.All(ordinaryZones.Where(zone => zone.Id != "BLIGHTED_GROVE"),
+            zone => Assert.Null(zone.RequiredContractId));
+        Assert.Equal("CONTRACT_BROODMOTHER_GATE", GetLocation("BLIGHTED_GROVE").RequiredContractId);
 
-        Assert.Equal(9, GetLocation("DEEP_FOREST").RecommendedLevel);
+        Assert.Equal(8, GetLocation("DEEP_FOREST").RecommendedLevel);
         Assert.Equal(14, GetLocation("BROODMOTHER_LAIR").RecommendedLevel);
-        Assert.Equal(17, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
+        Assert.Equal(18, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
     }
 }

@@ -92,7 +92,7 @@
           "weight": 0.7
         }
       ],
-      "minimumLevel": 6,
+      "minimumLevel": 1,
       "maximumLevel": 11,
       "requiredContractId": null,
       "artId": "whispering-forest",
@@ -108,7 +108,7 @@
         "DEEP_FOREST"
       ],
       "encounters": [],
-      "minimumLevel": 14,
+      "minimumLevel": 1,
       "maximumLevel": 16,
       "requiredContractId": null,
       "artId": "ancient-ruins",
@@ -130,7 +130,7 @@
           "weight": 1
         }
       ],
-      "minimumLevel": 14,
+      "minimumLevel": 1,
       "maximumLevel": 14,
       "requiredContractId": null,
       "artId": "ancient-ruins",
@@ -172,7 +172,7 @@
           "weight": 0.7
         }
       ],
-      "minimumLevel": 15,
+      "minimumLevel": 1,
       "maximumLevel": 20,
       "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
       "artId": "caravan-road",
@@ -188,7 +188,7 @@
         "BLIGHTED_GROVE"
       ],
       "encounters": [],
-      "minimumLevel": 25,
+      "minimumLevel": 1,
       "maximumLevel": 25,
       "requiredContractId": null,
       "artId": "ancient-ruins",
@@ -204,7 +204,7 @@
         "BLIGHTED_GROVE"
       ],
       "encounters": [],
-      "minimumLevel": 25,
+      "minimumLevel": 1,
       "maximumLevel": 25,
       "requiredContractId": null,
       "artId": "ancient-ruins",

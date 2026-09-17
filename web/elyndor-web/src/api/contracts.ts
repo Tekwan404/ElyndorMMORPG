@@ -374,7 +374,7 @@ export interface ItemStats {
 export type EquipmentSlot =
   | 'MainHand' | 'OffHand' | 'Head' | 'Shoulders' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
   | 'Cloak' | 'Amulet' | 'Ring1' | 'Ring2'
-  | 'Weapon' | 'Boots' | 'Accessory'
+  | 'Weapon' | 'Boots' | 'Accessory' | 'Waist' | 'Wrist'
 export type ItemType = 'Equipment' | 'Material' | 'Consumable'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
@@ -467,6 +467,8 @@ export interface InventorySnapshot {
     amulet?: InventoryItem | null
     ring1?: InventoryItem | null
     ring2?: InventoryItem | null
+    waist?: InventoryItem | null
+    wrist?: InventoryItem | null
   }
 }
 

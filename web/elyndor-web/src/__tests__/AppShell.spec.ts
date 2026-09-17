@@ -150,7 +150,7 @@ describe('AppShell', () => {
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Боевые показатели')
-    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(12)
+    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(14)
   })
 
   it('shows an unseen release after bootstrap and acknowledges it once', async () => {

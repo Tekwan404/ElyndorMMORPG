@@ -93,16 +93,14 @@ const routeLines = computed(() => {
   )
   if (currentIndex < 0) return []
 
-  const currentLocation = visibleLocations.value[currentIndex]!
   const current = nodePosition(
     currentIndex,
     visibleLocations.value.length,
-    currentLocation.id,
   )
   return visibleLocations.value
     .map((location, index) => ({
       location,
-      target: nodePosition(index, visibleLocations.value.length, location.id),
+      target: nodePosition(index, visibleLocations.value.length),
     }))
     .filter(entry => reachableLocationIds.value.has(entry.location.id))
     .map(entry => {
@@ -202,40 +200,31 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
   return 'locked'
 }
 
-const worldMapAnchors: Record<string, { x: number; y: number }> = {
-  STARTER_TOWN: { x: 16, y: 58 },
-  WHISPERING_FOREST: { x: 31, y: 44 },
-  DEEP_FOREST: { x: 47, y: 29 },
-  ANCIENT_MINE: { x: 55, y: 17 },
-  BROODMOTHER_LAIR: { x: 64, y: 48 },
-  BLIGHTED_GROVE: { x: 78, y: 32 },
-  ECLIPSED_CITADEL: { x: 87, y: 16 },
-}
-
 function nodePosition(
   index: number,
   total: number,
-  locationId?: string,
 ): { x: number; y: number } {
-  const anchored = locationId ? worldMapAnchors[locationId] : undefined
-  if (anchored) return anchored
-  if (total <= 1) return { x: 50, y: 48 }
-
-  const safeTotal = Math.max(total - 1, 1)
-  const progress = index / safeTotal
+  const columns = 3
+  const row = Math.floor(index / columns)
+  const rowCount = Math.ceil(total / columns)
   return {
-    x: 14 + progress * 72,
-    y: index % 2 === 0 ? 56 : 38,
+    x: [16.67, 50, 83.33][index % columns] ?? 50,
+    y: rowCount <= 1 ? 50 : 20 + (row / (rowCount - 1)) * 66,
   }
 }
 
-function nodeStyle(index: number, locationId: string): Record<string, string> {
-  const position = nodePosition(index, visibleLocations.value.length, locationId)
+function nodeStyle(index: number): Record<string, string> {
+  const position = nodePosition(index, visibleLocations.value.length)
   return {
     left: `${position.x}%`,
     top: `${position.y}%`,
   }
 }
+
+const mapCanvasStyle = computed(() => ({
+  '--map-art': `url(${mapArt.value})`,
+  '--map-rows': Math.ceil(visibleLocations.value.length / 3),
+}))
 
 watch(currentLocationId, locationId => {
   if (locationId) selectedLocationId.value = locationId
@@ -305,7 +294,7 @@ onMounted(() => {
     <template v-else>
       <section
         class="map-canvas"
-        :style="{ '--map-art': `url(${mapArt})` }"
+        :style="mapCanvasStyle"
         aria-label="Карта доступных локаций"
       >
         <div class="map-canvas__fog" />
@@ -337,7 +326,7 @@ onMounted(() => {
           }"
           :data-state="locationState(location)"
           :data-location-id="location.id"
-          :style="nodeStyle(index, location.id)"
+          :style="nodeStyle(index)"
           type="button"
           :aria-pressed="selectedLocation?.id === location.id"
           :aria-label="`${locationName(location)}, ${levelRangeLabel(location)}`"
@@ -352,6 +341,8 @@ onMounted(() => {
             <small>{{ levelRangeLabel(location) }}</small>
           </span>
         </button>
+
+      </section>
 
         <section
           v-if="selectedLocation"
@@ -417,7 +408,6 @@ onMounted(() => {
           <span><i data-state="reachable" /> Доступно</span>
           <span><i data-state="locked" /> Нет прямого пути</span>
         </div>
-      </section>
 
       <UICard v-if="activeContract" class="contract-card" data-world-contract>
         <div>
@@ -507,9 +497,10 @@ onMounted(() => {
 
 .map-canvas {
   --map-art: none;
+  --map-rows: 1;
 
   position: relative;
-  min-height: clamp(26rem, 58dvh, 34rem);
+  min-height: max(clamp(26rem, 58dvh, 34rem), calc(var(--map-rows) * 6rem + 4rem));
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
@@ -644,7 +635,8 @@ onMounted(() => {
 
 .map-node__label {
   display: grid;
-  max-width: 8.5rem;
+  width: min(6.6rem, calc(33vw - 1rem));
+  box-sizing: border-box;
   gap: 1px;
   padding: 3px 6px;
   border-radius: var(--ui-radius-sm);
@@ -717,11 +709,8 @@ onMounted(() => {
 }
 
 .map-selection {
-  position: absolute;
-  z-index: 3;
-  right: var(--ui-space-3);
-  bottom: var(--ui-space-3);
-  left: var(--ui-space-3);
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 4.7rem minmax(0, 1fr);
   gap: var(--ui-space-2);
@@ -851,20 +840,13 @@ onMounted(() => {
 }
 
 .map-legend {
-  position: absolute;
-  top: var(--ui-space-3);
-  right: var(--ui-space-3);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--ui-space-2);
-  padding: var(--ui-space-2);
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 68%);
+  padding-inline: var(--ui-space-1);
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-xs);
-  backdrop-filter: blur(8px);
 }
 
 .map-legend span {
@@ -921,18 +903,11 @@ onMounted(() => {
     justify-items: start;
   }
 
-  .map-canvas {
-    min-height: 30rem;
-  }
-
   .map-node__label {
-    max-width: 6.6rem;
+    width: min(6.6rem, calc(33vw - 1.25rem));
   }
 
   .map-selection {
-    right: var(--ui-space-2);
-    bottom: var(--ui-space-2);
-    left: var(--ui-space-2);
     grid-template-columns: 4.15rem minmax(0, 1fr);
   }
 
@@ -946,10 +921,6 @@ onMounted(() => {
 
   .map-selection p {
     -webkit-line-clamp: 1;
-  }
-
-  .map-legend {
-    display: none;
   }
 
 }
