@@ -1,6 +1,6 @@
 # Elyndor content refresh and inventory reset design
 
-**Status:** Design proposal for review  
+**Status:** Approved by user on 2026-09-17  
 **Source branch:** `feat/new-pictures-content-refresh` from `origin/main`  
 **Input assets:** `C:\Users\tekwan\Downloads\ELYNDOR\pic\new pictures`
 
@@ -139,4 +139,3 @@ resolve conflicts by reviewing both sides.
 - No automatic item conversion/compensation unless separately specified and
   approved; inventory reset means items are removed, not translated.
 - No inferred mechanics/content solely from artwork.
-
