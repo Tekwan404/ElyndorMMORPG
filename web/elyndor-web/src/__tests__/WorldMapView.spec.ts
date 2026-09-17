@@ -99,6 +99,23 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-map-selection]').text()).toContain('Шепчущий лес')
   })
 
+  it('shows a readable numbered location index tied to the map markers', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-location-index]').text()).toContain('Стартовый город')
+    expect(wrapper.get('[data-location-index]').text()).toContain('Шепчущий лес')
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').text()).toContain('01')
+    expect(wrapper.get('[data-location-list-id="WHISPERING_FOREST"]').text()).toContain('02')
+
+    await wrapper.get('[data-location-list-id="WHISPERING_FOREST"]').trigger('click')
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe('true')
+  })
+
   it('keeps map node order stable when the current location changes', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 

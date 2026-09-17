@@ -24,6 +24,7 @@
   "abilities": [
     {
       "id": "MIRROR_PRIEST_HEAL",
+      "iconId": "paladin-holy-light",
       "type": "Casted",
       "targetType": "Self",
       "resourceCost": 0,
@@ -42,6 +43,7 @@
     },
     {
       "id": "MIRROR_EXECUTIONER_PRESSURE",
+      "iconId": "warrior-sunder-armor",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -71,6 +73,7 @@
     },
     {
       "id": "VELARIUS_SHADOW_BOLT",
+      "iconId": "mage-arcane-missiles",
       "type": "Casted",
       "targetType": "SingleEnemy",
       "resourceCost": 5,
@@ -89,6 +92,7 @@
     },
     {
       "id": "VELARIUS_VOID_SURGE",
+      "iconId": "mage-arcane-explosion",
       "type": "Casted",
       "targetType": "AllEnemiesInCombat",
       "resourceCost": 12,
@@ -107,6 +111,7 @@
     },
     {
       "id": "VELARIUS_DRAIN_LIFE",
+      "iconId": "mage-arcane-power",
       "type": "Casted",
       "targetType": "SingleEnemy",
       "resourceCost": 15,
@@ -125,6 +130,7 @@
     },
     {
       "id": "VELARIUS_CATACLYSM",
+      "iconId": "mage-blast-wave",
       "type": "Casted",
       "targetType": "AllEnemiesInCombat",
       "resourceCost": 25,
@@ -143,6 +149,7 @@
     },
     {
       "id": "VELARIUS_MANA_FEED",
+      "iconId": "mage-evocation",
       "type": "Casted",
       "targetType": "Self",
       "resourceCost": 0,
@@ -159,6 +166,7 @@
     },
     {
       "id": "MOR_ET_SOUL_WARRIOR_STRIKE",
+      "iconId": "warrior-heavy-blow",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -176,6 +184,7 @@
     },
     {
       "id": "MOR_ET_SOUL_MAGE_BOLT",
+      "iconId": "mage-arcane-spark",
       "type": "Casted",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -194,6 +203,7 @@
     },
     {
       "id": "MOR_ET_SOUL_ARCHER_BLEED",
+      "iconId": "MARKSMAN_07",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -224,6 +234,7 @@
     },
     {
       "id": "MOR_ET_SOUL_PALADIN_LIGHT",
+      "iconId": "paladin-holy-shock",
       "type": "Casted",
       "targetType": "Self",
       "resourceCost": 0,
@@ -242,6 +253,7 @@
     },
     {
       "id": "AZRAEL_FIRE_BRAND",
+      "iconId": "mage-fireball",
       "type": "Casted",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -260,6 +272,7 @@
     },
     {
       "id": "AZRAEL_FROST_LANCE",
+      "iconId": "mage-ice-lance",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -277,6 +290,7 @@
     },
     {
       "id": "AZRAEL_VOID_PULSE",
+      "iconId": "mage-arcane-explosion",
       "type": "Casted",
       "targetType": "AllEnemiesInCombat",
       "resourceCost": 0,
@@ -295,6 +309,7 @@
     },
     {
       "id": "AZRAEL_FIRE_PRESSURE",
+      "iconId": "mage-fire-blast",
       "type": "Instant",
       "targetType": "SingleEnemy",
       "resourceCost": 0,
@@ -325,6 +340,7 @@
     },
     {
       "id": "AZRAEL_FROST_WARD",
+      "iconId": "mage-ice-barrier",
       "type": "Casted",
       "targetType": "Self",
       "resourceCost": 0,
@@ -341,6 +357,7 @@
     },
     {
       "id": "AZRAEL_VOID_MEND",
+      "iconId": "paladin-holy-light",
       "type": "Casted",
       "targetType": "Self",
       "resourceCost": 0,

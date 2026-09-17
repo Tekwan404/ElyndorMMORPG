@@ -64,7 +64,7 @@ const frontlineAlly = computed(() => {
 const aggroedAllyActorIds = computed(() => combatEnemies.value
   .map(enemy => enemy.currentAggroTargetActorId)
   .filter((actorId): actorId is string => Boolean(actorId)))
-const companionArt = computed(() => monsterArtUrl(companion.value?.artId))
+const companionArt = computed(() => monsterArtUrl(companion.value?.artId, companion.value?.definitionId))
 const isParticipantActive = computed(() => combat.isParticipantActive)
 const lootRolls = computed(() => combat.lootRolls)
 const battlefieldArt = computed(() => {
@@ -101,7 +101,7 @@ const enemyPresentation = computed<EnemyPresentation | null>(() => {
   return {
     name: enemy.name,
     level: enemy.level ?? (matchesEncounter ? encounter.level : 1),
-    art: monsterArtUrl(artId),
+    art: monsterArtUrl(artId, enemy.definitionId),
   }
 })
 const displayAbilities = computed(() => orderCombatAbilities(

@@ -168,6 +168,10 @@ function levelRangeLabel(location: WorldLocation): string {
     : `ур. ${location.minimumLevel}–${location.maximumLevel}`
 }
 
+function locationIndex(index: number): string {
+  return String(index + 1).padStart(2, '0')
+}
+
 function lockReason(location: WorldLocation): string | null {
   if (isTravelling.value && location.id !== currentLocationId.value) {
     return 'Герой уже находится в пути. Дождитесь завершения перехода.'
@@ -312,12 +316,12 @@ onMounted(() => {
           :style="nodeStyle(location.id, index)"
           type="button"
           :aria-pressed="selectedLocation?.id === location.id"
-          :aria-label="`${locationName(location)}, ${levelRangeLabel(location)}`"
+          :aria-label="`${locationIndex(index)}. ${locationName(location)}, ${levelRangeLabel(location)}`"
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
           <span class="map-node__marker" :data-location-kind="locationKind(location.id) === 'dungeon' ? 'dungeon' : 'normal'">
-            <i />
+            <span class="map-node__index">{{ locationIndex(index) }}</span>
           </span>
         </button>
 
@@ -382,11 +386,41 @@ onMounted(() => {
           </div>
         </section>
 
-        <div class="map-legend" aria-label="Легенда карты">
-          <span><i data-state="current" /> Вы здесь</span>
-          <span><i data-state="reachable" /> Доступно</span>
-          <span><i data-state="locked" /> Нет прямого пути</span>
+      <div class="map-legend" aria-label="Легенда карты">
+        <span><i data-state="current" /> Вы здесь</span>
+        <span><i data-state="reachable" /> Доступно</span>
+        <span><i data-state="locked" /> Нет прямого пути</span>
+      </div>
+
+      <section class="map-location-index" data-location-index aria-label="Список локаций по номерам карты">
+        <header class="map-location-index__header">
+          <div>
+            <small>ТОЧКИ НА КАРТЕ</small>
+            <span>Найдите название и нажмите, чтобы выбрать место</span>
+          </div>
+          <b>{{ visibleLocations.length }}</b>
+        </header>
+        <div class="map-location-index__grid">
+          <button
+            v-for="(location, index) in visibleLocations"
+            :key="location.id"
+            type="button"
+            class="map-location-index__item"
+            :class="{ 'map-location-index__item--selected': selectedLocation?.id === location.id }"
+            :data-location-list-id="location.id"
+            :data-state="locationState(location)"
+            :aria-pressed="selectedLocation?.id === location.id"
+            @click="selectLocation(location.id)"
+          >
+            <b class="map-location-index__number">{{ locationIndex(index) }}</b>
+            <span class="map-location-index__copy">
+              <strong>{{ locationName(location) }}</strong>
+              <small>{{ levelRangeLabel(location) }}</small>
+            </span>
+            <i class="map-location-index__state" aria-hidden="true" />
+          </button>
         </div>
+      </section>
 
       <UICard v-if="activeContract" class="contract-card" data-world-contract>
         <div>
@@ -598,20 +632,20 @@ onMounted(() => {
   box-shadow: 0 .35rem .9rem rgb(0 0 0 / 42%);
 }
 
-.map-node__marker i {
-  width: .48rem;
-  height: .48rem;
-  border-radius: 50%;
-  background: #7c849b;
+.map-node__index {
+  color: #d6d9e4;
+  font-size: .58rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 4px #05070b;
 }
 
 .map-node[data-state='reachable'] .map-node__marker {
   border-color: rgb(171 163 255 / 72%);
 }
 
-.map-node[data-state='reachable'] .map-node__marker i {
-  background: #aaa3ff;
-  box-shadow: 0 0 8px rgb(146 136 255 / 65%);
+.map-node[data-state='reachable'] .map-node__index {
+  color: #d8d4ff;
 }
 
 .map-node[data-state='current'] .map-node__marker {
@@ -619,9 +653,8 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgb(79 185 150 / 10%), 0 .35rem .9rem rgb(0 0 0 / 42%);
 }
 
-.map-node[data-state='current'] .map-node__marker i {
-  background: #72d5b2;
-  box-shadow: 0 0 10px rgb(79 185 150 / 70%);
+.map-node[data-state='current'] .map-node__index {
+  color: #a8f1d4;
 }
 
 .map-node[data-state='current'] .map-node__pulse {
@@ -638,12 +671,8 @@ onMounted(() => {
   transform: rotate(45deg);
 }
 
-.map-node__marker[data-location-kind='dungeon'] i {
-  width: .62rem;
-  height: .62rem;
-  border-radius: 2px;
-  background: var(--ui-color-gold);
-  box-shadow: 0 0 10px rgb(224 188 100 / 68%);
+.map-node__marker[data-location-kind='dungeon'] .map-node__index {
+  color: #ffe4a1;
   transform: rotate(-45deg);
 }
 
@@ -817,6 +846,122 @@ onMounted(() => {
 
 .map-legend i[data-state='reachable'] {
   background: #aaa3ff;
+}
+
+.map-location-index {
+  display: grid;
+  gap: var(--ui-space-2);
+  width: min(100%, 34rem);
+  margin-inline: auto;
+}
+
+.map-location-index__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+  padding-inline: 2px;
+}
+
+.map-location-index__header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.map-location-index__header small {
+  color: #aaa3ff;
+  font-size: var(--ui-font-size-xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+.map-location-index__header span {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.map-location-index__header > b {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.map-location-index__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 5px;
+}
+
+.map-location-index__item {
+  display: grid;
+  min-width: 0;
+  min-height: var(--ui-touch-target);
+  grid-template-columns: 2rem minmax(0, 1fr) 7px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(7 10 17 / 84%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-location-index__item--selected {
+  border-color: rgb(184 177 255 / 68%);
+  background: linear-gradient(100deg, rgb(92 81 166 / 26%), rgb(7 10 17 / 92%));
+  box-shadow: inset 0 0 0 1px rgb(184 177 255 / 12%);
+}
+
+.map-location-index__item[data-state='locked'] {
+  color: var(--ui-color-text-secondary);
+}
+
+.map-location-index__number {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid rgb(170 163 255 / 42%);
+  border-radius: 50%;
+  color: #d8d4ff;
+  font-size: .66rem;
+}
+
+.map-location-index__copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.map-location-index__copy strong {
+  overflow: hidden;
+  font-size: var(--ui-font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-location-index__copy small {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.map-location-index__state {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #727a8e;
+}
+
+.map-location-index__item[data-state='reachable'] .map-location-index__state {
+  background: #aaa3ff;
+  box-shadow: 0 0 7px rgb(146 136 255 / 55%);
+}
+
+.map-location-index__item[data-state='current'] .map-location-index__state {
+  background: #72d5b2;
+  box-shadow: 0 0 7px rgb(79 185 150 / 55%);
 }
 
 @keyframes map-pulse {
