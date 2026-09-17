@@ -31,7 +31,7 @@
                                               "DEEP_FOREST",
                                               "OLD_ROAD"
                                           ],
-                          "minimumLevel":  4,
+                          "minimumLevel":  1,
                           "maximumLevel":  8,
                           "requiredContractId":  null,
                           "artId":  "tsvetochnaia-poliana",
@@ -50,7 +50,7 @@
                                               "STONE_SPURS",
                                               "BROODMOTHER_LAIR"
                                           ],
-                          "minimumLevel":  6,
+                          "minimumLevel":  1,
                           "maximumLevel":  11,
                           "requiredContractId":  null,
                           "artId":  "glubokii-les",
@@ -67,7 +67,7 @@
                                               "DEEP_FOREST",
                                               "STONE_SPURS"
                                           ],
-                          "minimumLevel":  9,
+                          "minimumLevel":  1,
                           "maximumLevel":  14,
                           "requiredContractId":  null,
                           "artId":  "staryi-trakt",
@@ -85,7 +85,7 @@
                                               "ANCIENT_MINE",
                                               "BLIGHTED_GROVE"
                                           ],
-                          "minimumLevel":  12,
+                          "minimumLevel":  1,
                           "maximumLevel":  16,
                           "requiredContractId":  null,
                           "artId":  "kamennye-otrogi",
@@ -103,7 +103,7 @@
                                               "ASHEN_BORDER",
                                               "HEART_OF_BLIGHTED_GROVE"
                                           ],
-                          "minimumLevel":  15,
+                          "minimumLevel":  1,
                           "maximumLevel":  20,
                           "requiredContractId":  "CONTRACT_BROODMOTHER_GATE",
                           "artId":  "oskvernionnaia-chashcha",
@@ -119,7 +119,7 @@
                                               "BLIGHTED_GROVE",
                                               "MOON_ASH_MARSHES"
                                           ],
-                          "minimumLevel":  18,
+                          "minimumLevel":  1,
                           "maximumLevel":  23,
                           "requiredContractId":  null,
                           "artId":  "pepelnaia-granitsa",
@@ -135,7 +135,7 @@
                                               "ASHEN_BORDER",
                                               "ECLIPSE_OUTSKIRTS"
                                           ],
-                          "minimumLevel":  21,
+                          "minimumLevel":  1,
                           "maximumLevel":  26,
                           "requiredContractId":  null,
                           "artId":  "topi-lunnogo-pepla",
@@ -152,7 +152,7 @@
                                               "ECLIPSED_CITADEL",
                                               "SHATTERED_LANDS"
                                           ],
-                          "minimumLevel":  24,
+                          "minimumLevel":  1,
                           "maximumLevel":  29,
                           "requiredContractId":  null,
                           "artId":  "predmestia-zatmeniia",
@@ -169,7 +169,7 @@
                                               "BLACKSTONE_HIGHLANDS",
                                               "SHATTERED_ORDER_CITADEL"
                                           ],
-                          "minimumLevel":  27,
+                          "minimumLevel":  1,
                           "maximumLevel":  32,
                           "requiredContractId":  null,
                           "artId":  "zemli-raskola",
@@ -185,7 +185,7 @@
                                               "SHATTERED_LANDS",
                                               "CRIMSON_WASTELAND"
                                           ],
-                          "minimumLevel":  30,
+                          "minimumLevel":  1,
                           "maximumLevel":  35,
                           "requiredContractId":  null,
                           "artId":  "chernokamennoe-nagore",
@@ -201,7 +201,7 @@
                                               "BLACKSTONE_HIGHLANDS",
                                               "OBSIDIAN_EDGE"
                                           ],
-                          "minimumLevel":  33,
+                          "minimumLevel":  1,
                           "maximumLevel":  38,
                           "requiredContractId":  null,
                           "artId":  "bagrovaia-pustosh",
@@ -217,7 +217,7 @@
                                               "CRIMSON_WASTELAND",
                                               "BLACK_BASTION"
                                           ],
-                          "minimumLevel":  36,
+                          "minimumLevel":  1,
                           "maximumLevel":  40,
                           "requiredContractId":  null,
                           "artId":  "obsidianovyi-predel",
@@ -232,7 +232,7 @@
                           "transitions":  [
                                               "BLIGHTED_GROVE"
                                           ],
-                          "minimumLevel":  20,
+                          "minimumLevel":  1,
                           "maximumLevel":  20,
                           "requiredContractId":  null,
                           "artId":  "serdtse-oskvernionnoi-chashchi",
@@ -247,7 +247,7 @@
                           "transitions":  [
                                               "SHATTERED_LANDS"
                                           ],
-                          "minimumLevel":  30,
+                          "minimumLevel":  1,
                           "maximumLevel":  30,
                           "requiredContractId":  null,
                           "artId":  "tsitadel-raskolotogo-ordena",
@@ -262,7 +262,7 @@
                           "transitions":  [
                                               "OBSIDIAN_EDGE"
                                           ],
-                          "minimumLevel":  40,
+                          "minimumLevel":  1,
                           "maximumLevel":  40,
                           "requiredContractId":  null,
                           "artId":  "chiornyi-bastion",
