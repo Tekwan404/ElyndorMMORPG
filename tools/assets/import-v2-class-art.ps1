@@ -23,11 +23,13 @@ $talentOutputRoot = Join-Path $RepoRoot 'web\elyndor-web\src\assets\game\talents
 $spellOutputRoot = Join-Path $RepoRoot 'web\elyndor-web\src\assets\abilities'
 $manifestPath = Join-Path $RepoRoot 'tools\assets\v2-art-manifest.json'
 
-$rowStarts = @(14, 211, 407, 601, 793, 991)
-$rowEnds = @(192, 390, 584, 776, 974, 1188)
 $gridColumns = 6
 $gridRows = 6
 $inset = 8
+# V2 sheets use 204px row spacing with 178px of icon artwork; the remaining
+# pixels are the sheet gutters and must not leak into the next talent/spell.
+$rowPitch = 204
+$artHeight = 178
 
 function Ensure-Directory([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) {
@@ -56,7 +58,7 @@ function Save-GridCell([string]$SourcePath, [string]$OutputPath, [int]$CellIndex
         $column = $CellIndex % $gridColumns
         $row = [int][Math]::Floor($CellIndex / $gridColumns)
         $cropWidth = $cellWidth - ($inset * 2)
-        $cropHeight = $rowEnds[$row] - $rowStarts[$row] - ($inset * 2)
+        $cropHeight = $artHeight
         if ($cropWidth -le 0 -or $cropHeight -le 0) {
             throw "Invalid crop bounds for cell $CellIndex in $SourcePath."
         }
@@ -70,7 +72,7 @@ function Save-GridCell([string]$SourcePath, [string]$OutputPath, [int]$CellIndex
         $graphics.Clear([System.Drawing.Color]::Transparent)
         $sourceRectangle = [System.Drawing.Rectangle]::new(
             ($column * $cellWidth) + $inset,
-            $rowStarts[$row] + $inset,
+            ($row * $rowPitch) + $inset,
             $cropWidth,
             $cropHeight)
         $destinationRectangle = [System.Drawing.Rectangle]::new(0, 0, $cropWidth, $cropWidth)

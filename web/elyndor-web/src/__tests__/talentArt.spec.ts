@@ -34,6 +34,38 @@ describe('talent art registry', () => {
 
   it('prefers a dedicated spell icon over the talent art fallback', () => {
     expect(resolveAbilityArt('MAGE_FIREBALL', 'mage-fireball')).toMatch(/mage-fireball\.webp$/)
-    expect(resolveAbilityArt('HOLY_LIGHT', 'paladin-holy-light')).toMatch(/paladin-holy-light\.webp$/)
+    expect(resolveAbilityArt('HOLY_LIGHT', 'paladin-holy-light')).toMatch(
+      /paladin-holy-light\.webp$/,
+    )
+  })
+
+  it('uses matching class art for Archer abilities without dedicated spell-sheet icons', () => {
+    const abilityIcons = {
+      HUNTER_MARK: 'marksman-05',
+      PIERCING_ARROW: 'marksman-07',
+      AIMED_SHOT: 'marksman-09',
+      SHOCKING_SHOT: 'marksman-04',
+      MULTI_SHOT: 'marksman-26',
+      DISORIENTING_SHOT: 'marksman-06',
+      SNIPER_FOCUS: 'marksman-02',
+      HEAVY_ARROW: 'marksman-08',
+      VOLLEY: 'marksman-12',
+      COMMAND_ATTACK: 'beast-mastery-13',
+      MEND_PET: 'beast-mastery-14',
+      INTIMIDATION: 'beast-mastery-02',
+      BESTIAL_WRATH: 'beast-mastery-28',
+      RETURN_TO_OWNER: 'beast-mastery-26',
+      SERPENT_STING: 'survival-03',
+      FREEZING_TRAP: 'survival-05',
+      IMMOLATION_TRAP: 'survival-07',
+      EXPLOSIVE_TRAP: 'survival-09',
+      DETERRENCE: 'survival-28',
+      WYVERN_STING: 'survival-04',
+      PREPARATION: 'survival-25',
+    } as const
+
+    for (const [abilityId, iconName] of Object.entries(abilityIcons)) {
+      expect(resolveAbilityArt(abilityId)).toMatch(new RegExp(`${iconName}\\.webp$`))
+    }
   })
 })
