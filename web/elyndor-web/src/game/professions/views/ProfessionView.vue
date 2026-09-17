@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import { ApiRequestError } from '@/api/apiClient'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState } from '@/ui/components'
 import {
@@ -46,7 +47,7 @@ async function load(): Promise<void> {
 async function learn(id: 'SKINNING' | 'LEATHERWORKING'): Promise<void> {
   await mutate(`learn:${id}`, () => learnProfession(id), () => {
     const name = id === 'SKINNING' ? 'Снятие шкур' : 'Кожевничество'
-    return `${name} изучено. Навык начинается с 1.`
+    return `${name} изучено.`
   })
 }
 
@@ -99,16 +100,16 @@ function ingredientOwned(itemId: string): number {
 function locationLabel(id: string | null): string {
   if (!id) return 'без ограничения'
   if (id === 'STARTER_TOWN') return 'Городская мастерская'
-  return id
+  return locationPresentation(id).label
 }
 
 function itemLabel(id: string | null): string {
-  if (!id) return 'предмет'
+  if (!id) return 'Материал'
   return ({
     ROUGH_LEATHER: 'Грубая кожа',
     LIGHT_LEATHER: 'Лёгкая кожа',
     CHITIN_FRAGMENT: 'Фрагмент хитина',
-  } as Record<string, string>)[id] ?? id
+  } as Record<string, string>)[id] ?? 'Материал'
 }
 
 function errorMessage(caught: unknown): string {
@@ -116,15 +117,15 @@ function errorMessage(caught: unknown): string {
   return ({
     profession_limit_reached: 'Можно изучить не больше двух профессий.',
     profession_already_learned: 'Эта профессия уже изучена.',
-    profession_not_learned: 'Сначала изучи нужную профессию.',
+    profession_not_learned: 'Сначала изучите нужную профессию.',
     skinning_corpse_not_found: 'Эта туша больше недоступна.',
     skinning_corpse_expired: 'Время для снятия шкуры истекло.',
     skinning_corpse_already_skinned: 'Шкура с этой туши уже снята.',
     profession_skill_too_low: 'Навык профессии пока слишком низкий.',
-    profession_wrong_workshop: 'Для изготовления вернись в городскую мастерскую.',
+    profession_wrong_workshop: 'Для изготовления нужна городская мастерская.',
     profession_missing_ingredients: 'Не хватает материалов.',
     inventory_full: 'В инвентаре нет свободного места.',
-    profession_idempotency_conflict: 'Операция уже была выполнена с другими параметрами. Обнови экран.',
+    profession_idempotency_conflict: 'Состояние изменилось. Обновите экран и повторите действие.',
     network_unavailable: 'Не удалось связаться с сервером.',
   } as Record<string, string>)[code] ?? 'Не удалось выполнить действие.'
 }
@@ -138,7 +139,7 @@ onMounted(load)
       <div>
         <small>РЕМЁСЛА ЭЛИНДОРА</small>
         <h2>Профессии</h2>
-        <p>Собирай материалы в мире и превращай их в полезную экипировку.</p>
+        <p>Добывайте материалы и создавайте полезное снаряжение.</p>
       </div>
       <span>{{ state?.learned.length ?? 0 }} / 2</span>
     </header>
@@ -155,7 +156,7 @@ onMounted(load)
             <span class="profession-emblem" aria-hidden="true">✦</span>
             <div><small>СБОР</small><strong>Снятие шкур</strong></div>
           </div>
-          <p>После победы над подходящим зверем его туша остаётся доступной для снятия шкуры.</p>
+          <p>После победы над подходящим зверем с его туши можно снять шкуру.</p>
           <template v-if="skinning">
             <div class="profession-skill">
               <span>Навык {{ skinning.skill }} / {{ skinning.maxSkill }}</span>
@@ -174,9 +175,9 @@ onMounted(load)
         <article class="profession-card" :class="{ 'profession-card--learned': leatherworking }">
           <div class="profession-card__heading">
             <span class="profession-emblem" aria-hidden="true">◆</span>
-            <div><small>ПРОИЗВОДСТВО</small><strong>Кожевничество</strong></div>
+            <div><small>РЕМЕСЛО</small><strong>Кожевничество</strong></div>
           </div>
-          <p>Создавай кожаную экипировку из добытых шкур и хитина в городской мастерской.</p>
+          <p>Создавайте кожаное снаряжение из шкур и хитина в городской мастерской.</p>
           <template v-if="leatherworking">
             <div class="profession-skill">
               <span>Навык {{ leatherworking.skill }} / {{ leatherworking.maxSkill }}</span>
@@ -199,7 +200,7 @@ onMounted(load)
           <span>{{ state.recipes.length }}</span>
         </header>
         <p class="profession-workshop" :class="{ 'profession-workshop--ready': currentLocationId === 'STARTER_TOWN' }">
-          {{ currentLocationId === 'STARTER_TOWN' ? 'Ты в городской мастерской — можно создавать предметы.' : 'Создание доступно в городе. Вернись в мастерскую.' }}
+          {{ currentLocationId === 'STARTER_TOWN' ? 'Мастерская доступна — можно создавать предметы.' : 'Для создания предметов нужна городская мастерская.' }}
         </p>
         <article v-for="recipe in state.recipes" :key="recipe.id" class="recipe-row">
           <div class="recipe-row__main">
@@ -220,7 +221,7 @@ onMounted(load)
       </section>
 
       <p v-if="state.learned.length === 0" class="profession-empty profession-empty--large">
-        Выбери первую профессию. На персонаже одновременно может быть не больше двух профессий.
+        Выберите первую профессию. Одновременно доступны не более двух профессий.
       </p>
     </template>
 

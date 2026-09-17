@@ -62,24 +62,24 @@ onMounted(() => {
   <div class="social-view">
     <header class="social-view__header">
       <div>
-        <small>СОЦИАЛЬНЫЙ КРУГ</small>
+        <small>СПИСОК ДРУЗЕЙ</small>
         <h1>Друзья</h1>
       </div>
-      <span>{{ social.friends.length }} друзей</span>
+      <span>В списке: {{ social.friends.length }}</span>
     </header>
 
     <p v-if="social.errorCode || party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(social.errorCode || party.errorCode!) }}</p>
 
     <UIPanel title="Найти игрока">
       <form class="search-form" @submit.prevent="search">
-        <input v-model="query" placeholder="Имя, @username или ELY-код" aria-label="Поиск игрока" />
+        <input v-model="query" placeholder="Имя, @имя в Telegram или код героя" aria-label="Поиск игрока" />
         <UIButton type="submit" :disabled="searching || query.trim().length < 2">Найти</UIButton>
       </form>
       <div v-if="social.searchResults.length" class="result-list">
         <article v-for="player in social.searchResults" :key="player.characterId" class="player-row">
           <div>
             <strong>{{ player.name }}</strong>
-            <small>ур. {{ player.level }} · {{ classLabel(player.classId) }} · {{ player.publicCode }}</small>
+            <small>ур. {{ player.level }} · {{ classLabel(player.classId) }} · код {{ player.publicCode }}</small>
           </div>
           <div class="actions">
             <UIButton
@@ -138,12 +138,12 @@ onMounted(() => {
       </article>
     </UIPanel>
 
-    <UIPanel title="Мои друзья">
+    <UIPanel title="Друзья">
       <template v-if="!party.snapshot">
-        <p class="empty-state">Создайте группу, чтобы приглашать друзей прямо отсюда.</p>
+        <p class="empty-state">Создайте группу, чтобы приглашать друзей отсюда.</p>
         <UIButton :disabled="party.loading" @click="party.create">Создать группу</UIButton>
       </template>
-      <p v-if="!social.friends.length" class="empty-state">Пока здесь тихо. Найди первого товарища.</p>
+      <p v-if="!social.friends.length" class="empty-state">Здесь пока пусто. Найдите первого товарища.</p>
       <article v-for="friend in social.friends" :key="friend.characterId" class="player-row">
         <div>
           <strong>{{ friend.name }}</strong>

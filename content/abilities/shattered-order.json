@@ -85,7 +85,7 @@
         { "type": "Damage", "amount": 130, "damageType": "Magical", "spellPowerCoefficient": 0.55, "canDodge": false }
       ],
       "displayName": "Теневая стрела",
-      "description": "Базовый прерываемый расход маны Веллариуса."
+      "description": "Базовое прерываемое заклинание Веллариуса. Расходует ману."
     },
     {
       "id": "VELARIUS_VOID_SURGE",
@@ -139,7 +139,7 @@
         { "type": "Damage", "amount": 190, "damageType": "Magical", "spellPowerCoefficient": 0.50, "canDodge": false }
       ],
       "displayName": "Катаклизм пустоты",
-      "description": "Дорогой и опасный прерываемый каст по всей группе."
+      "description": "Опасное прерываемое заклинание, поражающее всю группу."
     },
     {
       "id": "VELARIUS_MANA_FEED",
@@ -155,7 +155,7 @@
       "interruptible": true,
       "actions": [],
       "displayName": "Подпитка маны",
-      "description": "После успешного каста передаёт Веллариусу 5 маны."
+      "description": "После успешного применения передаёт Веллариусу 5 маны."
     },
     {
       "id": "MOR_ET_SOUL_WARRIOR_STRIKE",
@@ -190,7 +190,7 @@
         { "type": "Damage", "amount": 125, "damageType": "Magical", "spellPowerCoefficient": 0.65, "canDodge": false }
       ],
       "displayName": "Эхо тайного знания",
-      "description": "Сильный прерываемый каст души мага."
+      "description": "Сильное прерываемое заклинание души мага."
     },
     {
       "id": "MOR_ET_SOUL_ARCHER_BLEED",
@@ -256,7 +256,7 @@
         { "type": "Damage", "amount": 125, "damageType": "Magical", "spellPowerCoefficient": 0.45, "canDodge": false }
       ],
       "displayName": "Клеймо Пламени",
-      "description": "Одна из трёх школ Азраэля."
+      "description": "Огненная атака одного из аспектов Азраэля."
     },
     {
       "id": "AZRAEL_FROST_LANCE",
@@ -273,7 +273,7 @@
         { "type": "Damage", "amount": 115, "damageType": "Magical", "spellPowerCoefficient": 0.40, "canDodge": false }
       ],
       "displayName": "Копьё Холода",
-      "description": "Одна из трёх школ Азраэля."
+      "description": "Ледяная атака одного из аспектов Азраэля."
     },
     {
       "id": "AZRAEL_VOID_PULSE",
@@ -291,7 +291,7 @@
         { "type": "Damage", "amount": 90, "damageType": "Magical", "spellPowerCoefficient": 0.30, "canDodge": false }
       ],
       "displayName": "Импульс Бездны",
-      "description": "Одна из трёх школ Азраэля."
+      "description": "Волна Бездны одного из аспектов Азраэля поражает всю группу."
     },
     {
       "id": "AZRAEL_FIRE_PRESSURE",

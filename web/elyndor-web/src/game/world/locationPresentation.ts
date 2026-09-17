@@ -84,6 +84,11 @@ const FALLBACK_PRESENTATION: LocationPresentation = {
   dangerLabel: 'Неизвестная угроза',
 }
 
+function safeFallbackLabel(label: string | null | undefined): string {
+  if (!label) return FALLBACK_PRESENTATION.label
+  return /[А-Яа-яЁё]/.test(label) ? label : FALLBACK_PRESENTATION.label
+}
+
 export function locationPresentation(
   locationId: string | null | undefined,
   fallbackLabel?: string | null,
@@ -92,7 +97,7 @@ export function locationPresentation(
   if (presentation) return presentation
   return {
     ...FALLBACK_PRESENTATION,
-    label: fallbackLabel || FALLBACK_PRESENTATION.label,
+    label: safeFallbackLabel(fallbackLabel),
   }
 }
 

@@ -49,7 +49,8 @@ describe('CharacterCreationView', () => {
       createCharacter.mock.calls[1]?.[0].requestId,
     )
     expect(wrapper.get<HTMLInputElement>('input[autocomplete="off"]').element.value).toBe('Arthas')
-    expect(wrapper.text()).toContain('character_name_conflict')
+    expect(wrapper.text()).toContain('Не удалось создать героя. Попробуйте ещё раз.')
+    expect(wrapper.text()).not.toContain('character_name_conflict')
   })
 
   it('disables submission while a mutation is pending', async () => {

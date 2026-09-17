@@ -39,8 +39,8 @@ async function skin(corpse: SkinnableCorpseState): Promise<void> {
 function errorMessage(caught: unknown): string {
   const code = caught instanceof ApiRequestError ? caught.code : 'network_unavailable'
   return ({
-    profession_skill_too_low: 'Недостаточно навыка снятия шкур.',
-    skinning_corpse_expired: 'Время для снятия шкуры истекло.',
+    profession_skill_too_low: 'Навыка снятия шкур пока недостаточно.',
+    skinning_corpse_expired: 'С этой туши уже нельзя снять шкуру.',
     skinning_corpse_already_skinned: 'Шкура с этой туши уже снята.',
     network_unavailable: 'Не удалось снять шкуру. Проверьте соединение.',
   } as Record<string, string>)[code] ?? 'Не удалось снять шкуру.'
@@ -52,12 +52,12 @@ onMounted(() => void load().catch(() => undefined))
 <template>
   <UICard v-if="visible" class="skinning-aftermath" data-skinning-aftermath>
     <header>
-      <div><small>СНЯТИЕ ШКУР</small><strong>Трофей после боя</strong></div>
+      <div><small>СНЯТИЕ ШКУР</small><strong>Добыча с туши</strong></div>
       <span>Навык {{ skinning?.skill }}</span>
     </header>
     <p v-if="error" role="alert">{{ error }}</p>
     <article v-for="corpse in corpses" :key="`${corpse.combatSessionId}:${corpse.enemyActorId}`">
-      <div><strong>{{ corpse.monsterName }}</strong><small>Нужно навыка: {{ corpse.requiredSkill }}</small></div>
+      <div><strong>{{ corpse.monsterName }}</strong><small>Требуется навык {{ corpse.requiredSkill }}</small></div>
       <UIButton
         data-skin-corpse
         :disabled="skinning!.skill < corpse.requiredSkill || pendingKey !== null"

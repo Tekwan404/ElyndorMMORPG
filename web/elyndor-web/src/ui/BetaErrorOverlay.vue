@@ -58,21 +58,21 @@ onUnmounted(clearHideTimer)
 
 <template>
   <aside
-    v-if="visible"
+    v-if="visible && session.isAdmin"
     class="beta-error-diagnostic"
     role="alert"
     aria-live="assertive"
     data-beta-error-diagnostic
   >
     <div class="beta-error-diagnostic__copy">
-      <strong>Ошибка · закрытая бета</strong>
+      <strong>Диагностика ошибки</strong>
       <span v-if="session.errorCode">Код: {{ session.errorCode }}</span>
-      <span v-if="session.errorCorrelationId">ID: {{ session.errorCorrelationId }}</span>
+      <span v-if="session.errorCorrelationId">Запрос: {{ session.errorCorrelationId }}</span>
     </div>
     <button
       class="beta-error-diagnostic__close"
       type="button"
-      aria-label="Закрыть диагностическую ошибку"
+      aria-label="Закрыть диагностику"
       @click="dismiss"
     >×</button>
   </aside>

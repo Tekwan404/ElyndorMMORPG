@@ -28,9 +28,9 @@ const classes: readonly {
   detail: string
   glyph: GlyphName
 }[] = [
-  { value: 'WARRIOR', label: 'Воин', detail: 'Rage · реакция', glyph: 'shield' },
-  { value: 'ARCHER', label: 'Лучник', detail: 'Focus · темп', glyph: 'bow' },
-  { value: 'MAGE', label: 'Маг', detail: 'Mana · порядок', glyph: 'staff' },
+  { value: 'WARRIOR', label: 'Воин', detail: 'Ярость · ближний бой', glyph: 'shield' },
+  { value: 'ARCHER', label: 'Лучник', detail: 'Концентрация · дальний бой', glyph: 'bow' },
+  { value: 'MAGE', label: 'Маг', detail: 'Мана · заклинания', glyph: 'staff' },
 ]
 
 const valid = computed(
@@ -40,6 +40,16 @@ const valid = computed(
     [...name.value].length <= 16 &&
     !/^[ -]|[ -]$|[ -]{2}/.test(name.value),
 )
+
+const errorMessage = computed(() => {
+  if (!session.errorCode) return null
+  return ({
+    character_name_taken: 'Это имя уже занято.',
+    character_already_exists: 'На аккаунте уже есть герой.',
+    character_name_invalid: 'Проверьте имя героя.',
+    network_unavailable: 'Нет связи с сервером. Попробуйте ещё раз.',
+  } as Record<string, string>)[session.errorCode] ?? 'Не удалось создать героя. Попробуйте ещё раз.'
+})
 
 function classIcon(value: CreateCharacterRequest['classId'], glyph: GlyphName): IconConfig {
   return {
@@ -68,9 +78,7 @@ async function submit() {
     <header>
       <p class="kicker">Новый путь</p>
       <h1>Создание героя</h1>
-      <p class="intro">
-        Выбери личность героя. Характеристики и игровой ресурс рассчитывает сервер.
-      </p>
+      <p class="intro">Выберите имя, происхождение и класс.</p>
     </header>
 
     <form @submit.prevent="submit">
@@ -87,7 +95,7 @@ async function submit() {
           />
         </label>
         <p id="name-hint" class="hint">
-          Латиница или кириллица; один пробел или дефис внутри имени.
+          Кириллица или латиница. Внутри имени можно использовать пробел или дефис.
         </p>
       </UIPanel>
 
@@ -142,8 +150,8 @@ async function submit() {
         </fieldset>
       </UIPanel>
 
-      <div v-if="session.errorCode" role="alert">
-        <UIToast tone="danger">{{ session.errorCode }}</UIToast>
+      <div v-if="errorMessage" role="alert">
+        <UIToast tone="danger">{{ errorMessage }}</UIToast>
       </div>
       <UIButton class="submit" :disabled="!valid" :loading="session.mutationPending" type="submit"
         >Войти в мир</UIButton

@@ -266,14 +266,14 @@ function abilityName(id: string | null | undefined): string {
   if (ability) return ability.displayName
   if (id === 'AUTO_ATTACK') return 'Автоатака'
   if (id === 'DIRECT_DAMAGE_TAKEN') return 'Получение урона'
-  if (id === 'COMBAT_REGEN') return 'Регенерация'
+  if (id === 'COMBAT_REGEN') return 'Восстановление'
   const inventoryItem = session.snapshot?.character?.inventory.items.find(
     (item) => item.definitionId === id,
   )
   if (inventoryItem) return inventoryItem.name
   if (id === 'PYRO_BURN') return 'Горение'
   if (id === 'PYRO_COMET_AFTERSHOCK') return 'Кометный удар'
-  return id.split('_').join(' ')
+  return 'Способность'
 }
 
 function abilityIcon(ability: CombatAbility): string | undefined {
@@ -338,7 +338,7 @@ function eventText(event: CombatEvent, critical = false): string {
     case 'AutoAttackStopped':
       return 'Автоатака остановлена'
     case 'DamageDealt':
-      return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТ!' : ''}`
+      return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТИЧЕСКИЙ УДАР!' : ''}`
     case 'UnblockableHit':
       return 'НЕБЛОКИРУЕМЫЙ УДАР'
     case 'DamageBlocked':
@@ -477,7 +477,20 @@ function combatPlayerRole(player: { definitionId: string }): string {
   if (player.definitionId === 'WARRIOR') return 'Страж'
   if (player.definitionId === 'MAGE') return 'Маг'
   if (player.definitionId === 'ARCHER') return 'Следопыт'
-  return player.definitionId
+  if (player.definitionId === 'PALADIN') return 'Паладин'
+  return 'Союзник'
+}
+
+function rarityLabel(rarity: string): string {
+  const labels: Record<string, string> = {
+    Common: 'Обычная',
+    Uncommon: 'Необычная',
+    Rare: 'Редкая',
+    Epic: 'Эпическая',
+    Legendary: 'Легендарная',
+    Unique: 'Уникальная',
+  }
+  return labels[rarity] ?? 'Ценная'
 }
 
 function combatPlayerHealthRatio(player: { hp: number; maxHp: number }): number {
@@ -551,7 +564,7 @@ onUnmounted(() => window.clearInterval(timer))
         data-combat-join
       >
         <strong>Бой уже идёт</strong>
-        <span>Ты можешь присоединиться, когда находишься в этой локации.</span>
+        <span>Присоединиться можно из этой локации.</span>
         <button type="button" :disabled="combat.pending" @click="attachCombat">
           Войти в бой
         </button>
@@ -646,7 +659,7 @@ onUnmounted(() => window.clearInterval(timer))
         <div class="player-figure" aria-hidden="true">
           <img v-if="playerArt" :src="playerArt" alt="" />
           <div v-else class="player-figure__fallback">
-            {{ snapshot.player.definitionId.slice(0, 1) }}
+            {{ combatPlayerRole(snapshot.player).slice(0, 1) }}
           </div>
         </div>
 
@@ -668,8 +681,8 @@ onUnmounted(() => window.clearInterval(timer))
         <div><small>ВРЕМЯ</small><strong>{{ trainingElapsedSeconds.toFixed(1) }}с</strong></div>
         <div><small>Урон/с</small><strong>{{ Math.round(trainingDps).toLocaleString('ru-RU') }}</strong></div>
         <div><small>УРОН</small><strong>{{ Math.round(combat.trainingStats.totalDamage).toLocaleString('ru-RU') }}</strong></div>
-        <div><small>КРИТЫ</small><strong>{{ combat.trainingStats.criticalHits }}</strong></div>
-        <div><small>МАКС.</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
+        <div><small>КРИТ. УДАРЫ</small><strong>{{ combat.trainingStats.criticalHits }}</strong></div>
+        <div><small>МАКС. УДАР</small><strong>{{ Math.round(combat.trainingStats.maxHit).toLocaleString('ru-RU') }}</strong></div>
       </section>
 
       <section v-if="isParticipantActive" class="combat-actions">
@@ -788,7 +801,7 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <UIModal :open="fleeConfirmationOpen" title="Сбежать из боя?" @close="fleeConfirmationOpen = false">
-        <p class="combat-flee-confirmation">Ты покинешь этот бой и не сможешь вернуться в него.</p>
+        <p class="combat-flee-confirmation">После выхода вернуться в этот бой нельзя.</p>
         <template #actions>
           <UIButton variant="ghost" @click="fleeConfirmationOpen = false">Остаться</UIButton>
           <UIButton variant="danger" data-flee-confirm :loading="combat.pending" @click="fleeCombat">Сбежать</UIButton>
@@ -804,7 +817,7 @@ onUnmounted(() => window.clearInterval(timer))
         <article v-for="roll in lootRolls" :key="roll.lootRollId" class="loot-roll">
           <div class="loot-roll__heading">
             <div>
-              <small>ЦЕННАЯ ДОБЫЧА · {{ roll.rarity }}</small>
+              <small>ЦЕННАЯ ДОБЫЧА · {{ rarityLabel(roll.rarity) }}</small>
               <strong>{{ roll.name }}<span v-if="roll.quantity > 1"> ×{{ roll.quantity }}</span></strong>
             </div>
             <time>{{ Math.ceil(lootRollRemaining(roll.endsAtUtc)) }}с</time>

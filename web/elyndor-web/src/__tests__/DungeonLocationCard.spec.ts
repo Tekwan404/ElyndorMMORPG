@@ -42,7 +42,7 @@ describe('DungeonLocationCard', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Цитадель Затмения')
-    expect(wrapper.text()).toContain('Группа готова к новому заходу')
+    expect(wrapper.text()).toContain('Группа готова к забегу')
     expect(wrapper.text()).not.toContain('Древняя шахта')
   })
 
@@ -57,12 +57,12 @@ describe('DungeonLocationCard', () => {
 
     const status = wrapper.get('[data-dungeon-status]').text()
     expect(status).toContain('1 / 5')
-    expect(status).toContain('Завершить текущее столкновение')
+    expect(status).toContain('Завершить текущий бой')
     expect(status).toContain('Между боями')
     expect(status).not.toContain('Pending')
     expect(wrapper.find('[data-dungeon-return]').exists()).toBe(true)
     expect(wrapper.find('[data-dungeon-city-exit]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('остаёшься участником этого забега')
+    expect(wrapper.text()).toContain('Ты вне подземелья. Прогресс забега сохранён.')
   })
 
   it('shows separate city and permanent leave actions inside the dungeon', async () => {

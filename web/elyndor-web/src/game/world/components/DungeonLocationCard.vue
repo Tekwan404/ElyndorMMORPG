@@ -97,7 +97,7 @@ const cardState = computed<'loading' | 'error' | 'ready'>(() => {
   return 'ready'
 })
 const runStateLabel = computed(() => {
-  if (!current.value) return 'Готово к запуску'
+  if (!current.value) return 'Готово к началу'
   if (current.value.state === 'Completed') return 'Завершено'
   if (current.value.state === 'Abandoned') return 'Забег прекращён'
   if (hasActiveEncounter.value) return 'В бою'
@@ -105,20 +105,20 @@ const runStateLabel = computed(() => {
 })
 const encounterStateLabel = computed(() => {
   if (!current.value) return 'Нет активного забега'
-  if (current.value.state === 'Completed') return 'Все столкновения завершены'
+  if (current.value.state === 'Completed') return 'Все бои завершены'
   if (current.value.state === 'Abandoned') return 'Участие завершено'
-  if (currentEncounter.value?.state === 'Active') return 'Столкновение идёт'
-  if (currentEncounter.value?.state === 'Wiped') return 'Требуется повтор'
-  if (currentEncounter.value?.state === 'Completed') return 'Столкновение завершено'
+  if (currentEncounter.value?.state === 'Active') return 'Бой идёт'
+  if (currentEncounter.value?.state === 'Wiped') return 'Нужен повтор'
+  if (currentEncounter.value?.state === 'Completed') return 'Бой завершён'
   return 'Ожидает начала'
 })
 const objectiveLabel = computed(() => {
-  if (!current.value) return 'Начать экспедицию'
+  if (!current.value) return 'Начать забег'
   if (current.value.state === 'Completed') return 'Подземелье пройдено'
   if (current.value.state === 'Abandoned') return 'Забег завершён'
   if (currentEncounterPreview.value?.isBoss) return 'Победить босса'
-  if (currentEncounter.value?.state === 'Wiped') return 'Повторить столкновение'
-  return 'Завершить текущее столкновение'
+  if (currentEncounter.value?.state === 'Wiped') return 'Повторить бой'
+  return 'Завершить текущий бой'
 })
 const isBossStage = computed(() => currentEncounterPreview.value?.isBoss === true)
 
@@ -153,7 +153,7 @@ async function startEncounter(): Promise<void> {
   await combat.connect()
   const started = await combat.startDungeonEncounter(current.value.runId)
   if (!started) {
-    startEncounterError.value = 'Не удалось начать столкновение. Состояние забега обновлено — попробуйте ещё раз.'
+    startEncounterError.value = 'Не удалось начать бой. Забег обновлён — попробуйте ещё раз.'
     await dungeon.refresh()
     return
   }
@@ -188,11 +188,11 @@ async function leaveRun(): Promise<void> {
     <div v-if="cardState !== 'ready'" class="dungeon-expedition__state" role="status">
       <template v-if="cardState === 'loading'">
         <strong>Загружаем подземелье</strong>
-        <p>Проверяем доступ и текущий забег.</p>
+        <p>Проверяем доступ.</p>
       </template>
       <template v-else>
         <strong>Подземелье временно недоступно</strong>
-        <p>Не удалось получить описание этой локации. Можно повторить запрос или открыть карту мира.</p>
+        <p>Не удалось загрузить данные. Попробуйте ещё раз.</p>
         <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
         <div class="dungeon-actions">
           <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard">Повторить</UIButton>
@@ -205,7 +205,7 @@ async function leaveRun(): Promise<void> {
     <div class="dungeon-expedition__content">
       <header class="dungeon-expedition__header">
         <div>
-          <small>ИНСТАНС · 1–{{ preview.maximumPartySize }} ИГРОКОВ</small>
+          <small>ПОДЗЕМЕЛЬЕ · 1–{{ preview.maximumPartySize }} ИГРОКОВ</small>
           <h2>{{ preview.displayName }}</h2>
           <p>{{ preview.description }}</p>
         </div>
@@ -216,8 +216,8 @@ async function leaveRun(): Promise<void> {
       </header>
 
       <div class="dungeon-expedition__meta">
-        <span>{{ encounterCount }} столкновений</span>
-        <span>Соло или группа до {{ preview.maximumPartySize }}</span>
+        <span>{{ encounterCount }} боёв</span>
+        <span>Один игрок или группа до {{ preview.maximumPartySize }}</span>
         <span>{{ runStateLabel }}</span>
       </div>
 
@@ -277,9 +277,9 @@ async function leaveRun(): Promise<void> {
         </div>
 
         <p v-if="current.state === 'Completed'" class="dungeon-hint">Подземелье пройдено. Можно выйти в город или начать новый забег.</p>
-        <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">Предыдущий забег завершён. Он не смешивается с другими подземельями.</p>
-        <p v-else-if="canReturnToRun" class="dungeon-hint">Ты временно в городе, но остаёшься участником этого забега.</p>
-        <p v-else-if="!canManageRun" class="dungeon-hint">Следующее столкновение запускает лидер группы.</p>
+        <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">Предыдущий забег завершён.</p>
+        <p v-else-if="canReturnToRun" class="dungeon-hint">Ты вне подземелья. Прогресс забега сохранён.</p>
+        <p v-else-if="!canManageRun" class="dungeon-hint">Следующий бой начинает лидер группы.</p>
 
         <div class="dungeon-actions">
           <UIButton
@@ -302,13 +302,13 @@ async function leaveRun(): Promise<void> {
             :loading="combat.pending"
             data-start-dungeon
             @click="startEncounter"
-          >Начать столкновение</UIButton>
+          >Начать бой</UIButton>
           <UIButton
             v-if="canManageRun && current.encounters.some(encounter => encounter.state === 'Wiped')"
             variant="secondary"
             data-dungeon-restart
             @click="restartEncounter"
-          >Повторить столкновение</UIButton>
+          >Повторить бой</UIButton>
           <UIButton
             v-if="canExitToCity"
             variant="secondary"
@@ -328,12 +328,12 @@ async function leaveRun(): Promise<void> {
       <template v-else>
         <div class="dungeon-ready">
           <div>
-            <small>ЭКСПЕДИЦИЯ</small>
-            <strong>{{ party.snapshot ? 'Группа готова к новому заходу' : 'Можно войти одному' }}</strong>
+            <small>ПОДЗЕМЕЛЬЕ</small>
+            <strong>{{ party.snapshot ? 'Группа готова к забегу' : 'Можно войти одному' }}</strong>
             <p>
               {{ party.snapshot
-                ? 'Лидер создаёт инстанс для текущего состава.'
-                : 'Одиночный забег создаётся напрямую — отдельную группу создавать не нужно.' }}
+                ? 'Забег начинает лидер группы.'
+                : 'Можно начать забег без группы.' }}
             </p>
           </div>
           <div class="dungeon-actions">
@@ -346,7 +346,7 @@ async function leaveRun(): Promise<void> {
               v-else-if="isLeader"
               data-create-dungeon
               @click="createRun"
-            >Создать забег</UIButton>
+            >Начать забег</UIButton>
             <UIButton v-else variant="secondary" @click="emit('open-party')">Открыть группу</UIButton>
           </div>
         </div>

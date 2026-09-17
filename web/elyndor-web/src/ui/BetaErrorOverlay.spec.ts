@@ -16,6 +16,7 @@ describe('BetaErrorOverlay', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const session = useGameSessionStore(pinia)
+    session.roles = ['SUPER_ADMIN']
     const wrapper = mount(BetaErrorOverlay, { global: { plugins: [pinia] } })
 
     session.errorCode = 'star_upgrade_profile_missing'
@@ -45,13 +46,14 @@ describe('BetaErrorOverlay', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const session = useGameSessionStore(pinia)
+    session.roles = ['SUPER_ADMIN']
     const wrapper = mount(BetaErrorOverlay, { global: { plugins: [pinia] } })
 
     session.errorCode = 'inventory_conflict'
     session.errorCorrelationId = 'request-1'
     await nextTick()
 
-    await wrapper.get('button[aria-label="Закрыть диагностическую ошибку"]').trigger('click')
+    await wrapper.get('button[aria-label="Закрыть диагностику"]').trigger('click')
     expect(wrapper.find('[data-beta-error-diagnostic]').exists()).toBe(false)
 
     session.errorCorrelationId = 'request-2'
@@ -65,6 +67,7 @@ describe('BetaErrorOverlay', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const session = useGameSessionStore(pinia)
+    session.roles = ['SUPER_ADMIN']
     session.errorCorrelationId = 'correlation-only'
 
     const wrapper = mount(BetaErrorOverlay, { global: { plugins: [pinia] } })
@@ -72,5 +75,18 @@ describe('BetaErrorOverlay', () => {
 
     expect(wrapper.find('[data-beta-error-diagnostic]').exists()).toBe(true)
     expect(wrapper.text()).toContain('correlation-only')
+  })
+
+  it('stays hidden for regular players', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const session = useGameSessionStore(pinia)
+    session.errorCode = 'inventory_conflict'
+    session.errorCorrelationId = 'request-1'
+
+    const wrapper = mount(BetaErrorOverlay, { global: { plugins: [pinia] } })
+    await nextTick()
+
+    expect(wrapper.find('[data-beta-error-diagnostic]').exists()).toBe(false)
   })
 })

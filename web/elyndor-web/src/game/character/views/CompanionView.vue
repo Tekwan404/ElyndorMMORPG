@@ -36,15 +36,15 @@ function roleLabel(archetype: string): string {
 }
 
 function errorMessage(): string | null {
-  if (session.errorCode === 'companion_change_in_combat') return 'Сменить спутника можно после завершения боя.'
-  if (session.errorCode === 'companion_invalid_profile') return 'Этот спутник недоступен персонажу.'
-  return session.errorCode ? 'Не удалось сменить спутника. Повторите попытку.' : null
+  if (session.errorCode === 'companion_change_in_combat') return 'Сменить спутника можно после боя.'
+  if (session.errorCode === 'companion_invalid_profile') return 'Этот спутник недоступен.'
+  return session.errorCode ? 'Не удалось сменить спутника. Попробуйте ещё раз.' : null
 }
 </script>
 
 <template>
   <section class="companion-view">
-    <UIPanel v-if="loading" class="companion-state">Загрузка спутника…</UIPanel>
+    <UIPanel v-if="loading" class="companion-state">Загружаем спутника…</UIPanel>
     <UIPanel v-else-if="!snapshot" class="companion-state">Спутник сейчас недоступен.</UIPanel>
     <template v-else>
       <section class="companion-hero" data-companion-active>
@@ -55,15 +55,15 @@ function errorMessage(): string | null {
         <div>
           <p class="eyebrow">Активный спутник</p>
           <h1>{{ activeProfile?.name ?? 'Эфирный дух' }}</h1>
-          <p>{{ activeProfile ? roleLabel(activeProfile.archetype) : 'Дух арканического стрелка' }}</p>
-          <small v-if="isSpiritOverride">Магический спутник активен из-за текущего арканического билда.</small>
-          <small v-else>Спутник участвует в бою вместе с лучником.</small>
+          <p>{{ activeProfile ? roleLabel(activeProfile.archetype) : 'Магический дух лучника' }}</p>
+          <small v-if="isSpiritOverride">Магический спутник призван выбранными талантами.</small>
+          <small v-else>Спутник сражается вместе с лучником.</small>
         </div>
       </section>
 
       <UIPanel class="companion-list">
-        <template #title>Ваши спутники</template>
-        <p>Выберите одного физического спутника. Смена доступна вне боя.</p>
+        <template #title>Спутники</template>
+        <p>Выберите спутника. Сменить его можно вне боя.</p>
         <div class="companion-list__grid">
           <article
             v-for="profile in snapshot.availableProfiles"

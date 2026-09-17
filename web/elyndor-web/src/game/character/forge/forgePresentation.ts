@@ -27,10 +27,10 @@ export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailabilit
     return { available: false, reason: 'Предмет защищён. Снимите блокировку в инвентаре.' }
   }
   if (item.transactionLocked) {
-    return { available: false, reason: 'С этим предметом уже выполняется операция.' }
+    return { available: false, reason: 'С этим предметом уже выполняется действие.' }
   }
   if (!item.generatedItem.affixes.some(affix => !affix.isGuaranteed)) {
-    return { available: false, reason: 'У предмета нет характеристик, доступных для перековки.' }
+    return { available: false, reason: 'У предмета нет характеристик для перековки.' }
   }
   return { available: true, reason: null }
 }
@@ -77,5 +77,5 @@ export function forgeStatLabel(statId: string): string {
     BLOCK_VALUE: 'Сила блока',
     WEAPON_DAMAGE: 'Урон оружия',
   }
-  return labels[statId] ?? statId
+  return labels[statId] ?? 'Характеристика'
 }

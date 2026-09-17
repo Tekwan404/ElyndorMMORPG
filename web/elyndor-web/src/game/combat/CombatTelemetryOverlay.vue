@@ -32,7 +32,7 @@ const connectionLabel = computed(() => {
   switch (combat.connectionState) {
     case 'connected': return 'В СЕТИ'
     case 'connecting': return 'ПОДКЛЮЧЕНИЕ'
-    case 'reconnecting': return 'ПЕРЕПОДКЛ.'
+    case 'reconnecting': return 'ВОССТАНОВЛЕНИЕ'
     case 'syncing': return 'СИНХРОНИЗАЦИЯ'
     default: return 'НЕТ СВЯЗИ'
   }
@@ -66,8 +66,8 @@ function healthPercent(actor: CombatActorSnapshot): number {
 }
 
 function threatLabel(entry: CombatThreatEntry): string {
-  if (threat.value?.forcedTargetActorId === entry.actorId) return 'ТАУНТ'
-  if (entry.isCurrentTarget) return 'АГРО'
+  if (threat.value?.forcedTargetActorId === entry.actorId) return 'ПРОВОКАЦИЯ'
+  if (entry.isCurrentTarget) return 'ЦЕЛЬ'
   if (combat.snapshot?.player.actorId === entry.actorId) return 'ВЫ'
   return ''
 }
@@ -100,7 +100,7 @@ function definitionName(definitionId: string | null): string {
     ...(combat.snapshot?.player.abilities ?? []),
     ...(combat.snapshot?.enemy.abilities ?? []),
   ].find(candidate => candidate.id === definitionId)
-  return ability?.displayName ?? definitionId.split('_').join(' ')
+  return ability?.displayName ?? 'Способность'
 }
 
 function compactEventText(event: CombatEvent): string {
@@ -108,14 +108,14 @@ function compactEventText(event: CombatEvent): string {
   const target = actorName(event.targetActorId)
   const definition = definitionName(event.definitionId)
   switch (event.type) {
-    case 'DamageDealt': return `${source} → ${target} · ${Math.round(event.amount)}`
-    case 'HealingApplied': return `${source} · +${Math.round(event.amount)} HP`
+    case 'DamageDealt': return `${source} → ${target} · ${Math.round(event.amount)} урона`
+    case 'HealingApplied': return `${source} · +${Math.round(event.amount)} здоровья`
     case 'TauntApplied': return `${source} · провокация${definition ? ` · ${definition}` : ''}`
     case 'ActorDied': return `${actorName(event.actorId)} · пал`
     case 'EnemyKilled': return `${actorName(event.actorId)} · повержен`
     case 'TargetChanged': return `${source} → ${target} · новая цель`
     case 'CombatEnded': return event.definitionId === 'Victory' ? 'Победа' : 'Бой завершён'
-    default: return definition || event.type
+    default: return definition || 'Событие боя'
   }
 }
 
@@ -125,7 +125,7 @@ watch(
     if (!current || !previous || current === previous) return
     const targetName = threat.value?.entries.find(entry => entry.actorId === current)?.name ?? 'новая цель'
     const forced = threat.value?.forcedTargetActorId === current
-    aggroAlert.value = forced ? `ТАУНТ → ${targetName}` : `АГРО СМЕНИЛОСЬ → ${targetName}`
+    aggroAlert.value = forced ? `ПРОВОКАЦИЯ → ${targetName}` : `ПРОТИВНИК СМЕНИЛ ЦЕЛЬ → ${targetName}`
     if (aggroAlertTimer !== null) window.clearTimeout(aggroAlertTimer)
     aggroAlertTimer = window.setTimeout(() => {
       aggroAlert.value = null
@@ -148,11 +148,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <aside v-if="isTelemetryVisible" class="combat-telemetry" aria-label="Сетевая задержка, цели и агро">
+  <aside v-if="isTelemetryVisible" class="combat-telemetry" aria-label="Связь, цели и внимание противника">
     <div class="combat-telemetry__ping" :data-state="combat.connectionState">
       <span>{{ connectionLabel }}</span>
       <strong>{{ combat.latencyMs ?? '—' }}</strong>
-      <small>ms</small>
+      <small>мс</small>
     </div>
 
     <div v-if="aggroAlert" class="combat-telemetry__aggro-alert" role="status" aria-live="assertive">
@@ -202,7 +202,7 @@ onUnmounted(() => {
       class="combat-telemetry__boss-cast"
       data-combat-boss-cast-target
     >
-      <span>КАСТ БОССА</span>
+      <span>УМЕНИЕ БОССА</span>
       <strong>{{ definitionName(bossCast.abilityId) }}</strong>
       <small>→ {{ bossCastTargetName }}</small>
     </section>
@@ -213,7 +213,7 @@ onUnmounted(() => {
       data-combat-threat-meter
     >
       <header>
-        <span>АГРО</span>
+        <span>ВНИМАНИЕ ПРОТИВНИКА</span>
         <strong>{{ threat.enemyName }}</strong>
       </header>
       <ol>
