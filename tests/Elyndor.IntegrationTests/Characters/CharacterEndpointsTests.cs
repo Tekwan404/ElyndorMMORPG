@@ -79,7 +79,7 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         WorldLocationResponse[]? locations =
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
         Assert.NotNull(locations);
-        Assert.Equal(8, locations.Length);
+        Assert.Equal(21, locations.Length);
         Assert.Contains(locations, location =>
             string.Equals(location.Id, "SHATTERED_ORDER_CITADEL_TEST", StringComparison.Ordinal));
 
