@@ -143,6 +143,19 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   })
   await page.locator('[data-nav="world"]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
+  await expect(page.locator('[data-location-id]')).toHaveCount(21)
+  const illustratedMap = page.locator('.map-canvas')
+  const mapPresentation = await illustratedMap.evaluate((element) => {
+    const { width, height } = element.getBoundingClientRect()
+    return {
+      ratio: height / width,
+      backgroundImage: getComputedStyle(element).backgroundImage,
+    }
+  })
+  expect(mapPresentation.backgroundImage).toContain('elyndor-world-map')
+  expect(mapPresentation.ratio).toBeCloseTo(1491 / 1055, 1)
+  const bastionPosition = await page.locator('[data-location-id="BLACK_BASTION"]').getAttribute('style')
+  expect(Number.parseFloat(bastionPosition?.match(/top:\s*([\d.]+)%/)?.[1] ?? '0')).toBeGreaterThanOrEqual(70)
   await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
   await expect.poll(async () => {
     const travelButton = await page.locator('[data-map-travel]').boundingBox()
@@ -274,7 +287,7 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
     }),
   )
   await page.route('**/api/v1/world/locations', (route) =>
-    route.fulfill({ json: Object.values(locations) }),
+    route.fulfill({ json: [...Object.values(locations), ...additionalWorldLocations] }),
   )
   await page.route('**/api/v1/character', async (route) => {
     hasCharacter = true
@@ -380,6 +393,39 @@ const locations = {
     description: 'Опасная лесная зона 6–11 уровня.',
   },
 } as const
+
+const additionalMapLocations = [
+  ['FLOWER_MEADOW', 'Цветочная поляна', 6],
+  ['OLD_ROAD', 'Старый тракт', 12],
+  ['STONE_SPURS', 'Каменные отроги', 14],
+  ['BLIGHTED_GROVE', 'Осквернённая чаща', 18],
+  ['ASHEN_BORDER', 'Пепельная граница', 20],
+  ['MOON_ASH_MARSHES', 'Топи Лунного Пепла', 24],
+  ['ECLIPSE_OUTSKIRTS', 'Предместья Затмения', 26],
+  ['SHATTERED_LANDS', 'Земли Раскола', 30],
+  ['BLACKSTONE_HIGHLANDS', 'Чернокаменное нагорье', 32],
+  ['CRIMSON_WASTELAND', 'Багровая пустошь', 36],
+  ['OBSIDIAN_EDGE', 'Обсидиановый предел', 38],
+  ['ANCIENT_MINE', 'Древняя шахта', 15],
+  ['ECLIPSED_CITADEL', 'Цитадель Затмения', 25],
+  ['SHATTERED_ORDER_CITADEL_TEST', 'Цитадель Расколотого Ордена', 30],
+  ['HEART_OF_BLIGHTED_GROVE', 'Сердце Осквернённой Чащи', 20],
+  ['SHATTERED_ORDER_CITADEL', 'Цитадель Расколотого Ордена · рейд', 30],
+  ['BLACK_BASTION', 'Чёрный Бастион', 40],
+  ['BROODMOTHER_LAIR', 'Логово Прародительницы', 12],
+] as const
+
+const additionalWorldLocations = additionalMapLocations.map(([id, displayName, recommendedLevel]) => ({
+  id,
+  displayName,
+  dangerLevel: 'DANGEROUS',
+  recommendedLevel,
+  minimumLevel: id === 'ANCIENT_MINE' ? 15 : 1,
+  maximumLevel: 40,
+  requiredContractId: null,
+  artId: null,
+  description: 'Mock world location for map layout checks.',
+}))
 
 function snapshot(hasCharacter: boolean, locationId: keyof typeof locations) {
   const transitions =

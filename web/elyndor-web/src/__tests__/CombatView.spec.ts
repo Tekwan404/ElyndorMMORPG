@@ -87,7 +87,7 @@ describe('CombatView', () => {
     const store = useCombatSessionStore()
     const player = actor('Player', 'WARRIOR', 'Warrior', 180, 180, 0, 100, [])
     const wolf = actor('Monster', 'WOLF', 'Волк', 80, 100, 0, 0, [], 3, 'wolf')
-    const alpha = actor('Monster', 'WOLF_ALPHA', 'Альфа-волк', 150, 150, 0, 0, [], 4, 'wolf')
+    const alpha = actor('Monster', 'WOLF_ALPHA', 'Альфа-волк', 150, 150, 0, 0, [], 4, 'alpha-wolf')
     store.snapshot = {
       sessionId: crypto.randomUUID(),
       sequence: 4,
@@ -107,10 +107,16 @@ describe('CombatView', () => {
     const targets = wrapper.findAll('[data-combat-targets] button')
     expect(targets).toHaveLength(2)
     expect(targets[0]!.classes()).toContain('active')
+    expect(wrapper.get(`[data-target-actor-id="${alpha.actorId}"] img`).attributes('src')).toContain('alpha-wolf')
     expect(wrapper.text()).toContain('Альфа-волк')
+    expect(wrapper.get('.enemy-figure img').attributes('alt')).toBe('Волк')
 
     await wrapper.get(`[data-target-actor-id="${alpha.actorId}"]`).trigger('click')
     expect(selectTarget).toHaveBeenCalledWith(alpha.actorId)
+    store.snapshot.selectedTargetActorId = alpha.actorId
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('.enemy-figure img').attributes('alt')).toBe('Альфа-волк')
+    expect(wrapper.get('.enemy-figure img').attributes('src')).toContain('alpha-wolf')
   })
 
   it('presents a two-player encounter as a compact shared front', () => {

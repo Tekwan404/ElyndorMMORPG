@@ -29,6 +29,7 @@ import shatteredOrderRaid from './world/tsitadel-raskolotogo-ordena-raid.webp'
 import blackBastionRaid from './world/chiornyi-bastion.webp'
 import ancientRuins from './world/ancient-ruins.png'
 import worldAtlas from './world/world-atlas.svg'
+import worldMap from './world/elyndor-world-map.webp'
 import caravanRoad from './world/caravan-road.png'
 import combatWhispering from './world/combat-whispering.png'
 import marcus from './npc/marcus.webp'
@@ -53,6 +54,7 @@ export const gameArt = {
     caravanRoad,
     combatWhispering,
     worldAtlas,
+    worldMap,
   },
   locations: {
     STARTER_TOWN: starterTown,

@@ -81,6 +81,24 @@ describe('WorldMapView', () => {
     expect(selection.get('[data-map-travel]').text()).toContain('Начать переход')
   })
 
+  it('keeps the selected map marker and its full location name tied together', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('aria-label')).toContain('Стартовый город')
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-map-selection]').text()).toContain('Стартовый город')
+
+    await wrapper.get('[data-location-id="WHISPERING_FOREST"]').trigger('click')
+
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-map-selection]').text()).toContain('Шепчущий лес')
+  })
+
   it('keeps map node order stable when the current location changes', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
@@ -162,7 +180,33 @@ describe('WorldMapView', () => {
       return `${style.match(/left: ([^;]+)/)?.[1]}:${style.match(/top: ([^;]+)/)?.[1]}`
     })
     expect(new Set(slots).size).toBe(nodes.length)
-    expect(wrapper.get('.map-canvas').attributes('style')).toContain('--map-rows: 8')
+  })
+
+  it('uses the illustrated world map and places the obsidian end and black bastion in the southern lava region', async () => {
+    const obsidianEdge: WorldLocation = {
+      ...LOCATIONS[2]!,
+      id: 'OBSIDIAN_EDGE',
+      displayName: 'Обсидиановый предел',
+      recommendedLevel: 38,
+    }
+    const blackBastion: WorldLocation = {
+      ...LOCATIONS[2]!,
+      id: 'BLACK_BASTION',
+      displayName: 'Чёрный Бастион',
+      recommendedLevel: 40,
+    }
+    vi.spyOn(apiClient, 'request').mockResolvedValue([...LOCATIONS, obsidianEdge, blackBastion])
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    expect(wrapper.get('.map-canvas').attributes('style')).toContain('elyndor-world-map')
+    for (const id of ['OBSIDIAN_EDGE', 'BLACK_BASTION']) {
+      const top = Number.parseFloat(wrapper.get(`[data-location-id="${id}"]`).element.getAttribute('style')!.match(/top:\s*([\d.]+)%/)?.[1] ?? '0')
+      expect(top).toBeGreaterThanOrEqual(70)
+    }
   })
 
   it('resolves any dungeon location through the shared dungeon presentation', async () => {
