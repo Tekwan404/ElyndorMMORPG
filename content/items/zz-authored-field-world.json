@@ -1,0 +1,2306 @@
+{
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "items":  [
+                  {
+                      "id":  "BAGROVAIA_TKAN",
+                      "name":  "Багровая ткань",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bagrovaia_tkan"
+                  },
+                  {
+                      "id":  "BAGROVAIA_ZHELEZA",
+                      "name":  "Багровая железа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bagrovaia_zheleza"
+                  },
+                  {
+                      "id":  "BASTIONNAIA_TKAN",
+                      "name":  "Бастионная ткань",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bastionnaia_tkan"
+                  },
+                  {
+                      "id":  "BOAR_TUSK",
+                      "name":  "Клык кабана",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "boar_tusk"
+                  },
+                  {
+                      "id":  "BOLOTNAIA_KOZHA",
+                      "name":  "Болотная кожа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bolotnaia_kozha"
+                  },
+                  {
+                      "id":  "BOLOTNOE_IADRO",
+                      "name":  "Болотное ядро",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bolotnoe_iadro"
+                  },
+                  {
+                      "id":  "BOLOTNOE_MIASO",
+                      "name":  "Болотное мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "bolotnoe_miaso"
+                  },
+                  {
+                      "id":  "CHERNOKAMENNOE_IADRO",
+                      "name":  "Чернокаменное ядро",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chernokamennoe_iadro"
+                  },
+                  {
+                      "id":  "CHIORNAIA_KORA",
+                      "name":  "Чёрная кора",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chiornaia_kora"
+                  },
+                  {
+                      "id":  "CHIORNAIA_MANA",
+                      "name":  "Чёрная мана",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chiornaia_mana"
+                  },
+                  {
+                      "id":  "CHIORNOE_ZHELEZO",
+                      "name":  "Чёрное железо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chiornoe_zhelezo"
+                  },
+                  {
+                      "id":  "CHIORNYI_KLYK",
+                      "name":  "Чёрный клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chiornyi_klyk"
+                  },
+                  {
+                      "id":  "CHIORNYI_METALL",
+                      "name":  "Чёрный металл",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chiornyi_metall"
+                  },
+                  {
+                      "id":  "CHITIN_FRAGMENT",
+                      "name":  "Хитиновая пластина",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "chitin_fragment"
+                  },
+                  {
+                      "id":  "EKHO_KLASSA",
+                      "name":  "Эхо класса",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ekho_klassa"
+                  },
+                  {
+                      "id":  "EKHO_ZNAMENI",
+                      "name":  "Эхо знамени",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ekho_znameni"
+                  },
+                  {
+                      "id":  "FITIL",
+                      "name":  "Фитиль",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "fitil"
+                  },
+                  {
+                      "id":  "GLUBINNYI_IAD",
+                      "name":  "Глубинный яд",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "glubinnyi_iad"
+                  },
+                  {
+                      "id":  "GRUBAIA_TKAN",
+                      "name":  "Грубая ткань",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "grubaia_tkan"
+                  },
+                  {
+                      "id":  "IADOVITAIA_ZHELEZA",
+                      "name":  "Ядовитая железа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "iadovitaia_zheleza"
+                  },
+                  {
+                      "id":  "IADOVITOE_ZHALO",
+                      "name":  "Ядовитое жало",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "iadovitoe_zhalo"
+                  },
+                  {
+                      "id":  "KABANE_MIASO",
+                      "name":  "Кабанье мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "kabane_miaso"
+                  },
+                  {
+                      "id":  "KAMENNOE_IADRO",
+                      "name":  "Каменное ядро",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "kamennoe_iadro"
+                  },
+                  {
+                      "id":  "KHITIN",
+                      "name":  "Хитин",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "khitin"
+                  },
+                  {
+                      "id":  "KLYK",
+                      "name":  "Клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "klyk"
+                  },
+                  {
+                      "id":  "KOSTIANAIA_PYL",
+                      "name":  "Костяная пыль",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "kostianaia_pyl"
+                  },
+                  {
+                      "id":  "KOST_ILI_ROG",
+                      "name":  "Кость или рог",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "kost_ili_rog"
+                  },
+                  {
+                      "id":  "KROVAVYI_REAGENT",
+                      "name":  "Кровавый реагент",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "krovavyi_reagent"
+                  },
+                  {
+                      "id":  "KUZNECHNAIA_DETAL",
+                      "name":  "Кузнечная деталь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "kuznechnaia_detal"
+                  },
+                  {
+                      "id":  "LOM",
+                      "name":  "Лом",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "lom"
+                  },
+                  {
+                      "id":  "LUNNAIA_PYL",
+                      "name":  "Лунная пыль",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "lunnaia_pyl"
+                  },
+                  {
+                      "id":  "MANAKRISTALL",
+                      "name":  "Манакристалл",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "manakristall"
+                  },
+                  {
+                      "id":  "MANAPYL",
+                      "name":  "Манапыль",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "manapyl"
+                  },
+                  {
+                      "id":  "MANASOL",
+                      "name":  "Манасоль",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "manasol"
+                  },
+                  {
+                      "id":  "MESHOCHEK_MONET",
+                      "name":  "Мешочек монет",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "meshochek_monet"
+                  },
+                  {
+                      "id":  "MESHOCHEK_REAGENTOV",
+                      "name":  "Мешочек реагентов",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "meshochek_reagentov"
+                  },
+                  {
+                      "id":  "MIASO_ZVERIA",
+                      "name":  "Мясо зверя",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "miaso_zveria"
+                  },
+                  {
+                      "id":  "MINERALIZOVANNAIA_KOST",
+                      "name":  "Минерализованная кость",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "mineralizovannaia_kost"
+                  },
+                  {
+                      "id":  "MOKRAIA_TKAN",
+                      "name":  "Мокрая ткань",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "mokraia_tkan"
+                  },
+                  {
+                      "id":  "NARUCHI_GOBLINSKOGO_KAPKANSHCHIKA",
+                      "name":  "Наручи гоблинского капканщика",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  10,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для лучника: ловкость; усиливает эффекты ловушек и контроля.",
+                      "version":  1,
+                      "iconId":  "naruchi_goblinskogo_kapkanshchika"
+                  },
+                  {
+                      "id":  "OBLOMOK_KOSTI",
+                      "name":  "Обломок кости",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oblomok_kosti"
+                  },
+                  {
+                      "id":  "OBSIDIANOVAIA_KOZHA",
+                      "name":  "Обсидиановая кожа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obsidianovaia_kozha"
+                  },
+                  {
+                      "id":  "OBSIDIANOVAIA_KROSHKA",
+                      "name":  "Обсидиановая крошка",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obsidianovaia_kroshka"
+                  },
+                  {
+                      "id":  "OBSIDIANOVAIA_PLITA",
+                      "name":  "Обсидиановая плита",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obsidianovaia_plita"
+                  },
+                  {
+                      "id":  "OBSIDIANOVYI_KHITIN",
+                      "name":  "Обсидиановый хитин",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obsidianovyi_khitin"
+                  },
+                  {
+                      "id":  "OBUGLENNYI_KLYK",
+                      "name":  "Обугленный клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obuglennyi_klyk"
+                  },
+                  {
+                      "id":  "OGNENNAIA_ESSENTSIIA",
+                      "name":  "Огненная эссенция",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ognennaia_essentsiia"
+                  },
+                  {
+                      "id":  "ORUZHEINAIA_DETAL",
+                      "name":  "Оружейная деталь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oruzheinaia_detal"
+                  },
+                  {
+                      "id":  "ORUZHEINAIA_PLASTINA",
+                      "name":  "Оружейная пластина",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oruzheinaia_plastina"
+                  },
+                  {
+                      "id":  "ORUZHEINYI_FRAGMENT",
+                      "name":  "Оружейный фрагмент",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oruzheinyi_fragment"
+                  },
+                  {
+                      "id":  "OSKOLOK_DUKHA",
+                      "name":  "Осколок духа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_dukha"
+                  },
+                  {
+                      "id":  "OSKOLOK_DUSHI",
+                      "name":  "Осколок души",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_dushi"
+                  },
+                  {
+                      "id":  "OSKOLOK_PANTSIRIA",
+                      "name":  "Осколок панциря",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_pantsiria"
+                  },
+                  {
+                      "id":  "OSKOLOK_PERVOGO_STRAZHA",
+                      "name":  "Осколок Первого Стража",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_pervogo_strazha"
+                  },
+                  {
+                      "id":  "OSKOLOK_RASKOLA",
+                      "name":  "Осколок раскола",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_raskola"
+                  },
+                  {
+                      "id":  "OSKOLOK_RUDY",
+                      "name":  "Осколок руды",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_rudy"
+                  },
+                  {
+                      "id":  "OSKOLOK_SVETA",
+                      "name":  "Осколок света",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_sveta"
+                  },
+                  {
+                      "id":  "OSKOLOK_ZAKLINANIIA",
+                      "name":  "Осколок заклинания",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oskolok_zaklinaniia"
+                  },
+                  {
+                      "id":  "OSTATOK_DUSHI",
+                      "name":  "Остаток души",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ostatok_dushi"
+                  },
+                  {
+                      "id":  "PADALNAIA_KOZHA",
+                      "name":  "Падальная кожа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "padalnaia_kozha"
+                  },
+                  {
+                      "id":  "PECHAT_MAGISTRA",
+                      "name":  "Печать магистра",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pechat_magistra"
+                  },
+                  {
+                      "id":  "PECHAT_MARSHALA",
+                      "name":  "Печать маршала",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pechat_marshala"
+                  },
+                  {
+                      "id":  "PECHAT_VRAT",
+                      "name":  "Печать врат",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pechat_vrat"
+                  },
+                  {
+                      "id":  "PEPELNAIA_PYL",
+                      "name":  "Пепельная пыль",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pepelnaia_pyl"
+                  },
+                  {
+                      "id":  "PEPELNOE_MIASO",
+                      "name":  "Пепельное мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pepelnoe_miaso"
+                  },
+                  {
+                      "id":  "PEPELNYI_REAGENT",
+                      "name":  "Пепельный реагент",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pepelnyi_reagent"
+                  },
+                  {
+                      "id":  "PERO_ILI_KOGOT",
+                      "name":  "Перо или коготь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pero_ili_kogot"
+                  },
+                  {
+                      "id":  "PESHCHERNAIA_MEMBRANA_ILI_PANTSIR",
+                      "name":  "Пещерная мембрана или панцирь",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "peshchernaia_membrana_ili_pantsir"
+                  },
+                  {
+                      "id":  "PESHCHERNAIA_SLIZ",
+                      "name":  "Пещерная слизь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "peshchernaia_sliz"
+                  },
+                  {
+                      "id":  "PLOTNAIA_TKAN",
+                      "name":  "Плотная ткань",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "plotnaia_tkan"
+                  },
+                  {
+                      "id":  "PORCHENOE_MIASO",
+                      "name":  "Порченое мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "porchenoe_miaso"
+                  },
+                  {
+                      "id":  "PORCHENYI_KHITIN",
+                      "name":  "Порченый хитин",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "porchenyi_khitin"
+                  },
+                  {
+                      "id":  "PROKLIATYI_OBEREG",
+                      "name":  "Проклятый оберег",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "prokliatyi_obereg"
+                  },
+                  {
+                      "id":  "PROZRACHNOE_KRYLO",
+                      "name":  "Прозрачное крыло",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "prozrachnoe_krylo"
+                  },
+                  {
+                      "id":  "PRUZHINA_KAPKANA",
+                      "name":  "Пружина капкана",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pruzhina_kapkana"
+                  },
+                  {
+                      "id":  "PYLTSA_ROEVIKA",
+                      "name":  "Пыльца роевика",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pyltsa_roevika"
+                  },
+                  {
+                      "id":  "PYL_OTRAZHENII",
+                      "name":  "Пыль отражений",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pyl_otrazhenii"
+                  },
+                  {
+                      "id":  "PYL_PORCHI",
+                      "name":  "Пыль порчи",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pyl_porchi"
+                  },
+                  {
+                      "id":  "RUDNYI_MESHOCHEK",
+                      "name":  "Рудный мешочек",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "rudnyi_meshochek"
+                  },
+                  {
+                      "id":  "RUNICHESKAIA_NIT",
+                      "name":  "Руническая нить",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runicheskaia_nit"
+                  },
+                  {
+                      "id":  "RUNICHESKAIA_PLASTINA",
+                      "name":  "Руническая пластина",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  30,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runicheskaia_plastina"
+                  },
+                  {
+                      "id":  "RUNICHESKOE_IADRO",
+                      "name":  "Руническое ядро",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runicheskoe_iadro"
+                  },
+                  {
+                      "id":  "RUNNAIA_KROSHKA",
+                      "name":  "Рунная крошка",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runnaia_kroshka"
+                  },
+                  {
+                      "id":  "RUNNAIA_PLASTINA",
+                      "name":  "Рунная пластина",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runnaia_plastina"
+                  },
+                  {
+                      "id":  "RUNNAIA_PYL",
+                      "name":  "Рунная пыль",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "runnaia_pyl"
+                  },
+                  {
+                      "id":  "RVANAIA_SBRUIA",
+                      "name":  "Рваная сбруя",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  9,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "rvanaia_sbruia"
+                  },
+                  {
+                      "id":  "RVANAIA_SHERST",
+                      "name":  "Рваная шерсть",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "rvanaia_sherst"
+                  },
+                  {
+                      "id":  "SERDTSEVINA_LESNOI_PORCHI",
+                      "name":  "Сердцевина лесной порчи",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  11,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Нужна для зелий очищения и нескольких предметов 10–15 уровня.",
+                      "version":  1,
+                      "iconId":  "serdtsevina_lesnoi_porchi"
+                  },
+                  {
+                      "id":  "SGUSTOK_PORCHI",
+                      "name":  "Сгусток порчи",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sgustok_porchi"
+                  },
+                  {
+                      "id":  "SGUSTOK_SOKA",
+                      "name":  "Сгусток сока",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sgustok_soka"
+                  },
+                  {
+                      "id":  "SHERST",
+                      "name":  "Шерсть",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sherst"
+                  },
+                  {
+                      "id":  "SLED_PORCHI",
+                      "name":  "След порчи",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sled_porchi"
+                  },
+                  {
+                      "id":  "SLIZ",
+                      "name":  "Слизь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sliz"
+                  },
+                  {
+                      "id":  "SLIZISTYI_KLYK",
+                      "name":  "Слизистый клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "slizistyi_klyk"
+                  },
+                  {
+                      "id":  "SLOMANNYI_INSTRUMENT",
+                      "name":  "Сломанный инструмент",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  12,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "slomannyi_instrument"
+                  },
+                  {
+                      "id":  "SLUCHAINYI_OSKOLOK_SNARIAZHENIIA",
+                      "name":  "Случайный осколок снаряжения",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sluchainyi_oskolok_snariazheniia"
+                  },
+                  {
+                      "id":  "SLUCHAINYI_REAGENT",
+                      "name":  "Случайный реагент",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "sluchainyi_reagent"
+                  },
+                  {
+                      "id":  "SPIDER_SILK",
+                      "name":  "Паучий шёлк",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  16,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Изготовление ткани, тетив и расходников.",
+                      "version":  1,
+                      "iconId":  "spider_silk"
+                  },
+                  {
+                      "id":  "STRELA_ILI_LEZVIE",
+                      "name":  "Стрела или лезвие",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "strela_ili_lezvie"
+                  },
+                  {
+                      "id":  "TERNOVYI_OTROSTOK",
+                      "name":  "Терновый отросток",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ternovyi_otrostok"
+                  },
+                  {
+                      "id":  "TIOMNAIA_ESSENTSIIA",
+                      "name":  "Тёмная эссенция",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tiomnaia_essentsiia"
+                  },
+                  {
+                      "id":  "TIOMNAIA_RUNA",
+                      "name":  "Тёмная руна",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  33,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tiomnaia_runa"
+                  },
+                  {
+                      "id":  "TIOMNOE_MIASO",
+                      "name":  "Тёмное мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tiomnoe_miaso"
+                  },
+                  {
+                      "id":  "TIOMNYI_REAGENT",
+                      "name":  "Тёмный реагент",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tiomnyi_reagent"
+                  },
+                  {
+                      "id":  "TIOMNYI_SHIOLK",
+                      "name":  "Тёмный шёлк",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  15,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tiomnyi_shiolk"
+                  },
+                  {
+                      "id":  "TKANEVYI_LOSKUT",
+                      "name":  "Тканевый лоскут",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tkanevyi_loskut"
+                  },
+                  {
+                      "id":  "TLEIUSHCHAIA_ESSENTSIIA",
+                      "name":  "Тлеющая эссенция",
+                      "type":  "Material",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tleiushchaia_essentsiia"
+                  },
+                  {
+                      "id":  "TONKOE_ZHALO",
+                      "name":  "Тонкое жало",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "tonkoe_zhalo"
+                  },
+                  {
+                      "id":  "TOPIANAIA_ZHELEZA",
+                      "name":  "Топяная железа",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  21,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "topianaia_zheleza"
+                  },
+                  {
+                      "id":  "UGOLNOE_IADRO",
+                      "name":  "Угольное ядро",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "ugolnoe_iadro"
+                  },
+                  {
+                      "id":  "WOLF_FANG",
+                      "name":  "Волчий клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "wolf_fang"
+                  },
+                  {
+                      "id":  "ZARAZHIONNYI_KLYK",
+                      "name":  "Заражённый клык",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zarazhionnyi_klyk"
+                  },
+                  {
+                      "id":  "ZERKALNAIA_PLASTINA",
+                      "name":  "Зеркальная пластина",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zerkalnaia_plastina"
+                  },
+                  {
+                      "id":  "ZERKALNYI_OSKOLOK",
+                      "name":  "Зеркальный осколок",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  27,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zerkalnyi_oskolok"
+                  },
+                  {
+                      "id":  "ZHELEZNAIA_MELOCH",
+                      "name":  "Железная мелочь",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zheleznaia_meloch"
+                  },
+                  {
+                      "id":  "ZHIOSTKAIA_SHCHETINA",
+                      "name":  "Жёсткая щетина",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zhiostkaia_shchetina"
+                  },
+                  {
+                      "id":  "ZHIOSTKOE_MIASO",
+                      "name":  "Жёсткое мясо",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zhiostkoe_miaso"
+                  },
+                  {
+                      "id":  "ZHIVAIA_KORA",
+                      "name":  "Живая кора",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  6,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zhivaia_kora"
+                  },
+                  {
+                      "id":  "ZHIVOI_KOREN",
+                      "name":  "Живой корень",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  4,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "zhivoi_koren"
+                  },
+                  {
+                      "id":  "ZNAK_BASTIONA",
+                      "name":  "Знак Бастиона",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  36,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "znak_bastiona"
+                  },
+                  {
+                      "id":  "ZNAK_ZATMENIIA",
+                      "name":  "Знак Затмения",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  18,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "znak_zatmeniia"
+                  }
+              ]
+}

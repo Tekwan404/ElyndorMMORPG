@@ -1,0 +1,36 @@
+{
+    "locationId":  "OBSIDIAN_EDGE",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_OBSIDIANOVYI_GONCHII_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_PEPELNYI_RYTSAR_L36",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_STRELOK_BASTIONA_L37",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_INKVIZITOR_BASTIONA_L37",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_RUNNYI_RAZRUSHITEL_L37",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_PRIZRACHNYI_ZNAMENOSETS_L38",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OBSIDIAN_EDGE_STRAZH_VRAT_L39",
+                           "weight":  1.0
+                       }
+                   ]
+}

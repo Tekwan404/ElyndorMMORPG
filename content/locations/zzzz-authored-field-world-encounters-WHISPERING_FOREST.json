@@ -1,0 +1,56 @@
+{
+    "locationId":  "WHISPERING_FOREST",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_SERYI_VOLK_L1",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_LESNOI_KABAN_L2",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_LESNOI_PAUK_L3",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_LESNOI_VOLK_L3",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_KABAN_L4",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
+                           "weight":  1.0
+                       }
+                   ]
+}

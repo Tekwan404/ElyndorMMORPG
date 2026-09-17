@@ -1,0 +1,36 @@
+{
+    "locationId":  "ECLIPSE_OUTSKIRTS",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_REKRUT_ZATMENIIA_L24",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_STRELOK_ZATMENIIA_L25",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_MOGILNYI_AKOLIT_L26",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_POKHITITEL_OSKOLKOV_L26",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_ZAKLINATEL_RASKOLA_L27",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_PODMASTERE_RUNNOGO_KUZNETSA_L28",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_RUNNYI_STRAZH_ZATMENIIA_L28",
+                           "weight":  1.0
+                       }
+                   ]
+}

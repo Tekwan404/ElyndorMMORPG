@@ -1,0 +1,225 @@
+{
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "locations":  [
+                      {
+                          "id":  "WHISPERING_FOREST",
+                          "displayName":  "Шепчущий лес",
+                          "dangerLevel":  "ADVENTURE",
+                          "recommendedLevel":  3,
+                          "transitions":  [
+                                              "STARTER_TOWN",
+                                              "FLOWER_MEADOW",
+                                              "DEEP_FOREST"
+                                          ],
+                          "minimumLevel":  1,
+                          "maximumLevel":  5,
+                          "requiredContractId":  null,
+                          "artId":  "shepchushchii-les",
+                          "description":  "Первый лес, волки, кабаны, пауки. Визуальная тема: шепчущий лес в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "FLOWER_MEADOW",
+                          "displayName":  "Цветочная поляна",
+                          "dangerLevel":  "ADVENTURE",
+                          "recommendedLevel":  6,
+                          "transitions":  [
+                                              "STARTER_TOWN",
+                                              "WHISPERING_FOREST",
+                                              "DEEP_FOREST",
+                                              "OLD_ROAD"
+                                          ],
+                          "minimumLevel":  4,
+                          "maximumLevel":  8,
+                          "requiredContractId":  null,
+                          "artId":  "tsvetochnaia-poliana",
+                          "description":  "Ранний хаб профессий и светлая зона. Визуальная тема: цветочная поляна в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "DEEP_FOREST",
+                          "displayName":  "Глубокий лес",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  8,
+                          "transitions":  [
+                                              "WHISPERING_FOREST",
+                                              "FLOWER_MEADOW",
+                                              "OLD_ROAD",
+                                              "STONE_SPURS",
+                                              "BROODMOTHER_LAIR"
+                                          ],
+                          "minimumLevel":  6,
+                          "maximumLevel":  11,
+                          "requiredContractId":  null,
+                          "artId":  "glubokii-les",
+                          "description":  "Порча, ловушки, гоблины и усиленные звери. Визуальная тема: глубокий лес в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "OLD_ROAD",
+                          "displayName":  "Старый тракт",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  12,
+                          "transitions":  [
+                                              "FLOWER_MEADOW",
+                                              "DEEP_FOREST",
+                                              "STONE_SPURS"
+                                          ],
+                          "minimumLevel":  9,
+                          "maximumLevel":  14,
+                          "requiredContractId":  null,
+                          "artId":  "staryi-trakt",
+                          "description":  "Разбойники, наёмники, подрывники и дорога. Визуальная тема: старый тракт в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "STONE_SPURS",
+                          "displayName":  "Каменные отроги",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  14,
+                          "transitions":  [
+                                              "DEEP_FOREST",
+                                              "OLD_ROAD",
+                                              "ANCIENT_MINE",
+                                              "BLIGHTED_GROVE"
+                                          ],
+                          "minimumLevel":  12,
+                          "maximumLevel":  16,
+                          "requiredContractId":  null,
+                          "artId":  "kamennye-otrogi",
+                          "description":  "Руда, тяжёлая броня и вход в древнюю шахту. Визуальная тема: каменные отроги в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "BLIGHTED_GROVE",
+                          "displayName":  "Осквернённая чаща",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  18,
+                          "transitions":  [
+                                              "BROODMOTHER_LAIR",
+                                              "STONE_SPURS",
+                                              "ASHEN_BORDER"
+                                          ],
+                          "minimumLevel":  15,
+                          "maximumLevel":  20,
+                          "requiredContractId":  "CONTRACT_BROODMOTHER_GATE",
+                          "artId":  "oskvernionnaia-chashcha",
+                          "description":  "Порча, яд, чума и подготовка к рейду 20. Визуальная тема: осквернённая чаща в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "ASHEN_BORDER",
+                          "displayName":  "Пепельная граница",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  20,
+                          "transitions":  [
+                                              "BLIGHTED_GROVE",
+                                              "MOON_ASH_MARSHES"
+                                          ],
+                          "minimumLevel":  18,
+                          "maximumLevel":  23,
+                          "requiredContractId":  null,
+                          "artId":  "pepelnaia-granitsa",
+                          "description":  "Организованное затмение, огонь и руны. Визуальная тема: пепельная граница в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "MOON_ASH_MARSHES",
+                          "displayName":  "Топи Лунного Пепла",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  24,
+                          "transitions":  [
+                                              "ASHEN_BORDER",
+                                              "ECLIPSE_OUTSKIRTS"
+                                          ],
+                          "minimumLevel":  21,
+                          "maximumLevel":  26,
+                          "requiredContractId":  null,
+                          "artId":  "topi-lunnogo-pepla",
+                          "description":  "Яд, болезнь, высасывание здоровья и магические болота. Визуальная тема: топи лунного пепла в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "ECLIPSE_OUTSKIRTS",
+                          "displayName":  "Предместья Затмения",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  26,
+                          "transitions":  [
+                                              "MOON_ASH_MARSHES",
+                                              "ECLIPSED_CITADEL",
+                                              "SHATTERED_LANDS"
+                                          ],
+                          "minimumLevel":  24,
+                          "maximumLevel":  29,
+                          "requiredContractId":  null,
+                          "artId":  "predmestia-zatmeniia",
+                          "description":  "Армия цитадели, руны, конструкты и кузницы. Визуальная тема: предместья затмения в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "SHATTERED_LANDS",
+                          "displayName":  "Земли Раскола",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  30,
+                          "transitions":  [
+                                              "ECLIPSE_OUTSKIRTS",
+                                              "BLACKSTONE_HIGHLANDS"
+                                          ],
+                          "minimumLevel":  27,
+                          "maximumLevel":  32,
+                          "requiredContractId":  null,
+                          "artId":  "zemli-raskola",
+                          "description":  "Отражения, мана, щиты и зеркальная магия. Визуальная тема: земли раскола в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "BLACKSTONE_HIGHLANDS",
+                          "displayName":  "Чернокаменное нагорье",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  32,
+                          "transitions":  [
+                                              "SHATTERED_LANDS",
+                                              "CRIMSON_WASTELAND"
+                                          ],
+                          "minimumLevel":  30,
+                          "maximumLevel":  35,
+                          "requiredContractId":  null,
+                          "artId":  "chernokamennoe-nagore",
+                          "description":  "Позднее горное дело, тяжёлая броня, огонь и кузни. Визуальная тема: чернокаменное нагорье в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "CRIMSON_WASTELAND",
+                          "displayName":  "Багровая пустошь",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  36,
+                          "transitions":  [
+                                              "BLACKSTONE_HIGHLANDS",
+                                              "OBSIDIAN_EDGE"
+                                          ],
+                          "minimumLevel":  33,
+                          "maximumLevel":  38,
+                          "requiredContractId":  null,
+                          "artId":  "bagrovaia-pustosh",
+                          "description":  "Нежить, души, проклятия и некромантия. Визуальная тема: багровая пустошь в стилистике Elyndor.",
+                          "allowAfk":  true
+                      },
+                      {
+                          "id":  "OBSIDIAN_EDGE",
+                          "displayName":  "Обсидиановый предел",
+                          "dangerLevel":  "DANGEROUS",
+                          "recommendedLevel":  38,
+                          "transitions":  [
+                                              "CRIMSON_WASTELAND"
+                                          ],
+                          "minimumLevel":  36,
+                          "maximumLevel":  40,
+                          "requiredContractId":  null,
+                          "artId":  "obsidianovyi-predel",
+                          "description":  "Преддверие чёрного бастиона и финальная открытого мира-подготовка. Визуальная тема: обсидиановый предел в стилистике Elyndor.",
+                          "allowAfk":  true
+                      }
+                  ]
+}

@@ -1,0 +1,44 @@
+{
+    "locationId":  "BLACKSTONE_HIGHLANDS",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_VOLK_L30",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_BRONESPIN_L30",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_KRYLATYI_OKHOTNIK_L31",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_OBSIDIANOVYI_SKORPION_L32",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_GORNYI_NALIOTCHIK_L32",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_KUZNETS_CHIORNOGO_ZHELEZA_L32",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_KAMENNOE_CHUDOVISHCHE_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_GROMILA_L35",
+                           "weight":  1.0
+                       }
+                   ]
+}

@@ -1,0 +1,52 @@
+{
+    "locationId":  "OLD_ROAD",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "OLD_ROAD_GRABITELI_L9",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_LUCHNIKI_L9",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_NAIOMNIKI_L10",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_PODRYVNIKI_L10",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_GOBLIN_MARODIOR_L11",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_BOEVOI_PIOS_TRAKTA_L12",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_DOROZHNYI_PADALSHCHIK_L12",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_RAZBOINIK_LUCHNIK_L13",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_BRODIACHII_NAIOMNIK_L13",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_RAZBOINIK_PODRYVNIK_L14",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_DOROZHNYI_MARODIOR_L14",
+                           "weight":  1.0
+                       }
+                   ]
+}

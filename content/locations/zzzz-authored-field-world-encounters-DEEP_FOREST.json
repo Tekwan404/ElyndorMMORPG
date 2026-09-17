@@ -1,0 +1,40 @@
+{
+    "locationId":  "DEEP_FOREST",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_ALFA_VOLK_L7",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_GLUBINNYI_PAUK_L8",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_LESNOI_DUKH_L10",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "DEEP_FOREST_SGUSTOK_LESNOI_PORCHI_L11",
+                           "weight":  1.0
+                       }
+                   ]
+}

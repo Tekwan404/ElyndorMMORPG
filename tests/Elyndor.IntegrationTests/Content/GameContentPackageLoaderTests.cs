@@ -13,7 +13,20 @@ public sealed class GameContentPackageLoaderTests
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
-        ["FOREST_WOLF_L1", "FOREST_BOAR_L2", "GIANT_SPIDER_L3", "FOREST_WOLF_L4", "ALPHA_WOLF_L5"];
+    [
+        "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+        "WHISPERING_FOREST_SERYI_VOLK_L1",
+        "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+        "WHISPERING_FOREST_LESNOI_KABAN_L2",
+        "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+        "WHISPERING_FOREST_LESNOI_PAUK_L3",
+        "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+        "WHISPERING_FOREST_LESNOI_VOLK_L3",
+        "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+        "WHISPERING_FOREST_KABAN_L4",
+        "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+        "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"
+    ];
 
     [Fact]
     public async Task PhaseFiveMageAndLocationEncounterPackageLoadsAndValidates()
@@ -21,8 +34,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.22.0", package.ContentVersion);
-        Assert.Equal("0.18.0", package.BalanceVersion);
+        Assert.Equal("0.23.0", package.ContentVersion);
+        Assert.Equal("0.19.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");

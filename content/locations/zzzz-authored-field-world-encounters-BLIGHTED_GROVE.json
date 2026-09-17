@@ -1,0 +1,60 @@
+{
+    "locationId":  "BLIGHTED_GROVE",
+    "contentVersion":  "0.23.0",
+    "balanceVersion":  "0.19.0",
+    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "encounters":  [
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_PORCHENYI_KABAN_L15",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_PORCHENYI_VOLK_L15",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_SOBIRATEL_PORCHI_L17",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_BOLOTNYI_VASILISK_L19",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
+                           "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
+                           "weight":  1.0
+                       }
+                   ]
+}
