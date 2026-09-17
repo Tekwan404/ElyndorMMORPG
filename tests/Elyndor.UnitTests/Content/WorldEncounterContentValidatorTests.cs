@@ -24,6 +24,26 @@ public sealed class WorldEncounterContentValidatorTests
     }
 
     [Fact]
+    public void ValidateAcceptsEliteEncounterAlongsideNormalEncounters()
+    {
+        GameContentPackage package = Package(
+            new LocationDefinition(
+                "DANGEROUS_REGION",
+                "Dangerous Region",
+                "DANGEROUS",
+                12,
+                [],
+                [
+                    new LocationEncounterDefinition("WOLF", 1),
+                    new LocationEncounterDefinition("ELITE_WOLF", 0.2m)
+                ]),
+            Monster("WOLF"),
+            Monster("ELITE_WOLF") with { Rank = MonsterRank.Elite });
+
+        Assert.Empty(WorldEncounterContentValidator.Validate(package));
+    }
+
+    [Fact]
     public void ValidateRejectsNonSafeLocationWithoutEncounters()
     {
         GameContentPackage package = Package(

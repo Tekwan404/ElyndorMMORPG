@@ -61,6 +61,22 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
   },
 }
 
+Object.assign(PRESENTATIONS, {
+  FLOWER_MEADOW: { label: 'Цветочная поляна', art: gameArt.locations.FLOWER_MEADOW, kind: 'region', dangerLabel: 'Приключение' },
+  OLD_ROAD: { label: 'Старый тракт', art: gameArt.locations.OLD_ROAD, kind: 'region', dangerLabel: 'Опасная область' },
+  STONE_SPURS: { label: 'Каменные отроги', art: gameArt.locations.STONE_SPURS, kind: 'region', dangerLabel: 'Опасная область' },
+  ASHEN_BORDER: { label: 'Пепельная граница', art: gameArt.locations.ASHEN_BORDER, kind: 'region', dangerLabel: 'Опасная область' },
+  MOON_ASH_MARSHES: { label: 'Топи Лунного Пепла', art: gameArt.locations.MOON_ASH_MARSHES, kind: 'region', dangerLabel: 'Опасная область' },
+  ECLIPSE_OUTSKIRTS: { label: 'Предместья Затмения', art: gameArt.locations.ECLIPSE_OUTSKIRTS, kind: 'region', dangerLabel: 'Опасная область' },
+  SHATTERED_LANDS: { label: 'Земли Раскола', art: gameArt.locations.SHATTERED_LANDS, kind: 'region', dangerLabel: 'Высокий риск' },
+  BLACKSTONE_HIGHLANDS: { label: 'Чернокаменное нагорье', art: gameArt.locations.BLACKSTONE_HIGHLANDS, kind: 'region', dangerLabel: 'Высокий риск' },
+  CRIMSON_WASTELAND: { label: 'Багровая пустошь', art: gameArt.locations.CRIMSON_WASTELAND, kind: 'region', dangerLabel: 'Высокий риск' },
+  OBSIDIAN_EDGE: { label: 'Обсидиановый предел', art: gameArt.locations.OBSIDIAN_EDGE, kind: 'region', dangerLabel: 'Смертельная опасность' },
+  HEART_OF_BLIGHTED_GROVE: { label: 'Сердце Осквернённой Чащи', art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 20 уровень' },
+  SHATTERED_ORDER_CITADEL: { label: 'Цитадель Расколотого Ордена', art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 30 уровень' },
+  BLACK_BASTION: { label: 'Чёрный Бастион', art: gameArt.locations.BLACK_BASTION_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 40 уровень' },
+})
+
 const FALLBACK_PRESENTATION: LocationPresentation = {
   label: 'Неизвестная область',
   art: gameArt.world.ancientRuins,

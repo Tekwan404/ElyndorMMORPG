@@ -1,4 +1,4 @@
-{
+﻿{
     "contentVersion":  "0.23.0",
     "balanceVersion":  "0.19.0",
     "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
@@ -100,7 +100,8 @@
                           "transitions":  [
                                               "BROODMOTHER_LAIR",
                                               "STONE_SPURS",
-                                              "ASHEN_BORDER"
+                                              "ASHEN_BORDER",
+                                              "HEART_OF_BLIGHTED_GROVE"
                                           ],
                           "minimumLevel":  15,
                           "maximumLevel":  20,
@@ -161,11 +162,12 @@
                       {
                           "id":  "SHATTERED_LANDS",
                           "displayName":  "Земли Раскола",
-                          "dangerLevel":  "DANGEROUS",
+                          "dangerLevel":  "DEADLY",
                           "recommendedLevel":  30,
                           "transitions":  [
                                               "ECLIPSE_OUTSKIRTS",
-                                              "BLACKSTONE_HIGHLANDS"
+                                              "BLACKSTONE_HIGHLANDS",
+                                              "SHATTERED_ORDER_CITADEL"
                                           ],
                           "minimumLevel":  27,
                           "maximumLevel":  32,
@@ -177,7 +179,7 @@
                       {
                           "id":  "BLACKSTONE_HIGHLANDS",
                           "displayName":  "Чернокаменное нагорье",
-                          "dangerLevel":  "DANGEROUS",
+                          "dangerLevel":  "DEADLY",
                           "recommendedLevel":  32,
                           "transitions":  [
                                               "SHATTERED_LANDS",
@@ -193,7 +195,7 @@
                       {
                           "id":  "CRIMSON_WASTELAND",
                           "displayName":  "Багровая пустошь",
-                          "dangerLevel":  "DANGEROUS",
+                          "dangerLevel":  "DEADLY",
                           "recommendedLevel":  36,
                           "transitions":  [
                                               "BLACKSTONE_HIGHLANDS",
@@ -209,10 +211,11 @@
                       {
                           "id":  "OBSIDIAN_EDGE",
                           "displayName":  "Обсидиановый предел",
-                          "dangerLevel":  "DANGEROUS",
+                          "dangerLevel":  "DEADLY",
                           "recommendedLevel":  38,
                           "transitions":  [
-                                              "CRIMSON_WASTELAND"
+                                              "CRIMSON_WASTELAND",
+                                              "BLACK_BASTION"
                                           ],
                           "minimumLevel":  36,
                           "maximumLevel":  40,
@@ -220,6 +223,51 @@
                           "artId":  "obsidianovyi-predel",
                           "description":  "Преддверие чёрного бастиона и финальная открытого мира-подготовка. Визуальная тема: обсидиановый предел в стилистике Elyndor.",
                           "allowAfk":  true
+                      },
+                      {
+                          "id":  "HEART_OF_BLIGHTED_GROVE",
+                          "displayName":  "Сердце Осквернённой Чащи",
+                          "dangerLevel":  "SAFE",
+                          "recommendedLevel":  20,
+                          "transitions":  [
+                                              "BLIGHTED_GROVE"
+                                          ],
+                          "minimumLevel":  20,
+                          "maximumLevel":  20,
+                          "requiredContractId":  null,
+                          "artId":  "serdtse-oskvernionnoi-chashchi",
+                          "description":  "Первый рейд 20 уровня: четыре босса, шесть слотов комплектов и профессиональные рейдовые материалы.",
+                          "allowAfk":  false
+                      },
+                      {
+                          "id":  "SHATTERED_ORDER_CITADEL",
+                          "displayName":  "Цитадель Расколотого Ордена",
+                          "dangerLevel":  "SAFE",
+                          "recommendedLevel":  30,
+                          "transitions":  [
+                                              "SHATTERED_LANDS"
+                                          ],
+                          "minimumLevel":  30,
+                          "maximumLevel":  30,
+                          "requiredContractId":  null,
+                          "artId":  "tsitadel-raskolotogo-ordena",
+                          "description":  "Рейд 30 уровня на зеркальную магию, ману, щиты и отражения.",
+                          "allowAfk":  false
+                      },
+                      {
+                          "id":  "BLACK_BASTION",
+                          "displayName":  "Чёрный Бастион",
+                          "dangerLevel":  "SAFE",
+                          "recommendedLevel":  40,
+                          "transitions":  [
+                                              "OBSIDIAN_EDGE"
+                                          ],
+                          "minimumLevel":  40,
+                          "maximumLevel":  40,
+                          "requiredContractId":  null,
+                          "artId":  "chiornyi-bastion",
+                          "description":  "Финальный рейд диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+                          "allowAfk":  false
                       }
                   ]
 }

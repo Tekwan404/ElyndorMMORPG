@@ -167,6 +167,44 @@
         ]
       },
       {
+        "id": "MAGE_OFFHAND",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "ATTACK_SPEED",
+          "MAGIC_PENETRATION",
+          "ACCURACY",
+          "MAX_RESOURCE"
+        ]
+      },
+      {
+        "id": "WORLD_GENERAL",
+        "statIds": [
+          "STRENGTH",
+          "AGILITY",
+          "INTELLECT",
+          "STAMINA",
+          "MAX_HP",
+          "ATTACK_POWER",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "ARMOR",
+          "MAGIC_RESISTANCE",
+          "ARMOR_PENETRATION",
+          "MAGIC_PENETRATION",
+          "DODGE",
+          "MAX_RESOURCE",
+          "WEAPON_DAMAGE",
+          "BLOCK_CHANCE",
+          "BLOCK_VALUE"
+        ]
+      },
+      {
         "id": "ARCHER_QUIVER",
         "statIds": [
           "AGILITY",
@@ -276,6 +314,126 @@
         "guaranteedCount": 3,
         "minimumBonusCount": 2,
         "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_5_8_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_5_8_G2",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 0,
+        "maximumBonusCount": 1
+      },
+      {
+        "id": "LEVEL_13_16_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_17_20_G2",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_17_20_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_21_24",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_21_24_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_25_28",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_25_28_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_29_32",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_29_32_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_33_36",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_33_36_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_37_40",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_37_40_G0",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "ACCESSORY_LEVEL_21_24",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 4,
+        "maximumBonusCount": 5
+      },
+      {
+        "id": "ACCESSORY_LEVEL_25_28",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 3
+      },
+      {
+        "id": "ACCESSORY_LEVEL_29_32",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 4,
+        "maximumBonusCount": 5
+      },
+      {
+        "id": "ACCESSORY_LEVEL_33_36",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 3
+      },
+      {
+        "id": "ACCESSORY_LEVEL_37_40",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 4,
+        "maximumBonusCount": 5
       }
     ],
     "qualityProfiles": [

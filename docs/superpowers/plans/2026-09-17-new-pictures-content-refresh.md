@@ -49,9 +49,9 @@ New files:
 
 - [x] Record source IDs/counts for items, sets, loot tables, locations, monsters, profession zones, and image files; report duplicate IDs and missing source references.
 - [x] Compare source location/monster/item/loot shapes with current contracts and document unsupported fields.
-- [x] Select 13 non-instance field locations and stable Normal encounter, loot-table, and supported drop-item IDs; preserve current hub and instance definitions.
-- [x] Exclude all instance locations and source-designated raids from imported content and field transitions.
-- [x] Replace legacy field encounter aliases with authored Normal encounter IDs; do not create an unsupported Elite spawn rule.
+- [x] Import 13 field locations and all 169 authored Normal/Elite field encounters.
+- [x] Add three source raids with 32 raid encounter records, safe entry locations, and empty behavior profiles.
+- [x] Fill every imported mob loot table with supported item references; leave grouped raid set-loot semantics for a future loot-model change.
 - [x] Verify unrelated talent/ability/character artwork remains untouched; no artwork was imported in this slice.
 - [x] Add the auditable import manifest.
 
@@ -79,10 +79,10 @@ repeatable tool only if future authored content refreshes justify maintaining it
 
 **Files:** staged output copied to `content/items/`, `content/loot/`, `content/monsters/`, `content/locations/`, `content/package.json`; compatibility fragments only when an existing reference must be preserved.
 
-- [x] Add a focused unit test for field locations, encounter and loot references, item references, and raid exclusions.
-- [x] Import 13 locations, 134 Normal encounters/mobs, 134 direct loot tables, and 121 supported Material/Consumable item definitions.
-- [x] Preserve existing dungeon/raid locations and remove raid routes from the imported field-location graph.
-- [x] Exclude unsupported Elite roster entries, all equipment drops requiring invalid/unavailable itemization contracts, and Recipe items without a runtime `ItemType`; every imported table retains at least one supported entry.
+- [x] Add a focused unit test for field/raid locations, encounter and loot references, item references, and empty raid behavior.
+- [x] Import 13 field locations, 3 raid locations, 201 authored monsters, 201 loot tables, and raid material loot.
+- [x] Preserve the existing test dungeon; link authored raid entrances from adjacent field zones.
+- [x] Keep unsupported exclusive set-drop rolls out of the flat loot runtime and use supported material loot for raids.
 - [x] Update content/balance versions and validate the composed package.
 - [x] Run backend build, unit tests, and the focused content integration test.
 - [x] Review the change scope; no gameplay service/runtime schema or player data was changed.
@@ -105,10 +105,10 @@ repeatable tool only if future authored content refreshes justify maintaining it
 
 - A complete inventory reset tool and the production data reset.
 - Rare random-equipment bonus profiles attached to the source field-mob tables; current `LootTableDefinition` does not model `randomEquipmentProfile`.
-- Raid content, including the source-designated level 20/30/40 raids; none is imported here.
-- The 35 authored Elite field roster entries need an encounter/spawn contract before they can enter normal location encounter pools.
+- Exact source weighted-exclusive raid gear rolls need runtime support; raid loot currently grants static materials only.
+- Enemy portrait files still need auditable per-monster artId mapping/cropping.
 - Authored equipment and recipe drops: 26 equipment definitions need compatible slot/category/procedural affix data; 3 Recipe definitions need an existing runtime representation. Their loot entries are omitted for now.
-- Field-location/enemy artwork, the authored world map, location presentation mapping, and item art have not been imported.
+- Per-monster portrait art mapping/cropping, the authored world map, and item art have not been imported.
 - Profession zone rolls, set-effect implementations, and remaining authored itemization not required by direct field-mob loot.
 - The separately requested guarded inventory reset utility and any production reset/deployment; neither is part of this slice.
 
@@ -122,7 +122,7 @@ repeatable tool only if future authored content refreshes justify maintaining it
 - [ ] Run `dotnet run --project tools/Elyndor.ContentValidator -- content/package.json`.
 - [ ] Run frontend lint, format check, unit tests, build, and relevant E2E commands from `CONTRIBUTING.md`.
 - [ ] Review asset previews and full `git diff`; verify unchanged talent/ability/character art and no secrets or production data artifacts.
-- [ ] Open a content PR to `main` describing the 13 field locations, imported mob/loot coverage, excluded raids, and exact validation/build/test results. Do not merge without the user's explicit merge request.
+- [ ] Open a content PR to `main` describing the 13 field locations, three static raids, imported mob/loot coverage, limitations, and exact validation/build/test results. Do not merge without the user's explicit merge request.
 
 ## Verification commands
 

@@ -1,4 +1,4 @@
-{
+﻿{
     "contentVersion":  "0.23.0",
     "balanceVersion":  "0.19.0",
     "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
@@ -137,6 +137,41 @@
                       "iconId":  "bolotnoe_miaso"
                   },
                   {
+                      "id":  "CHERNOKAMENNAIA_SEKIRA",
+                      "name":  "Чернокаменная секира",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  35,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для воина: высокий урон и пробитие брони.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "TWO_HAND_AXE",
+                      "iconId":  "chernokamennaia_sekira",
+                      "weaponDamageMin":  145,
+                      "weaponDamageMax":  198,
+                      "itemLevelMin":  35,
+                      "itemLevelMax":  35,
+                      "guaranteedAffixStatIds":  [
+                                                     "STRENGTH",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "WARRIOR_WEAPON",
+                      "affixCountProfileId":  "LEVEL_33_36",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "CHERNOKAMENNOE_IADRO",
                       "name":  "Чернокаменное ядро",
                       "type":  "Material",
@@ -154,6 +189,37 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "chernokamennoe_iadro"
+                  },
+                  {
+                      "id":  "CHESHUICHATYI_PLASHCH_VASILISKA",
+                      "name":  "Чешуйчатый плащ Василиска",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  25,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Cloak",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальный плащ с сопротивлением магии и яду.",
+                      "version":  1,
+                      "iconId":  "cheshuichatyi_plashch_vasiliska",
+                      "itemLevelMin":  25,
+                      "itemLevelMax":  25,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_25_28",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "CHIORNAIA_KORA",
@@ -270,6 +336,41 @@
                       "iconId":  "chitin_fragment"
                   },
                   {
+                      "id":  "DOZORNYI_LUK_STAROGO_TRAKTA",
+                      "name":  "Дозорный лук Старого тракта",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  13,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: точность, шанс критического удара и увеличенный урон по целям с полным здоровьем.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.7,
+                      "weaponCategory":  "BOW",
+                      "iconId":  "dozornyi_luk_starogo_trakta",
+                      "weaponDamageMin":  38,
+                      "weaponDamageMax":  52,
+                      "itemLevelMin":  13,
+                      "itemLevelMax":  13,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_WEAPON",
+                      "affixCountProfileId":  "LEVEL_13_16",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "EKHO_KLASSA",
                       "name":  "Эхо класса",
                       "type":  "Material",
@@ -325,6 +426,69 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "fitil"
+                  },
+                  {
+                      "id":  "FOKUS_CHIORNOI_ZVEZDY",
+                      "name":  "Фокус Чёрной Звезды",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  40,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг: интеллект, мана и усиление заклинаний после траты большого объёма ресурса.",
+                      "version":  1,
+                      "iconId":  "fokus_chiornoi_zvezdy",
+                      "offHandCategory":  "FOCUS",
+                      "itemLevelMin":  40,
+                      "itemLevelMax":  40,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_OFFHAND",
+                      "affixCountProfileId":  "LEVEL_37_40",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "FONAR_UTONUVSHEGO_PALOMNIKA",
+                      "name":  "Фонарь утонувшего паломника",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  24,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг и паладин: восстановление ресурса и усиление лечения и щитов.",
+                      "version":  1,
+                      "iconId":  "fonar_utonuvshego_palomnika",
+                      "offHandCategory":  "FOCUS",
+                      "itemLevelMin":  24,
+                      "itemLevelMax":  24,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_21_24_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "GLUBINNYI_IAD",
@@ -441,6 +605,72 @@
                       "iconId":  "kamennoe_iadro"
                   },
                   {
+                      "id":  "KAPIUSHON_CHASHCHOBY",
+                      "name":  "Капюшон чащобы",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  10,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Head",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для мага: интеллект и восстановление маны.",
+                      "version":  1,
+                      "armorCategory":  "CLOTH",
+                      "armorFlat":  17.5,
+                      "iconId":  "kapiushon_chashchoby",
+                      "itemLevelMin":  10,
+                      "itemLevelMax":  10,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_ARMOR",
+                      "affixCountProfileId":  "LEVEL_9_12",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KAPIUSHON_TENEVOGO_BRAKONERA",
+                      "name":  "Капюшон теневого браконьера",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  19,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Head",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: ловкость, шанс критического удара и бонус к первой атаке после входа в бой.",
+                      "version":  1,
+                      "armorCategory":  "LEATHER",
+                      "armorFlat":  62.7,
+                      "iconId":  "kapiushon_tenevogo_brakonera",
+                      "itemLevelMin":  19,
+                      "itemLevelMax":  19,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_ARMOR",
+                      "affixCountProfileId":  "LEVEL_17_20_G2",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "KHITIN",
                       "name":  "Хитин",
                       "type":  "Material",
@@ -458,6 +688,206 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "khitin"
+                  },
+                  {
+                      "id":  "KIRASA_KAMNEGLOTA",
+                      "name":  "Кираса камнеглота",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  16,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Chest",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: броня и выносливость.",
+                      "version":  1,
+                      "armorCategory":  "HEAVY",
+                      "armorFlat":  104.4,
+                      "iconId":  "kirasa_kamneglota",
+                      "itemLevelMin":  16,
+                      "itemLevelMax":  16,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_13_16_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KIRASA_MATIOROGO_VOZHAKA",
+                      "name":  "Кираса Матёрого Вожака",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  20,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Chest",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: броня, выносливость, небольшой ответный урон при блоке.",
+                      "version":  1,
+                      "armorCategory":  "HEAVY",
+                      "armorFlat":  130.5,
+                      "iconId":  "kirasa_matiorogo_vozhaka",
+                      "itemLevelMin":  20,
+                      "itemLevelMax":  20,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_17_20_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KLINOK_PALACHA_ZATMENIIA",
+                      "name":  "Клинок палача Затмения",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  29,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для физического бойца: сила или ловкость; добивающие атаки наносят больше урона.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "ONE_HAND_SWORD",
+                      "iconId":  "klinok_palacha_zatmeniia",
+                      "weaponDamageMin":  75,
+                      "weaponDamageMax":  103,
+                      "itemLevelMin":  29,
+                      "itemLevelMax":  29,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_29_32_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KLINOK_PEPELNOGO_RYTSARIA",
+                      "name":  "Клинок Пепельного рыцаря",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  38,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для воина и паладина: сила; после активации ключевой способности ненадолго повышает урон.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "ONE_HAND_SWORD",
+                      "iconId":  "klinok_pepelnogo_rytsaria",
+                      "weaponDamageMin":  106,
+                      "weaponDamageMax":  145,
+                      "itemLevelMin":  38,
+                      "itemLevelMax":  38,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_37_40_G0",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KLINOK_PYLNOI_DOROGI",
+                      "name":  "Клинок Пыльной дороги",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  14,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для воина и паладина: сила и пробитие брони.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "ONE_HAND_SWORD",
+                      "iconId":  "klinok_pylnoi_dorogi",
+                      "weaponDamageMin":  36,
+                      "weaponDamageMax":  50,
+                      "itemLevelMin":  14,
+                      "itemLevelMax":  14,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_13_16_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KLINOK_ZERKALNOGO_EKHA",
+                      "name":  "Клинок зеркального эха",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  31,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: часть характеристик усиливается на короткое время после получения щита.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "ONE_HAND_SWORD",
+                      "iconId":  "klinok_zerkalnogo_ekha",
+                      "weaponDamageMin":  86,
+                      "weaponDamageMax":  119,
+                      "itemLevelMin":  31,
+                      "itemLevelMax":  31,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_29_32_G0",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "KLYK",
@@ -479,6 +909,172 @@
                       "iconId":  "klyk"
                   },
                   {
+                      "id":  "KLYK_MATERI_TOPEI",
+                      "name":  "Клык Матери топей",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  26,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник:  шанс критического удара и дополнительный яд при серии атак.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  1.8,
+                      "weaponCategory":  "DAGGER",
+                      "iconId":  "klyk_materi_topei",
+                      "weaponDamageMin":  62,
+                      "weaponDamageMax":  84,
+                      "itemLevelMin":  26,
+                      "itemLevelMax":  26,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_WEAPON",
+                      "affixCountProfileId":  "LEVEL_25_28",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KLYK_MATIOROGO_VOZHAKA",
+                      "name":  "Клык Матёрого Вожака",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  4,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лёгкий меч раннего воина/паладина; бонус к физическому урону и точности.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "ONE_HAND_SWORD",
+                      "iconId":  "klyk_matiorogo_vozhaka",
+                      "weaponDamageMin":  10,
+                      "weaponDamageMax":  14,
+                      "itemLevelMin":  4,
+                      "itemLevelMax":  4,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_1_4",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KOLTSO_KORNEVOI_ROSY",
+                      "name":  "Кольцо корневой росы",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  8,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Ring1",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Кольцо для мага и паладина с интеллектом и малым восстановлением ресурса.",
+                      "version":  1,
+                      "iconId":  "koltso_kornevoi_rosy",
+                      "itemLevelMin":  8,
+                      "itemLevelMax":  8,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_5_8",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KOPIO_PALACHA_GRANITSY",
+                      "name":  "Копьё Палача границы",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  23,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: сила, пробитие брони и бонус к урону по целям ниже 35% здоровья.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "POLEARM",
+                      "iconId":  "kopio_palacha_granitsy",
+                      "weaponDamageMin":  79,
+                      "weaponDamageMax":  109,
+                      "itemLevelMin":  23,
+                      "itemLevelMax":  23,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_21_24_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "KORONA_CHUMNOGO_ZHRETSA",
+                      "name":  "Корона чумного жреца",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  36,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Head",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг: интеллект и усиление периодических и теневых эффектов.",
+                      "version":  1,
+                      "armorCategory":  "CLOTH",
+                      "armorFlat":  70.0,
+                      "iconId":  "korona_chumnogo_zhretsa",
+                      "itemLevelMin":  36,
+                      "itemLevelMax":  36,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_ARMOR",
+                      "affixCountProfileId":  "LEVEL_33_36",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "KOSTIANAIA_PYL",
                       "name":  "Костяная пыль",
                       "type":  "Material",
@@ -496,6 +1092,40 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "kostianaia_pyl"
+                  },
+                  {
+                      "id":  "KOSTIANOI_KLINOK_MARSHALA",
+                      "name":  "Костяной клинок Маршала",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  38,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: сила и усиление против нежити и призванных целей.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "TWO_HAND_SWORD",
+                      "iconId":  "kostianoi_klinok_marshala",
+                      "weaponDamageMin":  150,
+                      "weaponDamageMax":  206,
+                      "itemLevelMin":  38,
+                      "itemLevelMax":  38,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_37_40_G0",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "KOST_ILI_ROG",
@@ -574,6 +1204,111 @@
                       "iconId":  "lom"
                   },
                   {
+                      "id":  "LUK_BASTIONNOGO_DOZORA",
+                      "name":  "Лук Бастионного дозора",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  39,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: точность, шанс критического удара и бонус по приоритетной цели.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.7,
+                      "weaponCategory":  "BOW",
+                      "iconId":  "luk_bastionnogo_dozora",
+                      "weaponDamageMin":  123,
+                      "weaponDamageMax":  169,
+                      "itemLevelMin":  39,
+                      "itemLevelMax":  39,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_WEAPON",
+                      "affixCountProfileId":  "LEVEL_37_40",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "LUK_DVOINOGO_EKHA",
+                      "name":  "Лук двойного эха",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  31,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: небольшой шанс повторить ослабленную копию выстрела.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.7,
+                      "weaponCategory":  "BOW",
+                      "iconId":  "luk_dvoinogo_ekha",
+                      "weaponDamageMin":  98,
+                      "weaponDamageMax":  134,
+                      "itemLevelMin":  31,
+                      "itemLevelMax":  31,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_WEAPON",
+                      "affixCountProfileId":  "LEVEL_29_32",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "LUK_ZVONKOGO_KRYLA",
+                      "name":  "Лук Звонкого Крыла",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  7,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Ранний лук для лучника: скорость атаки и шанс критического удара.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.7,
+                      "weaponCategory":  "BOW",
+                      "iconId":  "luk_zvonkogo_kryla",
+                      "weaponDamageMin":  20,
+                      "weaponDamageMax":  27,
+                      "itemLevelMin":  7,
+                      "itemLevelMax":  7,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_WEAPON",
+                      "affixCountProfileId":  "LEVEL_5_8_G2",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "LUNNAIA_PYL",
                       "name":  "Лунная пыль",
                       "type":  "Material",
@@ -648,6 +1383,25 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "manasol"
+                  },
+                  {
+                      "id":  "MATOCHNOE_ZHALO",
+                      "name":  "Маточное жало",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  8,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Редкий алхимический и ремесленный реагент.",
+                      "version":  1,
+                      "iconId":  "matochnoe_zhalo"
                   },
                   {
                       "id":  "MESHOCHEK_MONET",
@@ -745,6 +1499,73 @@
                       "iconId":  "mokraia_tkan"
                   },
                   {
+                      "id":  "MOLOT_KHOZIAINA_ZHIL",
+                      "name":  "Молот Хозяина жил",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  16,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: медленное тяжёлое оружие, бонус против бронированных целей.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "TWO_HAND_MACE",
+                      "iconId":  "molot_khoziaina_zhil",
+                      "weaponDamageMin":  62,
+                      "weaponDamageMax":  85,
+                      "itemLevelMin":  16,
+                      "itemLevelMax":  16,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_13_16_G0",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "NAPLECHNIKI_BAGROVOI_GARPII",
+                      "name":  "Наплечники Багровой гарпии",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  37,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Shoulders",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: ловкость и увеличенный урон критических атак.",
+                      "version":  1,
+                      "armorCategory":  "LEATHER",
+                      "armorFlat":  100.1,
+                      "iconId":  "naplechniki_bagrovoi_garpii",
+                      "itemLevelMin":  37,
+                      "itemLevelMax":  37,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_ARMOR",
+                      "affixCountProfileId":  "LEVEL_37_40",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "NARUCHI_GOBLINSKOGO_KAPKANSHCHIKA",
                       "name":  "Наручи гоблинского капканщика",
                       "type":  "Material",
@@ -762,6 +1583,25 @@
                       "description":  "Для лучника: ловкость; усиливает эффекты ловушек и контроля.",
                       "version":  1,
                       "iconId":  "naruchi_goblinskogo_kapkanshchika"
+                  },
+                  {
+                      "id":  "OBLOMOK_BASTIONNOI_BRONI",
+                      "name":  "Обломок бастионной брони",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "oblomok_bastionnoi_broni"
                   },
                   {
                       "id":  "OBLOMOK_KOSTI",
@@ -954,6 +1794,41 @@
                       "iconId":  "oruzheinyi_fragment"
                   },
                   {
+                      "id":  "OSKOLOCHNYI_ZHEZL",
+                      "name":  "Осколочный жезл",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  27,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг: интеллект и усиление урона по щитам.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  1.8,
+                      "weaponCategory":  "WAND",
+                      "iconId":  "oskolochnyi_zhezl",
+                      "weaponDamageMin":  56,
+                      "weaponDamageMax":  76,
+                      "itemLevelMin":  27,
+                      "itemLevelMax":  27,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_WEAPON",
+                      "affixCountProfileId":  "LEVEL_25_28",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "OSKOLOK_DUKHA",
                       "name":  "Осколок духа",
                       "type":  "Material",
@@ -1144,6 +2019,66 @@
                       "iconId":  "padalnaia_kozha"
                   },
                   {
+                      "id":  "PAUCHII_OBEREG",
+                      "name":  "Паучий оберег",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  5,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Amulet",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Даёт немного сопротивления яду и сокращает длительность слабых ядов.",
+                      "version":  1,
+                      "iconId":  "pauchii_obereg",
+                      "itemLevelMin":  5,
+                      "itemLevelMax":  5,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_5_8",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "PECHAT_KHRANITELIA_RASKOLA",
+                      "name":  "Печать Хранителя раскола",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  32,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Ring1",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальное кольцо с защитой от отражённого урона.",
+                      "version":  1,
+                      "iconId":  "pechat_khranitelia_raskola",
+                      "itemLevelMin":  32,
+                      "itemLevelMax":  32,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_29_32",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "PECHAT_MAGISTRA",
                       "name":  "Печать магистра",
                       "type":  "Material",
@@ -1180,6 +2115,55 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "pechat_marshala"
+                  },
+                  {
+                      "id":  "PECHAT_PREDVESTNIKA",
+                      "name":  "Печать Предвестника",
+                      "type":  "Equipment",
+                      "rarity":  "Legendary",
+                      "requiredLevel":  40,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Ring1",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Очень редкий мировой трофей 40 уровня; сильный универсальный аксессуар, но не обязательный для прохождения рейда.",
+                      "version":  1,
+                      "iconId":  "pechat_predvestnika",
+                      "itemLevelMin":  40,
+                      "itemLevelMax":  40,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_37_40",
+                      "extraAffixBudgetCap":  0.08,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "PECHAT_UMBRY",
+                      "name":  "Печать Умбры",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  24,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "pechat_umbry"
                   },
                   {
                       "id":  "PECHAT_VRAT",
@@ -1239,6 +2223,39 @@
                       "iconId":  "pepelnoe_miaso"
                   },
                   {
+                      "id":  "PEPELNYE_NAPLECHNIKI_DOZORNOGO",
+                      "name":  "Пепельные наплечники дозорного",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  21,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Shoulders",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: ловкость и устойчивость к огню.",
+                      "version":  1,
+                      "armorCategory":  "LEATHER",
+                      "armorFlat":  56.8,
+                      "iconId":  "pepelnye_naplechniki_dozornogo",
+                      "itemLevelMin":  21,
+                      "itemLevelMax":  21,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ARCHER_ARMOR",
+                      "affixCountProfileId":  "LEVEL_21_24",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "PEPELNYI_REAGENT",
                       "name":  "Пепельный реагент",
                       "type":  "Material",
@@ -1256,6 +2273,38 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "pepelnyi_reagent"
+                  },
+                  {
+                      "id":  "PERCHATKI_TRAVNIKA",
+                      "name":  "Перчатки травника",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  6,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Hands",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальные перчатки; небольшой бонус к шансу получить дополнительную траву.",
+                      "version":  1,
+                      "armorCategory":  "LEATHER",
+                      "armorFlat":  14.4,
+                      "iconId":  "perchatki_travnika",
+                      "itemLevelMin":  6,
+                      "itemLevelMax":  6,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_5_8_G0",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "PERO_ILI_KOGOT",
@@ -1315,6 +2364,97 @@
                       "iconId":  "peshchernaia_sliz"
                   },
                   {
+                      "id":  "PLASHCH_BRODIACHEGO_NAIOMNIKA",
+                      "name":  "Плащ бродячего наёмника",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  12,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Cloak",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальный плащ с выносливостью и небольшим уклонением.",
+                      "version":  1,
+                      "iconId":  "plashch_brodiachego_naiomnika",
+                      "itemLevelMin":  12,
+                      "itemLevelMax":  12,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_9_12",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "PLASHCH_KRYLATOGO_OKHOTNIKA",
+                      "name":  "Плащ крылатого охотника",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  35,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Cloak",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Лучник: ловкость, скорость и уменьшение штрафов при смене цели.",
+                      "version":  1,
+                      "iconId":  "plashch_krylatogo_okhotnika",
+                      "itemLevelMin":  35,
+                      "itemLevelMax":  35,
+                      "guaranteedAffixStatIds":  [
+                                                     "AGILITY",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_33_36",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "PLASHCH_LESNOI_TROPY",
+                      "name":  "Плащ лесной тропы",
+                      "type":  "Equipment",
+                      "rarity":  "Uncommon",
+                      "requiredLevel":  4,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Cloak",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальный плащ с выносливостью; полезная ранняя награда за охоту на волков.",
+                      "version":  1,
+                      "iconId":  "plashch_lesnoi_tropy",
+                      "itemLevelMin":  4,
+                      "itemLevelMax":  4,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_1_4",
+                      "extraAffixBudgetCap":  0,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "PLOTNAIA_TKAN",
                       "name":  "Плотная ткань",
                       "type":  "Material",
@@ -1370,6 +2510,76 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "porchenyi_khitin"
+                  },
+                  {
+                      "id":  "POSOKH_LESNOI_VEDMY",
+                      "name":  "Посох Лесной ведьмы",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  20,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для мага: интеллект и усиление периодического урона.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "STAFF",
+                      "iconId":  "posokh_lesnoi_vedmy",
+                      "weaponDamageMin":  68,
+                      "weaponDamageMax":  93,
+                      "itemLevelMin":  20,
+                      "itemLevelMax":  20,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_WEAPON",
+                      "affixCountProfileId":  "LEVEL_17_20_G2",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "POSOKH_SORVANNOGO_ZAKLIATIIA",
+                      "name":  "Посох сорванного заклятия",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  31,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для мага: интеллект и мана; после прерывания заклинания или разрушения щита усиливается следующее заклинание.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  3.2,
+                      "weaponCategory":  "STAFF",
+                      "iconId":  "posokh_sorvannogo_zakliatiia",
+                      "weaponDamageMin":  105,
+                      "weaponDamageMax":  144,
+                      "itemLevelMin":  31,
+                      "itemLevelMax":  31,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_WEAPON",
+                      "affixCountProfileId":  "LEVEL_29_32",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "PROKLIATYI_OBEREG",
@@ -1619,6 +2829,70 @@
                       "iconId":  "runnaia_pyl"
                   },
                   {
+                      "id":  "RUNNYI_FONAR_SHTREKA",
+                      "name":  "Рунный фонарь штрека",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  15,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для мага: интеллект; заклинания сильнее бьют цели под отрицательным эффектом.",
+                      "version":  1,
+                      "iconId":  "runnyi_fonar_shtreka",
+                      "offHandCategory":  "FOCUS",
+                      "itemLevelMin":  15,
+                      "itemLevelMax":  15,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_OFFHAND",
+                      "affixCountProfileId":  "LEVEL_13_16",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
+                      "id":  "RUNNYI_NAGRUDNIK_PEREVALA",
+                      "name":  "Рунный нагрудник перевала",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  35,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Chest",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: броня, выносливость и снижение первого тяжёлого удара боя.",
+                      "version":  1,
+                      "armorCategory":  "HEAVY",
+                      "armorFlat":  246.6,
+                      "iconId":  "runnyi_nagrudnik_perevala",
+                      "itemLevelMin":  35,
+                      "itemLevelMax":  35,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_33_36_G0",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "RVANAIA_SBRUIA",
                       "name":  "Рваная сбруя",
                       "type":  "Material",
@@ -1657,6 +2931,41 @@
                       "iconId":  "rvanaia_sherst"
                   },
                   {
+                      "id":  "SEKIRA_CHASHCHOBY",
+                      "name":  "Секира Чащобы",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  11,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "MainHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Для воина: сила; иногда следующая обычная атака наносит усиленный удар.",
+                      "version":  1,
+                      "weaponBaseAttackIntervalSeconds":  2.4,
+                      "weaponCategory":  "AXE",
+                      "iconId":  "sekira_chashchoby",
+                      "weaponDamageMin":  30,
+                      "weaponDamageMax":  41,
+                      "itemLevelMin":  11,
+                      "itemLevelMax":  11,
+                      "guaranteedAffixStatIds":  [
+                                                     "STRENGTH",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "WARRIOR_WEAPON",
+                      "affixCountProfileId":  "LEVEL_9_12",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "SERDTSEVINA_LESNOI_PORCHI",
                       "name":  "Сердцевина лесной порчи",
                       "type":  "Material",
@@ -1674,6 +2983,76 @@
                       "description":  "Нужна для зелий очищения и нескольких предметов 10–15 уровня.",
                       "version":  1,
                       "iconId":  "serdtsevina_lesnoi_porchi"
+                  },
+                  {
+                      "id":  "SERDTSE_BOLOTNOGO_SVETA",
+                      "name":  "Сердце болотного света",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  26,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Реагент для антипроклятий, защитных зелий и световых предметов паладина.",
+                      "version":  1,
+                      "iconId":  "serdtse_bolotnogo_sveta"
+                  },
+                  {
+                      "id":  "SERDTSE_LESNOI_PORCHI",
+                      "name":  "Сердце лесной порчи",
+                      "type":  "Material",
+                      "rarity":  "Epic",
+                      "requiredLevel":  20,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Ключевой реагент для нескольких рецептов 20 уровня и рейдового ремесла.",
+                      "version":  1,
+                      "iconId":  "serdtse_lesnoi_porchi"
+                  },
+                  {
+                      "id":  "SFERA_CHIORNOGO_PLAMENI",
+                      "name":  "Сфера чёрного пламени",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  34,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг: усиление огненного урона и критических ударов; при критическом заклинании накапливает краткий бонус.",
+                      "version":  1,
+                      "iconId":  "sfera_chiornogo_plameni",
+                      "offHandCategory":  "FOCUS",
+                      "itemLevelMin":  34,
+                      "itemLevelMax":  34,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_OFFHAND",
+                      "affixCountProfileId":  "LEVEL_33_36",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "SGUSTOK_PORCHI",
@@ -1714,6 +3093,41 @@
                       "iconId":  "sgustok_soka"
                   },
                   {
+                      "id":  "SHCHIT_CHASOVOGO_UMBRY",
+                      "name":  "Щит Часового Умбры",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  29,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Воин и паладин: высокая броня, блок и небольшой щит после успешного блока.",
+                      "version":  1,
+                      "armorFlat":  219.2,
+                      "iconId":  "shchit_chasovogo_umbry",
+                      "offHandCategory":  "SHIELD",
+                      "blockChancePercent":  5.8,
+                      "blockValueMin":  56,
+                      "blockValueMax":  85,
+                      "itemLevelMin":  29,
+                      "itemLevelMax":  29,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "WORLD_GENERAL",
+                      "affixCountProfileId":  "LEVEL_29_32_G0",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "SHERST",
                       "name":  "Шерсть",
                       "type":  "Material",
@@ -1731,6 +3145,25 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "sherst"
+                  },
+                  {
+                      "id":  "SHKURA_MATIOROGO_VOZHAKA",
+                      "name":  "Шкура Матёрого Вожака",
+                      "type":  "Material",
+                      "rarity":  "Rare",
+                      "requiredLevel":  5,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Трофей для ранних кожевенных рецептов и контрактов.",
+                      "version":  1,
+                      "iconId":  "shkura_matiorogo_vozhaka"
                   },
                   {
                       "id":  "SLED_PORCHI",
@@ -1845,6 +3278,36 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "sluchainyi_reagent"
+                  },
+                  {
+                      "id":  "SOSUD_PLENIONNOI_DUSHI",
+                      "name":  "Сосуд пленённой души",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  38,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Accessory",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальный аксессуар: победа над сильным противником временно восстанавливает часть основного ресурса.",
+                      "version":  1,
+                      "iconId":  "sosud_plenionnoi_dushi",
+                      "itemLevelMin":  38,
+                      "itemLevelMax":  38,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_37_40",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "SPIDER_SILK",
@@ -2035,6 +3498,38 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "tleiushchaia_essentsiia"
+                  },
+                  {
+                      "id":  "TLEIUSHCHII_FOKUS",
+                      "name":  "Тлеющий фокус",
+                      "type":  "Equipment",
+                      "rarity":  "Rare",
+                      "requiredLevel":  22,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "OffHand",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Маг: интеллект и шанс вернуть часть маны после критического заклинания.",
+                      "version":  1,
+                      "iconId":  "tleiushchii_fokus",
+                      "offHandCategory":  "FOCUS",
+                      "itemLevelMin":  22,
+                      "itemLevelMax":  22,
+                      "guaranteedAffixStatIds":  [
+                                                     "INTELLECT",
+                                                     "STAMINA"
+                                                 ],
+                      "randomAffixPoolId":  "MAGE_OFFHAND",
+                      "affixCountProfileId":  "LEVEL_21_24",
+                      "extraAffixBudgetCap":  0.04,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
                   },
                   {
                       "id":  "TONKOE_ZHALO",
@@ -2284,6 +3779,36 @@
                       "iconId":  "znak_bastiona"
                   },
                   {
+                      "id":  "ZNAK_GLASHATAIA",
+                      "name":  "Знак Глашатая",
+                      "type":  "Equipment",
+                      "rarity":  "Epic",
+                      "requiredLevel":  23,
+                      "stackable":  false,
+                      "maxStack":  1,
+                      "slot":  "Amulet",
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Универсальный амулет; после успешного прерывания вражеского заклинания на несколько секунд усиливает владельца.",
+                      "version":  1,
+                      "iconId":  "znak_glashataia",
+                      "itemLevelMin":  23,
+                      "itemLevelMax":  23,
+                      "guaranteedAffixStatIds":  [
+
+                                                 ],
+                      "randomAffixPoolId":  "ACCESSORY_GENERAL",
+                      "affixCountProfileId":  "ACCESSORY_LEVEL_21_24",
+                      "extraAffixBudgetCap":  0.06,
+                      "prefixSuffixPolicyId":  "WORLD_V1",
+                      "tradePolicyId":  "ORDINARY_TRADEABLE",
+                      "generationVersion":  1
+                  },
+                  {
                       "id":  "ZNAK_ZATMENIIA",
                       "name":  "Знак Затмения",
                       "type":  "Material",
@@ -2301,6 +3826,25 @@
                       "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
                       "version":  1,
                       "iconId":  "znak_zatmeniia"
+                  },
+                  {
+                      "id":  "OBSIDIAN",
+                      "name":  "Обсидиан",
+                      "type":  "Material",
+                      "rarity":  "Common",
+                      "requiredLevel":  1,
+                      "stackable":  true,
+                      "maxStack":  99,
+                      "slot":  null,
+                      "stats":  {
+                                    "strength":  0,
+                                    "agility":  0,
+                                    "intellect":  0,
+                                    "stamina":  0
+                                },
+                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "version":  1,
+                      "iconId":  "obsidian"
                   }
               ]
 }

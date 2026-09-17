@@ -13,6 +13,10 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
                            "weight":  1.0
                        },
@@ -31,6 +35,10 @@
                        {
                            "monsterId":  "BLIGHTED_GROVE_SOBIRATEL_PORCHI_L17",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
@@ -55,6 +63,10 @@
                        {
                            "monsterId":  "BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
+                           "weight":  0.28
                        }
                    ]
 }

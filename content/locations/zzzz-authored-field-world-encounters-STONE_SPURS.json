@@ -13,6 +13,10 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "STONE_SPURS_RUDNYI_ZHUK_L15",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "STONE_SPURS_OBEZUMEVSHII_SHAKHTIOR_L14",
                            "weight":  1.0
                        },
@@ -27,6 +31,10 @@
                        {
                            "monsterId":  "STONE_SPURS_KAMNEGLOT_L15",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "STONE_SPURS_KHOZIAIN_ZHIL_L16",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "STONE_SPURS_MOLODOI_KAMNEGLOT_L16",

@@ -24,11 +24,14 @@ public sealed class AuthoredWorldContentTests
     ];
 
     [Fact]
-    public async Task AuthoredFieldLocationsHaveOnlyResolvableNonRaidEncounterLoot()
+    public async Task AuthoredFieldLocationsHaveResolvableEncounterLoot()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             RepositoryContentPath());
         GameContentIndexes indexes = GameContentIndexes.For(package);
+        HashSet<string> authoredEncounterIds = [];
+        int authoredEliteCount = 0;
+        bool authoredEquipmentLootExists = false;
 
         foreach (string locationId in ExpectedFieldLocations)
         {
@@ -37,27 +40,67 @@ public sealed class AuthoredWorldContentTests
 
             foreach (var encounter in location.Encounters ?? [])
             {
+                authoredEncounterIds.Add(encounter.MonsterId);
                 Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
-                Assert.Equal(MonsterRank.Normal, monster!.Rank);
+                Assert.True(monster!.Rank is MonsterRank.Normal or MonsterRank.Elite);
+                Assert.Empty(monster.AbilityIds);
+                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                if (monster.Rank == MonsterRank.Elite) authoredEliteCount++;
                 Assert.False(string.IsNullOrWhiteSpace(monster.LootTableId));
                 Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
 
                 foreach (var entry in lootTable!.Entries)
                 {
                     Assert.True(indexes.ItemsById.ContainsKey(entry.ItemId));
+                    if (indexes.ItemsById[entry.ItemId].Type == Elyndor.Core.Items.ItemType.Equipment)
+                        authoredEquipmentLootExists = true;
                 }
             }
         }
 
-        Assert.DoesNotContain("BLACK_BASTION", indexes.LocationsById.Keys);
-        Assert.DoesNotContain("HEART_OF_BLIGHTED_GROVE", indexes.LocationsById.Keys);
-        foreach (string locationId in ExpectedFieldLocations)
+        Assert.Equal(169, authoredEncounterIds.Count);
+        Assert.Equal(35, authoredEliteCount);
+        Assert.True(authoredEquipmentLootExists);
+
+        Assert.Equal("DEADLY", indexes.LocationsById["OBSIDIAN_EDGE"].DangerLevel);
+    }
+
+    [Fact]
+    public async Task AuthoredRaidsAreStaticContentWithEmptyMobBehaviorAndResolvableLoot()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+        string[] raidIds = ["HEART_OF_BLIGHTED_GROVE", "SHATTERED_ORDER_CITADEL", "BLACK_BASTION"];
+        string[] dungeonIds = raidIds.Select(id => $"{id}_RAID").ToArray();
+
+        Assert.Equal(3, package.Dungeons!.Count(dungeon => dungeonIds.Contains(dungeon.Id)));
+        foreach (string raidId in raidIds)
         {
-            var location = indexes.LocationsById[locationId];
-            Assert.DoesNotContain("BLACK_BASTION", location.Transitions);
-            Assert.DoesNotContain("HEART_OF_BLIGHTED_GROVE", location.Transitions);
-            Assert.DoesNotContain("SHATTERED_ORDER_CITADEL", location.Transitions);
+            Assert.True(indexes.LocationsById.TryGetValue(raidId, out var location));
+            Assert.False(location!.AllowAfk);
+            Assert.NotNull(location.ArtId);
+
+            var dungeon = package.Dungeons!.Single(definition => definition.Id == $"{raidId}_RAID");
+            Assert.Equal(raidId, dungeon.EntryLocationId);
+            Assert.NotEmpty(dungeon.Encounters);
+
+            foreach (var encounter in dungeon.Encounters)
+            {
+                Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
+                Assert.Empty(monster!.AbilityIds);
+                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
+                Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
+                Assert.NotEmpty(lootTable!.Entries);
+                Assert.All(lootTable.Entries, entry => Assert.True(indexes.ItemsById.ContainsKey(entry.ItemId)));
+            }
         }
+
+        Assert.Contains("BLACK_BASTION", indexes.LocationsById["OBSIDIAN_EDGE"].Transitions);
+        Assert.Contains("HEART_OF_BLIGHTED_GROVE", indexes.LocationsById["BLIGHTED_GROVE"].Transitions);
+        Assert.Contains("SHATTERED_ORDER_CITADEL", indexes.LocationsById["SHATTERED_LANDS"].Transitions);
+        Assert.Contains(package.MonsterAiProfiles!, profile =>
+            profile.Id == "AUTHORED_EMPTY_AI" && profile.PriorityAbilityIds.Count == 0);
     }
 
     private static string RepositoryContentPath()

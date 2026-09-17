@@ -3,7 +3,7 @@ namespace Elyndor.Core.Content;
 public static partial class GameContentPackageValidator
 {
     private static readonly HashSet<string> AllowedDangerLevels =
-        ["SAFE", "ADVENTURE", "DANGEROUS"];
+        ["SAFE", "ADVENTURE", "DANGEROUS", "DEADLY"];
 
     public static IReadOnlyList<ContentValidationError> Validate(GameContentPackage package) =>
         ContentValidationPipeline.Default.Validate(package);

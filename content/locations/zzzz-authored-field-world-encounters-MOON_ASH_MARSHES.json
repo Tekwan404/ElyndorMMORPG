@@ -33,6 +33,14 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
+                           "weight":  0.28
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_MATER_TOPEI_L25",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "MOON_ASH_MARSHES_BOLOTNYI_POZHIRATEL_L24",
                            "weight":  1.0
                        },
@@ -43,6 +51,10 @@
                        {
                            "monsterId":  "MOON_ASH_MARSHES_VEDMAK_TOPEI_L25",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",

@@ -19,21 +19,19 @@ content package validator/runtime pipeline remains the source of truth.
 
 ## Current approved implementation slice
 
-The user narrowed the immediate implementation to:
+The latest user instruction scopes the immediate implementation to:
 
 ```text
-13 field locations -> authored monsters encountered there -> their direct loot tables
+field locations -> authored monsters -> filled loot tables
+three level 20/30/40 raid locations -> raid monsters -> filled loot tables
 ```
 
-Do not add raid locations or raid encounter/loot content. Preserve existing dungeons,
-bosses, and unrelated content. The current ordinary location-encounter validator
-rejects Elite entries, so this slice uses authored Normal mobs only; Elite spawn
-rules need a separate supported encounter contract. Import the supported direct
-Material/Consumable loot entries. Omit item entries with unsupported equipment
-categories/slots, invalid procedural itemization, or the unsupported `Recipe` type;
-do not disguise them as another item type. Source `randomEquipmentProfile`,
-profession-zone rolls, and set-effect descriptions are not current runtime contracts;
-report these as remaining work instead of silently treating them as implemented.
+Do not add new combat or raid-specific gameplay logic. Preserve the existing dungeon
+and encounter models. Raid mobs use empty ability and AI-priority lists. Raid loot
+uses supported material drops because the source's weighted-exclusive set-drop
+groups cannot be represented by the current flat loot model without changing runtime
+logic. Unsupported item slots/procedural profiles, recipe items, profession-zone
+rolls, and set effects remain out of scope and must be reported as remaining work.
 
 The previously proposed inventory reset is a separate operator/data task; it is not
 part of this content slice and no production database mutation is authorized here.

@@ -13,12 +13,20 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "ASHEN_BORDER_PALACH_GRANITSY_L22",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "ASHEN_BORDER_KULTIST_ZATMENIIA_L19",
                            "weight":  1.0
                        },
                        {
                            "monsterId":  "ASHEN_BORDER_ZAKLINATEL_TLEIUSHCHIKH_RUN_L20",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ASHEN_BORDER_GLASHATAI_ZATMENIIA_L22",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",

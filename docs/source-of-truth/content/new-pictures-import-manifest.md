@@ -30,13 +30,16 @@ The JSON source bundles carry extra wrapper/editorial fields (`bundleType`,
 are not copied into runtime fragments unless an existing package contract explicitly
 defines the equivalent.
 
-The implemented slice selects the 13 non-instance field locations from
-`WHISPERING_FOREST` through `OBSIDIAN_EDGE`, their 134 authored Normal-rank
-encounters, 134 direct loot tables, and 121 supported Material/Consumable item
-definitions. Existing instance locations and `STARTER_TOWN` are preserved. The 35
-authored Elite roster entries are not placed into location encounter pools because
-the current encounter validator only permits Normal entries or a sole Boss entry;
-elite encounter/spawn rules need a separate supported content contract.
+The current slice imports 13 authored field locations, all 169 authored Normal/Elite
+field encounters and their loot tables, plus three static raid entries at levels
+20/30/40. The raids reuse the existing `DungeonDefinition` content model and have
+32 authored non-Normal encounter records, empty ability/AI-priority lists, and
+filled material loot tables. Their entry locations are safe staging areas; combat,
+boss mechanics, and raid-specific runtime rules are not added here. The existing
+test dungeon and starter location are preserved. Field loot includes supported
+equipment/material items; raid set-drop groups are not imported as item templates
+because their weighted-exclusive selection semantics are not represented by the
+current flat `LootTableDefinition` runtime contract.
 
 ## Existing runtime contracts inspected
 
@@ -109,17 +112,18 @@ elite encounter/spawn rules need a separate supported content contract.
   mob bundle. The import replaces those encounter aliases with the authored roster;
   existing legacy monster definitions are retained if another system references
   them.
-- The JSON location bundle also includes instance entries. The companion design
-  explicitly marks level 20/30/40 content as raids. Exclude those raid instances and
-  the level-40 `BLACK_BASTION` portal transition; preserve existing dungeon/instance
-  definitions and do not create new raid definitions, loot, or boss encounters.
+- The JSON location bundle includes level 20/30/40 raid entries. These are imported
+  as static `DungeonDefinition` content with empty AI/ability behavior; no raid
+  mechanics are added. The existing test dungeon remains untouched.
 - All 169 selected field-mob loot tables include `randomEquipmentProfile`, while the
   current `LootTableDefinition` supports direct independent item entries only. This
   slice imports and validates the direct entries; randomized bonus-equipment rolls
   remain unimplemented and must not be described as working.
-- The selected field rosters contain 134 normal and 35 elite mobs; this slice imports
-  the 134 normal encounters only. The current location encounter validator rejects
-  Elite entries in ordinary encounter pools. No boss rank is included.
+- The imported field rosters contain 134 Normal and 35 Elite encounters. The three
+  raids add 32 non-Normal monster definitions with empty abilities and AI priorities.
+- Current raid source set drops use weighted-exclusive groups, unsupported by the
+  flat runtime loot table. Raid loot currently uses authored-region materials; exact
+  set-drop choices remain unimplemented rather than being simulated incorrectly.
 - Of the direct-loot item definitions referenced by the selected tables, 26
   Equipment definitions currently fail runtime category/slot or procedural
   itemization validation, and 3 `Recipe` definitions have no corresponding

@@ -71,6 +71,9 @@ public static class EquipmentCategoryIds
 {
     public const string OneHandSword = "ONE_HAND_SWORD";
     public const string TwoHandSword = "TWO_HAND_SWORD";
+    public const string TwoHandAxe = "TWO_HAND_AXE";
+    public const string TwoHandMace = "TWO_HAND_MACE";
+    public const string Polearm = "POLEARM";
     public const string Axe = "AXE";
     public const string Mace = "MACE";
     public const string Bow = "BOW";
@@ -95,6 +98,9 @@ public static class EquipmentCategoryIds
     {
         OneHandSword,
         TwoHandSword,
+        TwoHandAxe,
+        TwoHandMace,
+        Polearm,
         Axe,
         Mace,
         Bow,
@@ -127,7 +133,7 @@ public static class EquipmentCategoryIds
         category is not null && OffHandCategories.Contains(category);
 
     public static bool UsesBothHands(string? weaponCategory) =>
-        weaponCategory is TwoHandSword or Bow or Staff;
+        weaponCategory is TwoHandSword or TwoHandAxe or TwoHandMace or Polearm or Bow or Staff;
 
     public static bool IsOneHandedWeapon(string? weaponCategory) =>
         IsWeapon(weaponCategory) && !UsesBothHands(weaponCategory);

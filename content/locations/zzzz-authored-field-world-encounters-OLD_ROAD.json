@@ -21,6 +21,10 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "OLD_ROAD_KAPITAN_L13",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "OLD_ROAD_GOBLIN_MARODIOR_L11",
                            "weight":  1.0
                        },
@@ -31,6 +35,10 @@
                        {
                            "monsterId":  "OLD_ROAD_DOROZHNYI_PADALSHCHIK_L12",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "OLD_ROAD_RAZBOINIK_LUCHNIK_L13",

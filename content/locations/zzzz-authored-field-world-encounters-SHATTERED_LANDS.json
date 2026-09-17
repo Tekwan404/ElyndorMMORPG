@@ -45,8 +45,16 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "SHATTERED_LANDS_KHRANITEL_RASKOLA_L31",
+                           "weight":  0.18
+                       },
+                       {
                            "monsterId":  "SHATTERED_LANDS_OSKOLOCHNYI_STRAZH_L30",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "SHATTERED_LANDS_CHARODEI_RASKOLA_L31",
@@ -55,6 +63,10 @@
                        {
                            "monsterId":  "SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+                           "weight":  0.18
                        },
                        {
                            "monsterId":  "SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",

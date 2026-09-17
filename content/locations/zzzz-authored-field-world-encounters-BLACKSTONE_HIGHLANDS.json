@@ -29,8 +29,16 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_RUNNYI_GOLEM_L34",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "BLACKSTONE_HIGHLANDS_KAMENNOE_CHUDOVISHCHE_L34",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "BLACKSTONE_HIGHLANDS_STRAZH_CHIORNOGO_PEREVALA_L34",
+                           "weight":  0.28
                        },
                        {
                            "monsterId":  "BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",

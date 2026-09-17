@@ -13,6 +13,10 @@
                            "weight":  1.0
                        },
                        {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_PALACH_ZATMENIIA_L28",
+                           "weight":  0.28
+                       },
+                       {
                            "monsterId":  "ECLIPSE_OUTSKIRTS_MOGILNYI_AKOLIT_L26",
                            "weight":  1.0
                        },
@@ -31,6 +35,10 @@
                        {
                            "monsterId":  "ECLIPSE_OUTSKIRTS_RUNNYI_STRAZH_ZATMENIIA_L28",
                            "weight":  1.0
+                       },
+                       {
+                           "monsterId":  "ECLIPSE_OUTSKIRTS_CHASOVOI_UMBRY_L29",
+                           "weight":  0.28
                        }
                    ]
 }
