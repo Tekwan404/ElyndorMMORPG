@@ -42,7 +42,10 @@ public sealed class ThreatTable
             throw new ArgumentException("Threat actor is required.", nameof(actorId));
         ValidatePercent(percent);
 
-        decimal updated = GetThreat(actorId) * (1 - percent / 100m);
+        if (!_threatByActor.TryGetValue(actorId, out decimal currentThreat))
+            return 0;
+
+        decimal updated = currentThreat * (1 - percent / 100m);
         _threatByActor[actorId] = updated;
         return updated;
     }
