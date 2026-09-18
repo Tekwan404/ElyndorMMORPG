@@ -31,12 +31,16 @@ public static partial class GameContentPackageValidator
                 }
 
                 bool periodic = effect.Kind is EffectKind.DamageOverTime or EffectKind.HealingOverTime;
+                bool invalidReflection = effect.Kind == EffectKind.DamageReflection
+                    && (effect.Magnitude <= 0
+                        || effect.ReflectedDamageCap is { } cap && cap <= 0);
                 if (effect.Duration <= TimeSpan.Zero
                     || effect.MaxStacks <= 0
                     || effect.Magnitude < 0
                     || effect.Version <= 0
                     || periodic != effect.TickInterval.HasValue
-                    || effect.TickInterval <= TimeSpan.Zero)
+                    || effect.TickInterval <= TimeSpan.Zero
+                    || invalidReflection)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_EFFECT_DEFINITION", path,
