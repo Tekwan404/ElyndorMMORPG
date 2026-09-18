@@ -66,13 +66,16 @@ public sealed class PveLifestealTests
             new AbilityIntent("soul-drain", ability.Id, target.ActorId),
             Now,
             new SequenceGameRandom(0.5m));
+
+        Assert.True(started.Succeeded);
+        Assert.Equal(100, caster.CurrentHp);
+        Assert.Equal(1_000, target.CurrentHp);
+
         AbilityExecutionResult completed = AbilityEngine.CompleteCast(
             runtime,
             Now.AddSeconds(2),
             new SequenceGameRandom(0.5m));
 
-        Assert.True(started.Succeeded);
-        Assert.Equal(100, caster.CurrentHp);
         Assert.True(completed.Succeeded);
         Assert.Equal(900, target.CurrentHp);
         Assert.Equal(170, caster.CurrentHp);
