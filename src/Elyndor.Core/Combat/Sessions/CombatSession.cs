@@ -815,7 +815,7 @@ public sealed partial class CombatSession
                     now),
                 now),
             now);
-        Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability, command.TargetActorId);
+        Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability, command.TargetActorId, now);
         if (targetActorIds.Length == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         Guid primaryTargetActorId = targetActorIds[0];
@@ -1018,7 +1018,8 @@ public sealed partial class CombatSession
 
     private Guid[] ResolvePlayerAbilityTargetIds(
         AbilityDefinition ability,
-        Guid requestedTargetActorId)
+        Guid requestedTargetActorId,
+        DateTimeOffset now)
     {
         if (ability.TargetType == AbilityTargetType.Self)
             return [_player.Actor.ActorId];
@@ -1049,6 +1050,7 @@ public sealed partial class CombatSession
                     targetActorId,
                     out CombatParticipantDefinition? selected)
                 && !selected.Actor.IsDead
+                && selected.Actor.IsTargetable(now)
                     ? [targetActorId]
                     : [];
         }
@@ -1086,7 +1088,7 @@ public sealed partial class CombatSession
             return [];
 
         return _enemies
-            .Where(enemy => !enemy.Actor.IsDead)
+            .Where(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(now))
             .Take(targetLimit)
             .Select(enemy => enemy.Actor.ActorId)
             .ToArray();
@@ -1108,7 +1110,8 @@ public sealed partial class CombatSession
         if (!_enemiesById.TryGetValue(
                 command.TargetActorId,
                 out CombatParticipantDefinition? target)
-            || target.Actor.IsDead)
+            || target.Actor.IsDead
+            || !target.Actor.IsTargetable(now))
         {
             return Result(false, CombatErrorCodes.InvalidTarget, before);
         }
@@ -1263,8 +1266,13 @@ public sealed partial class CombatSession
             {
                 CombatParticipantDefinition? companionTarget = _enemiesById
                     .GetValueOrDefault(_selectedTargetActorId);
-                if (companionTarget is null || companionTarget.Actor.IsDead)
-                    companionTarget = _enemies.FirstOrDefault(enemy => !enemy.Actor.IsDead);
+                if (companionTarget is null
+                    || companionTarget.Actor.IsDead
+                    || !companionTarget.Actor.IsTargetable(due))
+                {
+                    companionTarget = _enemies.FirstOrDefault(enemy =>
+                        !enemy.Actor.IsDead && enemy.Actor.IsTargetable(due));
+                }
 
                 if (companionTarget is not null)
                     ResolveAutoAttack(_companion, companionTarget, due);
@@ -1312,6 +1320,16 @@ public sealed partial class CombatSession
         DateTimeOffset? nextAtUtc = isOffHand
             ? _nextPlayerOffHandAutoAttackAtUtc
             : _nextPlayerMainHandAutoAttackAtUtc;
+        if (!_enemy.Actor.IsTargetable(due)
+            && _enemy.Actor.UntargetableUntilUtc is { } targetableAtUtc)
+        {
+            nextAtUtc = targetableAtUtc;
+            if (isOffHand)
+                _nextPlayerOffHandAutoAttackAtUtc = nextAtUtc;
+            else
+                _nextPlayerMainHandAutoAttackAtUtc = nextAtUtc;
+            return;
+        }
         if (_playerRuntime.ActiveCast is null)
         {
             ResolveAutoAttack(_player, _enemy, due, profile);

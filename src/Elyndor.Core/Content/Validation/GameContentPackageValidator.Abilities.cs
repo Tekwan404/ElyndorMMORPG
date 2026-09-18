@@ -97,6 +97,10 @@ public static partial class GameContentPackageValidator
                             && (action.Amount != 0
                                 || action.Duration is null
                                 || action.Duration <= TimeSpan.Zero)
+                        || action.Type == AbilityActionType.TemporaryUntargetable
+                            && (action.Amount != 0
+                                || action.Duration is null
+                                || action.Duration <= TimeSpan.Zero)
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero

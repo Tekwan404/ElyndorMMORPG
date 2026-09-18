@@ -172,6 +172,12 @@ public static class AbilityEngine
         {
             return AbilityErrorCode.InvalidTarget;
         }
+        if (targetIds.Any(targetId =>
+                targetId != runtime.Actor.ActorId
+                && !runtime.Actors[targetId].IsTargetable(now)))
+        {
+            return AbilityErrorCode.InvalidTarget;
+        }
 
         if (ability.TargetType == AbilityTargetType.Self
             && (targetIds.Length != 1 || targetIds[0] != runtime.Actor.ActorId))
@@ -443,6 +449,17 @@ public static class AbilityEngine
                             SourceActorId: runtime.Actor.ActorId,
                             TargetActorId: target.ActorId));
                         break;
+                    case AbilityActionType.TemporaryUntargetable:
+                        target.SetTemporaryUntargetable(now, action.Duration!.Value);
+                        events.Add(new CombatEvent(
+                            CombatEventType.TargetabilityChanged,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            (decimal)action.Duration.Value.TotalSeconds,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
                 }
             }
         }
@@ -600,6 +617,15 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Threat actions contain values outside their valid range.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.TemporaryUntargetable
+                && (action.Amount != 0
+                    || action.Duration is null
+                    || action.Duration <= TimeSpan.Zero)) == true)
+        {
+            throw new InvalidOperationException(
+                "Temporary untargetable actions require a positive duration and zero amount.");
         }
     }
 
