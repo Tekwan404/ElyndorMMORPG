@@ -52,6 +52,20 @@ public static class MonsterAbilityScheduler
         CombatActorState monster,
         DateTimeOffset combatStartedAtUtc,
         DateTimeOffset now,
+        MonsterAbilitySchedulerState state) =>
+        SelectEligibleRules(
+                profile,
+                monster,
+                combatStartedAtUtc,
+                now,
+                state)
+            .FirstOrDefault();
+
+    public static IReadOnlyList<MonsterAbilityRule> SelectEligibleRules(
+        MonsterAiProfile profile,
+        CombatActorState monster,
+        DateTimeOffset combatStartedAtUtc,
+        DateTimeOffset now,
         MonsterAbilitySchedulerState state)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -80,7 +94,7 @@ public static class MonsterAbilityScheduler
             .OrderByDescending(item => item.rule.Priority)
             .ThenBy(item => item.index)
             .Select(item => item.rule)
-            .FirstOrDefault();
+            .ToArray();
     }
 
     private static bool IsEligible(
