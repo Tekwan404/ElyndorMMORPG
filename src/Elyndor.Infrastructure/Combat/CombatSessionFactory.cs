@@ -432,7 +432,7 @@ public sealed class CombatSessionFactory(
             initiallyAttached);
     }
 
-    private static IReadOnlyDictionary<string, int> BuildEquippedSetPieceCounts(
+    private static Dictionary<string, int> BuildEquippedSetPieceCounts(
         InventorySnapshot inventory) =>
         inventory.Equipped.Values
             .DistinctBy(item => item.Id)
