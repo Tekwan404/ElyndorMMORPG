@@ -444,7 +444,9 @@ public sealed class ProfessionCorpseService(
         IEnumerable<CombatActorSnapshot> enemies = snapshot.Enemies ?? [snapshot.Enemy];
         foreach (CombatActorSnapshot enemy in enemies)
         {
-            if (enemy.Hp > 0 || !sources.ContainsKey(enemy.DefinitionId))
+            if (!enemy.RewardEligible
+                || enemy.Hp > 0
+                || !sources.ContainsKey(enemy.DefinitionId))
                 continue;
             await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
                 INSERT INTO game.character_skinnable_corpses

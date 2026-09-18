@@ -63,6 +63,14 @@ public sealed partial class CombatSession
                         $"Encounter '{definition.Id}' has no runtime profile for summon '{summon.MonsterId}'.",
                         nameof(enemyProfiles));
                 }
+                if (action.Type == EncounterActionType.Summon
+                    && action.Summon?.AuraEffectId is { } auraEffectId
+                    && !effects.ContainsKey(auraEffectId))
+                {
+                    throw new ArgumentException(
+                        $"Encounter '{definition.Id}' has no runtime aura effect '{auraEffectId}'.",
+                        nameof(effects));
+                }
                 if (action.Type == EncounterActionType.ApplyEffect
                     && action.EffectId is { } effectId
                     && !effects.ContainsKey(effectId))
@@ -179,7 +187,13 @@ public sealed partial class CombatSession
         {
             eventType = EncounterTriggerType.AddDeath;
             eventDefinitionId = deadEnemy.DefinitionId;
-            _genericEncounterSummons?.TryRemove(combatEvent.ActorId, out _);
+            if (_genericEncounterSummons?.TryRemove(
+                    combatEvent.ActorId,
+                    out LinkedSummonRegistration? removed) == true
+                && removed is not null)
+            {
+                RemoveLinkedSummonAura(removed, combatEvent.OccurredAtUtc);
+            }
         }
         else if (combatEvent.Type == CombatEventType.EffectExpired)
         {
@@ -297,6 +311,7 @@ public sealed partial class CombatSession
             _genericEncounterSummons.CollectExpired(now);
         foreach (LinkedSummonRegistration summon in expired)
         {
+            RemoveLinkedSummonAura(summon, summon.ExpiresAtUtc ?? now);
             DeactivateEncounterEnemy(
                 summon.ActorId,
                 summon.OwnerActorId,
@@ -316,6 +331,7 @@ public sealed partial class CombatSession
         foreach (LinkedSummonRegistration summon in
                  _genericEncounterSummons.CollectForOwnerDeath(ownerActorId))
         {
+            RemoveLinkedSummonAura(summon, now);
             DeactivateEncounterEnemy(
                 summon.ActorId,
                 ownerActorId,
@@ -370,12 +386,80 @@ public sealed partial class CombatSession
             CombatParticipantDefinition spawned = SpawnEncounterEnemy(
                 profile,
                 _primaryEnemyActorId,
-                now);
-            registry.Register(
+                now,
+                summon.IsCombatObject,
+                rewardEligible: !summon.NoReward);
+            Guid[] auraTargetActorIds = string.IsNullOrWhiteSpace(summon.AuraEffectId)
+                ? []
+                : ResolveGenericEncounterTargets(summon.AuraTargetSelector, now)
+                    .Select(target => target.ActorId)
+                    .ToArray();
+            LinkedSummonRegistration registration = registry.Register(
                 spawned.Actor.ActorId,
                 _primaryEnemyActorId,
                 summon with { Count = 1 },
-                now);
+                now,
+                auraTargetActorIds);
+            ApplyLinkedSummonAura(registration, now);
+        }
+    }
+
+    private void ApplyLinkedSummonAura(
+        LinkedSummonRegistration registration,
+        DateTimeOffset now)
+    {
+        if (string.IsNullOrWhiteSpace(registration.AuraEffectId)
+            || registration.AuraTargetActorIds.Count == 0)
+        {
+            return;
+        }
+
+        EffectDefinition source = _genericEncounterEffects[registration.AuraEffectId];
+        TimeSpan duration = registration.ExpiresAtUtc is { } expiresAtUtc
+            ? expiresAtUtc - now
+            : PersistentEncounterEffectDuration;
+        if (duration <= TimeSpan.Zero)
+            return;
+
+        EffectDefinition aura = source with
+        {
+            Duration = duration,
+            SourceSpecific = true
+        };
+        foreach (Guid targetActorId in registration.AuraTargetActorIds)
+        {
+            CombatActorState? target = ResolveCombatActor(targetActorId);
+            if (target is null || target.IsDead)
+                continue;
+            ApplyKernelEvents(
+                EffectEngine.Apply(target, registration.ActorId, aura, now),
+                registration.ActorId,
+                target.ActorId,
+                aura.Id);
+        }
+    }
+
+    private void RemoveLinkedSummonAura(
+        LinkedSummonRegistration registration,
+        DateTimeOffset now)
+    {
+        if (string.IsNullOrWhiteSpace(registration.AuraEffectId))
+            return;
+
+        foreach (Guid targetActorId in registration.AuraTargetActorIds)
+        {
+            CombatActorState? target = ResolveCombatActor(targetActorId);
+            if (target is null)
+                continue;
+            ApplyKernelEvents(
+                EffectEngine.RemoveOwned(
+                    target,
+                    registration.AuraEffectId,
+                    registration.ActorId,
+                    now),
+                registration.ActorId,
+                target.ActorId,
+                registration.AuraEffectId);
         }
     }
 

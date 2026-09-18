@@ -33,13 +33,23 @@ public sealed partial class CombatSession
     private CombatParticipantDefinition SpawnEncounterEnemy(
         EncounterEnemyProfile profile,
         Guid sourceActorId,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        bool isCombatObject = false,
+        bool rewardEligible = true)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(profile.Monster);
         ArgumentNullException.ThrowIfNull(profile.AiProfile);
 
-        CombatParticipantDefinition summoned = CreateSummonedParticipant(profile.Monster);
+        CombatParticipantDefinition summoned = CreateSummonedParticipant(profile.Monster) with
+        {
+            KnownAbilityIds = isCombatObject
+                ? new HashSet<string>(StringComparer.Ordinal)
+                : new HashSet<string>(profile.Monster.AbilityIds, StringComparer.Ordinal),
+            CanAutoAttack = !isCombatObject,
+            IsCombatObject = isCombatObject,
+            RewardEligible = rewardEligible
+        };
         CombatActorState[] existingEnemyActors = _enemies
             .Select(enemy => enemy.Actor)
             .ToArray();
@@ -59,12 +69,13 @@ public sealed partial class CombatSession
                 _playerStatesByActorId.Values.Select(state => state.Definition.Actor)
                     .Concat(existingEnemyActors)
                     .Concat(_companion is null ? [] : new[] { _companion.Actor })));
-        _enemyAiRuntimes.Add(
-            summoned.Actor.ActorId,
-            new EnemyAiRuntime(
-                profile.AiProfile,
-                now,
-                now + summoned.AutoAttack.Interval));
+        EnemyAiRuntime summonedAi = new(
+            profile.AiProfile,
+            now,
+            now + summoned.AutoAttack.Interval);
+        if (isCombatObject)
+            summonedAi.NextActionAtUtc = null;
+        _enemyAiRuntimes.Add(summoned.Actor.ActorId, summonedAi);
 
         ThreatTable threat = new();
         foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)

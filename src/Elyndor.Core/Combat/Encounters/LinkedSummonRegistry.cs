@@ -8,7 +8,10 @@ public sealed record LinkedSummonRegistration(
     DateTimeOffset? ExpiresAtUtc,
     bool LinkToOwner,
     bool DespawnOnOwnerDeath,
-    bool NoReward);
+    bool NoReward,
+    bool IsCombatObject,
+    string? AuraEffectId,
+    IReadOnlyList<Guid> AuraTargetActorIds);
 
 public sealed class LinkedSummonRegistry
 {
@@ -26,7 +29,8 @@ public sealed class LinkedSummonRegistry
         Guid actorId,
         Guid ownerActorId,
         SummonDefinition definition,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        IReadOnlyList<Guid>? auraTargetActorIds = null)
     {
         if (actorId == Guid.Empty)
             throw new ArgumentException("Summon actor id is required.", nameof(actorId));
@@ -40,6 +44,8 @@ public sealed class LinkedSummonRegistry
         {
             throw new ArgumentException("Summon definition is invalid.", nameof(definition));
         }
+        if (auraTargetActorIds?.Any(targetId => targetId == Guid.Empty) == true)
+            throw new ArgumentException("Aura target actor identifiers cannot be empty.", nameof(auraTargetActorIds));
         if (_active.ContainsKey(actorId))
             throw new InvalidOperationException($"Summon actor '{actorId}' is already registered.");
         if (definition.MaxActive > 0
@@ -57,7 +63,10 @@ public sealed class LinkedSummonRegistry
             definition.Lifetime is { } lifetimeValue ? now + lifetimeValue : null,
             definition.LinkToCaster,
             definition.DespawnOnBossDeath,
-            definition.NoReward);
+            definition.NoReward,
+            definition.IsCombatObject,
+            definition.AuraEffectId,
+            auraTargetActorIds?.Distinct().ToArray() ?? []);
         _active.Add(actorId, registration);
         return registration;
     }

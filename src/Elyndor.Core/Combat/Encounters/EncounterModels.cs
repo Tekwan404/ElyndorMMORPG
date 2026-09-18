@@ -52,7 +52,10 @@ public sealed record SummonDefinition(
     TimeSpan? Lifetime = null,
     bool LinkToCaster = false,
     bool DespawnOnBossDeath = true,
-    bool NoReward = true);
+    bool NoReward = true,
+    bool IsCombatObject = false,
+    string? AuraEffectId = null,
+    string? AuraTargetSelector = null);
 
 public sealed record EncounterTriggerDefinition(
     EncounterTriggerType Type,
@@ -214,7 +217,12 @@ public static class EncounterDefinitionValidator
                     || string.IsNullOrWhiteSpace(action.Summon.MonsterId)
                     || action.Summon.Count <= 0
                     || action.Summon.MaxActive < 0
-                    || action.Summon.Lifetime is { } lifetime && lifetime <= TimeSpan.Zero)
+                    || action.Summon.Lifetime is { } lifetime && lifetime <= TimeSpan.Zero
+                    || action.Summon.AuraEffectId is not null
+                        && string.IsNullOrWhiteSpace(action.Summon.AuraEffectId)
+                    || action.Summon.AuraEffectId is null
+                        && !string.IsNullOrWhiteSpace(action.Summon.AuraTargetSelector)
+                    || !EncounterTargetSelectors.IsSupported(action.Summon.AuraTargetSelector))
                 {
                     errors.Add($"Phase '{phaseId}' summon action is invalid.");
                 }

@@ -710,7 +710,9 @@ public sealed partial class CombatSession
             .Select(enemy => ActorSnapshot(
                 enemy,
                 _enemyRuntimes[enemy.Actor.ActorId],
-                Status == CombatSessionStatus.Active && !enemy.Actor.IsDead))
+                Status == CombatSessionStatus.Active
+                    && !enemy.Actor.IsDead
+                    && enemy.CanAutoAttack))
             .ToArray();
         CombatPlayerRuntimeState requester = requesterCharacterId is { } requested
             && _playerStatesByActorId.TryGetValue(requested, out CombatPlayerRuntimeState? requestedState)
@@ -2262,24 +2264,27 @@ public sealed partial class CombatSession
             return;
         }
 
-        Append(new CombatEvent(
-            CombatEventType.EnemyKilled,
-            death.OccurredAtUtc,
-            _player.Actor.ActorId,
-            killedEnemy.DefinitionId,
-            SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
-            TargetActorId: killedEnemy.Actor.ActorId,
-            IsPeriodic: death.IsPeriodic,
-            DamageType: death.DamageType,
-            WeaponHand: death.WeaponHand,
-            WeaponDefinitionId: death.WeaponDefinitionId));
-        TriggerTalent(
-            TalentModifierKeys.OnEnemyKilled,
-            death.OccurredAtUtc);
-        ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
-        ApplyPyromancerEnemyKilledHooks(death);
-        ApplyArcherEnemyKilledHooks(death.OccurredAtUtc);
-        ApplyWarlordEnemyKilledHooks(death);
+        if (!killedEnemy.IsCombatObject)
+        {
+            Append(new CombatEvent(
+                CombatEventType.EnemyKilled,
+                death.OccurredAtUtc,
+                _player.Actor.ActorId,
+                killedEnemy.DefinitionId,
+                SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
+                TargetActorId: killedEnemy.Actor.ActorId,
+                IsPeriodic: death.IsPeriodic,
+                DamageType: death.DamageType,
+                WeaponHand: death.WeaponHand,
+                WeaponDefinitionId: death.WeaponDefinitionId));
+            TriggerTalent(
+                TalentModifierKeys.OnEnemyKilled,
+                death.OccurredAtUtc);
+            ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
+            ApplyPyromancerEnemyKilledHooks(death);
+            ApplyArcherEnemyKilledHooks(death.OccurredAtUtc);
+            ApplyWarlordEnemyKilledHooks(death);
+        }
 
         EnemyAiRuntime killedAi = _enemyAiRuntimes[killedEnemy.Actor.ActorId];
         killedAi.State = MonsterAiState.Dead;
@@ -2534,9 +2539,11 @@ public sealed partial class CombatSession
                 : null,
             autoAttackIntervalSeconds,
             nextAutoAttackAtUtc,
-            definition.Kind == CombatActorKind.Monster
+            definition.Kind == CombatActorKind.Monster && !definition.IsCombatObject
                 ? GetEnemyCurrentTargetActorId(definition.Actor.ActorId, CurrentTimeUtc)
-                : null);
+                : null,
+            definition.IsCombatObject,
+            definition.RewardEligible);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()

@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
@@ -61,6 +62,7 @@ public sealed class CombatSessionGenericEncounterTests
         CombatActorSnapshot summoned = Assert.Single(
             session.Snapshot().Enemies!,
             enemy => enemy.DefinitionId == add.Id);
+        Assert.False(summoned.RewardEligible);
         Assert.Equal(Now.AddSeconds(5), session.NextDueAtUtc);
 
         session.AdvanceTo(Now.AddSeconds(5));
@@ -71,6 +73,85 @@ public sealed class CombatSessionGenericEncounterTests
             item.Type == CombatEventType.ActorDied
             && item.ActorId == summoned.ActorId
             && item.OccurredAtUtc == Now.AddSeconds(5));
+    }
+
+    [Fact]
+    public void LinkedCombatObjectAppliesAuraUntilDestroyedAndIsRewardIneligible()
+    {
+        AbilityDefinition strike = DamageAbility("OBJECT_STRIKE", 50);
+        EffectDefinition aura = new(
+            "TEST_BANNER_AURA",
+            EffectKind.StatModifier,
+            TimeSpan.FromMinutes(10),
+            1,
+            EffectStackPolicy.Replace,
+            25,
+            ModifiedStat: EffectStat.Armor,
+            ModifierMode: EffectModifierMode.Percent);
+        MonsterDefinition banner = Monster(
+            "TEST_BANNER",
+            abilityIds: [],
+            aiProfileId: "BANNER_PASSIVE",
+            autoAttackInterval: TimeSpan.FromSeconds(1));
+        EncounterDefinition encounter = new(
+            "TEST_LINKED_OBJECT",
+            "TEST_BOSS",
+            [
+                new EncounterPhaseDefinition(
+                    "OPEN",
+                    new EncounterTriggerDefinition(EncounterTriggerType.CombatStart),
+                    [
+                        new EncounterActionDefinition(
+                            EncounterActionType.Summon,
+                            Summon: new SummonDefinition(
+                                banner.Id,
+                                Count: 1,
+                                MaxActive: 1,
+                                LinkToCaster: true,
+                                NoReward: true,
+                                IsCombatObject: true,
+                                AuraEffectId: aura.Id,
+                                AuraTargetSelector: EncounterTargetSelectors.Boss))
+                    ])
+            ]);
+        CombatSession session = Session(
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
+            abilities: Abilities(strike),
+            bossAi: new MonsterAiProfile("BOSS_PASSIVE", []),
+            bossAutoAttackInterval: TimeSpan.FromHours(1),
+            playerAbilityIds: new HashSet<string>([strike.Id], StringComparer.Ordinal));
+
+        session.ConfigureGenericEncounter(
+            encounter,
+            new Dictionary<string, EncounterEnemyProfile>(StringComparer.Ordinal)
+            {
+                [banner.Id] = new(banner, new MonsterAiProfile("BANNER_PASSIVE", []))
+            },
+            new Dictionary<string, EffectDefinition>(StringComparer.Ordinal)
+            {
+                [aura.Id] = aura
+            });
+
+        CombatActorSnapshot objectSnapshot = Assert.Single(
+            session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == banner.Id);
+        Assert.True(objectSnapshot.IsCombatObject);
+        Assert.False(objectSnapshot.RewardEligible);
+        Assert.False(objectSnapshot.AutoAttackEnabled);
+        Assert.Empty(objectSnapshot.KnownAbilityIds);
+        Assert.Contains(session.Snapshot().Enemy.Effects, effect => effect.Id == aura.Id);
+
+        CombatCommandResult destroyed = session.Handle(
+            new UseAbilityCommand("destroy-banner", strike.Id, objectSnapshot.ActorId),
+            Now.AddMilliseconds(10));
+
+        Assert.True(destroyed.Succeeded, destroyed.ErrorCode);
+        Assert.Equal(0, session.Snapshot().Enemies!
+            .Single(enemy => enemy.ActorId == objectSnapshot.ActorId).Hp);
+        Assert.DoesNotContain(session.Snapshot().Enemy.Effects, effect => effect.Id == aura.Id);
+        Assert.DoesNotContain(session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.EnemyKilled
+            && item.TargetActorId == objectSnapshot.ActorId);
     }
 
     [Fact]

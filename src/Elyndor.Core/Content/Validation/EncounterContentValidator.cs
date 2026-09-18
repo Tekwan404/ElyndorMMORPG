@@ -78,6 +78,15 @@ public sealed class EncounterContentValidator : IContentValidationStage
                 {
                     EncounterActionDefinition action = phase.Actions[actionIndex];
                     string actionPath = $"{phasePath}.actions[{actionIndex}]";
+                    if (action.Type == EncounterActionType.Summon
+                        && action.Summon?.AuraEffectId is { Length: > 0 } auraEffectId
+                        && !effectIds.Contains(auraEffectId))
+                    {
+                        context.Errors.Add(new ContentValidationError(
+                            "UNKNOWN_ENCOUNTER_AURA_EFFECT",
+                            $"{actionPath}.summon.auraEffectId",
+                            $"Encounter '{encounter.Id}' references unknown aura effect '{auraEffectId}'."));
+                    }
                     switch (action.Type)
                     {
                         case EncounterActionType.Summon when action.Summon is { } summon
