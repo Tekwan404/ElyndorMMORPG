@@ -166,9 +166,17 @@ public static class EncounterDefinitionValidator
         {
             errors.Add($"Phase '{phaseId}' elapsed-time trigger requires a positive duration.");
         }
-        if (trigger.Type == EncounterTriggerType.ElapsedTime && !trigger.Once)
+
+        if (!trigger.Once
+            && trigger.Type is EncounterTriggerType.CombatStart
+                or EncounterTriggerType.HpAtOrBelow
+                or EncounterTriggerType.ElapsedTime
+                or EncounterTriggerType.ResourceAtOrBelow
+                or EncounterTriggerType.ResourceAtOrAbove
+                or EncounterTriggerType.PhaseStart)
         {
-            errors.Add($"Phase '{phaseId}' elapsed-time trigger must be once-per-combat.");
+            errors.Add(
+                $"Phase '{phaseId}' state/time trigger must be once-per-combat; repeatable triggers require an encounter event.");
         }
 
         if (trigger.Type is EncounterTriggerType.AddDeath
