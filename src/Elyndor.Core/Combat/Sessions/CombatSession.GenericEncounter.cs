@@ -423,8 +423,7 @@ public sealed partial class CombatSession
 
         EffectDefinition aura = source with
         {
-            Duration = duration,
-            SourceSpecific = true
+            Duration = duration
         };
         foreach (Guid targetActorId in registration.AuraTargetActorIds)
         {
