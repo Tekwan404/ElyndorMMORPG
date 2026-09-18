@@ -20,6 +20,7 @@ public sealed class EncounterContentValidator : IContentValidationStage
             .Select(effect => effect.Id)
             .ToHashSet(StringComparer.Ordinal);
         HashSet<string> encounterIds = new(StringComparer.Ordinal);
+        HashSet<string> encounterMonsterIds = new(StringComparer.Ordinal);
 
         for (var encounterIndex = 0; encounterIndex < encounters.Count; encounterIndex++)
         {
@@ -32,6 +33,14 @@ public sealed class EncounterContentValidator : IContentValidationStage
                     "DUPLICATE_ENCOUNTER_ID",
                     path,
                     $"Encounter '{encounter.Id}' is duplicated."));
+            }
+            if (!string.IsNullOrWhiteSpace(encounter.MonsterId)
+                && !encounterMonsterIds.Add(encounter.MonsterId))
+            {
+                context.Errors.Add(new ContentValidationError(
+                    "DUPLICATE_ENCOUNTER_MONSTER",
+                    $"{path}.monsterId",
+                    $"Monster '{encounter.MonsterId}' has more than one active encounter definition."));
             }
 
             foreach (string error in EncounterDefinitionValidator.Validate(encounter))
