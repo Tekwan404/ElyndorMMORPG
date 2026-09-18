@@ -6,6 +6,7 @@ public sealed record LinkedSummonRegistration(
     string MonsterId,
     DateTimeOffset SpawnedAtUtc,
     DateTimeOffset? ExpiresAtUtc,
+    bool LinkToOwner,
     bool DespawnOnOwnerDeath,
     bool NoReward);
 
@@ -54,11 +55,15 @@ public sealed class LinkedSummonRegistry
             definition.MonsterId,
             now,
             definition.Lifetime is { } lifetimeValue ? now + lifetimeValue : null,
+            definition.LinkToCaster,
             definition.DespawnOnBossDeath,
             definition.NoReward);
         _active.Add(actorId, registration);
         return registration;
     }
+
+    public bool TryGet(Guid actorId, out LinkedSummonRegistration? registration) =>
+        _active.TryGetValue(actorId, out registration);
 
     public bool TryRemove(Guid actorId, out LinkedSummonRegistration? removed)
     {
