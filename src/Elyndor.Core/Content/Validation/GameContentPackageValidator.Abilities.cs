@@ -86,6 +86,8 @@ public static partial class GameContentPackageValidator
                         || action.AttackPowerCoefficient < 0
                         || action.ArmorPenetrationBonus < 0
                         || action.Delay is { } delay && delay < TimeSpan.Zero
+                        || action.LifestealPercent < 0
+                        || action.Type != AbilityActionType.Damage && action.LifestealPercent != 0
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero
