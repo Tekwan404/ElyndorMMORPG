@@ -90,7 +90,7 @@ public sealed class EncounterActionPlannerTests
                 EncounterActionType.ApplyEffect,
                 EffectId: "TEST_BOMB",
                 Delay: TimeSpan.FromSeconds(4)));
-        DateTimeOffset now = StartedAt.AddSeconds(10);
+        DateTimeOffset now = StartedAt;
 
         EncounterPlannedAction planned = Assert.Single(EncounterActionPlanner.Plan(
             encounter,
