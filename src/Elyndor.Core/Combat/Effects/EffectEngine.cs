@@ -384,5 +384,13 @@ public static class EffectEngine
         {
             throw new ArgumentException("Only periodic effects require a tick interval.", nameof(definition));
         }
+        if (definition.Kind == EffectKind.DamageReflection
+            && (definition.Magnitude <= 0
+                || definition.ReflectedDamageCap is { } cap && cap <= 0))
+        {
+            throw new ArgumentException(
+                "Damage reflection requires a positive ratio and positive cap when specified.",
+                nameof(definition));
+        }
     }
 }

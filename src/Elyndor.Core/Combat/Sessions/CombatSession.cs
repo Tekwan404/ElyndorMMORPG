@@ -1900,6 +1900,9 @@ public sealed partial class CombatSession
             }
             RegisterThreat(normalized);
             Append(normalized);
+            ProcessGenericDamageReflection(normalized);
+            if (Status != CombatSessionStatus.Active)
+                break;
             ProcessGenericEncounterEvent(normalized);
             if (normalized.Type == CombatEventType.ActorDied
                 && normalized.ActorId == _player.Actor.ActorId)
