@@ -206,4 +206,5 @@ public sealed record CombatEvent(
     decimal DamageBeforeBlock = 0,
     bool IsUnblockable = false,
     bool IsCritical = false,
-    HealingOrigin? HealingOrigin = null);
+    HealingOrigin? HealingOrigin = null,
+    bool IsReflected = false);
