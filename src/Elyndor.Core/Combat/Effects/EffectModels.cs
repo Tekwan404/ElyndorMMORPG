@@ -13,6 +13,9 @@ public enum EffectKind
     ConditionalModifier,
     Stun,
     Silence,
+    Root,
+    Fear,
+    Disarm,
     LethalDamagePrevention
 }
 
