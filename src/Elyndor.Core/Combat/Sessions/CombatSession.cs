@@ -359,6 +359,7 @@ public sealed partial class CombatSession
             enemy => enemy.Actor.ActorId,
             enemy => new EnemyAiRuntime(
                 enemyAiProfiles[enemy.Actor.ActorId],
+                startedAtUtc,
                 startedAtUtc + enemy.AutoAttack.Interval));
         _enemyThreatTables = _enemies.ToDictionary(
             enemy => enemy.Actor.ActorId,
@@ -1383,6 +1384,7 @@ public sealed partial class CombatSession
                 summoned.Actor.ActorId,
                 new EnemyAiRuntime(
                     _summonProfile.AiProfile,
+                    now,
                     now + summoned.AutoAttack.Interval));
             ThreatTable summonedThreat = new();
             foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)
@@ -1457,18 +1459,31 @@ public sealed partial class CombatSession
         SyncBerserkerConditionalEffects(now);
         SyncMageConditionalEffects(now);
         SyncArcherConditionalEffects(now);
-        foreach (string abilityId in aiRuntime.Profile.PriorityAbilityIds)
+        AbilityTargetCandidate[] targetCandidates = BuildMonsterAiTargetCandidates(
+            enemy,
+            now,
+            out Guid? currentThreatTargetId);
+        HashSet<string> failedAbilityIds = new(StringComparer.Ordinal);
+        while (true)
         {
-            if (!enemy.KnownAbilityIds.Contains(abilityId)
-                || !_abilities.TryGetValue(abilityId, out AbilityDefinition? ability))
-            {
-                continue;
-            }
+            MonsterAiDecision? decision = MonsterAiDecisionEngine.Select(
+                aiRuntime.Profile,
+                enemy.Actor,
+                enemy.KnownAbilityIds,
+                _abilities,
+                targetCandidates,
+                aiRuntime.StartedAtUtc,
+                now,
+                aiRuntime.SchedulerState,
+                _random,
+                currentThreatTargetId,
+                excludedAbilityIds: failedAbilityIds);
+            if (decision is null)
+                break;
 
-            Guid[] targetIds = ResolveEnemyAbilityTargetIds(enemy, ability, now);
-            if (targetIds.Length == 0)
-                continue;
-
+            AbilityDefinition ability = decision.Ability;
+            string abilityId = ability.Id;
+            Guid[] targetIds = decision.TargetActorIds.ToArray();
             Dictionary<Guid, AbilityTargetModifier>? targetModifiers =
                 ResolveEnemyAbilityTargetModifiers(ability, targetIds);
 
@@ -1485,8 +1500,16 @@ public sealed partial class CombatSession
                 now,
                 _random);
             if (!execution.Succeeded)
+            {
+                failedAbilityIds.Add(abilityId);
                 continue;
+            }
 
+            aiRuntime.SchedulerState.MarkExecuted(
+                decision.Rule,
+                ability,
+                now,
+                _random);
             ApplyKernelEvents(
                 execution.Events,
                 enemyActorId,
@@ -2530,9 +2553,12 @@ public sealed partial class CombatSession
 
     private sealed class EnemyAiRuntime(
         MonsterAiProfile profile,
+        DateTimeOffset startedAtUtc,
         DateTimeOffset nextActionAtUtc)
     {
         public MonsterAiProfile Profile { get; } = profile;
+        public DateTimeOffset StartedAtUtc { get; } = startedAtUtc;
+        public MonsterAbilitySchedulerState SchedulerState { get; } = new();
         public MonsterAiState State { get; set; } = MonsterAiState.InCombat;
         public DateTimeOffset? NextActionAtUtc { get; set; } = nextActionAtUtc;
     }
