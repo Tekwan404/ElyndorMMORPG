@@ -76,6 +76,7 @@ public static partial class GameContentPackageValidator
                     || ability.Actions?.Any(action => action.Amount < 0
                         || action.AttackPowerCoefficient < 0
                         || action.ArmorPenetrationBonus < 0
+                        || action.Delay is { } delay && delay < TimeSpan.Zero
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true
