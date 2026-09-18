@@ -10,10 +10,10 @@ public sealed partial class CombatSession
 
     private EncounterDefinition? _genericEncounterDefinition;
     private EncounterPhaseRuntimeState? _genericEncounterState;
-    private IReadOnlyDictionary<string, EncounterEnemyProfile> _genericEncounterEnemyProfiles =
-        new Dictionary<string, EncounterEnemyProfile>(StringComparer.Ordinal);
-    private IReadOnlyDictionary<string, EffectDefinition> _genericEncounterEffects =
-        new Dictionary<string, EffectDefinition>(StringComparer.Ordinal);
+    private Dictionary<string, EncounterEnemyProfile> _genericEncounterEnemyProfiles =
+        new(StringComparer.Ordinal);
+    private Dictionary<string, EffectDefinition> _genericEncounterEffects =
+        new(StringComparer.Ordinal);
     private LinkedSummonRegistry? _genericEncounterSummons;
     private readonly List<EncounterPlannedAction> _genericEncounterPendingActions = [];
     private bool _processingGenericEncounter;
