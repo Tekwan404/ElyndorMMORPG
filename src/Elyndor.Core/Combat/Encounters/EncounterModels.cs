@@ -124,7 +124,7 @@ public static class EncounterDefinitionValidator
     private static void ValidateTrigger(
         string phaseId,
         EncounterTriggerDefinition trigger,
-        ICollection<string> errors)
+        List<string> errors)
     {
         if (trigger.Type == EncounterTriggerType.HpAtOrBelow
             && (trigger.Threshold < 0 || trigger.Threshold > 100))
@@ -163,7 +163,7 @@ public static class EncounterDefinitionValidator
     private static void ValidateAction(
         string phaseId,
         EncounterActionDefinition action,
-        ICollection<string> errors)
+        List<string> errors)
     {
         switch (action.Type)
         {
