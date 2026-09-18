@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    abstract partial class GameDbContextModelSnapshot : ModelSnapshot
+    partial class GameDbContextProfessionModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -1544,6 +1544,92 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("party_members", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("character_id");
+
+                    b.Property<string>("ProfessionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("profession_id");
+
+                    b.Property<DateTimeOffset>("LearnedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("learned_at_utc");
+
+                    b.Property<int>("Skill")
+                        .HasColumnType("integer")
+                        .HasColumnName("skill");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("CharacterId", "ProfessionId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.ToTable("character_professions", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.SkinnableCorpse", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("character_id");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("combat_session_id");
+
+                    b.Property<Guid>("EnemyActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("enemy_actor_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at_utc");
+
+                    b.Property<string>("MonsterDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("monster_definition_id");
+
+                    b.Property<bool>("SkillIncreased")
+                        .HasColumnType("boolean")
+                        .HasColumnName("skill_increased");
+
+                    b.Property<DateTimeOffset?>("SkinnedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("skinned_at_utc");
+
+                    b.Property<Guid?>("SkinningMutationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("skinning_mutation_id");
+
+                    b.Property<string>("YieldItemId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("yield_item_id");
+
+                    b.Property<int?>("YieldQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("yield_quantity");
+
+                    b.HasKey("CharacterId", "CombatSessionId", "EnemyActorId");
+
+                    b.HasIndex("CharacterId", "ExpiresAtUtc");
+
+                    b.ToTable("character_skinnable_corpses", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.Property<Guid>("CombatSessionId")
@@ -1679,6 +1765,145 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreationRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LeaderCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("MaximumMembers")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("pk_raids");
+
+                    b.HasIndex("CreationRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_raids_creation_request_id");
+
+                    b.HasIndex("LeaderCharacterId")
+                        .HasDatabaseName("ix_raids_leader_character_id");
+
+                    b.ToTable("raids", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InviterCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RaidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TargetCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_raid_invites");
+
+                    b.HasIndex("InviterCharacterId");
+
+                    b.HasIndex("RaidId");
+
+                    b.HasIndex("TargetCharacterId", "Status")
+                        .HasDatabaseName("ix_raid_invites_target_status");
+
+                    b.ToTable("raid_invites", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidMember", b =>
+                {
+                    b.Property<Guid>("RaidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RaidId", "CharacterId")
+                        .HasName("pk_raid_members");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_raid_members_character_id");
+
+                    b.ToTable("raid_members", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidReadyCheck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RaidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StartedByCharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id")
+                        .HasName("pk_raid_ready_checks");
+
+                    b.HasIndex("StartedByCharacterId");
+
+                    b.HasIndex("RaidId", "State")
+                        .HasDatabaseName("ix_raid_ready_checks_raid_state");
+
+                    b.ToTable("raid_ready_checks", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Releases.AccountReleaseAcknowledgement", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -1698,6 +1923,27 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_account_release_acknowledgements_acknowledged_at_utc");
 
                     b.ToTable("account_release_acknowledgements", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Releases.ReleaseAdminNotification", b =>
+                {
+                    b.Property<string>("ReleaseId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("TelegramUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("SentAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReleaseId", "TelegramUserId")
+                        .HasName("pk_release_admin_notifications");
+
+                    b.HasIndex("SentAtUtc")
+                        .HasDatabaseName("ix_release_admin_notifications_sent_at_utc");
+
+                    b.ToTable("release_admin_notifications", "game");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Social.FriendRequest", b =>
@@ -2233,6 +2479,24 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_party_members_parties_party_id");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.SkinnableCorpse", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Elyndor.Core.Progression.CombatRewardGrant", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -2261,6 +2525,74 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_quest_reward_grants_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidGroup", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("LeaderCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_raids_leader_character");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidInvite", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("InviterCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_invites_inviter_character_id");
+
+                    b.HasOne("Elyndor.Core.Raids.RaidGroup", null)
+                        .WithMany()
+                        .HasForeignKey("RaidId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_invites_raid_id");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("TargetCharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_invites_target_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidMember", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_members_character_id");
+
+                    b.HasOne("Elyndor.Core.Raids.RaidGroup", null)
+                        .WithMany("Members")
+                        .HasForeignKey("RaidId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_members_raids_raid_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidReadyCheck", b =>
+                {
+                    b.HasOne("Elyndor.Core.Raids.RaidGroup", null)
+                        .WithMany()
+                        .HasForeignKey("RaidId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_ready_checks_raid_id");
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("StartedByCharacterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_raid_ready_checks_started_by_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Releases.AccountReleaseAcknowledgement", b =>
@@ -2385,6 +2717,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Elyndor.Core.Parties.Party", b =>
+                {
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Raids.RaidGroup", b =>
                 {
                     b.Navigation("Members");
                 });
