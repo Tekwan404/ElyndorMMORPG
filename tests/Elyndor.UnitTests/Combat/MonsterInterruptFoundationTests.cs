@@ -156,7 +156,7 @@ public sealed class MonsterInterruptFoundationTests
         Ability(id) with
         {
             TargetSelectorProfile = AbilityTargetSelectorProfile.CastInProgressEnemy,
-            Actions:
+            Actions =
             [
                 new AbilityActionDefinition(
                     AbilityActionType.Interrupt,
