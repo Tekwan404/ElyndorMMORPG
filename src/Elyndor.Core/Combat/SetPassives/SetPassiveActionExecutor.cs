@@ -2,9 +2,9 @@ using Elyndor.Core.Combat.Effects;
 
 namespace Elyndor.Core.Combat.SetPassives;
 
-public sealed class SetPassiveActionExecutor
+public static class SetPassiveActionExecutor
 {
-    public IReadOnlyList<CombatEvent> Execute(
+    public static IReadOnlyList<CombatEvent> Execute(
         SetPassiveActionInvocation invocation,
         CombatActorState owner)
     {
