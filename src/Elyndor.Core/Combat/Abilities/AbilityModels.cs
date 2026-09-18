@@ -16,8 +16,19 @@ public enum AbilityTargetType
     Owner
 }
 public enum GlobalCooldownCategory { None, Reduced, Standard }
-public enum AbilityTargetSelectorProfile { EncounterOrder }
+public enum AbilityTargetSelectorProfile
+{
+    EncounterOrder,
+    RandomEnemy,
+    CurrentThreatTarget,
+    HighestThreat,
+    LowestHpAlly,
+    RandomManaUser,
+    NonTankRandom,
+    OwnerLinkedTarget
+}
 public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Taunt }
+public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
 {
     None,
@@ -30,6 +41,9 @@ public enum AbilityErrorCode
     SchoolLocked,
     ActorStunned,
     ActorSilenced,
+    ActorRooted,
+    ActorFeared,
+    ActorDisarmed,
     AbilityUnavailable,
     CastAlreadyActive,
     NoActiveCast,
@@ -67,7 +81,10 @@ public sealed record AbilityDefinition(
     IReadOnlyDictionary<string, decimal>? RuntimeParameters = null,
     string? RequiredActiveEffectId = null,
     string? FreeResourceCostWhileEffectId = null,
-    string? ConsumeEffectId = null);
+    string? ConsumeEffectId = null,
+    bool RequiresWeapon = false,
+    bool RequiresMobility = false,
+    bool CanUseWhileFeared = false);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -84,7 +101,8 @@ public sealed record AbilityActionDefinition(
     decimal DamagePerCharacterLevel = 0,
     bool IsUnblockable = false,
     decimal BlockValueCoefficient = 0,
-    bool HealingCanCrit = false);
+    bool HealingCanCrit = false,
+    AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
