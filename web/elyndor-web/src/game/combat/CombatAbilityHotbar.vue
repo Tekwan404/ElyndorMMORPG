@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 
 import type { CombatAbility, InventoryItem } from '@/api/contracts'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -40,6 +40,10 @@ const displaySlots = computed<Array<HotbarEntry | null>>(() => {
   })
 })
 
+const inspectedAbility = ref<CombatAbility | null>(null)
+let inspectionTimer: ReturnType<typeof setTimeout> | undefined
+let suppressNextAbilityClick = false
+
 function slotState(entry: HotbarEntry | null): string {
   if (!entry) return 'empty'
   if (entry.kind === 'ability') return props.abilityState(entry.ability)
@@ -48,13 +52,47 @@ function slotState(entry: HotbarEntry | null): string {
 }
 
 function slotDisabled(entry: HotbarEntry | null): boolean {
-  return !entry || slotState(entry) !== 'ready'
+  return !entry || (entry.kind === 'consumable' && slotState(entry) !== 'ready')
 }
 
 function activate(entry: HotbarEntry | null): void {
-  if (!entry || slotDisabled(entry)) return
-  if (entry.kind === 'ability') emit('use', entry.ability)
-  else emit('useConsumable', entry.item)
+  if (!entry) return
+  if (entry.kind === 'ability') {
+    if (suppressNextAbilityClick) {
+      suppressNextAbilityClick = false
+      return
+    }
+    inspectedAbility.value = null
+    if (props.abilityState(entry.ability) === 'ready') emit('use', entry.ability)
+    return
+  }
+  if (!slotDisabled(entry)) emit('useConsumable', entry.item)
+}
+
+function startInspection(ability: CombatAbility): void {
+  clearInspectionTimer()
+  suppressNextAbilityClick = false
+  inspectionTimer = setTimeout(() => {
+    inspectedAbility.value = ability
+    suppressNextAbilityClick = true
+    inspectionTimer = undefined
+  }, 500)
+}
+
+function clearInspectionTimer(): void {
+  if (inspectionTimer !== undefined) {
+    clearTimeout(inspectionTimer)
+    inspectionTimer = undefined
+  }
+}
+
+function activateAura(ability: CombatAbility): void {
+  if (suppressNextAbilityClick) {
+    suppressNextAbilityClick = false
+    return
+  }
+  inspectedAbility.value = null
+  if (props.abilityState(ability) === 'ready') emit('use', ability)
 }
 
 function isQueued(abilityId: string): boolean {
@@ -64,6 +102,8 @@ function isQueued(abilityId: string): boolean {
 function queuePosition(abilityId: string): number {
   return props.queuedAbilityIds.indexOf(abilityId) + 1
 }
+
+onUnmounted(clearInspectionTimer)
 </script>
 
 <template>
@@ -82,7 +122,13 @@ function queuePosition(abilityId: string): number {
       :data-ability-slot="entry?.kind === 'ability' ? entry.ability.id : ''"
       :data-combat-consumable="entry?.kind === 'consumable' ? entry.item.definitionId : undefined"
       :data-state="slotState(entry)"
-      :disabled="slotDisabled(entry)"
+      :disabled="!entry || (entry.kind === 'consumable' && slotDisabled(entry))"
+      :aria-disabled="entry?.kind === 'ability' ? slotState(entry) !== 'ready' : undefined"
+      @pointerdown="entry?.kind === 'ability' && startInspection(entry.ability)"
+      @pointerup="clearInspectionTimer"
+      @pointercancel="clearInspectionTimer"
+      @pointerleave="clearInspectionTimer"
+      @contextmenu.prevent
       :aria-label="entry?.kind === 'ability' ? entry.ability.displayName : entry?.kind === 'consumable' ? `${entry.item.name}, ${entry.item.quantity}` : 'Пустой слот'"
       @click="activate(entry)"
     >
@@ -129,9 +175,14 @@ function queuePosition(abilityId: string): number {
       type="button"
       class="combat-ability-hotbar__aura"
       :data-aura-ability="ability.id"
-      :disabled="abilityState(ability) !== 'ready'"
+      :aria-disabled="abilityState(ability) !== 'ready'"
       :aria-label="ability.displayName"
-      @click="emit('use', ability)"
+      @pointerdown="startInspection(ability)"
+      @pointerup="clearInspectionTimer"
+      @pointercancel="clearInspectionTimer"
+      @pointerleave="clearInspectionTimer"
+      @contextmenu.prevent
+      @click="activateAura(ability)"
     >
       <img v-if="abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
       <IconGenerator
@@ -142,6 +193,13 @@ function queuePosition(abilityId: string): number {
       <b v-if="cooldownRemaining(ability.id) > 0">{{ Math.ceil(cooldownRemaining(ability.id)) }}</b>
     </button>
   </section>
+  <section v-if="inspectedAbility" class="combat-ability-hotbar__inspection" data-ability-inspection aria-live="polite">
+    <div>
+      <strong>{{ inspectedAbility.displayName }}</strong>
+      <p>{{ inspectedAbility.description || 'Описание способности пока не добавлено.' }}</p>
+    </div>
+    <button type="button" aria-label="Закрыть описание способности" @click="inspectedAbility = null">×</button>
+  </section>
 </template>
 
 <style scoped>
@@ -149,7 +207,7 @@ function queuePosition(abilityId: string): number {
 .combat-ability-hotbar__auras { display: flex; align-items: center; gap: 5px; margin-top: 5px; padding: 5px; border: 1px solid rgb(205 177 113 / 28%); border-radius: var(--ui-radius-sm); background: rgb(205 177 113 / 6%); }
 .combat-ability-hotbar__auras > span { flex: none; color: var(--ui-color-gold-muted); font-size: .5rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .combat-ability-hotbar__aura { position: relative; display: inline-flex; min-width: 0; min-height: var(--ui-touch-target); flex: 1; align-items: center; justify-content: center; gap: 5px; padding: 4px 7px; border: 1px solid rgb(205 177 113 / 36%); border-radius: var(--ui-radius-sm); background: rgb(4 7 12 / 78%); color: var(--ui-color-text-primary); font: inherit; }
-.combat-ability-hotbar__aura:disabled { opacity: .45; }
+.combat-ability-hotbar__aura[aria-disabled='true'] { opacity: .45; }
 .combat-ability-hotbar__aura img, .combat-ability-hotbar__aura :deep(.icon-generator) { width: 24px; height: 24px; flex: none; }
 .combat-ability-hotbar__aura small { overflow: hidden; font-size: .52rem; text-overflow: ellipsis; white-space: nowrap; }
 .combat-ability-hotbar__aura b { position: absolute; inset: 2px; display: grid; place-items: center; border-radius: inherit; background: rgb(1 3 7 / 72%); color: white; font-size: .72rem; }
@@ -173,4 +231,8 @@ function queuePosition(abilityId: string): number {
 .combat-ability-hotbar__proc { position: absolute; top: 3px; right: 3px; border-radius: 4px; padding: 1px 2px; background: rgb(241 123 70 / 85%); color: #fff4de; font-size: .38rem; font-weight: 900; }
 .combat-ability-hotbar__slot--consumable { border-color: rgb(79 185 150 / 34%); }
 .combat-ability-hotbar__count { position: absolute; right: 2px; bottom: 14px; padding: 1px 3px; border-radius: 4px; background: rgb(2 4 8 / 84%); color: #9be2c9; font-size: .42rem; font-weight: 900; }
+.combat-ability-hotbar__inspection { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-top: 5px; padding: 8px 10px; border: 1px solid rgb(146 136 255 / 38%); border-radius: var(--ui-radius-sm); background: rgb(8 11 20 / 96%); box-shadow: 0 5px 14px rgb(0 0 0 / 25%); }
+.combat-ability-hotbar__inspection strong { color: var(--ui-color-text-primary); font-size: .72rem; }
+.combat-ability-hotbar__inspection p { margin: 3px 0 0; color: var(--ui-color-text-muted); font-size: .62rem; line-height: 1.4; }
+.combat-ability-hotbar__inspection > button { display: grid; width: 32px; height: 32px; flex: none; place-items: center; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: transparent; color: var(--ui-color-text-primary); font: inherit; }
 </style>

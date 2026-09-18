@@ -63,7 +63,10 @@ public sealed record EffectDefinition(
     EffectStat? ModifiedStat = null,
     EffectModifierMode ModifierMode = EffectModifierMode.Flat,
     bool SourceSpecific = false,
-    DamageType PeriodicDamageType = DamageType.True);
+    DamageType PeriodicDamageType = DamageType.True,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 
 public sealed class ActiveEffect
 {

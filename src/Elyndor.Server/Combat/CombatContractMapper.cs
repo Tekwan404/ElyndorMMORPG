@@ -155,7 +155,12 @@ internal static class CombatContractMapper
                     ability.TargetType.ToString());
             }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
-                effect.Id, effect.Stacks, effect.ExpiresAtUtc)).ToArray(),
+                effect.Id,
+                effect.Stacks,
+                effect.ExpiresAtUtc,
+                effect.DisplayName,
+                effect.Description,
+                effect.IconId)).ToArray(),
             monster?.Level ?? 1,
             monster?.ArtId,
             actor.ActiveCast is null

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 
-import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatEffectSnapshot, InventoryItem } from '@/api/contracts'
+import type { CombatAbility, CombatCastSnapshot, CombatEvent, InventoryItem } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
+import CombatEffectStrip from '@/game/combat/CombatEffectStrip.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
 import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
 import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
@@ -172,8 +173,8 @@ const trainingDps = computed(() =>
     ? combat.trainingStats.totalDamage / trainingElapsedSeconds.value
     : 0,
 )
-const playerEffects = computed(() => snapshot.value?.player.effects.slice(0, 6) ?? [])
-const enemyEffects = computed(() => snapshot.value?.enemy.effects.slice(0, 6) ?? [])
+const playerEffects = computed(() => snapshot.value?.player.effects ?? [])
+const enemyEffects = computed(() => (selectedEnemy.value ?? snapshot.value?.enemy)?.effects ?? [])
 const playerCast = computed(() => snapshot.value?.player.activeCast ?? null)
 const enemyCast = computed(() => snapshot.value?.enemy.activeCast ?? null)
 const enemyCastIsUnblockable = computed(() => enemyCast.value !== null
@@ -286,10 +287,6 @@ function abilityGlyph(ability: CombatAbility): GlyphName {
   if (ability.id.includes('SHIELD') || ability.id.includes('BASTION')) return 'shield'
   if (ability.id.includes('BOW') || ability.id.includes('ARROW')) return 'bow'
   return 'sword'
-}
-
-function effectLabel(effect: CombatEffectSnapshot): string {
-  return abilityName(effect.id)
 }
 
 function eventSide(event: CombatEvent): LogSide {
@@ -601,16 +598,12 @@ onUnmounted(() => window.clearInterval(timer))
           @select="selectCombatTarget"
         />
 
-        <div class="enemy-effects effect-strip effect-strip--enemy">
-          <span
-            v-for="effect in enemyEffects"
-            :key="effect.id"
-            :title="effectLabel(effect)"
-          >
-            <b>{{ effect.stacks }}</b>
-            <small>{{ effectRemaining(effect.expiresAtUtc).toFixed(1) }}</small>
-          </span>
-        </div>
+        <CombatEffectStrip
+          class="enemy-effects effect-strip effect-strip--enemy"
+          :effects="enemyEffects"
+          :now="now"
+          side="enemy"
+        />
 
         <div v-if="enemyCast" class="cast-bar cast-bar--enemy" :class="{ 'cast-bar--unblockable': enemyCastIsUnblockable }" data-enemy-cast>
           <div>
@@ -687,14 +680,7 @@ onUnmounted(() => window.clearInterval(timer))
 
       <section v-if="isParticipantActive" class="combat-actions">
         <div v-if="playerEffects.length" class="effect-strip effect-strip--player">
-            <span
-              v-for="effect in playerEffects"
-              :key="effect.id"
-              :title="effectLabel(effect)"
-            >
-              <b>{{ effect.stacks }}</b>
-              <small>{{ effectRemaining(effect.expiresAtUtc).toFixed(1) }}</small>
-            </span>
+          <CombatEffectStrip :effects="playerEffects" :now="now" side="player" />
         </div>
 
         <div v-if="isMage" class="pyro-state" aria-label="Состояние пироманта">
@@ -1134,43 +1120,12 @@ onUnmounted(() => window.clearInterval(timer))
   gap: 4px;
 }
 
-.effect-strip > span {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  place-items: center;
-  border: 1px solid var(--ui-color-border);
-  border-radius: 6px;
-  background: rgb(4 7 12 / 88%);
-  color: var(--ui-color-text-secondary);
-  font-size: .49rem;
-}
-
-.effect-strip > span b {
-  font-size: .52rem;
-  line-height: 1;
-}
-
-.effect-strip > span small {
-  color: var(--ui-color-text-muted);
-  font-size: .39rem;
-  line-height: 1;
-}
-
 .effect-strip--enemy {
   position: absolute;
   top: 7px;
   right: 8px;
   z-index: 3;
   justify-content: flex-end;
-}
-
-.effect-strip--enemy > span {
-  border-color: rgb(216 95 114 / 24%);
-}
-
-.effect-strip--player > span {
-  border-color: rgb(146 136 255 / 26%);
 }
 
 .effect-strip__empty {
@@ -2188,9 +2143,6 @@ onUnmounted(() => window.clearInterval(timer))
 .combat-hud__identity small,
 .combat-targets button > span:first-child,
 .combat-targets button small,
-.effect-strip > span,
-.effect-strip > span b,
-.effect-strip > span small,
 .effect-strip__empty,
 .combat-feedback,
 .training-stats small,
