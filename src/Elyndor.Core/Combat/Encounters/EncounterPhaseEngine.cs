@@ -15,6 +15,12 @@ public sealed class EncounterPhaseRuntimeState
         CurrentPhaseId = phase.Id;
     }
 
+    public void SetCurrentPhase(string phaseId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(phaseId);
+        CurrentPhaseId = phaseId;
+    }
+
     public void Reset()
     {
         _firedOnce.Clear();
