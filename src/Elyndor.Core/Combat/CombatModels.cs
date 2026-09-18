@@ -63,6 +63,7 @@ public sealed class CombatActorState
     public decimal IncomingControlDurationMultiplier { get; set; } = 1;
     public decimal OwnShieldMagnitudeMultiplier { get; set; } = 1;
     public bool CanDie { get; }
+    public DateTimeOffset? UntargetableUntilUtc { get; private set; }
     public List<ActiveEffect> ActiveEffects { get; } = [];
     public bool IsDead => CanDie && CurrentHp <= 0;
 
@@ -86,6 +87,24 @@ public sealed class CombatActorState
     public void SetCurrentHp(decimal value) => CurrentHp = ClampHp(value);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
     public void ApplyHealing(decimal value) => SetCurrentHp(CurrentHp + Math.Max(0, value));
+
+    public bool IsTargetable(DateTimeOffset now) =>
+        UntargetableUntilUtc is not { } until || now >= until;
+
+    public void SetTemporaryUntargetable(DateTimeOffset now, TimeSpan duration)
+    {
+        if (duration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(duration),
+                duration,
+                "Untargetable duration must be positive.");
+        }
+
+        DateTimeOffset proposed = now + duration;
+        if (UntargetableUntilUtc is not { } current || proposed > current)
+            UntargetableUntilUtc = proposed;
+    }
 
     public void ConfigureResource(decimal maxResource, decimal currentResource)
     {
@@ -184,6 +203,7 @@ public enum CombatEventType
     ThreatDropped,
     ThreatCleared,
     FixateApplied,
+    TargetabilityChanged,
     ResourceChanged,
     DamageBlocked,
     UnblockableHit,
