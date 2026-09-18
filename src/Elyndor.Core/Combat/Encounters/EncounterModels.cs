@@ -50,7 +50,8 @@ public sealed record EncounterActionDefinition(
     TimeSpan? Duration = null,
     decimal ResourceAmount = 0,
     string? PhaseId = null,
-    string? TargetSelector = null);
+    string? TargetSelector = null,
+    TimeSpan? Delay = null);
 
 public sealed record EncounterPhaseDefinition(
     string Id,
@@ -165,13 +166,17 @@ public static class EncounterDefinitionValidator
         EncounterActionDefinition action,
         List<string> errors)
     {
+        if (action.Delay is { } delay && delay < TimeSpan.Zero)
+            errors.Add($"Phase '{phaseId}' action delay cannot be negative.");
+
         switch (action.Type)
         {
             case EncounterActionType.Summon:
                 if (action.Summon is null
                     || string.IsNullOrWhiteSpace(action.Summon.MonsterId)
                     || action.Summon.Count <= 0
-                    || action.Summon.MaxActive < 0)
+                    || action.Summon.MaxActive < 0
+                    || action.Summon.Lifetime is { } lifetime && lifetime <= TimeSpan.Zero)
                 {
                     errors.Add($"Phase '{phaseId}' summon action is invalid.");
                 }
@@ -191,6 +196,8 @@ public static class EncounterDefinitionValidator
             case EncounterActionType.Vulnerability:
                 if (action.Magnitude <= 0)
                     errors.Add($"Phase '{phaseId}' {action.Type} action requires positive magnitude.");
+                if (action.Duration is { } duration && duration <= TimeSpan.Zero)
+                    errors.Add($"Phase '{phaseId}' {action.Type} duration must be positive when specified.");
                 break;
             case EncounterActionType.SetPhase:
                 if (string.IsNullOrWhiteSpace(action.PhaseId))
