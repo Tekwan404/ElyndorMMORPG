@@ -1903,6 +1903,8 @@ public sealed partial class CombatSession
             }
             RegisterThreat(normalized);
             Append(normalized);
+            ProcessEnemyInterruptUtilityEvent(normalized);
+            ProcessMonsterInterruptActionEvent(normalized);
             ProcessGenericDamageReflection(normalized);
             if (Status != CombatSessionStatus.Active)
                 break;

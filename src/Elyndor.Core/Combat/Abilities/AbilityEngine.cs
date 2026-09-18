@@ -385,6 +385,10 @@ public static class AbilityEngine
                             ability.Id,
                             (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds));
                         break;
+                    case AbilityActionType.Interrupt:
+                        // Cross-runtime interruption is authoritative at the CombatSession layer.
+                        // ResolveActions intentionally has no local actor-state mutation here.
+                        break;
                 }
             }
         }
@@ -504,6 +508,22 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Ability action delay cannot be negative.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.Interrupt
+                && (action.InterruptLockout is null
+                    || action.InterruptLockout < TimeSpan.Zero
+                    || action.Delay is not null)) == true)
+        {
+            throw new InvalidOperationException(
+                "Interrupt actions require a non-negative lockout and cannot be delayed.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type != AbilityActionType.Interrupt
+                && action.InterruptLockout is not null) == true)
+        {
+            throw new InvalidOperationException(
+                "Interrupt lockout is only valid for interrupt actions.");
         }
     }
 
