@@ -489,6 +489,7 @@ public sealed partial class CombatSession
             next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
             next = Min(next, _nextSummonAtUtc);
             next = Min(next, NextGenericEncounterDueAtUtc);
+            next = Min(next, NextDelayedAbilityActionAtUtc);
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 Guid enemyActorId = enemy.Actor.ActorId;
@@ -1196,6 +1197,8 @@ public sealed partial class CombatSession
             CurrentTimeUtc = due;
             ProcessGenericEncounterDue(due);
             ProcessEffects(due);
+            if (Status != CombatSessionStatus.Active) break;
+            ProcessDelayedAbilityActions(due);
             if (Status != CombatSessionStatus.Active) break;
 
             SyncAllPlayerConditionalEffects(due);
