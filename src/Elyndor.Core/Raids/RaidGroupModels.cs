@@ -108,6 +108,35 @@ public sealed class RaidGroup
         Version++;
     }
 
+    public RaidMember Leave(Guid characterId, DateTimeOffset leftAtUtc)
+    {
+        EnsureActive();
+        EnsureUtc(leftAtUtc);
+        RaidMember member = FindMember(characterId);
+        _members.Remove(member);
+
+        if (_members.Count == 0)
+        {
+            State = RaidState.Disbanded;
+        }
+        else if (characterId == LeaderCharacterId)
+        {
+            RaidMember nextLeader = _members
+                .OrderBy(candidate => candidate.JoinedAtUtc)
+                .ThenBy(candidate => candidate.CharacterId)
+                .First();
+            nextLeader.SetRole(RaidMemberRole.Leader);
+            LeaderCharacterId = nextLeader.CharacterId;
+        }
+
+        Version++;
+        return member;
+    }
+
+    private RaidMember FindMember(Guid characterId) =>
+        _members.SingleOrDefault(member => member.CharacterId == characterId)
+        ?? throw new InvalidOperationException("Character is not in the raid.");
+
     private void EnsureActive()
     {
         if (State != RaidState.Active)
@@ -152,6 +181,8 @@ public sealed class RaidMember
         RaidMemberRole role,
         DateTimeOffset joinedAtUtc) =>
         new(raidId, characterId, role, joinedAtUtc);
+
+    internal void SetRole(RaidMemberRole role) => Role = role;
 }
 
 public sealed class RaidInvite

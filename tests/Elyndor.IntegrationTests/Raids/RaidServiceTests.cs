@@ -1,5 +1,6 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Raids;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Raids;
 using Elyndor.IntegrationTests.Postgres;
@@ -62,6 +63,37 @@ public sealed class RaidServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.True(invited.IsSuccess);
         Assert.True(accepted.IsSuccess);
         Assert.Equal(2, accepted.Snapshot!.Members.Count);
+    }
+
+    [Fact]
+    public async Task LeaderLeavingPromotesTheRemainingMember()
+    {
+        (Guid leaderAccountId, Guid targetAccountId, Guid targetCharacterId) =
+            await SeedPairAsync();
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        RaidService service = new(context, new FixedTimeProvider(Now));
+        RaidOperationResult created = await service.CreateAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            CancellationToken.None);
+        RaidOperationResult invited = await service.InviteAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            targetCharacterId,
+            CancellationToken.None);
+        Assert.True((await service.AcceptInviteAsync(
+            targetAccountId,
+            invited.Invite!.Id,
+            CancellationToken.None)).IsSuccess);
+
+        RaidOperationResult left = await service.LeaveAsync(leaderAccountId, CancellationToken.None);
+
+        Assert.True(left.IsSuccess);
+        Assert.Equal(targetCharacterId, left.Snapshot!.LeaderCharacterId);
+        Assert.Single(left.Snapshot.Members);
+        Assert.Equal(RaidMemberRole.Leader, left.Snapshot.Members[0].Role);
+        Assert.NotEqual(created.Snapshot!.LeaderCharacterId, left.Snapshot.LeaderCharacterId);
     }
 
     private async Task<Guid> SeedCharacterAsync()

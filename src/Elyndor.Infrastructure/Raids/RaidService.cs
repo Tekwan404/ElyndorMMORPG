@@ -271,6 +271,44 @@ public sealed class RaidService(
         return new RaidOperationResult(true, null, await BuildSnapshotAsync(raid.Id, cancellationToken));
     }
 
+    public Task<RaidOperationResult> LeaveAsync(
+        Guid accountId,
+        CancellationToken cancellationToken) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            () => LeaveCoreAsync(accountId, cancellationToken));
+
+    private async Task<RaidOperationResult> LeaveCoreAsync(
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        Character? character = await GetCharacterAsync(accountId, cancellationToken);
+        if (character is null)
+            return RaidOperationResult.Failure(RaidErrorCodes.CharacterNotFound);
+
+        await using IDbContextTransaction transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await AcquireCharacterLockAsync(character.Id, cancellationToken);
+        RaidGroup? raid = await GetActiveRaidForCharacterAsync(character.Id, cancellationToken);
+        if (raid is null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.RaidNotFound);
+        }
+        await AcquireRaidLockAsync(raid.Id, cancellationToken);
+        raid = await GetActiveRaidForCharacterAsync(character.Id, cancellationToken);
+        if (raid is null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.RaidNotFound);
+        }
+
+        RaidMember removed = raid.Leave(character.Id, timeProvider.GetUtcNow());
+        dbContext.RaidMembers.Remove(removed);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return new RaidOperationResult(true, null, await BuildSnapshotAsync(raid.Id, cancellationToken));
+    }
+
     private async Task<Character?> GetCharacterAsync(
         Guid accountId,
         CancellationToken cancellationToken) =>
