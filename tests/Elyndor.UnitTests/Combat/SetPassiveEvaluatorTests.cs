@@ -8,6 +8,8 @@ public sealed class SetPassiveEvaluatorTests
     private const string GuardianSetId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN";
     private const string GuardianTwoPieceId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_2PC_PASSIVE";
     private const string GuardianFourPieceId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_4PC_PASSIVE";
+    private static readonly DateTimeOffset BaseTime =
+        new(2026, 9, 18, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
     public void BelowRequiredPiecesDoesNotProcOrCreateRuntimeState()
@@ -18,7 +20,7 @@ public sealed class SetPassiveEvaluatorTests
         SetPassiveRuntimeState state = new();
 
         IReadOnlyList<SetPassiveActionInvocation> actions = evaluator.Evaluate(
-            BlockEvent(attacker, defender, tick: 10),
+            BlockEvent(attacker, defender, 10),
             PieceCounts((defender, GuardianSetId, 1)),
             state);
 
@@ -27,7 +29,7 @@ public sealed class SetPassiveEvaluatorTests
     }
 
     [Fact]
-    public void TwoPieceBlockProcsImmediatelyForDefender()
+    public void TwoPieceDamageBlockedProcsImmediatelyForTargetActor()
     {
         Guid attacker = Guid.NewGuid();
         Guid defender = Guid.NewGuid();
@@ -35,12 +37,13 @@ public sealed class SetPassiveEvaluatorTests
         SetPassiveRuntimeState state = new();
 
         SetPassiveActionInvocation action = Assert.Single(evaluator.Evaluate(
-            BlockEvent(attacker, defender, tick: 10),
+            BlockEvent(attacker, defender, 10),
             PieceCounts((defender, GuardianSetId, 2)),
             state));
 
         Assert.Equal(GuardianTwoPieceId, action.PassiveId);
         Assert.Equal(defender, action.ActorId);
+        Assert.Equal(At(10), action.OccurredAtUtc);
         Assert.Equal(SetPassiveActionKind.ApplyEffect, action.Action.Kind);
         Assert.Equal("EFFECT_GUARDIAN_BLOCK_ARMOR", action.Action.ReferenceId);
     }
@@ -62,11 +65,11 @@ public sealed class SetPassiveEvaluatorTests
         Assert.Empty(evaluator.Evaluate(BlockEvent(attacker, defender, 5), pieces, state));
         Assert.Single(evaluator.Evaluate(BlockEvent(attacker, defender, 6), pieces, state));
 
-        Assert.Equal(0, state.Get(defender, GuardianFourPieceId).Occurrences);
+        Assert.Equal(0, state.Get(defender, GuardianFourPieceId).EventCounter);
     }
 
     [Fact]
-    public void UnrelatedEventsDoNotAdvanceOccurrenceCounter()
+    public void UnrelatedEventsDoNotAdvanceEventCounter()
     {
         Guid attacker = Guid.NewGuid();
         Guid defender = Guid.NewGuid();
@@ -77,20 +80,30 @@ public sealed class SetPassiveEvaluatorTests
 
         Assert.Empty(evaluator.Evaluate(BlockEvent(attacker, defender, 1), pieces, state));
         Assert.Empty(evaluator.Evaluate(
-            new CombatEvent(2, 2, CombatEventType.DamageDealt, attacker, defender, Value: 12m),
+            new CombatEvent(
+                CombatEventType.DamageDealt,
+                At(2),
+                attacker,
+                Amount: 12m,
+                SourceActorId: attacker,
+                TargetActorId: defender),
             pieces,
             state));
         Assert.Empty(evaluator.Evaluate(BlockEvent(attacker, defender, 3), pieces, state));
 
-        Assert.Equal(2, state.Get(defender, GuardianFourPieceId).Occurrences);
+        Assert.Equal(2, state.Get(defender, GuardianFourPieceId).EventCounter);
     }
 
     [Fact]
-    public void InternalCooldownBlocksRetriggerUntilEligibleTick()
+    public void InternalCooldownUsesAbsoluteCombatTime()
     {
         Guid attacker = Guid.NewGuid();
         Guid defender = Guid.NewGuid();
-        SetPassiveDefinition definition = GuardianTwoPiece() with { InternalCooldownTicks = 10 };
+        SetPassiveDefinition definition = GuardianTwoPiece() with
+        {
+            Conditions = new SetPassiveConditionDefinition(
+                InternalCooldown: TimeSpan.FromSeconds(10))
+        };
         SetPassiveEvaluator evaluator = new([definition]);
         SetPassiveRuntimeState state = new();
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> pieces =
@@ -100,7 +113,9 @@ public sealed class SetPassiveEvaluatorTests
         Assert.Empty(evaluator.Evaluate(BlockEvent(attacker, defender, 19), pieces, state));
         Assert.Single(evaluator.Evaluate(BlockEvent(attacker, defender, 20), pieces, state));
 
-        Assert.Equal(30, state.Get(defender, GuardianTwoPieceId).CooldownUntilTick);
+        SetPassiveProcState proc = state.Get(defender, GuardianTwoPieceId);
+        Assert.Equal(At(30), proc.CooldownUntil);
+        Assert.Equal(At(20), proc.LastProcAt);
     }
 
     [Fact]
@@ -119,8 +134,8 @@ public sealed class SetPassiveEvaluatorTests
         evaluator.Evaluate(BlockEvent(attacker, firstDefender, 2), pieces, state);
         evaluator.Evaluate(BlockEvent(attacker, secondDefender, 3), pieces, state);
 
-        Assert.Equal(2, state.Get(firstDefender, GuardianFourPieceId).Occurrences);
-        Assert.Equal(1, state.Get(secondDefender, GuardianFourPieceId).Occurrences);
+        Assert.Equal(2, state.Get(firstDefender, GuardianFourPieceId).EventCounter);
+        Assert.Equal(1, state.Get(secondDefender, GuardianFourPieceId).EventCounter);
     }
 
     [Fact]
@@ -133,13 +148,13 @@ public sealed class SetPassiveEvaluatorTests
             Actions =
             [
                 new(SetPassiveActionKind.ApplyEffect, "FIRST_A"),
-                new(SetPassiveActionKind.GrantProcToken, "FIRST_B")
+                new(SetPassiveActionKind.RestoreResource, "FIRST_B")
             ]
         };
         SetPassiveDefinition second = first with
         {
             Id = "SECOND_PASSIVE",
-            Actions = [new(SetPassiveActionKind.ApplyShield, "SECOND_A")]
+            Actions = [new(SetPassiveActionKind.AddShield, "SECOND_A")]
         };
         SetPassiveEvaluator evaluator = new([first, second]);
 
@@ -174,7 +189,10 @@ public sealed class SetPassiveEvaluatorTests
         GuardianTwoPieceId,
         GuardianSetId,
         RequiredPieces: 2,
-        new SetPassiveTriggerDefinition(CombatEventType.Block, SetPassiveActorRole.Target),
+        new SetPassiveTriggerDefinition(
+            CombatEventType.DamageBlocked,
+            SetPassiveActorRole.Target),
+        new SetPassiveConditionDefinition(),
         [new SetPassiveActionDefinition(SetPassiveActionKind.ApplyEffect, "EFFECT_GUARDIAN_BLOCK_ARMOR")]);
 
     private static SetPassiveDefinition GuardianFourPiece() => new(
@@ -182,18 +200,26 @@ public sealed class SetPassiveEvaluatorTests
         GuardianSetId,
         RequiredPieces: 4,
         new SetPassiveTriggerDefinition(
-            CombatEventType.Block,
-            SetPassiveActorRole.Target,
-            RequiredOccurrences: 3),
-        [new SetPassiveActionDefinition(SetPassiveActionKind.ApplyShield, "SHIELD_GUARDIAN_THIRD_BLOCK")]);
+            CombatEventType.DamageBlocked,
+            SetPassiveActorRole.Target),
+        new SetPassiveConditionDefinition(EveryNth: 3),
+        [new SetPassiveActionDefinition(SetPassiveActionKind.AddShield, "SHIELD_GUARDIAN_THIRD_BLOCK")]);
 
-    private static CombatEvent BlockEvent(Guid attacker, Guid defender, int tick) =>
-        new(tick, tick, CombatEventType.Block, attacker, defender, Value: 5m);
+    private static CombatEvent BlockEvent(Guid attacker, Guid defender, int seconds) =>
+        new(
+            CombatEventType.DamageBlocked,
+            At(seconds),
+            defender,
+            Amount: 5m,
+            SourceActorId: attacker,
+            TargetActorId: defender);
+
+    private static DateTimeOffset At(int seconds) => BaseTime.AddSeconds(seconds);
 
     private static IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> PieceCounts(
         params (Guid ActorId, string SetId, int Pieces)[] entries)
     {
-        Dictionary<Guid, Dictionary<string, int>> mutable = new();
+        Dictionary<Guid, Dictionary<string, int>> mutable = [];
         foreach ((Guid actorId, string setId, int pieces) in entries)
         {
             if (!mutable.TryGetValue(actorId, out Dictionary<string, int>? sets))
