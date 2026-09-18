@@ -697,6 +697,9 @@ export interface CombatEffectSnapshot {
   id: string
   stacks: number
   expiresAtUtc: string
+  displayName?: string | null
+  description?: string | null
+  iconId?: string | null
 }
 
 export interface CombatAbility {

@@ -2525,7 +2525,10 @@ public sealed partial class CombatSession
                 new CombatEffectSnapshot(
                     effect.Definition.Id,
                     effect.Stacks,
-                    effect.ExpiresAtUtc)).ToArray(),
+                    effect.ExpiresAtUtc,
+                    effect.Definition.DisplayName,
+                    effect.Definition.Description,
+                    effect.Definition.IconId)).ToArray(),
             runtime.ActiveCast is null
                 ? null
                 : new CombatCastSnapshot(

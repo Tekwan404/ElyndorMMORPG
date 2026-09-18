@@ -369,7 +369,12 @@ public static class AbilityEngine
                         events.AddRange(EffectEngine.Apply(
                             target,
                             runtime.Actor.ActorId,
-                            action.Effect,
+                            action.Effect with
+                            {
+                                DisplayName = action.Effect.DisplayName ?? ability.DisplayName,
+                                Description = action.Effect.Description ?? ability.Description,
+                                IconId = action.Effect.IconId ?? ability.IconId
+                            },
                             now));
                         break;
                     case AbilityActionType.ResourceChange:

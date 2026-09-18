@@ -66,7 +66,13 @@ public sealed record CombatPlayerDefinition(
     IReadOnlyDictionary<string, DateTimeOffset>? InitialCooldowns = null,
     bool InitiallyAttached = true);
 
-public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
+public sealed record CombatEffectSnapshot(
+    string Id,
+    int Stacks,
+    DateTimeOffset ExpiresAtUtc,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 public sealed record CombatAbilitySnapshot(
     string Id,
     decimal ResourceCost,

@@ -120,6 +120,38 @@ public sealed class AbilityEngineTests
     }
 
     [Fact]
+    public void AppliedEffectInheritsAbilityPresentationWhenEffectHasNoOwnMetadata()
+    {
+        CombatRuntimeState runtime = CreateRuntime(resource: 50);
+        EffectDefinition effect = new(
+            "TEST_MARK",
+            EffectKind.Debuff,
+            TimeSpan.FromSeconds(8),
+            1,
+            EffectStackPolicy.Replace,
+            1);
+        AbilityDefinition ability = Instant("TEST_MARK_ABILITY", 0, 0) with
+        {
+            DisplayName = "Метка охотника",
+            Description = "Помечает цель и усиливает последующие атаки.",
+            IconId = "hunter-mark",
+            Actions = [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect: effect)]
+        };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent("apply-mark", ability.Id, runtime.Actor.ActorId),
+            Now);
+
+        ActiveEffect applied = Assert.Single(runtime.Actor.ActiveEffects);
+        Assert.True(result.Succeeded);
+        Assert.Equal("Метка охотника", applied.Definition.DisplayName);
+        Assert.Equal("Помечает цель и усиливает последующие атаки.", applied.Definition.Description);
+        Assert.Equal("hunter-mark", applied.Definition.IconId);
+    }
+
+    [Fact]
     public void AllEnemiesAbilityUsesOnlyExplicitServerResolvedTargets()
     {
         CombatRuntimeState runtime = CreateRuntime(resource: 50);

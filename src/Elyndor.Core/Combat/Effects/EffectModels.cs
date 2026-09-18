@@ -89,7 +89,10 @@ public sealed record EffectDefinition(
     bool SourceSpecific = false,
     DamageType PeriodicDamageType = DamageType.True,
     decimal? ReflectedDamageCap = null,
-    IReadOnlyList<EffectExpirationActionDefinition>? OnExpireActions = null);
+    IReadOnlyList<EffectExpirationActionDefinition>? OnExpireActions = null,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 
 public sealed class ActiveEffect
 {
