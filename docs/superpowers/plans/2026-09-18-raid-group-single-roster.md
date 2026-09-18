@@ -473,4 +473,3 @@ gh pr create --base main --head feat/raid-group-single-roster --title "feat: add
 ```
 
 The PR description must state that raids are one roster of up to 20 active players, group effects reach eligible active raid participants, and ordinary Party/dungeon behavior remains capped at five. Do not merge the PR.
-
