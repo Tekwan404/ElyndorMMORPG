@@ -10,6 +10,8 @@ public sealed class SetPassiveRuntimeState
 {
     private readonly Dictionary<(Guid ActorId, string PassiveId), SetPassiveProcState> _states = new();
 
+    public int Count => _states.Count;
+
     public SetPassiveProcState Get(Guid actorId, string passiveId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(passiveId);
