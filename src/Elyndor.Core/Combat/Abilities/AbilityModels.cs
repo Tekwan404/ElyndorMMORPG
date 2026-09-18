@@ -25,9 +25,10 @@ public enum AbilityTargetSelectorProfile
     LowestHpAlly,
     RandomManaUser,
     NonTankRandom,
+    CastInProgressEnemy,
     OwnerLinkedTarget
 }
-public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Dispel, Taunt }
+public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Dispel, Taunt, Interrupt }
 public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
 {
@@ -104,7 +105,8 @@ public sealed record AbilityActionDefinition(
     bool HealingCanCrit = false,
     AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster,
     string? DispelCategory = null,
-    TimeSpan? Delay = null);
+    TimeSpan? Delay = null,
+    TimeSpan? InterruptLockout = null);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
