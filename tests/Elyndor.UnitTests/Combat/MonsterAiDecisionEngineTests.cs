@@ -215,7 +215,7 @@ public sealed class MonsterAiDecisionEngineTests
             MaxHp: 100,
             Threat: threat);
 
-    private static IReadOnlyDictionary<string, AbilityDefinition> Abilities(
+    private static Dictionary<string, AbilityDefinition> Abilities(
         params AbilityDefinition[] abilities) =>
         abilities.ToDictionary(ability => ability.Id, StringComparer.Ordinal);
 
