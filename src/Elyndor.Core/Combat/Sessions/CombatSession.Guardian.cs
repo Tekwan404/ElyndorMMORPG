@@ -198,6 +198,11 @@ public sealed partial class CombatSession
 
     private void ApplyGuardianBlockHooks(CombatEvent combatEvent)
     {
+        // ApplyKernelEvents routes every authoritative DamageBlocked event here. Run the
+        // generic set-passive runtime before Guardian talent-specific logic so ownership
+        // is driven by TargetActorId even when the wearer has no Guardian talents.
+        ApplySetPassiveHooks(combatEvent);
+
         if (!IsGuardian
             || combatEvent.TargetActorId != _player.Actor.ActorId
             || combatEvent.SourceActorId is not { } enemyActorId
