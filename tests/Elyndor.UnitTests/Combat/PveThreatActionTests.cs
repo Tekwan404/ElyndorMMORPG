@@ -77,7 +77,7 @@ public sealed class PveThreatActionTests
     }
 
     [Fact]
-    public void PlayerSelfThreatDropAndClearAffectExistingEnemyThreat()
+    public void PlayerSelfThreatDropAndClearDoNotSuppressNextRealDamageThreat()
     {
         AbilityDefinition strike = new(
             "THREAT_STRIKE",
@@ -123,7 +123,7 @@ public sealed class PveThreatActionTests
             playerAbilityIds: new HashSet<string>(abilities.Keys, StringComparer.Ordinal));
 
         Assert.True(session.Handle(
-            new UseAbilityCommand("strike", strike.Id, EnemyId),
+            new UseAbilityCommand("strike-1", strike.Id, EnemyId),
             Now.AddMilliseconds(10)).Succeeded);
         CombatThreatSnapshot afterStrike = Assert.IsType<CombatThreatSnapshot>(
             session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(10)));
@@ -137,15 +137,25 @@ public sealed class PveThreatActionTests
             Now.AddMilliseconds(20)).Succeeded);
         CombatThreatSnapshot afterDrop = Assert.IsType<CombatThreatSnapshot>(
             session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(20)));
+        decimal threatAfterDrop = Assert.Single(
+            afterDrop.Entries,
+            entry => entry.ActorId == PlayerId).Threat;
+        Assert.Equal(threatAfterStrike * 0.5m, threatAfterDrop);
+
+        Assert.True(session.Handle(
+            new UseAbilityCommand("strike-2", strike.Id, EnemyId),
+            Now.AddMilliseconds(30)).Succeeded);
+        CombatThreatSnapshot afterSecondStrike = Assert.IsType<CombatThreatSnapshot>(
+            session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(30)));
         Assert.Equal(
-            threatAfterStrike * 0.5m,
-            Assert.Single(afterDrop.Entries, entry => entry.ActorId == PlayerId).Threat);
+            threatAfterDrop + 100m,
+            Assert.Single(afterSecondStrike.Entries, entry => entry.ActorId == PlayerId).Threat);
 
         Assert.True(session.Handle(
             new UseAbilityCommand("clear", clear.Id, PlayerId),
-            Now.AddMilliseconds(30)).Succeeded);
+            Now.AddMilliseconds(40)).Succeeded);
         CombatThreatSnapshot afterClear = Assert.IsType<CombatThreatSnapshot>(
-            session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(30)));
+            session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(40)));
         Assert.DoesNotContain(afterClear.Entries, entry => entry.ActorId == PlayerId);
     }
 
