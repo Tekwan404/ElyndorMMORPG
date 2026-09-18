@@ -78,7 +78,7 @@ public static class CombatReplaySimulator
             .OrderBy(item => item.Sequence)
             .ToList();
         long lastSequence = events.Count == 0 ? 0 : events[^1].Sequence;
-        IReadOnlyList<CombatEvent> recentEvents = events.ToArray();
+        CombatEvent[] recentEvents = events.ToArray();
         CombatCommandResult? lastCommandResult = null;
 
         for (var step = 0; step < scenario.MaximumSteps; step++)
