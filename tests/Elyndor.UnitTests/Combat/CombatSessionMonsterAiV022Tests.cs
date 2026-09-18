@@ -38,7 +38,7 @@ public sealed class CombatSessionMonsterAiV022Tests
         CombatSession session = CreateSession(
             ai,
             Abilities(bolt),
-            [bolt.Id],
+            new HashSet<string>(StringComparer.Ordinal) { bolt.Id },
             randomValues: Enumerable.Repeat(0.99m, 30).ToArray(),
             companion: Companion());
 
@@ -73,7 +73,7 @@ public sealed class CombatSessionMonsterAiV022Tests
         CombatSession session = CreateSession(
             ai,
             Abilities(opener, fallback),
-            [opener.Id, fallback.Id]);
+            new HashSet<string>(StringComparer.Ordinal) { opener.Id, fallback.Id });
 
         session.AdvanceTo(Now.AddSeconds(2));
 
@@ -106,7 +106,7 @@ public sealed class CombatSessionMonsterAiV022Tests
         CombatSession session = CreateSession(
             ai,
             Abilities(expensive, fallback),
-            [expensive.Id, fallback.Id],
+            new HashSet<string>(StringComparer.Ordinal) { expensive.Id, fallback.Id },
             enemyMaxResource: 0,
             enemyCurrentResource: 0);
 
@@ -124,7 +124,7 @@ public sealed class CombatSessionMonsterAiV022Tests
     private static CombatSession CreateSession(
         MonsterAiProfile ai,
         Dictionary<string, AbilityDefinition> abilities,
-        IReadOnlySet<string> enemyAbilityIds,
+        HashSet<string> enemyAbilityIds,
         decimal enemyMaxResource = 0,
         decimal enemyCurrentResource = 0,
         decimal[]? randomValues = null,
