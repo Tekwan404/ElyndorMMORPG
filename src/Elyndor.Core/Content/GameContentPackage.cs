@@ -1,6 +1,7 @@
 using Elyndor.Core.World;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Combat.Sessions;
@@ -27,6 +28,7 @@ public sealed record GameContentPackage(
     IReadOnlyList<TalentTreeDefinition>? TalentTrees = null,
     IReadOnlyList<MonsterDefinition>? Monsters = null,
     IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
+    IReadOnlyList<EncounterDefinition>? Encounters = null,
     LevelProgressionDefinition? LevelProgression = null,
     IReadOnlyList<ItemDefinition>? Items = null,
     IReadOnlyList<LootTableDefinition>? LootTables = null,

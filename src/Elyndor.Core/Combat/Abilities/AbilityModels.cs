@@ -16,8 +16,34 @@ public enum AbilityTargetType
     Owner
 }
 public enum GlobalCooldownCategory { None, Reduced, Standard }
-public enum AbilityTargetSelectorProfile { EncounterOrder }
-public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Taunt }
+public enum AbilityTargetSelectorProfile
+{
+    EncounterOrder,
+    RandomEnemy,
+    CurrentThreatTarget,
+    HighestThreat,
+    LowestHpAlly,
+    RandomManaUser,
+    NonTankRandom,
+    CastInProgressEnemy,
+    OwnerLinkedTarget
+}
+public enum AbilityActionType
+{
+    Damage,
+    Healing,
+    ApplyEffect,
+    ResourceChange,
+    Dispel,
+    Taunt,
+    Interrupt,
+    AddThreat,
+    DropThreatPercent,
+    ClearThreat,
+    Fixate,
+    TemporaryUntargetable
+}
+public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
 {
     None,
@@ -30,6 +56,9 @@ public enum AbilityErrorCode
     SchoolLocked,
     ActorStunned,
     ActorSilenced,
+    ActorRooted,
+    ActorFeared,
+    ActorDisarmed,
     AbilityUnavailable,
     CastAlreadyActive,
     NoActiveCast,
@@ -67,7 +96,10 @@ public sealed record AbilityDefinition(
     IReadOnlyDictionary<string, decimal>? RuntimeParameters = null,
     string? RequiredActiveEffectId = null,
     string? FreeResourceCostWhileEffectId = null,
-    string? ConsumeEffectId = null);
+    string? ConsumeEffectId = null,
+    bool RequiresWeapon = false,
+    bool RequiresMobility = false,
+    bool CanUseWhileFeared = false);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -84,7 +116,12 @@ public sealed record AbilityActionDefinition(
     decimal DamagePerCharacterLevel = 0,
     bool IsUnblockable = false,
     decimal BlockValueCoefficient = 0,
-    bool HealingCanCrit = false);
+    bool HealingCanCrit = false,
+    AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster,
+    string? DispelCategory = null,
+    TimeSpan? Delay = null,
+    TimeSpan? InterruptLockout = null,
+    decimal LifestealPercent = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
@@ -110,6 +147,14 @@ public sealed record ActiveCast(
     IReadOnlyList<Guid>? TargetIds = null,
     IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
 
+public sealed record PendingAbilityAction(
+    long Sequence,
+    AbilityDefinition Ability,
+    AbilityActionDefinition Action,
+    Guid TargetId,
+    AbilityTargetModifier TargetModifier,
+    DateTimeOffset ExecuteAtUtc);
+
 public sealed record AbilityExecutionResult(
     bool Succeeded,
     AbilityErrorCode ErrorCode,
@@ -120,14 +165,36 @@ public sealed record AbilityExecutionResult(
 
 public sealed class CombatRuntimeState(CombatActorState actor)
 {
+    private long _pendingActionSequence;
+
     public CombatActorState Actor { get; } = actor;
     public Dictionary<Guid, CombatActorState> Actors { get; } = new() { [actor.ActorId] = actor };
     public Dictionary<string, DateTimeOffset> Cooldowns { get; } = [];
     public Dictionary<string, DateTimeOffset> SchoolLockouts { get; } = [];
     public HashSet<string> ProcessedCommandIds { get; } = [];
+    public List<PendingAbilityAction> PendingActions { get; } = [];
     public DateTimeOffset? GlobalCooldownEndsAtUtc { get; internal set; }
     public ActiveCast? ActiveCast { get; internal set; }
     public long Version { get; internal set; }
+    public DateTimeOffset? NextPendingActionAtUtc => PendingActions.Count == 0
+        ? null
+        : PendingActions.Min(action => action.ExecuteAtUtc);
 
     public void AddActor(CombatActorState actor) => Actors.Add(actor.ActorId, actor);
+
+    internal void SchedulePendingAction(
+        AbilityDefinition ability,
+        AbilityActionDefinition action,
+        Guid targetId,
+        AbilityTargetModifier targetModifier,
+        DateTimeOffset executeAtUtc)
+    {
+        PendingActions.Add(new PendingAbilityAction(
+            ++_pendingActionSequence,
+            ability,
+            action,
+            targetId,
+            targetModifier,
+            executeAtUtc));
+    }
 }

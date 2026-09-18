@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
@@ -205,6 +206,10 @@ internal static class CategoryContentComposer
                 package.MonsterAiProfiles,
                 fragment.MonsterAiProfiles,
                 item => item.Id),
+            Encounters = ContentCompositionRules.MergeOptionalByKey(
+                package.Encounters,
+                fragment.Encounters,
+                item => item.Id),
             LevelProgression = fragment.LevelProgression ?? package.LevelProgression,
             Items = ContentCompositionRules.MergeOptionalByKey(
                 package.Items,
@@ -389,6 +394,7 @@ internal static class CategoryContentComposer
         IReadOnlyList<TalentTreePatch>? TalentTreePatches = null,
         IReadOnlyList<MonsterDefinition>? Monsters = null,
         IReadOnlyList<MonsterAiProfile>? MonsterAiProfiles = null,
+        IReadOnlyList<EncounterDefinition>? Encounters = null,
         LevelProgressionDefinition? LevelProgression = null,
         IReadOnlyList<ItemDefinition>? Items = null,
         IReadOnlyList<LootTableDefinition>? LootTables = null,

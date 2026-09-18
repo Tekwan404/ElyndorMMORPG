@@ -55,7 +55,9 @@ public sealed record CombatParticipantDefinition(
     decimal ResourceRegenPerSecond = 0,
     bool CanAutoAttack = true,
     AutoAttackProfile? OffHandAutoAttack = null,
-    MonsterRank? MonsterRank = null);
+    MonsterRank? MonsterRank = null,
+    bool IsCombatObject = false,
+    bool RewardEligible = true);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
@@ -95,7 +97,9 @@ public sealed record CombatActorSnapshot(
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
     DateTimeOffset? NextAutoAttackAtUtc = null,
-    Guid? CurrentAggroTargetActorId = null);
+    Guid? CurrentAggroTargetActorId = null,
+    bool IsCombatObject = false,
+    bool RewardEligible = true);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
@@ -32,6 +33,8 @@ public sealed class GameContentIndexes
         LootTablesById = ToDictionary(package.LootTables, item => item.Id);
         MonstersById = ToDictionary(package.Monsters, item => item.Id);
         MonsterAiProfilesById = ToDictionary(package.MonsterAiProfiles, item => item.Id);
+        EncountersById = ToDictionary(package.Encounters, item => item.Id);
+        EncountersByMonsterId = ToDictionary(package.Encounters, item => item.MonsterId);
         LocationsById = package.Locations.ToDictionary(item => item.Id, StringComparer.Ordinal);
         WorldContractsById = ToDictionary(package.WorldContracts, item => item.Id);
         DungeonsById = ToDictionary(package.Dungeons, item => item.Id);
@@ -53,6 +56,8 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, LootTableDefinition> LootTablesById { get; }
     public IReadOnlyDictionary<string, MonsterDefinition> MonstersById { get; }
     public IReadOnlyDictionary<string, MonsterAiProfile> MonsterAiProfilesById { get; }
+    public IReadOnlyDictionary<string, EncounterDefinition> EncountersById { get; }
+    public IReadOnlyDictionary<string, EncounterDefinition> EncountersByMonsterId { get; }
     public IReadOnlyDictionary<string, LocationDefinition> LocationsById { get; }
     public IReadOnlyDictionary<string, WorldContractDefinition> WorldContractsById { get; }
     public IReadOnlyDictionary<string, DungeonDefinition> DungeonsById { get; }

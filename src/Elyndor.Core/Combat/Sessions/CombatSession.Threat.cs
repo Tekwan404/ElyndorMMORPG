@@ -21,6 +21,15 @@ public sealed partial class CombatSession
 
     private void RegisterThreat(CombatEvent combatEvent)
     {
+        if (combatEvent.Type is CombatEventType.ThreatAdded
+            or CombatEventType.ThreatDropped
+            or CombatEventType.ThreatCleared
+            or CombatEventType.FixateApplied)
+        {
+            ProcessExplicitThreatAction(combatEvent);
+            return;
+        }
+
         CombatPlayerRuntimeState previousActivePlayer = _activePlayerState;
         try
         {
@@ -80,6 +89,96 @@ public sealed partial class CombatSession
 
             default:
                 threatTable.SuppressNextAutomaticAdd(sourceActorId);
+                break;
+        }
+    }
+
+    private void ProcessExplicitThreatAction(CombatEvent combatEvent)
+    {
+        if (combatEvent.Type is not (CombatEventType.ThreatAdded
+            or CombatEventType.ThreatDropped
+            or CombatEventType.ThreatCleared
+            or CombatEventType.FixateApplied)
+            || combatEvent.SourceActorId is not { } sourceActorId
+            || combatEvent.TargetActorId is not { } targetActorId)
+        {
+            return;
+        }
+
+        if (_enemiesById.ContainsKey(sourceActorId)
+            && _enemyThreatTables.TryGetValue(sourceActorId, out ThreatTable? enemyThreatTable))
+        {
+            bool selfTarget = targetActorId == sourceActorId;
+            switch (combatEvent.Type)
+            {
+                case CombatEventType.ThreatAdded when !selfTarget && IsPartyActor(targetActorId):
+                    enemyThreatTable.AddExplicitThreat(targetActorId, combatEvent.Amount);
+                    break;
+                case CombatEventType.ThreatDropped when selfTarget:
+                    enemyThreatTable.DropAllThreatPercent(combatEvent.Amount);
+                    break;
+                case CombatEventType.ThreatDropped when IsPartyActor(targetActorId):
+                    enemyThreatTable.DropThreatPercent(targetActorId, combatEvent.Amount);
+                    break;
+                case CombatEventType.ThreatCleared when selfTarget:
+                    enemyThreatTable.Clear();
+                    _enemyForcedTargets[sourceActorId].Clear();
+                    break;
+                case CombatEventType.ThreatCleared when IsPartyActor(targetActorId):
+                    enemyThreatTable.Remove(targetActorId);
+                    if (_enemyForcedTargets[sourceActorId].GetActive(combatEvent.OccurredAtUtc) == targetActorId)
+                        _enemyForcedTargets[sourceActorId].Clear();
+                    break;
+                case CombatEventType.FixateApplied when !selfTarget && IsPartyActor(targetActorId):
+                    _enemyForcedTargets[sourceActorId].Set(
+                        targetActorId,
+                        combatEvent.OccurredAtUtc,
+                        TimeSpan.FromSeconds((double)combatEvent.Amount));
+                    break;
+            }
+
+            return;
+        }
+
+        if (!IsPartyActor(sourceActorId))
+            return;
+
+        if (targetActorId == sourceActorId)
+        {
+            foreach (ThreatTable threatTable in _enemyThreatTables.Values)
+            {
+                if (combatEvent.Type == CombatEventType.ThreatDropped)
+                    threatTable.DropThreatPercent(sourceActorId, combatEvent.Amount);
+                else if (combatEvent.Type == CombatEventType.ThreatCleared)
+                    threatTable.Remove(sourceActorId);
+            }
+            return;
+        }
+
+        if (!_enemiesById.ContainsKey(targetActorId)
+            || !_enemyThreatTables.TryGetValue(targetActorId, out ThreatTable? targetThreatTable))
+        {
+            return;
+        }
+
+        switch (combatEvent.Type)
+        {
+            case CombatEventType.ThreatAdded:
+                targetThreatTable.AddExplicitThreat(sourceActorId, combatEvent.Amount);
+                break;
+            case CombatEventType.ThreatDropped:
+                targetThreatTable.DropThreatPercent(sourceActorId, combatEvent.Amount);
+                break;
+            case CombatEventType.ThreatCleared:
+                targetThreatTable.Remove(sourceActorId);
+                if (_enemyForcedTargets[targetActorId].GetActive(combatEvent.OccurredAtUtc) == sourceActorId)
+                    _enemyForcedTargets[targetActorId].Clear();
+                break;
+            case CombatEventType.FixateApplied:
+                _enemyForcedTargets[targetActorId].Set(
+                    sourceActorId,
+                    combatEvent.OccurredAtUtc,
+                    TimeSpan.FromSeconds((double)combatEvent.Amount));
                 break;
         }
     }
