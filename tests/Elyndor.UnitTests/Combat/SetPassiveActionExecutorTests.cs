@@ -13,26 +13,29 @@ public sealed class SetPassiveActionExecutorTests
         new(2026, 9, 18, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void GuardianTwoPieceBlockAppliesAndRefreshesArmorThroughEffectEngine()
+    public void GuardianTwoPieceRealBlockedHitAppliesAndRefreshesArmorThroughEffectEngine()
     {
-        Guid attackerId = Guid.NewGuid();
-        CombatActorState defender = Actor(Guid.NewGuid(), armor: 100);
+        CombatActorState attacker = Actor(Guid.NewGuid(), armor: 0);
+        CombatActorState defender = Actor(
+            Guid.NewGuid(),
+            armor: 100,
+            blockChance: 100,
+            blockValueMin: 10,
+            blockValueMax: 10);
         SetPassiveRuntime runtime = new([TestGuardianTwoPiece()]);
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> pieces =
             PieceCounts(defender.ActorId, 2);
 
-        SetPassiveActionInvocation first = Assert.Single(runtime.Evaluate(
-            BlockEvent(attackerId, defender.ActorId, Now),
-            pieces));
+        CombatEvent firstBlock = ResolveRealBlock(attacker, defender, Now);
+        SetPassiveActionInvocation first = Assert.Single(runtime.Evaluate(firstBlock, pieces));
         Assert.Single(SetPassiveActionExecutor.Execute(first, defender));
         Assert.Equal(
             125m,
             EffectEngine.CalculateStat(defender, EffectStat.Armor, 100m, Now));
 
         DateTimeOffset refreshedAt = Now.AddSeconds(4);
-        SetPassiveActionInvocation second = Assert.Single(runtime.Evaluate(
-            BlockEvent(attackerId, defender.ActorId, refreshedAt),
-            pieces));
+        CombatEvent secondBlock = ResolveRealBlock(attacker, defender, refreshedAt);
+        SetPassiveActionInvocation second = Assert.Single(runtime.Evaluate(secondBlock, pieces));
         Assert.Single(SetPassiveActionExecutor.Execute(second, defender));
 
         ActiveEffect effect = Assert.Single(defender.ActiveEffects.Where(item =>
@@ -129,7 +132,12 @@ public sealed class SetPassiveActionExecutorTests
                 StackPolicy: EffectStackPolicy.Replace)
         ]);
 
-    private static CombatActorState Actor(Guid id, decimal armor) => new(
+    private static CombatActorState Actor(
+        Guid id,
+        decimal armor,
+        decimal blockChance = 0,
+        decimal blockValueMin = 0,
+        decimal blockValueMax = 0) => new(
         id,
         maxHp: 500,
         currentHp: 500,
@@ -144,7 +152,30 @@ public sealed class SetPassiveActionExecutorTests
             Armor: armor,
             MagicResistance: 0,
             ArmorPenetration: 0,
-            MagicPenetration: 0));
+            MagicPenetration: 0,
+            BlockChance: blockChance,
+            BlockValueMin: blockValueMin,
+            BlockValueMax: blockValueMax));
+
+    private static CombatEvent ResolveRealBlock(
+        CombatActorState attacker,
+        CombatActorState defender,
+        DateTimeOffset occurredAt)
+    {
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                attacker,
+                defender,
+                BaseAmount: 40m,
+                Type: DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom(0m),
+            occurredAt);
+
+        return Assert.Single(result.Events.Where(item => item.Type == CombatEventType.DamageBlocked));
+    }
 
     private static CombatEvent BlockEvent(
         Guid attackerId,
