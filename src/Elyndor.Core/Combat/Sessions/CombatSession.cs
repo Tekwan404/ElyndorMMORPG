@@ -488,6 +488,7 @@ public sealed partial class CombatSession
             next = Min(next, _companionRuntime?.ActiveCast?.ResolvesAtUtc);
             next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
             next = Min(next, _nextSummonAtUtc);
+            next = Min(next, NextGenericEncounterDueAtUtc);
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 Guid enemyActorId = enemy.Actor.ActorId;
@@ -1193,6 +1194,7 @@ public sealed partial class CombatSession
         {
             ApplyPlayerResourceRegen(due);
             CurrentTimeUtc = due;
+            ProcessGenericEncounterDue(due);
             ProcessEffects(due);
             if (Status != CombatSessionStatus.Active) break;
 
@@ -1477,6 +1479,7 @@ public sealed partial class CombatSession
                 aiRuntime.SchedulerState,
                 _random,
                 currentThreatTargetId,
+                ownerLinkedTargetId: ResolveGenericEncounterOwnerTarget(enemyActorId),
                 excludedAbilityIds: failedAbilityIds);
             if (decision is null)
                 break;
@@ -1894,6 +1897,7 @@ public sealed partial class CombatSession
             }
             RegisterThreat(normalized);
             Append(normalized);
+            ProcessGenericEncounterEvent(normalized);
             if (normalized.Type == CombatEventType.ActorDied
                 && normalized.ActorId == _player.Actor.ActorId)
             {
