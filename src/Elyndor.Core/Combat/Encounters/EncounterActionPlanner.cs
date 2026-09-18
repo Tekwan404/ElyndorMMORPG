@@ -31,6 +31,17 @@ public static class EncounterActionPlanner
                      snapshot,
                      state))
         {
+            if (resolution.AbilityIds is { Count: > 0 })
+            {
+                planned.Add(new EncounterPlannedAction(
+                    resolution.PhaseId,
+                    new EncounterActionDefinition(
+                        EncounterActionType.ChangeAbilitySet,
+                        AbilityIds: resolution.AbilityIds),
+                    snapshot.Now,
+                    resolution.DisplayName));
+            }
+
             foreach (EncounterActionDefinition sourceAction in resolution.Actions)
             {
                 EncounterActionDefinition? action = ResolveAction(
