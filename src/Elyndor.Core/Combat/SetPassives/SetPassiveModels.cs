@@ -1,3 +1,5 @@
+using Elyndor.Core.Combat.Effects;
+
 namespace Elyndor.Core.Combat.SetPassives;
 
 public enum SetPassiveActorRole
@@ -9,21 +11,29 @@ public enum SetPassiveActorRole
 public enum SetPassiveActionKind
 {
     ApplyEffect,
-    ApplyShield,
-    GainResource,
-    GrantProcToken
+    AddShield,
+    RestoreResource,
+    DealDamage,
+    ModifyCooldown
 }
 
 public sealed record SetPassiveTriggerDefinition(
     CombatEventType EventType,
-    SetPassiveActorRole ActorRole,
-    int RequiredOccurrences = 1);
+    SetPassiveActorRole ActorRole);
+
+public sealed record SetPassiveConditionDefinition(
+    int EveryNth = 1,
+    TimeSpan? InternalCooldown = null);
 
 public sealed record SetPassiveActionDefinition(
     SetPassiveActionKind Kind,
     string? ReferenceId = null,
-    decimal Value = 0m,
-    int DurationTicks = 0,
+    decimal Magnitude = 0m,
+    TimeSpan? Duration = null,
+    EffectStat? ModifiedStat = null,
+    EffectModifierMode ModifierMode = EffectModifierMode.Flat,
+    EffectStackPolicy StackPolicy = EffectStackPolicy.Refresh,
+    int MaxStacks = 1,
     bool ScaleWithMaxHp = false);
 
 public sealed record SetPassiveDefinition(
@@ -31,12 +41,12 @@ public sealed record SetPassiveDefinition(
     string SetId,
     int RequiredPieces,
     SetPassiveTriggerDefinition Trigger,
-    IReadOnlyList<SetPassiveActionDefinition> Actions,
-    int InternalCooldownTicks = 0);
+    SetPassiveConditionDefinition Conditions,
+    IReadOnlyList<SetPassiveActionDefinition> Actions);
 
 public sealed record SetPassiveActionInvocation(
     string PassiveId,
     string SetId,
     Guid ActorId,
-    int Tick,
+    DateTimeOffset OccurredAtUtc,
     SetPassiveActionDefinition Action);
