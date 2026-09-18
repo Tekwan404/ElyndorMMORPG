@@ -16,6 +16,7 @@ public enum EffectKind
     Root,
     Fear,
     Disarm,
+    DamageReflection,
     LethalDamagePrevention
 }
 
@@ -66,7 +67,8 @@ public sealed record EffectDefinition(
     EffectStat? ModifiedStat = null,
     EffectModifierMode ModifierMode = EffectModifierMode.Flat,
     bool SourceSpecific = false,
-    DamageType PeriodicDamageType = DamageType.True);
+    DamageType PeriodicDamageType = DamageType.True,
+    decimal? ReflectedDamageCap = null);
 
 public sealed class ActiveEffect
 {
