@@ -30,7 +30,8 @@ public sealed partial class CombatSession
                 UsesMana: string.Equals(candidate.ResourceType, "MANA", StringComparison.Ordinal),
                 CurrentHp: candidate.Actor.CurrentHp,
                 MaxHp: candidate.Actor.MaxHp,
-                Threat: threatTable.GetThreat(actorId)));
+                Threat: threatTable.GetThreat(actorId),
+                IsCasting: IsPartyActorCasting(actorId)));
         }
 
         foreach (CombatParticipantDefinition ally in _enemies)
@@ -48,5 +49,19 @@ public sealed partial class CombatSession
         }
 
         return candidates.ToArray();
+    }
+
+    private bool IsPartyActorCasting(Guid actorId)
+    {
+        if (_playerStatesByActorId.TryGetValue(
+                actorId,
+                out CombatPlayerRuntimeState? playerState))
+        {
+            return playerState.Runtime.ActiveCast is not null;
+        }
+
+        return _companion is not null
+            && _companion.Actor.ActorId == actorId
+            && _companionRuntime?.ActiveCast is not null;
     }
 }
