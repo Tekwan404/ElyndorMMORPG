@@ -5,7 +5,6 @@ namespace Elyndor.Core.Combat.Sessions;
 public sealed partial class CombatSession
 {
     private readonly SetPassiveRuntime _setPassiveRuntime = new(SetPassiveCatalog.Definitions);
-    private readonly SetPassiveActionExecutor _setPassiveActionExecutor = new();
     private IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>>? _setPassiveLoadoutSnapshot;
 
     private void ApplySetPassiveHooks(CombatEvent combatEvent)
@@ -23,7 +22,7 @@ public sealed partial class CombatSession
                 continue;
             }
 
-            IReadOnlyList<CombatEvent> actionEvents = _setPassiveActionExecutor.Execute(
+            IReadOnlyList<CombatEvent> actionEvents = SetPassiveActionExecutor.Execute(
                 invocation,
                 ownerState.Definition.Actor);
             if (actionEvents.Count == 0)
