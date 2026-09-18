@@ -139,6 +139,68 @@ public sealed class EncounterPhaseEngineTests
         Assert.Contains(errors, item => item.Contains("target phase", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void ValidatorRejectsRepeatableStateAndTimeTriggersButAllowsRepeatableEvents()
+    {
+        EncounterTriggerDefinition[] unsafeTriggers =
+        [
+            new(EncounterTriggerType.CombatStart, Once: false),
+            new(EncounterTriggerType.HpAtOrBelow, Threshold: 50, Once: false),
+            new(
+                EncounterTriggerType.ElapsedTime,
+                Elapsed: TimeSpan.FromSeconds(5),
+                Once: false),
+            new(EncounterTriggerType.ResourceAtOrBelow, Threshold: 20, Once: false),
+            new(EncounterTriggerType.ResourceAtOrAbove, Threshold: 80, Once: false),
+            new(
+                EncounterTriggerType.PhaseStart,
+                PhaseId: "SOURCE_PHASE",
+                Once: false)
+        ];
+
+        foreach (EncounterTriggerDefinition trigger in unsafeTriggers)
+        {
+            EncounterDefinition invalid = new(
+                $"INVALID_{trigger.Type}",
+                "BOSS",
+                [
+                    new EncounterPhaseDefinition(
+                        "PHASE",
+                        trigger,
+                        [
+                            new EncounterActionDefinition(
+                                EncounterActionType.ResourceChange,
+                                ResourceAmount: -1)
+                        ])
+                ]);
+
+            Assert.Contains(
+                EncounterDefinitionValidator.Validate(invalid),
+                error => error.Contains("once-per-combat", StringComparison.Ordinal));
+        }
+
+        EncounterDefinition repeatableEvent = new(
+            "REPEATABLE_EVENT",
+            "BOSS",
+            [
+                new EncounterPhaseDefinition(
+                    "ADD_DIED",
+                    new EncounterTriggerDefinition(
+                        EncounterTriggerType.AddDeath,
+                        DefinitionId: "ADD",
+                        Once: false),
+                    [
+                        new EncounterActionDefinition(
+                            EncounterActionType.ResourceChange,
+                            ResourceAmount: -1)
+                    ])
+            ]);
+
+        Assert.DoesNotContain(
+            EncounterDefinitionValidator.Validate(repeatableEvent),
+            error => error.Contains("once-per-combat", StringComparison.Ordinal));
+    }
+
     private static EncounterRuntimeSnapshot Snapshot(decimal hp) =>
         new(
             hp,
