@@ -1,83 +1,64 @@
-# Elyndor — Raid Group System Specification
+# Elyndor — Raid Group System
 
 **Document:** `docs/source-of-truth/gameplay/31_RAID_GROUP_SYSTEM.md`
-**Status:** Foundation / Source of Truth
+**Status:** Approved foundation
 
 ---
 
-# 1. Назначение
+## 1. Purpose
 
-Raid Group System вводит организованную группу больше обычного Party для world-boss/raid encounters.
+`RaidGroup` is one organised group for raid and world-boss encounters. It does not replace the existing five-player `Party` used by ordinary party content and dungeons.
 
-Current Party max remains:
+A raid has one roster. If ten characters join, the raid has ten members; it is not represented as two parties and does not require filling empty slots.
 
-```text
-5
-```
-
-Raid Group does not replace Party.
-
----
-
-# 2. Model
+## 2. Model
 
 ```text
 RaidGroup
 ├── RaidGroupId
 ├── LeaderCharacterId
-├── Subgroups[]
+├── Members[]
 ├── MaxMembers
 ├── State
 ├── CreatedAt
 └── Version
 ```
 
-Default:
+Default `MaxMembers` is 20. The maximum is encounter/content-defined and must be validated by the server.
 
-```text
-MaxMembers = 20
-Subgroup size = 5
-```
+There are no combat subgroups and no subgroup assignment in the first raid implementation.
 
----
+## 3. Membership and permissions
 
-# 3. Membership
+A character is in either one ordinary `Party` or one `RaidGroup` context. Joining a raid must use an explicit server-authoritative transition; it must not silently preserve a second, independently managed party membership.
 
-Character can be:
-- in one Party OR
-- in one RaidGroup context that internally contains subgroup assignments.
+Raid roles are:
 
-Raid Group UI may represent 4 subgroups × 5.
-
-Party effects that are explicitly `Party-only` apply only to subgroup unless ability/effect says `Raid-wide`.
-
----
-
-# 4. Roles / Permissions
-
-Raid permissions:
 ```text
 LEADER
 ASSISTANT
 MEMBER
 ```
 
-Leader:
-- invite;
-- kick;
-- move subgroup;
-- promote assistant;
-- ready check;
-- disband.
+The leader may invite, remove members, promote assistants, begin a ready check, and disband the raid. An assistant may invite and begin a ready check. Member and capacity changes are versioned and validated atomically.
 
-Assistant:
-- invite;
-- ready check;
-- mark targets if enabled.
+## 4. Combat and effect scope
 
----
+An encounter started for a `RaidGroup` creates one combat roster containing all eligible raid members who join that encounter, up to the encounter maximum. It does not split the encounter into five-member combats.
 
-# 5. Ready Check
+During a raid encounter:
+
+- self effects affect only their owner;
+- explicitly targeted effects affect their selected valid target;
+- ally, party, group, and raid-wide effects affect every eligible active participant in the same raid combat roster.
+
+Thus a raid buff is shared by all present raid participants whether the roster contains 2, 10, or 20 characters. A member who is offline, has not joined the encounter, has fled, or is otherwise no longer an active participant is not a valid recipient.
+
+The rules above are a raid-context mapping of existing group effects, not a second parallel buff system. Ordinary Party and dungeon combat retain their existing maximum of five and their existing effect semantics.
+
+## 5. Ready check and lifecycle
+
+Ready check states are:
 
 ```text
 READY
@@ -85,35 +66,19 @@ NOT_READY
 NO_RESPONSE
 ```
 
-Ready Check has stable instance id and timeout.
+A ready check has a stable instance id and server timeout. It is organisational only and never starts combat by itself.
 
-Does not start combat automatically.
+Members may disconnect for a grace period. Reconnect restores the authoritative raid snapshot. Disconnected or non-participating characters do not receive rewards merely because their membership remains in the raid.
 
----
+## 6. Reward eligibility
 
-# 6. World Boss Integration
+Raid membership alone grants no reward. Boss and reward systems determine eligibility from the combat roster and the existing participation/contribution rules. Reward mutations remain server-authoritative, idempotent, and independent of the client connection.
 
-World Boss may accept:
-- ordinary Party;
-- organized RaidGroup;
-- unaffiliated participants if encounter policy allows.
+## 7. Invariants
 
-Reward eligibility remains participation-based, not raid membership alone.
-
----
-
-# 7. Disconnect
-
-Offline member may remain for grace period.
-No automatic reward for disconnected/non-participating member.
-
----
-
-# 8. Invariants
-
-1. Party max stays 5.
-2. Raid max default 20, data-driven.
-3. Subgroup size 5.
-4. Party-only effects do not silently become raid-wide.
-5. Raid membership does not grant reward by itself.
-6. Combat/Boss remain authoritative owners of encounter state.
+1. Ordinary Party and ordinary dungeon maximum remain 5.
+2. Raid has one roster with a default maximum of 20.
+3. A raid may start with any positive member count accepted by the encounter policy; no padding is required.
+4. No combat subgroup or subgroup-only buff rule exists in the initial raid system.
+5. Group/ally effects in an active raid combat apply to all valid members of that raid combat roster.
+6. Combat and boss systems remain authoritative owners of encounter state, targets, participation, and rewards.
