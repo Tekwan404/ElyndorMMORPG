@@ -26,7 +26,7 @@ public sealed class SetPassiveEvaluator
         ArgumentNullException.ThrowIfNull(equippedSetPieceCounts);
         ArgumentNullException.ThrowIfNull(runtimeState);
 
-        List<SetPassiveActionInvocation> invocations = new();
+        List<SetPassiveActionInvocation> invocations = [];
 
         foreach (SetPassiveDefinition definition in _definitions)
         {
@@ -42,26 +42,29 @@ public sealed class SetPassiveEvaluator
             }
 
             SetPassiveProcState state = runtimeState.Get(actorId.Value, definition.Id);
-            if (combatEvent.Tick < state.CooldownUntilTick)
+            if (state.CooldownUntil is { } cooldownUntil
+                && combatEvent.OccurredAtUtc < cooldownUntil)
             {
                 continue;
             }
 
-            int occurrences = state.Occurrences + 1;
-            if (occurrences < definition.Trigger.RequiredOccurrences)
+            int eventCounter = state.EventCounter + 1;
+            if (eventCounter < definition.Conditions.EveryNth)
             {
-                runtimeState.Set(state with { Occurrences = occurrences });
+                runtimeState.Set(state with { EventCounter = eventCounter });
                 continue;
             }
 
-            int cooldownUntilTick = definition.InternalCooldownTicks > 0
-                ? checked(combatEvent.Tick + definition.InternalCooldownTicks)
-                : 0;
+            DateTimeOffset? nextCooldown = definition.Conditions.InternalCooldown is { } internalCooldown
+                && internalCooldown > TimeSpan.Zero
+                ? combatEvent.OccurredAtUtc + internalCooldown
+                : null;
 
             runtimeState.Set(state with
             {
-                Occurrences = 0,
-                CooldownUntilTick = cooldownUntilTick
+                EventCounter = 0,
+                CooldownUntil = nextCooldown,
+                LastProcAt = combatEvent.OccurredAtUtc
             });
 
             foreach (SetPassiveActionDefinition action in definition.Actions)
@@ -70,7 +73,7 @@ public sealed class SetPassiveEvaluator
                     definition.Id,
                     definition.SetId,
                     actorId.Value,
-                    combatEvent.Tick,
+                    combatEvent.OccurredAtUtc,
                     action));
             }
         }
@@ -101,6 +104,7 @@ public sealed class SetPassiveEvaluator
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.Id);
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.SetId);
         ArgumentNullException.ThrowIfNull(definition.Trigger);
+        ArgumentNullException.ThrowIfNull(definition.Conditions);
         ArgumentNullException.ThrowIfNull(definition.Actions);
 
         if (definition.RequiredPieces <= 0)
@@ -108,19 +112,33 @@ public sealed class SetPassiveEvaluator
             throw new ArgumentOutOfRangeException(nameof(definition.RequiredPieces));
         }
 
-        if (definition.Trigger.RequiredOccurrences <= 0)
+        if (definition.Conditions.EveryNth <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(definition.Trigger.RequiredOccurrences));
+            throw new ArgumentOutOfRangeException(nameof(definition.Conditions.EveryNth));
         }
 
-        if (definition.InternalCooldownTicks < 0)
+        if (definition.Conditions.InternalCooldown is { } internalCooldown
+            && internalCooldown < TimeSpan.Zero)
         {
-            throw new ArgumentOutOfRangeException(nameof(definition.InternalCooldownTicks));
+            throw new ArgumentOutOfRangeException(nameof(definition.Conditions.InternalCooldown));
         }
 
         if (definition.Actions.Count == 0)
         {
             throw new ArgumentException("Set passive must define at least one action.", nameof(definition));
+        }
+
+        foreach (SetPassiveActionDefinition action in definition.Actions)
+        {
+            if (action.MaxStacks <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(action.MaxStacks));
+            }
+
+            if (action.Duration is { } duration && duration < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(action.Duration));
+            }
         }
     }
 }
