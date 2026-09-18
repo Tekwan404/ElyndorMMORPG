@@ -88,6 +88,7 @@ public static class MonsterAiDecisionEngine
             AbilityTargetType.Self => [monster.ActorId],
             AbilityTargetType.SingleEnemy => SelectEnemyTargets(
                 selector,
+                AbilityTargetSelectorProfile.CurrentThreatTarget,
                 candidates,
                 1,
                 random,
@@ -98,6 +99,7 @@ public static class MonsterAiDecisionEngine
                 candidates),
             AbilityTargetType.NEnemiesInCombat when ability.TargetCount > 0 => SelectEnemyTargets(
                 selector,
+                AbilityTargetSelectorProfile.EncounterOrder,
                 candidates,
                 ability.TargetCount,
                 random,
@@ -127,6 +129,7 @@ public static class MonsterAiDecisionEngine
 
     private static Guid[] SelectEnemyTargets(
         AbilityTargetSelectorProfile selector,
+        AbilityTargetSelectorProfile fallbackSelector,
         AbilityTargetCandidate[] candidates,
         int count,
         IGameRandom random,
@@ -134,7 +137,7 @@ public static class MonsterAiDecisionEngine
         Guid? ownerLinkedTargetId)
     {
         AbilityTargetSelectorProfile effectiveSelector = selector == AbilityTargetSelectorProfile.EncounterOrder
-            ? AbilityTargetSelectorProfile.CurrentThreatTarget
+            ? fallbackSelector
             : selector;
         return AbilityTargetSelector.SelectMany(
                 effectiveSelector,
