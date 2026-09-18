@@ -252,6 +252,17 @@ public static class AbilityEngine
                 ?? new AbilityTargetModifier();
             foreach (AbilityActionDefinition action in ability.Actions)
             {
+                if (action.Delay is { } delay && delay > TimeSpan.Zero)
+                {
+                    runtime.SchedulePendingAction(
+                        ability,
+                        action with { Delay = null },
+                        targetId,
+                        targetModifier,
+                        now + delay);
+                    continue;
+                }
+
                 switch (action.Type)
                 {
                     case AbilityActionType.Damage:
@@ -381,6 +392,60 @@ public static class AbilityEngine
         return events;
     }
 
+    public static IReadOnlyList<CombatEvent> ResolvePendingActions(
+        CombatRuntimeState runtime,
+        DateTimeOffset now,
+        IGameRandom? random = null)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        PendingAbilityAction[] due = runtime.PendingActions
+            .Where(action => action.ExecuteAtUtc <= now)
+            .OrderBy(action => action.ExecuteAtUtc)
+            .ThenBy(action => action.Sequence)
+            .ToArray();
+        if (due.Length == 0)
+            return [];
+
+        List<CombatEvent> events = [];
+        foreach (PendingAbilityAction pending in due)
+        {
+            runtime.PendingActions.Remove(pending);
+            if (!runtime.Actors.TryGetValue(
+                    pending.TargetId,
+                    out CombatActorState? target)
+                || target.IsDead)
+            {
+                continue;
+            }
+
+            AbilityDefinition delayedAbility = pending.Ability with
+            {
+                Actions = [pending.Action]
+            };
+            EnsureExecutable(delayedAbility, random);
+            Dictionary<Guid, AbilityTargetModifier> targetModifiers = new()
+            {
+                [pending.TargetId] = pending.TargetModifier
+            };
+            IReadOnlyList<CombatEvent> resolved = ResolveActions(
+                runtime,
+                delayedAbility,
+                [pending.TargetId],
+                targetModifiers,
+                pending.ExecuteAtUtc,
+                random);
+            events.AddRange(resolved.Select(combatEvent => combatEvent with
+            {
+                DefinitionId = combatEvent.DefinitionId ?? pending.Ability.Id,
+                SourceActorId = combatEvent.SourceActorId ?? runtime.Actor.ActorId,
+                TargetActorId = combatEvent.TargetActorId ?? pending.TargetId
+            }));
+        }
+
+        runtime.Version++;
+        return events;
+    }
+
     private static Guid[] ResolveTargetIds(
         AbilityDefinition ability,
         AbilityIntent intent)
@@ -433,6 +498,12 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Dispel actions require a dispel category.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Delay is { } delay && delay < TimeSpan.Zero) == true)
+        {
+            throw new InvalidOperationException(
+                "Ability action delay cannot be negative.");
         }
     }
 
