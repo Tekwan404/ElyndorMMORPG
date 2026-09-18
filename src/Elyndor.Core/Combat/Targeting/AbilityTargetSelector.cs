@@ -11,7 +11,8 @@ public sealed record AbilityTargetCandidate(
     decimal CurrentHp,
     decimal MaxHp,
     decimal Threat = 0,
-    Guid? OwnerId = null)
+    Guid? OwnerId = null,
+    bool IsCasting = false)
 {
     public decimal HpPercent => MaxHp <= 0 ? 0 : CurrentHp / MaxHp * 100m;
 }
@@ -89,6 +90,11 @@ public static class AbilityTargetSelector
                 living.Where(candidate => candidate.IsEnemy && !candidate.IsTank).ToArray(),
                 count,
                 random),
+            AbilityTargetSelectorProfile.CastInProgressEnemy => living
+                .Where(candidate => candidate.IsEnemy && candidate.IsCasting)
+                .Take(count)
+                .Select(candidate => candidate.ActorId)
+                .ToArray(),
             AbilityTargetSelectorProfile.OwnerLinkedTarget => ResolveOwnerLinkedTargets(
                 living,
                 count,
