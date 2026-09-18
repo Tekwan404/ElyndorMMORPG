@@ -3,7 +3,7 @@ using Elyndor.Core.Combat.Sessions;
 
 namespace Elyndor.Core.Combat.Simulation;
 
-public enum CombatSimulationEndReason
+public enum CombatReplayEndReason
 {
     Victory,
     Defeat,
@@ -13,22 +13,22 @@ public enum CombatSimulationEndReason
     StepLimit
 }
 
-public sealed record CombatSimulationDecisionContext(
+public sealed record CombatReplayDecisionContext(
     CombatSessionSnapshot Snapshot,
     IReadOnlyList<CombatEvent> EventsSinceLastDecision,
     CombatCommandResult? LastCommandResult,
     int Step);
 
-public sealed record CombatSimulationScenario(
+public sealed record CombatReplayScenario(
     string Id,
     int Seed,
     Func<IGameRandom, CombatSession> SessionFactory,
     TimeSpan MaximumDuration,
     int MaximumSteps = 10_000,
-    Func<CombatSimulationDecisionContext, CombatCommand?>? DecisionPolicy = null,
+    Func<CombatReplayDecisionContext, CombatCommand?>? DecisionPolicy = null,
     IReadOnlySet<string>? DispelAbilityIds = null);
 
-public sealed record CombatSimulationMetrics(
+public sealed record CombatReplayMetrics(
     TimeSpan SimulatedDuration,
     TimeSpan? TimeToKill,
     decimal IncomingDamage,
@@ -41,17 +41,17 @@ public sealed record CombatSimulationMetrics(
     Guid? LastPartyDeathActorId,
     string? LastPartyDeathCauseId);
 
-public sealed record CombatSimulationResult(
+public sealed record CombatReplayResult(
     string ScenarioId,
     int Seed,
-    CombatSimulationEndReason EndReason,
+    CombatReplayEndReason EndReason,
     CombatSessionSnapshot FinalSnapshot,
-    CombatSimulationMetrics Metrics,
+    CombatReplayMetrics Metrics,
     IReadOnlyList<CombatEvent> Events);
 
-public static class CombatScenarioSimulator
+public static class CombatReplaySimulator
 {
-    public static CombatSimulationResult Run(CombatSimulationScenario scenario)
+    public static CombatReplayResult Run(CombatReplayScenario scenario)
     {
         ArgumentNullException.ThrowIfNull(scenario);
         ArgumentException.ThrowIfNullOrWhiteSpace(scenario.Id);
@@ -101,13 +101,13 @@ public static class CombatScenarioSimulator
                     scenario,
                     initialSnapshot,
                     snapshot,
-                    CombatSimulationEndReason.Timeout,
+                    CombatReplayEndReason.Timeout,
                     partyActorIds,
                     events);
             }
 
             CombatCommand? command = scenario.DecisionPolicy?.Invoke(
-                new CombatSimulationDecisionContext(
+                new CombatReplayDecisionContext(
                     snapshot,
                     recentEvents,
                     lastCommandResult,
@@ -126,7 +126,7 @@ public static class CombatScenarioSimulator
                     scenario,
                     initialSnapshot,
                     snapshot,
-                    CombatSimulationEndReason.Stalled,
+                    CombatReplayEndReason.Stalled,
                     partyActorIds,
                     events);
             }
@@ -136,8 +136,8 @@ public static class CombatScenarioSimulator
                 session.AdvanceTo(deadlineUtc);
                 recentEvents = CollectNewEvents(session, events, ref lastSequence);
                 CombatSessionSnapshot deadlineSnapshot = session.Snapshot();
-                CombatSimulationEndReason endReason = deadlineSnapshot.Status == CombatSessionStatus.Active
-                    ? CombatSimulationEndReason.Timeout
+                CombatReplayEndReason endReason = deadlineSnapshot.Status == CombatSessionStatus.Active
+                    ? CombatReplayEndReason.Timeout
                     : MapEndReason(deadlineSnapshot.Status);
                 return BuildResult(
                     scenario,
@@ -161,15 +161,15 @@ public static class CombatScenarioSimulator
                     scenario,
                     initialSnapshot,
                     advanced,
-                    CombatSimulationEndReason.Stalled,
+                    CombatReplayEndReason.Stalled,
                     partyActorIds,
                     events);
             }
         }
 
         CombatSessionSnapshot finalSnapshot = session.Snapshot();
-        CombatSimulationEndReason finalReason = finalSnapshot.Status == CombatSessionStatus.Active
-            ? CombatSimulationEndReason.StepLimit
+        CombatReplayEndReason finalReason = finalSnapshot.Status == CombatSessionStatus.Active
+            ? CombatReplayEndReason.StepLimit
             : MapEndReason(finalSnapshot.Status);
         return BuildResult(
             scenario,
@@ -206,22 +206,22 @@ public static class CombatScenarioSimulator
         return actorIds;
     }
 
-    private static CombatSimulationResult BuildResult(
-        CombatSimulationScenario scenario,
+    private static CombatReplayResult BuildResult(
+        CombatReplayScenario scenario,
         CombatSessionSnapshot initialSnapshot,
         CombatSessionSnapshot finalSnapshot,
-        CombatSimulationEndReason endReason,
+        CombatReplayEndReason endReason,
         IReadOnlySet<Guid> partyActorIds,
         IReadOnlyList<CombatEvent> events)
     {
-        CombatSimulationMetrics metrics = BuildMetrics(
+        CombatReplayMetrics metrics = BuildMetrics(
             scenario,
             initialSnapshot,
             finalSnapshot,
             endReason,
             partyActorIds,
             events);
-        return new CombatSimulationResult(
+        return new CombatReplayResult(
             scenario.Id,
             scenario.Seed,
             endReason,
@@ -230,11 +230,11 @@ public static class CombatScenarioSimulator
             events.ToArray());
     }
 
-    private static CombatSimulationMetrics BuildMetrics(
-        CombatSimulationScenario scenario,
+    private static CombatReplayMetrics BuildMetrics(
+        CombatReplayScenario scenario,
         CombatSessionSnapshot initialSnapshot,
         CombatSessionSnapshot finalSnapshot,
-        CombatSimulationEndReason endReason,
+        CombatReplayEndReason endReason,
         IReadOnlySet<Guid> partyActorIds,
         IReadOnlyList<CombatEvent> events)
     {
@@ -282,9 +282,9 @@ public static class CombatScenarioSimulator
             .ToArray();
         CombatEvent? lastPartyDeath = partyDeaths.LastOrDefault();
 
-        return new CombatSimulationMetrics(
+        return new CombatReplayMetrics(
             duration,
-            endReason == CombatSimulationEndReason.Victory ? duration : null,
+            endReason == CombatReplayEndReason.Victory ? duration : null,
             incomingDamage,
             incomingDps,
             interruptCount,
@@ -333,12 +333,12 @@ public static class CombatScenarioSimulator
         return (totalUptime, peakActive);
     }
 
-    private static CombatSimulationEndReason MapEndReason(CombatSessionStatus status) =>
+    private static CombatReplayEndReason MapEndReason(CombatSessionStatus status) =>
         status switch
         {
-            CombatSessionStatus.Victory => CombatSimulationEndReason.Victory,
-            CombatSessionStatus.Defeat => CombatSimulationEndReason.Defeat,
-            CombatSessionStatus.Cancelled => CombatSimulationEndReason.Cancelled,
-            _ => CombatSimulationEndReason.Stalled
+            CombatSessionStatus.Victory => CombatReplayEndReason.Victory,
+            CombatSessionStatus.Defeat => CombatReplayEndReason.Defeat,
+            CombatSessionStatus.Cancelled => CombatReplayEndReason.Cancelled,
+            _ => CombatReplayEndReason.Stalled
         };
 }

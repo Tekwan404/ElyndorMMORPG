@@ -8,7 +8,7 @@ using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Combat;
 
-public sealed class CombatScenarioSimulatorTests
+public sealed class CombatReplaySimulatorTests
 {
     private static readonly DateTimeOffset Now =
         new(2026, 9, 18, 11, 0, 0, TimeSpan.Zero);
@@ -20,16 +20,16 @@ public sealed class CombatScenarioSimulatorTests
     [Fact]
     public void FixedSeedReplaysSameAuthoritativeCombatResult()
     {
-        CombatSimulationScenario scenario = new(
+        CombatReplayScenario scenario = new(
             "FIXED_SEED_REPLAY",
             Seed: 1337,
             SessionFactory: random => CreateSession(random, withTimedAdd: false),
             MaximumDuration: TimeSpan.FromSeconds(30));
 
-        CombatSimulationResult first = CombatScenarioSimulator.Run(scenario);
-        CombatSimulationResult second = CombatScenarioSimulator.Run(scenario);
+        CombatReplayResult first = CombatReplaySimulator.Run(scenario);
+        CombatReplayResult second = CombatReplaySimulator.Run(scenario);
 
-        Assert.Equal(CombatSimulationEndReason.Victory, first.EndReason);
+        Assert.Equal(CombatReplayEndReason.Victory, first.EndReason);
         Assert.Equal(first.EndReason, second.EndReason);
         Assert.Equal(first.Metrics, second.Metrics);
         Assert.Equal(
@@ -43,15 +43,15 @@ public sealed class CombatScenarioSimulatorTests
     [Fact]
     public void SimulatorTracksExactSummonedAddUptimeFromCombatEvents()
     {
-        CombatSimulationScenario scenario = new(
+        CombatReplayScenario scenario = new(
             "ADD_UPTIME",
             Seed: 17,
             SessionFactory: random => CreateSession(random, withTimedAdd: true),
             MaximumDuration: TimeSpan.FromSeconds(30));
 
-        CombatSimulationResult result = CombatScenarioSimulator.Run(scenario);
+        CombatReplayResult result = CombatReplaySimulator.Run(scenario);
 
-        Assert.Equal(CombatSimulationEndReason.Victory, result.EndReason);
+        Assert.Equal(CombatReplayEndReason.Victory, result.EndReason);
         Assert.Equal(TimeSpan.FromSeconds(2), result.Metrics.AddUptime);
         Assert.Equal(1, result.Metrics.PeakActiveAdds);
         Assert.Contains(result.Events, item =>
