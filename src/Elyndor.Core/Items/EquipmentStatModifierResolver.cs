@@ -101,6 +101,7 @@ public static class EquipmentStatModifierResolver
                 criticalDamagePercent += bonus.CriticalDamagePercent;
                 accuracyPercent += bonus.AccuracyPercent;
                 attackSpeedPercent += bonus.AttackSpeedPercent;
+                armorFlat += bonus.ArmorFlat;
                 magicResistanceFlat += bonus.MagicResistanceFlat;
                 dodgePercent += bonus.DodgePercent;
                 armorPenetrationPercent += bonus.ArmorPenetrationPercent;
