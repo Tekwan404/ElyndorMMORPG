@@ -97,17 +97,17 @@ public static class AbilityTargetSelector
     }
 
     private static Guid? SelectRandom(
-        IReadOnlyList<AbilityTargetCandidate> candidates,
+        AbilityTargetCandidate[] candidates,
         IGameRandom? random)
     {
-        if (candidates.Count == 0)
+        if (candidates.Length == 0)
             return null;
         if (random is null)
             throw new InvalidOperationException("Random target selection requires an injected game RNG.");
 
         int index = Math.Min(
-            candidates.Count - 1,
-            (int)Math.Floor(random.NextUnit() * candidates.Count));
+            candidates.Length - 1,
+            (int)Math.Floor(random.NextUnit() * candidates.Length));
         return candidates[index].ActorId;
     }
 }
