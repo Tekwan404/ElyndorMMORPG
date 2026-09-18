@@ -67,7 +67,7 @@ public sealed class SetPassiveActionExecutorTests
                 attacker,
                 defender,
                 BaseAmount: 100m,
-                DamageType.True,
+                Type: DamageType.True,
                 CanMiss: false,
                 CanDodge: false,
                 CanCrit: false,
