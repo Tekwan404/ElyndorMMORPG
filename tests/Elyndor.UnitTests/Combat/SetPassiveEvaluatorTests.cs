@@ -49,6 +49,24 @@ public sealed class SetPassiveEvaluatorTests
     }
 
     [Fact]
+    public void AnotherCharactersBlockDoesNotActivateOwnersPassive()
+    {
+        Guid attacker = Guid.NewGuid();
+        Guid owner = Guid.NewGuid();
+        Guid otherDefender = Guid.NewGuid();
+        SetPassiveEvaluator evaluator = new([GuardianTwoPiece()]);
+        SetPassiveRuntimeState state = new();
+
+        IReadOnlyList<SetPassiveActionInvocation> actions = evaluator.Evaluate(
+            BlockEvent(attacker, otherDefender, 10),
+            PieceCounts((owner, GuardianSetId, 2)),
+            state);
+
+        Assert.Empty(actions);
+        Assert.Equal(0, state.Count);
+    }
+
+    [Fact]
     public void FourPieceProcsOnlyOnEveryThirdEligibleBlock()
     {
         Guid attacker = Guid.NewGuid();
