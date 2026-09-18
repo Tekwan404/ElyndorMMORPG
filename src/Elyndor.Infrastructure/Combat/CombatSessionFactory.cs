@@ -219,7 +219,8 @@ public sealed class CombatSessionFactory(
             resourceProfile.CombatRegenPerSecond,
             CanAutoAttack: classProfile.AllowUnarmed
                 || mainHandItem?.Definition.WeaponCategory is not null,
-            OffHandAutoAttack: offHandAutoAttack);
+            OffHandAutoAttack: offHandAutoAttack,
+            EquippedSetPieces: BuildEquippedSetPieceCounts(derived.Inventory));
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -414,7 +415,8 @@ public sealed class CombatSessionFactory(
             derived.EffectiveResourceProfile.CombatRegenPerSecond,
             CanAutoAttack: classProfile.AllowUnarmed
                 || mainHandItem?.Definition.WeaponCategory is not null,
-            OffHandAutoAttack: offHandAutoAttack);
+            OffHandAutoAttack: offHandAutoAttack,
+            EquippedSetPieces: BuildEquippedSetPieceCounts(derived.Inventory));
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
@@ -429,6 +431,15 @@ public sealed class CombatSessionFactory(
             cooldowns,
             initiallyAttached);
     }
+
+    private static IReadOnlyDictionary<string, int> BuildEquippedSetPieceCounts(
+        InventorySnapshot inventory) =>
+        inventory.Equipped.Values
+            .DistinctBy(item => item.Id)
+            .Select(item => item.Definition.SetId)
+            .Where(setId => !string.IsNullOrWhiteSpace(setId))
+            .GroupBy(setId => setId!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
 
     private static InventoryItemSnapshot? GetEquippedItem(
         InventorySnapshot inventory,
