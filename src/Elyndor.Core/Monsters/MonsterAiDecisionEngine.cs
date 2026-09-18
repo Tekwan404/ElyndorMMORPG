@@ -26,7 +26,8 @@ public static class MonsterAiDecisionEngine
         MonsterAbilitySchedulerState schedulerState,
         IGameRandom random,
         Guid? currentThreatTargetId = null,
-        Guid? ownerLinkedTargetId = null)
+        Guid? ownerLinkedTargetId = null,
+        IReadOnlySet<string>? excludedAbilityIds = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(monster);
@@ -47,7 +48,8 @@ public static class MonsterAiDecisionEngine
                      now,
                      schedulerState))
         {
-            if (!knownAbilityIds.Contains(rule.AbilityId)
+            if (excludedAbilityIds?.Contains(rule.AbilityId) == true
+                || !knownAbilityIds.Contains(rule.AbilityId)
                 || !abilities.TryGetValue(rule.AbilityId, out AbilityDefinition? ability))
             {
                 continue;
