@@ -160,6 +160,32 @@ public sealed class RaidInvite
     {
     }
 
+    private RaidInvite(
+        Guid id,
+        Guid raidId,
+        Guid inviterCharacterId,
+        Guid targetCharacterId,
+        DateTimeOffset createdAtUtc,
+        DateTimeOffset expiresAtUtc)
+    {
+        if (id == Guid.Empty || raidId == Guid.Empty || inviterCharacterId == Guid.Empty
+            || targetCharacterId == Guid.Empty)
+            throw new ArgumentException("Raid invite identifiers cannot be empty.");
+        if (inviterCharacterId == targetCharacterId)
+            throw new ArgumentException("A character cannot invite itself to a raid.");
+        if (createdAtUtc.Offset != TimeSpan.Zero || expiresAtUtc.Offset != TimeSpan.Zero
+            || expiresAtUtc <= createdAtUtc)
+            throw new ArgumentException("Raid invite timestamps are invalid.");
+
+        Id = id;
+        RaidId = raidId;
+        InviterCharacterId = inviterCharacterId;
+        TargetCharacterId = targetCharacterId;
+        Status = RaidInviteStatus.Pending;
+        CreatedAtUtc = createdAtUtc;
+        ExpiresAtUtc = expiresAtUtc;
+    }
+
     public Guid Id { get; private set; }
     public Guid RaidId { get; private set; }
     public Guid InviterCharacterId { get; private set; }
@@ -168,6 +194,37 @@ public sealed class RaidInvite
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset ExpiresAtUtc { get; private set; }
     public DateTimeOffset? DecidedAtUtc { get; private set; }
+
+    public static RaidInvite Create(
+        Guid id,
+        Guid raidId,
+        Guid inviterCharacterId,
+        Guid targetCharacterId,
+        DateTimeOffset createdAtUtc,
+        DateTimeOffset expiresAtUtc) =>
+        new(id, raidId, inviterCharacterId, targetCharacterId, createdAtUtc, expiresAtUtc);
+
+    public void Accept(Guid actorCharacterId, DateTimeOffset decidedAtUtc)
+    {
+        EnsurePendingTarget(actorCharacterId, decidedAtUtc);
+        Status = RaidInviteStatus.Accepted;
+        DecidedAtUtc = decidedAtUtc;
+    }
+
+    private void EnsurePendingTarget(Guid actorCharacterId, DateTimeOffset decidedAtUtc)
+    {
+        if (Status != RaidInviteStatus.Pending)
+            throw new InvalidOperationException("Only pending raid invites can be accepted.");
+        if (actorCharacterId != TargetCharacterId)
+            throw new UnauthorizedAccessException("Only the target can accept a raid invite.");
+        if (decidedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Raid invite timestamps must be UTC.", nameof(decidedAtUtc));
+        if (decidedAtUtc >= ExpiresAtUtc)
+        {
+            Status = RaidInviteStatus.Expired;
+            throw new InvalidOperationException("Raid invite has expired.");
+        }
+    }
 }
 
 public sealed class RaidReadyCheck
