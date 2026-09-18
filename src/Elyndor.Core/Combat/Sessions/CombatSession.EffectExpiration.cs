@@ -5,7 +5,7 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private IReadOnlyList<CombatEvent> ResolveExpiredEffectActions(
+    private List<CombatEvent> ResolveExpiredEffectActions(
         ActiveEffect effect,
         CombatActorState effectTarget,
         DateTimeOffset now)
@@ -65,10 +65,8 @@ public sealed partial class CombatSession
                             now));
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(action),
-                            action.Type,
-                            "Unknown effect expiration action type.");
+                        throw new InvalidOperationException(
+                            $"Unknown effect expiration action type '{action.Type}'.");
                 }
             }
         }
