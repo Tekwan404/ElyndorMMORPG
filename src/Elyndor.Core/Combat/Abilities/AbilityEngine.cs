@@ -159,7 +159,8 @@ public static class AbilityEngine
             or AbilityTargetType.SingleEnemy
             or AbilityTargetType.AllEnemiesInCombat
             or AbilityTargetType.NEnemiesInCombat
-            or AbilityTargetType.SelfAndPartyMembersInCombat))
+            or AbilityTargetType.SelfAndPartyMembersInCombat
+            or AbilityTargetType.Owner))
             return AbilityErrorCode.InvalidTarget;
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
@@ -181,6 +182,9 @@ public static class AbilityEngine
         if (ability.TargetType == AbilityTargetType.SingleAlly
             && (targetIds.Length != 1
                 || targetIds[0] == runtime.Actor.ActorId && !ability.AllowSelfTarget))
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.Owner
+            && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
             or AbilityTargetType.NEnemiesInCombat
