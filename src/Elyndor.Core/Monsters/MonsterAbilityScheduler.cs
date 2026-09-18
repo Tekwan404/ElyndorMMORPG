@@ -52,14 +52,16 @@ public static class MonsterAbilityScheduler
         CombatActorState monster,
         DateTimeOffset combatStartedAtUtc,
         DateTimeOffset now,
-        MonsterAbilitySchedulerState state) =>
-        SelectEligibleRules(
-                profile,
-                monster,
-                combatStartedAtUtc,
-                now,
-                state)
-            .FirstOrDefault();
+        MonsterAbilitySchedulerState state)
+    {
+        IReadOnlyList<MonsterAbilityRule> eligible = SelectEligibleRules(
+            profile,
+            monster,
+            combatStartedAtUtc,
+            now,
+            state);
+        return eligible.Count == 0 ? null : eligible[0];
+    }
 
     public static IReadOnlyList<MonsterAbilityRule> SelectEligibleRules(
         MonsterAiProfile profile,
