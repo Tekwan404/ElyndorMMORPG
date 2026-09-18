@@ -38,6 +38,35 @@ public sealed class MonsterAiDecisionEngineTests
     }
 
     [Fact]
+    public void EncounterOrderMultiTargetPreservesCandidateOrder()
+    {
+        CombatActorState monster = Monster();
+        AbilityDefinition cleave = Ability(
+            "LEGACY_CLEAVE",
+            AbilityTargetType.NEnemiesInCombat,
+            targetCount: 2);
+        AbilityTargetCandidate first = Enemy(threat: 1);
+        AbilityTargetCandidate second = Enemy(threat: 100);
+        AbilityTargetCandidate third = Enemy(threat: 50);
+        MonsterAiProfile profile = new("AI", [cleave.Id]);
+
+        MonsterAiDecision? decision = MonsterAiDecisionEngine.Select(
+            profile,
+            monster,
+            new HashSet<string>([cleave.Id], StringComparer.Ordinal),
+            Abilities(cleave),
+            [first, second, third],
+            StartedAt,
+            StartedAt,
+            new MonsterAbilitySchedulerState(),
+            new SequenceGameRandom(),
+            currentThreatTargetId: second.ActorId);
+
+        Assert.NotNull(decision);
+        Assert.Equal([first.ActorId, second.ActorId], decision!.TargetActorIds);
+    }
+
+    [Fact]
     public void RandomMultiTargetSelectionIsDeterministicAndUnique()
     {
         CombatActorState monster = Monster();
