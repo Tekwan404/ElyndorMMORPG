@@ -31,12 +31,21 @@ public static partial class GameContentPackageValidator
                 }
 
                 bool periodic = effect.Kind is EffectKind.DamageOverTime or EffectKind.HealingOverTime;
+                bool invalidReflection = effect.Kind == EffectKind.DamageReflection
+                    && (effect.Magnitude <= 0
+                        || effect.ReflectedDamageCap is { } cap && cap <= 0);
+                bool invalidExpirationAction = effect.OnExpireActions?.Any(action =>
+                    action.Type == EffectExpirationActionType.Damage && action.Amount <= 0
+                    || action.Type == EffectExpirationActionType.ApplyEffect && action.Effect is null
+                    || action.Type != EffectExpirationActionType.ApplyEffect && action.Effect is not null) == true;
                 if (effect.Duration <= TimeSpan.Zero
                     || effect.MaxStacks <= 0
                     || effect.Magnitude < 0
                     || effect.Version <= 0
                     || periodic != effect.TickInterval.HasValue
-                    || effect.TickInterval <= TimeSpan.Zero)
+                    || effect.TickInterval <= TimeSpan.Zero
+                    || invalidReflection
+                    || invalidExpirationAction)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_EFFECT_DEFINITION", path,
@@ -76,9 +85,30 @@ public static partial class GameContentPackageValidator
                     || ability.Actions?.Any(action => action.Amount < 0
                         || action.AttackPowerCoefficient < 0
                         || action.ArmorPenetrationBonus < 0
+                        || action.Delay is { } delay && delay < TimeSpan.Zero
+                        || action.LifestealPercent < 0
+                        || action.Type != AbilityActionType.Damage && action.LifestealPercent != 0
+                        || action.Type == AbilityActionType.AddThreat && action.Amount <= 0
+                        || action.Type == AbilityActionType.DropThreatPercent
+                            && (action.Amount <= 0 || action.Amount > 100)
+                        || action.Type == AbilityActionType.ClearThreat
+                            && (action.Amount != 0 || action.Duration is not null)
+                        || action.Type == AbilityActionType.Fixate
+                            && (action.Amount != 0
+                                || action.Duration is null
+                                || action.Duration <= TimeSpan.Zero)
+                        || action.Type == AbilityActionType.TemporaryUntargetable
+                            && (action.Amount != 0
+                                || action.Duration is null
+                                || action.Duration <= TimeSpan.Zero)
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
-                        || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true
+                        || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero
+                        || action.Type == AbilityActionType.Interrupt
+                            && action.InterruptLockout is null
+                        || action.InterruptLockout is { } interruptLockout
+                            && (action.Type != AbilityActionType.Interrupt
+                                || interruptLockout < TimeSpan.Zero)) == true
                     || ability.RuntimeParameters?.Any(parameter =>
                         string.IsNullOrWhiteSpace(parameter.Key)
                         || parameter.Value < 0) == true

@@ -16,6 +16,9 @@ public static partial class GameContentPackageValidator
             HashSet<string> abilityIds = (package.Abilities ?? [])
                 .Select(ability => ability.Id)
                 .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> effectIds = (package.Effects ?? [])
+                .Select(effect => effect.Id)
+                .ToHashSet(StringComparer.Ordinal);
             HashSet<string> aiProfileIds = [];
             for (var index = 0; index < (package.MonsterAiProfiles?.Count ?? 0); index++)
             {
@@ -34,6 +37,13 @@ public static partial class GameContentPackageValidator
                     errors.Add(new("INVALID_MONSTER_AI_PROFILE", path,
                         $"Monster AI profile '{profile.Id}' is invalid."));
                 }
+
+                ValidateMonsterAbilityRules(
+                    profile,
+                    abilityIds,
+                    effectIds,
+                    path,
+                    errors);
             }
 
             HashSet<string> monsterIds = [];
@@ -126,4 +136,45 @@ public static partial class GameContentPackageValidator
             }
         }
 
+        private static void ValidateMonsterAbilityRules(
+            MonsterAiProfile profile,
+            HashSet<string> abilityIds,
+            HashSet<string> effectIds,
+            string path,
+            List<ContentValidationError> errors)
+        {
+            if (profile.AbilityRules is not { Count: > 0 } rules)
+                return;
+
+            for (var ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
+            {
+                MonsterAbilityRule rule = rules[ruleIndex];
+                string rulePath = $"{path}.abilityRules[{ruleIndex}]";
+                bool hpRangeInvalid = rule.MinHpPercent is < 0 or > 100
+                    || rule.MaxHpPercent is < 0 or > 100
+                    || rule.MinHpPercent is { } minHp
+                        && rule.MaxHpPercent is { } maxHp
+                        && minHp > maxHp;
+                bool timingInvalid = rule.InitialDelay is { } initialDelay
+                        && initialDelay < TimeSpan.Zero
+                    || rule.CooldownJitter is { } cooldownJitter
+                        && cooldownJitter < TimeSpan.Zero;
+                bool effectReferenceInvalid = !string.IsNullOrWhiteSpace(rule.RequiredEffectId)
+                        && !effectIds.Contains(rule.RequiredEffectId)
+                    || !string.IsNullOrWhiteSpace(rule.ForbiddenEffectId)
+                        && !effectIds.Contains(rule.ForbiddenEffectId);
+
+                if (string.IsNullOrWhiteSpace(rule.AbilityId)
+                    || !abilityIds.Contains(rule.AbilityId)
+                    || hpRangeInvalid
+                    || timingInvalid
+                    || effectReferenceInvalid)
+                {
+                    errors.Add(new(
+                        "INVALID_MONSTER_ABILITY_RULE",
+                        rulePath,
+                        $"Monster AI profile '{profile.Id}' contains an invalid ability rule for '{rule.AbilityId}'."));
+                }
+            }
+        }
 }

@@ -330,7 +330,10 @@ public sealed class CombatSessionFactory(
             accountId,
             additionalPlayers);
         if (!isTraining)
+        {
             DungeonEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
+            GenericEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
+        }
 
         CombatSessionParticipant[] participants = partyMembers
             .Select(member => new CombatSessionParticipant(member.AccountId, member.CharacterId))
