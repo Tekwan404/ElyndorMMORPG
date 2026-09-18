@@ -88,7 +88,12 @@ public static partial class GameContentPackageValidator
                         || action.Delay is { } delay && delay < TimeSpan.Zero
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
-                        || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero) == true
+                        || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero
+                        || action.Type == AbilityActionType.Interrupt
+                            && action.InterruptLockout is null
+                        || action.InterruptLockout is { } interruptLockout
+                            && (action.Type != AbilityActionType.Interrupt
+                                || interruptLockout < TimeSpan.Zero)) == true
                     || ability.RuntimeParameters?.Any(parameter =>
                         string.IsNullOrWhiteSpace(parameter.Key)
                         || parameter.Value < 0) == true
