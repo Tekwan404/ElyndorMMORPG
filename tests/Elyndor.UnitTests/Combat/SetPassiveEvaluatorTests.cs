@@ -234,7 +234,7 @@ public sealed class SetPassiveEvaluatorTests
 
     private static DateTimeOffset At(int seconds) => BaseTime.AddSeconds(seconds);
 
-    private static IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> PieceCounts(
+    private static Dictionary<Guid, IReadOnlyDictionary<string, int>> PieceCounts(
         params (Guid ActorId, string SetId, int Pieces)[] entries)
     {
         Dictionary<Guid, Dictionary<string, int>> mutable = [];
