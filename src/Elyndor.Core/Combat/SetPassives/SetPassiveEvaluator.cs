@@ -109,18 +109,27 @@ public sealed class SetPassiveEvaluator
 
         if (definition.RequiredPieces <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(definition.RequiredPieces));
+            throw new ArgumentOutOfRangeException(
+                nameof(definition),
+                definition.RequiredPieces,
+                "RequiredPieces must be greater than zero.");
         }
 
         if (definition.Conditions.EveryNth <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(definition.Conditions.EveryNth));
+            throw new ArgumentOutOfRangeException(
+                nameof(definition),
+                definition.Conditions.EveryNth,
+                "Conditions.EveryNth must be greater than zero.");
         }
 
         if (definition.Conditions.InternalCooldown is { } internalCooldown
             && internalCooldown < TimeSpan.Zero)
         {
-            throw new ArgumentOutOfRangeException(nameof(definition.Conditions.InternalCooldown));
+            throw new ArgumentOutOfRangeException(
+                nameof(definition),
+                internalCooldown,
+                "Conditions.InternalCooldown cannot be negative.");
         }
 
         if (definition.Actions.Count == 0)
@@ -132,12 +141,18 @@ public sealed class SetPassiveEvaluator
         {
             if (action.MaxStacks <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(action.MaxStacks));
+                throw new ArgumentOutOfRangeException(
+                    nameof(definition),
+                    action.MaxStacks,
+                    "Action.MaxStacks must be greater than zero.");
             }
 
             if (action.Duration is { } duration && duration < TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(action.Duration));
+                throw new ArgumentOutOfRangeException(
+                    nameof(definition),
+                    duration,
+                    "Action.Duration cannot be negative.");
             }
         }
     }
