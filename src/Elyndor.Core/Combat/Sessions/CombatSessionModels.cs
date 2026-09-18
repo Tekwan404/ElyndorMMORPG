@@ -55,7 +55,8 @@ public sealed record CombatParticipantDefinition(
     decimal ResourceRegenPerSecond = 0,
     bool CanAutoAttack = true,
     AutoAttackProfile? OffHandAutoAttack = null,
-    MonsterRank? MonsterRank = null);
+    MonsterRank? MonsterRank = null,
+    IReadOnlyDictionary<string, int>? EquippedSetPieces = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
