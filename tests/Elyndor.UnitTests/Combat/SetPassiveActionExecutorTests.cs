@@ -18,14 +18,13 @@ public sealed class SetPassiveActionExecutorTests
         Guid attackerId = Guid.NewGuid();
         CombatActorState defender = Actor(Guid.NewGuid(), armor: 100);
         SetPassiveRuntime runtime = new([TestGuardianTwoPiece()]);
-        SetPassiveActionExecutor executor = new();
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> pieces =
             PieceCounts(defender.ActorId, 2);
 
         SetPassiveActionInvocation first = Assert.Single(runtime.Evaluate(
             BlockEvent(attackerId, defender.ActorId, Now),
             pieces));
-        Assert.Single(executor.Execute(first, defender));
+        Assert.Single(SetPassiveActionExecutor.Execute(first, defender));
         Assert.Equal(
             125m,
             EffectEngine.CalculateStat(defender, EffectStat.Armor, 100m, Now));
@@ -34,7 +33,7 @@ public sealed class SetPassiveActionExecutorTests
         SetPassiveActionInvocation second = Assert.Single(runtime.Evaluate(
             BlockEvent(attackerId, defender.ActorId, refreshedAt),
             pieces));
-        Assert.Single(executor.Execute(second, defender));
+        Assert.Single(SetPassiveActionExecutor.Execute(second, defender));
 
         ActiveEffect effect = Assert.Single(defender.ActiveEffects.Where(item =>
             item.Definition.Id == "TEST_GUARDIAN_BLOCK_ARMOR"));
@@ -51,7 +50,6 @@ public sealed class SetPassiveActionExecutorTests
         CombatActorState attacker = Actor(attackerId, armor: 0);
         CombatActorState defender = Actor(Guid.NewGuid(), armor: 0);
         SetPassiveRuntime runtime = new([TestGuardianFourPiece()]);
-        SetPassiveActionExecutor executor = new();
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> pieces =
             PieceCounts(defender.ActorId, 4);
 
@@ -60,7 +58,7 @@ public sealed class SetPassiveActionExecutorTests
         SetPassiveActionInvocation proc = Assert.Single(runtime.Evaluate(
             BlockEvent(attackerId, defender.ActorId, Now.AddSeconds(2)),
             pieces));
-        Assert.Single(executor.Execute(proc, defender));
+        Assert.Single(SetPassiveActionExecutor.Execute(proc, defender));
 
         DamageResult result = DamagePipeline.Resolve(
             new DamageRequest(
@@ -87,7 +85,6 @@ public sealed class SetPassiveActionExecutorTests
     public void UnconfiguredProductionBalanceActionDoesNotCreateDecorativeEffect()
     {
         CombatActorState defender = Actor(Guid.NewGuid(), armor: 100);
-        SetPassiveActionExecutor executor = new();
         SetPassiveDefinition definition = Assert.Single(SetPassiveCatalog.Definitions.Where(item =>
             item.Id == SetPassiveCatalog.AncientMineGuardianTwoPieceId));
         SetPassiveRuntime runtime = new([definition]);
@@ -96,7 +93,7 @@ public sealed class SetPassiveActionExecutorTests
             BlockEvent(Guid.NewGuid(), defender.ActorId, Now),
             PieceCounts(defender.ActorId, 2)));
 
-        Assert.Empty(executor.Execute(invocation, defender));
+        Assert.Empty(SetPassiveActionExecutor.Execute(invocation, defender));
         Assert.Empty(defender.ActiveEffects);
     }
 
