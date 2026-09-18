@@ -27,7 +27,7 @@ public enum AbilityTargetSelectorProfile
     NonTankRandom,
     OwnerLinkedTarget
 }
-public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Taunt }
+public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Dispel, Taunt }
 public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
 {
@@ -102,7 +102,8 @@ public sealed record AbilityActionDefinition(
     bool IsUnblockable = false,
     decimal BlockValueCoefficient = 0,
     bool HealingCanCrit = false,
-    AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster);
+    AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster,
+    string? DispelCategory = null);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
