@@ -38,8 +38,9 @@ public sealed class SetPassiveActionExecutorTests
         SetPassiveActionInvocation second = Assert.Single(runtime.Evaluate(secondBlock, pieces));
         Assert.Single(SetPassiveActionExecutor.Execute(second, defender));
 
-        ActiveEffect effect = Assert.Single(defender.ActiveEffects.Where(item =>
-            item.Definition.Id == "TEST_GUARDIAN_BLOCK_ARMOR"));
+        ActiveEffect effect = Assert.Single(
+            defender.ActiveEffects,
+            item => item.Definition.Id == "TEST_GUARDIAN_BLOCK_ARMOR");
         Assert.Equal(refreshedAt.AddSeconds(10), effect.ExpiresAtUtc);
         Assert.Equal(
             125m,
@@ -88,8 +89,9 @@ public sealed class SetPassiveActionExecutorTests
     public void UnconfiguredProductionBalanceActionDoesNotCreateDecorativeEffect()
     {
         CombatActorState defender = Actor(Guid.NewGuid(), armor: 100);
-        SetPassiveDefinition definition = Assert.Single(SetPassiveCatalog.Definitions.Where(item =>
-            item.Id == SetPassiveCatalog.AncientMineGuardianTwoPieceId));
+        SetPassiveDefinition definition = Assert.Single(
+            SetPassiveCatalog.Definitions,
+            item => item.Id == SetPassiveCatalog.AncientMineGuardianTwoPieceId);
         SetPassiveRuntime runtime = new([definition]);
 
         SetPassiveActionInvocation invocation = Assert.Single(runtime.Evaluate(
@@ -174,7 +176,9 @@ public sealed class SetPassiveActionExecutorTests
             new SequenceGameRandom(0m),
             occurredAt);
 
-        return Assert.Single(result.Events.Where(item => item.Type == CombatEventType.DamageBlocked));
+        return Assert.Single(
+            result.Events,
+            item => item.Type == CombatEventType.DamageBlocked);
     }
 
     private static CombatEvent BlockEvent(
@@ -189,10 +193,10 @@ public sealed class SetPassiveActionExecutorTests
             SourceActorId: attackerId,
             TargetActorId: defenderId);
 
-    private static IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> PieceCounts(
+    private static Dictionary<Guid, IReadOnlyDictionary<string, int>> PieceCounts(
         Guid actorId,
         int pieces) =>
-        new Dictionary<Guid, IReadOnlyDictionary<string, int>>
+        new()
         {
             [actorId] = new Dictionary<string, int>(StringComparer.Ordinal)
             {
