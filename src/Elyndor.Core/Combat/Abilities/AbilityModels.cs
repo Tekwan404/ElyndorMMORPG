@@ -106,7 +106,8 @@ public sealed record AbilityActionDefinition(
     AbilityResourceTarget ResourceTarget = AbilityResourceTarget.Caster,
     string? DispelCategory = null,
     TimeSpan? Delay = null,
-    TimeSpan? InterruptLockout = null);
+    TimeSpan? InterruptLockout = null,
+    decimal LifestealPercent = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
