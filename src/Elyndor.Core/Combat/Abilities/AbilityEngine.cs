@@ -404,6 +404,45 @@ public static class AbilityEngine
                         // Cross-runtime interruption is authoritative at the CombatSession layer.
                         // ResolveActions intentionally has no local actor-state mutation here.
                         break;
+                    case AbilityActionType.AddThreat:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatAdded,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            action.Amount,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.DropThreatPercent:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatDropped,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            action.Amount,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.ClearThreat:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatCleared,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.Fixate:
+                        events.Add(new CombatEvent(
+                            CombatEventType.FixateApplied,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
                 }
             }
         }
@@ -547,6 +586,20 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Lifesteal must be non-negative and is only valid for damage actions.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.AddThreat && action.Amount <= 0
+                || action.Type == AbilityActionType.DropThreatPercent
+                    && (action.Amount <= 0 || action.Amount > 100)
+                || action.Type == AbilityActionType.ClearThreat
+                    && (action.Amount != 0 || action.Duration is not null)
+                || action.Type == AbilityActionType.Fixate
+                    && (action.Amount != 0
+                        || action.Duration is null
+                        || action.Duration <= TimeSpan.Zero)) == true)
+        {
+            throw new InvalidOperationException(
+                "Threat actions contain values outside their valid range.");
         }
     }
 

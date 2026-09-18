@@ -88,6 +88,15 @@ public static partial class GameContentPackageValidator
                         || action.Delay is { } delay && delay < TimeSpan.Zero
                         || action.LifestealPercent < 0
                         || action.Type != AbilityActionType.Damage && action.LifestealPercent != 0
+                        || action.Type == AbilityActionType.AddThreat && action.Amount <= 0
+                        || action.Type == AbilityActionType.DropThreatPercent
+                            && (action.Amount <= 0 || action.Amount > 100)
+                        || action.Type == AbilityActionType.ClearThreat
+                            && (action.Amount != 0 || action.Duration is not null)
+                        || action.Type == AbilityActionType.Fixate
+                            && (action.Amount != 0
+                                || action.Duration is null
+                                || action.Duration <= TimeSpan.Zero)
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero
