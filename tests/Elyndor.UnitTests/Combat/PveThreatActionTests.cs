@@ -156,7 +156,9 @@ public sealed class PveThreatActionTests
             Now.AddMilliseconds(40)).Succeeded);
         CombatThreatSnapshot afterClear = Assert.IsType<CombatThreatSnapshot>(
             session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(40)));
-        Assert.DoesNotContain(afterClear.Entries, entry => entry.ActorId == PlayerId);
+        Assert.Equal(
+            0,
+            Assert.Single(afterClear.Entries, entry => entry.ActorId == PlayerId).Threat);
     }
 
     [Fact]
