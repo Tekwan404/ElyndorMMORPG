@@ -100,6 +100,38 @@ public sealed class PveAbilityFoundationTests
         Assert.Equal("FIRST", selected!.AbilityId);
     }
 
+    [Fact]
+    public void ResourceChangeCanModifySelectedTargetInsteadOfCaster()
+    {
+        CombatRuntimeState runtime = new(CombatActorState.CreateDummy(100, 100, 100));
+        CombatActorState target = CombatActorState.CreateDummy(100, 100, 80);
+        runtime.AddActor(target);
+        AbilityDefinition ability = Ability("MANA_BURN", TimeSpan.Zero) with
+        {
+            Actions =
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ResourceChange,
+                    Amount: -30,
+                    ResourceTarget: AbilityResourceTarget.Target)
+            ]
+        };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime,
+            ability,
+            new AbilityIntent("mana-burn", ability.Id, target.ActorId),
+            Now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(100, runtime.Actor.CurrentResource);
+        Assert.Equal(50, target.CurrentResource);
+        Assert.Contains(result.Events, item =>
+            item.Type == CombatEventType.ResourceChanged
+            && item.TargetActorId == target.ActorId
+            && item.Amount == -30);
+    }
+
     [Theory]
     [InlineData(EffectKind.Root)]
     [InlineData(EffectKind.Fear)]
@@ -118,6 +150,82 @@ public sealed class PveAbilityFoundationTests
         EffectEngine.Apply(actor, actor.ActorId, effect, Now);
 
         Assert.True(EffectEngine.HasControl(actor, kind, Now.AddSeconds(1)));
+    }
+
+    [Fact]
+    public void RootBlocksOnlyAbilitiesMarkedAsRequiringMobility()
+    {
+        CombatRuntimeState runtime = ControlledRuntime(EffectKind.Root);
+        AbilityDefinition mobileAbility = SelfAbility("MOBILE") with { RequiresMobility = true };
+        AbilityDefinition stationaryAbility = SelfAbility("STATIONARY");
+
+        AbilityExecutionResult blocked = AbilityEngine.Execute(
+            runtime,
+            mobileAbility,
+            new AbilityIntent("mobile", mobileAbility.Id, runtime.Actor.ActorId),
+            Now);
+        AbilityExecutionResult allowed = AbilityEngine.Execute(
+            runtime,
+            stationaryAbility,
+            new AbilityIntent("stationary", stationaryAbility.Id, runtime.Actor.ActorId),
+            Now);
+
+        Assert.Equal(AbilityErrorCode.ActorRooted, blocked.ErrorCode);
+        Assert.True(allowed.Succeeded);
+    }
+
+    [Fact]
+    public void DisarmBlocksWeaponTaggedAbility()
+    {
+        CombatRuntimeState runtime = ControlledRuntime(EffectKind.Disarm);
+        AbilityDefinition weaponAbility = SelfAbility("WEAPON") with { RequiresWeapon = true };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime,
+            weaponAbility,
+            new AbilityIntent("weapon", weaponAbility.Id, runtime.Actor.ActorId),
+            Now);
+
+        Assert.Equal(AbilityErrorCode.ActorDisarmed, result.ErrorCode);
+    }
+
+    [Fact]
+    public void FearBlocksNormalAbilityUnlessExplicitlyAllowed()
+    {
+        CombatRuntimeState runtime = ControlledRuntime(EffectKind.Fear);
+        AbilityDefinition normal = SelfAbility("NORMAL");
+        AbilityDefinition escape = SelfAbility("ESCAPE") with { CanUseWhileFeared = true };
+
+        AbilityExecutionResult blocked = AbilityEngine.Execute(
+            runtime,
+            normal,
+            new AbilityIntent("normal", normal.Id, runtime.Actor.ActorId),
+            Now);
+        AbilityExecutionResult allowed = AbilityEngine.Execute(
+            runtime,
+            escape,
+            new AbilityIntent("escape", escape.Id, runtime.Actor.ActorId),
+            Now);
+
+        Assert.Equal(AbilityErrorCode.ActorFeared, blocked.ErrorCode);
+        Assert.True(allowed.Succeeded);
+    }
+
+    private static CombatRuntimeState ControlledRuntime(EffectKind kind)
+    {
+        CombatRuntimeState runtime = new(CombatActorState.CreateDummy(100));
+        EffectEngine.Apply(
+            runtime.Actor,
+            runtime.Actor.ActorId,
+            new EffectDefinition(
+                $"TEST_{kind}",
+                kind,
+                TimeSpan.FromSeconds(3),
+                1,
+                EffectStackPolicy.Replace,
+                0),
+            Now);
+        return runtime;
     }
 
     private static AbilityTargetCandidate Candidate(
@@ -140,6 +248,19 @@ public sealed class PveAbilityFoundationTests
             AbilityTargetType.SingleEnemy,
             0,
             cooldown,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "PHYSICAL");
+
+    private static AbilityDefinition SelfAbility(string id) =>
+        new(
+            id,
+            AbilityType.Instant,
+            AbilityTargetType.Self,
+            0,
+            TimeSpan.Zero,
             TimeSpan.Zero,
             false,
             GlobalCooldownCategory.None,
