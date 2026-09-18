@@ -28,7 +28,20 @@ public enum AbilityTargetSelectorProfile
     CastInProgressEnemy,
     OwnerLinkedTarget
 }
-public enum AbilityActionType { Damage, Healing, ApplyEffect, ResourceChange, Dispel, Taunt, Interrupt }
+public enum AbilityActionType
+{
+    Damage,
+    Healing,
+    ApplyEffect,
+    ResourceChange,
+    Dispel,
+    Taunt,
+    Interrupt,
+    AddThreat,
+    DropThreatPercent,
+    ClearThreat,
+    Fixate
+}
 public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
 {
