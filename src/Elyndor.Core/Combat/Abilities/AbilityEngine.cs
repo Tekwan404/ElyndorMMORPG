@@ -320,6 +320,21 @@ public static class AbilityEngine
                             random,
                             now);
                         events.AddRange(damage.Events);
+                        if (action.LifestealPercent > 0
+                            && damage.HpDamage > 0
+                            && !runtime.Actor.IsDead)
+                        {
+                            HealingResult lifesteal = HealingPipeline.Resolve(
+                                new HealingRequest(
+                                    runtime.Actor,
+                                    damage.HpDamage * action.LifestealPercent / 100m,
+                                    OccurredAtUtc: now,
+                                    Source: runtime.Actor,
+                                    CanCrit: false,
+                                    Origin: HealingOrigin.Secondary,
+                                    DefinitionId: ability.Id));
+                            events.AddRange(lifesteal.Events);
+                        }
                         break;
                     case AbilityActionType.Healing:
                         HealingResult healing = HealingPipeline.Resolve(
@@ -524,6 +539,14 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Interrupt lockout is only valid for interrupt actions.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.LifestealPercent < 0
+                || action.Type != AbilityActionType.Damage
+                    && action.LifestealPercent != 0) == true)
+        {
+            throw new InvalidOperationException(
+                "Lifesteal must be non-negative and is only valid for damage actions.");
         }
     }
 
