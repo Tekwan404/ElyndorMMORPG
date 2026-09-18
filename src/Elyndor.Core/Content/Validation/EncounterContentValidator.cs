@@ -110,10 +110,10 @@ public sealed class EncounterContentValidator : IContentValidationStage
 
     private static void ValidateAbilityIds(
         IReadOnlyList<string>? ids,
-        IReadOnlySet<string> knownAbilityIds,
+        HashSet<string> knownAbilityIds,
         string path,
         string encounterId,
-        ICollection<ContentValidationError> errors)
+        List<ContentValidationError> errors)
     {
         if (ids is null)
             return;
