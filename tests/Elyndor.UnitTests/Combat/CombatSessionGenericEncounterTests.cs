@@ -45,7 +45,7 @@ public sealed class CombatSessionGenericEncounterTests
                     ])
             ]);
         CombatSession session = Session(
-            bossAbilityIds: [],
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
             abilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
             bossAi: new MonsterAiProfile("BOSS_PASSIVE", []),
             bossAutoAttackInterval: TimeSpan.FromHours(1));
@@ -84,11 +84,11 @@ public sealed class CombatSessionGenericEncounterTests
             "BOSS_AI",
             [phaseHit.Id, oldHit.Id]);
         CombatSession session = Session(
-            [oldHit.Id],
+            new HashSet<string>([oldHit.Id], StringComparer.Ordinal),
             abilities,
             bossAi,
             bossAutoAttackInterval: TimeSpan.FromSeconds(1),
-            playerAbilityIds: [strike.Id]);
+            playerAbilityIds: new HashSet<string>([strike.Id], StringComparer.Ordinal));
         EncounterDefinition encounter = new(
             "TEST_HP_PHASE",
             "TEST_BOSS",
@@ -130,7 +130,7 @@ public sealed class CombatSessionGenericEncounterTests
     public void DelayedResourceChangeExecutesAtExactEncounterDeadline()
     {
         CombatSession session = Session(
-            bossAbilityIds: [],
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
             abilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
             bossAi: new MonsterAiProfile("BOSS_PASSIVE", []),
             bossAutoAttackInterval: TimeSpan.FromHours(1),
@@ -218,11 +218,11 @@ public sealed class CombatSessionGenericEncounterTests
                     ])
             ]);
         CombatSession session = Session(
-            bossAbilityIds: [],
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
             abilities,
             new MonsterAiProfile("BOSS_PASSIVE", []),
             bossAutoAttackInterval: TimeSpan.FromHours(1),
-            playerAbilityIds: [strike.Id]);
+            playerAbilityIds: new HashSet<string>([strike.Id], StringComparer.Ordinal));
         session.ConfigureGenericEncounter(
             encounter,
             new Dictionary<string, EncounterEnemyProfile>(StringComparer.Ordinal)
