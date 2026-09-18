@@ -309,6 +309,58 @@ public sealed class RaidService(
         return new RaidOperationResult(true, null, await BuildSnapshotAsync(raid.Id, cancellationToken));
     }
 
+    public Task<RaidOperationResult> PromoteAssistantAsync(
+        Guid accountId,
+        Guid targetCharacterId,
+        CancellationToken cancellationToken) =>
+        dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            () => PromoteAssistantCoreAsync(accountId, targetCharacterId, cancellationToken));
+
+    private async Task<RaidOperationResult> PromoteAssistantCoreAsync(
+        Guid accountId,
+        Guid targetCharacterId,
+        CancellationToken cancellationToken)
+    {
+        Character? leader = await GetCharacterAsync(accountId, cancellationToken);
+        if (leader is null)
+            return RaidOperationResult.Failure(RaidErrorCodes.CharacterNotFound);
+
+        await using IDbContextTransaction transaction =
+            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        RaidGroup? raid = await GetActiveRaidForCharacterAsync(leader.Id, cancellationToken);
+        if (raid is null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.RaidNotFound);
+        }
+        await AcquireRaidLockAsync(raid.Id, cancellationToken);
+        raid = await GetActiveRaidForCharacterAsync(leader.Id, cancellationToken);
+        if (raid is null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.RaidNotFound);
+        }
+        if (raid.LeaderCharacterId != leader.Id)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.NotLeaderOrAssistant);
+        }
+
+        try
+        {
+            raid.PromoteAssistant(leader.Id, targetCharacterId);
+        }
+        catch (InvalidOperationException)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return RaidOperationResult.Failure(RaidErrorCodes.InvalidState);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return new RaidOperationResult(true, null, await BuildSnapshotAsync(raid.Id, cancellationToken));
+    }
+
     private async Task<Character?> GetCharacterAsync(
         Guid accountId,
         CancellationToken cancellationToken) =>

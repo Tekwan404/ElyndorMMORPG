@@ -96,6 +96,39 @@ public sealed class RaidServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.NotEqual(created.Snapshot!.LeaderCharacterId, left.Snapshot.LeaderCharacterId);
     }
 
+    [Fact]
+    public async Task LeaderCanPromoteMemberToAssistant()
+    {
+        (Guid leaderAccountId, Guid targetAccountId, Guid targetCharacterId) =
+            await SeedPairAsync();
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        RaidService service = new(context, new FixedTimeProvider(Now));
+        Assert.True((await service.CreateAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            CancellationToken.None)).IsSuccess);
+        RaidOperationResult invited = await service.InviteAsync(
+            leaderAccountId,
+            Guid.NewGuid(),
+            targetCharacterId,
+            CancellationToken.None);
+        Assert.True((await service.AcceptInviteAsync(
+            targetAccountId,
+            invited.Invite!.Id,
+            CancellationToken.None)).IsSuccess);
+
+        RaidOperationResult promoted = await service.PromoteAssistantAsync(
+            leaderAccountId,
+            targetCharacterId,
+            CancellationToken.None);
+
+        Assert.True(promoted.IsSuccess);
+        Assert.Equal(
+            RaidMemberRole.Assistant,
+            promoted.Snapshot!.Members.Single(member => member.CharacterId == targetCharacterId).Role);
+    }
+
     private async Task<Guid> SeedCharacterAsync()
     {
         Guid accountId = Guid.Parse("50000000-0000-0000-0000-000000000001");

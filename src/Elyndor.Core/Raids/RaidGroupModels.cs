@@ -133,9 +133,27 @@ public sealed class RaidGroup
         return member;
     }
 
+    public void PromoteAssistant(Guid leaderCharacterId, Guid targetCharacterId)
+    {
+        EnsureLeader(leaderCharacterId);
+        RaidMember target = FindMember(targetCharacterId);
+        if (target.Role == RaidMemberRole.Leader)
+            throw new InvalidOperationException("Raid leader cannot be promoted to assistant.");
+
+        target.SetRole(RaidMemberRole.Assistant);
+        Version++;
+    }
+
     private RaidMember FindMember(Guid characterId) =>
         _members.SingleOrDefault(member => member.CharacterId == characterId)
         ?? throw new InvalidOperationException("Character is not in the raid.");
+
+    private void EnsureLeader(Guid characterId)
+    {
+        EnsureActive();
+        if (LeaderCharacterId != characterId)
+            throw new UnauthorizedAccessException("Only the raid leader can perform this action.");
+    }
 
     private void EnsureActive()
     {
