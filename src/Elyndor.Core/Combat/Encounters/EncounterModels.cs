@@ -24,6 +24,27 @@ public enum EncounterActionType
     SetPhase
 }
 
+public static class EncounterTargetSelectors
+{
+    public const string Boss = "BOSS";
+    public const string CurrentTarget = "CURRENT_TARGET";
+    public const string RandomPartyMember = "RANDOM_PARTY_MEMBER";
+    public const string AllPartyMembers = "ALL_PARTY_MEMBERS";
+    public const string LowestHpPartyMember = "LOWEST_HP_PARTY_MEMBER";
+
+    private static readonly HashSet<string> Supported = new(StringComparer.Ordinal)
+    {
+        Boss,
+        CurrentTarget,
+        RandomPartyMember,
+        AllPartyMembers,
+        LowestHpPartyMember
+    };
+
+    public static bool IsSupported(string? selector) =>
+        string.IsNullOrWhiteSpace(selector) || Supported.Contains(selector);
+}
+
 public sealed record SummonDefinition(
     string MonsterId,
     int Count,
@@ -111,8 +132,8 @@ public static class EncounterDefinitionValidator
         {
             if (string.IsNullOrWhiteSpace(phase.Id))
                 errors.Add("Encounter phase id is required.");
-            if (phase.Actions.Count == 0)
-                errors.Add($"Encounter phase '{phase.Id}' requires at least one action.");
+            if (phase.Actions.Count == 0 && phase.AbilityIds is not { Count: > 0 })
+                errors.Add($"Encounter phase '{phase.Id}' requires at least one action or ability set.");
 
             ValidateTrigger(phase.Id, phase.Trigger, errors);
             foreach (EncounterActionDefinition action in phase.Actions)
@@ -145,6 +166,10 @@ public static class EncounterDefinitionValidator
         {
             errors.Add($"Phase '{phaseId}' elapsed-time trigger requires a positive duration.");
         }
+        if (trigger.Type == EncounterTriggerType.ElapsedTime && !trigger.Once)
+        {
+            errors.Add($"Phase '{phaseId}' elapsed-time trigger must be once-per-combat.");
+        }
 
         if (trigger.Type is EncounterTriggerType.AddDeath
             or EncounterTriggerType.EffectExpired
@@ -168,6 +193,11 @@ public static class EncounterDefinitionValidator
     {
         if (action.Delay is { } delay && delay < TimeSpan.Zero)
             errors.Add($"Phase '{phaseId}' action delay cannot be negative.");
+        if (!EncounterTargetSelectors.IsSupported(action.TargetSelector))
+        {
+            errors.Add(
+                $"Phase '{phaseId}' action target selector '{action.TargetSelector}' is not supported.");
+        }
 
         switch (action.Type)
         {
@@ -198,6 +228,10 @@ public static class EncounterDefinitionValidator
                     errors.Add($"Phase '{phaseId}' {action.Type} action requires positive magnitude.");
                 if (action.Duration is { } duration && duration <= TimeSpan.Zero)
                     errors.Add($"Phase '{phaseId}' {action.Type} duration must be positive when specified.");
+                break;
+            case EncounterActionType.ResourceChange:
+                if (action.ResourceAmount == 0)
+                    errors.Add($"Phase '{phaseId}' resource-change action requires a non-zero amount.");
                 break;
             case EncounterActionType.SetPhase:
                 if (string.IsNullOrWhiteSpace(action.PhaseId))
