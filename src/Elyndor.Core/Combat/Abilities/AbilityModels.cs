@@ -40,7 +40,8 @@ public enum AbilityActionType
     AddThreat,
     DropThreatPercent,
     ClearThreat,
-    Fixate
+    Fixate,
+    TemporaryUntargetable
 }
 public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
