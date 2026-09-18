@@ -1786,7 +1786,8 @@ public sealed partial class CombatSession
                 EffectEngine.Process(
                     _player.Actor,
                     now,
-                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _player.Actor, tickAt)),
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _player.Actor, tickAt),
+                    (effect, expiresAt) => ResolveExpiredEffectActions(effect, _player.Actor, expiresAt)),
                 _primaryEnemy.Actor.ActorId,
                 _player.Actor.ActorId,
                 null);
@@ -1799,7 +1800,8 @@ public sealed partial class CombatSession
                 EffectEngine.Process(
                     _companion.Actor,
                     now,
-                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _companion.Actor, tickAt)),
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, _companion.Actor, tickAt),
+                    (effect, expiresAt) => ResolveExpiredEffectActions(effect, _companion.Actor, expiresAt)),
                 _companion.Actor.ActorId,
                 _companion.Actor.ActorId,
                 null);
@@ -1812,7 +1814,8 @@ public sealed partial class CombatSession
                 EffectEngine.Process(
                     enemy.Actor,
                     now,
-                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, enemy.Actor, tickAt)),
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, enemy.Actor, tickAt),
+                    (effect, expiresAt) => ResolveExpiredEffectActions(effect, enemy.Actor, expiresAt)),
                 _player.Actor.ActorId,
                 enemy.Actor.ActorId,
                 null);

@@ -84,7 +84,8 @@ public static class EffectEngine
     public static IReadOnlyList<CombatEvent> Process(
         CombatActorState target,
         DateTimeOffset now,
-        Func<ActiveEffect, DateTimeOffset, IReadOnlyList<CombatEvent>>? periodicDamageResolver = null)
+        Func<ActiveEffect, DateTimeOffset, IReadOnlyList<CombatEvent>>? periodicDamageResolver = null,
+        Func<ActiveEffect, DateTimeOffset, IReadOnlyList<CombatEvent>>? expirationResolver = null)
     {
         List<CombatEvent> events = [];
 
@@ -228,6 +229,11 @@ public static class EffectEngine
                 expired.Definition.Id,
                 SourceActorId: expired.SourceId,
                 TargetActorId: target.ActorId));
+            if (expirationResolver is not null
+                && expired.Definition.OnExpireActions is { Count: > 0 })
+            {
+                events.AddRange(expirationResolver(expired, expired.ExpiresAtUtc));
+            }
         }
 
         return events;
@@ -390,6 +396,15 @@ public static class EffectEngine
         {
             throw new ArgumentException(
                 "Damage reflection requires a positive ratio and positive cap when specified.",
+                nameof(definition));
+        }
+        if (definition.OnExpireActions?.Any(action =>
+                action.Type == EffectExpirationActionType.Damage && action.Amount <= 0
+                || action.Type == EffectExpirationActionType.ApplyEffect && action.Effect is null
+                || action.Type != EffectExpirationActionType.ApplyEffect && action.Effect is not null) == true)
+        {
+            throw new ArgumentException(
+                "Effect expiration actions contain invalid values.",
                 nameof(definition));
         }
     }
