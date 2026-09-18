@@ -155,7 +155,7 @@ public static class CombatReplaySimulator
             CombatSessionSnapshot advanced = session.Snapshot();
             if (advanced.Status == CombatSessionStatus.Active
                 && advanced.ServerTimeUtc == previousTimeUtc
-                && recentEvents.Count == 0)
+                && recentEvents.Length == 0)
             {
                 return BuildResult(
                     scenario,
