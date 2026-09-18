@@ -21,7 +21,14 @@ public sealed partial class CombatSession
 
     private void RegisterThreat(CombatEvent combatEvent)
     {
-        ProcessExplicitThreatAction(combatEvent);
+        if (combatEvent.Type is CombatEventType.ThreatAdded
+            or CombatEventType.ThreatDropped
+            or CombatEventType.ThreatCleared
+            or CombatEventType.FixateApplied)
+        {
+            ProcessExplicitThreatAction(combatEvent);
+            return;
+        }
 
         CombatPlayerRuntimeState previousActivePlayer = _activePlayerState;
         try
