@@ -10,6 +10,7 @@ using Elyndor.Core.Progression;
 using Elyndor.Core.Content;
 using Elyndor.Core.Social;
 using Elyndor.Core.Parties;
+using Elyndor.Core.Raids;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Quests;
@@ -112,6 +113,14 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<PartyMember> PartyMembers => Set<PartyMember>();
 
     public DbSet<PartyInvite> PartyInvites => Set<PartyInvite>();
+
+    public DbSet<RaidGroup> RaidGroups => Set<RaidGroup>();
+
+    public DbSet<RaidMember> RaidMembers => Set<RaidMember>();
+
+    public DbSet<RaidInvite> RaidInvites => Set<RaidInvite>();
+
+    public DbSet<RaidReadyCheck> RaidReadyChecks => Set<RaidReadyCheck>();
 
     public DbSet<DungeonRun> DungeonRuns => Set<DungeonRun>();
 

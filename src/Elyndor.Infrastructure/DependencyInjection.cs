@@ -7,6 +7,7 @@ using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Talents;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Progression;
+using Elyndor.Infrastructure.Raids;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Social;
@@ -60,6 +61,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ContentAdministrationService>();
         builder.Services.AddScoped<FriendService>();
         builder.Services.AddScoped<PartyService>();
+        builder.Services.AddScoped<RaidService>();
         builder.Services.AddScoped<DungeonService>();
         builder.Services.AddScoped<AfkFarmService>();
         builder.Services.AddScoped<AfkFarmProgressService>();
