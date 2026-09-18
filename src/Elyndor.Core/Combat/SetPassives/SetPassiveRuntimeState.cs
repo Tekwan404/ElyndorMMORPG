@@ -3,8 +3,9 @@ namespace Elyndor.Core.Combat.SetPassives;
 public sealed record SetPassiveProcState(
     Guid ActorId,
     string PassiveId,
-    int Occurrences,
-    int CooldownUntilTick);
+    int EventCounter,
+    DateTimeOffset? CooldownUntil,
+    DateTimeOffset? LastProcAt = null);
 
 public sealed class SetPassiveRuntimeState
 {
@@ -18,7 +19,7 @@ public sealed class SetPassiveRuntimeState
 
         return _states.TryGetValue((actorId, passiveId), out SetPassiveProcState? state)
             ? state
-            : new SetPassiveProcState(actorId, passiveId, 0, 0);
+            : new SetPassiveProcState(actorId, passiveId, 0, null);
     }
 
     internal void Set(SetPassiveProcState state)
