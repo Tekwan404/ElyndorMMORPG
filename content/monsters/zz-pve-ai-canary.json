@@ -2,6 +2,7 @@
   "contentVersion": "0.22.0",
   "balanceVersion": "0.18.0",
   "publishedAtUtc": "2026-09-18T00:00:00+00:00",
+  "monsters": [],
   "monsterAiProfiles": [
     {
       "id": "SHATTERED_ORDER_VELARIUS_AI",
