@@ -204,6 +204,15 @@ public static class AbilityEngine
         if (!ability.CanUseWhileSilenced
             && EffectEngine.HasControl(runtime.Actor, EffectKind.Silence, now))
             return AbilityErrorCode.ActorSilenced;
+        if (ability.RequiresMobility
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Root, now))
+            return AbilityErrorCode.ActorRooted;
+        if (!ability.CanUseWhileFeared
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Fear, now))
+            return AbilityErrorCode.ActorFeared;
+        if (ability.RequiresWeapon
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Disarm, now))
+            return AbilityErrorCode.ActorDisarmed;
         if (runtime.Cooldowns.TryGetValue(ability.Id, out DateTimeOffset cooldown) && cooldown > now)
             return AbilityErrorCode.CooldownActive;
         if (ability.UsesGlobalCooldown && runtime.GlobalCooldownEndsAtUtc > now)
@@ -328,13 +337,18 @@ public static class AbilityEngine
                             now));
                         break;
                     case AbilityActionType.ResourceChange:
-                        decimal actualChange = runtime.Actor.AddResource(action.Amount);
+                        CombatActorState resourceTarget = action.ResourceTarget == AbilityResourceTarget.Target
+                            ? target
+                            : runtime.Actor;
+                        decimal actualChange = resourceTarget.AddResource(action.Amount);
                         events.Add(new CombatEvent(
                             CombatEventType.ResourceChanged,
                             now,
-                            runtime.Actor.ActorId,
+                            resourceTarget.ActorId,
                             ability.Id,
-                            actualChange));
+                            actualChange,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: resourceTarget.ActorId));
                         break;
                     case AbilityActionType.Taunt:
                         events.Add(new CombatEvent(
