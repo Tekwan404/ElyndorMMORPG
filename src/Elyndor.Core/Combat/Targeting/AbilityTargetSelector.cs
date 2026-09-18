@@ -23,15 +23,17 @@ public static class AbilityTargetSelector
         IReadOnlyList<AbilityTargetCandidate> candidates,
         IGameRandom? random = null,
         Guid? currentThreatTargetId = null,
-        Guid? ownerLinkedTargetId = null) =>
-        SelectMany(
-                profile,
-                candidates,
-                1,
-                random,
-                currentThreatTargetId,
-                ownerLinkedTargetId)
-            .FirstOrDefault();
+        Guid? ownerLinkedTargetId = null)
+    {
+        IReadOnlyList<Guid> selected = SelectMany(
+            profile,
+            candidates,
+            1,
+            random,
+            currentThreatTargetId,
+            ownerLinkedTargetId);
+        return selected.Count == 0 ? null : selected[0];
+    }
 
     public static IReadOnlyList<Guid> SelectMany(
         AbilityTargetSelectorProfile profile,
@@ -98,7 +100,7 @@ public static class AbilityTargetSelector
         };
     }
 
-    private static IReadOnlyList<Guid> SelectCurrentThreatTargets(
+    private static List<Guid> SelectCurrentThreatTargets(
         AbilityTargetCandidate[] candidates,
         int count,
         Guid? currentThreatTargetId)
@@ -125,7 +127,7 @@ public static class AbilityTargetSelector
         return selected;
     }
 
-    private static IReadOnlyList<Guid> ResolveOwnerLinkedTargets(
+    private static Guid[] ResolveOwnerLinkedTargets(
         AbilityTargetCandidate[] candidates,
         int count,
         Guid? ownerLinkedTargetId)
@@ -148,7 +150,7 @@ public static class AbilityTargetSelector
         return resolved is { } actorId && count > 0 ? [actorId] : [];
     }
 
-    private static IReadOnlyList<Guid> SelectRandomMany(
+    private static Guid[] SelectRandomMany(
         AbilityTargetCandidate[] candidates,
         int count,
         IGameRandom? random)
