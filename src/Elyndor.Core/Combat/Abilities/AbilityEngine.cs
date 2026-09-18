@@ -350,6 +350,18 @@ public static class AbilityEngine
                             SourceActorId: runtime.Actor.ActorId,
                             TargetActorId: resourceTarget.ActorId));
                         break;
+                    case AbilityActionType.Dispel:
+                        if (string.IsNullOrWhiteSpace(action.DispelCategory))
+                        {
+                            throw new InvalidOperationException(
+                                "Dispel actions require a dispel category.");
+                        }
+
+                        events.AddRange(EffectEngine.Dispel(
+                            target,
+                            action.DispelCategory,
+                            now));
+                        break;
                     case AbilityActionType.Taunt:
                         events.Add(new CombatEvent(
                             CombatEventType.TauntApplied,
@@ -409,6 +421,14 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Damage actions and critical healing actions require an injected game RNG.");
+        }
+
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.Dispel
+                && string.IsNullOrWhiteSpace(action.DispelCategory)) == true)
+        {
+            throw new InvalidOperationException(
+                "Dispel actions require a dispel category.");
         }
     }
 
