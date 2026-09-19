@@ -1,13 +1,13 @@
 {
-  "contentVersion": "0.17.0",
-  "balanceVersion": "0.14.0",
-  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
+  "contentVersion": "0.19.0",
+  "balanceVersion": "0.14.1",
+  "publishedAtUtc": "2026-09-20T08:00:00+00:00",
   "merchants": [
     {
       "id": "MARCUS_SUPPLIES",
       "name": "Торговец Маркус",
       "locationId": "STARTER_TOWN",
-      "description": "Маркус снабжает искателей расходниками и гарантированным Common-снаряжением 2 уровня. Более редкая экипировка добывается в мире и подземельях.",
+      "description": "Маркус снабжает искателей расходниками, материалами для базового усиления и гарантированным Common-снаряжением 2 уровня. Более редкая экипировка добывается в мире и подземельях.",
       "itemIds": [
         "SMALL_HEALING_POTION",
         "SMALL_MANA_POTION",
@@ -15,6 +15,7 @@
         "SMALL_RAGE_POTION",
         "MINOR_BATTLE_TONIC",
         "MINOR_ANTIDOTE",
+        "ENHANCEMENT_ORE",
         "WARRIOR_COMMON_BORDER_STEEL_CHEST",
         "WARRIOR_COMMON_BORDER_STEEL_FEET",
         "WARRIOR_COMMON_BORDER_STEEL_HANDS",
