@@ -166,7 +166,7 @@ public sealed class SetPassiveEvaluatorTests
             Actions =
             [
                 new(SetPassiveActionKind.ApplyEffect, "FIRST_A"),
-                new(SetPassiveActionKind.RestoreResource, "FIRST_B")
+                new(SetPassiveActionKind.AddShield, "FIRST_B")
             ]
         };
         SetPassiveDefinition second = first with
