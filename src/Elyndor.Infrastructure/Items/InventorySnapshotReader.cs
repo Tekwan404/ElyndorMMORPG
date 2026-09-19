@@ -41,7 +41,10 @@ internal static class InventorySnapshotReader
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
                 : null;
-            GeneratedItemInstance? generated = ToGeneratedItem(item, definition, content.Itemization);
+            GeneratedItemInstance? generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
+                item,
+                definition,
+                content.Itemization);
             ItemDefinition effectiveDefinition = generated is null
                 ? definition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
@@ -67,54 +70,6 @@ internal static class InventorySnapshotReader
             .Where(item => item.EquippedSlot.HasValue)
             .ToDictionary(item => item.EquippedSlot!.Value);
         return new InventorySnapshot(snapshots, equipped);
-    }
-
-
-    private static GeneratedItemInstance? ToGeneratedItem(
-        CharacterItem item,
-        ItemDefinition definition,
-        ItemizationDefinition? itemization)
-    {
-        if (!item.IsProcedurallyGenerated
-            || !item.ItemLevel.HasValue
-            || !item.MinimumTemplateItemPower.HasValue
-            || !item.ActualItemPower.HasValue
-            || !item.MaxTemplateItemPower.HasValue
-            || !item.RollQuality.HasValue
-            || !item.Stars.HasValue)
-        {
-            return null;
-        }
-
-        GeneratedItemAffix[] affixes = item.Affixes
-            .OrderBy(affix => affix.GenerationOrdinal)
-            .Select(affix => affix.ToGeneratedAffix())
-            .ToArray();
-
-        if (itemization is not null && ProceduralItemPolicy.IsEnabled(definition))
-        {
-            return ItemizationBudgetPolicy.RecalculateStored(
-                definition,
-                itemization,
-                item.ItemLevel.Value,
-                affixes,
-                item.PerfectOrigin);
-        }
-
-        return new GeneratedItemInstance(
-            item.ItemLevel.Value,
-            affixes,
-            item.MinimumTemplateItemPower.Value,
-            item.ActualItemPower.Value,
-            item.MaxTemplateItemPower.Value,
-            item.RollQuality.Value,
-            item.Stars.Value,
-            item.IsPerfect,
-            item.PerfectOrigin,
-            item.GeneratedPrefixId,
-            item.GeneratedSuffixId,
-            item.GeneratedDisplayName ?? definition.Name,
-            item.GenerationVersion);
     }
 
     private static ItemDefinition CreateOrphanedDefinition(CharacterItem item) =>
