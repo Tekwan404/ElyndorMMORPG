@@ -15,12 +15,12 @@ public sealed class RaidCombatRosterTests
         new(2026, 9, 19, 5, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void DefaultRoster_RejectsSixParticipants() =>
+    public void DefaultRosterRejectsSixParticipants() =>
         Assert.Throws<ArgumentException>(() =>
             new CombatParticipantRoster(Participants(6), UtcNow));
 
     [Fact]
-    public void RaidRoster_AllowsTwentyParticipants()
+    public void RaidRosterAllowsTwentyParticipants()
     {
         CombatParticipantRoster roster = new(
             Participants(20),
@@ -32,7 +32,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void RaidRoster_RejectsTwentyFirstParticipant() =>
+    public void RaidRosterRejectsTwentyFirstParticipant() =>
         Assert.Throws<ArgumentException>(() =>
             new CombatParticipantRoster(
                 Participants(21),
@@ -40,7 +40,7 @@ public sealed class RaidCombatRosterTests
                 CombatParticipantLimit.MaximumRaid));
 
     [Fact]
-    public void MaximumAboveRaidLimit_IsRejected() =>
+    public void MaximumAboveRaidLimitIsRejected() =>
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new CombatParticipantRoster(
                 Participants(1),
@@ -48,7 +48,7 @@ public sealed class RaidCombatRosterTests
                 CombatParticipantLimit.MaximumRaid + 1));
 
     [Fact]
-    public void FledRaidParticipant_CannotReattach()
+    public void FledRaidParticipantCannotReattach()
     {
         Guid characterId = Guid.NewGuid();
         CombatParticipantRoster roster = new(
@@ -63,7 +63,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void RaidCombatSession_CapturesTenPlayersInOneRoster()
+    public void RaidCombatSessionCapturesTenPlayersInOneRoster()
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         Guid leaderAccountId = Guid.NewGuid();
@@ -86,7 +86,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void RaidCombatSession_AllowsFullTwentyPlayerRoster()
+    public void RaidCombatSessionAllowsFullTwentyPlayerRoster()
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 19)
@@ -106,7 +106,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void RaidCombatSession_RejectsTwentyFirstPlayer()
+    public void RaidCombatSessionRejectsTwentyFirstPlayer()
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 20)
@@ -123,7 +123,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void OrdinaryCombatSession_StillRejectsSixPlayers()
+    public void OrdinaryCombatSessionStillRejectsSixPlayers()
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 5)
@@ -147,7 +147,7 @@ public sealed class RaidCombatRosterTests
     }
 
     [Fact]
-    public void RaidGroupEffect_AppliesToAllTenActivePlayers()
+    public void RaidGroupEffectAppliesToAllTenActivePlayers()
     {
         const string abilityId = "TEST_RAID_BUFF";
         const string effectId = "TEST_RAID_BUFF_EFFECT";
