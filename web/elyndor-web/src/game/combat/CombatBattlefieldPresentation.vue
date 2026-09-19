@@ -42,7 +42,7 @@ async function syncBattlefieldTarget(active: boolean): Promise<void> {
   let attempts = 0
   const findBattlefield = (): void => {
     battlefieldReady.value = document.querySelector('[data-combat-battlefield]') !== null
-    if (battlefieldReady.value || attempts >= 4) {
+    if (battlefieldReady.value || attempts >= 20) {
       battlefieldFrame = null
       return
     }
