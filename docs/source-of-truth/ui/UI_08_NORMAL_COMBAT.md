@@ -87,6 +87,8 @@ PROC_READY
 Cooldown number + radial visual.
 Queue window 0.5s represented subtly.
 
+Short tap uses an available ability. Press-and-hold for 500ms opens its name and description without casting; this remains available while the ability is on cooldown or lacks resources.
+
 ---
 
 # 6. GCD / Cast
@@ -136,7 +138,9 @@ Show up to 6 important icons; overflow:
 +3
 ```
 
-Tap/press icon via normal tap detail, not mandatory long-press.
+Tap an effect icon to open its details; this uses a normal tap and does not require a long-press.
+
+The detail shows the effect name, description, stack count when above one, and remaining duration. The icon uses the effect/ability art when available and the existing SVG glyph fallback otherwise.
 
 ---
 

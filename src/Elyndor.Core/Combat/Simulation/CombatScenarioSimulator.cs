@@ -1,0 +1,344 @@
+using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Sessions;
+
+namespace Elyndor.Core.Combat.Simulation;
+
+public enum CombatReplayEndReason
+{
+    Victory,
+    Defeat,
+    Cancelled,
+    Timeout,
+    Stalled,
+    StepLimit
+}
+
+public sealed record CombatReplayDecisionContext(
+    CombatSessionSnapshot Snapshot,
+    IReadOnlyList<CombatEvent> EventsSinceLastDecision,
+    CombatCommandResult? LastCommandResult,
+    int Step);
+
+public sealed record CombatReplayScenario(
+    string Id,
+    int Seed,
+    Func<IGameRandom, CombatSession> SessionFactory,
+    TimeSpan MaximumDuration,
+    int MaximumSteps = 10_000,
+    Func<CombatReplayDecisionContext, CombatCommand?>? DecisionPolicy = null,
+    IReadOnlySet<string>? DispelAbilityIds = null);
+
+public sealed record CombatReplayMetrics(
+    TimeSpan SimulatedDuration,
+    TimeSpan? TimeToKill,
+    decimal IncomingDamage,
+    decimal IncomingDamagePerSecond,
+    int InterruptCount,
+    int DispelCount,
+    TimeSpan AddUptime,
+    int PeakActiveAdds,
+    int PartyDeaths,
+    Guid? LastPartyDeathActorId,
+    string? LastPartyDeathCauseId);
+
+public sealed record CombatReplayResult(
+    string ScenarioId,
+    int Seed,
+    CombatReplayEndReason EndReason,
+    CombatSessionSnapshot FinalSnapshot,
+    CombatReplayMetrics Metrics,
+    IReadOnlyList<CombatEvent> Events);
+
+public static class CombatReplaySimulator
+{
+    public static CombatReplayResult Run(CombatReplayScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scenario.Id);
+        ArgumentNullException.ThrowIfNull(scenario.SessionFactory);
+        if (scenario.MaximumDuration <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(
+                nameof(scenario),
+                "Simulation duration must be positive.");
+        if (scenario.MaximumSteps <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(scenario),
+                "Simulation step limit must be positive.");
+
+        CombatSession session = scenario.SessionFactory(new SeededGameRandom(scenario.Seed));
+        if (session is null)
+            throw new InvalidOperationException("Combat simulation session factory returned null.");
+
+        CombatSessionSnapshot initialSnapshot = session.Snapshot();
+        DateTimeOffset startedAtUtc = initialSnapshot.ServerTimeUtc;
+        DateTimeOffset deadlineUtc = startedAtUtc + scenario.MaximumDuration;
+        HashSet<Guid> partyActorIds = ResolvePartyActorIds(initialSnapshot);
+
+        List<CombatEvent> events = session.GetEventsAfter(0)
+            .OrderBy(item => item.Sequence)
+            .ToList();
+        long lastSequence = events.Count == 0 ? 0 : events[^1].Sequence;
+        CombatEvent[] recentEvents = events.ToArray();
+        CombatCommandResult? lastCommandResult = null;
+
+        for (var step = 0; step < scenario.MaximumSteps; step++)
+        {
+            CombatSessionSnapshot snapshot = session.Snapshot();
+            if (snapshot.Status != CombatSessionStatus.Active)
+            {
+                return BuildResult(
+                    scenario,
+                    initialSnapshot,
+                    snapshot,
+                    MapEndReason(snapshot.Status),
+                    partyActorIds,
+                    events);
+            }
+
+            if (snapshot.ServerTimeUtc >= deadlineUtc)
+            {
+                return BuildResult(
+                    scenario,
+                    initialSnapshot,
+                    snapshot,
+                    CombatReplayEndReason.Timeout,
+                    partyActorIds,
+                    events);
+            }
+
+            CombatCommand? command = scenario.DecisionPolicy?.Invoke(
+                new CombatReplayDecisionContext(
+                    snapshot,
+                    recentEvents,
+                    lastCommandResult,
+                    step));
+            if (command is not null)
+            {
+                lastCommandResult = session.Handle(command, snapshot.ServerTimeUtc);
+                recentEvents = CollectNewEvents(session, events, ref lastSequence);
+                continue;
+            }
+
+            DateTimeOffset? nextDueAtUtc = session.NextDueAtUtc;
+            if (nextDueAtUtc is null)
+            {
+                return BuildResult(
+                    scenario,
+                    initialSnapshot,
+                    snapshot,
+                    CombatReplayEndReason.Stalled,
+                    partyActorIds,
+                    events);
+            }
+
+            if (nextDueAtUtc > deadlineUtc)
+            {
+                session.AdvanceTo(deadlineUtc);
+                recentEvents = CollectNewEvents(session, events, ref lastSequence);
+                CombatSessionSnapshot deadlineSnapshot = session.Snapshot();
+                CombatReplayEndReason endReason = deadlineSnapshot.Status == CombatSessionStatus.Active
+                    ? CombatReplayEndReason.Timeout
+                    : MapEndReason(deadlineSnapshot.Status);
+                return BuildResult(
+                    scenario,
+                    initialSnapshot,
+                    deadlineSnapshot,
+                    endReason,
+                    partyActorIds,
+                    events);
+            }
+
+            DateTimeOffset previousTimeUtc = snapshot.ServerTimeUtc;
+            session.AdvanceTo(nextDueAtUtc.Value);
+            recentEvents = CollectNewEvents(session, events, ref lastSequence);
+            lastCommandResult = null;
+            CombatSessionSnapshot advanced = session.Snapshot();
+            if (advanced.Status == CombatSessionStatus.Active
+                && advanced.ServerTimeUtc == previousTimeUtc
+                && recentEvents.Length == 0)
+            {
+                return BuildResult(
+                    scenario,
+                    initialSnapshot,
+                    advanced,
+                    CombatReplayEndReason.Stalled,
+                    partyActorIds,
+                    events);
+            }
+        }
+
+        CombatSessionSnapshot finalSnapshot = session.Snapshot();
+        CombatReplayEndReason finalReason = finalSnapshot.Status == CombatSessionStatus.Active
+            ? CombatReplayEndReason.StepLimit
+            : MapEndReason(finalSnapshot.Status);
+        return BuildResult(
+            scenario,
+            initialSnapshot,
+            finalSnapshot,
+            finalReason,
+            partyActorIds,
+            events);
+    }
+
+    private static CombatEvent[] CollectNewEvents(
+        CombatSession session,
+        List<CombatEvent> events,
+        ref long lastSequence)
+    {
+        CombatEvent[] newEvents = session.GetEventsAfter(lastSequence)
+            .OrderBy(item => item.Sequence)
+            .ToArray();
+        if (newEvents.Length == 0)
+            return newEvents;
+
+        events.AddRange(newEvents);
+        lastSequence = newEvents[^1].Sequence;
+        return newEvents;
+    }
+
+    private static HashSet<Guid> ResolvePartyActorIds(CombatSessionSnapshot snapshot)
+    {
+        HashSet<Guid> actorIds = snapshot.Players is { Count: > 0 }
+            ? snapshot.Players.Select(item => item.ActorId).ToHashSet()
+            : new HashSet<Guid> { snapshot.Player.ActorId };
+        if (snapshot.Companion is not null)
+            actorIds.Add(snapshot.Companion.ActorId);
+        return actorIds;
+    }
+
+    private static CombatReplayResult BuildResult(
+        CombatReplayScenario scenario,
+        CombatSessionSnapshot initialSnapshot,
+        CombatSessionSnapshot finalSnapshot,
+        CombatReplayEndReason endReason,
+        IReadOnlySet<Guid> partyActorIds,
+        IReadOnlyList<CombatEvent> events)
+    {
+        CombatReplayMetrics metrics = BuildMetrics(
+            scenario,
+            initialSnapshot,
+            finalSnapshot,
+            endReason,
+            partyActorIds,
+            events);
+        return new CombatReplayResult(
+            scenario.Id,
+            scenario.Seed,
+            endReason,
+            finalSnapshot,
+            metrics,
+            events.ToArray());
+    }
+
+    private static CombatReplayMetrics BuildMetrics(
+        CombatReplayScenario scenario,
+        CombatSessionSnapshot initialSnapshot,
+        CombatSessionSnapshot finalSnapshot,
+        CombatReplayEndReason endReason,
+        IReadOnlySet<Guid> partyActorIds,
+        IReadOnlyList<CombatEvent> events)
+    {
+        TimeSpan duration = finalSnapshot.ServerTimeUtc - initialSnapshot.ServerTimeUtc;
+        if (duration < TimeSpan.Zero)
+            duration = TimeSpan.Zero;
+
+        decimal incomingDamage = events
+            .Where(item =>
+                item.Type == CombatEventType.DamageDealt
+                && item.TargetActorId is { } targetActorId
+                && partyActorIds.Contains(targetActorId))
+            .Sum(item => item.Amount);
+        decimal incomingDps = duration.TotalSeconds <= 0
+            ? 0
+            : incomingDamage / (decimal)duration.TotalSeconds;
+
+        HashSet<Guid> enemyActorIds = (initialSnapshot.Enemies ?? [initialSnapshot.Enemy])
+            .Select(item => item.ActorId)
+            .ToHashSet();
+        foreach (CombatEvent summoned in events.Where(item => item.Type == CombatEventType.ActorSummoned))
+            enemyActorIds.Add(summoned.ActorId);
+
+        int interruptCount = events.Count(item =>
+            item.Type == CombatEventType.AbilityInterrupted
+            && enemyActorIds.Contains(item.ActorId));
+        IReadOnlySet<string> dispelAbilityIds = scenario.DispelAbilityIds
+            ?? new HashSet<string>(StringComparer.Ordinal);
+        int dispelCount = events.Count(item =>
+            item.Type == CombatEventType.AbilityUsed
+            && item.SourceActorId is { } sourceActorId
+            && partyActorIds.Contains(sourceActorId)
+            && item.DefinitionId is { } definitionId
+            && dispelAbilityIds.Contains(definitionId));
+
+        (TimeSpan addUptime, int peakActiveAdds) = CalculateAddUptime(
+            events,
+            finalSnapshot.ServerTimeUtc);
+        CombatEvent[] partyDeaths = events
+            .Where(item =>
+                item.Type == CombatEventType.ActorDied
+                && partyActorIds.Contains(item.ActorId))
+            .OrderBy(item => item.OccurredAtUtc)
+            .ThenBy(item => item.Sequence)
+            .ToArray();
+        CombatEvent? lastPartyDeath = partyDeaths.LastOrDefault();
+
+        return new CombatReplayMetrics(
+            duration,
+            endReason == CombatReplayEndReason.Victory ? duration : null,
+            incomingDamage,
+            incomingDps,
+            interruptCount,
+            dispelCount,
+            addUptime,
+            peakActiveAdds,
+            partyDeaths.Length,
+            lastPartyDeath?.ActorId,
+            lastPartyDeath?.DefinitionId);
+    }
+
+    private static (TimeSpan TotalUptime, int PeakActive) CalculateAddUptime(
+        IReadOnlyList<CombatEvent> events,
+        DateTimeOffset finishedAtUtc)
+    {
+        Dictionary<Guid, DateTimeOffset> activeAdds = [];
+        TimeSpan totalUptime = TimeSpan.Zero;
+        var peakActive = 0;
+        foreach (CombatEvent combatEvent in events
+                     .OrderBy(item => item.OccurredAtUtc)
+                     .ThenBy(item => item.Sequence))
+        {
+            if (combatEvent.Type == CombatEventType.ActorSummoned)
+            {
+                activeAdds[combatEvent.ActorId] = combatEvent.OccurredAtUtc;
+                peakActive = Math.Max(peakActive, activeAdds.Count);
+                continue;
+            }
+
+            if (combatEvent.Type != CombatEventType.ActorDied
+                || !activeAdds.Remove(combatEvent.ActorId, out DateTimeOffset spawnedAtUtc))
+            {
+                continue;
+            }
+
+            if (combatEvent.OccurredAtUtc > spawnedAtUtc)
+                totalUptime += combatEvent.OccurredAtUtc - spawnedAtUtc;
+        }
+
+        foreach (DateTimeOffset spawnedAtUtc in activeAdds.Values)
+        {
+            if (finishedAtUtc > spawnedAtUtc)
+                totalUptime += finishedAtUtc - spawnedAtUtc;
+        }
+
+        return (totalUptime, peakActive);
+    }
+
+    private static CombatReplayEndReason MapEndReason(CombatSessionStatus status) =>
+        status switch
+        {
+            CombatSessionStatus.Victory => CombatReplayEndReason.Victory,
+            CombatSessionStatus.Defeat => CombatReplayEndReason.Defeat,
+            CombatSessionStatus.Cancelled => CombatReplayEndReason.Cancelled,
+            _ => CombatReplayEndReason.Stalled
+        };
+}

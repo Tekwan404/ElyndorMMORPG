@@ -450,6 +450,13 @@ public sealed class CombatApplicationService(
                 {
                     return null;
                 }
+
+                effect = effect with
+                {
+                    DisplayName = effect.DisplayName ?? definition.Name,
+                    Description = effect.Description ?? definition.Description,
+                    IconId = effect.IconId ?? definition.IconId
+                };
             }
 
             actions.Add(new ResolvedConsumableAction(

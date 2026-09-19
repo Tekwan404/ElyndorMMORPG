@@ -13,6 +13,10 @@ public enum EffectKind
     ConditionalModifier,
     Stun,
     Silence,
+    Root,
+    Fear,
+    Disarm,
+    DamageReflection,
     LethalDamagePrevention
 }
 
@@ -24,6 +28,26 @@ public enum EffectStackPolicy
     Independent,
     StrongestWins
 }
+
+public enum EffectExpirationActionType
+{
+    Damage,
+    ApplyEffect
+}
+
+public enum EffectExpirationTargetScope
+{
+    EffectTarget,
+    EffectTargetAllies,
+    EffectTargetAndAllies
+}
+
+public sealed record EffectExpirationActionDefinition(
+    EffectExpirationActionType Type,
+    decimal Amount = 0,
+    DamageType DamageType = DamageType.True,
+    EffectDefinition? Effect = null,
+    EffectExpirationTargetScope TargetScope = EffectExpirationTargetScope.EffectTarget);
 
 public enum EffectStat
 {
@@ -63,7 +87,12 @@ public sealed record EffectDefinition(
     EffectStat? ModifiedStat = null,
     EffectModifierMode ModifierMode = EffectModifierMode.Flat,
     bool SourceSpecific = false,
-    DamageType PeriodicDamageType = DamageType.True);
+    DamageType PeriodicDamageType = DamageType.True,
+    decimal? ReflectedDamageCap = null,
+    IReadOnlyList<EffectExpirationActionDefinition>? OnExpireActions = null,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 
 public sealed class ActiveEffect
 {

@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
 
 namespace Elyndor.Core.Monsters;
 
@@ -45,7 +46,20 @@ public sealed record MonsterDefinition(
     int SummonCount = 0,
     int MaxActiveSummons = 0);
 
+public sealed record MonsterAbilityRule(
+    string AbilityId,
+    int Priority = 0,
+    decimal? MinHpPercent = null,
+    decimal? MaxHpPercent = null,
+    AbilityTargetSelectorProfile TargetSelector = AbilityTargetSelectorProfile.EncounterOrder,
+    bool OncePerCombat = false,
+    TimeSpan? InitialDelay = null,
+    TimeSpan? CooldownJitter = null,
+    string? RequiredEffectId = null,
+    string? ForbiddenEffectId = null);
+
 public sealed record MonsterAiProfile(
     string Id,
     IReadOnlyList<string> PriorityAbilityIds,
-    int Version = 1);
+    int Version = 1,
+    IReadOnlyList<MonsterAbilityRule>? AbilityRules = null);

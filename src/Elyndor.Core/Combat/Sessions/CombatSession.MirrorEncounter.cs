@@ -177,6 +177,7 @@ public sealed partial class CombatSession
             summoned.Actor.ActorId,
             new EnemyAiRuntime(
                 profile.AiProfile,
+                now,
                 now + summoned.AutoAttack.Interval));
 
         ThreatTable threat = new();

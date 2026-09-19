@@ -25,6 +25,38 @@ public sealed class ThreatTable
         return updated;
     }
 
+    public decimal AddExplicitThreat(Guid actorId, decimal amount)
+    {
+        if (actorId == Guid.Empty)
+            throw new ArgumentException("Threat actor is required.", nameof(actorId));
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+
+        decimal updated = GetThreat(actorId) + amount;
+        _threatByActor[actorId] = updated;
+        return updated;
+    }
+
+    public decimal DropThreatPercent(Guid actorId, decimal percent)
+    {
+        if (actorId == Guid.Empty)
+            throw new ArgumentException("Threat actor is required.", nameof(actorId));
+        ValidatePercent(percent);
+
+        if (!_threatByActor.TryGetValue(actorId, out decimal currentThreat))
+            return 0;
+
+        decimal updated = currentThreat * (1 - percent / 100m);
+        _threatByActor[actorId] = updated;
+        return updated;
+    }
+
+    public void DropAllThreatPercent(decimal percent)
+    {
+        ValidatePercent(percent);
+        foreach (Guid actorId in _threatByActor.Keys.ToArray())
+            _threatByActor[actorId] *= 1 - percent / 100m;
+    }
+
     internal void SuppressNextAutomaticAdd(Guid actorId)
     {
         if (actorId == Guid.Empty)
@@ -54,6 +86,18 @@ public sealed class ThreatTable
     {
         _threatByActor.Clear();
         _suppressedNextAddsByActor.Clear();
+    }
+
+    private static void ValidatePercent(decimal percent)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(percent);
+        if (percent > 100)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(percent),
+                percent,
+                "Threat percent cannot exceed 100.");
+        }
     }
 
     private bool TryConsumeSuppressedAdd(Guid actorId)

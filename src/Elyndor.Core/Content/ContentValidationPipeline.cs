@@ -22,6 +22,7 @@ public sealed class ContentValidationPipeline
             new ItemValidator(),
             new MerchantValidator(),
             new MonsterValidator(),
+            new EncounterContentValidator(),
             new WorldValidator(),
             new DungeonValidator()
         ]);

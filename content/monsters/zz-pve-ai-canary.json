@@ -1,0 +1,40 @@
+{
+  "contentVersion": "0.22.0",
+  "balanceVersion": "0.18.0",
+  "publishedAtUtc": "2026-09-18T00:00:00+00:00",
+  "monsters": [],
+  "monsterAiProfiles": [
+    {
+      "id": "SHATTERED_ORDER_VELARIUS_AI",
+      "priorityAbilityIds": [
+        "VELARIUS_CATACLYSM",
+        "VELARIUS_DRAIN_LIFE",
+        "VELARIUS_VOID_SURGE",
+        "VELARIUS_SHADOW_BOLT"
+      ],
+      "version": 2,
+      "abilityRules": [
+        {
+          "abilityId": "VELARIUS_CATACLYSM",
+          "priority": 400,
+          "targetSelector": "EncounterOrder"
+        },
+        {
+          "abilityId": "VELARIUS_DRAIN_LIFE",
+          "priority": 300,
+          "targetSelector": "EncounterOrder"
+        },
+        {
+          "abilityId": "VELARIUS_VOID_SURGE",
+          "priority": 200,
+          "targetSelector": "EncounterOrder"
+        },
+        {
+          "abilityId": "VELARIUS_SHADOW_BOLT",
+          "priority": 100,
+          "targetSelector": "EncounterOrder"
+        }
+      ]
+    }
+  ]
+}

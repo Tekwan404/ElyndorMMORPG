@@ -590,7 +590,9 @@ public sealed class CombatRewardService(
         GameContentIndexes indexes)
     {
         CombatActorSnapshot[] enemies =
-            snapshot.Enemies?.ToArray() ?? [snapshot.Enemy];
+            (snapshot.Enemies?.ToArray() ?? [snapshot.Enemy])
+                .Where(enemy => enemy.RewardEligible)
+                .ToArray();
         if (enemies.Length == 0)
             throw new InvalidOperationException(
                 "Victory snapshot must contain at least one defeated enemy.");

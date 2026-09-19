@@ -56,6 +56,8 @@ public sealed record CombatParticipantDefinition(
     bool CanAutoAttack = true,
     AutoAttackProfile? OffHandAutoAttack = null,
     MonsterRank? MonsterRank = null,
+    bool IsCombatObject = false,
+    bool RewardEligible = true,
     IReadOnlyDictionary<string, int>? EquippedSetPieces = null);
 
 public sealed record CombatPlayerDefinition(
@@ -65,7 +67,13 @@ public sealed record CombatPlayerDefinition(
     IReadOnlyDictionary<string, DateTimeOffset>? InitialCooldowns = null,
     bool InitiallyAttached = true);
 
-public sealed record CombatEffectSnapshot(string Id, int Stacks, DateTimeOffset ExpiresAtUtc);
+public sealed record CombatEffectSnapshot(
+    string Id,
+    int Stacks,
+    DateTimeOffset ExpiresAtUtc,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 public sealed record CombatAbilitySnapshot(
     string Id,
     decimal ResourceCost,
@@ -96,7 +104,9 @@ public sealed record CombatActorSnapshot(
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
     DateTimeOffset? NextAutoAttackAtUtc = null,
-    Guid? CurrentAggroTargetActorId = null);
+    Guid? CurrentAggroTargetActorId = null,
+    bool IsCombatObject = false,
+    bool RewardEligible = true);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

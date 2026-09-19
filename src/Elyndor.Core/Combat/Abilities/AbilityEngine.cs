@@ -159,7 +159,8 @@ public static class AbilityEngine
             or AbilityTargetType.SingleEnemy
             or AbilityTargetType.AllEnemiesInCombat
             or AbilityTargetType.NEnemiesInCombat
-            or AbilityTargetType.SelfAndPartyMembersInCombat))
+            or AbilityTargetType.SelfAndPartyMembersInCombat
+            or AbilityTargetType.Owner))
             return AbilityErrorCode.InvalidTarget;
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
@@ -168,6 +169,12 @@ public static class AbilityEngine
             || targetIds.Any(targetId =>
                 !runtime.Actors.TryGetValue(targetId, out CombatActorState? target)
                 || target.IsDead))
+        {
+            return AbilityErrorCode.InvalidTarget;
+        }
+        if (targetIds.Any(targetId =>
+                targetId != runtime.Actor.ActorId
+                && !runtime.Actors[targetId].IsTargetable(now)))
         {
             return AbilityErrorCode.InvalidTarget;
         }
@@ -181,6 +188,9 @@ public static class AbilityEngine
         if (ability.TargetType == AbilityTargetType.SingleAlly
             && (targetIds.Length != 1
                 || targetIds[0] == runtime.Actor.ActorId && !ability.AllowSelfTarget))
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.Owner
+            && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
             or AbilityTargetType.NEnemiesInCombat
@@ -204,6 +214,15 @@ public static class AbilityEngine
         if (!ability.CanUseWhileSilenced
             && EffectEngine.HasControl(runtime.Actor, EffectKind.Silence, now))
             return AbilityErrorCode.ActorSilenced;
+        if (ability.RequiresMobility
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Root, now))
+            return AbilityErrorCode.ActorRooted;
+        if (!ability.CanUseWhileFeared
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Fear, now))
+            return AbilityErrorCode.ActorFeared;
+        if (ability.RequiresWeapon
+            && EffectEngine.HasControl(runtime.Actor, EffectKind.Disarm, now))
+            return AbilityErrorCode.ActorDisarmed;
         if (runtime.Cooldowns.TryGetValue(ability.Id, out DateTimeOffset cooldown) && cooldown > now)
             return AbilityErrorCode.CooldownActive;
         if (ability.UsesGlobalCooldown && runtime.GlobalCooldownEndsAtUtc > now)
@@ -239,6 +258,17 @@ public static class AbilityEngine
                 ?? new AbilityTargetModifier();
             foreach (AbilityActionDefinition action in ability.Actions)
             {
+                if (action.Delay is { } delay && delay > TimeSpan.Zero)
+                {
+                    runtime.SchedulePendingAction(
+                        ability,
+                        action with { Delay = null },
+                        targetId,
+                        targetModifier,
+                        now + delay);
+                    continue;
+                }
+
                 switch (action.Type)
                 {
                     case AbilityActionType.Damage:
@@ -296,6 +326,21 @@ public static class AbilityEngine
                             random,
                             now);
                         events.AddRange(damage.Events);
+                        if (action.LifestealPercent > 0
+                            && damage.HpDamage > 0
+                            && !runtime.Actor.IsDead)
+                        {
+                            HealingResult lifesteal = HealingPipeline.Resolve(
+                                new HealingRequest(
+                                    runtime.Actor,
+                                    damage.HpDamage * action.LifestealPercent / 100m,
+                                    OccurredAtUtc: now,
+                                    Source: runtime.Actor,
+                                    CanCrit: false,
+                                    Origin: HealingOrigin.Secondary,
+                                    DefinitionId: ability.Id));
+                            events.AddRange(lifesteal.Events);
+                        }
                         break;
                     case AbilityActionType.Healing:
                         HealingResult healing = HealingPipeline.Resolve(
@@ -324,17 +369,39 @@ public static class AbilityEngine
                         events.AddRange(EffectEngine.Apply(
                             target,
                             runtime.Actor.ActorId,
-                            action.Effect,
+                            action.Effect with
+                            {
+                                DisplayName = action.Effect.DisplayName ?? ability.DisplayName,
+                                Description = action.Effect.Description ?? ability.Description,
+                                IconId = action.Effect.IconId ?? ability.IconId
+                            },
                             now));
                         break;
                     case AbilityActionType.ResourceChange:
-                        decimal actualChange = runtime.Actor.AddResource(action.Amount);
+                        CombatActorState resourceTarget = action.ResourceTarget == AbilityResourceTarget.Target
+                            ? target
+                            : runtime.Actor;
+                        decimal actualChange = resourceTarget.AddResource(action.Amount);
                         events.Add(new CombatEvent(
                             CombatEventType.ResourceChanged,
                             now,
-                            runtime.Actor.ActorId,
+                            resourceTarget.ActorId,
                             ability.Id,
-                            actualChange));
+                            actualChange,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: resourceTarget.ActorId));
+                        break;
+                    case AbilityActionType.Dispel:
+                        if (string.IsNullOrWhiteSpace(action.DispelCategory))
+                        {
+                            throw new InvalidOperationException(
+                                "Dispel actions require a dispel category.");
+                        }
+
+                        events.AddRange(EffectEngine.Dispel(
+                            target,
+                            action.DispelCategory,
+                            now));
                         break;
                     case AbilityActionType.Taunt:
                         events.Add(new CombatEvent(
@@ -344,10 +411,118 @@ public static class AbilityEngine
                             ability.Id,
                             (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds));
                         break;
+                    case AbilityActionType.Interrupt:
+                        // Cross-runtime interruption is authoritative at the CombatSession layer.
+                        // ResolveActions intentionally has no local actor-state mutation here.
+                        break;
+                    case AbilityActionType.AddThreat:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatAdded,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            action.Amount,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.DropThreatPercent:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatDropped,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            action.Amount,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.ClearThreat:
+                        events.Add(new CombatEvent(
+                            CombatEventType.ThreatCleared,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.Fixate:
+                        events.Add(new CombatEvent(
+                            CombatEventType.FixateApplied,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            (decimal)(action.Duration ?? TimeSpan.Zero).TotalSeconds,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
+                    case AbilityActionType.TemporaryUntargetable:
+                        target.SetTemporaryUntargetable(now, action.Duration!.Value);
+                        events.Add(new CombatEvent(
+                            CombatEventType.TargetabilityChanged,
+                            now,
+                            target.ActorId,
+                            ability.Id,
+                            (decimal)action.Duration.Value.TotalSeconds,
+                            SourceActorId: runtime.Actor.ActorId,
+                            TargetActorId: target.ActorId));
+                        break;
                 }
             }
         }
 
+        return events;
+    }
+
+    public static IReadOnlyList<CombatEvent> ResolvePendingActions(
+        CombatRuntimeState runtime,
+        DateTimeOffset now,
+        IGameRandom? random = null)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        PendingAbilityAction[] due = runtime.PendingActions
+            .Where(action => action.ExecuteAtUtc <= now)
+            .OrderBy(action => action.ExecuteAtUtc)
+            .ThenBy(action => action.Sequence)
+            .ToArray();
+        if (due.Length == 0)
+            return [];
+
+        List<CombatEvent> events = [];
+        foreach (PendingAbilityAction pending in due)
+        {
+            runtime.PendingActions.Remove(pending);
+            if (!runtime.Actors.TryGetValue(
+                    pending.TargetId,
+                    out CombatActorState? target)
+                || target.IsDead)
+            {
+                continue;
+            }
+
+            AbilityDefinition delayedAbility = pending.Ability with
+            {
+                Actions = [pending.Action]
+            };
+            EnsureExecutable(delayedAbility, random);
+            Dictionary<Guid, AbilityTargetModifier> targetModifiers = new()
+            {
+                [pending.TargetId] = pending.TargetModifier
+            };
+            IReadOnlyList<CombatEvent> resolved = ResolveActions(
+                runtime,
+                delayedAbility,
+                [pending.TargetId],
+                targetModifiers,
+                pending.ExecuteAtUtc,
+                random);
+            events.AddRange(resolved.Select(combatEvent => combatEvent with
+            {
+                DefinitionId = combatEvent.DefinitionId ?? pending.Ability.Id,
+                SourceActorId = combatEvent.SourceActorId ?? runtime.Actor.ActorId,
+                TargetActorId = combatEvent.TargetActorId ?? pending.TargetId
+            }));
+        }
+
+        runtime.Version++;
         return events;
     }
 
@@ -395,6 +570,67 @@ public static class AbilityEngine
         {
             throw new InvalidOperationException(
                 "Damage actions and critical healing actions require an injected game RNG.");
+        }
+
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.Dispel
+                && string.IsNullOrWhiteSpace(action.DispelCategory)) == true)
+        {
+            throw new InvalidOperationException(
+                "Dispel actions require a dispel category.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Delay is { } delay && delay < TimeSpan.Zero) == true)
+        {
+            throw new InvalidOperationException(
+                "Ability action delay cannot be negative.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.Interrupt
+                && (action.InterruptLockout is null
+                    || action.InterruptLockout < TimeSpan.Zero
+                    || action.Delay is not null)) == true)
+        {
+            throw new InvalidOperationException(
+                "Interrupt actions require a non-negative lockout and cannot be delayed.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type != AbilityActionType.Interrupt
+                && action.InterruptLockout is not null) == true)
+        {
+            throw new InvalidOperationException(
+                "Interrupt lockout is only valid for interrupt actions.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.LifestealPercent < 0
+                || action.Type != AbilityActionType.Damage
+                    && action.LifestealPercent != 0) == true)
+        {
+            throw new InvalidOperationException(
+                "Lifesteal must be non-negative and is only valid for damage actions.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.AddThreat && action.Amount <= 0
+                || action.Type == AbilityActionType.DropThreatPercent
+                    && (action.Amount <= 0 || action.Amount > 100)
+                || action.Type == AbilityActionType.ClearThreat
+                    && (action.Amount != 0 || action.Duration is not null)
+                || action.Type == AbilityActionType.Fixate
+                    && (action.Amount != 0
+                        || action.Duration is null
+                        || action.Duration <= TimeSpan.Zero)) == true)
+        {
+            throw new InvalidOperationException(
+                "Threat actions contain values outside their valid range.");
+        }
+        if (ability.Actions?.Any(action =>
+                action.Type == AbilityActionType.TemporaryUntargetable
+                && (action.Amount != 0
+                    || action.Duration is null
+                    || action.Duration <= TimeSpan.Zero)) == true)
+        {
+            throw new InvalidOperationException(
+                "Temporary untargetable actions require a positive duration and zero amount.");
         }
     }
 
