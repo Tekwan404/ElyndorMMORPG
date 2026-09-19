@@ -127,14 +127,25 @@ public static class ItemInstancePersistenceFactory
             .Select(affix => affix.ToGeneratedAffix())
             .ToArray();
 
-        if (itemization is not null && ProceduralItemPolicy.IsEnabled(definition))
+        bool requiresHistoricalRepair = itemization is not null
+            && ProceduralItemPolicy.IsEnabled(definition)
+            && affixes.Any(affix => affix.MaxAtGeneration <= affix.MinAtGeneration);
+        if (requiresHistoricalRepair)
         {
-            return ItemizationBudgetPolicy.RecalculateStored(
+            GeneratedItemInstance repaired = ItemizationBudgetPolicy.RecalculateStored(
                 definition,
-                itemization,
+                itemization!,
                 item.ItemLevel.Value,
                 affixes,
                 item.PerfectOrigin);
+
+            // Forge stars are explicit paid progression, not a drop-quality classifier.
+            // Historical budget repair may lower the natural quality classification, but it
+            // must never roll back a star tier that was already earned through enhancement.
+            if (item.EnhancementLevel > 0 && repaired.Stars < item.Stars.Value)
+                repaired = repaired with { Stars = item.Stars.Value };
+
+            return repaired;
         }
 
         return new GeneratedItemInstance(
