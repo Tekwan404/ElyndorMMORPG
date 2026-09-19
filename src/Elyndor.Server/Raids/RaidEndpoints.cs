@@ -28,6 +28,7 @@ public static class RaidEndpoints
         group.MapPost("/disband", DisbandAsync);
         group.MapPost("/ready-checks", BeginReadyCheckAsync);
         group.MapPost("/ready-checks/{readyCheckId:guid}/state", SetReadyStateAsync);
+        group.MapRaidCombatEndpoints();
         return endpoints;
     }
 
