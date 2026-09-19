@@ -78,7 +78,7 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-companion-view]').exists()).toBe(true)
   })
 
-  it('opens empty equipment slots in the Hero inventory tab filtered for that slot', async () => {
+  it('opens empty equipment slots in a contextual picker with an explicit back action', async () => {
     const session = useGameSessionStore()
     const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')
     const chest = equipment('TEST_CHEST', 'Кираса стража', 'Chest')
@@ -89,16 +89,50 @@ describe('HeroView', () => {
     await wrapper.get('[data-equipment-slot="head"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.find('[data-hero-tab="inventory"]').exists()).toBe(true)
     expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.find('[data-close-slot-inventory]').exists()).toBe(false)
+    expect(wrapper.get('[data-close-slot-inventory]').text()).toContain('Назад')
     expect(wrapper.text()).toContain('Выберите: шлем')
     expect(wrapper.find('[data-item-id="TEST_HELMET"]').exists()).toBe(true)
     expect(wrapper.find('[data-item-id="TEST_CHEST"]').exists()).toBe(false)
 
-    await wrapper.get('[data-hero-tab="character"]').trigger('click')
+    await wrapper.get('[data-close-slot-inventory]').trigger('click')
+    await flushPromises()
+
     expect(wrapper.get('[data-hero-tab="character"]').attributes('aria-current')).toBe('page')
     expect(wrapper.find('[data-equipment-slot="head"]').exists()).toBe(true)
+  })
+
+  it('opens Change for an equipped slot and compares a replacement with the currently equipped item', async () => {
+    const session = useGameSessionStore()
+    const currentHelmet = equipment('CURRENT_HELMET', 'Шлем ветерана', 'Head')
+    currentHelmet.equippedSlot = 'Head'
+    currentHelmet.stats.stamina = 4
+    const candidate = equipment('NEW_HELMET', 'Шлем бастиона', 'Head')
+    candidate.stats.stamina = 8
+    session.snapshot = snapshot([currentHelmet, candidate])
+    session.snapshot.character!.inventory.equipped.head = currentHelmet
+
+    const wrapper = mount(HeroView)
+
+    await wrapper.get('[data-equipment-slot="head"]').trigger('click')
+    await flushPromises()
+
+    const changeAction = document.body.querySelector<HTMLButtonElement>('[data-change-equipment]')
+    expect(changeAction).not.toBeNull()
+    expect(changeAction?.textContent).toContain('Сменить')
+    changeAction?.click()
+    await flushPromises()
+
+    expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-close-slot-inventory]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="NEW_HELMET"]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="CURRENT_HELMET"]').exists()).toBe(false)
+
+    await wrapper.get('[data-item-id="NEW_HELMET"]').trigger('click')
+    await flushPromises()
+
+    expect(document.body.textContent).toContain('СРАВНЕНИЕ')
+    expect(document.body.textContent).toContain('Сейчас: Шлем ветерана')
   })
 
   it('returns to the character tab after a successful equip from a contextual slot picker', async () => {
@@ -129,7 +163,7 @@ describe('HeroView', () => {
     expect(wrapper.get('[data-equipment-slot="head"]').attributes('data-filled')).toBe('true')
   })
 
-  it('keeps the player in the inventory and explains a class restriction for an incompatible item', async () => {
+  it('does not offer class-incompatible items in a contextual equipment picker', async () => {
     const session = useGameSessionStore()
     const leatherHood = equipment('LEATHER_HOOD', 'Кожаный капюшон', 'Head')
     leatherHood.armorCategory = 'LEATHER'
@@ -140,13 +174,10 @@ describe('HeroView', () => {
 
     await wrapper.get('[data-equipment-slot="head"]').trigger('click')
     await flushPromises()
-    await wrapper.get('[data-item-id="LEATHER_HOOD"]').trigger('click')
-    await flushPromises()
 
     expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
-    expect(document.body.querySelector('[data-equip-action]')).toBeNull()
-    expect(document.body.querySelector('[data-equip-restriction]')?.textContent)
-      .toContain('Воин может носить только тяжёлую броню.')
+    expect(wrapper.find('[data-item-id="LEATHER_HOOD"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('В рюкзаке нет предметов для выбранного слота.')
     expect(equip).not.toHaveBeenCalled()
   })
 })
