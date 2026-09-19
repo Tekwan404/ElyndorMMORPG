@@ -1,8 +1,8 @@
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
-using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.World;
 
 namespace Elyndor.Infrastructure.Raids;
@@ -85,7 +85,6 @@ public sealed class RaidCombatApplicationService(
 
         CombatSessionParticipant[] participants = created.Participants?.ToArray()
             ?? [new CombatSessionParticipant(accountId, created.CharacterId)];
-        List<Guid> durableParticipants = [];
         foreach (CombatSessionParticipant participant in participants)
         {
             if (await durability.BeginAsync(
@@ -93,7 +92,6 @@ public sealed class RaidCombatApplicationService(
                     created.Session.Snapshot(participant.CharacterId),
                     cancellationToken))
             {
-                durableParticipants.Add(participant.CharacterId);
                 continue;
             }
 
