@@ -126,7 +126,7 @@ describe('HeroView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.get('[data-close-slot-inventory]').exists()).toBe(true)
+    expect(wrapper.find('[data-close-slot-inventory]').exists()).toBe(true)
     expect(wrapper.find('[data-item-id="NEW_HELMET"]').exists()).toBe(true)
     expect(wrapper.find('[data-item-id="CURRENT_HELMET"]').exists()).toBe(false)
 
