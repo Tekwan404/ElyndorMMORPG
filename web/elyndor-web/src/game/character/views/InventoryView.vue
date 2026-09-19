@@ -1052,7 +1052,17 @@ async function toggleSelectedLock(): Promise<void> {
   bottom: .85rem;
 }
 
-.bag-cell__icon img,
+.bag-cell__icon img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+}
+
+.bag-cell__icon :deep(.icon-generator svg) {
+  width: 54%;
+  height: 54%;
+}
+
 .item-detail__icon img {
   width: 100%;
   height: 100%;
