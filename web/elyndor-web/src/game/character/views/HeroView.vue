@@ -131,7 +131,7 @@ function openStats(): void {
           <span><strong>Назад</strong><small>к персонажу</small></span>
         </button>
       </div>
-      <InventoryView :slot-filter="requestedSlot" @return-to-character="returnToCharacter" />
+      <InventoryView :slot-filter="requestedSlot" />
     </template>
     <CharacterStatsView v-else />
   </section>
