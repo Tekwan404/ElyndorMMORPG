@@ -1,7 +1,7 @@
 using Elyndor.Core.Afk;
+using Elyndor.Core.Content;
 using Elyndor.Core.Raids;
 using Elyndor.Infrastructure.Combat;
-using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
 using Microsoft.EntityFrameworkCore;
