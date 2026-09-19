@@ -9,6 +9,7 @@ namespace Elyndor.Core.Items;
 /// </summary>
 public static class ItemizationBudgetPolicy
 {
+    private const decimal MinimumAffixQuality = 0.40m;
     private const int MinimumAffixRollSteps = 2;
 
     public static ItemizationDefinition NormalizeForTemplate(
@@ -35,10 +36,7 @@ public static class ItemizationBudgetPolicy
             throw new InvalidOperationException($"No positive itemization rarity multiplier for '{rarity}'.");
         }
 
-        ItemAffixCountProfileDefinition countProfile = itemization.AffixCountProfiles
-            .SingleOrDefault(profile => string.Equals(profile.Id, template.AffixCountProfileId, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException(
-                $"Template '{template.Id}' has no valid affix-count profile.");
+        ItemAffixCountProfileDefinition countProfile = FindCountProfile(template, itemization);
         int maxAffixCount = checked(countProfile.GuaranteedCount + countProfile.MaximumBonusCount);
         if (maxAffixCount <= 0)
             throw new InvalidOperationException($"Template '{template.Id}' has no legal affix capacity.");
@@ -103,18 +101,26 @@ public static class ItemizationBudgetPolicy
         ArgumentNullException.ThrowIfNull(itemization);
         ArgumentNullException.ThrowIfNull(affixes);
 
+        bool hadCollapsedAffix = affixes.Any(IsCollapsedAffix);
         ItemizationDefinition effectiveItemization = NormalizeForTemplate(template, itemization);
+        GeneratedItemAffix[] effectiveAffixes = ReferenceEquals(effectiveItemization, itemization)
+            ? affixes.ToArray()
+            : NormalizeStoredAffixEnvelopes(
+                template,
+                effectiveItemization,
+                itemLevel,
+                affixes);
         GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
             template,
             effectiveItemization,
             itemLevel,
-            affixes,
+            effectiveAffixes,
             perfectOrigin);
 
         // Historical under-budget instances can contain 1..1 affix envelopes.
-        // Such a range contains no quality information, so it must never produce
-        // a HIGH prefix/suffix or an "ideal" marker after the budget fix.
-        if (affixes.Any(IsCollapsedAffix))
+        // The actual stat values are preserved, but the old envelope contains no
+        // trustworthy naming/perfect-quality information.
+        if (hadCollapsedAffix)
         {
             return recalculated with
             {
@@ -128,6 +134,53 @@ public static class ItemizationBudgetPolicy
 
         return recalculated;
     }
+
+    private static GeneratedItemAffix[] NormalizeStoredAffixEnvelopes(
+        ItemDefinition template,
+        ItemizationDefinition itemization,
+        int itemLevel,
+        IReadOnlyList<GeneratedItemAffix> affixes)
+    {
+        decimal maxTemplatePower = ItemInstanceGenerator.CalculateTemplateMaxPower(
+            template,
+            itemization,
+            itemLevel);
+        decimal structuralPower = CalculateStructuralPower(template, itemization);
+        ItemAffixCountProfileDefinition countProfile = FindCountProfile(template, itemization);
+        int maxAffixCount = checked(countProfile.GuaranteedCount + countProfile.MaximumBonusCount);
+        decimal maxPowerPerAffix = (maxTemplatePower - structuralPower) / maxAffixCount;
+
+        return affixes.Select(affix =>
+        {
+            if (!itemization.StatPowerWeights.TryGetValue(affix.StatId, out decimal weight) || weight <= 0)
+                throw new InvalidOperationException($"Item stat '{affix.StatId}' has no positive power weight.");
+
+            decimal step = StepFor(affix.StatId);
+            decimal maximumValue = FloorToStep(maxPowerPerAffix / weight, step);
+            if (maximumValue <= 0)
+                maximumValue = step;
+            decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
+            if (minimumValue <= 0)
+                minimumValue = step;
+            if (minimumValue > maximumValue)
+                minimumValue = maximumValue;
+
+            return affix with
+            {
+                MinAtGeneration = minimumValue,
+                MaxAtGeneration = maximumValue,
+                StepAtGeneration = step
+            };
+        }).ToArray();
+    }
+
+    private static ItemAffixCountProfileDefinition FindCountProfile(
+        ItemDefinition template,
+        ItemizationDefinition itemization) =>
+        itemization.AffixCountProfiles.SingleOrDefault(profile =>
+            string.Equals(profile.Id, template.AffixCountProfileId, StringComparison.Ordinal))
+        ?? throw new InvalidOperationException(
+            $"Template '{template.Id}' has no valid affix-count profile.");
 
     private static decimal MinimumPowerEnvelope(
         string statId,
@@ -187,6 +240,9 @@ public static class ItemizationBudgetPolicy
             _ when ItemStatIds.IsPercentage(statId) => 0.1m,
             _ => 1m
         };
+
+    private static decimal FloorToStep(decimal value, decimal step) =>
+        decimal.Floor(value / step) * step;
 
     private static string SlotBudgetId(EquipmentSlot slot) =>
         slot switch
