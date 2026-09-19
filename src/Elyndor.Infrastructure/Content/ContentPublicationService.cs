@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Elyndor.Core.Content;
 
 namespace Elyndor.Infrastructure.Content;
@@ -185,8 +186,8 @@ public sealed class ContentPublicationService(
         GameContentPackage bundled,
         ContentRevision publishedRevision)
     {
-        if (!Version.TryParse(bundled.ContentVersion, out Version? bundledContent)
-            || !Version.TryParse(publishedRevision.ContentVersion, out Version? publishedContent))
+        if (!TryParseComparableVersion(bundled.ContentVersion, out Version? bundledContent)
+            || !TryParseComparableVersion(publishedRevision.ContentVersion, out Version? publishedContent))
         {
             return false;
         }
@@ -195,9 +196,25 @@ public sealed class ContentPublicationService(
         if (contentComparison != 0)
             return contentComparison > 0;
 
-        return Version.TryParse(bundled.BalanceVersion, out Version? bundledBalance)
-            && Version.TryParse(publishedRevision.BalanceVersion, out Version? publishedBalance)
+        return TryParseComparableVersion(bundled.BalanceVersion, out Version? bundledBalance)
+            && TryParseComparableVersion(publishedRevision.BalanceVersion, out Version? publishedBalance)
             && bundledBalance > publishedBalance;
+    }
+
+    private static bool TryParseComparableVersion(
+        string? value,
+        [NotNullWhen(true)] out Version? version)
+    {
+        version = null;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        ReadOnlySpan<char> candidate = value.AsSpan().Trim();
+        int suffixIndex = candidate.IndexOfAny('-', '+');
+        if (suffixIndex >= 0)
+            candidate = candidate[..suffixIndex];
+
+        return Version.TryParse(candidate, out version);
     }
 
     private static GameContentPackage MergePublishedExtensions(

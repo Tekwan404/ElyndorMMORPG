@@ -1,7 +1,7 @@
-﻿{
-    "contentVersion":  "0.23.0",
+{
+    "contentVersion":  "0.24.1",
     "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "publishedAtUtc":  "2026-09-18T07:22:00+00:00",
     "monsters":  [
                      {
                          "id":  "WHISPERING_FOREST_MOLODOI_VOLK_L1",
@@ -334,7 +334,7 @@
                          "goldRewardMax":  10,
                          "displayName":  "Лесной волк",
                          "description":  "Лесной волк. первый лес, волки, кабаны, пауки.",
-                         "artId":  "lesnoi-volk"
+                         "artId":  "enemy-lesnoy-volk"
                      },
                      {
                          "id":  "WHISPERING_FOREST_MATIORYI_VOLK_L4",
@@ -408,7 +408,7 @@
                          "goldRewardMax":  12,
                          "displayName":  "Кабан",
                          "description":  "Кабан. первый лес, волки, кабаны, пауки.",
-                         "artId":  "kaban"
+                         "artId":  "enemy-kaban"
                      },
                      {
                          "id":  "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
@@ -482,7 +482,7 @@
                          "goldRewardMax":  14,
                          "displayName":  "Гигантский паук",
                          "description":  "Гигантский паук. первый лес, волки, кабаны, пауки.",
-                         "artId":  "gigantskii-pauk"
+                         "artId":  "enemy-gigantskiy-pauk"
                      },
                      {
                          "id":  "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
@@ -519,7 +519,7 @@
                          "goldRewardMax":  14,
                          "displayName":  "Лесной разбойник",
                          "description":  "Лесной разбойник. первый лес, волки, кабаны, пауки.",
-                         "artId":  "lesnoi-razboinik"
+                         "artId":  "enemy-lesnoy-razboynik"
                      },
                      {
                          "id":  "FLOWER_MEADOW_POLEVOI_VOLK_L4",
@@ -1999,7 +1999,7 @@
                          "goldRewardMax":  63,
                          "displayName":  "Порченый волк",
                          "description":  "Порченый волк. порча, яд, чума и подготовка к рейду 20.",
-                         "artId":  "matioryi-volk"
+                         "artId":  "porchenyi-volk"
                      },
                      {
                          "id":  "BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
@@ -3479,7 +3479,7 @@
                          "goldRewardMax":  129,
                          "displayName":  "Призрачный паломник",
                          "description":  "Призрачный паломник. яд, болезнь, высасывание здоровья и магические болота.",
-                         "artId":  "prizrachnyi-palomnik"
+                         "artId":  "enemy-prizrachnyy-palomnik"
                      },
                      {
                          "id":  "ECLIPSE_OUTSKIRTS_REKRUT_ZATMENIIA_L24",
@@ -4256,7 +4256,7 @@
                          "goldRewardMax":  161,
                          "displayName":  "Осколочный страж",
                          "description":  "Осколочный страж. отражения, мана, щиты и зеркальная магия.",
-                         "artId":  "oskolochnyi-strazh"
+                         "artId":  "enemy-oskolochnyy-strazh"
                      },
                      {
                          "id":  "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
@@ -4330,7 +4330,7 @@
                          "goldRewardMax":  170,
                          "displayName":  "Чародей раскола",
                          "description":  "Чародей раскола. отражения, мана, щиты и зеркальная магия.",
-                         "artId":  "charodei-raskola"
+                         "artId":  "enemy-charodey-raskola"
                      },
                      {
                          "id":  "SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
@@ -4404,7 +4404,7 @@
                          "goldRewardMax":  224,
                          "displayName":  "Хранитель разлома",
                          "description":  "Хранитель разлома. отражения, мана, щиты и зеркальная магия.",
-                         "artId":  "khranitel-razloma"
+                         "artId":  "enemy-khranitel-razloma"
                      },
                      {
                          "id":  "SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
@@ -6587,7 +6587,7 @@
                          "goldRewardMax":  201,
                          "displayName":  "Осколочный страж",
                          "description":  "Осколочный страж — противник контента «Цитадель Расколотого Ордена».",
-                         "artId":  "oskolochnyi-strazh"
+                         "artId":  "enemy-oskolochnyy-strazh"
                      },
                      {
                          "id":  "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
@@ -6661,7 +6661,7 @@
                          "goldRewardMax":  201,
                          "displayName":  "Чародей раскола",
                          "description":  "Чародей раскола — противник контента «Цитадель Расколотого Ордена».",
-                         "artId":  "charodei-raskola"
+                         "artId":  "enemy-charodey-raskola"
                      },
                      {
                          "id":  "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
@@ -6735,7 +6735,7 @@
                          "goldRewardMax":  201,
                          "displayName":  "Хранитель разлома",
                          "description":  "Хранитель разлома — противник контента «Цитадель Расколотого Ордена».",
-                         "artId":  "khranitel-razloma"
+                         "artId":  "enemy-khranitel-razloma"
                      },
                      {
                          "id":  "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
@@ -6809,7 +6809,7 @@
                          "goldRewardMax":  201,
                          "displayName":  "Магистр разбитого ордена",
                          "description":  "Магистр разбитого ордена — противник контента «Цитадель Расколотого Ордена».",
-                         "artId":  "magistr-razbitogo-ordena"
+                         "artId":  "enemy-magistr-razbitogo-ordena"
                      },
                      {
                          "id":  "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
@@ -6846,7 +6846,7 @@
                          "goldRewardMax":  201,
                          "displayName":  "Рыцарь зеркального ядра",
                          "description":  "Рыцарь зеркального ядра — противник контента «Цитадель Расколотого Ордена».",
-                         "artId":  "rytsar-zerkalnogo-iadra"
+                         "artId":  "enemy-rytsar-zerkalnogo-yadra"
                      },
                      {
                          "id":  "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",

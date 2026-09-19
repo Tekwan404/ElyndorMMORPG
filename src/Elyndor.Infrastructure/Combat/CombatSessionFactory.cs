@@ -219,7 +219,8 @@ public sealed class CombatSessionFactory(
             resourceProfile.CombatRegenPerSecond,
             CanAutoAttack: classProfile.AllowUnarmed
                 || mainHandItem?.Definition.WeaponCategory is not null,
-            OffHandAutoAttack: offHandAutoAttack);
+            OffHandAutoAttack: offHandAutoAttack,
+            EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory));
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -417,7 +418,8 @@ public sealed class CombatSessionFactory(
             derived.EffectiveResourceProfile.CombatRegenPerSecond,
             CanAutoAttack: classProfile.AllowUnarmed
                 || mainHandItem?.Definition.WeaponCategory is not null,
-            OffHandAutoAttack: offHandAutoAttack);
+            OffHandAutoAttack: offHandAutoAttack,
+            EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory));
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
