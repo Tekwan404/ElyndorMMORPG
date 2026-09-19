@@ -70,6 +70,8 @@ const requestedSlotEquippedItemId = computed(() =>
   requestedSlot.value ? equippedItemId(requestedSlot.value) : null,
 )
 
+// Return only after the authoritative snapshot confirms that the requested slot changed.
+// Failed or class-restricted equip attempts therefore keep the player in the inventory.
 watch(requestedSlotEquippedItemId, currentItemId => {
   if (
     activeTab.value === 'inventory'
