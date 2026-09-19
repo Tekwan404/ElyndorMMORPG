@@ -1,10 +1,12 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import HeroView from '@/game/character/views/HeroView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+
+enableAutoUnmount(afterEach)
 
 describe('HeroView', () => {
   beforeEach(() => setActivePinia(createPinia()))
