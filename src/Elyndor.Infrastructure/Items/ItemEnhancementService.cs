@@ -53,64 +53,41 @@ public sealed record ItemEnhancementPreviewResult(
         new(false, code, Guid.Empty, 0, 0m, 0, string.Empty, 0, null, 0, null, null);
 }
 
-/// <summary>
-/// Post-acquisition progression for generated equipment. Enhancement is deliberately external
-/// to the birth-time item budget and therefore cannot rewrite stars, roll quality, Perfect,
-/// generated names or rolled affixes.
-/// </summary>
 public sealed class ItemEnhancementService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
+    public const string EnhancementMaterialItemId = "ENHANCEMENT_ORE";
     private const string OperationType = "ITEM_ENHANCEMENT_V2";
     private const string LegacyOperationType = "ITEM_STAR_UPGRADE";
 
-    public Task<ItemEnhancementResult> EnhanceAsync(
-        Guid accountId,
-        Guid itemId,
-        Guid mutationId,
-        CancellationToken cancellationToken) =>
+    public Task<ItemEnhancementResult> EnhanceAsync(Guid accountId, Guid itemId, Guid mutationId, CancellationToken cancellationToken) =>
         mutationId == Guid.Empty
             ? Task.FromResult(ItemEnhancementResult.Failure(ItemEnhancementErrorCodes.MutationConflict))
             : dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
                 () => EnhanceCoreAsync(accountId, itemId, mutationId, cancellationToken));
 
-    public async Task<ItemEnhancementPreviewResult> GetPreviewAsync(
-        Guid accountId,
-        Guid itemId,
-        CancellationToken cancellationToken)
+    public async Task<ItemEnhancementPreviewResult> GetPreviewAsync(Guid accountId, Guid itemId, CancellationToken cancellationToken)
     {
         GameContentSnapshot content = contentProvider.GetCurrent();
         ItemStarUpgradeProfileDefinition? profile = content.Package.Itemization?.StarUpgrades;
-        if (profile is null)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
+        if (profile is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
 
         Character? character = await dbContext.Characters.AsNoTracking()
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
-        if (character is null)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.CharacterNotFound);
+        if (character is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.CharacterNotFound);
 
-        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking()
-            .Include(candidate => candidate.Affixes)
-            .SingleOrDefaultAsync(
-                candidate => candidate.Id == itemId && candidate.CharacterId == character.Id,
-                cancellationToken);
-        if (item is null)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotFound);
-        if (item.IsLocked)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemLocked);
-        if (item.TransactionLockId.HasValue)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemTransactionLocked);
+        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking().Include(candidate => candidate.Affixes)
+            .SingleOrDefaultAsync(candidate => candidate.Id == itemId && candidate.CharacterId == character.Id, cancellationToken);
+        if (item is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotFound);
+        if (item.IsLocked) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemLocked);
+        if (item.TransactionLockId.HasValue) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemTransactionLocked);
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotFound);
 
-        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
-            item,
-            definition,
-            content.Package.Itemization);
-        if (current is null)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotGenerated);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization);
+        if (current is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotGenerated);
         if (item.EnhancementLevel >= ItemEnhancementRules.MaximumLevel)
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.MaxEnhancement);
 
@@ -119,47 +96,28 @@ public sealed class ItemEnhancementService(
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
 
         decimal finalPower = content.Package.Itemization is { } itemization
-            ? ItemEnhancementRules.CalculateEnhancedItemPower(
-                definition,
-                itemization,
-                current.ActualItemPower,
-                targetLevel)
+            ? ItemEnhancementRules.CalculateEnhancedItemPower(definition, itemization, current.ActualItemPower, targetLevel)
             : current.ActualItemPower;
 
         return new ItemEnhancementPreviewResult(
-            true,
-            null,
-            item.Id,
-            targetLevel,
-            ItemEnhancementRules.ResolveBonusPercent(targetLevel),
-            cost.Gold,
-            profile.ReforgeStoneItemId,
-            cost.EnhancementMaterialQuantity,
-            cost.CatalystItemId,
-            cost.CatalystQuantity,
-            current.ActualItemPower,
-            finalPower);
+            true, null, item.Id, targetLevel, ItemEnhancementRules.ResolveBonusPercent(targetLevel),
+            cost.Gold, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity,
+            cost.CatalystItemId, cost.CatalystQuantity, current.ActualItemPower, finalPower);
     }
 
-    private async Task<ItemEnhancementResult> EnhanceCoreAsync(
-        Guid accountId,
-        Guid itemId,
-        Guid mutationId,
-        CancellationToken cancellationToken)
+    private async Task<ItemEnhancementResult> EnhanceCoreAsync(Guid accountId, Guid itemId, Guid mutationId, CancellationToken cancellationToken)
     {
         string fingerprint = Fingerprint(OperationType, itemId);
         string legacyFingerprint = Fingerprint(LegacyOperationType, itemId);
         GameContentSnapshot content = contentProvider.GetCurrent();
         ItemStarUpgradeProfileDefinition? profile = content.Package.Itemization?.StarUpgrades;
-        if (profile is null)
-            return ItemEnhancementResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
+        if (profile is null) return ItemEnhancementResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
 
         await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         Character? character = await dbContext.Characters
             .FromSqlInterpolated($"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
-        if (character is null)
-            return await Fail(transaction, ItemEnhancementErrorCodes.CharacterNotFound, cancellationToken);
+        if (character is null) return await Fail(transaction, ItemEnhancementErrorCodes.CharacterNotFound, cancellationToken);
 
         CharacterMutation? replay = await dbContext.CharacterMutations.AsNoTracking()
             .SingleOrDefaultAsync(x => x.CharacterId == character.Id && x.MutationId == mutationId, cancellationToken);
@@ -169,7 +127,6 @@ public sealed class ItemEnhancementService(
             bool legacyReplay = replay.OperationType == LegacyOperationType && replay.RequestFingerprint == legacyFingerprint;
             if (!currentReplay && !legacyReplay)
                 return await Fail(transaction, ItemEnhancementErrorCodes.MutationConflict, cancellationToken);
-
             LoadedItem? existing = await LoadGeneratedAsync(character.Id, itemId, content, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return existing is null
@@ -177,37 +134,27 @@ public sealed class ItemEnhancementService(
                 : CreateSuccess(existing.Item, existing.Generated, existing.Definition, content.Package.Itemization);
         }
 
-        CharacterItem? item = await dbContext.CharacterItems
-            .Include(x => x.Affixes)
+        CharacterItem? item = await dbContext.CharacterItems.Include(x => x.Affixes)
             .SingleOrDefaultAsync(x => x.Id == itemId && x.CharacterId == character.Id, cancellationToken);
-        if (item is null)
-            return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotFound, cancellationToken);
-        if (item.IsLocked)
-            return await Fail(transaction, ItemEnhancementErrorCodes.ItemLocked, cancellationToken);
-        if (item.TransactionLockId.HasValue)
-            return await Fail(transaction, ItemEnhancementErrorCodes.ItemTransactionLocked, cancellationToken);
+        if (item is null) return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotFound, cancellationToken);
+        if (item.IsLocked) return await Fail(transaction, ItemEnhancementErrorCodes.ItemLocked, cancellationToken);
+        if (item.TransactionLockId.HasValue) return await Fail(transaction, ItemEnhancementErrorCodes.ItemTransactionLocked, cancellationToken);
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotFound, cancellationToken);
 
-        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
-            item,
-            definition,
-            content.Package.Itemization);
-        if (current is null)
-            return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotGenerated, cancellationToken);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization);
+        if (current is null) return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotGenerated, cancellationToken);
         if (item.EnhancementLevel >= ItemEnhancementRules.MaximumLevel)
             return await Fail(transaction, ItemEnhancementErrorCodes.MaxEnhancement, cancellationToken);
 
         int targetLevel = item.EnhancementLevel + 1;
         if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
             return await Fail(transaction, ItemEnhancementErrorCodes.ProfileMissing, cancellationToken);
-        if (character.Gold < cost.Gold)
-            return await Fail(transaction, ItemEnhancementErrorCodes.NotEnoughGold, cancellationToken);
-        if (!await HasMaterial(character.Id, profile.ReforgeStoneItemId, cost.EnhancementMaterialQuantity, cancellationToken))
+        if (character.Gold < cost.Gold) return await Fail(transaction, ItemEnhancementErrorCodes.NotEnoughGold, cancellationToken);
+        if (!await HasMaterial(character.Id, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken))
             return await Fail(transaction, ItemEnhancementErrorCodes.NotEnoughMaterial, cancellationToken);
-        if (cost.CatalystQuantity > 0
-            && (string.IsNullOrWhiteSpace(cost.CatalystItemId)
-                || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken)))
+        if (cost.CatalystQuantity > 0 && (string.IsNullOrWhiteSpace(cost.CatalystItemId)
+            || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken)))
             return await Fail(transaction, ItemEnhancementErrorCodes.MissingCatalyst, cancellationToken);
 
         int stars = current.Stars;
@@ -219,115 +166,68 @@ public sealed class ItemEnhancementService(
         GeneratedItemAffix[] affixes = current.Affixes.ToArray();
 
         character.TrySpendGold(cost.Gold);
-        await Consume(character.Id, profile.ReforgeStoneItemId, cost.EnhancementMaterialQuantity, cancellationToken);
-        if (cost.CatalystQuantity > 0)
-            await Consume(character.Id, cost.CatalystItemId!, cost.CatalystQuantity, cancellationToken);
-
+        await Consume(character.Id, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken);
+        if (cost.CatalystQuantity > 0) await Consume(character.Id, cost.CatalystItemId!, cost.CatalystQuantity, cancellationToken);
         item.ApplyEnhancement(targetLevel);
 
-        GeneratedItemInstance unchanged = ItemInstancePersistenceFactory.ToGeneratedInstance(
-            item,
-            definition,
-            content.Package.Itemization)
+        GeneratedItemInstance unchanged = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization)
             ?? throw new InvalidOperationException("Generated item disappeared during enhancement.");
-        if (unchanged.Stars != stars
-            || unchanged.RollQuality != rollQuality
-            || unchanged.IsPerfect != isPerfect
-            || unchanged.PerfectOrigin != perfectOrigin
-            || unchanged.ActualItemPower != actualItemPower
-            || unchanged.DisplayName != displayName
-            || !unchanged.Affixes.SequenceEqual(affixes))
-        {
+        if (unchanged.Stars != stars || unchanged.RollQuality != rollQuality || unchanged.IsPerfect != isPerfect
+            || unchanged.PerfectOrigin != perfectOrigin || unchanged.ActualItemPower != actualItemPower
+            || unchanged.DisplayName != displayName || !unchanged.Affixes.SequenceEqual(affixes))
             throw new InvalidOperationException("Enhancement mutated intrinsic generated-item properties.");
-        }
 
-        dbContext.CharacterMutations.Add(new CharacterMutation(
-            character.Id,
-            mutationId,
-            OperationType,
-            fingerprint,
-            timeProvider.GetUtcNow()));
+        dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, OperationType, fingerprint, timeProvider.GetUtcNow()));
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return CreateSuccess(item, unchanged, definition, content.Package.Itemization);
     }
 
-    private static ItemEnhancementResult CreateSuccess(
-        CharacterItem item,
-        GeneratedItemInstance generated,
-        ItemDefinition definition,
-        ItemizationDefinition? itemization)
+    private static ItemEnhancementResult CreateSuccess(CharacterItem item, GeneratedItemInstance generated, ItemDefinition definition, ItemizationDefinition? itemization)
     {
         decimal finalPower = itemization is null
             ? generated.ActualItemPower
-            : ItemEnhancementRules.CalculateEnhancedItemPower(
-                definition,
-                itemization,
-                generated.ActualItemPower,
-                item.EnhancementLevel);
-
-        return new ItemEnhancementResult(
-            true,
-            null,
-            generated,
-            item.EnhancementLevel,
-            ItemEnhancementRules.ResolveBonusPercent(item.EnhancementLevel),
-            finalPower);
+            : ItemEnhancementRules.CalculateEnhancedItemPower(definition, itemization, generated.ActualItemPower, item.EnhancementLevel);
+        return new ItemEnhancementResult(true, null, generated, item.EnhancementLevel,
+            ItemEnhancementRules.ResolveBonusPercent(item.EnhancementLevel), finalPower);
     }
 
     private static string Fingerprint(string operationType, Guid itemId) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{operationType}|{itemId:N}")));
 
-    private static bool TryResolveCost(
-        ItemStarUpgradeProfileDefinition profile,
-        int targetEnhancementLevel,
-        out EnhancementCost cost)
+    private static bool TryResolveCost(ItemStarUpgradeProfileDefinition profile, int targetEnhancementLevel, out EnhancementCost cost)
     {
-        if (!profile.GoldByTargetStars.TryGetValue(targetEnhancementLevel, out int gold)
-            || !profile.ReforgeStoneQuantityByTargetStars.TryGetValue(targetEnhancementLevel, out int materialQuantity))
+        // The persisted content field is kept for backward-compatible deserialization. V2 interprets
+        // its progression table as enhancement costs; the old 2..5 keys map to +1..+4, while +5
+        // intentionally reuses the high-end +4/+5 cost until the content schema itself is renamed.
+        int legacyCostKey = Math.Min(5, targetEnhancementLevel + 1);
+        if (!profile.GoldByTargetStars.TryGetValue(legacyCostKey, out int gold)
+            || !profile.ReforgeStoneQuantityByTargetStars.TryGetValue(legacyCostKey, out int materialQuantity))
         {
             cost = default;
             return false;
         }
-
         bool catalystRequired = targetEnhancementLevel >= 4 && profile.HighEndCatalystQuantity > 0;
-        cost = new EnhancementCost(
-            gold,
-            materialQuantity,
+        cost = new EnhancementCost(gold, materialQuantity,
             catalystRequired ? profile.HighEndCatalystItemId : null,
             catalystRequired ? profile.HighEndCatalystQuantity : 0);
         return true;
     }
 
-    private async Task<LoadedItem?> LoadGeneratedAsync(
-        Guid characterId,
-        Guid itemId,
-        GameContentSnapshot content,
-        CancellationToken cancellationToken)
+    private async Task<LoadedItem?> LoadGeneratedAsync(Guid characterId, Guid itemId, GameContentSnapshot content, CancellationToken cancellationToken)
     {
-        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking()
-            .Include(x => x.Affixes)
+        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking().Include(x => x.Affixes)
             .SingleOrDefaultAsync(x => x.Id == itemId && x.CharacterId == characterId, cancellationToken);
-        if (item is null || !content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
-            return null;
-
-        GeneratedItemInstance? generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
-            item,
-            definition,
-            content.Package.Itemization);
+        if (item is null || !content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition)) return null;
+        GeneratedItemInstance? generated = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization);
         return generated is null ? null : new LoadedItem(item, definition, generated);
     }
 
     private async Task<bool> HasMaterial(Guid characterId, string itemId, int quantity, CancellationToken cancellationToken)
     {
-        if (quantity <= 0)
-            return true;
-
+        if (quantity <= 0) return true;
         int available = await dbContext.CharacterItems.AsNoTracking()
-            .Where(x => x.CharacterId == characterId
-                && x.ItemDefinitionId == itemId
-                && !x.IsLocked
-                && x.TransactionLockId == null)
+            .Where(x => x.CharacterId == characterId && x.ItemDefinitionId == itemId && !x.IsLocked && x.TransactionLockId == null)
             .SumAsync(x => x.Quantity, cancellationToken);
         return available >= quantity;
     }
@@ -335,44 +235,24 @@ public sealed class ItemEnhancementService(
     private async Task Consume(Guid characterId, string itemId, int quantity, CancellationToken cancellationToken)
     {
         foreach (CharacterItem stack in await dbContext.CharacterItems
-                     .Where(x => x.CharacterId == characterId
-                         && x.ItemDefinitionId == itemId
-                         && !x.IsLocked
-                         && x.TransactionLockId == null)
-                     .OrderBy(x => x.AcquiredAtUtc)
-                     .ToArrayAsync(cancellationToken))
+                     .Where(x => x.CharacterId == characterId && x.ItemDefinitionId == itemId && !x.IsLocked && x.TransactionLockId == null)
+                     .OrderBy(x => x.AcquiredAtUtc).ToArrayAsync(cancellationToken))
         {
-            if (quantity == 0)
-                break;
-
+            if (quantity == 0) break;
             int take = Math.Min(quantity, stack.Quantity);
             stack.RemoveQuantity(take);
             quantity -= take;
-            if (stack.Quantity == 0)
-                dbContext.CharacterItems.Remove(stack);
+            if (stack.Quantity == 0) dbContext.CharacterItems.Remove(stack);
         }
-
-        if (quantity != 0)
-            throw new InvalidOperationException("Material availability changed inside enhancement transaction.");
+        if (quantity != 0) throw new InvalidOperationException("Material availability changed inside enhancement transaction.");
     }
 
-    private static async Task<ItemEnhancementResult> Fail(
-        IDbContextTransaction transaction,
-        string code,
-        CancellationToken cancellationToken)
+    private static async Task<ItemEnhancementResult> Fail(IDbContextTransaction transaction, string code, CancellationToken cancellationToken)
     {
         await transaction.RollbackAsync(cancellationToken);
         return ItemEnhancementResult.Failure(code);
     }
 
-    private readonly record struct EnhancementCost(
-        int Gold,
-        int EnhancementMaterialQuantity,
-        string? CatalystItemId,
-        int CatalystQuantity);
-
-    private sealed record LoadedItem(
-        CharacterItem Item,
-        ItemDefinition Definition,
-        GeneratedItemInstance Generated);
+    private readonly record struct EnhancementCost(int Gold, int EnhancementMaterialQuantity, string? CatalystItemId, int CatalystQuantity);
+    private sealed record LoadedItem(CharacterItem Item, ItemDefinition Definition, GeneratedItemInstance Generated);
 }
