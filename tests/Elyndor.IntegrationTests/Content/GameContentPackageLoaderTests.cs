@@ -293,6 +293,39 @@ public sealed class GameContentPackageLoaderTests
     }
 
     [Fact]
+    public async Task DungeonSetPiecesAreReachableFromReferencedLootTables()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        Dictionary<string, LootTableDefinition> lootTablesById = package.LootTables!
+            .ToDictionary(table => table.Id, StringComparer.Ordinal);
+        HashSet<string> reachableItemIds = package.Monsters!
+            .Select(monster => monster.LootTableId)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.Ordinal)
+            .Where(id => lootTablesById.ContainsKey(id!))
+            .SelectMany(id => CollectItemIds(lootTablesById[id!]))
+            .ToHashSet(StringComparer.Ordinal);
+
+        string[] dungeonSetItemIds = package.Items!
+            .Where(item => item.SetId is not null
+                && (item.SetId.StartsWith("SET_ANCIENT_MINE_", StringComparison.Ordinal)
+                    || item.SetId.StartsWith("SET_ECLIPSED_CITADEL_", StringComparison.Ordinal)))
+            .Select(item => item.Id)
+            .ToArray();
+
+        Assert.NotEmpty(dungeonSetItemIds);
+        Assert.All(dungeonSetItemIds, id => Assert.Contains(id, reachableItemIds));
+    }
+
+    private static IEnumerable<string> CollectItemIds(LootTableDefinition table) =>
+        table.Entries
+            .Select(entry => entry.ItemId)
+            .Concat((table.SelectionGroups ?? [])
+                .SelectMany(group => group.Entries.Select(entry => entry.ItemId)));
+
+    [Fact]
     public async Task LoadAsyncReturnsValidatedPackage()
     {
         const string json = """
