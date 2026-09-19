@@ -12,6 +12,7 @@ import type { GlyphName, Rarity } from '@/ui/icons/icon.types'
 
 const emit = defineEmits<{
   'select-empty-slot': [slot: EquipmentSlot]
+  'change-slot': [slot: EquipmentSlot]
   'open-stats': []
 }>()
 
@@ -201,6 +202,13 @@ function closeItem(): void {
   selectedItem.value = null
   selectedEquipmentSlot.value = null
   equipmentActionError.value = null
+}
+
+function changeSelectedEquipment(): void {
+  const slot = selectedEquipmentSlot.value
+  if (!slot) return
+  closeItem()
+  emit('change-slot', slot)
 }
 
 async function unequipSelected(): Promise<void> {
@@ -605,6 +613,14 @@ function affixValue(statId: string, value: number): string {
       </article>
 
       <template #actions>
+        <UIButton
+          v-if="selectedEquipmentSlot"
+          data-change-equipment
+          :disabled="session.mutationPending"
+          @click="changeSelectedEquipment"
+        >
+          Сменить
+        </UIButton>
         <UIButton
           v-if="selectedEquipmentSlot"
           data-unequip-selected
