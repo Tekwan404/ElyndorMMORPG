@@ -2,7 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Combat.Sessions;
-using Elyndor.Infrastructure.Content;
+using Elyndor.Core.Content;
+using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Raids;
 using Elyndor.Server.Combat;
 
