@@ -181,7 +181,8 @@ public sealed class RaidCombatSessionFactory(
                 definition,
                 derived.TalentModifiers,
                 cooldowns,
-                InitiallyAttached: true));
+                InitiallyAttached: true,
+                CharacterId: member.CharacterId));
         }
 
         CombatSession session = new(
@@ -199,6 +200,7 @@ public sealed class RaidCombatSessionFactory(
             summonProfile,
             companion,
             leaderAccountId,
+            leaderMember.CharacterId,
             additionalPlayers,
             CombatGroupContext.Raid,
             CombatParticipantLimit.MaximumRaid);
