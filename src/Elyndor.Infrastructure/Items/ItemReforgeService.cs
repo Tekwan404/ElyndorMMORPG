@@ -137,12 +137,7 @@ public sealed class ItemReforgeService(
         if (operationId == Guid.Empty)
             return Task.FromResult(ItemReforgeOperationResult.Failure(ItemReforgeErrorCodes.OperationConflict));
         return dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => RollCoreAsync(
-                accountId,
-                itemInstanceId,
-                slotKey,
-                operationId,
-                cancellationToken));
+            () => RollCoreAsync(accountId, itemInstanceId, slotKey, operationId, cancellationToken));
     }
 
     public Task<ItemReforgeOperationResult> DecideAsync(
@@ -154,11 +149,7 @@ public sealed class ItemReforgeService(
         if (operationId == Guid.Empty)
             return Task.FromResult(ItemReforgeOperationResult.Failure(ItemReforgeErrorCodes.ProposalNotFound));
         return dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => DecideCoreAsync(
-                accountId,
-                operationId,
-                acceptProposed,
-                cancellationToken));
+            () => DecideCoreAsync(accountId, operationId, acceptProposed, cancellationToken));
     }
 
     private async Task<ItemReforgeOperationResult> RollCoreAsync(
@@ -169,12 +160,10 @@ public sealed class ItemReforgeService(
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
-        await using IDbContextTransaction transaction =
-            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         Character? character = await dbContext.Characters
-            .FromSqlInterpolated(
-                $"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
         if (character is null)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.CharacterNotFound, cancellationToken);
@@ -188,10 +177,7 @@ public sealed class ItemReforgeService(
                 || replay.ItemInstanceId != itemInstanceId
                 || !string.Equals(replay.SlotKey, slotKey, StringComparison.Ordinal))
             {
-                return await RollbackFailureAsync(
-                    transaction,
-                    ItemReforgeErrorCodes.OperationConflict,
-                    cancellationToken);
+                return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.OperationConflict, cancellationToken);
             }
 
             ItemReforgeOperationResult replayResult = ToResult(replay);
@@ -202,36 +188,25 @@ public sealed class ItemReforgeService(
         CharacterItem? item = await dbContext.CharacterItems
             .Include(candidate => candidate.Affixes)
             .SingleOrDefaultAsync(
-                candidate => candidate.Id == itemInstanceId
-                    && candidate.CharacterId == character.Id,
+                candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id,
                 cancellationToken);
         if (item is null)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotFound, cancellationToken);
-
         if (item.TransactionLockId.HasValue)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemTransactionLocked, cancellationToken);
         if (item.IsLocked)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemLocked, cancellationToken);
 
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
-        if (!contentSnapshot.Indexes.ItemsById.TryGetValue(
-                item.ItemDefinitionId,
-                out ItemDefinition? definition))
-        {
+        if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotFound, cancellationToken);
-        }
 
         GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
             item,
             definition,
             contentSnapshot.Package.Itemization);
         if (current is null || contentSnapshot.Package.Itemization is not { } itemization)
-        {
-            return await RollbackFailureAsync(
-                transaction,
-                ItemReforgeErrorCodes.ItemNotGenerated,
-                cancellationToken);
-        }
+            return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotGenerated, cancellationToken);
 
         GeneratedItemAffix? selected = current.Affixes.SingleOrDefault(affix =>
             string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
@@ -241,9 +216,7 @@ public sealed class ItemReforgeService(
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.GuaranteedSlot, cancellationToken);
         if (item.ReforgeSlotKey is not null
             && !string.Equals(item.ReforgeSlotKey, slotKey, StringComparison.Ordinal))
-        {
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.InvalidSlot, cancellationToken);
-        }
 
         ItemReforgeCostProfileDefinition? costProfile = itemization.ReforgeCosts;
         if (costProfile is null)
@@ -261,45 +234,36 @@ public sealed class ItemReforgeService(
             operationId,
             $"{item.Id:N}|{slotKey}|REFORGE",
             item.ReforgeCount);
-        GeneratedItemAffix proposedAffix = ItemInstanceGenerator.RollReforgeAffix(
+        SeededGameRandom random = new(key.Seed);
+        GeneratedItemAffix rawCandidate = ItemInstanceGenerator.RollReforgeAffix(
             definition,
             itemization,
             current.Affixes,
             slotKey,
             "REFORGE",
-            new SeededGameRandom(key.Seed));
+            random);
+        GeneratedItemAffix proposedAffix = ItemReforgeQualityPolicy.Constrain(selected, rawCandidate, random);
         GeneratedItemAffix[] proposedAffixes = current.Affixes
             .Select(affix => string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal)
                 ? proposedAffix
                 : affix)
             .ToArray();
-        GeneratedItemInstance proposed = ItemizationBudgetPolicy.RecalculateStored(
-            definition,
-            itemization,
-            current.ItemLevel,
-            proposedAffixes,
-            perfectOrigin: "REFORGE");
+
+        // Reforge changes exactly one eligible affix. It never re-runs item classification,
+        // so Stars/RollQuality/Perfect/PerfectOrigin and intrinsic power remain birth history.
+        GeneratedItemInstance proposed = current with { Affixes = proposedAffixes };
 
         if (!character.TrySpendGold(cost.Gold))
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.NotEnoughGold, cancellationToken);
-        await ConsumeMaterialAsync(
-            character.Id,
-            cost.MaterialItemId,
-            cost.MaterialQuantity,
-            cancellationToken);
-        await ConsumeMaterialAsync(
-            character.Id,
-            cost.CatalystItemId,
-            cost.CatalystQuantity,
-            cancellationToken);
+        await ConsumeMaterialAsync(character.Id, cost.MaterialItemId, cost.MaterialQuantity, cancellationToken);
+        await ConsumeMaterialAsync(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken);
 
         item.SelectReforgeSlot(slotKey);
         item.RecordReforgeAttempt();
         item.AcquireTransactionLock(operationId);
 
         GeneratedItemInstance lockedCurrent =
-            ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, itemization)
-            ?? current;
+            ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, itemization) ?? current;
         ItemReforgeOperation operation = new(
             operationId,
             character.Id,
@@ -316,13 +280,7 @@ public sealed class ItemReforgeService(
         dbContext.ItemReforgeOperations.Add(operation);
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new ItemReforgeOperationResult(
-            true,
-            null,
-            operation,
-            lockedCurrent,
-            proposed,
-            cost);
+        return new ItemReforgeOperationResult(true, null, operation, lockedCurrent, proposed, cost);
     }
 
     private async Task<ItemReforgeOperationResult> DecideCoreAsync(
@@ -332,20 +290,17 @@ public sealed class ItemReforgeService(
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
-        await using IDbContextTransaction transaction =
-            await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         Character? character = await dbContext.Characters
-            .FromSqlInterpolated(
-                $"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
         if (character is null)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.CharacterNotFound, cancellationToken);
 
         ItemReforgeOperation? operation = await dbContext.ItemReforgeOperations
             .SingleOrDefaultAsync(
-                candidate => candidate.OperationId == operationId
-                    && candidate.CharacterId == character.Id,
+                candidate => candidate.OperationId == operationId && candidate.CharacterId == character.Id,
                 cancellationToken);
         if (operation is null)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ProposalNotFound, cancellationToken);
@@ -360,16 +315,12 @@ public sealed class ItemReforgeService(
         CharacterItem? item = await dbContext.CharacterItems
             .Include(candidate => candidate.Affixes)
             .SingleOrDefaultAsync(
-                candidate => candidate.Id == operation.ItemInstanceId
-                    && candidate.CharacterId == character.Id,
+                candidate => candidate.Id == operation.ItemInstanceId && candidate.CharacterId == character.Id,
                 cancellationToken);
         if (item is null)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotFound, cancellationToken);
         if (item.TransactionLockId != operationId)
-            return await RollbackFailureAsync(
-                transaction,
-                ItemReforgeErrorCodes.ItemTransactionLocked,
-                cancellationToken);
+            return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemTransactionLocked, cancellationToken);
 
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
@@ -386,18 +337,7 @@ public sealed class ItemReforgeService(
         {
             GeneratedItemAffix proposedAffix = proposed.Affixes.Single(affix =>
                 string.Equals(affix.SlotKey, operation.SlotKey, StringComparison.Ordinal));
-            item.ApplyReforge(
-                proposedAffix,
-                proposed.MinimumTemplateItemPower,
-                proposed.ActualItemPower,
-                proposed.MaxTemplateItemPower,
-                proposed.RollQuality,
-                proposed.Stars,
-                proposed.IsPerfect,
-                proposed.PerfectOrigin,
-                proposed.GeneratedPrefixId,
-                proposed.GeneratedSuffixId,
-                proposed.DisplayName);
+            item.ApplyReforge(proposedAffix);
         }
 
         item.ReleaseTransactionLock(operationId);
@@ -446,9 +386,7 @@ public sealed class ItemReforgeService(
             multiplier);
     }
 
-    private static decimal ResolveCountMultiplier(
-        ItemReforgeCostProfileDefinition profile,
-        int reforgeCount)
+    private static decimal ResolveCountMultiplier(ItemReforgeCostProfileDefinition profile, int reforgeCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(reforgeCount);
         if (profile.ReforgeCountMultipliers.Count == 0)
@@ -458,9 +396,7 @@ public sealed class ItemReforgeService(
 
         int overflowAttempts = reforgeCount - profile.ReforgeCountMultipliers.Count + 1;
         decimal last = profile.ReforgeCountMultipliers[^1];
-        return last * (decimal)Math.Pow(
-            (double)profile.OverflowGrowthMultiplier,
-            overflowAttempts);
+        return last * (decimal)Math.Pow((double)profile.OverflowGrowthMultiplier, overflowAttempts);
     }
 
     private async Task<bool> HasMaterialAsync(
@@ -516,13 +452,9 @@ public sealed class ItemReforgeService(
 
     private static ItemReforgeOperationResult ToResult(ItemReforgeOperation operation)
     {
-        GeneratedItemInstance? original =
-            JsonSerializer.Deserialize<GeneratedItemInstance>(operation.CurrentItemJson);
-        GeneratedItemInstance? proposed =
-            JsonSerializer.Deserialize<GeneratedItemInstance>(operation.ProposedItemJson);
-        GeneratedItemInstance? current = operation.State == ItemReforgeOperationState.Accepted
-            ? proposed
-            : original;
+        GeneratedItemInstance? original = JsonSerializer.Deserialize<GeneratedItemInstance>(operation.CurrentItemJson);
+        GeneratedItemInstance? proposed = JsonSerializer.Deserialize<GeneratedItemInstance>(operation.ProposedItemJson);
+        GeneratedItemInstance? current = operation.State == ItemReforgeOperationState.Accepted ? proposed : original;
         return new ItemReforgeOperationResult(
             true,
             null,
