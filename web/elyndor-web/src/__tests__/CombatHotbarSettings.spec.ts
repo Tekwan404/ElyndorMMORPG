@@ -5,7 +5,7 @@ import type { KnownAbility } from '@/api/contracts'
 import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
 
 vi.mock('@/assets/abilityArt', () => ({
-  abilityArtUrl: vi.fn((iconId: string | null | undefined) => iconId ? `/abilities/${iconId}.webp` : undefined),
+  abilityArtUrl: (iconId: string | null | undefined) => iconId ? `/abilities/${iconId}.webp` : undefined,
 }))
 
 const ability: KnownAbility = {
