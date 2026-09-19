@@ -380,6 +380,31 @@ onUnmounted(() => {
   display: none;
 }
 
+:global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .player-figure) {
+  bottom: .2rem;
+  left: 4%;
+  width: 42%;
+  height: clamp(13rem, 50vw, 15.5rem);
+  place-items: end center;
+  opacity: .96;
+}
+
+:global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure) {
+  top: auto;
+  right: 3%;
+  bottom: 1.15rem;
+  left: auto;
+  width: 48%;
+  height: clamp(11.5rem, 45vw, 13.5rem);
+  place-items: end center;
+}
+
+:global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure::after) {
+  right: 12%;
+  bottom: 0;
+  left: 12%;
+}
+
 .battlefield-slot {
   position: absolute;
   top: 1.4rem;
@@ -584,6 +609,18 @@ onUnmounted(() => {
     min-height: 19.25rem;
   }
 
+  :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .player-figure) {
+    left: 2%;
+    width: 44%;
+    height: 13.5rem;
+  }
+
+  :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure) {
+    right: 1%;
+    width: 50%;
+    height: 11.75rem;
+  }
+
   .battlefield-slot {
     top: 1.1rem;
     bottom: .25rem;
@@ -631,6 +668,14 @@ onUnmounted(() => {
 @media (max-width: 340px) {
   :global(.combat-screen:not(.combat-screen--party) .battlefield) {
     min-height: 18rem;
+  }
+
+  :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .player-figure) {
+    height: 12.75rem;
+  }
+
+  :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure) {
+    height: 11rem;
   }
 
   .battlefield-slot {
