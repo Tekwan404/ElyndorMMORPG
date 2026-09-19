@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.11.0",
+  "contentVersion": "0.24.1",
   "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-06T19:42:00+00:00",
+  "publishedAtUtc": "2026-09-18T07:22:00+00:00",
   "monsterAiProfiles": [
     {
       "id": "WOLF_BASIC_AI",
@@ -67,7 +67,7 @@
       "goldRewardMax": 7,
       "displayName": "Лесной волк",
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
-      "artId": "wolf",
+      "artId":  "enemy-lesnoy-volk",
       "autoAttackBaseDamageMin": 4,
       "autoAttackBaseDamageMax": 6
     },
@@ -139,7 +139,7 @@
       "goldRewardMax": 10,
       "displayName": "Гигантский паук",
       "description": "Крупный паук атакует быстро и старается не дать противнику передышки.",
-      "artId": "giant-spider",
+      "artId":  "enemy-gigantskiy-pauk",
       "autoAttackBaseDamageMin": 4,
       "autoAttackBaseDamageMax": 7
     },
@@ -176,7 +176,7 @@
       "goldRewardMax": 12,
       "displayName": "Лесной волк",
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
-      "artId": "wolf",
+      "artId":  "enemy-lesnoy-volk",
       "autoAttackBaseDamageMin": 7,
       "autoAttackBaseDamageMax": 10
     },
@@ -466,7 +466,7 @@
       "goldRewardMax": 58,
       "displayName": "Лесной разбойник",
       "description": "Разбойник поджидает добычу среди деревьев и атакует с близкой дистанции.",
-      "artId": "bandit-rogue",
+      "artId":  "enemy-lesnoy-razboynik",
       "autoAttackBaseDamageMin": 36,
       "autoAttackBaseDamageMax": 48
     },
