@@ -53,8 +53,10 @@ public sealed class GroupMembershipConcurrencyTests(PostgresFixture postgres) : 
             Guid.NewGuid(),
             CancellationToken.None);
         await Task.WhenAll(partyTask, raidTask);
+        PartyOperationResult partyResult = await partyTask;
+        RaidOperationResult raidResult = await raidTask;
 
-        Assert.NotEqual(partyTask.Result.IsSuccess, raidTask.Result.IsSuccess);
+        Assert.NotEqual(partyResult.IsSuccess, raidResult.IsSuccess);
         await using GameDbContext verification = postgres.CreateDbContext();
         int memberships = await verification.PartyMembers.CountAsync(member => member.CharacterId == characterId)
             + await verification.RaidMembers.CountAsync(member => member.CharacterId == characterId);
