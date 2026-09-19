@@ -29,6 +29,7 @@ public sealed partial class CombatSession
         CombatSummonProfile? summonProfile,
         CombatParticipantDefinition? companion,
         Guid playerAccountId,
+        Guid playerCharacterId,
         IReadOnlyList<CombatPlayerDefinition> additionalPlayers,
         CombatGroupContext groupContext,
         int maximumParticipants)
@@ -52,6 +53,10 @@ public sealed partial class CombatSession
         ArgumentNullException.ThrowIfNull(additionalPlayers);
         if (groupContext is not CombatGroupContext.Raid)
             throw new ArgumentException("The extended combat constructor is reserved for raid context.", nameof(groupContext));
+        if (playerAccountId == Guid.Empty)
+            throw new ArgumentException("Raid leader account id is required.", nameof(playerAccountId));
+        if (playerCharacterId == Guid.Empty)
+            throw new ArgumentException("Raid leader character id is required.", nameof(playerCharacterId));
         if (maximumParticipants <= CombatParticipantLimit.DefaultParty
             || maximumParticipants > CombatParticipantLimit.MaximumRaid)
         {
@@ -63,11 +68,14 @@ public sealed partial class CombatSession
         CombatPlayerDefinition[] allAdditional = additionalPlayers.ToArray();
         if (allAdditional.Any(item =>
                 item.AccountId == Guid.Empty
+                || item.CharacterId == Guid.Empty
                 || item.Participant.Kind != CombatActorKind.Player
                 || item.TalentModifiers is null)
             || allAdditional.Select(item => item.AccountId).Distinct().Count() != allAdditional.Length
+            || allAdditional.Select(item => item.CharacterId).Distinct().Count() != allAdditional.Length
             || allAdditional.Select(item => item.Participant.Actor.ActorId).Distinct().Count() != allAdditional.Length
             || allAdditional.Any(item => item.AccountId == playerAccountId
+                || item.CharacterId == playerCharacterId
                 || item.Participant.Actor.ActorId == player.Actor.ActorId))
         {
             throw new ArgumentException("Raid player participant identifiers and definitions must be unique.", nameof(additionalPlayers));
@@ -125,25 +133,24 @@ public sealed partial class CombatSession
             }
         }
 
-        CombatParticipantSnapshot primaryBinding = _participantRoster.Participants.Single();
         CombatParticipantIdentity[] capturedRoster =
         [
-            new(primaryBinding.AccountId, primaryBinding.CharacterId, primaryBinding.ActorId),
+            new(playerAccountId, playerCharacterId, player.Actor.ActorId),
             .. allAdditional.Select(item => new CombatParticipantIdentity(
                 item.AccountId,
-                item.Participant.Actor.ActorId,
+                item.CharacterId,
                 item.Participant.Actor.ActorId))
         ];
         _participantRoster = new CombatParticipantRoster(
             capturedRoster,
             startedAtUtc,
             maximumParticipants);
-        if (!_participantRoster.TryAttach(primaryBinding.CharacterId, startedAtUtc, out _))
+        if (!_participantRoster.TryAttach(playerCharacterId, startedAtUtc, out _))
             throw new InvalidOperationException("Raid leader could not be attached to the captured combat roster.");
         foreach (CombatPlayerDefinition playerDefinition in allAdditional.Where(item => item.InitiallyAttached))
         {
             if (!_participantRoster.TryAttach(
-                    playerDefinition.Participant.Actor.ActorId,
+                    playerDefinition.CharacterId,
                     startedAtUtc,
                     out _))
             {
