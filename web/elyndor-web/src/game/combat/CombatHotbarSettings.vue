@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import type { KnownAbility } from '@/api/contracts'
+import { abilityArtUrl } from '@/assets/abilityArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import {
   loadCombatHotbarOrder,
@@ -78,6 +79,10 @@ function abilityMeta(ability: KnownAbility): string {
   if (ability.cooldownSeconds > 0) parts.push(`Перезарядка: ${ability.cooldownSeconds} с`)
   return parts.join(' · ') || 'Без затрат и перезарядки'
 }
+
+function abilityIcon(ability: KnownAbility): string | undefined {
+  return abilityArtUrl(ability.iconId)
+}
 </script>
 
 <template>
@@ -91,30 +96,44 @@ function abilityMeta(ability: KnownAbility): string {
     <section v-if="orderedAbilities.length" class="hotbar-settings__active" aria-label="Активная панель">
       <strong class="hotbar-settings__section-label">В БОЮ · 12 ЯЧЕЕК</strong>
       <div class="hotbar-settings__slots" role="list" aria-label="Порядок боевых способностей">
-      <button
-        v-for="(ability, index) in activeSlots"
-        :key="ability?.id ?? `empty-${index}`"
-        class="hotbar-slot"
-        :class="{
-          'hotbar-slot--selected': selectedAbilityId === ability?.id,
-          'hotbar-slot--empty': !ability,
-        }"
-        type="button"
-        role="listitem"
-        :disabled="!ability"
-        :aria-pressed="selectedAbilityId === ability?.id"
-        :data-hotbar-slot="index + 1"
-        @click="ability && selectSlot(ability.id)"
-      >
-        <span class="hotbar-slot__number">{{ index + 1 }}</span>
-        <span class="hotbar-slot__copy">
-          <strong>{{ ability?.displayName ?? 'Пустая ячейка' }}</strong>
-          <small>{{ ability ? abilityMeta(ability) : 'Свободно' }}</small>
-        </span>
-        <span v-if="ability" class="hotbar-slot__state">
-          {{ selectedAbilityId === ability.id ? 'Выбрано' : 'В бою' }}
-        </span>
-      </button>
+        <button
+          v-for="(ability, index) in activeSlots"
+          :key="ability?.id ?? `empty-${index}`"
+          class="hotbar-slot"
+          :class="{
+            'hotbar-slot--selected': selectedAbilityId === ability?.id,
+            'hotbar-slot--empty': !ability,
+          }"
+          type="button"
+          role="listitem"
+          :disabled="!ability"
+          :aria-pressed="selectedAbilityId === ability?.id"
+          :data-hotbar-slot="index + 1"
+          @click="ability && selectSlot(ability.id)"
+        >
+          <span class="hotbar-slot__icon" :class="{ 'hotbar-slot__icon--empty': !ability }">
+            <img
+              v-if="ability && abilityIcon(ability)"
+              :src="abilityIcon(ability)"
+              :alt="ability.displayName"
+              data-ability-icon
+              loading="lazy"
+              decoding="async"
+            />
+            <span v-else-if="ability" class="hotbar-slot__icon-fallback" aria-hidden="true">
+              {{ ability.displayName.slice(0, 1).toUpperCase() }}
+            </span>
+            <span v-else class="hotbar-slot__icon-fallback" aria-hidden="true">+</span>
+            <span class="hotbar-slot__number">{{ index + 1 }}</span>
+          </span>
+          <span class="hotbar-slot__copy">
+            <strong>{{ ability?.displayName ?? 'Пустая ячейка' }}</strong>
+            <small>{{ ability ? abilityMeta(ability) : 'Свободно' }}</small>
+          </span>
+          <span v-if="ability" class="hotbar-slot__state">
+            {{ selectedAbilityId === ability.id ? 'Выбрано' : 'В бою' }}
+          </span>
+        </button>
       </div>
     </section>
 
@@ -130,7 +149,20 @@ function abilityMeta(ability: KnownAbility): string {
           :aria-pressed="selectedAbilityId === ability.id"
           @click="selectSlot(ability.id)"
         >
-          <span class="hotbar-slot__number">Р</span>
+          <span class="hotbar-slot__icon">
+            <img
+              v-if="abilityIcon(ability)"
+              :src="abilityIcon(ability)"
+              :alt="ability.displayName"
+              data-ability-icon
+              loading="lazy"
+              decoding="async"
+            />
+            <span v-else class="hotbar-slot__icon-fallback" aria-hidden="true">
+              {{ ability.displayName.slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="hotbar-slot__number">Р</span>
+          </span>
           <span class="hotbar-slot__copy"><strong>{{ ability.displayName }}</strong><small>{{ abilityMeta(ability) }}</small></span>
           <span class="hotbar-slot__state">{{ selectedAbilityId === ability.id ? 'Выбрано' : 'Резерв' }}</span>
         </button>
@@ -208,21 +240,22 @@ function abilityMeta(ability: KnownAbility): string {
 
 .hotbar-settings__active .hotbar-slot {
   grid-template-columns: 1fr;
-  min-height: 52px;
-  gap: 2px;
-  padding: 3px 1px;
+  min-height: 72px;
+  gap: 3px;
+  padding: 4px 2px;
   place-items: center;
   text-align: center;
 }
 
-.hotbar-settings__active .hotbar-slot__number {
-  width: 1.25rem;
-  height: 1.25rem;
-  font-size: .52rem;
+.hotbar-settings__active .hotbar-slot__icon {
+  width: min(44px, 100%);
+  aspect-ratio: 1;
 }
 
 .hotbar-settings__active .hotbar-slot__copy strong {
-  font-size: .42rem;
+  display: block;
+  max-width: 100%;
+  font-size: .46rem;
 }
 
 .hotbar-settings__active .hotbar-slot__copy small,
@@ -231,7 +264,7 @@ function abilityMeta(ability: KnownAbility): string {
 }
 
 .hotbar-slot--empty {
-  opacity: .48;
+  opacity: .42;
 }
 
 .hotbar-settings__reserve-list {
@@ -242,7 +275,7 @@ function abilityMeta(ability: KnownAbility): string {
 
 .hotbar-slot {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
   min-height: var(--ui-touch-target);
@@ -262,22 +295,54 @@ function abilityMeta(ability: KnownAbility): string {
 .hotbar-slot--selected {
   border-color: var(--ui-color-gold);
   background: rgb(205 177 113 / 12%);
-  box-shadow: inset 0 0 0 1px rgb(205 177 113 / 18%);
+  box-shadow: 0 0 12px rgb(205 177 113 / 14%), inset 0 0 0 1px rgb(205 177 113 / 18%);
 }
 
 .hotbar-slot--reserve {
-  opacity: .72;
+  opacity: .78;
+}
+
+.hotbar-slot__icon {
+  position: relative;
+  display: grid;
+  width: 2.6rem;
+  aspect-ratio: 1;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(205 177 113 / 46%);
+  border-radius: 5px;
+  background: radial-gradient(circle at 50% 35%, rgb(146 136 255 / 16%), rgb(3 5 9 / 98%));
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 7%),
+    inset 0 0 12px rgb(0 0 0 / 58%);
+}
+
+.hotbar-slot__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hotbar-slot__icon-fallback {
+  color: var(--ui-color-gold-muted);
+  font: 700 .8rem var(--ui-font-display);
 }
 
 .hotbar-slot__number {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 3px;
   place-items: center;
-  border: 1px solid rgb(205 177 113 / 38%);
-  border-radius: var(--ui-radius-sm);
-  color: var(--ui-color-gold);
-  font: 700 .78rem var(--ui-font-display);
+  border: 1px solid rgb(205 177 113 / 42%);
+  border-radius: 3px;
+  background: rgb(2 4 8 / 92%);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 72%);
+  color: #f3dfad;
+  font: 800 .5rem var(--ui-font-display);
 }
 
 .hotbar-slot__copy {
@@ -328,12 +393,11 @@ function abilityMeta(ability: KnownAbility): string {
 
 @media (max-width: 380px) {
   .hotbar-slot {
-    grid-template-columns: 1.8rem minmax(0, 1fr);
+    grid-template-columns: 2.35rem minmax(0, 1fr);
   }
 
-  .hotbar-slot__number {
-    width: 1.8rem;
-    height: 1.8rem;
+  .hotbar-slot__icon {
+    width: 2.35rem;
   }
 
   .hotbar-slot__state {
