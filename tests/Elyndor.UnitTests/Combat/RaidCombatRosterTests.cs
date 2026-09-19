@@ -1,4 +1,6 @@
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
@@ -135,7 +137,7 @@ public sealed class RaidCombatRosterTests
             Guid.NewGuid(),
             leader,
             CreateEnemy(),
-            new Dictionary<string, Elyndor.Core.Combat.Abilities.AbilityDefinition>(StringComparer.Ordinal),
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
             new MonsterAiProfile("TEST_AI", []),
             ResolvedTalentModifiers.Empty,
             Random(),
@@ -144,15 +146,74 @@ public sealed class RaidCombatRosterTests
             additionalPlayers: additional));
     }
 
+    [Fact]
+    public void RaidGroupEffect_AppliesToAllTenActivePlayers()
+    {
+        const string abilityId = "TEST_RAID_BUFF";
+        const string effectId = "TEST_RAID_BUFF_EFFECT";
+        EffectDefinition effect = new(
+            effectId,
+            EffectKind.Buff,
+            TimeSpan.FromMinutes(1),
+            1,
+            EffectStackPolicy.Refresh,
+            1);
+        AbilityDefinition ability = new(
+            abilityId,
+            AbilityType.Instant,
+            AbilityTargetType.SelfAndPartyMembersInCombat,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "HOLY",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ApplyEffect,
+                    Effect: effect)
+            ]);
+        Guid leaderId = Guid.NewGuid();
+        CombatParticipantDefinition leader = CreatePlayer(leaderId, abilityId);
+        CombatPlayerDefinition[] additional = Enumerable.Range(0, 9)
+            .Select(_ => new CombatPlayerDefinition(
+                Guid.NewGuid(),
+                CreatePlayer(Guid.NewGuid()),
+                ResolvedTalentModifiers.Empty))
+            .ToArray();
+        CombatSession session = CreateRaidSession(
+            leader,
+            Guid.NewGuid(),
+            additional,
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                [abilityId] = ability
+            });
+
+        CombatCommandResult result = session.Handle(
+            leaderId,
+            new UseAbilityCommand("raid-buff-1", abilityId, Guid.Empty),
+            UtcNow);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        CombatSessionSnapshot snapshot = session.Snapshot(leaderId);
+        Assert.Equal(10, snapshot.Players?.Count);
+        Assert.All(snapshot.Players!, player =>
+            Assert.Contains(player.Effects, active => active.Id == effectId));
+    }
+
     private static CombatSession CreateRaidSession(
         CombatParticipantDefinition leader,
         Guid leaderAccountId,
-        IReadOnlyList<CombatPlayerDefinition> additionalPlayers) =>
+        IReadOnlyList<CombatPlayerDefinition> additionalPlayers,
+        IReadOnlyDictionary<string, AbilityDefinition>? abilities = null) =>
         new(
             Guid.NewGuid(),
             leader,
             CreateEnemy(),
-            new Dictionary<string, Elyndor.Core.Combat.Abilities.AbilityDefinition>(StringComparer.Ordinal),
+            abilities ?? new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
             new MonsterAiProfile("TEST_AI", []),
             ResolvedTalentModifiers.Empty,
             Random(),
@@ -167,9 +228,14 @@ public sealed class RaidCombatRosterTests
             CombatGroupContext.Raid,
             CombatParticipantLimit.MaximumRaid);
 
-    private static CombatParticipantDefinition CreatePlayer(Guid actorId)
+    private static CombatParticipantDefinition CreatePlayer(
+        Guid actorId,
+        string? knownAbilityId = null)
     {
         CombatStats stats = Stats();
+        HashSet<string> knownAbilities = knownAbilityId is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : new HashSet<string>([knownAbilityId], StringComparer.Ordinal);
         return new CombatParticipantDefinition(
             new CombatActorState(actorId, 500, 500, 100, 100, stats),
             CombatActorKind.Player,
@@ -177,7 +243,7 @@ public sealed class RaidCombatRosterTests
             $"Player-{actorId:N}",
             "RAGE",
             new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
-            new HashSet<string>(StringComparer.Ordinal),
+            knownAbilities,
             CanAutoAttack: false);
     }
 
