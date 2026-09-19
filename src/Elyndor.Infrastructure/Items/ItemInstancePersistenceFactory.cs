@@ -23,9 +23,12 @@ public static class ItemInstancePersistenceFactory
             sourceOperationId,
             $"{sourceEntryId}|{definition.Id}",
             ordinal);
+        ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
+            ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
+            : null;
         GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
             definition,
-            content.Itemization,
+            effectiveItemization,
             qualityProfileId,
             key);
         PrimaryStats? legacyRoll = generated is null
@@ -70,9 +73,12 @@ public static class ItemInstancePersistenceFactory
             sourceOperationId,
             $"{sourceEntryId}|{definition.Id}",
             ordinal);
+        ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
+            ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
+            : null;
         GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
             definition,
-            content.Itemization,
+            effectiveItemization,
             qualityProfileId,
             key);
         PrimaryStats? legacyRoll = generated is null
