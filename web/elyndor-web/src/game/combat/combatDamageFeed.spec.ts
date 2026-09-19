@@ -49,6 +49,17 @@ describe('collectCombatDamageFeedHits', () => {
     ])
   })
 
+  it('does not mark unrelated damage as critical', () => {
+    const result = collectCombatDamageFeedHits([
+      event(12, 'CriticalHit', 'enemy', 173, 'player'),
+      event(13, 'DamageDealt', 'player', 42, 'enemy'),
+    ], 0, 'player', 'enemy')
+
+    expect(result.hits).toEqual([
+      { sequence: 13, side: 'player', amount: 42, critical: false },
+    ])
+  })
+
   it('only returns events newer than the processed sequence cursor', () => {
     const result = collectCombatDamageFeedHits([
       event(20, 'DamageDealt', 'player', 12),
