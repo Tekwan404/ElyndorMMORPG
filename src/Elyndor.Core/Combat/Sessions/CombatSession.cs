@@ -269,6 +269,7 @@ public sealed partial class CombatSession
             _playerStatesByActorId.Add(playerDefinition.Participant.Actor.ActorId, state);
         }
         _activePlayerState = _playerStatesByActorId[player.Actor.ActorId];
+        InitializeSetPassiveLoadoutSnapshot();
         InitializeThreatTables();
         _participantRoster = new CombatParticipantRoster(
             playerDefinitions
@@ -1936,6 +1937,10 @@ public sealed partial class CombatSession
                     _player.Actor.ActorId,
                     normalized.OccurredAtUtc);
             }
+            // The set-passive runtime is event driven and ownership is resolved from the
+            // event itself, so it runs for every event type its catalog subscribes to
+            // rather than hanging off one class-specific hook.
+            ApplySetPassiveHooks(normalized);
             ApplyTalentHooks(normalized);
             if (normalized.Type == CombatEventType.DamageBlocked)
             {
