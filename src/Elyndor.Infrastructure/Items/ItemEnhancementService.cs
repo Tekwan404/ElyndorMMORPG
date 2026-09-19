@@ -54,9 +54,9 @@ public sealed record ItemEnhancementPreviewResult(
 }
 
 /// <summary>
-/// Player investment applied after an item has been generated.
-/// Enhancement is deliberately external to the generated-instance budget: it must never
-/// rewrite Stars, RollQuality, IsPerfect, generated names or rolled affixes.
+/// Post-acquisition progression for generated equipment. Enhancement is deliberately external
+/// to the birth-time item budget and therefore cannot rewrite stars, roll quality, Perfect,
+/// generated names or rolled affixes.
 /// </summary>
 public sealed class ItemEnhancementService(
     GameDbContext dbContext,
@@ -111,22 +111,20 @@ public sealed class ItemEnhancementService(
             content.Package.Itemization);
         if (current is null)
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotGenerated);
-        if (item.EnhancementLevel >= ItemEnhancementRules.MaxEnhancementLevel)
+        if (item.EnhancementLevel >= ItemEnhancementRules.MaximumLevel)
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.MaxEnhancement);
 
         int targetLevel = item.EnhancementLevel + 1;
         if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
 
-        decimal? intrinsicPower = current.ActualItemPower;
-        decimal? finalPower = intrinsicPower.HasValue
+        decimal finalPower = content.Package.Itemization is { } itemization
             ? ItemEnhancementRules.CalculateEnhancedItemPower(
                 definition,
-                current.Affixes,
+                itemization,
                 current.ActualItemPower,
-                targetLevel,
-                content.Package.Itemization)
-            : null;
+                targetLevel)
+            : current.ActualItemPower;
 
         return new ItemEnhancementPreviewResult(
             true,
@@ -139,7 +137,7 @@ public sealed class ItemEnhancementService(
             cost.EnhancementMaterialQuantity,
             cost.CatalystItemId,
             cost.CatalystQuantity,
-            intrinsicPower,
+            current.ActualItemPower,
             finalPower);
     }
 
@@ -197,7 +195,7 @@ public sealed class ItemEnhancementService(
             content.Package.Itemization);
         if (current is null)
             return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotGenerated, cancellationToken);
-        if (item.EnhancementLevel >= ItemEnhancementRules.MaxEnhancementLevel)
+        if (item.EnhancementLevel >= ItemEnhancementRules.MaximumLevel)
             return await Fail(transaction, ItemEnhancementErrorCodes.MaxEnhancement, cancellationToken);
 
         int targetLevel = item.EnhancementLevel + 1;
@@ -212,14 +210,12 @@ public sealed class ItemEnhancementService(
                 || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken)))
             return await Fail(transaction, ItemEnhancementErrorCodes.MissingCatalyst, cancellationToken);
 
-        // Snapshot the complete generated-item classification before the external progression mutation.
-        // These values are intentionally not used to rebuild the instance afterwards: they are birth history.
         int stars = current.Stars;
         decimal rollQuality = current.RollQuality;
         bool isPerfect = current.IsPerfect;
         string? perfectOrigin = current.PerfectOrigin;
-        decimal? actualItemPower = current.ActualItemPower;
-        string generatedName = current.GeneratedName;
+        decimal actualItemPower = current.ActualItemPower;
+        string displayName = current.DisplayName;
         GeneratedItemAffix[] affixes = current.Affixes.ToArray();
 
         character.TrySpendGold(cost.Gold);
@@ -229,7 +225,6 @@ public sealed class ItemEnhancementService(
 
         item.ApplyEnhancement(targetLevel);
 
-        // Defensive invariant: enhancement has no authority over generated-instance identity/quality.
         GeneratedItemInstance unchanged = ItemInstancePersistenceFactory.ToGeneratedInstance(
             item,
             definition,
@@ -240,7 +235,7 @@ public sealed class ItemEnhancementService(
             || unchanged.IsPerfect != isPerfect
             || unchanged.PerfectOrigin != perfectOrigin
             || unchanged.ActualItemPower != actualItemPower
-            || unchanged.GeneratedName != generatedName
+            || unchanged.DisplayName != displayName
             || !unchanged.Affixes.SequenceEqual(affixes))
         {
             throw new InvalidOperationException("Enhancement mutated intrinsic generated-item properties.");
@@ -263,14 +258,13 @@ public sealed class ItemEnhancementService(
         ItemDefinition definition,
         ItemizationDefinition? itemization)
     {
-        decimal? finalPower = generated.ActualItemPower.HasValue && itemization is not null
-            ? ItemEnhancementRules.CalculateEnhancedItemPower(
+        decimal finalPower = itemization is null
+            ? generated.ActualItemPower
+            : ItemEnhancementRules.CalculateEnhancedItemPower(
                 definition,
-                generated.Affixes,
+                itemization,
                 generated.ActualItemPower,
-                item.EnhancementLevel,
-                itemization)
-            : generated.ActualItemPower;
+                item.EnhancementLevel);
 
         return new ItemEnhancementResult(
             true,
