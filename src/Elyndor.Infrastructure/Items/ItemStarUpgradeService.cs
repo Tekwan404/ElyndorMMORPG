@@ -45,10 +45,13 @@ public sealed record ItemStarUpgradePreviewResult(
 
 /// <summary>
 /// Backward-compatible facade for clients that still call /star-upgrade.
-/// TargetStars now carries the target enhancement level only on this deprecated contract.
+/// TargetStars carries the target enhancement level only on this legacy contract.
 /// The generated item's Stars/RollQuality/Perfect fields remain immutable.
+///
+/// This facade intentionally is not marked Obsolete at type level because ASP.NET endpoint
+/// method signatures still bind it through DI while old routes remain supported. Deprecation
+/// is an API-contract concern; making the DI type obsolete turns warnings-as-errors builds red.
 /// </summary>
-[Obsolete("Use ItemEnhancementService. Star upgrade is a compatibility alias only.")]
 public sealed class ItemStarUpgradeService(ItemEnhancementService enhancementService)
 {
     public async Task<ItemStarUpgradeResult> UpgradeAsync(
