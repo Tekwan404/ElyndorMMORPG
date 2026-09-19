@@ -68,10 +68,7 @@ public sealed class RaidCombatRosterTests
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         Guid leaderAccountId = Guid.NewGuid();
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 9)
-            .Select(_ => new CombatPlayerDefinition(
-                Guid.NewGuid(),
-                CreatePlayer(Guid.NewGuid()),
-                ResolvedTalentModifiers.Empty))
+            .Select(_ => CreateRaidPlayerDefinition())
             .ToArray();
 
         CombatSession session = CreateRaidSession(
@@ -90,10 +87,7 @@ public sealed class RaidCombatRosterTests
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 19)
-            .Select(_ => new CombatPlayerDefinition(
-                Guid.NewGuid(),
-                CreatePlayer(Guid.NewGuid()),
-                ResolvedTalentModifiers.Empty))
+            .Select(_ => CreateRaidPlayerDefinition())
             .ToArray();
 
         CombatSession session = CreateRaidSession(
@@ -110,16 +104,43 @@ public sealed class RaidCombatRosterTests
     {
         CombatParticipantDefinition leader = CreatePlayer(Guid.NewGuid());
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 20)
-            .Select(_ => new CombatPlayerDefinition(
-                Guid.NewGuid(),
-                CreatePlayer(Guid.NewGuid()),
-                ResolvedTalentModifiers.Empty))
+            .Select(_ => CreateRaidPlayerDefinition())
             .ToArray();
 
         Assert.Throws<ArgumentException>(() => CreateRaidSession(
             leader,
             Guid.NewGuid(),
             additional));
+    }
+
+    [Fact]
+    public void RaidCombatSessionPreservesCharacterIdsWhenActorIdsDiffer()
+    {
+        Guid leaderActorId = Guid.NewGuid();
+        Guid leaderCharacterId = Guid.NewGuid();
+        Guid memberActorId = Guid.NewGuid();
+        Guid memberCharacterId = Guid.NewGuid();
+        CombatParticipantDefinition leader = CreatePlayer(leaderActorId);
+        CombatPlayerDefinition member = new(
+            Guid.NewGuid(),
+            CreatePlayer(memberActorId),
+            ResolvedTalentModifiers.Empty,
+            CharacterId: memberCharacterId);
+
+        CombatSession session = CreateRaidSession(
+            leader,
+            Guid.NewGuid(),
+            [member],
+            leaderCharacterId: leaderCharacterId);
+
+        CombatParticipantSnapshot capturedLeader = Assert.Single(
+            session.ParticipantRoster.Participants,
+            participant => participant.ActorId == leaderActorId);
+        CombatParticipantSnapshot capturedMember = Assert.Single(
+            session.ParticipantRoster.Participants,
+            participant => participant.ActorId == memberActorId);
+        Assert.Equal(leaderCharacterId, capturedLeader.CharacterId);
+        Assert.Equal(memberCharacterId, capturedMember.CharacterId);
     }
 
     [Fact]
@@ -158,33 +179,11 @@ public sealed class RaidCombatRosterTests
             1,
             EffectStackPolicy.Refresh,
             1);
-        AbilityDefinition ability = new(
-            abilityId,
-            AbilityType.Instant,
-            AbilityTargetType.SelfAndPartyMembersInCombat,
-            0,
-            TimeSpan.Zero,
-            TimeSpan.Zero,
-            false,
-            GlobalCooldownCategory.None,
-            true,
-            "HOLY",
-            true,
-            true,
-            false,
-            false,
-            [
-                new AbilityActionDefinition(
-                    AbilityActionType.ApplyEffect,
-                    Effect: effect)
-            ]);
+        AbilityDefinition ability = CreateGroupBuffAbility(abilityId, effect);
         Guid leaderId = Guid.NewGuid();
         CombatParticipantDefinition leader = CreatePlayer(leaderId, abilityId);
         CombatPlayerDefinition[] additional = Enumerable.Range(0, 9)
-            .Select(_ => new CombatPlayerDefinition(
-                Guid.NewGuid(),
-                CreatePlayer(Guid.NewGuid()),
-                ResolvedTalentModifiers.Empty))
+            .Select(_ => CreateRaidPlayerDefinition())
             .ToArray();
         CombatSession session = CreateRaidSession(
             leader,
@@ -213,11 +212,37 @@ public sealed class RaidCombatRosterTests
         Assert.All(session.PlayerActorIds, actorId => Assert.Contains(actorId, affectedPlayerIds));
     }
 
+    private static AbilityDefinition CreateGroupBuffAbility(
+        string abilityId,
+        EffectDefinition effect) =>
+        new(
+            abilityId,
+            AbilityType.Instant,
+            AbilityTargetType.SelfAndPartyMembersInCombat,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "HOLY",
+            true,
+            true,
+            false,
+            false,
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ApplyEffect,
+                    Effect: effect)
+            ]);
+
     private static CombatSession CreateRaidSession(
         CombatParticipantDefinition leader,
         Guid leaderAccountId,
         IReadOnlyList<CombatPlayerDefinition> additionalPlayers,
-        IReadOnlyDictionary<string, AbilityDefinition>? abilities = null) =>
+        IReadOnlyDictionary<string, AbilityDefinition>? abilities = null,
+        CombatParticipantDefinition? companion = null,
+        Guid? leaderCharacterId = null) =>
         new(
             Guid.NewGuid(),
             leader,
@@ -231,11 +256,22 @@ public sealed class RaidCombatRosterTests
             "TEST_BALANCE",
             null,
             null,
-            null,
+            companion,
             leaderAccountId,
+            leaderCharacterId ?? leader.Actor.ActorId,
             additionalPlayers,
             CombatGroupContext.Raid,
             CombatParticipantLimit.MaximumRaid);
+
+    private static CombatPlayerDefinition CreateRaidPlayerDefinition()
+    {
+        Guid characterId = Guid.NewGuid();
+        return new CombatPlayerDefinition(
+            Guid.NewGuid(),
+            CreatePlayer(characterId),
+            ResolvedTalentModifiers.Empty,
+            CharacterId: characterId);
+    }
 
     private static CombatParticipantDefinition CreatePlayer(
         Guid actorId,
