@@ -5,13 +5,33 @@ namespace Elyndor.Core.Combat.Sessions;
 public sealed partial class CombatSession
 {
     private readonly SetPassiveRuntime _setPassiveRuntime = new(SetPassiveCatalog.Definitions);
-    private IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>>? _setPassiveLoadoutSnapshot;
+    private IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> _setPassiveLoadoutSnapshot =
+        new Dictionary<Guid, IReadOnlyDictionary<string, int>>();
+
+    /// <summary>
+    /// Equipped set pieces are captured once, when the session is created: equipment cannot
+    /// change while a combat session is active, and the roster is fixed by the constructor.
+    /// </summary>
+    private void InitializeSetPassiveLoadoutSnapshot()
+    {
+        _setPassiveLoadoutSnapshot = _playerStatesByActorId.ToDictionary(
+            pair => pair.Key,
+            pair => (IReadOnlyDictionary<string, int>)(pair.Value.Definition.EquippedSetPieces is { } setPieces
+                ? setPieces.ToDictionary(
+                    item => item.Key,
+                    item => item.Value,
+                    StringComparer.Ordinal)
+                : new Dictionary<string, int>(StringComparer.Ordinal)));
+    }
 
     private void ApplySetPassiveHooks(CombatEvent combatEvent)
     {
+        if (!_setPassiveRuntime.HandlesEventType(combatEvent.Type))
+            return;
+
         IReadOnlyList<SetPassiveActionInvocation> invocations = _setPassiveRuntime.Evaluate(
             combatEvent,
-            GetSetPassiveLoadoutSnapshot());
+            _setPassiveLoadoutSnapshot);
 
         foreach (SetPassiveActionInvocation invocation in invocations)
         {
@@ -36,23 +56,5 @@ public sealed partial class CombatSession
                 invocation.ActorId,
                 invocation.Action.ReferenceId);
         }
-    }
-
-    private IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> GetSetPassiveLoadoutSnapshot()
-    {
-        if (_setPassiveLoadoutSnapshot is not null)
-        {
-            return _setPassiveLoadoutSnapshot;
-        }
-
-        _setPassiveLoadoutSnapshot = _playerStatesByActorId.ToDictionary(
-            pair => pair.Key,
-            pair => (IReadOnlyDictionary<string, int>)(pair.Value.Definition.EquippedSetPieces is { } setPieces
-                ? setPieces.ToDictionary(
-                    item => item.Key,
-                    item => item.Value,
-                    StringComparer.Ordinal)
-                : new Dictionary<string, int>(StringComparer.Ordinal)));
-        return _setPassiveLoadoutSnapshot;
     }
 }

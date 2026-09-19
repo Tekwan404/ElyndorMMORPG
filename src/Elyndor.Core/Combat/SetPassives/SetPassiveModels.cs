@@ -11,10 +11,7 @@ public enum SetPassiveActorRole
 public enum SetPassiveActionKind
 {
     ApplyEffect,
-    AddShield,
-    RestoreResource,
-    DealDamage,
-    ModifyCooldown
+    AddShield
 }
 
 public sealed record SetPassiveTriggerDefinition(
@@ -34,7 +31,10 @@ public sealed record SetPassiveActionDefinition(
     EffectModifierMode ModifierMode = EffectModifierMode.Flat,
     EffectStackPolicy StackPolicy = EffectStackPolicy.Refresh,
     int MaxStacks = 1,
-    bool ScaleWithMaxHp = false);
+    bool ScaleWithMaxHp = false,
+    string? DisplayName = null,
+    string? Description = null,
+    string? IconId = null);
 
 public sealed record SetPassiveDefinition(
     string Id,

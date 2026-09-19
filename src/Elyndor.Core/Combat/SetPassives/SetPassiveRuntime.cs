@@ -12,6 +12,9 @@ public sealed class SetPassiveRuntime
 
     public SetPassiveRuntimeState State => _state;
 
+    public bool HandlesEventType(CombatEventType eventType) =>
+        _evaluator.TriggerEventTypes.Contains(eventType);
+
     public IReadOnlyList<SetPassiveActionInvocation> Evaluate(
         CombatEvent combatEvent,
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> equippedSetPieceCounts) =>

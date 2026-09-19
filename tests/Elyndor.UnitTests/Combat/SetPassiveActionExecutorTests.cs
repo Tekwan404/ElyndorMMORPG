@@ -86,7 +86,7 @@ public sealed class SetPassiveActionExecutorTests
     }
 
     [Fact]
-    public void UnconfiguredProductionBalanceActionDoesNotCreateDecorativeEffect()
+    public void ProductionCatalogTwoPieceAppliesItsConfiguredArmorBuff()
     {
         CombatActorState defender = Actor(Guid.NewGuid(), armor: 100);
         SetPassiveDefinition definition = Assert.Single(
@@ -98,8 +98,35 @@ public sealed class SetPassiveActionExecutorTests
             BlockEvent(Guid.NewGuid(), defender.ActorId, Now),
             PieceCounts(defender.ActorId, 2)));
 
-        Assert.Empty(SetPassiveActionExecutor.Execute(invocation, defender));
-        Assert.Empty(defender.ActiveEffects);
+        Assert.Single(SetPassiveActionExecutor.Execute(invocation, defender));
+        ActiveEffect effect = Assert.Single(defender.ActiveEffects);
+        Assert.Equal("EFFECT_GUARDIAN_BLOCK_ARMOR", effect.Definition.Id);
+        Assert.False(string.IsNullOrWhiteSpace(effect.Definition.DisplayName));
+        Assert.False(string.IsNullOrWhiteSpace(effect.Definition.IconId));
+        Assert.Equal(
+            112m,
+            EffectEngine.CalculateStat(defender, EffectStat.Armor, 100m, Now));
+    }
+
+    [Fact]
+    public void ProductionCatalogActionsAreAllExecutable()
+    {
+        CombatActorState owner = Actor(Guid.NewGuid(), armor: 100);
+
+        foreach (SetPassiveDefinition definition in SetPassiveCatalog.Definitions)
+        {
+            foreach (SetPassiveActionDefinition action in definition.Actions)
+            {
+                SetPassiveActionInvocation invocation = new(
+                    definition.Id,
+                    definition.SetId,
+                    owner.ActorId,
+                    Now,
+                    action);
+
+                Assert.NotEmpty(SetPassiveActionExecutor.Execute(invocation, owner));
+            }
+        }
     }
 
     private static SetPassiveDefinition TestGuardianTwoPiece() => new(

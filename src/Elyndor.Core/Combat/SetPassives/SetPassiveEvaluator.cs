@@ -15,7 +15,15 @@ public sealed class SetPassiveEvaluator
         }
 
         _definitions = materialized;
+        TriggerEventTypes = materialized
+            .Select(definition => definition.Trigger.EventType)
+            .ToHashSet();
     }
+
+    /// <summary>
+    /// Event types any definition reacts to, so callers can skip the evaluation entirely.
+    /// </summary>
+    public IReadOnlySet<CombatEventType> TriggerEventTypes { get; }
 
     public IReadOnlyList<SetPassiveActionInvocation> Evaluate(
         CombatEvent combatEvent,
@@ -45,6 +53,9 @@ public sealed class SetPassiveEvaluator
             if (state.CooldownUntil is { } cooldownUntil
                 && combatEvent.OccurredAtUtc < cooldownUntil)
             {
+                // Deliberate: events that arrive during the internal cooldown do not advance
+                // the EveryNth counter, so the two conditions never stack into a shorter
+                // effective cooldown. SetPassiveEvaluatorTests pins this behaviour.
                 continue;
             }
 

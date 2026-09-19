@@ -16,7 +16,8 @@ public sealed record CombatSimulationScenario(
     int Seed = 1337,
     int MaxDurationSeconds = 90,
     IReadOnlyList<string>? AbilityPriority = null,
-    IReadOnlyDictionary<string, int>? SelectedTalentRanks = null);
+    IReadOnlyDictionary<string, int>? SelectedTalentRanks = null,
+    IReadOnlyDictionary<string, int>? EquippedSetPieces = null);
 
 public sealed record CombatSimulationDamageSource(
     string DefinitionId,
@@ -264,7 +265,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             resource.Id,
             playerAutoAttack,
             new HashSet<string>(knownAbilityIds, StringComparer.Ordinal),
-            resource.CombatRegenPerSecond);
+            resource.CombatRegenPerSecond,
+            EquippedSetPieces: scenario.EquippedSetPieces);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,

@@ -15,8 +15,8 @@ public static class SetPassiveActionExecutor
         {
             SetPassiveActionKind.ApplyEffect => ApplyStatEffect(invocation, owner),
             SetPassiveActionKind.AddShield => ApplyShield(invocation, owner),
-            _ => throw new NotSupportedException(
-                $"Set passive action '{invocation.Action.Kind}' is not implemented yet.")
+            // An unknown kind must never abort the combat event that triggered it.
+            _ => []
         };
     }
 
@@ -46,7 +46,10 @@ public static class SetPassiveActionExecutor
                 action.StackPolicy,
                 magnitude,
                 ModifiedStat: action.ModifiedStat,
-                ModifierMode: action.ModifierMode),
+                ModifierMode: action.ModifierMode,
+                DisplayName: action.DisplayName,
+                Description: action.Description,
+                IconId: action.IconId),
             invocation.OccurredAtUtc);
     }
 
@@ -78,7 +81,10 @@ public static class SetPassiveActionExecutor
                 duration,
                 action.MaxStacks,
                 action.StackPolicy,
-                magnitude),
+                magnitude,
+                DisplayName: action.DisplayName,
+                Description: action.Description,
+                IconId: action.IconId),
             invocation.OccurredAtUtc);
     }
 
