@@ -48,6 +48,7 @@ public sealed class RaidMemberConfiguration : IEntityTypeConfiguration<RaidMembe
             .HasName("pk_raid_members");
         builder.Property(member => member.Role).HasConversion<int>().IsRequired();
         builder.Property(member => member.State).HasConversion<int>().IsRequired();
+        builder.Property(member => member.ReadyState).HasConversion<int>().IsRequired();
         builder.Property(member => member.JoinedAtUtc).IsRequired();
 
         builder.HasOne<Character>()
