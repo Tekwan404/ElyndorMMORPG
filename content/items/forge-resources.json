@@ -1,6 +1,6 @@
 {
   "contentVersion": "0.19.0",
-  "balanceVersion": "0.9.0",
+  "balanceVersion": "0.9.1",
   "publishedAtUtc": "2026-09-20T08:00:00+00:00",
   "items": [
     {
@@ -29,7 +29,9 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Материал для усиления снаряжения от +1 до +5. Не используется для перековки.",
       "version": 1,
-      "iconId": "ore"
+      "iconId": "ore",
+      "buyPriceGold": 20,
+      "sellPriceGold": 5
     },
     {
       "id": "FORGE_SCRAP",
