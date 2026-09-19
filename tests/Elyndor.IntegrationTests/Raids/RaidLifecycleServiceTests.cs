@@ -192,7 +192,7 @@ public sealed class RaidLifecycleServiceTests(PostgresFixture postgres) : IAsync
         Assert.Equal(RaidErrorCodes.NotLeaderOrAssistant, result.ErrorCode);
     }
 
-    private async Task CreateAndJoinAsync(
+    private static async Task CreateAndJoinAsync(
         RaidService service,
         SeededCharacters seeded,
         params int[] memberIndexes)
