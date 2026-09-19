@@ -39,6 +39,8 @@ public sealed record ItemEnhancementPreviewResult(
     bool Succeeded,
     string? ErrorCode,
     Guid ItemInstanceId,
+    int CurrentEnhancementLevel,
+    bool IsMaximumEnhancement,
     int TargetEnhancementLevel,
     decimal EnhancementBonusPercent,
     int Gold,
@@ -50,7 +52,7 @@ public sealed record ItemEnhancementPreviewResult(
     decimal? FinalItemPower)
 {
     public static ItemEnhancementPreviewResult Failure(string code) =>
-        new(false, code, Guid.Empty, 0, 0m, 0, string.Empty, 0, null, 0, null, null);
+        new(false, code, Guid.Empty, 0, false, 0, 0m, 0, string.Empty, 0, null, 0, null, null);
 }
 
 public sealed class ItemEnhancementService(
@@ -88,21 +90,51 @@ public sealed class ItemEnhancementService(
 
         GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization);
         if (current is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotGenerated);
-        if (item.EnhancementLevel >= ItemEnhancementRules.MaximumLevel)
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.MaxEnhancement);
 
-        int targetLevel = item.EnhancementLevel + 1;
-        if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
-            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
-
+        int currentLevel = item.EnhancementLevel;
+        bool isMaximum = currentLevel >= ItemEnhancementRules.MaximumLevel;
+        int targetLevel = isMaximum ? currentLevel : currentLevel + 1;
         decimal finalPower = content.Package.Itemization is { } itemization
             ? ItemEnhancementRules.CalculateEnhancedItemPower(definition, itemization, current.ActualItemPower, targetLevel)
             : current.ActualItemPower;
 
+        if (isMaximum)
+        {
+            return new ItemEnhancementPreviewResult(
+                true,
+                null,
+                item.Id,
+                currentLevel,
+                true,
+                currentLevel,
+                ItemEnhancementRules.ResolveBonusPercent(currentLevel),
+                0,
+                EnhancementMaterialItemId,
+                0,
+                null,
+                0,
+                current.ActualItemPower,
+                finalPower);
+        }
+
+        if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
+            return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
+
         return new ItemEnhancementPreviewResult(
-            true, null, item.Id, targetLevel, ItemEnhancementRules.ResolveBonusPercent(targetLevel),
-            cost.Gold, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity,
-            cost.CatalystItemId, cost.CatalystQuantity, current.ActualItemPower, finalPower);
+            true,
+            null,
+            item.Id,
+            currentLevel,
+            false,
+            targetLevel,
+            ItemEnhancementRules.ResolveBonusPercent(targetLevel),
+            cost.Gold,
+            EnhancementMaterialItemId,
+            cost.EnhancementMaterialQuantity,
+            cost.CatalystItemId,
+            cost.CatalystQuantity,
+            current.ActualItemPower,
+            finalPower);
     }
 
     private async Task<ItemEnhancementResult> EnhanceCoreAsync(Guid accountId, Guid itemId, Guid mutationId, CancellationToken cancellationToken)
