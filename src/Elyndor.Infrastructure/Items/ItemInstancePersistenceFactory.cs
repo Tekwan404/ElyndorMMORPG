@@ -100,7 +100,8 @@ public static class ItemInstancePersistenceFactory
 
     public static GeneratedItemInstance? ToGeneratedInstance(
         CharacterItem item,
-        ItemDefinition definition)
+        ItemDefinition definition,
+        ItemizationDefinition? itemization = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(definition);
@@ -115,12 +116,24 @@ public static class ItemInstancePersistenceFactory
             return null;
         }
 
+        GeneratedItemAffix[] affixes = item.Affixes
+            .OrderBy(affix => affix.GenerationOrdinal)
+            .Select(affix => affix.ToGeneratedAffix())
+            .ToArray();
+
+        if (itemization is not null && ProceduralItemPolicy.IsEnabled(definition))
+        {
+            return ItemizationBudgetPolicy.RecalculateStored(
+                definition,
+                itemization,
+                item.ItemLevel.Value,
+                affixes,
+                item.PerfectOrigin);
+        }
+
         return new GeneratedItemInstance(
             item.ItemLevel.Value,
-            item.Affixes
-                .OrderBy(affix => affix.GenerationOrdinal)
-                .Select(affix => affix.ToGeneratedAffix())
-                .ToArray(),
+            affixes,
             item.MinimumTemplateItemPower.Value,
             item.ActualItemPower.Value,
             item.MaxTemplateItemPower.Value,
