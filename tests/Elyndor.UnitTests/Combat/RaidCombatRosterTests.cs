@@ -169,7 +169,10 @@ public sealed class RaidCombatRosterTests
             GlobalCooldownCategory.None,
             true,
             "HOLY",
-            Actions:
+            true,
+            true,
+            false,
+            false,
             [
                 new AbilityActionDefinition(
                     AbilityActionType.ApplyEffect,
@@ -198,10 +201,16 @@ public sealed class RaidCombatRosterTests
             UtcNow);
 
         Assert.True(result.Succeeded, result.ErrorCode);
-        CombatSessionSnapshot snapshot = session.Snapshot(leaderId);
-        Assert.Equal(10, snapshot.Players?.Count);
-        Assert.All(snapshot.Players!, player =>
-            Assert.Contains(player.Effects, active => active.Id == effectId));
+        Guid[] affectedPlayerIds = result.Events
+            .Where(combatEvent =>
+                combatEvent.Type == CombatEventType.EffectApplied
+                && combatEvent.DefinitionId == effectId
+                && combatEvent.TargetActorId.HasValue)
+            .Select(combatEvent => combatEvent.TargetActorId!.Value)
+            .Distinct()
+            .ToArray();
+        Assert.Equal(10, affectedPlayerIds.Length);
+        Assert.All(session.PlayerActorIds, actorId => Assert.Contains(actorId, affectedPlayerIds));
     }
 
     private static CombatSession CreateRaidSession(
