@@ -41,7 +41,7 @@ internal static class InventorySnapshotReader
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
                 : null;
-            GeneratedItemInstance? generated = ToGeneratedItem(item, definition);
+            GeneratedItemInstance? generated = ToGeneratedItem(item, definition, content.Itemization);
             ItemDefinition effectiveDefinition = generated is null
                 ? definition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
@@ -72,7 +72,8 @@ internal static class InventorySnapshotReader
 
     private static GeneratedItemInstance? ToGeneratedItem(
         CharacterItem item,
-        ItemDefinition definition)
+        ItemDefinition definition,
+        ItemizationDefinition? itemization)
     {
         if (!item.IsProcedurallyGenerated
             || !item.ItemLevel.HasValue
@@ -85,12 +86,24 @@ internal static class InventorySnapshotReader
             return null;
         }
 
+        GeneratedItemAffix[] affixes = item.Affixes
+            .OrderBy(affix => affix.GenerationOrdinal)
+            .Select(affix => affix.ToGeneratedAffix())
+            .ToArray();
+
+        if (itemization is not null && ProceduralItemPolicy.IsEnabled(definition))
+        {
+            return ItemizationBudgetPolicy.RecalculateStored(
+                definition,
+                itemization,
+                item.ItemLevel.Value,
+                affixes,
+                item.PerfectOrigin);
+        }
+
         return new GeneratedItemInstance(
             item.ItemLevel.Value,
-            item.Affixes
-                .OrderBy(affix => affix.GenerationOrdinal)
-                .Select(affix => affix.ToGeneratedAffix())
-                .ToArray(),
+            affixes,
             item.MinimumTemplateItemPower.Value,
             item.ActualItemPower.Value,
             item.MaxTemplateItemPower.Value,
