@@ -91,8 +91,12 @@ public sealed class AuthoredWorldContentTests
                 Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
                 Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
                 Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
-                Assert.NotEmpty(lootTable!.Entries);
-                Assert.All(lootTable.Entries, entry => Assert.True(indexes.ItemsById.ContainsKey(entry.ItemId)));
+                var lootItemIds = lootTable!.Entries.Select(entry => entry.ItemId)
+                    .Concat((lootTable.SelectionGroups ?? []).SelectMany(group => group.Entries)
+                        .Select(entry => entry.ItemId))
+                    .ToArray();
+                Assert.NotEmpty(lootItemIds);
+                Assert.All(lootItemIds, itemId => Assert.True(indexes.ItemsById.ContainsKey(itemId)));
             }
         }
 

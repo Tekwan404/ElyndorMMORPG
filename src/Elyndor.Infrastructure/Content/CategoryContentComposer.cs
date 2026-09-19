@@ -382,6 +382,7 @@ internal static class CategoryContentComposer
         string? ContentVersion = null,
         string? BalanceVersion = null,
         DateTimeOffset? PublishedAtUtc = null,
+        string? Note = null,
         IReadOnlyList<GameContentDefinition>? Definitions = null,
         IReadOnlyList<LocationDefinition>? Locations = null,
         IReadOnlyList<ClassProfile>? ClassProfiles = null,
