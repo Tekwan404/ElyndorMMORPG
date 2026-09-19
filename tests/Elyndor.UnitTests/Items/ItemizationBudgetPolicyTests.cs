@@ -7,25 +7,25 @@ namespace Elyndor.UnitTests.Items;
 public sealed class ItemizationBudgetPolicyTests
 {
     [Fact]
-    public void SnapshotNormalizesOnlyUnderfundedTemplateBudget()
+    public void NormalizeForTemplateExpandsOnlyLocalRuntimeEnvelope()
     {
         ItemDefinition shield = UnderfundedShield();
         ItemDefinition healthySword = HealthySword();
         ItemizationDefinition itemization = TestItemization();
-        GameContentPackage package = Package([shield, healthySword], itemization);
 
-        GameContentSnapshot snapshot = GameContentSnapshot.Create(package);
+        ItemizationDefinition shieldItemization =
+            ItemizationBudgetPolicy.NormalizeForTemplate(shield, itemization);
+        ItemizationDefinition swordItemization =
+            ItemizationBudgetPolicy.NormalizeForTemplate(healthySword, itemization);
 
-        ItemDefinition normalizedShield = snapshot.Indexes.ItemsById[shield.Id];
-        ItemDefinition normalizedSword = snapshot.Indexes.ItemsById[healthySword.Id];
-
-        Assert.True(normalizedShield.ExtraAffixBudgetCap > shield.ExtraAffixBudgetCap);
-        Assert.Equal(healthySword.ExtraAffixBudgetCap, normalizedSword.ExtraAffixBudgetCap);
-        Assert.Equal(itemization.SlotMultipliers, snapshot.Package.Itemization!.SlotMultipliers);
+        Assert.Equal(0.70m, itemization.SlotMultipliers["OFF_HAND"]);
+        Assert.True(shieldItemization.SlotMultipliers["OFF_HAND"] > 0.70m);
+        Assert.Same(itemization, swordItemization);
+        Assert.Equal(0.08m, shield.ExtraAffixBudgetCap);
         Assert.Equal(587.50m, decimal.Round(
             ItemInstanceGenerator.CalculateTemplateMaxPower(
-                normalizedShield,
-                snapshot.Package.Itemization,
+                shield,
+                shieldItemization,
                 16),
             2,
             MidpointRounding.AwayFromZero));
@@ -35,12 +35,13 @@ public sealed class ItemizationBudgetPolicyTests
     public void NormalizedShieldGenerationHasRealAffixRangesAndCannotOverflowPower()
     {
         ItemDefinition shield = UnderfundedShield();
-        GameContentSnapshot snapshot = GameContentSnapshot.Create(Package([shield], TestItemization()));
-        ItemDefinition normalizedShield = snapshot.Indexes.ItemsById[shield.Id];
+        ItemizationDefinition itemization = ItemizationBudgetPolicy.NormalizeForTemplate(
+            shield,
+            TestItemization());
 
         GeneratedItemInstance generated = ItemInstanceGenerator.Generate(
-            normalizedShield,
-            snapshot.Package.Itemization!,
+            shield,
+            itemization,
             "TEST",
             new SequenceGameRandom(
                 0m, 0m, // choose both bonus affixes
@@ -88,18 +89,6 @@ public sealed class ItemizationBudgetPolicyTests
         Assert.Null(recalculated.GeneratedSuffixId);
         Assert.Equal(shield.Name, recalculated.DisplayName);
     }
-
-    private static GameContentPackage Package(
-        IReadOnlyList<ItemDefinition> items,
-        ItemizationDefinition itemization) =>
-        new(
-            "test",
-            "test",
-            DateTimeOffset.UnixEpoch,
-            [],
-            [],
-            Items: items,
-            Itemization: itemization);
 
     private static ItemDefinition UnderfundedShield() => new(
         "TEST_UNDERFUNDED_SHIELD",
