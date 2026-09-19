@@ -42,6 +42,11 @@ function selectTab(tab: (typeof tabs)[number]): void {
   clearRequestedSlot()
 }
 
+function returnToCharacter(): void {
+  clearRequestedSlot()
+  activeTab.value = 'character'
+}
+
 function equippedItemId(slot: EquipmentSlot): string | null {
   const equipped = session.snapshot?.character?.inventory.equipped
   if (!equipped) return null
@@ -79,8 +84,7 @@ watch(requestedSlotEquippedItemId, currentItemId => {
     && currentItemId !== null
     && currentItemId !== requestedSlotInitialItemId.value
   ) {
-    activeTab.value = 'character'
-    clearRequestedSlot()
+    returnToCharacter()
   }
 })
 
@@ -112,10 +116,23 @@ function openStats(): void {
         {{ tab.label }}
       </button>
     </nav>
-    <CharacterOverviewView v-if="activeTab === 'character'" @select-empty-slot="openSlotInventory" @open-stats="openStats" />
+    <CharacterOverviewView
+      v-if="activeTab === 'character'"
+      @select-empty-slot="openSlotInventory"
+      @change-slot="openSlotInventory"
+      @open-stats="openStats"
+    />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
     <CompanionView v-else-if="activeTab === 'companion' && hasCompanion" />
-    <InventoryView v-else-if="activeTab === 'inventory'" :slot-filter="requestedSlot" />
+    <template v-else-if="activeTab === 'inventory'">
+      <div v-if="requestedSlot" class="slot-picker-nav">
+        <button type="button" data-close-slot-inventory @click="returnToCharacter">
+          <span aria-hidden="true">‹</span>
+          <span><strong>Назад</strong><small>к персонажу</small></span>
+        </button>
+      </div>
+      <InventoryView :slot-filter="requestedSlot" />
+    </template>
     <CharacterStatsView v-else />
   </section>
 </template>
@@ -123,6 +140,54 @@ function openStats(): void {
 <style scoped>
 .hero-view {
   min-height: 100%;
+}
+
+.slot-picker-nav {
+  padding: 8px var(--ui-space-3) 0;
+}
+
+.slot-picker-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--ui-touch-target);
+  padding: 6px 12px 6px 8px;
+  border: 1px solid rgb(205 177 113 / 42%);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(180deg, rgb(205 177 113 / 12%), rgb(6 10 17 / 92%));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.slot-picker-nav button > span:first-child {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgb(205 177 113 / 32%);
+  border-radius: 50%;
+  color: var(--ui-color-gold);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.slot-picker-nav button > span:last-child {
+  display: grid;
+  text-align: left;
+}
+
+.slot-picker-nav strong {
+  color: var(--ui-color-gold);
+  font-size: .72rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.slot-picker-nav small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
 }
 
 .hero-tabs {

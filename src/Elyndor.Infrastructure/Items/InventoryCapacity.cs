@@ -7,7 +7,7 @@ namespace Elyndor.Infrastructure.Items;
 
 public static class InventoryCapacity
 {
-    public const int DefaultCapacity = 40;
+    public const int DefaultCapacity = 100;
 
     public static int Resolve(GameContentSnapshot contentSnapshot) =>
         contentSnapshot.Package.InventoryProfile?.DefaultCapacity

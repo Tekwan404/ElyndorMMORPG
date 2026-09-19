@@ -13,7 +13,7 @@ const props = defineProps<{
   slotFilter?: EquipmentSlot | null
 }>()
 
-const BAG_CAPACITY = 40
+const BAG_CAPACITY = 100
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
@@ -31,7 +31,10 @@ const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
   const contextualMatches = contextualSlot.value === null
-    || (item.type === 'Equipment' && item.slot !== null && slotsMatch(item, contextualSlot.value))
+    || (item.type === 'Equipment'
+      && item.slot !== null
+      && slotsMatch(item, contextualSlot.value)
+      && equipmentCompatibilityReason(item) === null)
   const typeMatches = isContextualSlotMode.value
     || typeFilter.value === 'all'
     || (typeFilter.value === 'equipment' && item.type === 'Equipment')
@@ -468,7 +471,7 @@ async function toggleSelectedLock(): Promise<void> {
         <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Снаряжение и добыча' }}</p>
         <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Инвентарь' }}</h1>
       </div>
-      <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 4 }">
+      <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 10 }">
         <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
       </div>
     </header>

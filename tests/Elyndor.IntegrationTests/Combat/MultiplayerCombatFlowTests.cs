@@ -462,5 +462,28 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public override ITimer CreateTimer(
+            TimerCallback callback,
+            object? state,
+            TimeSpan dueTime,
+            TimeSpan period)
+        {
+            ArgumentNullException.ThrowIfNull(callback);
+            return FrozenTimer.Instance;
+        }
+    }
+
+    private sealed class FrozenTimer : ITimer
+    {
+        public static readonly FrozenTimer Instance = new();
+
+        public bool Change(TimeSpan dueTime, TimeSpan period) => true;
+
+        public void Dispose()
+        {
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }
