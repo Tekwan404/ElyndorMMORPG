@@ -23,7 +23,12 @@ public static class ItemInstancePersistenceFactory
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
             ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
             : null;
-        GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(definition, effectiveItemization, qualityProfileId, key);
+        GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
+            definition,
+            effectiveItemization,
+            qualityProfileId,
+            key,
+            ResolvePerfectOrigin(sourceType));
         PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
             ? ItemInstanceStatRoller.Resolve(definition, legacyRandom ?? new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
@@ -49,7 +54,12 @@ public static class ItemInstancePersistenceFactory
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
             ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
             : null;
-        GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(definition, effectiveItemization, qualityProfileId, key);
+        GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
+            definition,
+            effectiveItemization,
+            qualityProfileId,
+            key,
+            ResolvePerfectOrigin(sourceType));
         PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
             ? ItemInstanceStatRoller.Resolve(definition, new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
@@ -142,5 +152,22 @@ public static class ItemInstancePersistenceFactory
                 pending.SourceEntryId ?? definition.Id);
         }
         return item;
+    }
+
+    internal static string ResolvePerfectOrigin(string sourceType)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceType);
+        if (sourceType.Contains("CRAFT", StringComparison.OrdinalIgnoreCase))
+            return "CRAFT";
+        if (sourceType.Contains("RAID", StringComparison.OrdinalIgnoreCase))
+            return "RAID";
+        if (sourceType.Contains("DUNGEON", StringComparison.OrdinalIgnoreCase))
+            return "DUNGEON";
+        if (sourceType.Contains("MERCHANT", StringComparison.OrdinalIgnoreCase))
+            return "MERCHANT";
+        if (sourceType.Contains("QUEST", StringComparison.OrdinalIgnoreCase)
+            || sourceType.Contains("CONTRACT", StringComparison.OrdinalIgnoreCase))
+            return "QUEST";
+        return "DROP";
     }
 }
