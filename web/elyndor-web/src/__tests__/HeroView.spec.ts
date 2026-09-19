@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import HeroView from '@/game/character/views/HeroView.vue'
@@ -99,6 +99,55 @@ describe('HeroView', () => {
     await wrapper.get('[data-hero-tab="character"]').trigger('click')
     expect(wrapper.get('[data-hero-tab="character"]').attributes('aria-current')).toBe('page')
     expect(wrapper.find('[data-equipment-slot="head"]').exists()).toBe(true)
+  })
+
+  it('returns to the character tab after a successful equip from a contextual slot picker', async () => {
+    const session = useGameSessionStore()
+    const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')
+    session.snapshot = snapshot([helmet])
+    const equip = vi.spyOn(session, 'equip').mockImplementation(async (itemId, targetSlot) => {
+      const item = session.snapshot?.character?.inventory.items.find(candidate => candidate.id === itemId)
+      if (!item || !session.snapshot?.character) return
+      item.equippedSlot = targetSlot ?? item.slot
+      session.snapshot.character.inventory.equipped.head = item
+    })
+
+    const wrapper = mount(HeroView)
+
+    await wrapper.get('[data-equipment-slot="head"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-item-id="TEST_HELMET"]').trigger('click')
+    await flushPromises()
+
+    const equipAction = document.body.querySelector<HTMLButtonElement>('[data-equip-action]')
+    expect(equipAction).not.toBeNull()
+    equipAction?.click()
+    await flushPromises()
+
+    expect(equip).toHaveBeenCalledWith('TEST_HELMET', undefined)
+    expect(wrapper.get('[data-hero-tab="character"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-equipment-slot="head"]').attributes('data-filled')).toBe('true')
+  })
+
+  it('keeps the player in the inventory and explains a class restriction for an incompatible item', async () => {
+    const session = useGameSessionStore()
+    const leatherHood = equipment('LEATHER_HOOD', 'Кожаный капюшон', 'Head')
+    leatherHood.armorCategory = 'LEATHER'
+    session.snapshot = snapshot([leatherHood], 'WARRIOR')
+    const equip = vi.spyOn(session, 'equip').mockResolvedValue(undefined)
+
+    const wrapper = mount(HeroView)
+
+    await wrapper.get('[data-equipment-slot="head"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-item-id="LEATHER_HOOD"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
+    expect(document.body.querySelector('[data-equip-action]')).toBeNull()
+    expect(document.body.querySelector('[data-equip-restriction]')?.textContent)
+      .toContain('Воин может носить только тяжёлую броню.')
+    expect(equip).not.toHaveBeenCalled()
   })
 })
 
@@ -215,11 +264,11 @@ function snapshot(
         displayName: 'Starter Town',
         dangerLevel: 'SAFE',
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
       version: 1,
       outgoingTransitions: [],

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { EquipmentSlot } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewV2.vue'
@@ -14,6 +14,7 @@ type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion'
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
 const requestedSlot = ref<EquipmentSlot | null>(null)
+const requestedSlotInitialItemId = ref<string | null>(null)
 const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER', 'PALADIN'].includes(session.snapshot?.character?.classId ?? ''))
 const hasCompanion = computed(() => session.snapshot?.character?.classId === 'ARCHER')
 const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents' | 'companion' }[] = [
@@ -30,19 +31,67 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
     || (tab.available === 'companion' && hasCompanion.value)
 }
 
+function clearRequestedSlot(): void {
+  requestedSlot.value = null
+  requestedSlotInitialItemId.value = null
+}
+
 function selectTab(tab: (typeof tabs)[number]): void {
   if (!isAvailable(tab)) return
   activeTab.value = tab.id
-  requestedSlot.value = null
+  clearRequestedSlot()
 }
+
+function equippedItemId(slot: EquipmentSlot): string | null {
+  const equipped = session.snapshot?.character?.inventory.equipped
+  if (!equipped) return null
+
+  if (slot === 'MainHand') return (equipped.mainHand ?? equipped.weapon)?.id ?? null
+  if (slot === 'OffHand') return equipped.offHand?.id ?? null
+  if (slot === 'Weapon') return (equipped.weapon ?? equipped.mainHand)?.id ?? null
+  if (slot === 'Head') return equipped.head?.id ?? null
+  if (slot === 'Shoulders') return equipped.shoulders?.id ?? null
+  if (slot === 'Chest') return equipped.chest?.id ?? null
+  if (slot === 'Hands') return equipped.hands?.id ?? null
+  if (slot === 'Legs') return equipped.legs?.id ?? null
+  if (slot === 'Feet') return (equipped.feet ?? equipped.boots)?.id ?? null
+  if (slot === 'Boots') return (equipped.boots ?? equipped.feet)?.id ?? null
+  if (slot === 'Cloak') return equipped.cloak?.id ?? null
+  if (slot === 'Amulet') return (equipped.amulet ?? equipped.accessory)?.id ?? null
+  if (slot === 'Accessory') return (equipped.accessory ?? equipped.amulet)?.id ?? null
+  if (slot === 'Ring1') return equipped.ring1?.id ?? null
+  if (slot === 'Ring2') return equipped.ring2?.id ?? null
+  if (slot === 'Waist') return equipped.waist?.id ?? null
+  if (slot === 'Wrist') return equipped.wrist?.id ?? null
+  return null
+}
+
+const requestedSlotEquippedItemId = computed(() =>
+  requestedSlot.value ? equippedItemId(requestedSlot.value) : null,
+)
+
+// Return only after the authoritative snapshot confirms that the requested slot changed.
+// Failed or class-restricted equip attempts therefore keep the player in the inventory.
+watch(requestedSlotEquippedItemId, currentItemId => {
+  if (
+    activeTab.value === 'inventory'
+    && requestedSlot.value !== null
+    && currentItemId !== null
+    && currentItemId !== requestedSlotInitialItemId.value
+  ) {
+    activeTab.value = 'character'
+    clearRequestedSlot()
+  }
+})
 
 function openSlotInventory(slot: EquipmentSlot): void {
   requestedSlot.value = slot
+  requestedSlotInitialItemId.value = equippedItemId(slot)
   activeTab.value = 'inventory'
 }
 
 function openStats(): void {
-  requestedSlot.value = null
+  clearRequestedSlot()
   activeTab.value = 'stats'
 }
 </script>

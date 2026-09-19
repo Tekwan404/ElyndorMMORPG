@@ -93,6 +93,231 @@ button {
   scrollbar-color: var(--ui-color-border-strong) transparent;
 }
 
+/* Inventory readability pass.
+   Keep the canonical compact MMO grid, but make state, rarity and interaction clearer. */
+.game-shell .inventory-view .inventory-tools {
+  gap: 10px;
+  padding-block: 10px;
+}
+
+.game-shell .inventory-view .filter-chips button {
+  min-height: 38px;
+  border-color: rgb(255 255 255 / 9%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 3.5%), rgb(255 255 255 / 1.5%));
+  color: color-mix(in srgb, var(--ui-color-text-secondary) 86%, white);
+  transition:
+    border-color var(--ui-transition-fast),
+    background var(--ui-transition-fast),
+    color var(--ui-transition-fast),
+    transform var(--ui-transition-fast);
+}
+
+.game-shell .inventory-view .filter-chips button.active {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 72%, white 6%);
+  background:
+    linear-gradient(180deg, rgb(146 136 255 / 18%), rgb(146 136 255 / 7%));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
+  color: #f0eeff;
+  font-weight: 800;
+}
+
+.game-shell .inventory-view .filter-chips button.active::before {
+  margin-right: 4px;
+  color: #bdb7ff;
+  content: '•';
+}
+
+.game-shell .inventory-view .inventory-tools > .ui-button {
+  width: auto !important;
+  min-width: 8.75rem;
+  justify-self: end;
+}
+
+.game-shell .inventory-view .bag-surface {
+  gap: 10px;
+  border-color: rgb(255 255 255 / 9%);
+  background:
+    radial-gradient(circle at 50% -10%, rgb(146 136 255 / 7%), transparent 18rem),
+    linear-gradient(180deg, rgb(15 20 33 / 86%), rgb(7 10 17 / 88%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 3%),
+    inset 0 0 32px rgb(0 0 0 / 16%);
+}
+
+.game-shell .inventory-view .bag-surface__header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+}
+
+.game-shell .inventory-view .bag-surface__header strong {
+  font-weight: 850;
+  letter-spacing: .01em;
+}
+
+.game-shell .inventory-view .bag-grid {
+  gap: 7px;
+}
+
+.game-shell .inventory-view .bag-cell {
+  isolation: isolate;
+  border-color: rgb(255 255 255 / 12%);
+  background:
+    radial-gradient(circle at 50% 35%, rgb(255 255 255 / 6%), transparent 55%),
+    linear-gradient(180deg, rgb(25 32 47 / 92%), rgb(15 21 33 / 94%));
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 2.5%),
+    inset 0 -12px 22px rgb(0 0 0 / 10%);
+  transition:
+    border-color var(--ui-transition-fast),
+    box-shadow var(--ui-transition-fast),
+    background var(--ui-transition-fast),
+    transform var(--ui-transition-fast);
+}
+
+.game-shell .inventory-view .bag-cell:not(.bag-cell--empty):hover {
+  z-index: 2;
+  border-color: rgb(214 220 238 / 46%);
+  background:
+    radial-gradient(circle at 50% 30%, rgb(255 255 255 / 9%), transparent 58%),
+    linear-gradient(180deg, rgb(30 39 57 / 96%), rgb(16 23 36 / 96%));
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 5%),
+    0 5px 18px rgb(0 0 0 / 22%);
+  transform: translateY(-1px);
+}
+
+.game-shell .inventory-view .bag-cell:not(.bag-cell--empty):active {
+  transform: scale(.975);
+}
+
+.game-shell .inventory-view .bag-cell:not(.bag-cell--empty):focus-visible {
+  z-index: 3;
+  outline: 2px solid color-mix(in srgb, var(--ui-color-primary) 80%, white 10%);
+  outline-offset: 2px;
+}
+
+.game-shell .inventory-view .bag-cell--empty {
+  border-style: dashed;
+  border-color: rgb(255 255 255 / 5%);
+  background: rgb(255 255 255 / 1%);
+  box-shadow: none;
+  opacity: .14;
+}
+
+/* Rarity is communicated with frame treatment as well as color. */
+.game-shell .inventory-view .bag-cell[data-rarity='Uncommon'] {
+  border-color: color-mix(in srgb, var(--ui-color-success) 68%, var(--ui-color-border));
+  box-shadow:
+    inset 0 0 0 1px rgb(92 215 139 / 6%),
+    inset 0 -14px 24px rgb(50 168 98 / 4%);
+}
+
+.game-shell .inventory-view .bag-cell[data-rarity='Rare'] {
+  border-color: color-mix(in srgb, var(--ui-color-secondary) 78%, var(--ui-color-border));
+  box-shadow:
+    inset 0 0 0 1px rgb(101 169 255 / 10%),
+    inset 0 0 18px rgb(72 133 224 / 5%);
+}
+
+.game-shell .inventory-view .bag-cell[data-rarity='Epic'] {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 86%, white 5%);
+  box-shadow:
+    inset 0 0 0 2px rgb(146 136 255 / 8%),
+    inset 0 0 20px rgb(122 103 226 / 7%);
+}
+
+.game-shell .inventory-view .bag-cell[data-rarity='Legendary'],
+.game-shell .inventory-view .bag-cell[data-rarity='Unique'] {
+  border-color: color-mix(in srgb, var(--ui-color-gold) 90%, white 7%);
+  background:
+    radial-gradient(circle at 50% 34%, rgb(232 200 102 / 9%), transparent 58%),
+    linear-gradient(180deg, rgb(32 31 29 / 96%), rgb(18 21 28 / 96%));
+  box-shadow:
+    inset 0 0 0 2px rgb(232 200 102 / 9%),
+    inset 0 0 22px rgb(232 200 102 / 6%),
+    0 0 12px rgb(232 200 102 / 7%);
+}
+
+.game-shell .inventory-view .bag-cell__rarity {
+  right: 12%;
+  left: 12%;
+  height: 3px;
+  opacity: .62;
+}
+
+.game-shell .inventory-view .bag-cell[data-rarity='Epic'] .bag-cell__rarity,
+.game-shell .inventory-view .bag-cell[data-rarity='Legendary'] .bag-cell__rarity,
+.game-shell .inventory-view .bag-cell[data-rarity='Unique'] .bag-cell__rarity {
+  right: 7%;
+  left: 7%;
+  height: 4px;
+  opacity: .82;
+}
+
+.game-shell .inventory-view .bag-cell__new {
+  top: 4px;
+  left: 4px;
+  padding: 2px 5px;
+  border-color: rgb(194 188 255 / 62%);
+  background: linear-gradient(180deg, rgb(44 35 92 / 97%), rgb(24 20 52 / 97%));
+  box-shadow: 0 1px 5px rgb(0 0 0 / 30%);
+  color: #e4e0ff;
+  font-size: .45rem;
+  letter-spacing: .055em;
+}
+
+.game-shell .inventory-view .bag-cell__quantity {
+  right: 4px;
+  bottom: 4px;
+  min-width: 1.55rem;
+  padding: 2px 5px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 6px;
+  background: rgb(5 8 14 / 94%);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
+  font-size: .64rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.game-shell .inventory-view .bag-cell__quantity::before {
+  margin-right: 1px;
+  color: var(--ui-color-text-muted);
+  content: '×';
+  font-weight: 500;
+}
+
+.game-shell .inventory-view .bag-cell--generated .bag-cell__quantity {
+  bottom: 1rem;
+}
+
+.game-shell .inventory-view .bag-cell__quality {
+  right: 5px;
+  bottom: 4px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  background: rgb(5 8 14 / 72%);
+}
+
+.game-shell .inventory-view .bag-cell__lock {
+  top: 4px;
+  right: 4px;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-color: rgb(232 200 102 / 58%);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 34%);
+}
+
+/* Give item art a little more breathing room from badges/frame without shrinking the tap target. */
+.game-shell .inventory-view .bag-cell__icon {
+  padding: 5px;
+}
+
+.game-shell .inventory-view .bag-cell__icon img {
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 24%));
+}
+
 /* Tablet shell: the Telegram window can use the whole iPad canvas while individual
    game views stay at a readable width until they opt into a wider layout. */
 @media (min-width: 768px) {
@@ -109,6 +334,21 @@ button {
 
   .game-shell .content {
     scrollbar-gutter: stable;
+  }
+
+  /* Keep inventory slot dimensions close to the mobile layout instead of stretching
+     five columns across the whole tablet/desktop content width. */
+  .game-shell .inventory-view .bag-grid {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  }
+
+  .game-shell .inventory-view .inventory-tools {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .game-shell .inventory-view .inventory-tools__primary {
+    min-width: 0;
   }
 
   .game-shell .navigation__item {
@@ -132,6 +372,15 @@ button {
   .game-shell .overview-v2 > .hero-card,
   .game-shell .overview-v2 > .combat-sheet {
     min-width: 0;
+  }
+}
+
+@media (hover: none) {
+  .game-shell .inventory-view .bag-cell:not(.bag-cell--empty):hover {
+    border-color: inherit;
+    background: inherit;
+    box-shadow: inherit;
+    transform: none;
   }
 }
 
