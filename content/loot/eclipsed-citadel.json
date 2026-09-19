@@ -230,6 +230,12 @@
           "maxQuantity": 2
         },
         {
+          "itemId": "DUNGEON_CATALYST",
+          "dropChance": 0.75,
+          "minQuantity": 1,
+          "maxQuantity": 2
+        },
+        {
           "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
           "dropChance": 0.07,
           "minQuantity": 1,
