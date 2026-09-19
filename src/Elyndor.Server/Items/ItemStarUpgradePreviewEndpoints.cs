@@ -39,6 +39,8 @@ public static class ItemStarUpgradePreviewEndpoints
         return Results.Ok(new
         {
             itemInstanceId = result.ItemInstanceId,
+            currentEnhancementLevel = result.CurrentEnhancementLevel,
+            isMaximumEnhancement = result.IsMaximumEnhancement,
             targetEnhancementLevel = result.TargetEnhancementLevel,
             enhancementBonusPercent = result.EnhancementBonusPercent,
             intrinsicItemPower = result.IntrinsicItemPower,
@@ -101,9 +103,7 @@ public static class ItemStarUpgradePreviewEndpoints
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-#pragma warning disable CS0618
         ItemStarUpgradePreviewResult result = await service.GetPreviewAsync(accountId, characterItemId, cancellationToken);
-#pragma warning restore CS0618
         if (!result.Succeeded) return LegacyProblem(result.ErrorCode!, context);
 
         return Results.Ok(new
