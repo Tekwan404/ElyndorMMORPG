@@ -1,4 +1,4 @@
-﻿param(
+param(
     [Parameter(Mandatory = $true)]
     [string] $SourceRoot,
     [string] $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -200,6 +200,22 @@ function Convert-ImportedArtToWebp {
         }
     }
     finally { Pop-Location }
+}
+
+function Import-MonsterPortrait([string] $ArtId, [System.IO.FileInfo] $Source) {
+    # Always re-import from the source pack. Reusing an asset that already exists keeps a
+    # stale or wrongly mapped portrait while the manifest claims the current source produced
+    # it, which makes the import non-reproducible.
+    $outputPath = Join-Path $MonsterRoot "$ArtId.png"
+    $stalePaths = @(
+        Get-ChildItem -LiteralPath $MonsterRoot -File |
+            Where-Object { $_.BaseName -eq $ArtId -and $_.FullName -ne $outputPath })
+    foreach ($stalePath in $stalePaths) {
+        Remove-Item -LiteralPath $stalePath.FullName -Force
+    }
+
+    Copy-Item -LiteralPath $Source.FullName -Destination $outputPath -Force
+    return $outputPath
 }
 
 function Get-SourceRelativePath([string] $Path) {
@@ -418,9 +434,7 @@ foreach ($enemySource in $enemySources) {
             $script:MonsterArtAssignments[$monsterEntry.File][[string]$monster.id] = $artId
         }
 
-        $existing = Get-ChildItem -LiteralPath $MonsterRoot -File | Where-Object { $_.BaseName -eq $artId } | Select-Object -First 1
-        $outputPath = if ($existing) { $existing.FullName } else { Join-Path $MonsterRoot "$artId.png" }
-        if (-not $existing) { Copy-Item -LiteralPath $enemySource.FullName -Destination $outputPath }
+        $outputPath = Import-MonsterPortrait $artId $enemySource
         $source = Get-SourceRelativePath $enemySource.FullName
         foreach ($monsterEntry in $matchingMonsters) {
             $importRows.Add([pscustomobject]@{
@@ -434,9 +448,7 @@ foreach ($enemySource in $enemySources) {
     foreach ($monsterEntry in $matchingMonsters) {
         $monster = $monsterEntry.Data
         $artId = [string]$monster.artId
-        $existing = Get-ChildItem -LiteralPath $MonsterRoot -File | Where-Object { $_.BaseName -eq $artId } | Select-Object -First 1
-        $outputPath = if ($existing) { $existing.FullName } else { Join-Path $MonsterRoot "$artId.png" }
-        if (-not $existing) { Copy-Item -LiteralPath $enemySource.FullName -Destination $outputPath }
+        $outputPath = Import-MonsterPortrait $artId $enemySource
         $source = Get-SourceRelativePath $enemySource.FullName
         $importRows.Add([pscustomobject]@{ ContentType = 'Monster'; Id = $monster.id; ArtKey = $artId; Source = $source; Cell = ''; Output = ('web/elyndor-web/src/assets/monsters/' + (Split-Path -Leaf $outputPath)) })
     }
