@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Elyndor.Core.Content;
 
 namespace Elyndor.Infrastructure.Content;
@@ -202,7 +203,7 @@ public sealed class ContentPublicationService(
 
     private static bool TryParseComparableVersion(
         string? value,
-        out Version? version)
+        [NotNullWhen(true)] out Version? version)
     {
         version = null;
         if (string.IsNullOrWhiteSpace(value))
@@ -290,4 +291,3 @@ public sealed class ContentPublicationService(
                 bundled.PromoCodes,
                 item => item.Code)
         };
-}
