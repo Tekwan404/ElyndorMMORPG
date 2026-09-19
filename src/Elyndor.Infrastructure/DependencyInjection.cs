@@ -62,6 +62,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<FriendService>();
         builder.Services.AddScoped<PartyService>();
         builder.Services.AddScoped<RaidService>();
+        builder.Services.AddScoped<RaidCombatRosterResolver>();
         builder.Services.AddScoped<DungeonService>();
         builder.Services.AddScoped<AfkFarmService>();
         builder.Services.AddScoped<AfkFarmProgressService>();
