@@ -3,43 +3,27 @@ using Elyndor.Core.Content;
 namespace Elyndor.Core.Items;
 
 /// <summary>
-/// Keeps procedural equipment budgets large enough for every legal affix to have
-/// a real roll range instead of being forced into a collapsed minimum step.
-/// Budget repair is applied per item template so healthy items in the same slot
-/// keep their configured power budget unchanged.
+/// Builds a per-template runtime itemization envelope large enough for every legal
+/// affix to have a real roll range. Published slot/rarity multipliers and rarity
+/// extra-budget caps remain unchanged.
 /// </summary>
 public static class ItemizationBudgetPolicy
 {
     private const int MinimumAffixRollSteps = 2;
 
-    public static GameContentPackage NormalizePackage(GameContentPackage package)
-    {
-        ArgumentNullException.ThrowIfNull(package);
-        if (package.Itemization is null || package.Items is null || package.Items.Count == 0)
-            return package;
-
-        ItemDefinition[] normalizedItems = package.Items
-            .Select(item => ProceduralItemPolicy.IsEnabled(item)
-                ? NormalizeTemplate(item, package.Itemization)
-                : item)
-            .ToArray();
-
-        return package with { Items = normalizedItems };
-    }
-
-    public static ItemDefinition NormalizeTemplate(
+    public static ItemizationDefinition NormalizeForTemplate(
         ItemDefinition template,
         ItemizationDefinition itemization)
     {
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(itemization);
         if (!ProceduralItemPolicy.IsEnabled(template))
-            return template;
+            return itemization;
 
         EquipmentSlot canonicalSlot = CanonicalSlot(template.Slot);
         string slotId = SlotBudgetId(canonicalSlot);
-        if (!itemization.SlotMultipliers.TryGetValue(slotId, out decimal slotMultiplier)
-            || slotMultiplier <= 0)
+        if (!itemization.SlotMultipliers.TryGetValue(slotId, out decimal configuredSlotMultiplier)
+            || configuredSlotMultiplier <= 0)
         {
             throw new InvalidOperationException($"No positive itemization slot multiplier for '{slotId}'.");
         }
@@ -80,27 +64,32 @@ public static class ItemizationBudgetPolicy
         if (minimumItemLevel < 1 || maximumItemLevel < minimumItemLevel)
             throw new InvalidOperationException($"Template '{template.Id}' item-level range is invalid.");
 
-        decimal requiredExtraBudgetCap = template.ExtraAffixBudgetCap;
+        decimal requiredSlotMultiplier = configuredSlotMultiplier;
         for (int itemLevel = minimumItemLevel; itemLevel <= maximumItemLevel; itemLevel++)
         {
             decimal x = itemLevel - 1;
             decimal levelMultiplier = 1m
                 + (itemization.LevelLinearCoefficient * x)
                 + (itemization.LevelQuadraticCoefficient * x * x);
-            decimal budgetWithoutExtraCap = itemization.TemplateBasePower
+            decimal budgetWithoutSlot = itemization.TemplateBasePower
                 * levelMultiplier
-                * slotMultiplier
-                * rarityMultiplier;
-            if (budgetWithoutExtraCap <= 0)
+                * rarityMultiplier
+                * (1m + template.ExtraAffixBudgetCap);
+            if (budgetWithoutSlot <= 0)
                 throw new InvalidOperationException($"Template '{template.Id}' has a non-positive item power budget.");
 
-            decimal requiredAtLevel = (minimumViableTemplatePower / budgetWithoutExtraCap) - 1m;
-            requiredExtraBudgetCap = decimal.Max(requiredExtraBudgetCap, requiredAtLevel);
+            requiredSlotMultiplier = decimal.Max(
+                requiredSlotMultiplier,
+                minimumViableTemplatePower / budgetWithoutSlot);
         }
 
-        return requiredExtraBudgetCap > template.ExtraAffixBudgetCap
-            ? template with { ExtraAffixBudgetCap = requiredExtraBudgetCap }
-            : template;
+        if (requiredSlotMultiplier <= configuredSlotMultiplier)
+            return itemization;
+
+        Dictionary<string, decimal> slotMultipliers = itemization.SlotMultipliers
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        slotMultipliers[slotId] = requiredSlotMultiplier;
+        return itemization with { SlotMultipliers = slotMultipliers };
     }
 
     public static GeneratedItemInstance RecalculateStored(
@@ -114,10 +103,10 @@ public static class ItemizationBudgetPolicy
         ArgumentNullException.ThrowIfNull(itemization);
         ArgumentNullException.ThrowIfNull(affixes);
 
-        ItemDefinition normalizedTemplate = NormalizeTemplate(template, itemization);
+        ItemizationDefinition effectiveItemization = NormalizeForTemplate(template, itemization);
         GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
-            normalizedTemplate,
-            itemization,
+            template,
+            effectiveItemization,
             itemLevel,
             affixes,
             perfectOrigin);
