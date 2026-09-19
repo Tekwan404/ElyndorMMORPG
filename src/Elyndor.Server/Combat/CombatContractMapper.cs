@@ -1,5 +1,6 @@
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
@@ -142,12 +143,16 @@ internal static class CombatContractMapper
             actor.KnownAbilityIds.OrderBy(id => id, StringComparer.Ordinal).ToArray(),
             actor.Abilities.Select(ability =>
             {
-                var definition = (content.Abilities ?? []).SingleOrDefault(candidate =>
+                AbilityDefinition? definition = (content.Abilities ?? []).SingleOrDefault(candidate =>
                     string.Equals(candidate.Id, ability.Id, StringComparison.Ordinal));
                 return new CombatAbilityResponse(
                     ability.Id,
                     definition?.DisplayName ?? ability.Id,
-                    definition?.Description ?? string.Empty,
+                    ResolveAbilityDescription(
+                        definition,
+                        ability.ResourceCost,
+                        ability.Cooldown,
+                        ability.TargetType),
                     definition?.IconId,
                     ability.ResourceCost,
                     ability.Cooldown.TotalSeconds,
@@ -173,6 +178,67 @@ internal static class CombatContractMapper
             actor.AutoAttackIntervalSeconds,
             actor.NextAutoAttackAtUtc,
             actor.CurrentAggroTargetActorId);
+    }
+
+    private static string ResolveAbilityDescription(
+        AbilityDefinition? definition,
+        decimal resourceCost,
+        TimeSpan cooldown,
+        AbilityTargetType targetType)
+    {
+        if (!string.IsNullOrWhiteSpace(definition?.Description))
+            return definition.Description.Trim();
+
+        List<string> parts = [];
+        foreach (AbilityActionDefinition action in definition?.Actions ?? [])
+        {
+            string? part = action.Type switch
+            {
+                AbilityActionType.Damage => "Наносит урон цели.",
+                AbilityActionType.Healing => "Восстанавливает здоровье.",
+                AbilityActionType.ApplyEffect => "Накладывает боевой эффект.",
+                AbilityActionType.ResourceChange => action.Amount >= 0
+                    ? "Восстанавливает ресурс."
+                    : "Уменьшает ресурс цели.",
+                AbilityActionType.Dispel => "Снимает эффект.",
+                AbilityActionType.Taunt => "Заставляет противника атаковать персонажа.",
+                AbilityActionType.Interrupt => "Прерывает применение способности противника.",
+                AbilityActionType.AddThreat => "Повышает угрозу.",
+                AbilityActionType.DropThreatPercent => "Снижает угрозу.",
+                AbilityActionType.ClearThreat => "Сбрасывает угрозу.",
+                AbilityActionType.Fixate => "Фиксирует внимание противника на выбранной цели.",
+                AbilityActionType.TemporaryUntargetable => "Временно делает цель недоступной для атак.",
+                _ => null
+            };
+            if (part is not null && !parts.Contains(part, StringComparer.Ordinal))
+                parts.Add(part);
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(targetType switch
+            {
+                AbilityTargetType.Self => "Применяется к персонажу.",
+                AbilityTargetType.SingleAlly => "Применяется к выбранному союзнику.",
+                AbilityTargetType.SingleEnemy => "Применяется к выбранному противнику.",
+                AbilityTargetType.AllEnemiesInCombat => "Воздействует на всех противников в бою.",
+                AbilityTargetType.NEnemiesInCombat => "Воздействует на несколько противников в бою.",
+                AbilityTargetType.SelfAndPartyMembersInCombat => "Воздействует на персонажа и союзников в бою.",
+                AbilityTargetType.ActiveCompanion => "Применяется к активному спутнику.",
+                AbilityTargetType.Owner => "Применяется к владельцу.",
+                _ => "Боевая способность."
+            });
+        }
+
+        if (resourceCost > 0)
+            parts.Add($"Стоимость: {decimal.Round(resourceCost, 0)} ед. ресурса.");
+        if (cooldown > TimeSpan.Zero)
+        {
+            decimal seconds = decimal.Round((decimal)cooldown.TotalSeconds, 1);
+            parts.Add($"Восстановление: {seconds:0.#} сек.");
+        }
+
+        return string.Join(" ", parts);
     }
 
     private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(
