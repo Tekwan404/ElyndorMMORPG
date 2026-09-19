@@ -5,7 +5,7 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryCapacityTests
 {
     [Fact]
-    public void DefaultCapacity_IsOneHundredSlots()
+    public void DefaultCapacityIsOneHundredSlots()
     {
         Assert.Equal(100, InventoryCapacity.DefaultCapacity);
     }
