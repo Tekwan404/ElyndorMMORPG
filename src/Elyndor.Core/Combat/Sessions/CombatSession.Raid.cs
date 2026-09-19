@@ -2,6 +2,7 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Contribution;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 
