@@ -83,7 +83,10 @@ public sealed class ItemReforgeService(
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
-        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
+            item,
+            definition,
+            contentSnapshot.Package.Itemization);
         if (current is null || contentSnapshot.Package.Itemization is not { } itemization)
             return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotGenerated);
 
@@ -218,8 +221,10 @@ public sealed class ItemReforgeService(
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotFound, cancellationToken);
         }
 
-        GeneratedItemInstance? current =
-            ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
+            item,
+            definition,
+            contentSnapshot.Package.Itemization);
         if (current is null || contentSnapshot.Package.Itemization is not { } itemization)
         {
             return await RollbackFailureAsync(
@@ -268,7 +273,7 @@ public sealed class ItemReforgeService(
                 ? proposedAffix
                 : affix)
             .ToArray();
-        GeneratedItemInstance proposed = ItemInstanceGenerator.Recalculate(
+        GeneratedItemInstance proposed = ItemizationBudgetPolicy.RecalculateStored(
             definition,
             itemization,
             current.ItemLevel,
@@ -293,7 +298,7 @@ public sealed class ItemReforgeService(
         item.AcquireTransactionLock(operationId);
 
         GeneratedItemInstance lockedCurrent =
-            ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition)
+            ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, itemization)
             ?? current;
         ItemReforgeOperation operation = new(
             operationId,
@@ -401,8 +406,8 @@ public sealed class ItemReforgeService(
         await transaction.CommitAsync(cancellationToken);
 
         GeneratedItemInstance final = acceptProposed
-            ? ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition) ?? proposed
-            : ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition) ?? current;
+            ? ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, contentSnapshot.Package.Itemization) ?? proposed
+            : ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, contentSnapshot.Package.Itemization) ?? current;
         return new ItemReforgeOperationResult(
             true,
             null,
