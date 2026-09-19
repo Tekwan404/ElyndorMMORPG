@@ -87,7 +87,10 @@ public sealed class ItemStarUpgradeService(
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemNotFound);
 
-        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
+            item,
+            definition,
+            content.Package.Itemization);
         if (current is null)
             return ItemStarUpgradePreviewResult.Failure(ItemStarUpgradeErrorCodes.ItemNotGenerated);
         if (current.Stars >= 5)
@@ -133,7 +136,10 @@ public sealed class ItemStarUpgradeService(
         if (item.TransactionLockId.HasValue) return await Fail(transaction, ItemStarUpgradeErrorCodes.ItemTransactionLocked, cancellationToken);
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return await Fail(transaction, ItemStarUpgradeErrorCodes.ItemNotFound, cancellationToken);
-        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition);
+        GeneratedItemInstance? current = ItemInstancePersistenceFactory.ToGeneratedInstance(
+            item,
+            definition,
+            content.Package.Itemization);
         if (current is null || content.Package.Itemization is not { } itemization) return await Fail(transaction, ItemStarUpgradeErrorCodes.ItemNotGenerated, cancellationToken);
         if (current.Stars >= 5) return await Fail(transaction, ItemStarUpgradeErrorCodes.MaxStars, cancellationToken);
         int targetStars = current.Stars + 1;
@@ -142,7 +148,7 @@ public sealed class ItemStarUpgradeService(
         if (!await HasMaterial(character.Id, profile.ReforgeStoneItemId, cost.ReforgeStoneQuantity, cancellationToken)) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughStones, cancellationToken);
         if (cost.CatalystQuantity > 0 && (string.IsNullOrWhiteSpace(cost.CatalystItemId) || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken))) return await Fail(transaction, ItemStarUpgradeErrorCodes.MissingCatalyst, cancellationToken);
 
-        GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
+        GeneratedItemInstance recalculated = ItemizationBudgetPolicy.RecalculateStored(
             definition,
             itemization,
             current.ItemLevel,
@@ -190,7 +196,9 @@ public sealed class ItemStarUpgradeService(
     private async Task<GeneratedItemInstance?> LoadGeneratedAsync(Guid characterId, Guid itemId, GameContentSnapshot content, CancellationToken ct)
     {
         CharacterItem? item = await dbContext.CharacterItems.AsNoTracking().Include(x => x.Affixes).SingleOrDefaultAsync(x => x.Id == itemId && x.CharacterId == characterId, ct);
-        return item is not null && content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition) ? ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition) : null;
+        return item is not null && content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition)
+            ? ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, content.Package.Itemization)
+            : null;
     }
     private async Task<bool> HasMaterial(Guid characterId, string itemId, int quantity, CancellationToken ct)
     {

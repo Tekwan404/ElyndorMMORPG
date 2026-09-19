@@ -80,8 +80,11 @@ public sealed class ItemSalvageService(
             .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
         if (character is null) return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.CharacterNotFound);
 
-        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking().SingleOrDefaultAsync(
-            candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id, cancellationToken);
+        CharacterItem? item = await dbContext.CharacterItems.AsNoTracking()
+            .Include(candidate => candidate.Affixes)
+            .SingleOrDefaultAsync(
+                candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id,
+                cancellationToken);
         if (item is null) return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ItemNotFound);
         if (item.IsLocked) return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ItemLocked);
         if (item.TransactionLockId.HasValue) return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ItemTransactionLocked);
@@ -94,7 +97,10 @@ public sealed class ItemSalvageService(
             return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ItemNotEquipment);
 
         ItemSalvageYield reward = ItemSalvageYieldCalculator.Calculate(
-            definition, item.ItemLevel, item.Stars, profile);
+            definition,
+            item.ItemLevel,
+            ResolveEffectiveStars(item, definition, content.Package.Itemization),
+            profile);
         return new ItemSalvagePreviewResult(
             true,
             null,
@@ -130,8 +136,11 @@ public sealed class ItemSalvageService(
                 return new ItemSalvageOperationResult(true, null, ToYield(receipt));
             }
 
-            CharacterItem? item = await dbContext.CharacterItems.SingleOrDefaultAsync(
-                candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id, cancellationToken);
+            CharacterItem? item = await dbContext.CharacterItems
+                .Include(candidate => candidate.Affixes)
+                .SingleOrDefaultAsync(
+                    candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id,
+                    cancellationToken);
             if (item is null) return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ItemNotFound);
             if (item.IsLocked) return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ItemLocked);
             if (item.TransactionLockId.HasValue) return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ItemTransactionLocked);
@@ -146,7 +155,10 @@ public sealed class ItemSalvageService(
                 return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ConfirmationRequired);
 
             ItemSalvageYield reward = ItemSalvageYieldCalculator.Calculate(
-                definition, item.ItemLevel, item.Stars, profile);
+                definition,
+                item.ItemLevel,
+                ResolveEffectiveStars(item, definition, content.Package.Itemization),
+                profile);
             ItemDefinition? stone = content.Indexes.ItemsById.GetValueOrDefault(reward.ReforgeStoneItemId);
             ItemDefinition? material = content.Indexes.ItemsById.GetValueOrDefault(reward.MaterialItemId);
             if (stone?.Type != ItemType.Material || material?.Type != ItemType.Material)
@@ -232,6 +244,13 @@ public sealed class ItemSalvageService(
             remaining -= size;
         }
     }
+
+    private static int? ResolveEffectiveStars(
+        CharacterItem item,
+        ItemDefinition definition,
+        ItemizationDefinition? itemization) =>
+        ItemInstancePersistenceFactory.ToGeneratedInstance(item, definition, itemization)?.Stars
+        ?? item.Stars;
 
     private static bool RequiresConfirmation(ItemRarity rarity, string threshold) =>
         RarityRank(rarity) >= RarityRank(Enum.Parse<ItemRarity>(threshold, true));

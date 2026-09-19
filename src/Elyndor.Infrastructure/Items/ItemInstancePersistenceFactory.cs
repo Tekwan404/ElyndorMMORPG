@@ -23,9 +23,12 @@ public static class ItemInstancePersistenceFactory
             sourceOperationId,
             $"{sourceEntryId}|{definition.Id}",
             ordinal);
+        ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
+            ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
+            : null;
         GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
             definition,
-            content.Itemization,
+            effectiveItemization,
             qualityProfileId,
             key);
         PrimaryStats? legacyRoll = generated is null
@@ -70,9 +73,12 @@ public static class ItemInstancePersistenceFactory
             sourceOperationId,
             $"{sourceEntryId}|{definition.Id}",
             ordinal);
+        ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
+            ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
+            : null;
         GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
             definition,
-            content.Itemization,
+            effectiveItemization,
             qualityProfileId,
             key);
         PrimaryStats? legacyRoll = generated is null
@@ -100,7 +106,8 @@ public static class ItemInstancePersistenceFactory
 
     public static GeneratedItemInstance? ToGeneratedInstance(
         CharacterItem item,
-        ItemDefinition definition)
+        ItemDefinition definition,
+        ItemizationDefinition? itemization = null)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(definition);
@@ -115,12 +122,35 @@ public static class ItemInstancePersistenceFactory
             return null;
         }
 
+        GeneratedItemAffix[] affixes = item.Affixes
+            .OrderBy(affix => affix.GenerationOrdinal)
+            .Select(affix => affix.ToGeneratedAffix())
+            .ToArray();
+
+        bool requiresHistoricalRepair = itemization is not null
+            && ProceduralItemPolicy.IsEnabled(definition)
+            && affixes.Any(affix => affix.MaxAtGeneration <= affix.MinAtGeneration);
+        if (requiresHistoricalRepair)
+        {
+            GeneratedItemInstance repaired = ItemizationBudgetPolicy.RecalculateStored(
+                definition,
+                itemization!,
+                item.ItemLevel.Value,
+                affixes,
+                item.PerfectOrigin);
+
+            // Forge stars are explicit paid progression, not a drop-quality classifier.
+            // Historical budget repair may lower the natural quality classification, but it
+            // must never roll back a star tier that was already earned through enhancement.
+            if (item.EnhancementLevel > 0 && repaired.Stars < item.Stars.Value)
+                repaired = repaired with { Stars = item.Stars.Value };
+
+            return repaired;
+        }
+
         return new GeneratedItemInstance(
             item.ItemLevel.Value,
-            item.Affixes
-                .OrderBy(affix => affix.GenerationOrdinal)
-                .Select(affix => affix.ToGeneratedAffix())
-                .ToArray(),
+            affixes,
             item.MinimumTemplateItemPower.Value,
             item.ActualItemPower.Value,
             item.MaxTemplateItemPower.Value,

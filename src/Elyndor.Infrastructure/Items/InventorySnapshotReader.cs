@@ -41,7 +41,10 @@ internal static class InventorySnapshotReader
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
                 : null;
-            GeneratedItemInstance? generated = ToGeneratedItem(item, definition);
+            GeneratedItemInstance? generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
+                item,
+                definition,
+                content.Itemization);
             ItemDefinition effectiveDefinition = generated is null
                 ? definition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
@@ -67,41 +70,6 @@ internal static class InventorySnapshotReader
             .Where(item => item.EquippedSlot.HasValue)
             .ToDictionary(item => item.EquippedSlot!.Value);
         return new InventorySnapshot(snapshots, equipped);
-    }
-
-
-    private static GeneratedItemInstance? ToGeneratedItem(
-        CharacterItem item,
-        ItemDefinition definition)
-    {
-        if (!item.IsProcedurallyGenerated
-            || !item.ItemLevel.HasValue
-            || !item.MinimumTemplateItemPower.HasValue
-            || !item.ActualItemPower.HasValue
-            || !item.MaxTemplateItemPower.HasValue
-            || !item.RollQuality.HasValue
-            || !item.Stars.HasValue)
-        {
-            return null;
-        }
-
-        return new GeneratedItemInstance(
-            item.ItemLevel.Value,
-            item.Affixes
-                .OrderBy(affix => affix.GenerationOrdinal)
-                .Select(affix => affix.ToGeneratedAffix())
-                .ToArray(),
-            item.MinimumTemplateItemPower.Value,
-            item.ActualItemPower.Value,
-            item.MaxTemplateItemPower.Value,
-            item.RollQuality.Value,
-            item.Stars.Value,
-            item.IsPerfect,
-            item.PerfectOrigin,
-            item.GeneratedPrefixId,
-            item.GeneratedSuffixId,
-            item.GeneratedDisplayName ?? definition.Name,
-            item.GenerationVersion);
     }
 
     private static ItemDefinition CreateOrphanedDefinition(CharacterItem item) =>
