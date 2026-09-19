@@ -1,3 +1,4 @@
+using Elyndor.Core.Items;
 using Elyndor.Core.World;
 
 namespace Elyndor.Core.Content;
@@ -6,9 +7,10 @@ public sealed class GameContentSnapshot
 {
     private GameContentSnapshot(GameContentPackage package, bool directTravel)
     {
-        Package = package ?? throw new ArgumentNullException(nameof(package));
-        Indexes = GameContentIndexes.For(package);
-        WorldMap = new WorldMap(package.Locations, directTravel);
+        Package = ItemizationBudgetPolicy.NormalizePackage(
+            package ?? throw new ArgumentNullException(nameof(package)));
+        Indexes = GameContentIndexes.For(Package);
+        WorldMap = new WorldMap(Package.Locations, directTravel);
     }
 
     public GameContentPackage Package { get; }
