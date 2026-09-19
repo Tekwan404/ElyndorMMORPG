@@ -148,7 +148,7 @@ public sealed class ItemStarUpgradeService(
         if (!await HasMaterial(character.Id, profile.ReforgeStoneItemId, cost.ReforgeStoneQuantity, cancellationToken)) return await Fail(transaction, ItemStarUpgradeErrorCodes.NotEnoughStones, cancellationToken);
         if (cost.CatalystQuantity > 0 && (string.IsNullOrWhiteSpace(cost.CatalystItemId) || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken))) return await Fail(transaction, ItemStarUpgradeErrorCodes.MissingCatalyst, cancellationToken);
 
-        GeneratedItemInstance recalculated = ItemInstanceGenerator.Recalculate(
+        GeneratedItemInstance recalculated = ItemizationBudgetPolicy.RecalculateStored(
             definition,
             itemization,
             current.ItemLevel,
