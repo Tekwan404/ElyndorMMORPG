@@ -36,6 +36,7 @@ describe('CombatHotbarSettings', () => {
     expect(icon.attributes('src')).toBe('/abilities/warrior/combat-strike.webp')
     expect(icon.attributes('alt')).toBe('Боевой удар')
     expect(wrapper.get('[data-hotbar-slot="1"]').text()).toContain('Боевой удар')
+    expect(wrapper.text()).not.toContain('У героя пока нет боевых способностей.')
   })
 
   it('keeps the numbered 12-slot combat layout', () => {
