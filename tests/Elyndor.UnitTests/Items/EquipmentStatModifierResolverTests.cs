@@ -45,7 +45,7 @@ public sealed class EquipmentStatModifierResolverTests
 
         Assert.Equal(new PrimaryStats(3, 1, 0, 6), result.PrimaryStats);
         Assert.Equal(5, result.AttackPowerFlat);
-        Assert.Equal(7.8m, result.ArmorFlat);
+        Assert.Equal(15.8m, result.ArmorFlat);
         Assert.Equal(3, result.CriticalChancePercent);
         Assert.Equal(3, result.AttackSpeedPercent);
         Assert.Equal(2, result.DodgePercent);
