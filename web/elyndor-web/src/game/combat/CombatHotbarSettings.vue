@@ -169,7 +169,7 @@ function abilityIcon(ability: KnownAbility): string | undefined {
       </div>
     </section>
 
-    <div v-else class="hotbar-settings__empty">У героя пока нет боевых способностей.</div>
+    <div v-if="!orderedAbilities.length" class="hotbar-settings__empty">У героя пока нет боевых способностей.</div>
 
     <div v-if="selectedAbilityId" class="hotbar-settings__hint" role="status">
       Теперь выберите вторую способность.
