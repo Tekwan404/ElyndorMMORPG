@@ -22,6 +22,10 @@ public static class GameContentPackageLoader
                 path,
                 package,
                 cancellationToken);
+            package = await PremiumStoreContentComposer.ComposeAsync(
+                path,
+                package,
+                cancellationToken);
             package = await InventoryProfileContentComposer.ComposeAsync(
                 path,
                 package,

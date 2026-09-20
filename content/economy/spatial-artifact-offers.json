@@ -1,0 +1,60 @@
+{
+  "premiumStoreOffers": [
+    {
+      "sku": "SPATIAL_CRACKED_RING",
+      "itemDefinitionId": "SPATIAL_CRACKED_RING",
+      "quantity": 1,
+      "crystalPrice": 75,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_MINOR_RING",
+      "itemDefinitionId": "SPATIAL_MINOR_RING",
+      "quantity": 1,
+      "crystalPrice": 125,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_EXPANDED_RING",
+      "itemDefinitionId": "SPATIAL_EXPANDED_RING",
+      "quantity": 1,
+      "crystalPrice": 200,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_SEAL",
+      "itemDefinitionId": "SPATIAL_SEAL",
+      "quantity": 1,
+      "crystalPrice": 300,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_BOTTOMLESS_RING",
+      "itemDefinitionId": "SPATIAL_BOTTOMLESS_RING",
+      "quantity": 1,
+      "crystalPrice": 425,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_POCKET_SHARD",
+      "itemDefinitionId": "SPATIAL_POCKET_SHARD",
+      "quantity": 1,
+      "crystalPrice": 600,
+      "enabled": true,
+      "perAccountLimit": 1
+    },
+    {
+      "sku": "SPATIAL_VOID_SEAL",
+      "itemDefinitionId": "SPATIAL_VOID_SEAL",
+      "quantity": 1,
+      "crystalPrice": 900,
+      "enabled": true,
+      "perAccountLimit": 1
+    }
+  ]
+}
