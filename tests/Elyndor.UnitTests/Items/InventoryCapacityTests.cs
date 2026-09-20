@@ -12,17 +12,17 @@ public sealed class InventoryCapacityTests
     }
 
     [Fact]
-    public void LegacyFortySlotProfileMigratesToOneHundredSlots()
+    public void MissingProfileFallsBackToOneHundredSlots()
     {
-        GameContentPackage package = CreatePackage(new InventoryProfileDefinition(40));
-
-        Assert.Equal(100, InventoryCapacity.Resolve(package));
+        Assert.Equal(100, InventoryCapacity.Resolve(CreatePackage(null)));
     }
 
     [Theory]
+    [InlineData(40)]
     [InlineData(80)]
+    [InlineData(100)]
     [InlineData(120)]
-    public void ExplicitNonLegacyCapacityIsPreserved(int configuredCapacity)
+    public void ExplicitCapacityIsPreserved(int configuredCapacity)
     {
         GameContentPackage package = CreatePackage(new InventoryProfileDefinition(configuredCapacity));
 
