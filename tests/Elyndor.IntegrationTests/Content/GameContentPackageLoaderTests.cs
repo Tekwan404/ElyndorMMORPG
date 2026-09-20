@@ -46,7 +46,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.True(package.LootTables!.Count >= 11);
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
-        Assert.Equal(40, package.InventoryProfile!.DefaultCapacity);
+        Assert.Equal(100, package.InventoryProfile!.DefaultCapacity);
         Assert.All(
             package.Locations,
             location => Assert.True(location.TravelDurationSeconds >= 0));
