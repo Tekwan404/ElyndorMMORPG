@@ -76,6 +76,49 @@ public sealed class ContentRevisionImporterTests(PostgresFixture postgres) : IAs
     }
 
     [Fact]
+    public async Task RevisionWithSubMicrosecondPublishedAtRoundTripsThroughPostgres()
+    {
+        string packagePath = Path.GetFullPath("content/package.json");
+        GameContentPackage source =
+            await GameContentPackageLoader.LoadAsync(packagePath);
+        DateTimeOffset precisePublishedAt = Now.AddTicks(7);
+        GameContentPackage package = source with
+        {
+            PublishedAtUtc = precisePublishedAt
+        };
+        string payload = GameContentPackageCodec.SerializeCanonical(package);
+
+        Guid revisionId;
+        await using (GameDbContext createContext = postgres.CreateDbContext())
+        {
+            ContentRevisionStore store =
+                new(createContext, new FixedTimeProvider(Now));
+            ContentRevision revision = await store.CreateRevisionAsync(
+                package,
+                payload,
+                "integration-test",
+                "sub-microsecond timestamp",
+                CancellationToken.None);
+            revisionId = revision.Id;
+        }
+
+        await using GameDbContext verifyContext = postgres.CreateDbContext();
+        ContentRevision persisted = await verifyContext.ContentRevisions
+            .AsNoTracking()
+            .SingleAsync(revision => revision.Id == revisionId);
+        Assert.NotEqual(precisePublishedAt, persisted.SourcePublishedAtUtc);
+
+        ContentRevisionImporter importer = new(
+            new ContentRevisionStore(verifyContext, new FixedTimeProvider(Now)));
+        GameContentPackage? restored = await importer.LoadRevisionPackageAsync(
+            revisionId,
+            CancellationToken.None);
+
+        Assert.NotNull(restored);
+        Assert.Equal(precisePublishedAt, restored.PublishedAtUtc);
+    }
+
+    [Fact]
     public async Task LegacyHealAmountPayloadIsUpgradedToConsumableAction()
     {
         string packagePath = Path.GetFullPath("content/package.json");
