@@ -30,7 +30,8 @@ public static class ItemSalvageErrorCodes
 public sealed record ItemSalvageOperationResult(
     bool Succeeded,
     string? ErrorCode,
-    ItemSalvageYield? Reward)
+    ItemSalvageYield? Reward,
+    ItemEnhancementSalvageRefund? EnhancementRefund = null)
 {
     public static ItemSalvageOperationResult Failure(string errorCode) => new(false, errorCode, null);
 }
@@ -39,7 +40,8 @@ public sealed record ItemSalvagePreviewResult(
     bool Succeeded,
     string? ErrorCode,
     ItemSalvageYield? Reward,
-    bool RequiresConfirmation)
+    bool RequiresConfirmation,
+    ItemEnhancementSalvageRefund? EnhancementRefund = null)
 {
     public static ItemSalvagePreviewResult Failure(string errorCode) => new(false, errorCode, null, false);
 }
@@ -95,6 +97,8 @@ public sealed class ItemSalvageService(
         ItemDefinition? definition = content.Indexes.ItemsById.GetValueOrDefault(item.ItemDefinitionId);
         if (definition?.Type != ItemType.Equipment)
             return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ItemNotEquipment);
+        if (!TryResolveEnhancementRefund(content.Package.Itemization, item.EnhancementLevel, out ItemEnhancementSalvageRefund refund))
+            return ItemSalvagePreviewResult.Failure(ItemSalvageErrorCodes.ProfileMissing);
 
         ItemSalvageYield reward = ItemSalvageYieldCalculator.Calculate(
             definition,
@@ -105,7 +109,8 @@ public sealed class ItemSalvageService(
             true,
             null,
             reward,
-            RequiresConfirmation(definition.Rarity, profile.HighValueConfirmationRarity));
+            RequiresConfirmation(definition.Rarity, profile.HighValueConfirmationRarity),
+            refund);
     }
 
     private async Task<ItemSalvageOperationResult> SalvageCoreAsync(
@@ -133,7 +138,11 @@ public sealed class ItemSalvageService(
                 ItemSalvageOperation receipt = await dbContext.ItemSalvageOperations.AsNoTracking()
                     .SingleAsync(operation => operation.OperationId == mutationId, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                return new ItemSalvageOperationResult(true, null, ToYield(receipt));
+                return new ItemSalvageOperationResult(
+                    true,
+                    null,
+                    ToYield(receipt),
+                    ToEnhancementRefund(receipt));
             }
 
             CharacterItem? item = await dbContext.CharacterItems
@@ -153,6 +162,8 @@ public sealed class ItemSalvageService(
                 return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ItemNotEquipment);
             if (RequiresConfirmation(definition.Rarity, profile.HighValueConfirmationRarity) && !confirmedHighValue)
                 return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ConfirmationRequired);
+            if (!TryResolveEnhancementRefund(content.Package.Itemization, item.EnhancementLevel, out ItemEnhancementSalvageRefund refund))
+                return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ProfileMissing);
 
             ItemSalvageYield reward = ItemSalvageYieldCalculator.Calculate(
                 definition,
@@ -161,23 +172,55 @@ public sealed class ItemSalvageService(
                 profile);
             ItemDefinition? stone = content.Indexes.ItemsById.GetValueOrDefault(reward.ReforgeStoneItemId);
             ItemDefinition? material = content.Indexes.ItemsById.GetValueOrDefault(reward.MaterialItemId);
-            if (stone?.Type != ItemType.Material || material?.Type != ItemType.Material)
+            ItemDefinition? enhancementMaterial = refund.EnhancementMaterialQuantity > 0
+                ? content.Indexes.ItemsById.GetValueOrDefault(refund.EnhancementMaterialItemId!)
+                : null;
+            ItemDefinition? catalyst = refund.CatalystQuantity > 0
+                ? content.Indexes.ItemsById.GetValueOrDefault(refund.CatalystItemId!)
+                : null;
+            if (stone?.Type != ItemType.Material
+                || material?.Type != ItemType.Material
+                || (refund.EnhancementMaterialQuantity > 0 && enhancementMaterial?.Type != ItemType.Material)
+                || (refund.CatalystQuantity > 0 && catalyst?.Type != ItemType.Material))
+            {
                 return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.ProfileMissing);
-            if (!await CanGrantRewardsAsync(character.Id, stone, material, reward, content, cancellationToken))
+            }
+
+            List<(ItemDefinition Definition, int Quantity)> grants =
+            [
+                (stone, reward.ReforgeStoneQuantity),
+                (material, reward.MaterialQuantity)
+            ];
+            if (enhancementMaterial is not null)
+                grants.Add((enhancementMaterial, refund.EnhancementMaterialQuantity));
+            if (catalyst is not null)
+                grants.Add((catalyst, refund.CatalystQuantity));
+
+            if (!await CanGrantRewardsAsync(character.Id, grants, content, cancellationToken))
                 return ItemSalvageOperationResult.Failure(ItemSalvageErrorCodes.InventoryFull);
 
             dbContext.CharacterMutations.Add(new CharacterMutation(
                 character.Id, mutationId, OperationType, fingerprint, timeProvider.GetUtcNow()));
             dbContext.CharacterItems.Remove(item);
-            await GrantAsync(character.Id, stone, reward.ReforgeStoneQuantity, cancellationToken);
-            await GrantAsync(character.Id, material, reward.MaterialQuantity, cancellationToken);
+            foreach ((ItemDefinition rewardDefinition, int quantity) in grants)
+                await GrantAsync(character.Id, rewardDefinition, quantity, cancellationToken);
             dbContext.ItemSalvageOperations.Add(new ItemSalvageOperation(
-                mutationId, character.Id, item.Id, definition.Id,
-                reward.ReforgeStoneItemId, reward.ReforgeStoneQuantity,
-                reward.MaterialItemId, reward.MaterialQuantity, timeProvider.GetUtcNow()));
+                mutationId,
+                character.Id,
+                item.Id,
+                definition.Id,
+                reward.ReforgeStoneItemId,
+                reward.ReforgeStoneQuantity,
+                reward.MaterialItemId,
+                reward.MaterialQuantity,
+                refund.EnhancementMaterialItemId,
+                refund.EnhancementMaterialQuantity,
+                refund.CatalystItemId,
+                refund.CatalystQuantity,
+                timeProvider.GetUtcNow()));
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return new ItemSalvageOperationResult(true, null, reward);
+            return new ItemSalvageOperationResult(true, null, reward, refund);
         }
         catch (DbUpdateException exception) when (IsMutationConstraintViolation(exception))
         {
@@ -210,15 +253,30 @@ public sealed class ItemSalvageService(
 
         ItemSalvageOperation receipt = await dbContext.ItemSalvageOperations.AsNoTracking()
             .SingleAsync(operation => operation.OperationId == mutationId, cancellationToken);
-        return new ItemSalvageOperationResult(true, null, ToYield(receipt));
+        return new ItemSalvageOperationResult(
+            true,
+            null,
+            ToYield(receipt),
+            ToEnhancementRefund(receipt));
     }
 
-    private async Task<bool> CanGrantRewardsAsync(Guid characterId, ItemDefinition stone,
-        ItemDefinition material, ItemSalvageYield reward, GameContentSnapshot content, CancellationToken cancellationToken)
+    private async Task<bool> CanGrantRewardsAsync(
+        Guid characterId,
+        IReadOnlyList<(ItemDefinition Definition, int Quantity)> rewards,
+        GameContentSnapshot content,
+        CancellationToken cancellationToken)
     {
         int used = await InventoryCapacity.CountUsedSlotsAsync(dbContext, characterId, cancellationToken) - 1;
-        int required = await InventoryCapacity.AdditionalSlotsRequiredAsync(dbContext, characterId, stone, reward.ReforgeStoneQuantity, cancellationToken)
-            + await InventoryCapacity.AdditionalSlotsRequiredAsync(dbContext, characterId, material, reward.MaterialQuantity, cancellationToken);
+        int required = 0;
+        foreach ((ItemDefinition definition, int quantity) in rewards)
+        {
+            required += await InventoryCapacity.AdditionalSlotsRequiredAsync(
+                dbContext,
+                characterId,
+                definition,
+                quantity,
+                cancellationToken);
+        }
         return used + required <= InventoryCapacity.Resolve(content);
     }
 
@@ -245,6 +303,26 @@ public sealed class ItemSalvageService(
         }
     }
 
+    private static bool TryResolveEnhancementRefund(
+        ItemizationDefinition? itemization,
+        int enhancementLevel,
+        out ItemEnhancementSalvageRefund refund)
+    {
+        if (enhancementLevel == ItemEnhancementRules.MinimumLevel)
+        {
+            refund = ItemEnhancementSalvageRefund.None;
+            return true;
+        }
+        if (itemization?.StarUpgrades is null)
+        {
+            refund = default!;
+            return false;
+        }
+
+        refund = ItemEnhancementSalvageRefundRules.Resolve(itemization.StarUpgrades, enhancementLevel);
+        return true;
+    }
+
     private static int? ResolveEffectiveStars(
         CharacterItem item,
         ItemDefinition definition,
@@ -267,8 +345,19 @@ public sealed class ItemSalvageService(
     };
 
     private static ItemSalvageYield ToYield(ItemSalvageOperation operation) => new(
-        operation.ReforgeStoneItemId, operation.ReforgeStoneQuantity,
-        operation.MaterialItemId, operation.MaterialQuantity);
+        operation.ReforgeStoneItemId,
+        operation.ReforgeStoneQuantity,
+        operation.MaterialItemId,
+        operation.MaterialQuantity);
+
+    private static ItemEnhancementSalvageRefund ToEnhancementRefund(ItemSalvageOperation operation) =>
+        operation.EnhancementMaterialQuantity == 0 && operation.CatalystQuantity == 0
+            ? ItemEnhancementSalvageRefund.None
+            : new ItemEnhancementSalvageRefund(
+                operation.EnhancementMaterialItemId,
+                operation.EnhancementMaterialQuantity,
+                operation.CatalystItemId,
+                operation.CatalystQuantity);
 
     private static string Fingerprint(Guid itemInstanceId, bool confirmedHighValue) => Convert.ToHexString(
         SHA256.HashData(Encoding.UTF8.GetBytes($"{OperationType}|{itemInstanceId:N}|{confirmedHighValue}")));

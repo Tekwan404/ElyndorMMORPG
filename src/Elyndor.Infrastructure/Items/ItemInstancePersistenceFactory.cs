@@ -19,10 +19,7 @@ public static class ItemInstancePersistenceFactory
         Guid? itemId = null,
         Elyndor.Core.Combat.Randomness.IGameRandom? legacyRandom = null)
     {
-        ItemGenerationKey key = ItemGenerationKey.Create(
-            sourceOperationId,
-            $"{sourceEntryId}|{definition.Id}",
-            ordinal);
+        ItemGenerationKey key = ItemGenerationKey.Create(sourceOperationId, $"{sourceEntryId}|{definition.Id}", ordinal);
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
             ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
             : null;
@@ -30,31 +27,15 @@ public static class ItemInstancePersistenceFactory
             definition,
             effectiveItemization,
             qualityProfileId,
-            key);
-        PrimaryStats? legacyRoll = generated is null
-            && definition.Type == ItemType.Equipment
-            ? ItemInstanceStatRoller.Resolve(
-                definition,
-                legacyRandom ?? new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
+            key,
+            ResolvePerfectOrigin(sourceType));
+        PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
+            ? ItemInstanceStatRoller.Resolve(definition, legacyRandom ?? new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
 
-        CharacterItem item = new(
-            itemId ?? Guid.CreateVersion7(),
-            characterId,
-            definition.Id,
-            1,
-            acquiredAtUtc,
-            definition.Version,
-            legacyRoll);
+        CharacterItem item = new(itemId ?? Guid.CreateVersion7(), characterId, definition.Id, 1, acquiredAtUtc, definition.Version, legacyRoll);
         if (generated is not null)
-        {
-            item.ApplyGeneratedInstance(
-                generated,
-                key.AuditHash,
-                sourceType,
-                sourceOperationId,
-                sourceEntryId);
-        }
+            item.ApplyGeneratedInstance(generated, key.AuditHash, sourceType, sourceOperationId, sourceEntryId);
         return item;
     }
 
@@ -69,10 +50,7 @@ public static class ItemInstancePersistenceFactory
         GameContentPackage content,
         string qualityProfileId = "NORMAL")
     {
-        ItemGenerationKey key = ItemGenerationKey.Create(
-            sourceOperationId,
-            $"{sourceEntryId}|{definition.Id}",
-            ordinal);
+        ItemGenerationKey key = ItemGenerationKey.Create(sourceOperationId, $"{sourceEntryId}|{definition.Id}", ordinal);
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
             ? ItemizationBudgetPolicy.NormalizeForTemplate(definition, itemization)
             : null;
@@ -80,28 +58,16 @@ public static class ItemInstancePersistenceFactory
             definition,
             effectiveItemization,
             qualityProfileId,
-            key);
-        PrimaryStats? legacyRoll = generated is null
-            && definition.Type == ItemType.Equipment
-            ? ItemInstanceStatRoller.Resolve(
-                definition,
-                new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
+            key,
+            ResolvePerfectOrigin(sourceType));
+        PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
+            ? ItemInstanceStatRoller.Resolve(definition, new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
 
         return new PendingLootItem(
-            Guid.CreateVersion7(),
-            characterId,
-            sourceOperationId,
-            definition.Id,
-            1,
-            definition.Version,
-            acquiredAtUtc,
-            legacyRoll,
-            generated is null ? null : JsonSerializer.Serialize(generated),
-            generated is null ? null : key.AuditHash,
-            sourceType,
-            sourceOperationId,
-            sourceEntryId);
+            Guid.CreateVersion7(), characterId, sourceOperationId, definition.Id, 1, definition.Version,
+            acquiredAtUtc, legacyRoll, generated is null ? null : JsonSerializer.Serialize(generated),
+            generated is null ? null : key.AuditHash, sourceType, sourceOperationId, sourceEntryId);
     }
 
     public static GeneratedItemInstance? ToGeneratedInstance(
@@ -118,15 +84,16 @@ public static class ItemInstancePersistenceFactory
             || !item.MaxTemplateItemPower.HasValue
             || !item.RollQuality.HasValue
             || !item.Stars.HasValue)
-        {
             return null;
-        }
 
         GeneratedItemAffix[] affixes = item.Affixes
             .OrderBy(affix => affix.GenerationOrdinal)
             .Select(affix => affix.ToGeneratedAffix())
             .ToArray();
 
+        // V2 source of truth: the persisted birth classification is canonical. Historical
+        // range repair is allowed to recover malformed generation envelopes, but may never
+        // reclassify Stars/RollQuality/Perfect or rewrite the birth power/name metadata.
         bool requiresHistoricalRepair = itemization is not null
             && ProceduralItemPolicy.IsEnabled(definition)
             && affixes.Any(affix => affix.MaxAtGeneration <= affix.MinAtGeneration);
@@ -137,15 +104,20 @@ public static class ItemInstancePersistenceFactory
                 itemization!,
                 item.ItemLevel.Value,
                 affixes,
-                item.PerfectOrigin);
-
-            // Forge stars are explicit paid progression, not a drop-quality classifier.
-            // Historical budget repair may lower the natural quality classification, but it
-            // must never roll back a star tier that was already earned through enhancement.
-            if (item.EnhancementLevel > 0 && repaired.Stars < item.Stars.Value)
-                repaired = repaired with { Stars = item.Stars.Value };
-
-            return repaired;
+                perfectOrigin: null);
+            return repaired with
+            {
+                MinimumTemplateItemPower = item.MinimumTemplateItemPower.Value,
+                ActualItemPower = item.ActualItemPower.Value,
+                MaxTemplateItemPower = item.MaxTemplateItemPower.Value,
+                RollQuality = item.RollQuality.Value,
+                Stars = item.Stars.Value,
+                IsPerfect = item.IsPerfect,
+                PerfectOrigin = item.PerfectOrigin,
+                GeneratedPrefixId = item.GeneratedPrefixId,
+                GeneratedSuffixId = item.GeneratedSuffixId,
+                DisplayName = item.GeneratedDisplayName ?? definition.Name
+            };
         }
 
         return new GeneratedItemInstance(
@@ -164,32 +136,38 @@ public static class ItemInstancePersistenceFactory
             item.GenerationVersion);
     }
 
-    public static CharacterItem MaterializePending(
-        PendingLootItem pending,
-        ItemDefinition definition,
-        DateTimeOffset acquiredAtUtc)
+    public static CharacterItem MaterializePending(PendingLootItem pending, ItemDefinition definition, DateTimeOffset acquiredAtUtc)
     {
         CharacterItem item = new(
-            pending.Id,
-            pending.CharacterId,
-            definition.Id,
-            1,
-            acquiredAtUtc,
-            definition.Version,
-            pending.RolledPrimaryStats);
+            pending.Id, pending.CharacterId, definition.Id, 1, acquiredAtUtc, definition.Version, pending.RolledPrimaryStats);
         if (!string.IsNullOrWhiteSpace(pending.GeneratedItemJson))
         {
-            GeneratedItemInstance generated =
-                JsonSerializer.Deserialize<GeneratedItemInstance>(pending.GeneratedItemJson)
+            GeneratedItemInstance generated = JsonSerializer.Deserialize<GeneratedItemInstance>(pending.GeneratedItemJson)
                 ?? throw new InvalidDataException("Pending generated item payload is invalid.");
             item.ApplyGeneratedInstance(
                 generated,
-                pending.GenerationSeedHash
-                    ?? throw new InvalidDataException("Pending generated item seed is missing."),
+                pending.GenerationSeedHash ?? throw new InvalidDataException("Pending generated item seed is missing."),
                 pending.SourceType ?? "PENDING_LOOT",
                 pending.SourceOperationId ?? pending.RewardResolutionId,
                 pending.SourceEntryId ?? definition.Id);
         }
         return item;
+    }
+
+    internal static string ResolvePerfectOrigin(string sourceType)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceType);
+        if (sourceType.Contains("CRAFT", StringComparison.OrdinalIgnoreCase))
+            return "CRAFT";
+        if (sourceType.Contains("RAID", StringComparison.OrdinalIgnoreCase))
+            return "RAID";
+        if (sourceType.Contains("DUNGEON", StringComparison.OrdinalIgnoreCase))
+            return "DUNGEON";
+        if (sourceType.Contains("MERCHANT", StringComparison.OrdinalIgnoreCase))
+            return "MERCHANT";
+        if (sourceType.Contains("QUEST", StringComparison.OrdinalIgnoreCase)
+            || sourceType.Contains("CONTRACT", StringComparison.OrdinalIgnoreCase))
+            return "QUEST";
+        return "DROP";
     }
 }

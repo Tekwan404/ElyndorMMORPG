@@ -12,11 +12,17 @@ public sealed class ItemSalvageOperationConfiguration : IEntityTypeConfiguration
         {
             table.HasCheckConstraint("ck_item_salvage_operations_stones", "\"ReforgeStoneQuantity\" > 0");
             table.HasCheckConstraint("ck_item_salvage_operations_material", "\"MaterialQuantity\" >= 0");
+            table.HasCheckConstraint("ck_item_salvage_operations_enhancement_material", "\"EnhancementMaterialQuantity\" >= 0");
+            table.HasCheckConstraint("ck_item_salvage_operations_catalyst", "\"CatalystQuantity\" >= 0");
         });
         builder.HasKey(operation => operation.OperationId).HasName("pk_item_salvage_operations");
         builder.Property(operation => operation.ItemDefinitionId).HasMaxLength(64).IsRequired();
         builder.Property(operation => operation.ReforgeStoneItemId).HasMaxLength(64).IsRequired();
         builder.Property(operation => operation.MaterialItemId).HasMaxLength(64).IsRequired();
+        builder.Property(operation => operation.EnhancementMaterialItemId).HasMaxLength(64);
+        builder.Property(operation => operation.EnhancementMaterialQuantity).HasDefaultValue(0).IsRequired();
+        builder.Property(operation => operation.CatalystItemId).HasMaxLength(64);
+        builder.Property(operation => operation.CatalystQuantity).HasDefaultValue(0).IsRequired();
         builder.Property(operation => operation.CreatedAtUtc).IsRequired();
         builder.HasIndex(operation => new { operation.CharacterId, operation.ItemInstanceId })
             .HasDatabaseName("ix_item_salvage_operations_character_item");

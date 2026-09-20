@@ -174,18 +174,12 @@ public sealed class CharacterItem
             affix.SetReforgeSlot(string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
     }
 
-    public void ApplyReforge(
-        GeneratedItemAffix updatedAffix,
-        decimal minimumTemplateItemPower,
-        decimal actualItemPower,
-        decimal maxTemplateItemPower,
-        decimal rollQuality,
-        int stars,
-        bool isPerfect,
-        string? perfectOrigin,
-        string? generatedPrefixId,
-        string? generatedSuffixId,
-        string generatedDisplayName)
+    /// <summary>
+    /// Reforge is an external adaptation layer. It may replace only the selected mutable affix;
+    /// birth-time classification (item level, roll quality, stars, perfect status and generated
+    /// name) is intentionally not recalculated or rewritten here.
+    /// </summary>
+    public void ApplyReforge(GeneratedItemAffix updatedAffix)
     {
         ArgumentNullException.ThrowIfNull(updatedAffix);
         if (ReforgeSlotKey is null
@@ -197,40 +191,19 @@ public sealed class CharacterItem
         ItemRolledAffix affix = Affixes.Single(candidate =>
             string.Equals(candidate.SlotKey, ReforgeSlotKey, StringComparison.Ordinal));
         affix.ReplaceFrom(updatedAffix);
-        MinimumTemplateItemPower = minimumTemplateItemPower;
-        ActualItemPower = actualItemPower;
-        MaxTemplateItemPower = maxTemplateItemPower;
-        RollQuality = rollQuality;
-        Stars = stars;
-        IsPerfect = isPerfect;
-        PerfectOrigin = perfectOrigin;
-        GeneratedPrefixId = generatedPrefixId;
-        GeneratedSuffixId = generatedSuffixId;
-        GeneratedDisplayName = generatedDisplayName;
     }
 
-    public void ApplyStarUpgrade(GeneratedItemInstance generated)
+    /// <summary>
+    /// Enhancement is post-acquisition progression and must never mutate intrinsic item quality.
+    /// </summary>
+    public void ApplyEnhancement(int targetEnhancementLevel)
     {
-        ArgumentNullException.ThrowIfNull(generated);
-        if (Stars is null || generated.Stars != Stars + 1)
-            throw new InvalidOperationException("Star upgrades must advance exactly one quality tier.");
+        if (targetEnhancementLevel is < ItemEnhancementRules.MinimumLevel or > ItemEnhancementRules.MaximumLevel)
+            throw new ArgumentOutOfRangeException(nameof(targetEnhancementLevel));
+        if (targetEnhancementLevel != EnhancementLevel + 1)
+            throw new InvalidOperationException("Enhancement must advance exactly one level.");
 
-        foreach (GeneratedItemAffix updated in generated.Affixes)
-        {
-            ItemRolledAffix affix = Affixes.Single(candidate => candidate.SlotKey == updated.SlotKey);
-            affix.ReplaceFrom(updated);
-        }
-        MinimumTemplateItemPower = generated.MinimumTemplateItemPower;
-        ActualItemPower = generated.ActualItemPower;
-        MaxTemplateItemPower = generated.MaxTemplateItemPower;
-        RollQuality = generated.RollQuality;
-        Stars = generated.Stars;
-        IsPerfect = generated.IsPerfect;
-        PerfectOrigin = generated.PerfectOrigin;
-        GeneratedPrefixId = generated.GeneratedPrefixId;
-        GeneratedSuffixId = generated.GeneratedSuffixId;
-        GeneratedDisplayName = generated.DisplayName;
-        EnhancementLevel = checked(EnhancementLevel + 1);
+        EnhancementLevel = targetEnhancementLevel;
     }
 
     private void SetRolledPrimaryStats(PrimaryStats? stats)

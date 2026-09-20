@@ -1324,11 +1324,29 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CatalystItemId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("CatalystQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<Guid>("CharacterId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EnhancementMaterialItemId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("EnhancementMaterialQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("ItemDefinitionId")
                         .IsRequired()
@@ -1362,6 +1380,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.ToTable("item_salvage_operations", "game", t =>
                         {
+                            t.HasCheckConstraint("ck_item_salvage_operations_catalyst", "\"CatalystQuantity\" >= 0");
+
+                            t.HasCheckConstraint("ck_item_salvage_operations_enhancement_material", "\"EnhancementMaterialQuantity\" >= 0");
+
                             t.HasCheckConstraint("ck_item_salvage_operations_material", "\"MaterialQuantity\" >= 0");
 
                             t.HasCheckConstraint("ck_item_salvage_operations_stones", "\"ReforgeStoneQuantity\" > 0");

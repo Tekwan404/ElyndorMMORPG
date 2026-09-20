@@ -45,12 +45,19 @@ internal static class InventorySnapshotReader
                 item,
                 definition,
                 content.Itemization);
+
+            // Enhancement is applied to structural template stats before generated affixes are
+            // overlaid. This guarantees +N affects combat while random affixes remain unscaled.
+            ItemDefinition enhancedDefinition = ItemEnhancementRules.ApplyStructuralEnhancement(
+                definition,
+                item.EnhancementLevel);
             ItemDefinition effectiveDefinition = generated is null
-                ? definition
+                ? enhancedDefinition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
-                    definition,
+                    enhancedDefinition,
                     generated.Affixes,
                     generated.DisplayName);
+
             return new InventoryItemSnapshot(
                 item.Id,
                 effectiveDefinition,

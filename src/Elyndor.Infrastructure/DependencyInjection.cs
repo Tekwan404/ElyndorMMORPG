@@ -48,7 +48,10 @@ public static class DependencyInjection
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<ItemReforgeService>();
         builder.Services.AddScoped<ItemSalvageService>();
+        builder.Services.AddScoped<ItemEnhancementService>();
+#pragma warning disable CS0618 // Legacy /star-upgrade client compatibility.
         builder.Services.AddScoped<ItemStarUpgradeService>();
+#pragma warning restore CS0618
         builder.Services.AddScoped<CrystalWalletService>();
         builder.Services.AddScoped<PremiumStoreService>();
         builder.Services.AddScoped<PromoCodeService>();

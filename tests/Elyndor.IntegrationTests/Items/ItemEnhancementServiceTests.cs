@@ -11,39 +11,65 @@ using Microsoft.EntityFrameworkCore;
 namespace Elyndor.IntegrationTests.Items;
 
 [Collection(PostgresFixtureDefinition.Name)]
-public sealed class ItemStarUpgradeServiceTests(PostgresFixture postgres) : IAsyncLifetime
+public sealed class ItemEnhancementServiceTests(PostgresFixture postgres) : IAsyncLifetime
 {
     private static readonly DateTimeOffset Now = new(2026, 9, 11, 0, 0, 0, TimeSpan.Zero);
+
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task UpgradeRejectsLockedItemWithoutCreatingMutation()
+    public async Task EnhanceRejectsLockedItemWithoutCreatingMutation()
     {
-        Guid accountId = Guid.CreateVersion7(); Guid characterId = Guid.CreateVersion7(); Guid itemId = Guid.CreateVersion7();
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        Guid itemId = Guid.CreateVersion7();
+
         await using (GameDbContext setup = postgres.CreateDbContext())
         {
             setup.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
-            setup.Characters.Add(new Character(characterId, accountId, Guid.CreateVersion7(), "Forger", "FORGER0003", "HUMAN", "MALE", "WARRIOR", Now));
-            CharacterItem item = new(itemId, characterId, "RECRUIT_IRON_SWORD", 1, Now); item.SetLocked(true);
-            setup.CharacterItems.Add(item); await setup.SaveChangesAsync();
+            setup.Characters.Add(new Character(
+                characterId,
+                accountId,
+                Guid.CreateVersion7(),
+                "Forger",
+                "FORGER0003",
+                "HUMAN",
+                "MALE",
+                "WARRIOR",
+                Now));
+            CharacterItem item = new(itemId, characterId, "RECRUIT_IRON_SWORD", 1, Now);
+            item.SetLocked(true);
+            setup.CharacterItems.Add(item);
+            await setup.SaveChangesAsync();
         }
+
         await using GameDbContext context = postgres.CreateDbContext();
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
-        ItemStarUpgradeService service = new(context, new StaticContentSnapshotProvider(content), new FixedTimeProvider(Now));
-        ItemStarUpgradeResult result = await service.UpgradeAsync(accountId, itemId, Guid.CreateVersion7(), CancellationToken.None);
-        Assert.False(result.Succeeded); Assert.Equal(ItemStarUpgradeErrorCodes.ItemLocked, result.ErrorCode);
+        ItemEnhancementService service = new(
+            context,
+            new StaticContentSnapshotProvider(content),
+            new FixedTimeProvider(Now));
+
+        ItemEnhancementResult result = await service.EnhanceAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(ItemEnhancementErrorCodes.ItemLocked, result.ErrorCode);
+
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Empty(verify.CharacterMutations);
     }
 
     [Fact]
-    public async Task UpgradeAdvancesSparseBlackConstellationBootsFromTwoToThreeStars()
+    public async Task EnhanceAdvancesInvestmentWithoutChangingBirthQualityOrAffixes()
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
         ItemDefinition definition = Assert.Single(content.Items!, item =>
             item.Id == "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET");
-        ItemizationDefinition itemization = Assert.IsType<ItemizationDefinition>(content.Itemization);
 
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -72,15 +98,6 @@ public sealed class ItemStarUpgradeServiceTests(PostgresFixture postgres) : IAsy
             DisplayName: "Сапоги Чёрного Созвездия",
             GenerationVersion: definition.GenerationVersion);
 
-        GeneratedItemAffix[] strengthened = ItemStarUpgradeCalculator.IncreaseToTargetStar(generated.Affixes, 3);
-        GeneratedItemInstance naturalRecalculation = ItemInstanceGenerator.Recalculate(
-            definition,
-            itemization,
-            generated.ItemLevel,
-            strengthened,
-            perfectOrigin: "STAR_UPGRADE");
-        Assert.NotEqual(3, naturalRecalculation.Stars);
-
         await using (GameDbContext setup = postgres.CreateDbContext())
         {
             setup.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
@@ -88,8 +105,8 @@ public sealed class ItemStarUpgradeServiceTests(PostgresFixture postgres) : IAsy
                 characterId,
                 accountId,
                 Guid.CreateVersion7(),
-                "Starforger",
-                "STARFORGER",
+                "Tempering",
+                "TEMPERING",
                 "HUMAN",
                 "MALE",
                 "ARCHER",
@@ -108,19 +125,19 @@ public sealed class ItemStarUpgradeServiceTests(PostgresFixture postgres) : IAsy
             setup.CharacterItems.Add(new CharacterItem(
                 Guid.CreateVersion7(),
                 characterId,
-                "REFORGE_STONE",
+                ItemEnhancementService.EnhancementMaterialItemId,
                 10,
                 Now.AddSeconds(1)));
             await setup.SaveChangesAsync();
         }
 
         await using GameDbContext context = postgres.CreateDbContext();
-        ItemStarUpgradeService service = new(
+        ItemEnhancementService service = new(
             context,
             new StaticContentSnapshotProvider(content),
             new FixedTimeProvider(Now));
 
-        ItemStarUpgradeResult result = await service.UpgradeAsync(
+        ItemEnhancementResult result = await service.EnhanceAsync(
             accountId,
             itemId,
             mutationId,
@@ -129,28 +146,36 @@ public sealed class ItemStarUpgradeServiceTests(PostgresFixture postgres) : IAsy
         Assert.True(result.Succeeded, result.ErrorCode);
         Assert.Null(result.ErrorCode);
         Assert.NotNull(result.Item);
-        Assert.Equal(3, result.Item.Stars);
-        Assert.Equal(
-            generated.Affixes.Select(affix => (affix.SlotKey, affix.StatId)),
-            result.Item.Affixes.Select(affix => (affix.SlotKey, affix.StatId)));
-        Assert.All(result.Item.Affixes, upgradedAffix =>
-        {
-            GeneratedItemAffix original = generated.Affixes.Single(affix => affix.SlotKey == upgradedAffix.SlotKey);
-            Assert.True(upgradedAffix.Value >= original.Value);
-        });
+        Assert.Equal(1, result.EnhancementLevel);
+        Assert.Equal(0.02m, result.EnhancementBonusPercent);
+        Assert.Equal(generated.Stars, result.Item.Stars);
+        Assert.Equal(generated.RollQuality, result.Item.RollQuality);
+        Assert.Equal(generated.IsPerfect, result.Item.IsPerfect);
+        Assert.Equal(generated.PerfectOrigin, result.Item.PerfectOrigin);
+        Assert.Equal(generated.ActualItemPower, result.Item.ActualItemPower);
+        Assert.Equal(generated.DisplayName, result.Item.DisplayName);
+        Assert.Equal(generated.Affixes, result.Item.Affixes);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Character savedCharacter = await verify.Characters.SingleAsync(character => character.Id == characterId);
-        CharacterItem savedBoots = await verify.CharacterItems.Include(item => item.Affixes).SingleAsync(item => item.Id == itemId);
-        CharacterItem stoneStack = await verify.CharacterItems.SingleAsync(item =>
-            item.CharacterId == characterId && item.ItemDefinitionId == "REFORGE_STONE");
-        Assert.Equal(900, savedCharacter.Gold);
-        Assert.Equal(6, stoneStack.Quantity);
-        Assert.Equal(3, savedBoots.Stars);
+        CharacterItem savedBoots = await verify.CharacterItems
+            .Include(item => item.Affixes)
+            .SingleAsync(item => item.Id == itemId);
+        CharacterItem oreStack = await verify.CharacterItems.SingleAsync(item =>
+            item.CharacterId == characterId
+            && item.ItemDefinitionId == ItemEnhancementService.EnhancementMaterialItemId);
+
+        Assert.Equal(950, savedCharacter.Gold);
+        Assert.Equal(8, oreStack.Quantity);
+        Assert.Equal(2, savedBoots.Stars);
+        Assert.Equal(42m, savedBoots.RollQuality);
         Assert.Equal(1, savedBoots.EnhancementLevel);
         Assert.Single(verify.CharacterMutations, mutation =>
             mutation.CharacterId == characterId && mutation.MutationId == mutationId);
     }
 
-    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider { public override DateTimeOffset GetUtcNow() => now; }
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 }
