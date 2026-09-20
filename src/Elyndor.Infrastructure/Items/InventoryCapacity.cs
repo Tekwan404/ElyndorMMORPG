@@ -8,18 +8,12 @@ namespace Elyndor.Infrastructure.Items;
 public static class InventoryCapacity
 {
     public const int DefaultCapacity = 100;
-    private const int LegacyDefaultCapacity = 40;
 
     public static int Resolve(GameContentSnapshot contentSnapshot) =>
         Resolve(contentSnapshot.Package);
 
-    public static int Resolve(GameContentPackage package)
-    {
-        int? configuredCapacity = package.InventoryProfile?.DefaultCapacity;
-        return configuredCapacity is null or LegacyDefaultCapacity
-            ? DefaultCapacity
-            : Math.Max(1, configuredCapacity.Value);
-    }
+    public static int Resolve(GameContentPackage package) =>
+        Math.Max(1, package.InventoryProfile?.DefaultCapacity ?? DefaultCapacity);
 
     public static Task<int> CountUsedSlotsAsync(
         GameDbContext dbContext,
