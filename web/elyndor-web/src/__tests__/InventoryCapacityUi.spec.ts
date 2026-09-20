@@ -15,7 +15,7 @@ describe('InventoryView capacity', () => {
   })
 
   it('renders capacity from the canonical spatial inventory response', async () => {
-    vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
       baseCapacity: 30,
       artifactCapacityBonus: 15,
       capacity: 45,
@@ -29,6 +29,7 @@ describe('InventoryView capacity', () => {
     const wrapper = mount(InventoryView)
     await flushPromises()
 
+    expect(request).toHaveBeenCalledWith('/api/v1/inventory/spatial-artifact/')
     expect(wrapper.findAll('.bag-cell')).toHaveLength(45)
     expect(wrapper.get('[data-inventory-capacity]').text()).toContain('1/ 45')
     expect(wrapper.get('[data-spatial-capacity]').text()).toContain('30 + 15 = 45')
