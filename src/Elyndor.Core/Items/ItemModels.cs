@@ -6,7 +6,8 @@ public enum ItemType
 {
     Equipment,
     Material,
-    Consumable
+    Consumable,
+    SpatialArtifact
 }
 
 public enum ItemRarity
@@ -196,7 +197,8 @@ public sealed record ItemDefinition(
     string? UniqueEquippedGroup = null,
     string? TradePolicyId = null,
     int GenerationVersion = 1,
-    bool PremiumEligible = true);
+    bool PremiumEligible = true,
+    int InventoryCapacityBonus = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

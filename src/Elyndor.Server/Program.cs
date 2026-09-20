@@ -265,6 +265,7 @@ app.MapWorldEndpoints();
 app.MapQuestEndpoints();
 app.MapTalentEndpoints();
 app.MapInventoryEndpoints();
+app.MapSpatialInventoryEndpoints();
 app.MapItemStarUpgradePreviewEndpoints();
 app.MapEconomyEndpoints();
 app.MapProfessionEndpoints();

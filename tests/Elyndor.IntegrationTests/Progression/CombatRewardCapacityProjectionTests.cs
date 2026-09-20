@@ -52,7 +52,7 @@ public sealed class CombatRewardCapacityProjectionTests(PostgresFixture postgres
                 Now,
                 Now));
 
-            for (var index = 0; index < 99; index++)
+            for (var index = 0; index < InventoryCapacity.DefaultCapacity - 1; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -87,7 +87,7 @@ public sealed class CombatRewardCapacityProjectionTests(PostgresFixture postgres
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            100,
+            InventoryCapacity.DefaultCapacity,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,
@@ -95,6 +95,96 @@ public sealed class CombatRewardCapacityProjectionTests(PostgresFixture postgres
         Assert.True(await verify.PendingLootItems
             .AsNoTracking()
             .AnyAsync(item => item.CharacterId == characterId));
+    }
+
+    [Fact]
+    public async Task FullInventoryUsesPartialStackAndQueuesOnlyRewardsNeedingSlots()
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        int fangVersion = content.Items!
+            .Single(item => item.Id == "WOLF_FANG")
+            .Version;
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Accounts.Add(new Account(
+                accountId,
+                Random.Shared.NextInt64(1, long.MaxValue),
+                Now));
+            setup.Characters.Add(new Character(
+                characterId,
+                accountId,
+                Guid.CreateVersion7(),
+                "PartialStack",
+                $"PSTACK{characterId:N}"[..16],
+                "HUMAN",
+                "MALE",
+                "WARRIOR",
+                Now));
+            setup.CharacterVitals.Add(new CharacterVitals(
+                characterId,
+                100,
+                0,
+                Now,
+                Now));
+            setup.CharacterItems.Add(new CharacterItem(
+                Guid.CreateVersion7(),
+                characterId,
+                "WOLF_FANG",
+                1,
+                Now,
+                fangVersion));
+            for (var index = 0; index < InventoryCapacity.DefaultCapacity - 1; index++)
+            {
+                setup.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    "RECRUIT_IRON_SWORD",
+                    1,
+                    Now.AddTicks(index + 1)));
+            }
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, content, timeProvider);
+        CharacterDerivedStateService derived = new(context, content, inventory);
+        CombatRewardService service = new(
+            context,
+            content,
+            derived,
+            new FixedRandomFactory(),
+            timeProvider);
+
+        CombatRewardApplicationResult result = await service.ApplyVictoryAsync(
+            characterId,
+            VictorySnapshot(Guid.CreateVersion7()),
+            CancellationToken.None);
+
+        Assert.True(result.Granted);
+        Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            InventoryCapacity.DefaultCapacity,
+            await InventoryCapacity.CountUsedSlotsAsync(
+                verify,
+                characterId,
+                CancellationToken.None));
+        Assert.True(await verify.CharacterItems
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "WOLF_FANG")
+            .SumAsync(item => item.Quantity) > 1);
+        PendingLootItem[] pending = await verify.PendingLootItems
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .ToArrayAsync();
+        Assert.NotEmpty(pending);
+        Assert.DoesNotContain(pending, item => item.ItemDefinitionId == "WOLF_FANG");
     }
 
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)

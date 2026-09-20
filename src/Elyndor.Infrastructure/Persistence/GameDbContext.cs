@@ -83,6 +83,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         Set<CombatConsumableUse>();
 
     public DbSet<CharacterEquipment> CharacterEquipment => Set<CharacterEquipment>();
+    public DbSet<CharacterSpatialArtifact> CharacterSpatialArtifacts => Set<CharacterSpatialArtifact>();
 
     public DbSet<CombatRewardGrant> CombatRewardGrants => Set<CombatRewardGrant>();
 

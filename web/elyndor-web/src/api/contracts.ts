@@ -449,6 +449,29 @@ export interface InventoryItem {
   bindState?: 'UNBOUND' | 'BOUND' | string
 }
 
+export interface SpatialArtifactSnapshot {
+  characterItemId: string
+  definitionId: string
+  name: string
+  rarity: string
+  capacityBonus: number
+  iconId: string | null
+}
+
+export interface InventoryCapacitySnapshot {
+  baseCapacity: number
+  artifactCapacityBonus: number
+  capacity: number
+  usedSlots: number
+  freeSlots: number
+  isOverflow: boolean
+}
+
+export interface SpatialInventorySnapshot {
+  equippedArtifact: SpatialArtifactSnapshot | null
+  capacity: InventoryCapacitySnapshot
+}
+
 export interface InventorySnapshot {
   items: InventoryItem[]
   equipped: {

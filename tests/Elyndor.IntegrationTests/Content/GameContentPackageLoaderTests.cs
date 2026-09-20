@@ -36,7 +36,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.24.1", package.ContentVersion);
+        Assert.Equal("0.24.2", package.ContentVersion);
         Assert.Equal("0.20.0-wowclassic-set-pass", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
@@ -46,7 +46,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.True(package.LootTables!.Count >= 11);
         Assert.Equal(100, package.ResourceScaling!.ManaBase);
         Assert.Equal(5, package.ResourceScaling.ManaPerIntellect);
-        Assert.Equal(100, package.InventoryProfile!.DefaultCapacity);
+        Assert.Equal(30, package.InventoryProfile!.DefaultCapacity);
         Assert.All(
             package.Locations,
             location => Assert.True(location.TravelDurationSeconds >= 0));

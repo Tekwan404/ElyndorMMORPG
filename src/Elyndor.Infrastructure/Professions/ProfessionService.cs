@@ -198,7 +198,8 @@ public sealed class ProfessionService(
             if (corpse.ExpiresAtUtc <= now)
                 return new ProfessionMutationResult(false, ProfessionErrorCodes.CorpseExpired);
 
-            GameContentPackage package = contentProvider.GetCurrent().Package;
+            GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+            GameContentPackage package = contentSnapshot.Package;
             SkinningSourceDefinition? source = (package.SkinningSources ?? [])
                 .SingleOrDefault(item => item.MonsterId == corpse.MonsterDefinitionId);
             if (source is null)
@@ -211,7 +212,7 @@ public sealed class ProfessionService(
                 throw new InvalidDataException($"Skinning source '{source.Id}' references missing item '{source.ItemId}'.");
 
             int quantity = DeterministicRange(mutationId, $"SKIN|{combatSessionId}|{enemyActorId}", source.MinQuantity, source.MaxQuantity);
-            ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, package, cancellationToken);
+            ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, contentSnapshot, cancellationToken);
             if (inventoryFailure is not null)
                 return inventoryFailure;
 
@@ -243,7 +244,8 @@ public sealed class ProfessionService(
             if (character is null)
                 return new ProfessionMutationResult(false, ProfessionErrorCodes.CharacterNotFound);
 
-            GameContentPackage package = contentProvider.GetCurrent().Package;
+            GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+            GameContentPackage package = contentSnapshot.Package;
             ProfessionRecipeDefinition? recipe = (package.ProfessionRecipes ?? []).SingleOrDefault(item => item.Id == recipeId);
             if (recipe is null)
                 return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
@@ -325,7 +327,7 @@ public sealed class ProfessionService(
                     output,
                     recipe.OutputQuantity,
                     timeProvider.GetUtcNow(),
-                    package,
+                    contentSnapshot,
                     cancellationToken,
                     releasedSlots);
                 if (inventoryFailure is not null)
@@ -333,7 +335,11 @@ public sealed class ProfessionService(
             }
             else
             {
-                int capacity = InventoryCapacity.Resolve(package);
+                int capacity = await InventoryCapacity.ResolveAsync(
+                    dbContext,
+                    character.Id,
+                    contentSnapshot,
+                    cancellationToken);
                 int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0 && !equippedItemIds.Contains(item.Id));
                 if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
@@ -370,7 +376,7 @@ public sealed class ProfessionService(
         ItemDefinition definition,
         int quantity,
         DateTimeOffset now,
-        GameContentPackage package,
+        GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken,
         int releasedSlots = 0)
     {
@@ -398,7 +404,11 @@ public sealed class ProfessionService(
                 return null;
         }
 
-        int capacity = InventoryCapacity.Resolve(package);
+        int capacity = await InventoryCapacity.ResolveAsync(
+            dbContext,
+            characterId,
+            contentSnapshot,
+            cancellationToken);
         int occupied = Math.Max(
             0,
             await InventoryCapacity.CountUsedSlotsAsync(dbContext, characterId, cancellationToken) - releasedSlots);
