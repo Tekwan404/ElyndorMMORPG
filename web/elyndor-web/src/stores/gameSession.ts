@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
+import type { ItemEnhancementResponse, ItemSalvagePreviewV2, ItemSalvageResponseV2 } from '@/api/itemEnhancementContracts'
 import {
   reconcilePendingGameMutation,
   runReplaySafeGameMutation,
@@ -24,8 +25,6 @@ import type {
   PromoCodeRedemptionResponse,
   ItemReforgeResponse,
   ItemReforgePreview,
-  ItemStarUpgradeResponse,
-  ItemSalvagePreview,
   ItemSalvageReward,
   QuestClaimResponse,
   QuestJournalResponse,
@@ -372,11 +371,11 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
-  async function getSalvagePreview(characterItemId: string): Promise<ItemSalvagePreview | null> {
+  async function getSalvagePreview(characterItemId: string): Promise<ItemSalvagePreviewV2 | null> {
     errorCode.value = null
     errorCorrelationId.value = null
     try {
-      return await apiClient.request<ItemSalvagePreview>(
+      return await apiClient.request<ItemSalvagePreviewV2>(
         `/api/v1/inventory/salvage/preview/${encodeURIComponent(characterItemId)}`,
       )
     } catch (error) {
@@ -385,29 +384,37 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function salvageItem(
+  async function salvageItemDetailed(
     characterItemId: string,
     confirmedHighValue: boolean,
-  ): Promise<ItemSalvageReward | null> {
+  ): Promise<ItemSalvageResponseV2 | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
     errorCorrelationId.value = null
     try {
-      const result = await runReplaySafeGameMutation<{ reward: ItemSalvageReward }>({
+      const result = await runReplaySafeGameMutation<ItemSalvageResponseV2>({
         key: `inventory:salvage:${characterItemId}:${confirmedHighValue}`,
         path: '/api/v1/inventory/salvage',
         idField: 'mutationId',
         intent: { characterItemId, confirmedHighValue },
       })
       await refreshSnapshot()
-      return result.reward
+      return result
     } catch (error) {
       handleError(error)
       return null
     } finally {
       mutationPending.value = false
     }
+  }
+
+  async function salvageItem(
+    characterItemId: string,
+    confirmedHighValue: boolean,
+  ): Promise<ItemSalvageReward | null> {
+    const result = await salvageItemDetailed(characterItemId, confirmedHighValue)
+    return result?.reward ?? null
   }
 
   async function getPendingReforge(
@@ -471,15 +478,15 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function upgradeItemStars(characterItemId: string): Promise<ItemStarUpgradeResponse | null> {
+  async function enhanceItem(characterItemId: string): Promise<ItemEnhancementResponse | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
     errorCode.value = null
     errorCorrelationId.value = null
     try {
-      const result = await runReplaySafeGameMutation<ItemStarUpgradeResponse>({
-        key: `inventory:star-upgrade:${characterItemId}`,
-        path: '/api/v1/inventory/star-upgrade',
+      const result = await runReplaySafeGameMutation<ItemEnhancementResponse>({
+        key: `inventory:enhancement:${characterItemId}`,
+        path: '/api/v1/inventory/enhancement',
         idField: 'mutationId',
         intent: { characterItemId },
       })
@@ -491,6 +498,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     } finally {
       mutationPending.value = false
     }
+  }
+
+  async function upgradeItemStars(characterItemId: string): Promise<ItemEnhancementResponse | null> {
+    return enhanceItem(characterItemId)
   }
 
   async function decideReforge(
@@ -734,9 +745,11 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     setItemLock,
     getSalvagePreview,
     salvageItem,
+    salvageItemDetailed,
     getPendingReforge,
     getReforgePreview,
     rollReforge,
+    enhanceItem,
     upgradeItemStars,
     decideReforge,
     getMerchant,
