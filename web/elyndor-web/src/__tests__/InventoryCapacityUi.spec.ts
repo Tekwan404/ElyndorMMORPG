@@ -1,8 +1,9 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
+import { apiClient } from '@/api/apiClient'
+import type { BootstrapSnapshot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
 import InventoryView from '@/game/character/views/InventoryView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
@@ -10,24 +11,126 @@ describe('InventoryView capacity', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     globalThis.localStorage.clear()
+    vi.restoreAllMocks()
   })
 
-  it('renders a 100-slot bag and shows the 100-slot capacity', () => {
+  it('renders capacity from the canonical spatial inventory response', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
+      baseCapacity: 30,
+      artifactCapacityBonus: 15,
+      capacity: 45,
+      usedSlots: 1,
+      freeSlots: 44,
+      isOverflow: false,
+    }))
     const session = useGameSessionStore()
-    session.snapshot = snapshot([equipment()])
+    session.snapshot = snapshot([equipment('TEST_HELMET')])
 
     const wrapper = mount(InventoryView)
+    await flushPromises()
 
-    expect(wrapper.findAll('.bag-cell')).toHaveLength(100)
-    expect(wrapper.get('.capacity').text()).toContain('/ 100')
+    expect(wrapper.findAll('.bag-cell')).toHaveLength(45)
+    expect(wrapper.get('[data-inventory-capacity]').text()).toContain('1/ 45')
+    expect(wrapper.get('[data-spatial-capacity]').text()).toContain('30 + 15 = 45')
+    expect(wrapper.get('[data-spatial-capacity]').text()).toContain('44 свободно')
+  })
+
+  it('excludes the equipped spatial artifact from the normal inventory grid', async () => {
+    const artifact = equipment('ARTIFACT_INSTANCE', 'Пространственное кольцо')
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      equippedArtifact: {
+        characterItemId: artifact.id,
+        definitionId: artifact.definitionId,
+        name: artifact.name,
+        rarity: artifact.rarity,
+        capacityBonus: 10,
+        iconId: artifact.iconId,
+      },
+      capacity: {
+        baseCapacity: 30,
+        artifactCapacityBonus: 10,
+        capacity: 40,
+        usedSlots: 1,
+        freeSlots: 39,
+        isOverflow: false,
+      },
+    } satisfies SpatialInventorySnapshot)
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([equipment('TEST_HELMET'), artifact])
+
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+
+    expect(wrapper.find('[data-item-id="ARTIFACT_INSTANCE"]').exists()).toBe(false)
+    expect(wrapper.find('[data-item-id="TEST_HELMET"]').exists()).toBe(true)
+    expect(wrapper.get('[data-equipped-spatial-artifact]').text()).toContain('+10')
+  })
+
+  it('never hides overflow items and expands the grid to the actual item count', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
+      baseCapacity: 2,
+      artifactCapacityBonus: 0,
+      capacity: 2,
+      usedSlots: 3,
+      freeSlots: 0,
+      isOverflow: true,
+    }))
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([
+      equipment('ITEM_1'),
+      equipment('ITEM_2'),
+      equipment('ITEM_3'),
+    ])
+
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+
+    expect(wrapper.findAll('.bag-cell')).toHaveLength(3)
+    expect(wrapper.find('[data-item-id="ITEM_1"]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="ITEM_2"]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="ITEM_3"]').exists()).toBe(true)
+    expect(wrapper.get('[data-inventory-overflow]').text()).toContain('Переполнение')
+  })
+
+  it('refreshes spatial state when the inventory snapshot changes', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(spatialState({ capacity: 30, usedSlots: 1, freeSlots: 29 }))
+      .mockResolvedValueOnce(spatialState({ capacity: 40, usedSlots: 2, freeSlots: 38, artifactCapacityBonus: 10 }))
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([equipment('ITEM_1')])
+
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+    expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 30')
+
+    session.snapshot.character!.inventory.items.push(equipment('ITEM_2'))
+    await flushPromises()
+
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 40')
   })
 })
 
-function equipment(): InventoryItem {
+function spatialState(capacity: Partial<SpatialInventorySnapshot['capacity']>): SpatialInventorySnapshot {
   return {
-    id: 'TEST_HELMET',
-    definitionId: 'TEST_HELMET',
-    name: 'Тестовый шлем',
+    equippedArtifact: null,
+    capacity: {
+      baseCapacity: 30,
+      artifactCapacityBonus: 0,
+      capacity: 30,
+      usedSlots: 0,
+      freeSlots: 30,
+      isOverflow: false,
+      ...capacity,
+    },
+  }
+}
+
+function equipment(id: string, name = 'Тестовый шлем'): InventoryItem {
+  return {
+    id,
+    definitionId: id,
+    name,
     type: 'Equipment',
     rarity: 'Rare',
     requiredLevel: 1,
