@@ -17,22 +17,22 @@ public partial class SpatialInventoryV1 : Migration
             schema: "game",
             columns: table => new
             {
-                character_id = table.Column<Guid>(type: "uuid", nullable: false),
-                character_item_id = table.Column<Guid>(type: "uuid", nullable: false)
+                CharacterId = table.Column<Guid>(type: "uuid", nullable: false),
+                CharacterItemId = table.Column<Guid>(type: "uuid", nullable: false)
             },
             constraints: table =>
             {
-                table.PrimaryKey("pk_character_spatial_artifacts", x => x.character_id);
+                table.PrimaryKey("pk_character_spatial_artifacts", x => x.CharacterId);
                 table.ForeignKey(
                     name: "fk_character_spatial_artifacts_characters_character_id",
-                    column: x => x.character_id,
+                    column: x => x.CharacterId,
                     principalSchema: "game",
                     principalTable: "characters",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "fk_character_spatial_artifacts_character_items_item_id",
-                    column: x => x.character_item_id,
+                    column: x => x.CharacterItemId,
                     principalSchema: "game",
                     principalTable: "character_items",
                     principalColumn: "Id",
@@ -43,7 +43,7 @@ public partial class SpatialInventoryV1 : Migration
             name: "uq_character_spatial_artifacts_item_id",
             schema: "game",
             table: "character_spatial_artifacts",
-            column: "character_item_id",
+            column: "CharacterItemId",
             unique: true);
     }
 
