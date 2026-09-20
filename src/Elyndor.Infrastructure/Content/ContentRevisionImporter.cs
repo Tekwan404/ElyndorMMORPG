@@ -81,12 +81,25 @@ public sealed class ContentRevisionImporter(ContentRevisionStore revisionStore)
                 package.BalanceVersion,
                 revision.BalanceVersion,
                 StringComparison.Ordinal)
-            || package.PublishedAtUtc != revision.SourcePublishedAtUtc)
+            || !MatchesPostgresTimestampPrecision(
+                package.PublishedAtUtc,
+                revision.SourcePublishedAtUtc))
         {
             throw new InvalidDataException(
                 $"Content revision '{revision.Id}' metadata does not match its payload.");
         }
 
         return package;
+    }
+
+    private static bool MatchesPostgresTimestampPrecision(
+        DateTimeOffset payloadTimestamp,
+        DateTimeOffset persistedTimestamp)
+    {
+        long payloadMicroseconds =
+            payloadTimestamp.UtcTicks / TimeSpan.TicksPerMicrosecond;
+        long persistedMicroseconds =
+            persistedTimestamp.UtcTicks / TimeSpan.TicksPerMicrosecond;
+        return payloadMicroseconds == persistedMicroseconds;
     }
 }
