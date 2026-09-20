@@ -121,6 +121,30 @@ public sealed class ItemEnhancementV2Tests
         Assert.Equal(affix.Value, item.Affixes.Single().Value);
     }
 
+    [Theory]
+    [InlineData(0, 0, 0)]
+    [InlineData(1, 1, 0)]
+    [InlineData(2, 2, 0)]
+    [InlineData(3, 5, 0)]
+    [InlineData(4, 11, 0)]
+    [InlineData(5, 18, 1)]
+    public void SalvageRefundReturnsDeterministicPartialEnhancementInvestment(
+        int enhancementLevel,
+        int expectedOre,
+        int expectedCatalyst)
+    {
+        ItemStarUpgradeProfileDefinition profile = CreateEnhancementProfile();
+
+        ItemEnhancementSalvageRefund first = ItemEnhancementSalvageRefundRules.Resolve(profile, enhancementLevel);
+        ItemEnhancementSalvageRefund replay = ItemEnhancementSalvageRefundRules.Resolve(profile, enhancementLevel);
+
+        Assert.Equal(first, replay);
+        Assert.Equal(expectedOre, first.EnhancementMaterialQuantity);
+        Assert.Equal(expectedOre > 0 ? ItemEnhancementCostRules.EnhancementMaterialItemId : null, first.EnhancementMaterialItemId);
+        Assert.Equal(expectedCatalyst, first.CatalystQuantity);
+        Assert.Equal(expectedCatalyst > 0 ? "DUNGEON_CATALYST" : null, first.CatalystItemId);
+    }
+
     [Fact]
     public void ReforgeStaysNearReplacedAffixQualityAndCannotCreateMaximumRoll()
     {
@@ -162,4 +186,24 @@ public sealed class ItemEnhancementV2Tests
         Assert.True(reforged.Value < reforged.MaxAtGeneration);
         Assert.True(reforged.IsReforgeSlot);
     }
+
+    private static ItemStarUpgradeProfileDefinition CreateEnhancementProfile() => new(
+        "STAR_UPGRADE_V1",
+        "REFORGE_STONE",
+        new Dictionary<int, int>
+        {
+            [2] = 50,
+            [3] = 100,
+            [4] = 180,
+            [5] = 300
+        },
+        new Dictionary<int, int>
+        {
+            [2] = 2,
+            [3] = 4,
+            [4] = 7,
+            [5] = 12
+        },
+        "DUNGEON_CATALYST",
+        1);
 }
