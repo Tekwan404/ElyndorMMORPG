@@ -6,18 +6,19 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryCapacityTests
 {
     [Fact]
-    public void DefaultCapacityIsOneHundredSlots()
+    public void DefaultCapacityIsThirtySlots()
     {
-        Assert.Equal(100, InventoryCapacity.DefaultCapacity);
+        Assert.Equal(30, InventoryCapacity.DefaultCapacity);
     }
 
     [Fact]
-    public void MissingProfileFallsBackToOneHundredSlots()
+    public void MissingProfileFallsBackToThirtySlots()
     {
-        Assert.Equal(100, InventoryCapacity.Resolve(CreatePackage(null)));
+        Assert.Equal(30, InventoryCapacity.Resolve(CreatePackage(null)));
     }
 
     [Theory]
+    [InlineData(30)]
     [InlineData(40)]
     [InlineData(80)]
     [InlineData(100)]

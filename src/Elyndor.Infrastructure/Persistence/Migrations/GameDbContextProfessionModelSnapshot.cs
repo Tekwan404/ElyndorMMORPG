@@ -1178,6 +1178,24 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Items.CharacterSpatialArtifact", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CharacterId")
+                        .HasName("pk_character_spatial_artifacts");
+
+                    b.HasIndex("CharacterItemId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_character_spatial_artifacts_item_id");
+
+                    b.ToTable("character_spatial_artifacts", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Items.ItemReforgeOperation", b =>
                 {
                     b.Property<Guid>("OperationId")
@@ -2428,6 +2446,23 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_items_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Items.CharacterSpatialArtifact", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_spatial_artifacts_characters_character_id");
+
+                    b.HasOne("Elyndor.Core.Items.CharacterItem", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_spatial_artifacts_character_items_item_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Items.ItemRolledAffix", b =>

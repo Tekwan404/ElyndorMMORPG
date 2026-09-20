@@ -46,6 +46,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatLootRollService>();
         builder.Services.AddHostedService<CombatLootRollExpiryWorker>();
         builder.Services.AddScoped<InventoryEquipmentService>();
+        builder.Services.AddScoped<SpatialInventoryService>();
         builder.Services.AddScoped<ItemReforgeService>();
         builder.Services.AddScoped<ItemSalvageService>();
         builder.Services.AddScoped<ItemEnhancementService>();

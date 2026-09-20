@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { EquipmentSlot, InventoryItem } from '@/api/contracts'
+import { apiClient } from '@/api/apiClient'
+import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -13,10 +14,12 @@ const props = defineProps<{
   slotFilter?: EquipmentSlot | null
 }>()
 
-const BAG_CAPACITY = 100
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
+const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
+const spatialInventoryError = ref(false)
+let spatialInventoryRequestSequence = 0
 const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
@@ -28,7 +31,10 @@ const newItemIds = ref<Set<string>>(new Set())
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 
-const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])
+const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
+const bagItems = computed(() => inventory.value?.items.filter((item) =>
+  !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
+) ?? [])
 const filteredItems = computed(() => bagItems.value.filter((item) => {
   const contextualMatches = contextualSlot.value === null
     || (item.type === 'Equipment'
@@ -57,11 +63,19 @@ const sortedItems = computed(() => {
   }
   return items
 })
+const capacityState = computed(() => spatialInventory.value?.capacity ?? null)
+const baseCapacity = computed(() => capacityState.value?.baseCapacity ?? null)
+const artifactCapacityBonus = computed(() => capacityState.value?.artifactCapacityBonus ?? null)
+const capacity = computed(() => capacityState.value?.capacity ?? null)
+const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.value.length)
+const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
+const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
 const visibleCells = computed(() => {
   if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
-  return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
+  const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
+  return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
 })
-const usedSlots = computed(() => bagItems.value.length)
+const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
 const activeFilterCount = computed(() => [
   rarityFilter.value !== 'all',
   equipableOnly.value,
@@ -316,9 +330,38 @@ function markItemSeen(itemId: string): void {
   newItemIds.value = next
 }
 
+async function refreshSpatialInventory(): Promise<void> {
+  const requestSequence = ++spatialInventoryRequestSequence
+  if (!character.value?.id) {
+    spatialInventory.value = null
+    spatialInventoryError.value = false
+    return
+  }
+
+  try {
+    const response = await apiClient.request<SpatialInventorySnapshot>('/api/v1/inventory/spatial-artifact/')
+    if (requestSequence !== spatialInventoryRequestSequence) return
+    spatialInventory.value = response
+    spatialInventoryError.value = false
+  } catch {
+    if (requestSequence !== spatialInventoryRequestSequence) return
+    spatialInventoryError.value = true
+  }
+}
+
+const inventorySnapshotKey = computed(() => [
+  character.value?.id ?? '',
+  ...(inventory.value?.items ?? []).map(item =>
+    `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
+  ),
+].join('|'))
+
 watch(
-  () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
-  syncNewItems,
+  inventorySnapshotKey,
+  () => {
+    syncNewItems()
+    void refreshSpatialInventory()
+  },
   { immediate: true },
 )
 
@@ -471,12 +514,31 @@ async function toggleSelectedLock(): Promise<void> {
         <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Снаряжение и добыча' }}</p>
         <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Инвентарь' }}</h1>
       </div>
-      <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 10 }">
-        <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
+      <div class="capacity" :class="{ 'capacity--warning': capacityWarning }" data-inventory-capacity>
+        <strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>
       </div>
-    </header>
+</header>
 
-    <section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
+<section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
+  <div>
+    <small>Пространственный инвентарь</small>
+    <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
+  </div>
+  <div class="spatial-capacity__meta">
+    <span>{{ freeSlots }} свободно</span>
+    <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
+      {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
+    </span>
+    <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
+      Переполнение: все предметы показаны
+    </span>
+  </div>
+</section>
+<p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
+  Данные вместимости временно недоступны. Предметы показаны полностью.
+</p>
+
+<section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
       <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
         <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
@@ -829,6 +891,53 @@ async function toggleSelectedLock(): Promise<void> {
 .capacity--warning {
   border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
   color: var(--ui-color-warning);
+}
+
+.spatial-capacity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.spatial-capacity > div:first-child,
+.spatial-capacity__meta {
+  display: grid;
+  gap: 2px;
+}
+
+.spatial-capacity small,
+.spatial-capacity__meta,
+.spatial-capacity__error {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.spatial-capacity strong {
+  color: var(--ui-color-text-primary);
+  font-size: .72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.spatial-capacity__meta {
+  justify-items: end;
+  text-align: right;
+}
+
+.spatial-capacity__overflow {
+  color: var(--ui-color-warning);
+  font-weight: 700;
+}
+
+.spatial-capacity__error {
+  margin: 0;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
 }
 
 .inventory-tools {
