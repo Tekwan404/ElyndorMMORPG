@@ -54,6 +54,8 @@ public sealed class ItemSalvageServiceTests(PostgresFixture postgres) : IAsyncLi
         Assert.True(first.Succeeded);
         Assert.True(replay.Succeeded);
         Assert.Equal(first.Reward, replay.Reward);
+        Assert.Equal(ItemEnhancementSalvageRefund.None, first.EnhancementRefund);
+        Assert.Equal(first.EnhancementRefund, replay.EnhancementRefund);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Empty(await verify.CharacterItems.Where(item => item.Id == itemId).ToArrayAsync());
@@ -63,9 +65,85 @@ public sealed class ItemSalvageServiceTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal(
             first.Reward.MaterialQuantity,
             await QuantityAsync(verify, characterId, "FORGE_SCRAP"));
+        Assert.Equal(0, await QuantityAsync(verify, characterId, "ENHANCEMENT_ORE"));
+        Assert.Equal(0, await QuantityAsync(verify, characterId, "DUNGEON_CATALYST"));
         Assert.Single(await verify.CharacterMutations
             .Where(mutation => mutation.CharacterId == characterId)
             .ToArrayAsync());
+
+        ItemSalvageOperation receipt = await verify.ItemSalvageOperations.SingleAsync(
+            operation => operation.OperationId == mutationId);
+        Assert.Null(receipt.EnhancementMaterialItemId);
+        Assert.Equal(0, receipt.EnhancementMaterialQuantity);
+        Assert.Null(receipt.CatalystItemId);
+        Assert.Equal(0, receipt.CatalystQuantity);
+    }
+
+    [Fact]
+    public async Task SalvageRefundsEnhancementInvestmentAndReplayDoesNotGrantTwice()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync();
+        Guid itemId = Guid.CreateVersion7();
+        Guid mutationId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterItem item = new(
+                itemId,
+                characterId,
+                "RECRUIT_IRON_SWORD",
+                1,
+                Now);
+            for (int level = 1; level <= ItemEnhancementRules.MaximumLevel; level++)
+                item.ApplyEnhancement(level);
+            setup.CharacterItems.Add(item);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        ItemSalvageService service = await CreateServiceAsync(context);
+
+        ItemSalvagePreviewResult preview = await service.GetPreviewAsync(
+            accountId,
+            itemId,
+            CancellationToken.None);
+        Assert.True(preview.Succeeded);
+        Assert.Equal(
+            new ItemEnhancementSalvageRefund("ENHANCEMENT_ORE", 18, "DUNGEON_CATALYST", 1),
+            preview.EnhancementRefund);
+
+        ItemSalvageOperationResult first = await service.SalvageAsync(
+            accountId,
+            itemId,
+            mutationId,
+            confirmedHighValue: true,
+            CancellationToken.None);
+        ItemSalvageOperationResult replay = await service.SalvageAsync(
+            accountId,
+            itemId,
+            mutationId,
+            confirmedHighValue: true,
+            CancellationToken.None);
+
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.Equal(first.Reward, replay.Reward);
+        Assert.Equal(preview.EnhancementRefund, first.EnhancementRefund);
+        Assert.Equal(first.EnhancementRefund, replay.EnhancementRefund);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterItems.Where(item => item.Id == itemId).ToArrayAsync());
+        Assert.Equal(18, await QuantityAsync(verify, characterId, "ENHANCEMENT_ORE"));
+        Assert.Equal(1, await QuantityAsync(verify, characterId, "DUNGEON_CATALYST"));
+        Assert.Single(await verify.CharacterMutations
+            .Where(mutation => mutation.CharacterId == characterId)
+            .ToArrayAsync());
+
+        ItemSalvageOperation receipt = await verify.ItemSalvageOperations.SingleAsync(
+            operation => operation.OperationId == mutationId);
+        Assert.Equal("ENHANCEMENT_ORE", receipt.EnhancementMaterialItemId);
+        Assert.Equal(18, receipt.EnhancementMaterialQuantity);
+        Assert.Equal("DUNGEON_CATALYST", receipt.CatalystItemId);
+        Assert.Equal(1, receipt.CatalystQuantity);
     }
 
     [Fact]
@@ -168,8 +246,11 @@ public sealed class ItemSalvageServiceTests(PostgresFixture postgres) : IAsyncLi
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
         Assert.NotNull(content.Itemization?.Salvage);
+        Assert.NotNull(content.Itemization?.StarUpgrades);
         Assert.Contains(content.Items!, item => item.Id == "REFORGE_STONE");
         Assert.Contains(content.Items!, item => item.Id == "FORGE_SCRAP");
+        Assert.Contains(content.Items!, item => item.Id == "ENHANCEMENT_ORE");
+        Assert.Contains(content.Items!, item => item.Id == "DUNGEON_CATALYST");
         return new ItemSalvageService(context, content, new FixedTimeProvider(Now));
     }
 
