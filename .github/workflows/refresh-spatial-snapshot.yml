@@ -13,20 +13,6 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    services:
-      postgres:
-        image: postgres:18.4
-        env:
-          POSTGRES_DB: elyndor_e2e
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d elyndor_e2e"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
 
     steps:
       - name: Checkout branch
@@ -35,81 +21,556 @@ jobs:
           ref: feat/spatial-inventory-v1
           fetch-depth: 0
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
         with:
-          global-json-file: global.json
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/elyndor-web/package-lock.json
 
-      - name: Restore
-        run: dotnet restore Elyndor.slnx
-
-      - name: Build
-        run: dotnet build Elyndor.slnx --configuration Release --no-restore
-
-      - name: Install EF tool
-        run: dotnet tool install --global dotnet-ef --version 10.0.11
-
-      - name: Refresh EF model snapshot
-        env:
-          ConnectionStrings__game: Host=127.0.0.1;Port=5432;Database=elyndor_e2e;Username=postgres;Password=postgres
-          Database__MigrateOnStartup: "false"
-          Content__RestorePublishedOnStartup: "false"
-        run: |
-          ~/.dotnet/tools/dotnet-ef migrations add __RefreshSpatialInventorySnapshot \
-            --project src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj \
-            --startup-project src/Elyndor.Server/Elyndor.Server.csproj \
-            --context GameDbContext \
-            --output-dir Persistence/Migrations \
-            --no-build \
-            --configuration Release
-          find src/Elyndor.Infrastructure/Persistence/Migrations -maxdepth 1 -type f -name '*__RefreshSpatialInventorySnapshot*.cs' -delete
-          if git diff --quiet -- src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs; then
-            echo 'Active snapshot was not changed.' >&2
-            exit 1
-          fi
-
-      - name: Align bundled content-version assertions
+      - name: Apply server-driven spatial inventory UI
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          replacements = {
-              Path('tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs'):
-                  ('Assert.Equal("0.24.1", package.ContentVersion);', 'Assert.Equal("0.24.2", package.ContentVersion);'),
-              Path('tests/Elyndor.IntegrationTests/Content/ContentPublicationDungeonRestoreTests.cs'):
-                  ('Assert.Equal("0.24.1", bundled.ContentVersion);', 'Assert.Equal("0.24.2", bundled.ContentVersion);'),
-              Path('tests/Elyndor.IntegrationTests/Content/ContentPublicationBalanceRestoreTests.cs'):
-                  ('Assert.Equal("0.24.1", bundled.ContentVersion);', 'Assert.Equal("0.24.2", bundled.ContentVersion);'),
-          }
-          for path, (old, new) in replacements.items():
+          def replace(path: Path, old: str, new: str):
               text = path.read_text()
               if old not in text:
-                  raise SystemExit(f'Expected assertion not found in {path}: {old}')
+                  raise SystemExit(f'Expected block not found in {path}: {old[:120]!r}')
               path.write_text(text.replace(old, new, 1))
+
+          contracts = Path('web/elyndor-web/src/api/contracts.ts')
+          replace(
+              contracts,
+              "export type ItemType = 'Equipment' | 'Material' | 'Consumable'",
+              "export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'SpatialArtifact'",
+          )
+          replace(
+              contracts,
+              "export interface InventorySnapshot {\n",
+              """export interface SpatialArtifactSnapshot {
+            characterItemId: string
+            definitionId: string
+            name: string
+            rarity: string
+            capacityBonus: number
+            iconId: string | null
+          }
+
+          export interface InventoryCapacitySnapshot {
+            baseCapacity: number
+            artifactCapacityBonus: number
+            capacity: number
+            usedSlots: number
+            freeSlots: number
+            isOverflow: boolean
+          }
+
+          export interface SpatialInventorySnapshot {
+            equippedArtifact: SpatialArtifactSnapshot | null
+            capacity: InventoryCapacitySnapshot
+          }
+
+          export interface InventorySnapshot {
+          """.replace('          ', ''),
+          )
+
+          view = Path('web/elyndor-web/src/game/character/views/InventoryView.vue')
+          replace(
+              view,
+              "import type { EquipmentSlot, InventoryItem } from '@/api/contracts'",
+              "import { apiClient } from '@/api/apiClient'\nimport type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'",
+          )
+          replace(view, "\nconst BAG_CAPACITY = 100", "")
+          replace(
+              view,
+              "const inventory = computed(() => character.value?.inventory)\n",
+              """const inventory = computed(() => character.value?.inventory)
+          const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
+          const spatialInventoryError = ref(false)
+          let spatialInventoryRequestSequence = 0
+          """.replace('          ', ''),
+          )
+          replace(
+              view,
+              "const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])",
+              """const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
+          const bagItems = computed(() => inventory.value?.items.filter((item) =>
+            !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
+          ) ?? [])""".replace('          ', ''),
+          )
+          replace(
+              view,
+              """const visibleCells = computed(() => {
+            if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
+            return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
+          })
+          const usedSlots = computed(() => bagItems.value.length)
+          """.replace('          ', ''),
+              """const capacityState = computed(() => spatialInventory.value?.capacity ?? null)
+          const baseCapacity = computed(() => capacityState.value?.baseCapacity ?? null)
+          const artifactCapacityBonus = computed(() => capacityState.value?.artifactCapacityBonus ?? null)
+          const capacity = computed(() => capacityState.value?.capacity ?? null)
+          const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.value.length)
+          const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
+          const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
+          const visibleCells = computed(() => {
+            if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
+            const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
+            return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
+          })
+          const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
+          """.replace('          ', ''),
+          )
+          replace(
+              view,
+              """watch(
+            () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
+            syncNewItems,
+            { immediate: true },
+          )
+          """.replace('          ', ''),
+              """async function refreshSpatialInventory(): Promise<void> {
+            const requestSequence = ++spatialInventoryRequestSequence
+            if (!character.value?.id) {
+              spatialInventory.value = null
+              spatialInventoryError.value = false
+              return
+            }
+
+            try {
+              const response = await apiClient.request<SpatialInventorySnapshot>('/api/v1/inventory/spatial-artifact/')
+              if (requestSequence !== spatialInventoryRequestSequence) return
+              spatialInventory.value = response
+              spatialInventoryError.value = false
+            } catch {
+              if (requestSequence !== spatialInventoryRequestSequence) return
+              spatialInventoryError.value = true
+            }
+          }
+
+          const inventorySnapshotKey = computed(() => [
+            character.value?.id ?? '',
+            ...(inventory.value?.items ?? []).map(item =>
+              `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
+            ),
+          ].join('|'))
+
+          watch(
+            inventorySnapshotKey,
+            () => {
+              syncNewItems()
+              void refreshSpatialInventory()
+            },
+            { immediate: true },
+          )
+          """.replace('          ', ''),
+          )
+          replace(
+              view,
+              "function typeLabel(item: InventoryItem): string {\n  if (item.type === 'Material') return 'Материал'",
+              "function typeLabel(item: InventoryItem): string {\n  if (item.type === 'SpatialArtifact') return 'Пространственный артефакт'\n  if (item.type === 'Material') return 'Материал'",
+          )
+          replace(
+              view,
+              "function itemGlyph(item: InventoryItem): GlyphName {\n  if (item.type === 'Material') return 'ore'",
+              "function itemGlyph(item: InventoryItem): GlyphName {\n  if (item.type === 'SpatialArtifact') return 'ring'\n  if (item.type === 'Material') return 'ore'",
+          )
+          replace(
+              view,
+              """      <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 10 }">
+                <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
+              </div>
+            </header>
+          """.replace('          ', ''),
+              """      <div class="capacity" :class="{ 'capacity--warning': capacityWarning }" data-inventory-capacity>
+                <strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>
+              </div>
+            </header>
+
+            <section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
+              <div>
+                <small>Пространственный инвентарь</small>
+                <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
+              </div>
+              <div class="spatial-capacity__meta">
+                <span>{{ freeSlots }} свободно</span>
+                <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
+                  {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
+                </span>
+                <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
+                  Переполнение: все предметы показаны
+                </span>
+              </div>
+            </section>
+            <p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
+              Данные вместимости временно недоступны. Предметы показаны полностью.
+            </p>
+          """.replace('          ', ''),
+          )
+          replace(
+              view,
+              """.capacity--warning {
+            border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
+            color: var(--ui-color-warning);
+          }
+          """.replace('          ', ''),
+              """.capacity--warning {
+            border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
+            color: var(--ui-color-warning);
+          }
+
+          .spatial-capacity {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--ui-space-3);
+            padding: var(--ui-space-2) var(--ui-space-3);
+            border: 1px solid var(--ui-color-border);
+            border-radius: var(--ui-radius-md);
+            background: rgb(255 255 255 / 2%);
+          }
+
+          .spatial-capacity > div:first-child,
+          .spatial-capacity__meta {
+            display: grid;
+            gap: 2px;
+          }
+
+          .spatial-capacity small,
+          .spatial-capacity__meta,
+          .spatial-capacity__error {
+            color: var(--ui-color-text-muted);
+            font-size: .58rem;
+          }
+
+          .spatial-capacity strong {
+            color: var(--ui-color-text-primary);
+            font-size: .72rem;
+            font-variant-numeric: tabular-nums;
+          }
+
+          .spatial-capacity__meta {
+            justify-items: end;
+            text-align: right;
+          }
+
+          .spatial-capacity__overflow {
+            color: var(--ui-color-warning);
+            font-weight: 700;
+          }
+
+          .spatial-capacity__error {
+            margin: 0;
+            padding: var(--ui-space-2) var(--ui-space-3);
+            border: 1px solid var(--ui-color-border);
+            border-radius: var(--ui-radius-md);
+          }
+          """.replace('          ', ''),
+          )
           PY
 
-      - name: Rebuild changed backend
-        run: dotnet build Elyndor.slnx --configuration Release --no-restore
+          cat > web/elyndor-web/src/__tests__/InventoryCapacityUi.spec.ts <<'EOF'
+          import { flushPromises, mount } from '@vue/test-utils'
+          import { createPinia, setActivePinia } from 'pinia'
+          import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-      - name: Test root causes
+          import { apiClient } from '@/api/apiClient'
+          import type { BootstrapSnapshot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
+          import InventoryView from '@/game/character/views/InventoryView.vue'
+          import { useGameSessionStore } from '@/stores/gameSession'
+
+          describe('InventoryView capacity', () => {
+            beforeEach(() => {
+              setActivePinia(createPinia())
+              globalThis.localStorage.clear()
+              vi.restoreAllMocks()
+            })
+
+            it('renders capacity from the canonical spatial inventory response', async () => {
+              vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
+                baseCapacity: 30,
+                artifactCapacityBonus: 15,
+                capacity: 45,
+                usedSlots: 1,
+                freeSlots: 44,
+                isOverflow: false,
+              }))
+              const session = useGameSessionStore()
+              session.snapshot = snapshot([equipment('TEST_HELMET')])
+
+              const wrapper = mount(InventoryView)
+              await flushPromises()
+
+              expect(wrapper.findAll('.bag-cell')).toHaveLength(45)
+              expect(wrapper.get('[data-inventory-capacity]').text()).toContain('1/ 45')
+              expect(wrapper.get('[data-spatial-capacity]').text()).toContain('30 + 15 = 45')
+              expect(wrapper.get('[data-spatial-capacity]').text()).toContain('44 свободно')
+            })
+
+            it('excludes the equipped spatial artifact from the normal inventory grid', async () => {
+              const artifact = spatialArtifact('ARTIFACT_INSTANCE')
+              vi.spyOn(apiClient, 'request').mockResolvedValue({
+                equippedArtifact: {
+                  characterItemId: artifact.id,
+                  definitionId: artifact.definitionId,
+                  name: artifact.name,
+                  rarity: artifact.rarity,
+                  capacityBonus: 10,
+                  iconId: artifact.iconId,
+                },
+                capacity: {
+                  baseCapacity: 30,
+                  artifactCapacityBonus: 10,
+                  capacity: 40,
+                  usedSlots: 1,
+                  freeSlots: 39,
+                  isOverflow: false,
+                },
+              } satisfies SpatialInventorySnapshot)
+              const session = useGameSessionStore()
+              session.snapshot = snapshot([equipment('TEST_HELMET'), artifact])
+
+              const wrapper = mount(InventoryView)
+              await flushPromises()
+
+              expect(wrapper.find('[data-item-id="ARTIFACT_INSTANCE"]').exists()).toBe(false)
+              expect(wrapper.find('[data-item-id="TEST_HELMET"]').exists()).toBe(true)
+              expect(wrapper.get('[data-equipped-spatial-artifact]').text()).toContain('+10')
+            })
+
+            it('never hides overflow items and expands the grid to the actual item count', async () => {
+              vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
+                baseCapacity: 2,
+                artifactCapacityBonus: 0,
+                capacity: 2,
+                usedSlots: 3,
+                freeSlots: 0,
+                isOverflow: true,
+              }))
+              const session = useGameSessionStore()
+              session.snapshot = snapshot([
+                equipment('ITEM_1'),
+                equipment('ITEM_2'),
+                equipment('ITEM_3'),
+              ])
+
+              const wrapper = mount(InventoryView)
+              await flushPromises()
+
+              expect(wrapper.findAll('.bag-cell')).toHaveLength(3)
+              expect(wrapper.find('[data-item-id="ITEM_1"]').exists()).toBe(true)
+              expect(wrapper.find('[data-item-id="ITEM_2"]').exists()).toBe(true)
+              expect(wrapper.find('[data-item-id="ITEM_3"]').exists()).toBe(true)
+              expect(wrapper.get('[data-inventory-overflow]').text()).toContain('Переполнение')
+            })
+
+            it('refreshes spatial state when the inventory snapshot changes', async () => {
+              const request = vi.spyOn(apiClient, 'request')
+                .mockResolvedValueOnce(spatialState({ capacity: 30, usedSlots: 1, freeSlots: 29 }))
+                .mockResolvedValueOnce(spatialState({ capacity: 40, usedSlots: 2, freeSlots: 38, artifactCapacityBonus: 10 }))
+              const session = useGameSessionStore()
+              session.snapshot = snapshot([equipment('ITEM_1')])
+
+              const wrapper = mount(InventoryView)
+              await flushPromises()
+              expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 30')
+
+              session.snapshot.character!.inventory.items.push(equipment('ITEM_2'))
+              await flushPromises()
+
+              expect(request).toHaveBeenCalledTimes(2)
+              expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 40')
+            })
+          })
+
+          function spatialState(capacity: Partial<SpatialInventorySnapshot['capacity']>): SpatialInventorySnapshot {
+            return {
+              equippedArtifact: null,
+              capacity: {
+                baseCapacity: 30,
+                artifactCapacityBonus: 0,
+                capacity: 30,
+                usedSlots: 0,
+                freeSlots: 30,
+                isOverflow: false,
+                ...capacity,
+              },
+            }
+          }
+
+          function spatialArtifact(id: string): InventoryItem {
+            return {
+              ...equipment(id),
+              definitionId: 'SPATIAL_RING_TEST',
+              name: 'Пространственное кольцо',
+              type: 'SpatialArtifact',
+              slot: null,
+              armorCategory: null,
+            }
+          }
+
+          function equipment(id: string): InventoryItem {
+            return {
+              id,
+              definitionId: id,
+              name: 'Тестовый шлем',
+              type: 'Equipment',
+              rarity: 'Rare',
+              requiredLevel: 1,
+              quantity: 1,
+              slot: 'Head',
+              equippedSlot: null,
+              stats: {
+                strength: 1,
+                agility: 0,
+                intellect: 0,
+                stamina: 1,
+                maxHp: 0,
+                attackPower: 0,
+                spellPower: 0,
+                criticalChance: 0,
+                criticalDamage: 0,
+                accuracy: 0,
+                armor: 2,
+                magicResistance: 0,
+                dodge: 0,
+                armorPenetration: 0,
+                magicPenetration: 0,
+                attackSpeed: 0,
+                maxResource: 0,
+              },
+              description: 'Test equipment',
+              setId: null,
+              weaponCategory: null,
+              armorCategory: 'HEAVY',
+              weaponBaseAttackIntervalSeconds: null,
+              attackSpeedPercent: 0,
+              dodgePercent: 0,
+              consumableActions: [],
+              consumableCooldownCategoryId: null,
+              consumableCooldownSeconds: 0,
+              buyPriceGold: 0,
+              sellPriceGold: 0,
+              isLocked: false,
+              iconId: null,
+              appearanceProfileId: null,
+            }
+          }
+
+          function snapshot(items: InventoryItem[]): BootstrapSnapshot {
+            return {
+              accountId: crypto.randomUUID(),
+              character: {
+                id: crypto.randomUUID(),
+                name: 'Arthas',
+                raceId: 'HUMAN',
+                genderId: 'MALE',
+                classId: 'WARRIOR',
+                level: 10,
+                experience: 0,
+                xpToNextLevel: 1000,
+                gold: 0,
+                primaryAttribute: 'STRENGTH',
+                classProfileVersion: 'test',
+                knownAbilityIds: [],
+                knownAbilities: [],
+                stats: {
+                  strength: 20,
+                  agility: 8,
+                  intellect: 5,
+                  stamina: 16,
+                  maxHp: 240,
+                  attackPower: 45,
+                  spellPower: 10,
+                  criticalChance: 5,
+                  criticalDamage: 100,
+                  accuracy: 95,
+                  armorPenetration: 0,
+                  magicPenetration: 0,
+                  attackSpeed: 1,
+                  armor: 30,
+                  magicResistance: 15,
+                  dodge: 2,
+                },
+                statBreakdown: {} as never,
+                vitals: {
+                  currentHp: 240,
+                  maxHp: 240,
+                  resourceType: 'RAGE',
+                  currentResource: 0,
+                  maxResource: 100,
+                  checkpointedAtUtc: '2026-09-19T00:00:00Z',
+                },
+                inventory: {
+                  items,
+                  equipped: {
+                    weapon: null,
+                    head: null,
+                    chest: null,
+                    legs: null,
+                    boots: null,
+                    accessory: null,
+                  },
+                },
+              },
+              world: {
+                currentLocation: {
+                  id: 'STARTER_TOWN',
+                  displayName: 'Starter Town',
+                  dangerLevel: 'SAFE',
+                  recommendedLevel: 1,
+                  minimumLevel: 1,
+                  maximumLevel: 60,
+                  requiredContractId: null,
+                  artId: null,
+                  description: 'Test location',
+                },
+                version: 1,
+                outgoingTransitions: [],
+                contracts: [],
+              },
+              contentVersion: 'test',
+              balanceVersion: 'test',
+              serverTimeUtc: '2026-09-19T00:00:00Z',
+            }
+          }
+          EOF
+
+      - name: Install frontend dependencies
+        working-directory: web/elyndor-web
+        run: npm ci
+
+      - name: Test inventory views
+        working-directory: web/elyndor-web
+        run: npx vitest run src/__tests__/InventoryCapacityUi.spec.ts src/__tests__/InventoryView.spec.ts
+
+      - name: Lint frontend
+        working-directory: web/elyndor-web
+        run: npm run lint
+
+      - name: Test frontend
+        working-directory: web/elyndor-web
+        run: npm run test:unit
+
+      - name: Build frontend
+        working-directory: web/elyndor-web
+        run: npm run build
+
+      - name: Verify server-driven inventory implementation
         run: |
-          dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageValidatorTests"
-          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageLoaderTests"
-          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ContentPublicationDungeonRestoreTests"
-          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ContentPublicationBalanceRestoreTests"
-          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~SpatialInventoryServiceTests"
+          ! grep -R "BAG_CAPACITY" web/elyndor-web/src/game/character/views/InventoryView.vue
+          grep -q "/api/v1/inventory/spatial-artifact/" web/elyndor-web/src/game/character/views/InventoryView.vue
+          grep -q "artifactCapacityBonus" web/elyndor-web/src/game/character/views/InventoryView.vue
+          grep -q "isOverflow" web/elyndor-web/src/game/character/views/InventoryView.vue
 
-      - name: Test full backend
-        run: dotnet test Elyndor.slnx --configuration Release --no-build
-
-      - name: Commit backend fixes
+      - name: Commit frontend and remove temporary workflow
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs \
-            tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs \
-            tests/Elyndor.IntegrationTests/Content/ContentPublicationDungeonRestoreTests.cs \
-            tests/Elyndor.IntegrationTests/Content/ContentPublicationBalanceRestoreTests.cs
-          git commit -m "fix: stabilize spatial inventory backend tests"
+          git rm .github/workflows/refresh-spatial-snapshot.yml
+          git add web/elyndor-web/src/api/contracts.ts \
+            web/elyndor-web/src/game/character/views/InventoryView.vue \
+            web/elyndor-web/src/__tests__/InventoryCapacityUi.spec.ts
+          git commit -m "feat: drive inventory capacity from spatial state"
           git push origin HEAD:feat/spatial-inventory-v1
