@@ -12,7 +12,7 @@ jobs:
   refresh:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:18.4
@@ -68,26 +68,36 @@ jobs:
             exit 1
           fi
 
-      - name: Align content-version assertion
+      - name: Align bundled content-version assertions
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs')
-          text = path.read_text()
-          old = 'Assert.Equal("0.24.1", package.ContentVersion);'
-          new = 'Assert.Equal("0.24.2", package.ContentVersion);'
-          if old not in text:
-              raise SystemExit('Expected old content-version assertion was not found.')
-          path.write_text(text.replace(old, new, 1))
+
+          replacements = {
+              Path('tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs'):
+                  ('Assert.Equal("0.24.1", package.ContentVersion);', 'Assert.Equal("0.24.2", package.ContentVersion);'),
+              Path('tests/Elyndor.IntegrationTests/Content/ContentPublicationDungeonRestoreTests.cs'):
+                  ('Assert.Equal("0.24.1", bundled.ContentVersion);', 'Assert.Equal("0.24.2", bundled.ContentVersion);'),
+              Path('tests/Elyndor.IntegrationTests/Content/ContentPublicationBalanceRestoreTests.cs'):
+                  ('Assert.Equal("0.24.1", bundled.ContentVersion);', 'Assert.Equal("0.24.2", bundled.ContentVersion);'),
+          }
+          for path, (old, new) in replacements.items():
+              text = path.read_text()
+              if old not in text:
+                  raise SystemExit(f'Expected assertion not found in {path}: {old}')
+              path.write_text(text.replace(old, new, 1))
           PY
 
       - name: Rebuild changed backend
         run: dotnet build Elyndor.slnx --configuration Release --no-restore
 
-      - name: Test content root causes
+      - name: Test root causes
         run: |
           dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageValidatorTests"
           dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageLoaderTests"
+          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ContentPublicationDungeonRestoreTests"
+          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~ContentPublicationBalanceRestoreTests"
+          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~SpatialInventoryServiceTests"
 
       - name: Test full backend
         run: dotnet test Elyndor.slnx --configuration Release --no-build
@@ -98,6 +108,8 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
             src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs \
-            tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs
+            tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs \
+            tests/Elyndor.IntegrationTests/Content/ContentPublicationDungeonRestoreTests.cs \
+            tests/Elyndor.IntegrationTests/Content/ContentPublicationBalanceRestoreTests.cs
           git commit -m "fix: stabilize spatial inventory backend tests"
           git push origin HEAD:feat/spatial-inventory-v1
