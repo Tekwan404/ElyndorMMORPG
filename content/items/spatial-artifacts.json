@@ -16,7 +16,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Слабое кольцо с нестабильным карманным пространством.",
       "inventoryCapacityBonus": 5,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_MINOR_RING",
@@ -31,7 +31,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Небольшое устойчивое хранилище, скрытое между слоями мира.",
       "inventoryCapacityBonus": 10,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_EXPANDED_RING",
@@ -46,7 +46,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Руны удерживают внутри кольца заметно расширенное карманное измерение.",
       "inventoryCapacityBonus": 15,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_SEAL",
@@ -61,7 +61,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Печать открывает доступ к устойчивому пространственному хранилищу.",
       "inventoryCapacityBonus": 20,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_BOTTOMLESS_RING",
@@ -76,7 +76,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Внутреннее пространство кольца гораздо больше, чем позволяет его внешний размер.",
       "inventoryCapacityBonus": 25,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_POCKET_SHARD",
@@ -91,7 +91,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Осколок стабилизирует отдельный фрагмент пространства для хранения добычи.",
       "inventoryCapacityBonus": 30,
-      "premiumEligible": false
+      "premiumEligible": true
     },
     {
       "id": "SPATIAL_VOID_SEAL",
@@ -106,7 +106,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Очень редкая печать, удерживающая большое и стабильное карманное измерение.",
       "inventoryCapacityBonus": 40,
-      "premiumEligible": false
+      "premiumEligible": true
     }
   ]
 }
