@@ -55,14 +55,33 @@ public static class InventoryCapacity
         GameDbContext dbContext,
         Guid characterId,
         GameContentSnapshot contentSnapshot,
-        CancellationToken cancellationToken) =>
-        Math.Max(
+        CancellationToken cancellationToken)
+    {
+        int persistedUsed = await CountUsedSlotsAsync(
+            dbContext,
+            characterId,
+            cancellationToken);
+
+        HashSet<Guid> trackedEquippedItemIds = dbContext.ChangeTracker
+            .Entries<CharacterEquipment>()
+            .Where(entry =>
+                entry.State != EntityState.Deleted
+                && entry.Entity.CharacterId == characterId)
+            .Select(entry => entry.Entity.CharacterItemId)
+            .ToHashSet();
+        int pendingAddedSlots = dbContext.ChangeTracker
+            .Entries<CharacterItem>()
+            .Count(entry =>
+                entry.State == EntityState.Added
+                && entry.Entity.CharacterId == characterId
+                && !trackedEquippedItemIds.Contains(entry.Entity.Id));
+
+        return Math.Max(
             0,
             Resolve(contentSnapshot)
-            - await CountUsedSlotsAsync(
-                dbContext,
-                characterId,
-                cancellationToken));
+            - persistedUsed
+            - pendingAddedSlots);
+    }
 
     public static async Task<int> AdditionalSlotsRequiredAsync(
         GameDbContext dbContext,
