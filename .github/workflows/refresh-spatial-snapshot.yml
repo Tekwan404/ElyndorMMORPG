@@ -40,7 +40,7 @@ jobs:
           Database__MigrateOnStartup: "false"
           Content__RestorePublishedOnStartup: "false"
         run: |
-          dotnet ef migrations add __RefreshSpatialInventorySnapshot \
+          ~/.dotnet/tools/dotnet-ef migrations add __RefreshSpatialInventorySnapshot \
             --project src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj \
             --startup-project src/Elyndor.Server/Elyndor.Server.csproj \
             --context GameDbContext \
