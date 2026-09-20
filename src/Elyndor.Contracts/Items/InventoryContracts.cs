@@ -270,14 +270,23 @@ public sealed record ItemSalvageRewardResponse(
     string MaterialItemId,
     int MaterialQuantity);
 
+public sealed record ItemEnhancementSalvageRefundResponse(
+    string? EnhancementMaterialItemId,
+    int EnhancementMaterialQuantity,
+    string? CatalystItemId,
+    int CatalystQuantity);
+
 public sealed record ItemSalvagePreviewResponse(
     Guid CharacterItemId,
     ItemSalvageRewardResponse Reward,
-    bool RequiresConfirmation);
+    bool RequiresConfirmation,
+    ItemEnhancementSalvageRefundResponse EnhancementRefund);
 
 public sealed record SalvageItemRequest(
     Guid CharacterItemId,
     Guid MutationId,
     bool ConfirmedHighValue = false);
 
-public sealed record ItemSalvageResponse(ItemSalvageRewardResponse Reward);
+public sealed record ItemSalvageResponse(
+    ItemSalvageRewardResponse Reward,
+    ItemEnhancementSalvageRefundResponse EnhancementRefund);
