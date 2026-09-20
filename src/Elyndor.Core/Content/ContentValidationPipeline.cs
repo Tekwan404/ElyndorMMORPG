@@ -108,17 +108,19 @@ public sealed class ItemValidator : IContentValidationStage
         GameContentPackage original = context.Package;
         GameContentPackage compatibilityProjection = original with
         {
-            Items = (original.Items ?? [])
-                .Select(item => item.Type == ItemType.SpatialArtifact
-                    ? item with
-                    {
-                        Type = ItemType.Material,
-                        Stackable = true,
-                        MaxStack = Math.Max(2, item.MaxStack),
-                        Slot = null
-                    }
-                    : item)
-                .ToArray()
+            Items = original.Items is null
+                ? null
+                : original.Items
+                    .Select(item => item.Type == ItemType.SpatialArtifact
+                        ? item with
+                        {
+                            Type = ItemType.Material,
+                            Stackable = true,
+                            MaxStack = Math.Max(2, item.MaxStack),
+                            Slot = null
+                        }
+                        : item)
+                    .ToArray()
         };
 
         GameContentPackageValidator.ValidateProgressionItemsAndLoot(
