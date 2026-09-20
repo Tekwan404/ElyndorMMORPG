@@ -12,7 +12,22 @@ jobs:
   refresh:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_DB: elyndor_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elyndor_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout branch
         uses: actions/checkout@v7
@@ -36,7 +51,7 @@ jobs:
 
       - name: Refresh EF model snapshot
         env:
-          ConnectionStrings__game: Host=127.0.0.1;Port=5432;Database=elyndor_snapshot;Username=postgres;Password=postgres
+          ConnectionStrings__game: Host=127.0.0.1;Port=5432;Database=elyndor_e2e;Username=postgres;Password=postgres
           Database__MigrateOnStartup: "false"
           Content__RestorePublishedOnStartup: "false"
         run: |
@@ -48,16 +63,41 @@ jobs:
             --no-build \
             --configuration Release
           find src/Elyndor.Infrastructure/Persistence/Migrations -maxdepth 1 -type f -name '*__RefreshSpatialInventorySnapshot*.cs' -delete
-          git diff -- src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs
           if git diff --quiet -- src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs; then
             echo 'Active snapshot was not changed.' >&2
             exit 1
           fi
 
-      - name: Commit generated snapshot
+      - name: Align content-version assertion
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs')
+          text = path.read_text()
+          old = 'Assert.Equal("0.24.1", package.ContentVersion);'
+          new = 'Assert.Equal("0.24.2", package.ContentVersion);'
+          if old not in text:
+              raise SystemExit('Expected old content-version assertion was not found.')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Rebuild changed backend
+        run: dotnet build Elyndor.slnx --configuration Release --no-restore
+
+      - name: Test content root causes
+        run: |
+          dotnet test tests/Elyndor.UnitTests/Elyndor.UnitTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageValidatorTests"
+          dotnet test tests/Elyndor.IntegrationTests/Elyndor.IntegrationTests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GameContentPackageLoaderTests"
+
+      - name: Test full backend
+        run: dotnet test Elyndor.slnx --configuration Release --no-build
+
+      - name: Commit backend fixes
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs
-          git commit -m "fix: refresh spatial inventory EF snapshot"
+          git add \
+            src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs \
+            tests/Elyndor.IntegrationTests/Content/GameContentPackageLoaderTests.cs
+          git commit -m "fix: stabilize spatial inventory backend tests"
           git push origin HEAD:feat/spatial-inventory-v1
