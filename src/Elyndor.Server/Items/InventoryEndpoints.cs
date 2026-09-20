@@ -323,7 +323,8 @@ public static class InventoryEndpoints
             ? Results.Ok(new ItemSalvagePreviewResponse(
                 characterItemId,
                 ToSalvageRewardResponse(result.Reward!),
-                result.RequiresConfirmation))
+                result.RequiresConfirmation,
+                ToEnhancementRefundResponse(result.EnhancementRefund!)))
             : SalvageProblem(result.ErrorCode!, context);
     }
 
@@ -347,7 +348,9 @@ public static class InventoryEndpoints
                     request.ConfirmedHighValue,
                     cancellationToken);
                 return result.Succeeded
-                    ? Results.Ok(new ItemSalvageResponse(ToSalvageRewardResponse(result.Reward!)))
+                    ? Results.Ok(new ItemSalvageResponse(
+                        ToSalvageRewardResponse(result.Reward!),
+                        ToEnhancementRefundResponse(result.EnhancementRefund!)))
                     : SalvageProblem(result.ErrorCode!, context);
             },
             () => InCombatProblem(context),
@@ -757,6 +760,13 @@ public static class InventoryEndpoints
         reward.ReforgeStoneQuantity,
         reward.MaterialItemId,
         reward.MaterialQuantity);
+
+    private static ItemEnhancementSalvageRefundResponse ToEnhancementRefundResponse(
+        ItemEnhancementSalvageRefund refund) => new(
+        refund.EnhancementMaterialItemId,
+        refund.EnhancementMaterialQuantity,
+        refund.CatalystItemId,
+        refund.CatalystQuantity);
 
     private static ConsumableActionResponse[] ToConsumableActions(
         ItemDefinition definition) =>
