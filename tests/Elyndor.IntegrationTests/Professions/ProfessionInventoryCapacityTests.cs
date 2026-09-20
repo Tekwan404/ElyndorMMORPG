@@ -93,7 +93,6 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
         Assert.Equal("ARCHER_COMMON_WHISPER_TRACKER_FEET", result.ItemId);
 
         await using GameDbContext verify = postgres.CreateDbContext();
-        GameContentSnapshot snapshot = new(content, "test");
         Assert.Equal(
             99,
             await InventoryCapacity.CountUsedSlotsAsync(
@@ -108,7 +107,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
         Assert.True(await verify.CharacterEquipment.AnyAsync(item =>
             item.CharacterId == characterId
             && item.CharacterItemId == equippedItemId));
-        Assert.Equal(100, InventoryCapacity.Resolve(snapshot));
+        Assert.Equal(100, InventoryCapacity.Resolve(content));
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
