@@ -52,7 +52,8 @@ public sealed class PremiumStoreService(GameDbContext dbContext, IContentSnapsho
 
     private async Task<PremiumStorePurchaseResult> PurchaseCoreAsync(Guid accountId, string sku, Guid operationId, CancellationToken cancellationToken)
     {
-        PremiumStoreOfferDefinition? offer = contentProvider.GetCurrent().Indexes.PremiumStoreOffersBySku.GetValueOrDefault(sku);
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        PremiumStoreOfferDefinition? offer = content.Indexes.PremiumStoreOffersBySku.GetValueOrDefault(sku);
         if (offer is null) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferNotFound);
         if (!offer.Enabled) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferDisabled);
         await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -70,16 +71,75 @@ public sealed class PremiumStoreService(GameDbContext dbContext, IContentSnapsho
         if (offer.PerAccountLimit is int limit && await dbContext.PremiumStorePurchases.CountAsync(item => item.AccountId == accountId && item.Sku == sku, cancellationToken) >= limit) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.LimitReached);
         CrystalWallet? wallet = await dbContext.CrystalWallets.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
         if (wallet is null || !wallet.TryDebit(offer.CrystalPrice)) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InsufficientCrystals, wallet?.Balance ?? 0);
-        ItemDefinition definition = contentProvider.GetCurrent().Indexes.ItemsById[offer.ItemDefinitionId];
+        ItemDefinition definition = content.Indexes.ItemsById[offer.ItemDefinitionId];
         if (!definition.PremiumEligible) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferNotFound);
-        if (!await InventoryCapacity.CanAddAsync(dbContext, character.Id, definition, offer.Quantity, contentProvider.GetCurrent(), cancellationToken))
+        if (!await InventoryCapacity.CanAddAsync(dbContext, character.Id, definition, offer.Quantity, content, cancellationToken))
             return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InventoryFull, wallet.Balance);
-        dbContext.CharacterItems.Add(new CharacterItem(Guid.CreateVersion7(), character.Id, definition.Id, offer.Quantity, timeProvider.GetUtcNow(), definition.Version));
+        await AddItemAsync(character.Id, definition, offer.Quantity, cancellationToken);
         dbContext.PremiumStorePurchases.Add(new PremiumStorePurchase(operationId, accountId, character.Id, sku, definition.Id, offer.Quantity, offer.CrystalPrice, timeProvider.GetUtcNow()));
         dbContext.CrystalLedgerEntries.Add(new CrystalLedgerEntry(Guid.CreateVersion7(), accountId, operationId, CrystalLedgerEntryType.StorePurchase, -offer.CrystalPrice, wallet.Balance, sku, Fingerprint(sku), timeProvider.GetUtcNow()));
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new(true, null, wallet.Balance);
     }
+
+    private async Task AddItemAsync(
+        Guid characterId,
+        ItemDefinition definition,
+        int quantity,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        if (!definition.Stackable)
+        {
+            for (var ordinal = 0; ordinal < quantity; ordinal++)
+            {
+                dbContext.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    definition.Id,
+                    1,
+                    now.AddTicks(ordinal),
+                    definition.Version));
+            }
+            return;
+        }
+
+        int remaining = quantity;
+        CharacterItem[] stacks = await dbContext.CharacterItems
+            .Where(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
+                && item.Quantity < definition.MaxStack)
+            .Where(item => !dbContext.CharacterEquipment.Any(equipment =>
+                equipment.CharacterId == characterId
+                && equipment.CharacterItemId == item.Id))
+            .OrderBy(item => item.AcquiredAtUtc)
+            .ToArrayAsync(cancellationToken);
+
+        foreach (CharacterItem stack in stacks)
+        {
+            if (remaining <= 0) break;
+            int added = Math.Min(definition.MaxStack - stack.Quantity, remaining);
+            if (added <= 0) continue;
+            stack.AddQuantity(added, definition.MaxStack);
+            remaining -= added;
+        }
+
+        var ordinalIndex = 0;
+        while (remaining > 0)
+        {
+            int stackSize = Math.Min(definition.MaxStack, remaining);
+            dbContext.CharacterItems.Add(new CharacterItem(
+                Guid.CreateVersion7(),
+                characterId,
+                definition.Id,
+                stackSize,
+                now.AddTicks(ordinalIndex++),
+                definition.Version));
+            remaining -= stackSize;
+        }
+    }
+
     private static string Fingerprint(string sku) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(sku)));
 }
