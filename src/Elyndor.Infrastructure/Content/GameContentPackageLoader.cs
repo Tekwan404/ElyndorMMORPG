@@ -26,6 +26,7 @@ public static class GameContentPackageLoader
                 path,
                 package,
                 cancellationToken);
+            package = DungeonProgressionContentInvariants.Apply(package);
 
             IReadOnlyList<ContentValidationError> errors =
                 ContentValidationPipeline.Default.Validate(package);
