@@ -14,7 +14,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Слабое кольцо с нестабильным карманным пространством.",
+      "description": "Слабое кольцо с нестабильным карманным пространством. Увеличивает вместимость инвентаря на 5 ячеек.",
       "inventoryCapacityBonus": 5,
       "premiumEligible": true
     },
@@ -29,7 +29,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Небольшое устойчивое хранилище, скрытое между слоями мира.",
+      "description": "Небольшое устойчивое хранилище, скрытое между слоями мира. Увеличивает вместимость инвентаря на 10 ячеек.",
       "inventoryCapacityBonus": 10,
       "premiumEligible": true
     },
@@ -44,7 +44,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Руны удерживают внутри кольца заметно расширенное карманное измерение.",
+      "description": "Руны удерживают внутри кольца заметно расширенное карманное измерение. Увеличивает вместимость инвентаря на 15 ячеек.",
       "inventoryCapacityBonus": 15,
       "premiumEligible": true
     },
@@ -59,7 +59,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Печать открывает доступ к устойчивому пространственному хранилищу.",
+      "description": "Печать открывает доступ к устойчивому пространственному хранилищу. Увеличивает вместимость инвентаря на 20 ячеек.",
       "inventoryCapacityBonus": 20,
       "premiumEligible": true
     },
@@ -74,7 +74,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Внутреннее пространство кольца гораздо больше, чем позволяет его внешний размер.",
+      "description": "Внутреннее пространство кольца гораздо больше, чем позволяет его внешний размер. Увеличивает вместимость инвентаря на 25 ячеек.",
       "inventoryCapacityBonus": 25,
       "premiumEligible": true
     },
@@ -89,7 +89,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Осколок стабилизирует отдельный фрагмент пространства для хранения добычи.",
+      "description": "Осколок стабилизирует отдельный фрагмент пространства для хранения добычи. Увеличивает вместимость инвентаря на 30 ячеек.",
       "inventoryCapacityBonus": 30,
       "premiumEligible": true
     },
@@ -104,7 +104,7 @@
       "maxStack": 1,
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Очень редкая печать, удерживающая большое и стабильное карманное измерение.",
+      "description": "Очень редкая печать, удерживающая большое и стабильное карманное измерение. Увеличивает вместимость инвентаря на 40 ячеек.",
       "inventoryCapacityBonus": 40,
       "premiumEligible": true
     }
