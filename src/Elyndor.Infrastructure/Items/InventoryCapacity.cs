@@ -8,10 +8,18 @@ namespace Elyndor.Infrastructure.Items;
 public static class InventoryCapacity
 {
     public const int DefaultCapacity = 100;
+    private const int LegacyDefaultCapacity = 40;
 
     public static int Resolve(GameContentSnapshot contentSnapshot) =>
-        contentSnapshot.Package.InventoryProfile?.DefaultCapacity
-        ?? DefaultCapacity;
+        Resolve(contentSnapshot.Package);
+
+    public static int Resolve(GameContentPackage package)
+    {
+        int? configuredCapacity = package.InventoryProfile?.DefaultCapacity;
+        return configuredCapacity is null or LegacyDefaultCapacity
+            ? DefaultCapacity
+            : Math.Max(1, configuredCapacity.Value);
+    }
 
     public static Task<int> CountUsedSlotsAsync(
         GameDbContext dbContext,
@@ -81,6 +89,10 @@ public static class InventoryCapacity
                 && item.ItemDefinitionId == definition.Id
                 && item.DefinitionVersion == definition.Version
                 && item.Quantity < definition.MaxStack)
+            .Where(item => !dbContext.CharacterEquipment
+                .Any(equipment =>
+                    equipment.CharacterId == characterId
+                    && equipment.CharacterItemId == item.Id))
             .SumAsync(
                 item => definition.MaxStack - item.Quantity,
                 cancellationToken);
