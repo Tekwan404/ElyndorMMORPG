@@ -787,7 +787,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             1);
         await using (GameDbContext fill = postgres.CreateDbContext())
         {
-            for (var index = 0; index < 39; index++)
+            for (var index = 0; index < 99; index++)
             {
                 fill.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -813,7 +813,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            40,
+            100,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,
