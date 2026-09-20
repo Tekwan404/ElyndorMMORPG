@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
