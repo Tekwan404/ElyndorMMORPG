@@ -2,7 +2,8 @@
 import { computed, ref, watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
-import type { InventoryItem, ItemReforgePreview, ItemReforgeResponse, ItemSalvagePreview } from '@/api/contracts'
+import type { InventoryItem, ItemReforgePreview, ItemReforgeResponse } from '@/api/contracts'
+import type { ItemSalvagePreviewV2, ItemSalvageResponseV2 } from '@/api/itemEnhancementContracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -40,10 +41,11 @@ const preview = ref<ItemReforgePreview | null>(null)
 const pending = ref<ItemReforgeResponse | null>(null)
 const actionError = ref<string | null>(null)
 const loadingPreview = ref(false)
-const salvagePreview = ref<ItemSalvagePreview | null>(null)
+const salvagePreview = ref<ItemSalvagePreviewV2 | null>(null)
+const salvageResult = ref<ItemSalvageResponseV2 | null>(null)
 const batchSalvageMode = ref(false)
 const batchSalvageIds = ref<string[]>([])
-const batchSalvagePreviews = ref<ItemSalvagePreview[]>([])
+const batchSalvagePreviews = ref<ItemSalvagePreviewV2[]>([])
 const batchSalvageLoading = ref(false)
 const enhancementPreview = ref<EnhancementPreview | null>(null)
 const loadingEnhancementPreview = ref(false)
@@ -162,6 +164,22 @@ const batchMaterialTotals = computed(() => {
   }
   return [...totals.entries()].filter(([, quantity]) => quantity > 0)
 })
+const batchEnhancementRefundTotals = computed(() => {
+  const totals = new Map<string, number>()
+  for (const item of batchSalvagePreviews.value) {
+    const refund = item.enhancementRefund
+    if (refund.enhancementMaterialItemId && refund.enhancementMaterialQuantity > 0) {
+      totals.set(
+        refund.enhancementMaterialItemId,
+        (totals.get(refund.enhancementMaterialItemId) ?? 0) + refund.enhancementMaterialQuantity,
+      )
+    }
+    if (refund.catalystItemId && refund.catalystQuantity > 0) {
+      totals.set(refund.catalystItemId, (totals.get(refund.catalystItemId) ?? 0) + refund.catalystQuantity)
+    }
+  }
+  return [...totals.entries()].filter(([, quantity]) => quantity > 0)
+})
 
 function isEquipped(item: InventoryItem): boolean { return item.equippedSlot !== null }
 function itemPower(item: InventoryItem): number { return item.generatedItem?.itemPower ?? 0 }
@@ -173,11 +191,12 @@ function canSelectForBatchSalvage(item: InventoryItem): boolean {
 function materialLabel(definitionId: string): string {
   return inventoryItems.value.find(item => item.definitionId === definitionId)?.name
     ?? materialLabels[definitionId]
-    ?? 'Материал'
+    ?? definitionId
 }
 
 function toggleBatchSalvage(item: InventoryItem): void {
   actionError.value = null
+  salvageResult.value = null
   if (!canSelectForBatchSalvage(item)) {
     actionError.value = isEquipped(item)
       ? 'Надетые вещи нельзя разбирать. Снимите предмет, чтобы добавить его в разбор.'
@@ -192,6 +211,7 @@ function toggleBatchSalvage(item: InventoryItem): void {
 }
 
 function toggleBatchSalvageMode(): void {
+  salvageResult.value = null
   if (batchSalvageMode.value) {
     batchSalvageMode.value = false
     batchSalvageIds.value = []
@@ -207,6 +227,7 @@ function toggleBatchSalvageMode(): void {
 }
 
 function selectItem(item: InventoryItem): void {
+  salvageResult.value = null
   if (batchSalvageMode.value) {
     toggleBatchSalvage(item)
     return
@@ -222,7 +243,7 @@ function selectItem(item: InventoryItem): void {
   salvagePreview.value = null
 }
 
-function clearSelection(): void {
+function clearSelection(preserveSalvageResult = false): void {
   selectedItemId.value = null
   selectedSlotKey.value = null
   activeMode.value = 'reforge'
@@ -231,6 +252,7 @@ function clearSelection(): void {
   enhancementPreview.value = null
   salvagePreview.value = null
   actionError.value = null
+  if (!preserveSalvageResult) salvageResult.value = null
 }
 
 function setMode(mode: ForgeMode): void {
@@ -239,6 +261,7 @@ function setMode(mode: ForgeMode): void {
   activeMode.value = mode
   actionError.value = null
   salvagePreview.value = null
+  salvageResult.value = null
 }
 
 async function refreshSelection(): Promise<void> {
@@ -315,7 +338,7 @@ async function enhance(): Promise<void> {
   const item = selectedItem.value
   if (!item || !canAffordEnhancement.value || session.mutationPending) return
   actionError.value = null
-  const result = await session.upgradeItemStars(item.id)
+  const result = await session.enhanceItem(item.id)
   if (!result) {
     actionError.value = enhancementErrorMessage(session.errorCode)
     return
@@ -331,15 +354,20 @@ async function prepareSalvage(): Promise<void> {
     return
   }
   actionError.value = null
+  salvageResult.value = null
   salvagePreview.value = await session.getSalvagePreview(item.id)
   if (!salvagePreview.value) actionError.value = 'Не удалось подготовить разбор.'
 }
 
 async function confirmSalvage(): Promise<void> {
   if (!selectedItem.value || !salvagePreview.value || session.mutationPending) return
-  const result = await session.salvageItem(selectedItem.value.id, salvagePreview.value.requiresConfirmation)
-  if (result) clearSelection()
-  else actionError.value = 'Не удалось разобрать предмет.'
+  const result = await session.salvageItemDetailed(selectedItem.value.id, salvagePreview.value.requiresConfirmation)
+  if (result) {
+    salvageResult.value = result
+    clearSelection(true)
+  } else {
+    actionError.value = 'Не удалось разобрать предмет.'
+  }
 }
 
 async function prepareBatchSalvage(): Promise<void> {
@@ -347,8 +375,9 @@ async function prepareBatchSalvage(): Promise<void> {
   batchSalvageLoading.value = true
   batchSalvagePreviews.value = []
   actionError.value = null
+  salvageResult.value = null
   try {
-    const prepared: ItemSalvagePreview[] = []
+    const prepared: ItemSalvagePreviewV2[] = []
     for (const id of batchSalvageIds.value) {
       const item = allEquipment.value.find(candidate => candidate.id === id)
       if (!item || !canSelectForBatchSalvage(item)) {
@@ -374,7 +403,7 @@ async function confirmBatchSalvage(): Promise<void> {
   let completed = 0
   actionError.value = null
   for (const itemPreview of previewsToSalvage) {
-    const result = await session.salvageItem(itemPreview.characterItemId, itemPreview.requiresConfirmation)
+    const result = await session.salvageItemDetailed(itemPreview.characterItemId, itemPreview.requiresConfirmation)
     if (!result) {
       actionError.value = completed > 0
         ? `Разобрано ${completed} из ${previewsToSalvage.length}. Остальные предметы не изменены.`
@@ -457,6 +486,14 @@ function rarityLabel(item: InventoryItem): string {
           <span>{{ displayedEquipment.length }} из {{ allEquipment.length }}</span>
         </header>
 
+        <div v-if="salvageResult" class="forge-salvage-reward" aria-live="polite">
+          <small>РАЗБОР ЗАВЕРШЁН · ПОЛУЧЕНО</small>
+          <div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'salvage-result-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камень перековки ×{{ salvageResult.reward.reforgeStoneQuantity }}</strong></div>
+          <div v-if="salvageResult.reward.materialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(salvageResult.reward.materialItemId) }} ×{{ salvageResult.reward.materialQuantity }}</strong></div>
+          <div v-if="salvageResult.enhancementRefund.enhancementMaterialItemId && salvageResult.enhancementRefund.enhancementMaterialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: {{ materialLabel(salvageResult.enhancementRefund.enhancementMaterialItemId) }} ×{{ salvageResult.enhancementRefund.enhancementMaterialQuantity }}</strong></div>
+          <div v-if="salvageResult.enhancementRefund.catalystItemId && salvageResult.enhancementRefund.catalystQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: {{ materialLabel(salvageResult.enhancementRefund.catalystItemId) }} ×{{ salvageResult.enhancementRefund.catalystQuantity }}</strong></div>
+        </div>
+
         <div class="forge-items__tools">
           <div class="forge-filter-tabs" aria-label="Фильтр экипировки">
             <button type="button" :class="{ active: equipmentFilter === 'all' }" data-forge-filter="all" @click="equipmentFilter = 'all'">Все</button>
@@ -488,6 +525,7 @@ function rarityLabel(item: InventoryItem): string {
             <small>ВЫ ПОЛУЧИТЕ</small>
             <div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'batch-salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камни перековки ×{{ batchStoneTotal }}</strong></div>
             <div v-for="[materialId, quantity] in batchMaterialTotals" :key="materialId"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(materialId) }} ×{{ quantity }}</strong></div>
+            <div v-for="[materialId, quantity] in batchEnhancementRefundTotals" :key="`refund-${materialId}`"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: {{ materialLabel(materialId) }} ×{{ quantity }}</strong></div>
           </div>
           <p v-if="actionError" class="forge-error" role="alert">{{ actionError }}</p>
           <div class="forge-actions">
@@ -547,7 +585,7 @@ function rarityLabel(item: InventoryItem): string {
       <UILoadingState v-if="!selectedItem && !batchSalvageMode" class="forge-empty" state="empty" title="Выберите предмет" message="Для разбора выберите «В рюкзаке», для надетого снаряжения — «Надето»." />
 
       <article v-else-if="selectedItem" class="forge-detail" :data-rarity="selectedItem.rarity">
-        <UIButton variant="ghost" class="forge-back" @click="clearSelection">← Все предметы</UIButton>
+        <UIButton variant="ghost" class="forge-back" @click="clearSelection()">← Все предметы</UIButton>
 
         <header class="forge-detail__identity">
           <span class="forge-detail__art" :data-rarity="selectedItem.rarity">
@@ -636,14 +674,21 @@ function rarityLabel(item: InventoryItem): string {
           </section>
 
           <section v-else class="forge-panel forge-panel--salvage">
-            <header class="forge-section-heading"><span>РАЗБОР</span><strong>Разобрать предмет на материалы</strong><small>Предмет будет уничтожен после подтверждения.</small></header>
+            <header class="forge-section-heading"><span>РАЗБОР</span><strong>Разобрать предмет на материалы</strong><small>Предмет будет уничтожен после подтверждения. Вложенные в усиление ресурсы возвращаются частично.</small></header>
             <div v-if="isEquipped(selectedItem)" class="forge-danger-box"><strong>Надетую вещь разбирать нельзя</strong><span>Снимите предмет перед разбором. Усиливать предмет можно без снятия.</span></div>
             <template v-else-if="!salvagePreview">
-              <div class="forge-danger-box"><strong>Предмет будет уничтожен</strong><span>Сначала покажем точную награду.</span></div>
+              <div class="forge-danger-box"><strong>Предмет будет уничтожен</strong><span>Сначала покажем точную награду и возврат ресурсов усиления.</span></div>
               <UIButton variant="secondary" :loading="session.mutationPending" @click="prepareSalvage">Показать результат разбора</UIButton>
             </template>
             <template v-else>
-              <div class="forge-salvage-reward"><small>ВЫ ПОЛУЧИТЕ</small><div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камень перековки ×{{ salvagePreview.reward.reforgeStoneQuantity }}</strong></div><div v-if="salvagePreview.reward.materialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(salvagePreview.reward.materialItemId) }} ×{{ salvagePreview.reward.materialQuantity }}</strong></div></div>
+              <div class="forge-salvage-reward">
+                <small>ВЫ ПОЛУЧИТЕ</small>
+                <div><span class="forge-wallet__icon"><IconGenerator :config="{ id: 'salvage-stone', glyph: 'ore', category: 'resource' }" /></span><strong>Камень перековки ×{{ salvagePreview.reward.reforgeStoneQuantity }}</strong></div>
+                <div v-if="salvagePreview.reward.materialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>{{ materialLabel(salvagePreview.reward.materialItemId) }} ×{{ salvagePreview.reward.materialQuantity }}</strong></div>
+                <div v-if="salvagePreview.enhancementRefund.enhancementMaterialItemId && salvagePreview.enhancementRefund.enhancementMaterialQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: {{ materialLabel(salvagePreview.enhancementRefund.enhancementMaterialItemId) }} ×{{ salvagePreview.enhancementRefund.enhancementMaterialQuantity }}</strong></div>
+                <div v-if="salvagePreview.enhancementRefund.catalystItemId && salvagePreview.enhancementRefund.catalystQuantity > 0"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: {{ materialLabel(salvagePreview.enhancementRefund.catalystItemId) }} ×{{ salvagePreview.enhancementRefund.catalystQuantity }}</strong></div>
+                <div v-if="salvagePreview.enhancementRefund.enhancementMaterialQuantity === 0 && salvagePreview.enhancementRefund.catalystQuantity === 0"><span class="forge-salvage-reward__dot" /><strong>Возврат усиления: нет (+0)</strong></div>
+              </div>
               <div class="forge-actions forge-actions--salvage"><UIButton variant="ghost" @click="salvagePreview = null">Назад</UIButton><UIButton variant="danger" :loading="session.mutationPending" @click="confirmSalvage">Разобрать навсегда</UIButton></div>
             </template>
           </section>
