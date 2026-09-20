@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
@@ -129,8 +130,18 @@ public sealed class SpatialInventoryServiceTests(PostgresFixture postgres) : IAs
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
         await using GameDbContext context = postgres.CreateDbContext();
-        context.Accounts.Add(new Account(accountId, 900000000 + Random.Shared.Next(1000000), Now));
-        context.Characters.Add(new Character(characterId, accountId, "Spatial Tester", "WARRIOR", "MALE", Now));
+        context.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
+        context.Characters.Add(new Character(
+            characterId,
+            accountId,
+            Guid.CreateVersion7(),
+            "Spatial Tester",
+            $"SPATIAL{characterId:N}"[..16],
+            "HUMAN",
+            "MALE",
+            "WARRIOR",
+            Now));
+        context.CharacterLocations.Add(new CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
         await context.SaveChangesAsync();
         return (accountId, characterId);
     }
@@ -161,7 +172,8 @@ public sealed class SpatialInventoryServiceTests(PostgresFixture postgres) : IAs
 
     private static async Task<SpatialInventoryService> CreateServiceAsync(GameDbContext context)
     {
-        GameContentPackage content = await GameContentPackageLoader.LoadDefaultAsync(CancellationToken.None);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
         return new SpatialInventoryService(
             context,
             new StaticContentSnapshotProvider(content));
