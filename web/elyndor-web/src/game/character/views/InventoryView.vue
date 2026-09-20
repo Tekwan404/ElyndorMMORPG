@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import { apiClient } from '@/api/apiClient'
+import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
@@ -19,10 +19,12 @@ const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
 const spatialInventoryError = ref(false)
+const spatialActionPending = ref(false)
+const spatialActionError = ref<string | null>(null)
 let spatialInventoryRequestSequence = 0
 const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
-const typeFilter = ref<'all' | 'equipment' | 'material' | 'consumable'>('all')
+const typeFilter = ref<'all' | 'equipment' | 'artifact' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
 const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
@@ -30,6 +32,10 @@ const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
+
+function isSpatialArtifact(item: InventoryItem | null | undefined): boolean {
+  return item !== null && item !== undefined && String(item.type) === 'SpatialArtifact'
+}
 
 const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
 const bagItems = computed(() => inventory.value?.items.filter((item) =>
@@ -44,6 +50,7 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
   const typeMatches = isContextualSlotMode.value
     || typeFilter.value === 'all'
     || (typeFilter.value === 'equipment' && item.type === 'Equipment')
+    || (typeFilter.value === 'artifact' && isSpatialArtifact(item))
     || (typeFilter.value === 'material' && item.type === 'Material')
     || (typeFilter.value === 'consumable' && item.type === 'Consumable')
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
@@ -172,7 +179,9 @@ const selectedEquipmentLevelReason = computed(() =>
 
 function canEquipNow(item: InventoryItem): boolean {
   const current = character.value
-  if (!current || item.type !== 'Equipment') return false
+  if (!current) return false
+  if (isSpatialArtifact(item)) return current.level >= item.requiredLevel
+  if (item.type !== 'Equipment') return false
   if (current.level < item.requiredLevel) return false
   return equipmentCompatibilityReason(item) === null
 }
@@ -276,6 +285,7 @@ function formatNumber(value: number): string {
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
   equipmentActionError.value = null
+  spatialActionError.value = null
   if (item) markItemSeen(item.id)
 }
 function seenStorageKey(): string | null {
@@ -397,6 +407,7 @@ function rarityLabel(item: InventoryItem): string {
 }
 
 function typeLabel(item: InventoryItem): string {
+  if (isSpatialArtifact(item)) return 'Пространственный артефакт'
   if (item.type === 'Material') return 'Материал'
   if (item.type === 'Consumable') return 'Расходник'
   const labels: Record<string, string> = {
@@ -413,6 +424,7 @@ function itemArt(item: InventoryItem): string | undefined {
 }
 
 function itemGlyph(item: InventoryItem): GlyphName {
+  if (isSpatialArtifact(item)) return 'ring'
   if (item.type === 'Material') return 'ore'
   if (item.type === 'Consumable') return 'potion'
   if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return 'sword'
@@ -428,7 +440,7 @@ function itemIconConfig(item: InventoryItem, idPrefix: string): IconConfig {
   return {
     id: `${idPrefix}-${item.id}`,
     glyph: itemGlyph(item),
-    category: item.type === 'Equipment' ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource',
+    category: item.type === 'Equipment' || isSpatialArtifact(item) ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource',
     rarity: item.rarity.toLowerCase() as IconConfig['rarity'],
   }
 }
@@ -452,12 +464,64 @@ function inventoryActionError(code: string | null): string | null {
   return 'Не удалось изменить снаряжение.'
 }
 
+function spatialActionErrorLabel(code: string | null): string | null {
+  if (!code) return null
+  if (code === 'inventory_full') return 'Нельзя снять или заменить артефакт: сначала освободите достаточно ячеек инвентаря.'
+  if (code === 'inventory_item_transaction_locked') return 'Этот артефакт сейчас участвует в другой операции.'
+  if (code === 'inventory_item_not_spatial_artifact') return 'Этот предмет не является пространственным артефактом.'
+  if (code === 'inventory_item_not_found' || code === 'inventory_item_not_owned') return 'Артефакт больше не найден в инвентаре.'
+  if (code === 'inventory_conflict') return 'Инвентарь изменился. Повторите действие.'
+  return 'Не удалось изменить пространственный артефакт.'
+}
+
 async function equipSelected(targetSlot?: EquipmentSlot): Promise<void> {
   const item = selectedItem.value
   if (!item || item.type !== 'Equipment') return
   await session.equip(item.id, targetSlot)
   equipmentActionError.value = session.errorCode
   if (!equipmentActionError.value) selectedItem.value = null
+}
+
+async function equipSelectedSpatialArtifact(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || !isSpatialArtifact(item) || spatialActionPending.value) return
+
+  spatialActionPending.value = true
+  spatialActionError.value = null
+  try {
+    spatialInventory.value = await apiClient.request<SpatialInventorySnapshot>(
+      '/api/v1/inventory/spatial-artifact/equip',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characterItemId: item.id }),
+      },
+    )
+    spatialInventoryError.value = false
+    selectedItem.value = null
+  } catch (error) {
+    spatialActionError.value = error instanceof ApiRequestError ? error.code : 'unknown'
+  } finally {
+    spatialActionPending.value = false
+  }
+}
+
+async function unequipSpatialArtifact(): Promise<void> {
+  if (!spatialInventory.value?.equippedArtifact || spatialActionPending.value) return
+
+  spatialActionPending.value = true
+  spatialActionError.value = null
+  try {
+    spatialInventory.value = await apiClient.request<SpatialInventorySnapshot>(
+      '/api/v1/inventory/spatial-artifact/unequip',
+      { method: 'POST' },
+    )
+    spatialInventoryError.value = false
+  } catch (error) {
+    spatialActionError.value = error instanceof ApiRequestError ? error.code : 'unknown'
+  } finally {
+    spatialActionPending.value = false
+  }
 }
 
 function canUseConsumableOutOfCombat(item: InventoryItem): boolean {
@@ -517,33 +581,52 @@ async function toggleSelectedLock(): Promise<void> {
       <div class="capacity" :class="{ 'capacity--warning': capacityWarning }" data-inventory-capacity>
         <strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>
       </div>
-</header>
+    </header>
 
-<section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
-  <div>
-    <small>Пространственный инвентарь</small>
-    <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
-  </div>
-  <div class="spatial-capacity__meta">
-    <span>{{ freeSlots }} свободно</span>
-    <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
-      {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
-    </span>
-    <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
-      Переполнение: все предметы показаны
-    </span>
-  </div>
-</section>
-<p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
-  Данные вместимости временно недоступны. Предметы показаны полностью.
-</p>
+    <section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
+      <div>
+        <small>Пространственный инвентарь</small>
+        <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
+      </div>
+      <div class="spatial-capacity__meta">
+        <span>{{ freeSlots }} свободно</span>
+        <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
+          {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
+        </span>
+        <button
+          v-if="spatialInventory?.equippedArtifact"
+          type="button"
+          class="spatial-capacity__action"
+          data-unequip-spatial-artifact
+          :disabled="spatialActionPending"
+          @click="unequipSpatialArtifact"
+        >
+          {{ spatialActionPending ? 'Снимаем…' : 'Снять' }}
+        </button>
+        <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
+          Переполнение: все предметы показаны
+        </span>
+      </div>
+    </section>
+    <p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
+      Данные вместимости временно недоступны. Предметы показаны полностью.
+    </p>
+    <p
+      v-if="spatialActionErrorLabel(spatialActionError) && !isContextualSlotMode"
+      class="item-detail__error"
+      role="alert"
+      data-spatial-action-error
+    >
+      {{ spatialActionErrorLabel(spatialActionError) }}
+    </p>
 
-<section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
+    <section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
       <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
         <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
           <button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">Все</button>
           <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
+          <button type="button" :class="{ active: typeFilter === 'artifact' }" @click="typeFilter = 'artifact'">Артефакты</button>
           <button type="button" :class="{ active: typeFilter === 'consumable' }" @click="typeFilter = 'consumable'">Расходники</button>
           <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
         </div>
@@ -706,6 +789,12 @@ async function toggleSelectedLock(): Promise<void> {
           </div>
         </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
+        <p v-if="isSpatialArtifact(selectedItem)" class="item-detail__hint" data-spatial-artifact-hint>
+          Используется в отдельном слоте пространственного артефакта и не занимает обычный слот экипировки.
+          <template v-if="spatialInventory?.equippedArtifact">
+            Сейчас надето: {{ spatialInventory.equippedArtifact.name }} (+{{ spatialInventory.equippedArtifact.capacityBonus }}).
+          </template>
+        </p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
           Характеристики этого экземпляра определились при получении предмета.
         </p>
@@ -772,6 +861,14 @@ async function toggleSelectedLock(): Promise<void> {
         >
           {{ inventoryActionError(equipmentActionError) }}
         </p>
+        <p
+          v-if="isSpatialArtifact(selectedItem) && spatialActionErrorLabel(spatialActionError)"
+          class="item-detail__error"
+          role="alert"
+          data-spatial-item-action-error
+        >
+          {{ spatialActionErrorLabel(spatialActionError) }}
+        </p>
       </article>
       <template #actions>
         <template v-if="selectedItem?.type === 'Equipment' && !selectedEquipmentCompatibilityReason">
@@ -806,6 +903,15 @@ async function toggleSelectedLock(): Promise<void> {
           </UIButton>
         </template>
         <UIButton
+          v-if="isSpatialArtifact(selectedItem)"
+          data-equip-spatial-artifact
+          :loading="spatialActionPending"
+          :disabled="spatialActionPending || (character?.level ?? 0) < (selectedItem?.requiredLevel ?? 0)"
+          @click="equipSelectedSpatialArtifact"
+        >
+          {{ spatialInventory?.equippedArtifact ? 'Заменить' : 'Надеть' }}
+        </UIButton>
+        <UIButton
           v-if="selectedItem?.type === 'Consumable'"
           :loading="session.mutationPending"
           :disabled="session.mutationPending || !canUseConsumableOutOfCombat(selectedItem)"
@@ -818,7 +924,7 @@ async function toggleSelectedLock(): Promise<void> {
           variant="secondary"
           data-item-lock-action
           :loading="session.mutationPending"
-          :disabled="session.mutationPending"
+          :disabled="session.mutationPending || spatialActionPending"
           @click="toggleSelectedLock"
         >
           {{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}
@@ -926,6 +1032,22 @@ async function toggleSelectedLock(): Promise<void> {
 .spatial-capacity__meta {
   justify-items: end;
   text-align: right;
+}
+
+.spatial-capacity__action {
+  min-height: 1.75rem;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 45%, var(--ui-color-border));
+  border-radius: var(--ui-radius-round);
+  background: rgb(146 136 255 / 8%);
+  color: #d5d2ff;
+  font: inherit;
+  font-size: .58rem;
+  font-weight: 700;
+}
+
+.spatial-capacity__action:disabled {
+  opacity: .55;
 }
 
 .spatial-capacity__overflow {
