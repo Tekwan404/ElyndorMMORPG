@@ -51,7 +51,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
                 4,
                 Now));
 
-            for (int index = 0; index < 98; index++)
+            for (int index = 0; index < InventoryCapacity.DefaultCapacity - 2; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -94,7 +94,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            99,
+            InventoryCapacity.DefaultCapacity - 1,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,
@@ -107,7 +107,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
         Assert.True(await verify.CharacterEquipment.AnyAsync(item =>
             item.CharacterId == characterId
             && item.CharacterItemId == equippedItemId));
-        Assert.Equal(100, InventoryCapacity.Resolve(content));
+        Assert.Equal(InventoryCapacity.DefaultCapacity, InventoryCapacity.Resolve(content));
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
