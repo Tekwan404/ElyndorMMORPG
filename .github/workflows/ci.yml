@@ -7,7 +7,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.head_ref || github.ref_name }}
@@ -36,106 +36,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          fetch-depth: 0
-
-      - name: Sync itemization EF snapshots
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/itemization-v2-enhancement'
-        shell: python
-        run: |
-          from pathlib import Path
-
-          paths = [
-              Path("src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextModelSnapshot.cs"),
-              Path("src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs"),
-          ]
-          property_anchor = '''                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-'''
-          property_replacement = '''                    b.Property<string>("CatalystItemId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int>("CatalystQuantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid>("CharacterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EnhancementMaterialItemId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<int>("EnhancementMaterialQuantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-'''
-          constraint_anchor = '''                    b.ToTable("item_salvage_operations", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_item_salvage_operations_material", "\\\"MaterialQuantity\\\" >= 0");
-
-                            t.HasCheckConstraint("ck_item_salvage_operations_stones", "\\\"ReforgeStoneQuantity\\\" > 0");
-                        });
-'''
-          constraint_replacement = '''                    b.ToTable("item_salvage_operations", "game", t =>
-                        {
-                            t.HasCheckConstraint("ck_item_salvage_operations_catalyst", "\\\"CatalystQuantity\\\" >= 0");
-
-                            t.HasCheckConstraint("ck_item_salvage_operations_enhancement_material", "\\\"EnhancementMaterialQuantity\\\" >= 0");
-
-                            t.HasCheckConstraint("ck_item_salvage_operations_material", "\\\"MaterialQuantity\\\" >= 0");
-
-                            t.HasCheckConstraint("ck_item_salvage_operations_stones", "\\\"ReforgeStoneQuantity\\\" > 0");
-                        });
-'''
-
-          changed = False
-          for path in paths:
-              text = path.read_text(encoding="utf-8-sig")
-              entity_start = text.index('modelBuilder.Entity("Elyndor.Core.Items.ItemSalvageOperation"')
-              entity_end = text.index('modelBuilder.Entity(', entity_start + 20)
-              block = text[entity_start:entity_end]
-
-              if 'b.Property<string>("EnhancementMaterialItemId")' not in block:
-                  if property_anchor not in block:
-                      raise SystemExit(f"property anchor missing in {path}")
-                  block = block.replace(property_anchor, property_replacement, 1)
-                  changed = True
-
-              if 'ck_item_salvage_operations_enhancement_material' not in block:
-                  if constraint_anchor not in block:
-                      raise SystemExit(f"constraint anchor missing in {path}")
-                  block = block.replace(constraint_anchor, constraint_replacement, 1)
-                  changed = True
-
-              text = text[:entity_start] + block + text[entity_end:]
-              path.write_text(text, encoding="utf-8")
-
-          if not changed:
-              print("Snapshots already synchronized.")
-
-      - name: Commit synchronized snapshots
-        if: github.event_name == 'pull_request' && github.head_ref == 'feat/itemization-v2-enhancement'
-        run: |
-          if git diff --quiet; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextModelSnapshot.cs \
-                  src/Elyndor.Infrastructure/Persistence/Migrations/GameDbContextProfessionModelSnapshot.cs
-          git commit -m "fix(itemization): sync salvage refund EF snapshots"
-          git push origin HEAD:feat/itemization-v2-enhancement
 
       - name: Check dev launcher syntax
         shell: pwsh
@@ -217,6 +117,7 @@ jobs:
           cp -a web/elyndor-admin/dist/. .artifacts/production/frontend-admin/
           test -f .artifacts/production/Elyndor.Server.dll
           test -f .artifacts/production/frontend/index.html
+          test -f .artifacts/production/frontend-admin/index.html
           test -f .artifacts/production/content/package.json
           test -f .artifacts/production/content/dungeons/eclipsed-citadel.json
 
