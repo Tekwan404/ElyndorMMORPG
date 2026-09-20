@@ -60,7 +60,7 @@ public sealed class ItemEnhancementService(
     IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider)
 {
-    public const string EnhancementMaterialItemId = "ENHANCEMENT_ORE";
+    public const string EnhancementMaterialItemId = ItemEnhancementCostRules.EnhancementMaterialItemId;
     private const string OperationType = "ITEM_ENHANCEMENT_V2";
     private const string LegacyOperationType = "ITEM_STAR_UPGRADE";
 
@@ -117,7 +117,7 @@ public sealed class ItemEnhancementService(
                 finalPower);
         }
 
-        if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
+        if (!ItemEnhancementCostRules.TryResolve(profile, targetLevel, out ItemEnhancementCost cost))
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ProfileMissing);
 
         return new ItemEnhancementPreviewResult(
@@ -129,7 +129,7 @@ public sealed class ItemEnhancementService(
             targetLevel,
             ItemEnhancementRules.ResolveBonusPercent(targetLevel),
             cost.Gold,
-            EnhancementMaterialItemId,
+            cost.EnhancementMaterialItemId,
             cost.EnhancementMaterialQuantity,
             cost.CatalystItemId,
             cost.CatalystQuantity,
@@ -180,10 +180,10 @@ public sealed class ItemEnhancementService(
             return await Fail(transaction, ItemEnhancementErrorCodes.MaxEnhancement, cancellationToken);
 
         int targetLevel = item.EnhancementLevel + 1;
-        if (!TryResolveCost(profile, targetLevel, out EnhancementCost cost))
+        if (!ItemEnhancementCostRules.TryResolve(profile, targetLevel, out ItemEnhancementCost cost))
             return await Fail(transaction, ItemEnhancementErrorCodes.ProfileMissing, cancellationToken);
         if (character.Gold < cost.Gold) return await Fail(transaction, ItemEnhancementErrorCodes.NotEnoughGold, cancellationToken);
-        if (!await HasMaterial(character.Id, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken))
+        if (!await HasMaterial(character.Id, cost.EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken))
             return await Fail(transaction, ItemEnhancementErrorCodes.NotEnoughMaterial, cancellationToken);
         if (cost.CatalystQuantity > 0 && (string.IsNullOrWhiteSpace(cost.CatalystItemId)
             || !await HasMaterial(character.Id, cost.CatalystItemId, cost.CatalystQuantity, cancellationToken)))
@@ -198,7 +198,7 @@ public sealed class ItemEnhancementService(
         GeneratedItemAffix[] affixes = current.Affixes.ToArray();
 
         character.TrySpendGold(cost.Gold);
-        await Consume(character.Id, EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken);
+        await Consume(character.Id, cost.EnhancementMaterialItemId, cost.EnhancementMaterialQuantity, cancellationToken);
         if (cost.CatalystQuantity > 0) await Consume(character.Id, cost.CatalystItemId!, cost.CatalystQuantity, cancellationToken);
         item.ApplyEnhancement(targetLevel);
 
@@ -226,25 +226,6 @@ public sealed class ItemEnhancementService(
 
     private static string Fingerprint(string operationType, Guid itemId) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{operationType}|{itemId:N}")));
-
-    private static bool TryResolveCost(ItemStarUpgradeProfileDefinition profile, int targetEnhancementLevel, out EnhancementCost cost)
-    {
-        // The persisted content field is kept for backward-compatible deserialization. V2 interprets
-        // its progression table as enhancement costs; the old 2..5 keys map to +1..+4, while +5
-        // intentionally reuses the high-end +4/+5 cost until the content schema itself is renamed.
-        int legacyCostKey = Math.Min(5, targetEnhancementLevel + 1);
-        if (!profile.GoldByTargetStars.TryGetValue(legacyCostKey, out int gold)
-            || !profile.ReforgeStoneQuantityByTargetStars.TryGetValue(legacyCostKey, out int materialQuantity))
-        {
-            cost = default;
-            return false;
-        }
-        bool catalystRequired = targetEnhancementLevel >= 4 && profile.HighEndCatalystQuantity > 0;
-        cost = new EnhancementCost(gold, materialQuantity,
-            catalystRequired ? profile.HighEndCatalystItemId : null,
-            catalystRequired ? profile.HighEndCatalystQuantity : 0);
-        return true;
-    }
 
     private async Task<LoadedItem?> LoadGeneratedAsync(Guid characterId, Guid itemId, GameContentSnapshot content, CancellationToken cancellationToken)
     {
@@ -285,6 +266,5 @@ public sealed class ItemEnhancementService(
         return ItemEnhancementResult.Failure(code);
     }
 
-    private readonly record struct EnhancementCost(int Gold, int EnhancementMaterialQuantity, string? CatalystItemId, int CatalystQuantity);
     private sealed record LoadedItem(CharacterItem Item, ItemDefinition Definition, GeneratedItemInstance Generated);
 }
