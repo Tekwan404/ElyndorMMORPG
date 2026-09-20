@@ -57,30 +57,11 @@ public static class InventoryCapacity
         GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
-        int persistedUsed = await CountUsedSlotsAsync(
+        int projectedUsed = await CountProjectedUsedSlotsAsync(
             dbContext,
             characterId,
             cancellationToken);
-
-        HashSet<Guid> trackedEquippedItemIds = dbContext.ChangeTracker
-            .Entries<CharacterEquipment>()
-            .Where(entry =>
-                entry.State != EntityState.Deleted
-                && entry.Entity.CharacterId == characterId)
-            .Select(entry => entry.Entity.CharacterItemId)
-            .ToHashSet();
-        int pendingAddedSlots = dbContext.ChangeTracker
-            .Entries<CharacterItem>()
-            .Count(entry =>
-                entry.State == EntityState.Added
-                && entry.Entity.CharacterId == characterId
-                && !trackedEquippedItemIds.Contains(entry.Entity.Id));
-
-        return Math.Max(
-            0,
-            Resolve(contentSnapshot)
-            - persistedUsed
-            - pendingAddedSlots);
+        return Math.Max(0, Resolve(contentSnapshot) - projectedUsed);
     }
 
     public static async Task<int> AdditionalSlotsRequiredAsync(
@@ -113,5 +94,75 @@ public static class InventoryCapacity
         return remaining == 0
             ? 0
             : (remaining + definition.MaxStack - 1) / definition.MaxStack;
+    }
+
+    private static async Task<int> CountProjectedUsedSlotsAsync(
+        GameDbContext dbContext,
+        Guid characterId,
+        CancellationToken cancellationToken)
+    {
+        HashSet<Guid> itemIds = (await dbContext.CharacterItems
+                .AsNoTracking()
+                .Where(item => item.CharacterId == characterId)
+                .Select(item => item.Id)
+                .ToArrayAsync(cancellationToken))
+            .ToHashSet();
+
+        Dictionary<Guid, int> equippedCounts = (await dbContext.CharacterEquipment
+                .AsNoTracking()
+                .Where(equipment => equipment.CharacterId == characterId)
+                .Select(equipment => equipment.CharacterItemId)
+                .ToArrayAsync(cancellationToken))
+            .GroupBy(itemId => itemId)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        foreach (var entry in dbContext.ChangeTracker.Entries<CharacterItem>())
+        {
+            if (entry.Entity.CharacterId != characterId)
+                continue;
+
+            if (entry.State == EntityState.Added)
+                itemIds.Add(entry.Entity.Id);
+            else if (entry.State == EntityState.Deleted)
+                itemIds.Remove(entry.Entity.Id);
+        }
+
+        foreach (var entry in dbContext.ChangeTracker.Entries<CharacterEquipment>())
+        {
+            if (entry.Entity.CharacterId != characterId)
+                continue;
+
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    Increment(equippedCounts, entry.Entity.CharacterItemId);
+                    break;
+                case EntityState.Deleted:
+                    Decrement(equippedCounts, entry.Entity.CharacterItemId);
+                    break;
+                case EntityState.Modified:
+                    Guid originalItemId = entry
+                        .Property(equipment => equipment.CharacterItemId)
+                        .OriginalValue;
+                    Decrement(equippedCounts, originalItemId);
+                    Increment(equippedCounts, entry.Entity.CharacterItemId);
+                    break;
+            }
+        }
+
+        return itemIds.Count(itemId => !equippedCounts.ContainsKey(itemId));
+    }
+
+    private static void Increment(Dictionary<Guid, int> counts, Guid itemId) =>
+        counts[itemId] = counts.GetValueOrDefault(itemId) + 1;
+
+    private static void Decrement(Dictionary<Guid, int> counts, Guid itemId)
+    {
+        if (!counts.TryGetValue(itemId, out int count))
+            return;
+        if (count <= 1)
+            counts.Remove(itemId);
+        else
+            counts[itemId] = count - 1;
     }
 }
