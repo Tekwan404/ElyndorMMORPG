@@ -32,242 +32,255 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
 
-          def replace(path: Path, old: str, new: str):
-              text = path.read_text()
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
               if old not in text:
-                  raise SystemExit(f'Expected block not found in {path}: {old[:120]!r}')
-              path.write_text(text.replace(old, new, 1))
+                  raise SystemExit(f'Expected block not found: {label}')
+              return text.replace(old, new, 1)
 
-          contracts = Path('web/elyndor-web/src/api/contracts.ts')
-          replace(
+          contracts_path = Path('web/elyndor-web/src/api/contracts.ts')
+          contracts = contracts_path.read_text()
+          contracts = replace_once(
               contracts,
-              "export type ItemType = 'Equipment' | 'Material' | 'Consumable'",
-              "export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'SpatialArtifact'",
+              'export interface InventorySnapshot {\n',
+              dedent('''\
+              export interface SpatialArtifactSnapshot {
+                characterItemId: string
+                definitionId: string
+                name: string
+                rarity: string
+                capacityBonus: number
+                iconId: string | null
+              }
+
+              export interface InventoryCapacitySnapshot {
+                baseCapacity: number
+                artifactCapacityBonus: number
+                capacity: number
+                usedSlots: number
+                freeSlots: number
+                isOverflow: boolean
+              }
+
+              export interface SpatialInventorySnapshot {
+                equippedArtifact: SpatialArtifactSnapshot | null
+                capacity: InventoryCapacitySnapshot
+              }
+
+              export interface InventorySnapshot {
+              '''),
+              'inventory contracts',
           )
-          replace(
-              contracts,
-              "export interface InventorySnapshot {\n",
-              """export interface SpatialArtifactSnapshot {
-            characterItemId: string
-            definitionId: string
-            name: string
-            rarity: string
-            capacityBonus: number
-            iconId: string | null
-          }
+          contracts_path.write_text(contracts)
 
-          export interface InventoryCapacitySnapshot {
-            baseCapacity: number
-            artifactCapacityBonus: number
-            capacity: number
-            usedSlots: number
-            freeSlots: number
-            isOverflow: boolean
-          }
-
-          export interface SpatialInventorySnapshot {
-            equippedArtifact: SpatialArtifactSnapshot | null
-            capacity: InventoryCapacitySnapshot
-          }
-
-          export interface InventorySnapshot {
-          """.replace('          ', ''),
-          )
-
-          view = Path('web/elyndor-web/src/game/character/views/InventoryView.vue')
-          replace(
+          view_path = Path('web/elyndor-web/src/game/character/views/InventoryView.vue')
+          view = view_path.read_text()
+          view = replace_once(
               view,
               "import type { EquipmentSlot, InventoryItem } from '@/api/contracts'",
               "import { apiClient } from '@/api/apiClient'\nimport type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'",
+              'inventory imports',
           )
-          replace(view, "\nconst BAG_CAPACITY = 100", "")
-          replace(
+          view = replace_once(view, '\nconst BAG_CAPACITY = 100', '', 'legacy bag capacity')
+          view = replace_once(
               view,
-              "const inventory = computed(() => character.value?.inventory)\n",
-              """const inventory = computed(() => character.value?.inventory)
-          const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
-          const spatialInventoryError = ref(false)
-          let spatialInventoryRequestSequence = 0
-          """.replace('          ', ''),
+              'const inventory = computed(() => character.value?.inventory)\n',
+              dedent('''\
+              const inventory = computed(() => character.value?.inventory)
+              const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
+              const spatialInventoryError = ref(false)
+              let spatialInventoryRequestSequence = 0
+              '''),
+              'spatial state',
           )
-          replace(
+          view = replace_once(
               view,
-              "const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])",
-              """const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
-          const bagItems = computed(() => inventory.value?.items.filter((item) =>
-            !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
-          ) ?? [])""".replace('          ', ''),
+              'const bagItems = computed(() => inventory.value?.items.filter((item) => !item.equippedSlot) ?? [])',
+              dedent('''\
+              const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
+              const bagItems = computed(() => inventory.value?.items.filter((item) =>
+                !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
+              ) ?? [])'''),
+              'bag items',
           )
-          replace(
+          view = replace_once(
               view,
-              """const visibleCells = computed(() => {
-            if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
-            return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
-          })
-          const usedSlots = computed(() => bagItems.value.length)
-          """.replace('          ', ''),
-              """const capacityState = computed(() => spatialInventory.value?.capacity ?? null)
-          const baseCapacity = computed(() => capacityState.value?.baseCapacity ?? null)
-          const artifactCapacityBonus = computed(() => capacityState.value?.artifactCapacityBonus ?? null)
-          const capacity = computed(() => capacityState.value?.capacity ?? null)
-          const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.value.length)
-          const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
-          const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
-          const visibleCells = computed(() => {
-            if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
-            const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
-            return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
-          })
-          const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
-          """.replace('          ', ''),
+              dedent('''\
+              const visibleCells = computed(() => {
+                if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
+                return Array.from({ length: BAG_CAPACITY }, (_, index) => sortedItems.value[index] ?? null)
+              })
+              const usedSlots = computed(() => bagItems.value.length)
+              '''),
+              dedent('''\
+              const capacityState = computed(() => spatialInventory.value?.capacity ?? null)
+              const baseCapacity = computed(() => capacityState.value?.baseCapacity ?? null)
+              const artifactCapacityBonus = computed(() => capacityState.value?.artifactCapacityBonus ?? null)
+              const capacity = computed(() => capacityState.value?.capacity ?? null)
+              const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.value.length)
+              const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
+              const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
+              const visibleCells = computed(() => {
+                if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
+                const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
+                return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
+              })
+              const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
+              '''),
+              'visible cells',
           )
-          replace(
+          view = replace_once(
               view,
-              """watch(
-            () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
-            syncNewItems,
-            { immediate: true },
-          )
-          """.replace('          ', ''),
-              """async function refreshSpatialInventory(): Promise<void> {
-            const requestSequence = ++spatialInventoryRequestSequence
-            if (!character.value?.id) {
-              spatialInventory.value = null
-              spatialInventoryError.value = false
-              return
-            }
+              dedent('''\
+              watch(
+                () => [character.value?.id ?? '', ...bagItems.value.map(item => item.id)].join('|'),
+                syncNewItems,
+                { immediate: true },
+              )
+              '''),
+              dedent('''\
+              async function refreshSpatialInventory(): Promise<void> {
+                const requestSequence = ++spatialInventoryRequestSequence
+                if (!character.value?.id) {
+                  spatialInventory.value = null
+                  spatialInventoryError.value = false
+                  return
+                }
 
-            try {
-              const response = await apiClient.request<SpatialInventorySnapshot>('/api/v1/inventory/spatial-artifact/')
-              if (requestSequence !== spatialInventoryRequestSequence) return
-              spatialInventory.value = response
-              spatialInventoryError.value = false
-            } catch {
-              if (requestSequence !== spatialInventoryRequestSequence) return
-              spatialInventoryError.value = true
-            }
-          }
+                try {
+                  const response = await apiClient.request<SpatialInventorySnapshot>('/api/v1/inventory/spatial-artifact/')
+                  if (requestSequence !== spatialInventoryRequestSequence) return
+                  spatialInventory.value = response
+                  spatialInventoryError.value = false
+                } catch {
+                  if (requestSequence !== spatialInventoryRequestSequence) return
+                  spatialInventoryError.value = true
+                }
+              }
 
-          const inventorySnapshotKey = computed(() => [
-            character.value?.id ?? '',
-            ...(inventory.value?.items ?? []).map(item =>
-              `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
-            ),
-          ].join('|'))
+              const inventorySnapshotKey = computed(() => [
+                character.value?.id ?? '',
+                ...(inventory.value?.items ?? []).map(item =>
+                  `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
+                ),
+              ].join('|'))
 
-          watch(
-            inventorySnapshotKey,
-            () => {
-              syncNewItems()
-              void refreshSpatialInventory()
-            },
-            { immediate: true },
+              watch(
+                inventorySnapshotKey,
+                () => {
+                  syncNewItems()
+                  void refreshSpatialInventory()
+                },
+                { immediate: true },
+              )
+              '''),
+              'inventory watcher',
           )
-          """.replace('          ', ''),
-          )
-          replace(
+          view = replace_once(
               view,
-              "function typeLabel(item: InventoryItem): string {\n  if (item.type === 'Material') return 'Материал'",
-              "function typeLabel(item: InventoryItem): string {\n  if (item.type === 'SpatialArtifact') return 'Пространственный артефакт'\n  if (item.type === 'Material') return 'Материал'",
+              ":class=\"{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 10 }\"",
+              ":class=\"{ 'capacity--warning': capacityWarning }\" data-inventory-capacity",
+              'capacity warning binding',
           )
-          replace(
+          view = replace_once(
               view,
-              "function itemGlyph(item: InventoryItem): GlyphName {\n  if (item.type === 'Material') return 'ore'",
-              "function itemGlyph(item: InventoryItem): GlyphName {\n  if (item.type === 'SpatialArtifact') return 'ring'\n  if (item.type === 'Material') return 'ore'",
+              '<strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>',
+              "<strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>",
+              'capacity value',
           )
-          replace(
+          view = replace_once(
               view,
-              """      <div class="capacity" :class="{ 'capacity--warning': usedSlots >= BAG_CAPACITY - 10 }">
-                <strong>{{ usedSlots }}</strong><span>/ {{ BAG_CAPACITY }}</span>
-              </div>
-            </header>
-          """.replace('          ', ''),
-              """      <div class="capacity" :class="{ 'capacity--warning': capacityWarning }" data-inventory-capacity>
-                <strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>
-              </div>
-            </header>
+              '    </header>\n\n    <section v-if="inventory && bagItems.length" class="inventory-tools"',
+              dedent('''\
+                  </header>
 
-            <section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
-              <div>
-                <small>Пространственный инвентарь</small>
-                <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
-              </div>
-              <div class="spatial-capacity__meta">
-                <span>{{ freeSlots }} свободно</span>
-                <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
-                  {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
-                </span>
-                <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
-                  Переполнение: все предметы показаны
-                </span>
-              </div>
-            </section>
-            <p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
-              Данные вместимости временно недоступны. Предметы показаны полностью.
-            </p>
-          """.replace('          ', ''),
+                  <section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
+                    <div>
+                      <small>Пространственный инвентарь</small>
+                      <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
+                    </div>
+                    <div class="spatial-capacity__meta">
+                      <span>{{ freeSlots }} свободно</span>
+                      <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
+                        {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
+                      </span>
+                      <span v-if="isOverflow" class="spatial-capacity__overflow" data-inventory-overflow>
+                        Переполнение: все предметы показаны
+                      </span>
+                    </div>
+                  </section>
+                  <p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
+                    Данные вместимости временно недоступны. Предметы показаны полностью.
+                  </p>
+
+                  <section v-if="inventory && bagItems.length" class="inventory-tools"'''),
+              'spatial capacity presentation',
           )
-          replace(
+          view = replace_once(
               view,
-              """.capacity--warning {
-            border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
-            color: var(--ui-color-warning);
-          }
-          """.replace('          ', ''),
-              """.capacity--warning {
-            border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
-            color: var(--ui-color-warning);
-          }
+              dedent('''\
+              .capacity--warning {
+                border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
+                color: var(--ui-color-warning);
+              }
+              '''),
+              dedent('''\
+              .capacity--warning {
+                border-color: color-mix(in srgb, var(--ui-color-warning) 48%, var(--ui-color-border));
+                color: var(--ui-color-warning);
+              }
 
-          .spatial-capacity {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--ui-space-3);
-            padding: var(--ui-space-2) var(--ui-space-3);
-            border: 1px solid var(--ui-color-border);
-            border-radius: var(--ui-radius-md);
-            background: rgb(255 255 255 / 2%);
-          }
+              .spatial-capacity {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--ui-space-3);
+                padding: var(--ui-space-2) var(--ui-space-3);
+                border: 1px solid var(--ui-color-border);
+                border-radius: var(--ui-radius-md);
+                background: rgb(255 255 255 / 2%);
+              }
 
-          .spatial-capacity > div:first-child,
-          .spatial-capacity__meta {
-            display: grid;
-            gap: 2px;
-          }
+              .spatial-capacity > div:first-child,
+              .spatial-capacity__meta {
+                display: grid;
+                gap: 2px;
+              }
 
-          .spatial-capacity small,
-          .spatial-capacity__meta,
-          .spatial-capacity__error {
-            color: var(--ui-color-text-muted);
-            font-size: .58rem;
-          }
+              .spatial-capacity small,
+              .spatial-capacity__meta,
+              .spatial-capacity__error {
+                color: var(--ui-color-text-muted);
+                font-size: .58rem;
+              }
 
-          .spatial-capacity strong {
-            color: var(--ui-color-text-primary);
-            font-size: .72rem;
-            font-variant-numeric: tabular-nums;
-          }
+              .spatial-capacity strong {
+                color: var(--ui-color-text-primary);
+                font-size: .72rem;
+                font-variant-numeric: tabular-nums;
+              }
 
-          .spatial-capacity__meta {
-            justify-items: end;
-            text-align: right;
-          }
+              .spatial-capacity__meta {
+                justify-items: end;
+                text-align: right;
+              }
 
-          .spatial-capacity__overflow {
-            color: var(--ui-color-warning);
-            font-weight: 700;
-          }
+              .spatial-capacity__overflow {
+                color: var(--ui-color-warning);
+                font-weight: 700;
+              }
 
-          .spatial-capacity__error {
-            margin: 0;
-            padding: var(--ui-space-2) var(--ui-space-3);
-            border: 1px solid var(--ui-color-border);
-            border-radius: var(--ui-radius-md);
-          }
-          """.replace('          ', ''),
+              .spatial-capacity__error {
+                margin: 0;
+                padding: var(--ui-space-2) var(--ui-space-3);
+                border: 1px solid var(--ui-color-border);
+                border-radius: var(--ui-radius-md);
+              }
+              '''),
+              'spatial capacity styles',
           )
+          view_path.write_text(view)
           PY
 
           cat > web/elyndor-web/src/__tests__/InventoryCapacityUi.spec.ts <<'EOF'
@@ -309,7 +322,7 @@ jobs:
             })
 
             it('excludes the equipped spatial artifact from the normal inventory grid', async () => {
-              const artifact = spatialArtifact('ARTIFACT_INSTANCE')
+              const artifact = equipment('ARTIFACT_INSTANCE', 'Пространственное кольцо')
               vi.spyOn(apiClient, 'request').mockResolvedValue({
                 equippedArtifact: {
                   characterItemId: artifact.id,
@@ -399,22 +412,11 @@ jobs:
             }
           }
 
-          function spatialArtifact(id: string): InventoryItem {
-            return {
-              ...equipment(id),
-              definitionId: 'SPATIAL_RING_TEST',
-              name: 'Пространственное кольцо',
-              type: 'SpatialArtifact',
-              slot: null,
-              armorCategory: null,
-            }
-          }
-
-          function equipment(id: string): InventoryItem {
+          function equipment(id: string, name = 'Тестовый шлем'): InventoryItem {
             return {
               id,
               definitionId: id,
-              name: 'Тестовый шлем',
+              name,
               type: 'Equipment',
               rarity: 'Rare',
               requiredLevel: 1,
