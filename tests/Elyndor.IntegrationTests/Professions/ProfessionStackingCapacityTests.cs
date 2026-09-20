@@ -56,7 +56,7 @@ public sealed class ProfessionStackingCapacityTests(PostgresFixture postgres) : 
                 "ROUGH_HIDE",
                 1,
                 Now));
-            for (int index = 0; index < 99; index++)
+            for (int index = 0; index < InventoryCapacity.DefaultCapacity - 1; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -89,7 +89,7 @@ public sealed class ProfessionStackingCapacityTests(PostgresFixture postgres) : 
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            100,
+            InventoryCapacity.DefaultCapacity,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,
