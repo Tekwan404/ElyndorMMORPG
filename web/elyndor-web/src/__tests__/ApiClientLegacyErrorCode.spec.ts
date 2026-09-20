@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ApiClient, ApiRequestError } from '@/api/apiClient'
+import { ApiClient } from '@/api/apiClient'
 
 describe('ApiClient legacy errorCode compatibility', () => {
   it('uses errorCode returned by spatial inventory endpoints', async () => {
@@ -13,7 +13,7 @@ describe('ApiClient legacy errorCode compatibility', () => {
     ))
 
     await expect(client.request('/api/v1/inventory/spatial-artifact/unequip', {}, false))
-      .rejects.toMatchObject<ApiRequestError>({
+      .rejects.toMatchObject({
         status: 409,
         code: 'inventory_full',
       })
