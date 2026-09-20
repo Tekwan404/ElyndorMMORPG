@@ -193,7 +193,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         (Guid characterId, _) = await CreateCharacterAsync(0, 100);
         await using (GameDbContext setup = postgres.CreateDbContext())
         {
-            for (var index = 0; index < 40; index++)
+            for (var index = 0; index < 100; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -217,7 +217,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            40,
+            100,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,
