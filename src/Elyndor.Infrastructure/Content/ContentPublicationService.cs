@@ -196,9 +196,17 @@ public sealed class ContentPublicationService(
         if (contentComparison != 0)
             return contentComparison > 0;
 
-        return TryParseComparableVersion(bundled.BalanceVersion, out Version? bundledBalance)
-            && TryParseComparableVersion(publishedRevision.BalanceVersion, out Version? publishedBalance)
-            && bundledBalance > publishedBalance;
+        if (!TryParseComparableVersion(bundled.BalanceVersion, out Version? bundledBalance)
+            || !TryParseComparableVersion(publishedRevision.BalanceVersion, out Version? publishedBalance))
+        {
+            return false;
+        }
+
+        int balanceComparison = bundledBalance.CompareTo(publishedBalance);
+        if (balanceComparison != 0)
+            return balanceComparison > 0;
+
+        return bundled.PublishedAtUtc > publishedRevision.SourcePublishedAtUtc;
     }
 
     private static bool TryParseComparableVersion(
