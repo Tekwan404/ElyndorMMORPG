@@ -91,10 +91,10 @@ export class ApiClient {
         : payload as T
     }
 
-    const problem = (await response.json().catch(() => ({}))) as ApiProblem
+    const problem = (await response.json().catch(() => ({}))) as ApiProblem & { errorCode?: string }
     throw new ApiRequestError(
       response.status,
-      problem.code ?? `http_${response.status}`,
+      problem.code ?? problem.errorCode ?? `http_${response.status}`,
       problem.correlationId,
     )
   }
