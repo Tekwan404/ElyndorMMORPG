@@ -280,9 +280,19 @@ public sealed class ProfessionService(
                 .Where(item => item.CharacterId == character.Id)
                 .OrderBy(item => item.AcquiredAtUtc)
                 .ToArrayAsync(cancellationToken);
+            HashSet<Guid> equippedItemIds = (await dbContext.CharacterEquipment.AsNoTracking()
+                .Where(item => item.CharacterId == character.Id)
+                .Select(item => item.CharacterItemId)
+                .ToArrayAsync(cancellationToken))
+                .ToHashSet();
             foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
             {
-                int available = inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null).Sum(item => item.Quantity);
+                int available = inventory
+                    .Where(item => !equippedItemIds.Contains(item.Id)
+                        && item.ItemDefinitionId == ingredient.ItemId
+                        && !item.IsLocked
+                        && item.TransactionLockId == null)
+                    .Sum(item => item.Quantity);
                 if (available < ingredient.Quantity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.MissingIngredients);
             }
@@ -290,7 +300,10 @@ public sealed class ProfessionService(
             foreach (ProfessionRecipeIngredient ingredient in recipe.Ingredients)
             {
                 int remaining = ingredient.Quantity;
-                foreach (CharacterItem item in inventory.Where(item => item.ItemDefinitionId == ingredient.ItemId && !item.IsLocked && item.TransactionLockId == null))
+                foreach (CharacterItem item in inventory.Where(item => !equippedItemIds.Contains(item.Id)
+                             && item.ItemDefinitionId == ingredient.ItemId
+                             && !item.IsLocked
+                             && item.TransactionLockId == null))
                 {
                     if (remaining == 0)
                         break;
@@ -302,18 +315,26 @@ public sealed class ProfessionService(
                 }
             }
 
+            int releasedSlots = inventory.Count(item => item.Quantity == 0 && !equippedItemIds.Contains(item.Id));
             ItemDefinition output = (package.Items ?? []).SingleOrDefault(item => item.Id == recipe.OutputItemId)
                 ?? throw new InvalidDataException($"Profession recipe '{recipe.Id}' references missing output '{recipe.OutputItemId}'.");
             if (output.Stackable)
             {
-                ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, output, recipe.OutputQuantity, timeProvider.GetUtcNow(), package, cancellationToken);
+                ProfessionMutationResult? inventoryFailure = await AddStackableAsync(
+                    character.Id,
+                    output,
+                    recipe.OutputQuantity,
+                    timeProvider.GetUtcNow(),
+                    package,
+                    cancellationToken,
+                    releasedSlots);
                 if (inventoryFailure is not null)
                     return inventoryFailure;
             }
             else
             {
-                int capacity = package.InventoryProfile?.DefaultCapacity ?? 30;
-                int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0);
+                int capacity = InventoryCapacity.Resolve(package);
+                int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0 && !equippedItemIds.Contains(item.Id));
                 if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
                 DateTimeOffset now = timeProvider.GetUtcNow();
@@ -350,11 +371,19 @@ public sealed class ProfessionService(
         int quantity,
         DateTimeOffset now,
         GameContentPackage package,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        int releasedSlots = 0)
     {
         int remaining = quantity;
         CharacterItem[] stacks = await dbContext.CharacterItems
-            .Where(item => item.CharacterId == characterId && item.ItemDefinitionId == definition.Id && !item.IsLocked && item.TransactionLockId == null)
+            .Where(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == definition.Id
+                && item.DefinitionVersion == definition.Version
+                && !item.IsLocked
+                && item.TransactionLockId == null)
+            .Where(item => !dbContext.CharacterEquipment.Any(equipment =>
+                equipment.CharacterId == characterId
+                && equipment.CharacterItemId == item.Id))
             .OrderBy(item => item.AcquiredAtUtc)
             .ToArrayAsync(cancellationToken);
         foreach (CharacterItem stack in stacks)
@@ -369,15 +398,18 @@ public sealed class ProfessionService(
                 return null;
         }
 
-        int capacity = package.InventoryProfile?.DefaultCapacity ?? 30;
-        int occupied = await dbContext.CharacterItems.CountAsync(item => item.CharacterId == characterId, cancellationToken);
-        int stacksNeeded = (int)Math.Ceiling(remaining / (double)definition.MaxStack);
+        int capacity = InventoryCapacity.Resolve(package);
+        int occupied = Math.Max(
+            0,
+            await InventoryCapacity.CountUsedSlotsAsync(dbContext, characterId, cancellationToken) - releasedSlots);
+        int maxStack = Math.Max(1, definition.MaxStack);
+        int stacksNeeded = (remaining + maxStack - 1) / maxStack;
         if (occupied + stacksNeeded > capacity)
             return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
 
         while (remaining > 0)
         {
-            int stackQuantity = Math.Min(remaining, definition.MaxStack);
+            int stackQuantity = Math.Min(remaining, maxStack);
             dbContext.CharacterItems.Add(new CharacterItem(Guid.CreateVersion7(), characterId, definition.Id, stackQuantity, now, definition.Version));
             remaining -= stackQuantity;
         }
