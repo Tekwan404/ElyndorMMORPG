@@ -11,6 +11,7 @@ describe('InventoryView spatial artifacts', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     globalThis.localStorage.clear()
+    document.body.innerHTML = ''
     vi.restoreAllMocks()
   })
 
@@ -44,11 +45,15 @@ describe('InventoryView spatial artifacts', () => {
 
     expect(wrapper.find('[data-item-id="ARTIFACT_10"]').exists()).toBe(true)
     await wrapper.get('[data-item-id="ARTIFACT_10"]').trigger('click')
-    expect(wrapper.get('[data-equip-spatial-artifact]').text()).toBe('Надеть')
-    expect(wrapper.text()).toContain('Пространственный артефакт')
-    expect(wrapper.text()).toContain('отдельном слоте пространственного артефакта')
+    await flushPromises()
 
-    await wrapper.get('[data-equip-spatial-artifact]').trigger('click')
+    const equipAction = document.body.querySelector<HTMLButtonElement>('[data-equip-spatial-artifact]')
+    expect(equipAction).not.toBeNull()
+    expect(equipAction?.textContent?.trim()).toBe('Надеть')
+    expect(document.body.textContent).toContain('Пространственный артефакт')
+    expect(document.body.textContent).toContain('отдельном слоте пространственного артефакта')
+
+    equipAction!.click()
     await flushPromises()
 
     expect(request).toHaveBeenNthCalledWith(
@@ -94,9 +99,12 @@ describe('InventoryView spatial artifacts', () => {
     expect(wrapper.find('[data-item-id="ARTIFACT_5"]').exists()).toBe(false)
     expect(wrapper.find('[data-item-id="ARTIFACT_20"]').exists()).toBe(true)
     await wrapper.get('[data-item-id="ARTIFACT_20"]').trigger('click')
+    await flushPromises()
 
-    expect(wrapper.get('[data-equip-spatial-artifact]').text()).toBe('Заменить')
-    expect(wrapper.text()).toContain('Сейчас надето: Треснувшее пространственное кольцо (+5)')
+    const replaceAction = document.body.querySelector<HTMLButtonElement>('[data-equip-spatial-artifact]')
+    expect(replaceAction).not.toBeNull()
+    expect(replaceAction?.textContent?.trim()).toBe('Заменить')
+    expect(document.body.textContent).toContain('Сейчас надето: Треснувшее пространственное кольцо (+5)')
   })
 
   it('unequips from the dedicated spatial capacity block and returns the artifact to the grid', async () => {
