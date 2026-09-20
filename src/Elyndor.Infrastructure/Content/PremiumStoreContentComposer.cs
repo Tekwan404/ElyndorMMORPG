@@ -1,5 +1,5 @@
 using Elyndor.Core.Content;
-using Elyndor.Core.Economy;
+using Elyndor.Core.Items;
 
 namespace Elyndor.Infrastructure.Content;
 
