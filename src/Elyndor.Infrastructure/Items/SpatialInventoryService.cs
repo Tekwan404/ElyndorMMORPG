@@ -4,6 +4,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Elyndor.Infrastructure.Items;
 
@@ -63,105 +64,115 @@ public sealed class SpatialInventoryService(
         Guid characterItemId,
         CancellationToken cancellationToken)
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
-        try
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            Character? character = await dbContext.Characters
-                .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
-            if (character is null)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.CharacterNotFound, cancellationToken);
-
-            CharacterItem? item = await dbContext.CharacterItems
-                .SingleOrDefaultAsync(candidate => candidate.Id == characterItemId, cancellationToken);
-            if (item is null)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.ItemNotFound, cancellationToken);
-            if (item.CharacterId != character.Id)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.ItemNotOwned, cancellationToken);
-            if (item.TransactionLockId.HasValue)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.TransactionLocked, cancellationToken);
-
-            GameContentSnapshot content = contentProvider.GetCurrent();
-            if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition)
-                || definition.Type != ItemType.SpatialArtifact
-                || definition.InventoryCapacityBonus <= 0)
-            {
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.NotSpatialArtifact, cancellationToken);
-            }
-
-            CharacterSpatialArtifact? current = await dbContext.CharacterSpatialArtifacts
-                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
-            if (current is null)
-                dbContext.CharacterSpatialArtifacts.Add(new CharacterSpatialArtifact(character.Id, item.Id));
-            else if (current.CharacterItemId != item.Id)
-                current.Equip(item.Id);
-
-            InventoryCapacityState projected = await InventoryCapacity.GetStateAsync(
-                dbContext,
-                character.Id,
-                content,
-                cancellationToken);
-            if (projected.IsOverflow)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.InventoryFull, cancellationToken);
-
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return SpatialInventoryOperationResult.Success(
-                await ReadAsync(character.Id, content, cancellationToken));
-        }
-        catch (DbUpdateException)
-        {
-            await transaction.RollbackAsync(cancellationToken);
             dbContext.ChangeTracker.Clear();
-            return SpatialInventoryOperationResult.Failure(SpatialInventoryErrorCodes.Conflict);
-        }
+            await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            try
+            {
+                Character? character = await dbContext.Characters
+                    .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+                if (character is null)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.CharacterNotFound, cancellationToken);
+
+                CharacterItem? item = await dbContext.CharacterItems
+                    .SingleOrDefaultAsync(candidate => candidate.Id == characterItemId, cancellationToken);
+                if (item is null)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.ItemNotFound, cancellationToken);
+                if (item.CharacterId != character.Id)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.ItemNotOwned, cancellationToken);
+                if (item.TransactionLockId.HasValue)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.TransactionLocked, cancellationToken);
+
+                GameContentSnapshot content = contentProvider.GetCurrent();
+                if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition)
+                    || definition.Type != ItemType.SpatialArtifact
+                    || definition.InventoryCapacityBonus <= 0)
+                {
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.NotSpatialArtifact, cancellationToken);
+                }
+
+                CharacterSpatialArtifact? current = await dbContext.CharacterSpatialArtifacts
+                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
+                if (current is null)
+                    dbContext.CharacterSpatialArtifacts.Add(new CharacterSpatialArtifact(character.Id, item.Id));
+                else if (current.CharacterItemId != item.Id)
+                    current.Equip(item.Id);
+
+                InventoryCapacityState projected = await InventoryCapacity.GetStateAsync(
+                    dbContext,
+                    character.Id,
+                    content,
+                    cancellationToken);
+                if (projected.IsOverflow)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.InventoryFull, cancellationToken);
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return SpatialInventoryOperationResult.Success(
+                    await ReadAsync(character.Id, content, cancellationToken));
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                dbContext.ChangeTracker.Clear();
+                return SpatialInventoryOperationResult.Failure(SpatialInventoryErrorCodes.Conflict);
+            }
+        });
     }
 
     public async Task<SpatialInventoryOperationResult> UnequipAsync(
         Guid accountId,
         CancellationToken cancellationToken)
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
-        try
+        IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            Character? character = await dbContext.Characters
-                .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
-            if (character is null)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.CharacterNotFound, cancellationToken);
-
-            CharacterSpatialArtifact? current = await dbContext.CharacterSpatialArtifacts
-                .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
-            GameContentSnapshot content = contentProvider.GetCurrent();
-            if (current is null)
+            dbContext.ChangeTracker.Clear();
+            await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            try
             {
+                Character? character = await dbContext.Characters
+                    .SingleOrDefaultAsync(candidate => candidate.AccountId == accountId, cancellationToken);
+                if (character is null)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.CharacterNotFound, cancellationToken);
+
+                CharacterSpatialArtifact? current = await dbContext.CharacterSpatialArtifacts
+                    .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
+                GameContentSnapshot content = contentProvider.GetCurrent();
+                if (current is null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    return SpatialInventoryOperationResult.Success(
+                        await ReadAsync(character.Id, content, cancellationToken));
+                }
+
+                dbContext.CharacterSpatialArtifacts.Remove(current);
+                InventoryCapacityState projected = await InventoryCapacity.GetStateAsync(
+                    dbContext,
+                    character.Id,
+                    content,
+                    cancellationToken);
+                if (projected.IsOverflow)
+                    return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.InventoryFull, cancellationToken);
+
+                await dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 return SpatialInventoryOperationResult.Success(
                     await ReadAsync(character.Id, content, cancellationToken));
             }
-
-            dbContext.CharacterSpatialArtifacts.Remove(current);
-            InventoryCapacityState projected = await InventoryCapacity.GetStateAsync(
-                dbContext,
-                character.Id,
-                content,
-                cancellationToken);
-            if (projected.IsOverflow)
-                return await RollbackFailureAsync(transaction, SpatialInventoryErrorCodes.InventoryFull, cancellationToken);
-
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return SpatialInventoryOperationResult.Success(
-                await ReadAsync(character.Id, content, cancellationToken));
-        }
-        catch (DbUpdateException)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            dbContext.ChangeTracker.Clear();
-            return SpatialInventoryOperationResult.Failure(SpatialInventoryErrorCodes.Conflict);
-        }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                dbContext.ChangeTracker.Clear();
+                return SpatialInventoryOperationResult.Failure(SpatialInventoryErrorCodes.Conflict);
+            }
+        });
     }
 
     private async Task<SpatialInventorySnapshot> ReadAsync(
@@ -193,7 +204,7 @@ public sealed class SpatialInventoryService(
     }
 
     private async Task<SpatialInventoryOperationResult> RollbackFailureAsync(
-        Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction,
+        IDbContextTransaction transaction,
         string errorCode,
         CancellationToken cancellationToken)
     {
