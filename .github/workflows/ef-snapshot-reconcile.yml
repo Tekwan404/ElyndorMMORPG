@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet ef migrations add __RaidReadyStateSnapshotProbe \
+          "$HOME/.dotnet/tools/dotnet-ef" migrations add __RaidReadyStateSnapshotProbe \
             --project src/Elyndor.Infrastructure/Elyndor.Infrastructure.csproj \
             --startup-project src/Elyndor.Server/Elyndor.Server.csproj \
             --context GameDbContext \
