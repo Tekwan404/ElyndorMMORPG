@@ -8,18 +8,19 @@ import { useGameSessionStore } from '@/stores/gameSession'
 describe('CharacterCreationView', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('offers only the approved prototype identity choices', () => {
+  it('offers the public identity choices including paladin', () => {
     const wrapper = mount(CharacterCreationView)
 
     expect(wrapper.findAll('input[name="raceId"]')).toHaveLength(2)
     expect(wrapper.findAll('input[name="genderId"]')).toHaveLength(2)
-    expect(wrapper.findAll('input[name="classId"]')).toHaveLength(3)
+    expect(wrapper.findAll('input[name="classId"]')).toHaveLength(4)
     expect(wrapper.text()).toContain('Воин')
     expect(wrapper.text()).toContain('Лучник')
     expect(wrapper.text()).toContain('Маг')
+    expect(wrapper.text()).toContain('Паладин')
   })
 
-  it('keeps submission disabled until the formal name hint is satisfied', async () => {
+  it('keeps submission disabled until the formal name rules are satisfied', async () => {
     const wrapper = mount(CharacterCreationView)
     const name = wrapper.get('input[autocomplete="off"]')
     const submit = wrapper.get('button[type="submit"]')
@@ -31,6 +32,28 @@ describe('CharacterCreationView', () => {
     expect(submit.attributes('disabled')).toBeDefined()
     await name.setValue('Arthas')
     expect(submit.attributes('disabled')).toBeUndefined()
+    expect(wrapper.text()).toContain('Имя подходит')
+  })
+
+  it('creates a paladin through the regular character creation flow', async () => {
+    const store = useGameSessionStore()
+    const createCharacter = vi.spyOn(store, 'createCharacter').mockResolvedValue(undefined)
+    const wrapper = mount(CharacterCreationView)
+
+    await wrapper.get('input[autocomplete="off"]').setValue('Uther')
+    await wrapper.get('input[value="PALADIN"]').setValue(true)
+    await wrapper.get('form').trigger('submit')
+
+    expect(createCharacter).toHaveBeenCalledTimes(1)
+    expect(createCharacter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Uther',
+        raceId: 'HUMAN',
+        genderId: 'MALE',
+        classId: 'PALADIN',
+      }),
+    )
+    expect(wrapper.text()).toContain('Свет · Мана')
   })
 
   it('reuses the same request id for an explicit retry and preserves the form', async () => {
