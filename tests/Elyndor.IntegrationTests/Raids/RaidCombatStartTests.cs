@@ -58,7 +58,7 @@ public sealed class RaidCombatStartTests(PostgresFixture postgres) : IAsyncLifet
 
         Assert.True(started.Succeeded, started.ErrorCode);
         Assert.NotNull(started.Snapshot);
-        Assert.Equal(CombatParticipantLimit.MaximumRaid, 20);
+        Assert.Equal(20, CombatParticipantLimit.MaximumRaid);
         Assert.Equal(3, started.Snapshot!.ParticipantRoster?.Count);
         Assert.All(
             started.Snapshot.ParticipantRoster!,
@@ -219,15 +219,15 @@ public sealed class RaidCombatStartTests(PostgresFixture postgres) : IAsyncLifet
 
     private static async Task CreateRaidAsync(
         RaidService raids,
-        IReadOnlyList<Guid> accountIds,
-        IReadOnlyList<Guid> characterIds)
+        Guid[] accountIds,
+        Guid[] characterIds)
     {
         RaidOperationResult created = await raids.CreateAsync(
             accountIds[0],
             Guid.CreateVersion7(),
             CancellationToken.None);
         Assert.True(created.IsSuccess, created.ErrorCode);
-        for (var index = 1; index < accountIds.Count; index++)
+        for (var index = 1; index < accountIds.Length; index++)
         {
             RaidOperationResult invited = await raids.InviteAsync(
                 accountIds[0],
