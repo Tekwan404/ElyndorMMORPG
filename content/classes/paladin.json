@@ -2,6 +2,13 @@
   "contentVersion": "0.22.0",
   "balanceVersion": "0.18.0",
   "publishedAtUtc": "2026-09-15T05:30:00+00:00",
+  "definitions": [
+    {
+      "type": "CLASS",
+      "id": "PALADIN",
+      "references": []
+    }
+  ],
   "classProfiles": [
     {
       "id": "PALADIN",
