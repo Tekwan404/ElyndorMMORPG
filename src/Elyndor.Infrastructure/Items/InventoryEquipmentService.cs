@@ -703,8 +703,9 @@ public sealed class InventoryEquipmentService(
             .Where(equipment => equipment.CharacterId == characterId)
             .ToArrayAsync(cancellationToken);
 
-        HashSet<Guid> projectedEquippedItemIds =
+        HashSet<Guid> currentEquippedItemIds =
             current.Select(equipment => equipment.CharacterItemId).ToHashSet();
+        HashSet<Guid> projectedEquippedItemIds = [.. currentEquippedItemIds];
         HashSet<Guid> compatibleQuiverItemIds = [];
         if (targetSlot == EquipmentSlot.MainHand
             && string.Equals(
@@ -750,16 +751,16 @@ public sealed class InventoryEquipmentService(
 
         projectedEquippedItemIds.Add(itemId);
 
-        int totalItemSlots = await dbContext.CharacterItems
-            .AsNoTracking()
-            .CountAsync(
-                item => item.CharacterId == characterId,
-                cancellationToken);
-        int projectedInventorySlots =
-            totalItemSlots - projectedEquippedItemIds.Count;
+        InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
+            dbContext,
+            characterId,
+            contentProvider.GetCurrent(),
+            cancellationToken);
+        int projectedInventorySlots = capacity.UsedSlots
+            + currentEquippedItemIds.Count
+            - projectedEquippedItemIds.Count;
 
-        return projectedInventorySlots <=
-            InventoryCapacity.Resolve(contentProvider.GetCurrent());
+        return projectedInventorySlots <= capacity.Capacity;
     }
 
     private async Task ClaimPendingLootCoreAsync(
