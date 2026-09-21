@@ -204,7 +204,7 @@ public sealed class RaidCombatStartTests(PostgresFixture postgres) : IAsyncLifet
                 "/api/v1/character",
                 new CreateCharacterRequest(
                     Guid.CreateVersion7(),
-                    $"RaidStart{index}",
+                    $"RaidStart{(char)('A' + index)}",
                     "HUMAN",
                     index % 2 == 0 ? "MALE" : "FEMALE",
                     index == 0 ? "WARRIOR" : "MAGE"));
