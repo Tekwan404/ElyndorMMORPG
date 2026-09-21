@@ -28,17 +28,7 @@ public sealed class EquipmentSpatialCapacityTests(PostgresFixture postgres) : IA
         (Guid accountId, Guid characterId) = await CreateCharacterAsync();
         Guid artifactId = await AddItemAsync(characterId, "SPATIAL_EXPANDED_RING");
 
-        await using (GameDbContext spatialContext = postgres.CreateDbContext())
-        {
-            SpatialInventoryService spatial = new(spatialContext, contentProvider);
-            SpatialInventoryOperationResult equippedArtifact = await spatial.EquipAsync(
-                accountId,
-                artifactId,
-                CancellationToken.None);
-
-            Assert.True(equippedArtifact.IsSuccess);
-            Assert.Equal(45, equippedArtifact.Snapshot!.Capacity.Capacity);
-        }
+        await EquipSpatialArtifactAsync(accountId, artifactId, contentProvider);
 
         Guid chestId = await AddItemAsync(characterId, "RECRUIT_HEAVY_CHEST");
         await FillSlotsAsync(characterId, 33);
@@ -86,6 +76,92 @@ public sealed class EquipmentSpatialCapacityTests(PostgresFixture postgres) : IA
             CancellationToken.None);
         Assert.Equal(45, finalState.Capacity);
         Assert.Equal(33, finalState.UsedSlots);
+    }
+
+    [Fact]
+    public async Task EquipmentCanBeSwappedAtExactSpatialCapacityWithoutFalseOverflow()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        StaticContentSnapshotProvider contentProvider = new(content);
+
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync();
+        Guid artifactId = await AddItemAsync(characterId, "SPATIAL_EXPANDED_RING");
+        await EquipSpatialArtifactAsync(accountId, artifactId, contentProvider);
+
+        Guid equippedChestId = await AddItemAsync(characterId, "RECRUIT_HEAVY_CHEST");
+        await using (GameDbContext equipContext = postgres.CreateDbContext())
+        {
+            InventoryEquipmentService equipment = new(
+                equipContext,
+                contentProvider,
+                new FixedTimeProvider(Now));
+            InventoryOperationResult initialEquip = await equipment.EquipAsync(
+                accountId,
+                equippedChestId,
+                Guid.CreateVersion7(),
+                CancellationToken.None);
+            Assert.True(initialEquip.IsSuccess);
+        }
+
+        Guid replacementChestId = await AddItemAsync(characterId, "RECRUIT_HEAVY_CHEST");
+        await FillSlotsAsync(characterId, 44);
+
+        await using (GameDbContext before = postgres.CreateDbContext())
+        {
+            InventoryCapacityState state = await InventoryCapacity.GetStateAsync(
+                before,
+                characterId,
+                contentProvider.GetCurrent(),
+                CancellationToken.None);
+            Assert.Equal(45, state.Capacity);
+            Assert.Equal(45, state.UsedSlots);
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = new(
+            context,
+            contentProvider,
+            new FixedTimeProvider(Now));
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            replacementChestId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment equippedChest = await verify.CharacterEquipment
+            .AsNoTracking()
+            .SingleAsync(item => item.CharacterId == characterId
+                && item.Slot == EquipmentSlot.Chest);
+        Assert.Equal(replacementChestId, equippedChest.CharacterItemId);
+
+        InventoryCapacityState finalState = await InventoryCapacity.GetStateAsync(
+            verify,
+            characterId,
+            contentProvider.GetCurrent(),
+            CancellationToken.None);
+        Assert.Equal(45, finalState.Capacity);
+        Assert.Equal(45, finalState.UsedSlots);
+    }
+
+    private async Task EquipSpatialArtifactAsync(
+        Guid accountId,
+        Guid artifactId,
+        StaticContentSnapshotProvider contentProvider)
+    {
+        await using GameDbContext spatialContext = postgres.CreateDbContext();
+        SpatialInventoryService spatial = new(spatialContext, contentProvider);
+        SpatialInventoryOperationResult equippedArtifact = await spatial.EquipAsync(
+            accountId,
+            artifactId,
+            CancellationToken.None);
+
+        Assert.True(equippedArtifact.IsSuccess);
+        Assert.Equal(45, equippedArtifact.Snapshot!.Capacity.Capacity);
     }
 
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync()
