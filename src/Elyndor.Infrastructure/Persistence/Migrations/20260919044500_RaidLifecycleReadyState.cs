@@ -1,13 +1,9 @@
-using Elyndor.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Elyndor.Infrastructure.Persistence.Migrations;
 
-[DbContext(typeof(GameDbContext))]
-[Migration("20260919044500_RaidLifecycleReadyState")]
 public partial class RaidLifecycleReadyState : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
