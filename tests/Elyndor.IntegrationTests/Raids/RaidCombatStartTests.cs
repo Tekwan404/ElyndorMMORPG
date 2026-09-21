@@ -7,6 +7,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.World;
+using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Raids;
