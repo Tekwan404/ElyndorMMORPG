@@ -158,12 +158,12 @@ public sealed partial class CombatSession
             }
         }
 
-        Dictionary<Guid, Guid> contributionActorOwners = _playerStatesByActorId.Values
+        Dictionary<Guid, Guid> contributionActorOwners = capturedRoster
             .ToDictionary(
-                state => state.Definition.Actor.ActorId,
-                state => state.Definition.Actor.ActorId);
+                participant => participant.ActorId,
+                participant => participant.CharacterId);
         if (companion is not null)
-            contributionActorOwners[companion.Actor.ActorId] = player.Actor.ActorId;
+            contributionActorOwners[companion.Actor.ActorId] = playerCharacterId;
         _contributionLedger = new ContributionLedger(contributionActorOwners);
         foreach (CombatParticipantSnapshot participant in _participantRoster.Participants
                      .Where(item => item.Status == CombatParticipantStatus.Active))
