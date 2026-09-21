@@ -97,6 +97,7 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
     [InlineData("WARRIOR", "RECRUIT_IRON_SWORD")]
     [InlineData("ARCHER", "HUNTER_SHORTBOW")]
     [InlineData("MAGE", "APPRENTICE_STAFF")]
+    [InlineData("PALADIN", "RECRUIT_IRON_SWORD")]
     public async Task CreationGrantsAndEquipsStartingWeapon(
         string classId,
         string expectedItemId)
@@ -135,6 +136,29 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
         await using GameDbContext context = postgres.CreateDbContext();
         CharacterVitals vitals = await context.CharacterVitals.AsNoTracking().SingleAsync();
         Assert.Equal(155, vitals.CurrentResource);
+    }
+
+    [Fact]
+    public async Task PaladinCanBeCreatedFromPublicRosterWithManaAndStarterWeapon()
+    {
+        Guid accountId = await CreateAccountAsync(575);
+
+        CharacterCreationResult result = await CreateAsync(
+            accountId,
+            CreateCommand(Guid.CreateVersion7(), "Uther", classId: "PALADIN"));
+
+        Assert.True(result.IsSuccess, result.ErrorCode);
+        Assert.Equal("PALADIN", result.Character!.ClassId);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterVitals vitals = await context.CharacterVitals.AsNoTracking().SingleAsync();
+        CharacterItem item = await context.CharacterItems.AsNoTracking().SingleAsync();
+        CharacterEquipment equipment = await context.CharacterEquipment.AsNoTracking().SingleAsync();
+
+        Assert.Equal(145, vitals.CurrentResource);
+        Assert.Equal("RECRUIT_IRON_SWORD", item.ItemDefinitionId);
+        Assert.Equal(EquipmentSlot.MainHand, equipment.Slot);
+        Assert.Equal(item.Id, equipment.CharacterItemId);
     }
 
     [Theory]
@@ -208,23 +232,39 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
                 new GameContentDefinition("GENDER", "FEMALE", []),
                 new GameContentDefinition("CLASS", "WARRIOR", []),
                 new GameContentDefinition("CLASS", "ARCHER", []),
-                new GameContentDefinition("CLASS", "MAGE", [])
+                new GameContentDefinition("CLASS", "MAGE", []),
+                new GameContentDefinition("CLASS", "PALADIN", [])
             ],
             []);
+
+        ClassProfile paladin = new(
+            "PALADIN",
+            "STRENGTH",
+            "MANA",
+            new(10, 4, 9, 10),
+            new(2.2m, 0.7m, 2m, 2.2m),
+            [EquipmentCategoryIds.OneHandSword],
+            ["HEAVY"],
+            "Paladin",
+            StartingEquipmentItemIds: ["RECRUIT_IRON_SWORD"]);
 
         return content with
         {
             ResourceScaling = new ResourceScalingProfile(100, 5),
-            ClassProfiles = content.ClassProfiles!.Select(profile => profile with
-            {
-                StartingEquipmentItemIds = profile.Id switch
+            ClassProfiles =
+            [
+                .. content.ClassProfiles!.Select(profile => profile with
                 {
-                    "WARRIOR" => ["RECRUIT_IRON_SWORD"],
-                    "ARCHER" => ["HUNTER_SHORTBOW"],
-                    "MAGE" => ["APPRENTICE_STAFF"],
-                    _ => []
-                }
-            }).ToArray(),
+                    StartingEquipmentItemIds = profile.Id switch
+                    {
+                        "WARRIOR" => ["RECRUIT_IRON_SWORD"],
+                        "ARCHER" => ["HUNTER_SHORTBOW"],
+                        "MAGE" => ["APPRENTICE_STAFF"],
+                        _ => []
+                    }
+                }),
+                paladin
+            ],
             Items =
             [
                 StarterWeapon(
