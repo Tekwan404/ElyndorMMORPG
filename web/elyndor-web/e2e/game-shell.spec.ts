@@ -17,7 +17,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   })
   await installMockApiUnlessReal(page)
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Создание героя' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Создайте героя' })).toBeVisible()
   await page.screenshot({
     path: '../../output/playwright/session-2a-character-creation.png',
     fullPage: true,
