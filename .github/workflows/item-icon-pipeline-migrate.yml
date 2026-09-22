@@ -20,7 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply item icon pipeline migration
-        run: python3 tools/dev/item_icon_pipeline_migrate.py
+        run: |
+          sed -i 's/json.loads(path.read_text(encoding="utf-8"))/json.loads(path.read_text(encoding="utf-8-sig"))/' tools/dev/item_icon_pipeline_migrate.py
+          python3 tools/dev/item_icon_pipeline_migrate.py
 
       - name: Validate generated diff
         run: git diff --check
