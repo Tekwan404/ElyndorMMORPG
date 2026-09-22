@@ -244,6 +244,8 @@ public sealed class CombatHub(
             roll.Quantity,
             roll.EndsAtUtc,
             eligible,
-            canNeed);
+            canNeed,
+            item?.IconId,
+            item?.Type.ToString());
     }
 }

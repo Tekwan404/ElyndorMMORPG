@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 
 import type { PremiumStoreSnapshot } from '@/api/contracts'
-import { itemArtUrl } from '@/assets/itemArt'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState } from '@/ui/components'
 
@@ -44,7 +44,7 @@ onMounted(load)
       <UIButton type="submit" variant="secondary" :disabled="!promoCode.trim() || session.mutationPending" :loading="session.mutationPending">Применить</UIButton>
     </form>
     <article v-for="offer in store?.offers ?? []" :key="offer.sku" class="store-offer">
-      <img v-if="offer.iconId" :src="itemArtUrl(offer.iconId)" alt="" />
+      <ItemIcon :icon-id="offer.iconId" :item-id="offer.itemDefinitionId" :name="offer.name" type="Premium" :rarity="offer.rarity" decorative />
       <div><strong>{{ offer.name }} ×{{ offer.quantity }}</strong><small>{{ offer.description }}</small></div>
       <UIButton :disabled="!offer.canPurchase || session.mutationPending || (store?.crystalBalance ?? 0) < offer.crystalPrice" :loading="session.mutationPending" @click="purchase(offer.sku)">{{ offer.crystalPrice }} крист.</UIButton>
     </article>

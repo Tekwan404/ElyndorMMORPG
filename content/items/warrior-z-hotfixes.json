@@ -5,7 +5,7 @@
   "items": [
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
-      "iconId": "warrior_epic_crimson_fury_weapon",
+      "iconId": "sets/warrior_epic_crimson_fury_weapon",
       "name": "Клинок Багровой Клятвы",
       "type": "Equipment",
       "rarity": "Epic",

@@ -6,6 +6,11 @@ bool strictTalents = args.Any(argument =>
     string.Equals(argument, "--strict-talents", StringComparison.Ordinal));
 bool auditTalents = args.Any(argument =>
     string.Equals(argument, "--audit-talents", StringComparison.Ordinal));
+bool strictItemIcons = args.Any(argument =>
+    string.Equals(argument, "--strict-item-icons", StringComparison.Ordinal));
+bool auditItemIcons = args.Any(argument =>
+    string.Equals(argument, "--audit-item-icons", StringComparison.Ordinal))
+    || strictItemIcons;
 string? packageArgument = args.FirstOrDefault(argument =>
     !argument.StartsWith("--", StringComparison.Ordinal));
 string packagePath = Path.GetFullPath(
@@ -20,6 +25,36 @@ try
         + $"BalanceVersion={package.BalanceVersion}, Definitions={indexes.DefinitionsByKey.Count}, "
         + $"Locations={indexes.LocationsById.Count}, Monsters={indexes.MonstersById.Count}, "
         + $"Items={indexes.ItemsById.Count}");
+
+    if (auditItemIcons)
+    {
+        string assetRoot = Path.GetFullPath(Path.Combine(
+            Path.GetDirectoryName(packagePath)!,
+            "..",
+            "web",
+            "elyndor-web",
+            "src",
+            "assets",
+            "items"));
+        ItemIconAuditReport audit = ItemIconAuditReport.Create(
+            package,
+            ItemIconAuditReport.ReadAssets(assetRoot));
+        Console.WriteLine(
+            $"Item icon audit: Total={audit.TotalItemDefinitions}, WithIconId={audit.WithIconId}, "
+            + $"WithoutIconId={audit.WithoutIconId}, Valid={audit.Valid}, MissingAsset={audit.MissingAsset}, "
+            + $"CaseMismatch={audit.CaseMismatch}, InvalidPath={audit.InvalidPath}, "
+            + $"UnsupportedFormat={audit.UnsupportedFormat}, Ambiguous={audit.Ambiguous}, "
+            + $"LegacyOnly={audit.LegacyOnly}, UnusedAssets={audit.UnusedAssets}");
+
+        foreach (ItemIconAuditIssue issue in audit.Issues)
+            Console.WriteLine($"{issue.Severity}: {issue.Code} {issue.ItemId} ({issue.IconId}): {issue.Message}");
+
+        foreach (string assetId in audit.UnusedAssetIds)
+            Console.WriteLine($"Warning: ITEM_ICON_ASSET_UNUSED ASSET:{assetId} ({assetId}): No composed ItemDefinition references this asset.");
+
+        if (strictItemIcons && audit.Issues.Any(issue => issue.Severity == ItemIconIssueSeverity.Error))
+            return 1;
+    }
 
     if (auditTalents || strictTalents)
     {

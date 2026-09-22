@@ -4,8 +4,8 @@ import { computed, ref, watch } from 'vue'
 import { apiClient } from '@/api/apiClient'
 import type { InventoryItem, ItemReforgePreview, ItemReforgeResponse } from '@/api/contracts'
 import type { ItemSalvagePreviewV2, ItemSalvageResponseV2 } from '@/api/itemEnhancementContracts'
-import { itemArtUrl } from '@/assets/itemArt'
 import { availableForgeMaterialQuantity, forgeableAffixes, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
@@ -183,7 +183,6 @@ const batchEnhancementRefundTotals = computed(() => {
 
 function isEquipped(item: InventoryItem): boolean { return item.equippedSlot !== null }
 function itemPower(item: InventoryItem): number { return item.generatedItem?.itemPower ?? 0 }
-function itemArt(item: InventoryItem): string | undefined { return itemArtUrl(item.iconId) }
 function isBatchSelected(item: InventoryItem): boolean { return batchSalvageIds.value.includes(item.id) }
 function canSelectForBatchSalvage(item: InventoryItem): boolean {
   return item.type === 'Equipment' && !isEquipped(item) && !item.isLocked && !item.transactionLocked
@@ -557,8 +556,7 @@ function rarityLabel(item: InventoryItem): string {
           @click="selectItem(item)"
         >
           <span class="forge-item__art" :data-rarity="item.rarity">
-            <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" />
-            <IconGenerator v-else :config="{ id: `forge-item-${item.id}`, glyph: 'sword', category: 'weapon' }" />
+            <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
           </span>
           <span class="forge-item__copy">
             <span class="forge-item__topline">
@@ -589,8 +587,7 @@ function rarityLabel(item: InventoryItem): string {
 
         <header class="forge-detail__identity">
           <span class="forge-detail__art" :data-rarity="selectedItem.rarity">
-            <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" />
-            <IconGenerator v-else :config="{ id: `forge-detail-${selectedItem.id}`, glyph: 'sword', category: 'weapon' }" />
+            <ItemIcon :icon-id="selectedItem.iconId" :item-id="selectedItem.id" :name="selectedItem.name" :type="selectedItem.type" :equipment-slot="selectedItem.slot" :rarity="selectedItem.rarity" loading="eager" />
           </span>
           <div class="forge-detail__copy">
             <small>{{ rarityLabel(selectedItem) }} · ур. {{ selectedItem.requiredLevel }}<template v-if="isEquipped(selectedItem)"> · надето</template></small>

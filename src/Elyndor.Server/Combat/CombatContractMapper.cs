@@ -39,7 +39,8 @@ internal static class CombatContractMapper
                     item.Name,
                     item.Type.ToString(),
                     item.Rarity.ToString(),
-                    item.Quantity)).ToArray(),
+                    item.Quantity,
+                    item.IconId)).ToArray(),
                 result.Reward.CompletedContractIds,
                 result.Reward.LootRolls?.Select(roll => new CombatLootRollResponse(
                     roll.LootRollId,
@@ -49,7 +50,9 @@ internal static class CombatContractMapper
                     roll.Quantity,
                     roll.EndsAtUtc,
                     roll.EligibleCharacterIds,
-                    roll.CanNeed)).ToArray()));
+                    roll.CanNeed,
+                    roll.IconId,
+                    roll.Type?.ToString())).ToArray()));
     }
 
     private static bool ShouldPublishRealtimeEvent(CombatEvent combatEvent) =>

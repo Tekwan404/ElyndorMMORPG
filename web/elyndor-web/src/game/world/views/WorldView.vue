@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
@@ -403,7 +404,10 @@ onMounted(() => {
           Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
         </p>
         <ul v-if="combat.reward.items.length">
-          <li v-for="item in combat.reward.items" :key="item.itemId">{{ item.name }} ×{{ item.quantity }}</li>
+          <li v-for="item in combat.reward.items" :key="item.itemId">
+            <ItemIcon class="reward-item__icon" :icon-id="item.iconId" :item-id="item.itemId" :name="item.name" :type="item.type" :rarity="item.rarity" />
+            {{ item.name }} ×{{ item.quantity }}
+          </li>
         </ul>
       </div>
       <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
@@ -418,6 +422,7 @@ onMounted(() => {
         <strong>Розыгрыш добычи</strong>
       </div>
       <article v-for="roll in combat.lootRolls" :key="roll.lootRollId" class="loot-roll-row">
+        <ItemIcon class="loot-roll-row__icon" :icon-id="roll.iconId" :item-id="roll.itemId" :name="roll.name" :type="roll.type ?? 'Equipment'" :rarity="roll.rarity" />
         <div>
           <strong>{{ roll.name }} ×{{ roll.quantity }}</strong>
           <small>{{ rarityLabel(roll.rarity) }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
@@ -963,6 +968,18 @@ onMounted(() => {
   padding-left: 1.2rem;
 }
 
+.reward-card li {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+}
+
+.reward-item__icon {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+}
+
 .loot-roll-card {
   display: grid;
   gap: var(--ui-space-3);
@@ -976,9 +993,16 @@ onMounted(() => {
 
 .loot-roll-row {
   display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid rgb(255 255 255 / 7%);
+}
+
+.loot-roll-row__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  grid-row: span 2;
 }
 
 .loot-roll-row > div:first-child {
@@ -997,6 +1021,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
+  grid-column: 2;
 }
 
 .section-heading {

@@ -49,7 +49,7 @@ describe('authored content art', () => {
   })
 
   it('resolves the Heart of the Blighted Grove guardian helmet artwork', () => {
-    const art = itemArtUrl('set_heart_of_blighted_grove_warrior_guardian_head')
+    const art = itemArtUrl('sets/set_heart_of_blighted_grove_warrior_guardian_head')
 
     expect(art).toMatch(/set_heart_of_blighted_grove_warrior_guardian_head\.(png|webp)$/)
   })
@@ -65,6 +65,6 @@ describe('authored content art', () => {
 
     expect(setItems.length).toBeGreaterThan(0)
     expect(missingArt).toEqual([])
-    expect(itemArtUrl('runnyi_fonar_shtreka')).toMatch(/runnyi_fonar_shtreka\.webp$/)
+    expect(itemArtUrl('imported/runnyi_fonar_shtreka')).toMatch(/runnyi_fonar_shtreka\.webp$/)
   })
 })

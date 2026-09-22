@@ -137,7 +137,31 @@ public sealed class ItemValidator : IContentValidationStage
             compatibilityProjection,
             context.Errors);
 
+        ValidateIconIds(original, context.Errors);
+
         ValidateSpatialArtifacts(original, context.Errors);
+    }
+
+    private static void ValidateIconIds(
+        GameContentPackage package,
+        List<ContentValidationError> errors)
+    {
+        IReadOnlyList<ItemDefinition> items = package.Items ?? [];
+        for (var index = 0; index < items.Count; index++)
+        {
+            ItemDefinition item = items[index];
+            if (item.IconId is null)
+                continue;
+
+            if (!ItemIconId.IsCanonical(item.IconId))
+            {
+                errors.Add(new(
+                    "ITEM_ICON_INVALID_PATH",
+                    $"items[{index}].iconId",
+                    $"Item '{item.Id}' has invalid icon id '{item.IconId}'. "
+                    + "Item icon ids must be lowercase, extensionless paths relative to the item asset root."));
+            }
+        }
     }
 
     private static void ValidateSpatialArtifacts(

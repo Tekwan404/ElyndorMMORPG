@@ -490,7 +490,7 @@ public static class InventoryEndpoints
             ? Results.Ok(ToMerchantResponse(result.Snapshot!))
             : MerchantProblem(result.ErrorCode!, context);
 
-    private static MerchantResponse ToMerchantResponse(MerchantSnapshot snapshot) =>
+    internal static MerchantResponse ToMerchantResponse(MerchantSnapshot snapshot) =>
         new(
             snapshot.Merchant.Id,
             snapshot.Merchant.Name,
@@ -592,7 +592,7 @@ public static class InventoryEndpoints
             ? ToResponse(item)
             : null;
 
-    private static PendingLootItemResponse ToPendingLootResponse(
+    internal static PendingLootItemResponse ToPendingLootResponse(
         PendingLootItemSnapshot item)
     {
         PrimaryStats stats = item.RolledPrimaryStats ?? item.Definition.Stats;
@@ -622,7 +622,8 @@ public static class InventoryEndpoints
                 item.Definition.MagicPenetrationPercent,
                 item.Definition.AttackSpeedPercent,
                 item.Definition.MaxResourceFlat),
-            ToGeneratedItemResponse(item.GeneratedItem));
+            ToGeneratedItemResponse(item.GeneratedItem),
+            item.Definition.IconId);
     }
 
     internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item)
