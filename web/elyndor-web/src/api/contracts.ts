@@ -256,6 +256,10 @@ export interface QuestObjective {
 export interface QuestRewardItem {
   itemId: string
   quantity: number
+  name: string
+  type: ItemType
+  rarity: ItemRarity
+  iconId: string | null
 }
 
 export interface Quest {
@@ -863,6 +867,7 @@ export interface CombatReward {
     type: ItemType
     rarity: ItemRarity
     quantity: number
+    iconId?: string | null
   }[]
   completedContractIds?: string[] | null
   lootRolls?: CombatLootRoll[] | null
@@ -877,4 +882,6 @@ export interface CombatLootRoll {
   endsAtUtc: string
   eligibleCharacterIds: string[]
   canNeed: boolean
+  iconId?: string | null
+  type?: ItemType | null
 }

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -41,11 +42,6 @@ const targetNames: Readonly<Record<string, string>> = {
   BLIGHTED_SPIDER_L18: 'Осквернённый паук', BANDIT_ROGUE_L19: 'Опытный лесной разбойник', ALPHA_WOLF_L20: 'Осквернённый альфа-волк',
   WOLF_HIDE: 'Шкура волка', WOLF_FANG: 'Волчий клык', BOAR_TUSK: 'Кабаний клык',
   SPIDER_SILK: 'Паучий шёлк', SPIDER_VENOM_SAC: 'Ядовитая железа паука',
-}
-const itemNames: Readonly<Record<string, string>> = {
-  SMALL_HEALING_POTION: 'Малое зелье лечения', MINOR_ANTIDOTE: 'Малое противоядие',
-  MINOR_BATTLE_TONIC: 'Малый боевой тоник', DEEP_FOREST_CHARM: 'Оберег Глубокого леса',
-  BLIGHTED_GROVE_RING: 'Кольцо Осквернённой чащи',
 }
 const errorMessages: Readonly<Record<string, string>> = {
   quest_level_required: 'Нужен более высокий уровень.',
@@ -198,8 +194,9 @@ onMounted(async () => {
           <div>
             <span v-if="quest.rewardXp">+{{ quest.rewardXp }} опыта</span>
             <span v-if="quest.rewardGold">+{{ quest.rewardGold }} золота</span>
-            <span v-for="item in quest.rewardItems" :key="item.itemId">
-              {{ itemNames[item.itemId] ?? 'Предмет' }} ×{{ item.quantity }}
+            <span v-for="item in quest.rewardItems" :key="item.itemId" class="quest-reward-item">
+              <ItemIcon :icon-id="item.iconId" :item-id="item.itemId" :name="item.name" :type="item.type" :rarity="item.rarity" />
+              {{ item.name }} ×{{ item.quantity }}
             </span>
           </div>
         </section>
@@ -275,7 +272,7 @@ onMounted(async () => {
 .objective{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:8px}.objective__icon{width:30px;height:30px}.objective__content{display:grid;gap:5px}.objective__line{display:flex;justify-content:space-between;gap:var(--ui-space-3);font-size:.72rem}.objective__line b{white-space:nowrap;font-variant-numeric:tabular-nums}.objective--done .objective__line{color:var(--ui-color-success)}
 .objective__bar{height:4px;overflow:hidden;border-radius:var(--ui-radius-round);background:rgb(255 255 255 / 7%)}.objective__bar span{display:block;height:100%;border-radius:inherit;background:var(--ui-color-primary)}
 .objective--done .objective__bar span{background:var(--ui-color-success)}
-.quest-card__rewards{display:grid;gap:5px}.quest-card__rewards small{color:var(--ui-color-gold);font-size:var(--ui-font-size-xs);font-weight:800;letter-spacing:.08em}.quest-card__rewards div{display:flex;flex-wrap:wrap;gap:6px}.quest-card__rewards span{padding:4px 7px;border:1px solid rgb(232 200 102 / 14%);border-radius:var(--ui-radius-round);background:rgb(232 200 102 / 4%);color:#ddd3a5;font-size:var(--ui-font-size-xs)}
+.quest-card__rewards{display:grid;gap:5px}.quest-card__rewards small{color:var(--ui-color-gold);font-size:var(--ui-font-size-xs);font-weight:800;letter-spacing:.08em}.quest-card__rewards div{display:flex;flex-wrap:wrap;gap:6px}.quest-card__rewards span{padding:4px 7px;border:1px solid rgb(232 200 102 / 14%);border-radius:var(--ui-radius-round);background:rgb(232 200 102 / 4%);color:#ddd3a5;font-size:var(--ui-font-size-xs)}.quest-card__rewards .quest-reward-item{display:inline-flex;align-items:center;gap:4px}.quest-reward-item :deep(.item-icon){width:20px;height:20px;flex:0 0 auto}
 .quest-card__unlock{margin:0;padding-top:var(--ui-space-2);border-top:1px solid var(--ui-color-border);color:var(--ui-color-text-muted);font-size:.7rem}.quest-card__unlock strong{color:var(--ui-color-text-primary)}
 .quest-card__actions{display:flex;justify-content:flex-end}.quest-card__completed-mark{display:inline-flex;align-items:center;gap:6px;color:var(--ui-color-success);font-size:var(--ui-font-size-xs);font-weight:700}.quest-card__completed-mark :deep(.icon-generator){width:20px;height:20px}.quest-card--completed{opacity:.74}
 .quests__empty{text-align:center}.quests__empty p{margin-bottom:0;color:var(--ui-color-text-muted)}

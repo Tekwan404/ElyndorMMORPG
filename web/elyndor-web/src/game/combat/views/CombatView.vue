@@ -12,6 +12,7 @@ import CombatEffectStrip from '@/game/combat/CombatEffectStrip.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
 import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
 import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -802,6 +803,7 @@ onUnmounted(() => window.clearInterval(timer))
       >
         <article v-for="roll in lootRolls" :key="roll.lootRollId" class="loot-roll">
           <div class="loot-roll__heading">
+            <ItemIcon class="loot-roll__icon" :icon-id="roll.iconId" :item-id="roll.itemId" :name="roll.name" :type="roll.type ?? 'Equipment'" :rarity="roll.rarity" />
             <div>
               <small>ЦЕННАЯ ДОБЫЧА · {{ rarityLabel(roll.rarity) }}</small>
               <strong>{{ roll.name }}<span v-if="roll.quantity > 1"> ×{{ roll.quantity }}</span></strong>
@@ -1433,6 +1435,12 @@ onUnmounted(() => window.clearInterval(timer))
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.loot-roll__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
 }
 
 .loot-roll__heading > div {

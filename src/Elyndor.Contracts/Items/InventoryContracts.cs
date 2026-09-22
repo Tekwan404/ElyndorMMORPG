@@ -221,7 +221,8 @@ public sealed record PendingLootItemResponse(
     int Quantity,
     DateTimeOffset CreatedAtUtc,
     ItemStatsResponse Stats,
-    GeneratedItemSummaryResponse? GeneratedItem = null);
+    GeneratedItemSummaryResponse? GeneratedItem = null,
+    string? IconId = null);
 
 public sealed record PendingLootResponse(
     IReadOnlyList<PendingLootItemResponse> Items);

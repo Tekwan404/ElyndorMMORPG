@@ -50,14 +50,17 @@ public sealed record CombatLootRollResult(
     decimal? RollQuality = null,
     int? Stars = null,
     bool IsPerfect = false,
-    IReadOnlyList<CombatLootAffixResult>? Affixes = null);
+    IReadOnlyList<CombatLootAffixResult>? Affixes = null,
+    string? IconId = null,
+    ItemType? Type = null);
 
 public sealed record CombatRewardItemResult(
     string ItemId,
     string Name,
     ItemType Type,
     ItemRarity Rarity,
-    int Quantity);
+    int Quantity,
+    string? IconId = null);
 
 public sealed class CombatRewardService(
     GameDbContext dbContext,
@@ -510,7 +513,9 @@ public sealed class CombatRewardService(
                 affix.Value,
                 affix.MinAtGeneration,
                 affix.MaxAtGeneration,
-                affix.IsGuaranteed)).ToArray());
+                affix.IsGuaranteed)).ToArray(),
+            item.IconId,
+            item.Type);
     }
 
     private static bool CanNeed(
@@ -810,6 +815,7 @@ public sealed class CombatRewardService(
             definition.Name,
             definition.Type,
             definition.Rarity,
-            roll.Quantity);
+            roll.Quantity,
+            definition.IconId);
     }
 }

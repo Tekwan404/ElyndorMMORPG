@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Quests;
+using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Quests;
 
@@ -25,6 +27,7 @@ public static class QuestEndpoints
     private static async Task<IResult> GetAsync(
         ClaimsPrincipal user,
         QuestService service,
+        IContentSnapshotProvider contentProvider,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -32,8 +35,9 @@ public static class QuestEndpoints
 
         QuestJournalSnapshot snapshot =
             await service.GetAsync(accountId, cancellationToken);
+        GameContentPackage content = contentProvider.GetCurrent().Package;
         return Results.Ok(new QuestJournalResponse(
-            snapshot.Quests.Select(ToResponse).ToArray()));
+            snapshot.Quests.Select(quest => ToResponse(quest, content)).ToArray()));
     }
 
     private static async Task<IResult> AcceptAsync(
@@ -99,6 +103,7 @@ public static class QuestEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         QuestService service,
+        IContentSnapshotProvider contentProvider,
         CharacterOperationGuard operationGuard,
         CancellationToken cancellationToken)
     {
@@ -117,6 +122,7 @@ public static class QuestEndpoints
                 if (!result.IsSuccess)
                     return Problem(result.ErrorCode!, context);
 
+                GameContentPackage content = contentProvider.GetCurrent().Package;
                 return Results.Ok(new QuestClaimResponse(
                     result.QuestId!,
                     result.Granted,
@@ -126,15 +132,18 @@ public static class QuestEndpoints
                     result.Progression?.PreviousLevel ?? 0,
                     result.Progression?.CurrentLevel ?? 0,
                     result.Items.Select(item =>
-                        new QuestRewardItemResponse(
+                        ToRewardItemResponse(
                             item.ItemId,
-                            item.Quantity)).ToArray()));
+                            item.Quantity,
+                            content)).ToArray()));
             },
             () => InCombatProblem(context),
             cancellationToken);
     }
 
-    private static QuestResponse ToResponse(QuestJournalEntry quest) =>
+    private static QuestResponse ToResponse(
+        QuestJournalEntry quest,
+        GameContentPackage content) =>
         new(
             quest.Id,
             quest.DisplayName,
@@ -155,11 +164,27 @@ public static class QuestEndpoints
             quest.RewardXp,
             quest.RewardGold,
             quest.RewardItems.Select(item =>
-                new QuestRewardItemResponse(
-                    item.ItemId,
-                    item.Quantity)).ToArray(),
+                ToRewardItemResponse(item.ItemId, item.Quantity, content)).ToArray(),
             quest.PrerequisiteQuestIds,
             quest.UnlockLocationId);
+
+    private static QuestRewardItemResponse ToRewardItemResponse(
+        string itemId,
+        int quantity,
+        GameContentPackage content)
+    {
+        ItemDefinition? item = content.Items?.FirstOrDefault(candidate =>
+            string.Equals(candidate.Id, itemId, StringComparison.Ordinal));
+        return item is null
+            ? new QuestRewardItemResponse(itemId, quantity, itemId, "Unknown", "Common", null)
+            : new QuestRewardItemResponse(
+                item.Id,
+                quantity,
+                item.Name,
+                item.Type.ToString(),
+                item.Rarity.ToString(),
+                item.IconId);
+    }
 
     private static IResult Problem(string code, HttpContext context)
     {

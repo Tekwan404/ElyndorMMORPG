@@ -3,12 +3,12 @@ import { computed, ref } from 'vue'
 
 import type { CharacterStats, EquipmentSlot, InventoryItem } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
-import { itemArtUrl } from '@/assets/itemArt'
 import { classLabel, raceLabel } from '@/game/character/characterPresentation'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName, Rarity } from '@/ui/icons/icon.types'
+import type { GlyphName } from '@/ui/icons/icon.types'
 
 const emit = defineEmits<{
   'select-empty-slot': [slot: EquipmentSlot]
@@ -226,26 +226,6 @@ function equipmentErrorMessage(code: string | null): string | null {
   return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
-function itemArt(item: InventoryItem | null): string | undefined {
-  return itemArtUrl(item?.iconId)
-}
-
-function itemGlyph(item: InventoryItem | null, fallback: GlyphName): GlyphName {
-  if (!item) return fallback
-  if (item.slot === 'Weapon' || item.slot === 'MainHand') return 'sword'
-  if (item.slot === 'OffHand') return 'shield'
-  if (item.slot === 'Head') return 'helmet'
-  if (['Shoulders', 'Chest', 'Hands', 'Legs'].includes(item.slot ?? '')) return 'armor'
-  if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
-  if (item.slot === 'Cloak') return 'scroll'
-  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
-  return 'star'
-}
-
-function itemRarity(item: InventoryItem | null): Rarity | undefined {
-  return item?.rarity.toLowerCase() as Rarity | undefined
-}
-
 function rarityLabel(item: InventoryItem): string {
   const labels: Record<string, string> = {
     Common: 'Обычный',
@@ -438,10 +418,10 @@ function affixValue(statId: string, value: number): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
               />
             </span>
             <small>{{ slot.label }}</small>
@@ -471,10 +451,10 @@ function affixValue(statId: string, value: number): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
               />
             </span>
             <small>{{ slot.label }}</small>
@@ -516,11 +496,7 @@ function affixValue(statId: string, value: number): string {
       <article v-if="selectedItem" class="item-detail">
         <header class="item-detail__hero" :data-rarity="selectedItem.rarity">
           <div class="item-detail__icon">
-            <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" />
-            <IconGenerator
-              v-else
-              :config="{ id: 'selected-equipment', glyph: itemGlyph(selectedItem, 'armor'), category: 'equipment', rarity: itemRarity(selectedItem) }"
-            />
+            <ItemIcon :icon-id="selectedItem.iconId" :item-id="selectedItem.id" :name="selectedItem.name" :type="selectedItem.type" :equipment-slot="selectedItem.slot" :rarity="selectedItem.rarity" loading="eager" />
           </div>
           <div class="item-detail__identity">
             <strong>{{ selectedItem.name }}</strong>

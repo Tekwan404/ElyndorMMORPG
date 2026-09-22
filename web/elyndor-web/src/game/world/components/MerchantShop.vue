@@ -3,12 +3,11 @@ import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
-import { itemArtUrl } from '@/assets/itemArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
@@ -85,22 +84,6 @@ function filterLabel(filter: 'all' | MerchantItem['type']): string {
   return 'Все'
 }
 
-function itemArt(item: MerchantItem): string | undefined {
-  return itemArtUrl(item.iconId)
-}
-
-function itemGlyph(item: MerchantItem): GlyphName {
-  if (item.type === 'Consumable') return 'potion'
-  if (item.type === 'Equipment') return 'sword'
-  return 'ore'
-}
-
-function itemCategory(type: MerchantItem['type']): 'equipment' | 'consumable' | 'resource' {
-  if (type === 'Consumable') return 'consumable'
-  if (type === 'Equipment') return 'equipment'
-  return 'resource'
-}
-
 function itemTypeLabel(item: MerchantItem): string {
   if (item.type === 'Consumable') return 'Расходник'
   if (item.type === 'Equipment') return 'Экипировка'
@@ -119,16 +102,6 @@ function rarityLabel(item: MerchantItem): string {
 async function buy(definitionId: string): Promise<void> {
   const updated = await session.buyMerchantItem(MERCHANT_ID, definitionId, 1)
   if (updated) merchant.value = updated
-}
-
-function inventoryItemArt(item: InventoryItem): string | undefined {
-  return itemArtUrl(item.iconId)
-}
-
-function inventoryItemGlyph(item: InventoryItem): GlyphName {
-  if (item.type === 'Equipment') return 'sword'
-  if (item.type === 'Consumable') return 'potion'
-  return 'ore'
 }
 
 function inventoryItemTypeLabel(item: InventoryItem): string {
@@ -223,11 +196,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               @click="selectOffer(item)"
             >
               <span class="offer-card__icon">
-                <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-                <IconGenerator
-                  v-else
-                  :config="{ id: `merchant-${item.definitionId}`, glyph: itemGlyph(item), category: itemCategory(item.type) }"
-                />
+                <ItemIcon :icon-id="item.iconId" :item-id="item.definitionId" :name="item.name" :type="item.type" :rarity="item.rarity" />
               </span>
               <span class="offer-card__copy">
                 <small>{{ rarityLabel(item) }}</small>
@@ -240,11 +209,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail>
             <div class="merchant-detail__identity">
               <span class="merchant-detail__icon" :data-rarity="selectedOffer.rarity">
-                <img v-if="itemArt(selectedOffer)" :src="itemArt(selectedOffer)" :alt="selectedOffer.name" decoding="async" />
-                <IconGenerator
-                  v-else
-                  :config="{ id: `merchant-detail-${selectedOffer.definitionId}`, glyph: itemGlyph(selectedOffer), category: itemCategory(selectedOffer.type) }"
-                />
+                <ItemIcon :icon-id="selectedOffer.iconId" :item-id="selectedOffer.definitionId" :name="selectedOffer.name" :type="selectedOffer.type" :rarity="selectedOffer.rarity" loading="eager" />
               </span>
               <div>
                 <small>{{ rarityLabel(selectedOffer) }} · {{ itemTypeLabel(selectedOffer) }}</small>
@@ -298,11 +263,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         <div v-if="sellableItems.length" class="sell-list">
           <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
             <span class="sell-card__icon" :data-rarity="item.rarity">
-              <img v-if="inventoryItemArt(item)" :src="inventoryItemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-              <IconGenerator
-                v-else
-                :config="{ id: `merchant-inventory-${item.id}`, glyph: inventoryItemGlyph(item), category: item.type === 'Equipment' ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource' }"
-              />
+              <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
             </span>
             <div class="sell-card__copy">
               <small>{{ inventoryItemTypeLabel(item) }}</small>

@@ -11,7 +11,11 @@ public sealed record QuestObjectiveResponse(
 
 public sealed record QuestRewardItemResponse(
     string ItemId,
-    int Quantity);
+    int Quantity,
+    string Name,
+    string Type,
+    string Rarity,
+    string? IconId);
 
 public sealed record QuestResponse(
     string Id,

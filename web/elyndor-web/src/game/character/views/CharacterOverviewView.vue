@@ -4,7 +4,6 @@ import { computed, ref } from 'vue'
 import type { EquipmentSlot, InventoryItem, KnownAbility } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { gameArt } from '@/assets/gameArt'
-import { itemArtUrl } from '@/assets/itemArt'
 import {
   abilityDescription,
   abilityName,
@@ -14,10 +13,11 @@ import {
   raceLabel,
 } from '@/game/character/characterPresentation'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal, UIPanel } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName, Rarity } from '@/ui/icons/icon.types'
+import type { GlyphName } from '@/ui/icons/icon.types'
 
 const emit = defineEmits<{
   'select-empty-slot': [slot: EquipmentSlot]
@@ -123,10 +123,6 @@ function equipmentErrorMessage(code: string | null): string | null {
   return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
-function itemArt(item: InventoryItem | null): string | undefined {
-  return itemArtUrl(item?.iconId)
-}
-
 function formatCombatNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
@@ -147,22 +143,6 @@ const offHandTiming = computed(() => weaponTiming(character.value?.inventory.equ
 const totalAttacksPerSecond = computed(() =>
   (mainHandTiming.value?.aps ?? 0) + (offHandTiming.value?.aps ?? 0),
 )
-
-function itemGlyph(item: InventoryItem | null, fallback: GlyphName): GlyphName {
-  if (!item) return fallback
-  if (item.slot === 'Weapon' || item.slot === 'MainHand') return 'sword'
-  if (item.slot === 'OffHand') return 'shield'
-  if (item.slot === 'Head') return 'helmet'
-  if (item.slot === 'Shoulders' || item.slot === 'Chest' || item.slot === 'Hands' || item.slot === 'Legs') return 'armor'
-  if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
-  if (item.slot === 'Cloak') return 'scroll'
-  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
-  return 'star'
-}
-
-function itemRarity(item: InventoryItem | null): Rarity | undefined {
-  return item?.rarity.toLowerCase() as Rarity | undefined
-}
 
 function itemStats(item: InventoryItem): string[] {
   return [
@@ -221,10 +201,10 @@ function abilityInitials(ability: KnownAbility): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+                :config="{ id: `paperdoll-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
               />
             </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>
@@ -261,10 +241,10 @@ function abilityInitials(ability: KnownAbility): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <img v-if="itemArt(slot.item)" :src="itemArt(slot.item)" :alt="slot.item?.name ?? slot.label" loading="lazy" decoding="async" />
+              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-${slot.id}`, glyph: itemGlyph(slot.item, slot.glyph), category: 'equipment', rarity: itemRarity(slot.item) }"
+                :config="{ id: `paperdoll-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
               />
             </span>
             <small class="equipment-slot__label">{{ slot.label }}</small>

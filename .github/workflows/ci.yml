@@ -78,7 +78,7 @@ jobs:
         run: dotnet test Elyndor.slnx --configuration Release --no-build
 
       - name: Validate game content
-        run: dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- content/package.json
+        run: dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- --strict-item-icons content/package.json
 
       - name: Install frontend dependencies
         working-directory: web/elyndor-web

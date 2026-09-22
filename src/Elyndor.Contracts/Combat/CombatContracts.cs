@@ -125,7 +125,8 @@ public sealed record CombatRewardItemResponse(
     string Name,
     string Type,
     string Rarity,
-    int Quantity);
+    int Quantity,
+    string? IconId = null);
 
 public sealed record CombatLootRollResponse(
     Guid LootRollId,
@@ -135,7 +136,9 @@ public sealed record CombatLootRollResponse(
     int Quantity,
     DateTimeOffset EndsAtUtc,
     IReadOnlyList<Guid> EligibleCharacterIds,
-    bool CanNeed);
+    bool CanNeed,
+    string? IconId = null,
+    string? Type = null);
 
 public sealed record CombatLootRollChoiceResponse(
     bool Succeeded,

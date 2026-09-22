@@ -61,7 +61,7 @@
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHIELD",
-      "iconId": "warrior_rare_grey_fang_shield",
+      "iconId": "sets/warrior_rare_grey_fang_shield",
       "name": "Щит Серого Волка",
       "type": "Equipment",
       "rarity": "Rare",
@@ -117,7 +117,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
-      "iconId": "warrior_legendary_first_guard_shield",
+      "iconId": "sets/warrior_legendary_first_guard_shield",
       "name": "Щит Первого Стража",
       "type": "Equipment",
       "rarity": "Legendary",
@@ -145,7 +145,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
-      "iconId": "warrior_legendary_black_bastion_shield",
+      "iconId": "sets/warrior_legendary_black_bastion_shield",
       "name": "Щит Чёрного Бастиона",
       "type": "Equipment",
       "rarity": "Legendary",

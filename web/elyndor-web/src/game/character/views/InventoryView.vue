@@ -3,12 +3,11 @@ import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
-import { itemArtUrl } from '@/assets/itemArt'
 import { consumableSummary } from '@/game/items/consumablePresentation'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName, IconConfig } from '@/ui/icons/icon.types'
 import { ItemQualityStars, UIButton, UILoadingState, UIModal } from '@/ui/components'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = defineProps<{
   slotFilter?: EquipmentSlot | null
@@ -419,32 +418,6 @@ function typeLabel(item: InventoryItem): string {
   return item.slot ? labels[item.slot] ?? 'Снаряжение' : 'Снаряжение'
 }
 
-function itemArt(item: InventoryItem): string | undefined {
-  return itemArtUrl(item.iconId)
-}
-
-function itemGlyph(item: InventoryItem): GlyphName {
-  if (isSpatialArtifact(item)) return 'ring'
-  if (item.type === 'Material') return 'ore'
-  if (item.type === 'Consumable') return 'potion'
-  if (item.slot === 'Weapon' || item.slot === 'MainHand' || item.slot === 'OffHand') return 'sword'
-  if (item.slot === 'Head') return 'helmet'
-  if (item.slot === 'Chest' || item.slot === 'Legs' || item.slot === 'Hands' || item.slot === 'Waist' || item.slot === 'Wrist') return 'armor'
-  if (item.slot === 'Boots' || item.slot === 'Feet') return 'boots'
-  if (item.slot === 'Cloak') return 'scroll'
-  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'ring'
-  return 'star'
-}
-
-function itemIconConfig(item: InventoryItem, idPrefix: string): IconConfig {
-  return {
-    id: `${idPrefix}-${item.id}`,
-    glyph: itemGlyph(item),
-    category: item.type === 'Equipment' || isSpatialArtifact(item) ? 'equipment' : item.type === 'Consumable' ? 'consumable' : 'resource',
-    rarity: item.rarity.toLowerCase() as IconConfig['rarity'],
-  }
-}
-
 function resetFilters(): void {
   rarityFilter.value = 'all'
   equipableOnly.value = false
@@ -725,8 +698,7 @@ async function toggleSelectedLock(): Promise<void> {
               <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
             </span>
             <span class="bag-cell__icon">
-              <img v-if="itemArt(item)" :src="itemArt(item)" :alt="item.name" loading="lazy" decoding="async" />
-              <IconGenerator v-else :config="itemIconConfig(item, 'item')" />
+              <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
             </span>
             <ItemQualityStars
               v-if="item.generatedItem"
@@ -758,8 +730,7 @@ async function toggleSelectedLock(): Promise<void> {
       <article v-if="selectedItem" class="item-detail">
         <div class="item-detail__identity">
           <span class="item-detail__icon" :data-rarity="selectedItem.rarity">
-            <img v-if="itemArt(selectedItem)" :src="itemArt(selectedItem)" :alt="selectedItem.name" decoding="async" />
-            <IconGenerator v-else :config="itemIconConfig(selectedItem, 'item-detail')" />
+            <ItemIcon :icon-id="selectedItem.iconId" :item-id="selectedItem.id" :name="selectedItem.name" :type="selectedItem.type" :equipment-slot="selectedItem.slot" :rarity="selectedItem.rarity" loading="eager" />
           </span>
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
