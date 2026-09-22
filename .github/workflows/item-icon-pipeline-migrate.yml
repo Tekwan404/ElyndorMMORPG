@@ -1,0 +1,38 @@
+name: item-icon-pipeline-migrate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.head_ref == 'fix/item-icon-pipeline'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply item icon pipeline migration
+        run: python3 tools/dev/item_icon_pipeline_migrate.py
+
+      - name: Validate generated diff
+        run: git diff --check
+
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo "No migration changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: apply canonical item icon migration"
+          git push origin HEAD:${{ github.head_ref }}

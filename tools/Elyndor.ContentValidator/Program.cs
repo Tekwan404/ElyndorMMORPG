@@ -1,5 +1,6 @@
 using Elyndor.ContentValidator;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 
 bool strictTalents = args.Any(argument =>
@@ -20,6 +21,32 @@ try
         + $"BalanceVersion={package.BalanceVersion}, Definitions={indexes.DefinitionsByKey.Count}, "
         + $"Locations={indexes.LocationsById.Count}, Monsters={indexes.MonstersById.Count}, "
         + $"Items={indexes.ItemsById.Count}");
+
+    string itemAssetRoot = FindItemAssetRoot(packagePath);
+    ItemIconAuditReport itemIconAudit = ItemIconAuditReport.Create(
+        package.Items ?? Array.Empty<ItemDefinition>(),
+        itemAssetRoot);
+    Console.WriteLine(
+        $"Item icon audit: Total={itemIconAudit.TotalItems}, "
+        + $"WithIconId={itemIconAudit.WithIconId}, WithoutIconId={itemIconAudit.WithoutIconId}, "
+        + $"Valid={itemIconAudit.Valid}, Missing={itemIconAudit.Missing}, "
+        + $"CaseMismatch={itemIconAudit.CaseMismatch}, LegacyOnlyMappings={itemIconAudit.LegacyOnlyMappings}, "
+        + $"InvalidPath={itemIconAudit.InvalidPath}, UnsupportedFormat={itemIconAudit.UnsupportedFormat}, "
+        + $"Ambiguous={itemIconAudit.Ambiguous}");
+
+    if (!itemIconAudit.IsValid)
+    {
+        foreach (ItemIconAuditEntry entry in itemIconAudit.Entries.Where(entry => entry.IsBroken))
+        {
+            Console.Error.WriteLine(
+                $"ITEM_ICON_{entry.Status.ToString().ToUpperInvariant()}: "
+                + $"item={entry.ItemId} iconId={entry.IconId ?? "<null>"} "
+                + $"canonical={entry.CanonicalIconId ?? "<none>"} {entry.Message}");
+        }
+
+        throw new InvalidDataException(
+            $"Item icon validation failed with {itemIconAudit.Broken} broken reference(s).");
+    }
 
     if (auditTalents || strictTalents)
     {
@@ -72,4 +99,25 @@ catch (UnauthorizedAccessException exception)
 {
     Console.Error.WriteLine($"Unable to read content package '{packagePath}': {exception.Message}");
     return 1;
+}
+
+static string FindItemAssetRoot(string packagePath)
+{
+    DirectoryInfo? directory = new FileInfo(packagePath).Directory;
+    while (directory is not null)
+    {
+        string candidate = Path.Combine(
+            directory.FullName,
+            "web",
+            "elyndor-web",
+            "src",
+            "assets",
+            "items");
+        if (Directory.Exists(candidate))
+            return candidate;
+        directory = directory.Parent;
+    }
+
+    throw new DirectoryNotFoundException(
+        $"Unable to locate web/elyndor-web/src/assets/items above content package '{packagePath}'.");
 }
