@@ -3,26 +3,31 @@ const itemArtModules = import.meta.glob<string>(
   { eager: true, import: 'default' },
 )
 
-function itemArtPriority(path: string): number {
-  if (path.startsWith('./items/sets/')) return 0
-  if (path.split('/').length === 3) return 2
-  return 1
+const ITEM_ICON_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/
+
+export function isCanonicalItemIconId(iconId: string | null | undefined): iconId is string {
+  if (!iconId || !ITEM_ICON_ID.test(iconId)) return false
+  return !iconId.split('/').some(segment => segment === '.' || segment === '..')
 }
 
-const itemArtById = new Map<string, string>(
-  Object.entries(itemArtModules)
-    .sort(([firstPath], [secondPath]) =>
-      itemArtPriority(firstPath) - itemArtPriority(secondPath)
-      || firstPath.localeCompare(secondPath),
-    )
-    .map(([path, url]) => {
-      const fileName = path.split('/').pop() ?? path
-      const iconId = fileName.replace(/\.[^.]+$/, '')
-      return [iconId, url]
-    }),
-)
+export function canonicalItemIconIdFromModulePath(path: string): string {
+  const relative = path.replace(/^\.\/items\//, '')
+  return relative.replace(/\.[^.]+$/, '')
+}
 
-export function itemArtUrl(iconId: string | null | undefined): string | undefined {
-  if (!iconId) return undefined
+const itemArtById = new Map<string, string>()
+for (const [path, url] of Object.entries(itemArtModules)) {
+  const iconId = canonicalItemIconIdFromModulePath(path)
+  if (itemArtById.has(iconId)) {
+    throw new Error(`Duplicate canonical item icon id: ${iconId}`)
+  }
+  itemArtById.set(iconId, url)
+}
+
+export function resolveItemArtUrl(iconId: string | null | undefined): string | undefined {
+  if (!isCanonicalItemIconId(iconId)) return undefined
   return itemArtById.get(iconId)
 }
+
+/** @deprecated Use ItemIcon.vue; retained only until the branch migration replaces old call sites. */
+export const itemArtUrl = resolveItemArtUrl

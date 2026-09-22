@@ -1,0 +1,60 @@
+name: item-icon-pipeline-migrate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.head_ref == 'fix/item-icon-pipeline'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply item icon pipeline migration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('tools/dev/item_icon_pipeline_migrate.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              'data = json.loads(path.read_text(encoding="utf-8"))',
+              'data = json.loads(path.read_text(encoding="utf-8-sig"))',
+          )
+          old = '''            needle = f'"iconId": {old_json}'
+                      count = text.count(needle)
+                      if count == 0:
+                          raise RuntimeError(f"{path}: parsed IconId {old!r}, but raw field was not found")
+                      text = text.replace(needle, f'"iconId": {new_json}')'''.replace('          ', '')
+          new = '''            pattern = re.compile(r'("iconId"\\s*:\\s*)' + re.escape(old_json))
+                      text, count = pattern.subn(lambda match: f'{match.group(1)}{new_json}', text)
+                      if count == 0:
+                          raise RuntimeError(f"{path}: parsed IconId {old!r}, but raw field was not found")'''.replace('          ', '')
+          if old not in text:
+              raise SystemExit('migration replacement block not found')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          python3 tools/dev/item_icon_pipeline_migrate.py
+
+      - name: Validate generated diff
+        run: git diff --check
+
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo "No migration changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: apply canonical item icon migration"
+          git push origin HEAD:${{ github.head_ref }}
