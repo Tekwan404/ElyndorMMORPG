@@ -1,0 +1,693 @@
+# Item icon audit - 2026-09-23
+
+Generated from final composed item definitions (later lexical content files override earlier definitions) and the current item asset root.
+
+## Summary
+
+- Total ItemDefinitions: 783
+- With IconId: 673
+- Without IconId: 110
+- IconId with existing asset: 360
+- IconId whose asset is missing: 313
+- Items currently using fallback: 423
+- Item assets not referenced by an ItemDefinition: 247
+
+## Items without IconId
+
+- `ACC_EPIC_14_AMULET`
+- `ACC_EPIC_14_CLOAK`
+- `ACC_EPIC_14_RING`
+- `ACC_LEGENDARY_18_AMULET`
+- `ACC_LEGENDARY_18_CLOAK`
+- `ACC_LEGENDARY_18_RING`
+- `ACC_LEGENDARY_23_AMULET`
+- `ACC_LEGENDARY_23_CLOAK`
+- `ACC_LEGENDARY_23_RING`
+- `ACC_RARE_10_AMULET`
+- `ACC_RARE_10_CLOAK`
+- `ACC_RARE_10_RING`
+- `APPRENTICE_CLOTH_ROBE`
+- `APPRENTICE_STAFF`
+- `APPRENTICE_WAND`
+- `ARCHER_COMMON_WHISPER_TRACKER_BOW`
+- `ARCHER_COMMON_WHISPER_TRACKER_CHEST`
+- `ARCHER_COMMON_WHISPER_TRACKER_FEET`
+- `ARCHER_COMMON_WHISPER_TRACKER_HANDS`
+- `ARCHER_COMMON_WHISPER_TRACKER_HEAD`
+- `ARCHER_COMMON_WHISPER_TRACKER_LEGS`
+- `ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_BOW`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_CHEST`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_FEET`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_HANDS`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_HEAD`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_LEGS`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS`
+- `ARCHER_LEGENDARY_STAR_HUNTER_BOW`
+- `ARCHER_LEGENDARY_STAR_HUNTER_CHEST`
+- `ARCHER_LEGENDARY_STAR_HUNTER_FEET`
+- `ARCHER_LEGENDARY_STAR_HUNTER_HANDS`
+- `ARCHER_LEGENDARY_STAR_HUNTER_HEAD`
+- `ARCHER_LEGENDARY_STAR_HUNTER_LEGS`
+- `ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS`
+- `ARCHER_RARE_THORN_TRAIL_BOW`
+- `ARCHER_RARE_THORN_TRAIL_CHEST`
+- `ARCHER_RARE_THORN_TRAIL_FEET`
+- `ARCHER_RARE_THORN_TRAIL_HANDS`
+- `ARCHER_RARE_THORN_TRAIL_HEAD`
+- `ARCHER_RARE_THORN_TRAIL_LEGS`
+- `ARCHER_RARE_THORN_TRAIL_SHOULDERS`
+- `ARCHER_UNCOMMON_GREY_TRAIL_BOW`
+- `ARCHER_UNCOMMON_GREY_TRAIL_CHEST`
+- `ARCHER_UNCOMMON_GREY_TRAIL_FEET`
+- `ARCHER_UNCOMMON_GREY_TRAIL_HANDS`
+- `ARCHER_UNCOMMON_GREY_TRAIL_HEAD`
+- `ARCHER_UNCOMMON_GREY_TRAIL_LEGS`
+- `ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS`
+- `BOAR_HIDE`
+- `BOAR_HIDE_VEST`
+- `HUNTER_LEATHER_VEST`
+- `HUNTER_SHORTBOW`
+- `MAGE_COMMON_BLUE_CANDLE_CHEST`
+- `MAGE_COMMON_BLUE_CANDLE_FEET`
+- `MAGE_COMMON_BLUE_CANDLE_HANDS`
+- `MAGE_COMMON_BLUE_CANDLE_HEAD`
+- `MAGE_COMMON_BLUE_CANDLE_LEGS`
+- `MAGE_COMMON_BLUE_CANDLE_SHOULDERS`
+- `MAGE_COMMON_BLUE_CANDLE_STAFF`
+- `MAGE_COMMON_BLUE_CANDLE_WAND`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_CHEST`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_FEET`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_HANDS`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_HEAD`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_LEGS`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_SHOULDERS`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_STAFF`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_WAND`
+- `MINOR_ANTIDOTE`
+- `MINOR_BATTLE_TONIC`
+- `RANGER_FANG_BLADE`
+- `RANGER_HIDE_VEST`
+- `RANGER_SILK_HOOD`
+- `RANGER_TRAIL_BOOTS`
+- `RANGER_TRAIL_LEGGINGS`
+- `SMALL_FOCUS_POTION`
+- `SMALL_HEALING_POTION`
+- `SMALL_MANA_POTION`
+- `SMALL_RAGE_POTION`
+- `SPIDER_SILK_HOOD`
+- `SPIDER_VENOM_SAC`
+- `UNIQUE_ARCHER_LAST_CONSTELLATION_L25`
+- `UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25`
+- `UNIQUE_WARRIOR_BLACKHEART_L25`
+- `WARRIOR_COMMON_BORDER_STEEL_CHEST`
+- `WARRIOR_COMMON_BORDER_STEEL_FEET`
+- `WARRIOR_COMMON_BORDER_STEEL_HANDS`
+- `WARRIOR_COMMON_BORDER_STEEL_HEAD`
+- `WARRIOR_COMMON_BORDER_STEEL_LEGS`
+- `WARRIOR_COMMON_BORDER_STEEL_SHIELD`
+- `WARRIOR_COMMON_BORDER_STEEL_SHOULDERS`
+- `WARRIOR_COMMON_BORDER_STEEL_WEAPON`
+- `WARRIOR_UNCOMMON_IRON_WATCH_CHEST`
+- `WARRIOR_UNCOMMON_IRON_WATCH_FEET`
+- `WARRIOR_UNCOMMON_IRON_WATCH_HANDS`
+- `WARRIOR_UNCOMMON_IRON_WATCH_HEAD`
+- `WARRIOR_UNCOMMON_IRON_WATCH_LEGS`
+- `WARRIOR_UNCOMMON_IRON_WATCH_SHIELD`
+- `WARRIOR_UNCOMMON_IRON_WATCH_SHOULDERS`
+- `WARRIOR_UNCOMMON_IRON_WATCH_WEAPON`
+- `WOLF_HIDE`
+
+## Items whose IconId has no asset
+
+- `ACC_COMMON_2_AMULET` - `acc_common_2_amulet`
+- `ACC_COMMON_2_CLOAK` - `acc_common_2_cloak`
+- `ACC_COMMON_2_RING` - `acc_common_2_ring`
+- `ACC_UNCOMMON_6_AMULET` - `acc_uncommon_6_amulet`
+- `ACC_UNCOMMON_6_CLOAK` - `acc_uncommon_6_cloak`
+- `ACC_UNCOMMON_6_RING` - `acc_uncommon_6_ring`
+- `ARBALET_CHIORNYKH_VRAT` - `arbalet_chiornykh_vrat`
+- `ARCHER_COMMON_WHISPER_TRACKER_QUIVER` - `archer_common_whisper_tracker_quiver`
+- `ARCHER_EPIC_MOONLEAF_SHADOW_QUIVER` - `archer_epic_moonleaf_shadow_quiver`
+- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_QUIVER` - `archer_legendary_black_constellation_quiver`
+- `ARCHER_LEGENDARY_STAR_HUNTER_QUIVER` - `archer_legendary_star_hunter_quiver`
+- `ARCHER_RARE_THORN_TRAIL_QUIVER` - `archer_rare_thorn_trail_quiver`
+- `ARCHER_UNCOMMON_GREY_TRAIL_QUIVER` - `archer_uncommon_grey_trail_quiver`
+- `BAGROVAIA_TKAN` - `bagrovaia_tkan`
+- `BAGROVAIA_ZHELEZA` - `bagrovaia_zheleza`
+- `BASTIONNAIA_TKAN` - `bastionnaia_tkan`
+- `BLIGHTED_GROVE_RING` - `warrior/item-warrior-ring`
+- `BOAR_TUSK` - `boar_tusk`
+- `BOLOTNAIA_KOZHA` - `bolotnaia_kozha`
+- `BOLOTNOE_IADRO` - `bolotnoe_iadro`
+- `BOLOTNOE_MIASO` - `bolotnoe_miaso`
+- `BROODMOTHER_FANG_CHARM` - `warrior/item-warrior-amulet`
+- `CHERNOKAMENNAIA_SEKIRA` - `imported/chernokamennaia_sekira`
+- `CHERNOKAMENNOE_IADRO` - `chernokamennoe_iadro`
+- `CHESHUICHATYI_PLASHCH_VASILISKA` - `imported/cheshuichatyi_plashch_vasiliska`
+- `CHIORNAIA_KORA` - `chiornaia_kora`
+- `CHIORNAIA_MANA` - `chiornaia_mana`
+- `CHIORNOE_ZHELEZO` - `chiornoe_zhelezo`
+- `CHIORNYI_KLYK` - `chiornyi_klyk`
+- `CHIORNYI_METALL` - `chiornyi_metall`
+- `CHITIN_FRAGMENT` - `chitin_fragment`
+- `DEEP_FOREST_CHARM` - `warrior/item-warrior-amulet`
+- `DOZORNYI_LUK_STAROGO_TRAKTA` - `imported/dozornyi_luk_starogo_trakta`
+- `DUNGEON_CATALYST` - `ore`
+- `DUNGEON_MINES_ARCHER_GLOVES_EPIC` - `dungeon_mines_archer_gloves_epic`
+- `DUNGEON_MINES_ARCHER_LEGENDARY_BOW` - `dungeon_mines_archer_legendary_bow`
+- `DUNGEON_MINES_ARCHER_LEGS_RARE` - `dungeon_mines_archer_legs_rare`
+- `DUNGEON_MINES_MAGE_BOOTS_EPIC` - `dungeon_mines_mage_boots_epic`
+- `DUNGEON_MINES_MAGE_HOOD_RARE` - `dungeon_mines_mage_hood_rare`
+- `DUNGEON_MINES_MAGE_LEGENDARY_STAFF` - `dungeon_mines_mage_legendary_staff`
+- `DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC` - `dungeon_mines_warrior_gauntlets_epic`
+- `DUNGEON_MINES_WARRIOR_HELM_RARE` - `dungeon_mines_warrior_helm_rare`
+- `DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD` - `dungeon_mines_warrior_legendary_shield`
+- `EKHO_KLASSA` - `ekho_klassa`
+- `EKHO_ZNAMENI` - `ekho_znameni`
+- `ENHANCEMENT_ORE` - `ore`
+- `FITIL` - `fitil`
+- `FOKUS_CHIORNOI_ZVEZDY` - `fokus_chiornoi_zvezdy`
+- `FOKUS_OSTATOCHNOI_MANY` - `fokus_ostatochnoi_many`
+- `FONAR_UTONUVSHEGO_PALOMNIKA` - `imported/fonar_utonuvshego_palomnika`
+- `FORGE_SCRAP` - `ore`
+- `FRAGMENT_CHIORNOGO_NASLEDIIA` - `fragment_chiornogo_naslediia`
+- `GLUBINNYI_IAD` - `glubinnyi_iad`
+- `GRUBAIA_TKAN` - `grubaia_tkan`
+- `IADOVITAIA_ZHELEZA` - `iadovitaia_zheleza`
+- `IADOVITOE_ZHALO` - `iadovitoe_zhalo`
+- `KABANE_MIASO` - `kabane_miaso`
+- `KADILO_INKVIZITORA` - `kadilo_inkvizitora`
+- `KADILO_OCHISHCHAIUSHCHEGO_PLAMENI` - `kadilo_ochishchaiushchego_plameni`
+- `KAMENNOE_IADRO` - `kamennoe_iadro`
+- `KAPIUSHON_CHASHCHOBY` - `imported/kapiushon_chashchoby`
+- `KAPIUSHON_TENEVOGO_BRAKONERA` - `imported/kapiushon_tenevogo_brakonera`
+- `KHITIN` - `khitin`
+- `KIRASA_KAMNEGLOTA` - `imported/kirasa_kamneglota`
+- `KIRASA_MATIOROGO_VOZHAKA` - `imported/kirasa_matiorogo_vozhaka`
+- `KLINOK_PALACHA_ZATMENIIA` - `klinok_palacha_zatmeniia`
+- `KLINOK_PEPELNOGO_RYTSARIA` - `imported/klinok_pepelnogo_rytsaria`
+- `KLINOK_PERVOGO_STRAZHA` - `klinok_pervogo_strazha`
+- `KLINOK_PYLNOI_DOROGI` - `imported/klinok_pylnoi_dorogi`
+- `KLINOK_ZERKALNOGO_EKHA` - `klinok_zerkalnogo_ekha`
+- `KLIUCH_KOMENDANTA` - `kliuch_komendanta`
+- `KLYK` - `klyk`
+- `KLYK_MATERI_TOPEI` - `imported/klyk_materi_topei`
+- `KLYK_MATIOROGO_VOZHAKA` - `imported/klyk_matiorogo_vozhaka`
+- `KOLTSO_KORNEVOI_ROSY` - `imported/koltso_kornevoi_rosy`
+- `KOLTSO_RAZBITOGO_OTRAZHENIIA` - `koltso_razbitogo_otrazheniia`
+- `KOPIO_PALACHA_GRANITSY` - `imported/kopio_palacha_granitsy`
+- `KORONA_CHUMNOGO_ZHRETSA` - `imported/korona_chumnogo_zhretsa`
+- `KOSTIANAIA_PYL` - `kostianaia_pyl`
+- `KOSTIANOI_KLINOK_MARSHALA` - `kostianoi_klinok_marshala`
+- `KOST_ILI_ROG` - `kost_ili_rog`
+- `KROVAVYI_REAGENT` - `krovavyi_reagent`
+- `KRUSHITEL_KRIVOKORNIA` - `krushitel_krivokornia`
+- `KUZNECHNAIA_DETAL` - `kuznechnaia_detal`
+- `LIGHT_HIDE` - `leather`
+- `LIGHT_LEATHER` - `leather`
+- `LIK_POKHISHCHENNOI_DUSHI` - `lik_pokhishchennoi_dushi`
+- `LOM` - `lom`
+- `LUK_BASTIONNOGO_DOZORA` - `imported/luk_bastionnogo_dozora`
+- `LUK_BEZMOLVNOGO_ZNAMENI` - `luk_bezmolvnogo_znameni`
+- `LUK_DVOINOGO_EKHA` - `imported/luk_dvoinogo_ekha`
+- `LUK_TROINOGO_ASPEKTA` - `luk_troinogo_aspekta`
+- `LUK_ZVONKOGO_KRYLA` - `imported/luk_zvonkogo_kryla`
+- `LUNNAIA_PYL` - `lunnaia_pyl`
+- `MAGE_COMMON_BLUE_CANDLE_FOCUS` - `mage_common_blue_candle_focus`
+- `MAGE_EPIC_SHATTERED_STAR_CHEST` - `sets/mage_epic_shattered_star_chest`
+- `MAGE_EPIC_SHATTERED_STAR_FEET` - `sets/mage_epic_shattered_star_feet`
+- `MAGE_EPIC_SHATTERED_STAR_FOCUS` - `mage_epic_shattered_star_focus`
+- `MAGE_EPIC_SHATTERED_STAR_HANDS` - `sets/mage_epic_shattered_star_hands`
+- `MAGE_EPIC_SHATTERED_STAR_HEAD` - `sets/mage_epic_shattered_star_head`
+- `MAGE_EPIC_SHATTERED_STAR_LEGS` - `sets/mage_epic_shattered_star_legs`
+- `MAGE_EPIC_SHATTERED_STAR_SHOULDERS` - `sets/mage_epic_shattered_star_shoulders`
+- `MAGE_EPIC_SHATTERED_STAR_STAFF` - `sets/mage_epic_shattered_star_staff`
+- `MAGE_EPIC_SHATTERED_STAR_WAND` - `sets/mage_epic_shattered_star_wand`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST` - `sets/mage_legendary_eclipsed_oracle_chest`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET` - `sets/mage_legendary_eclipsed_oracle_feet`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS` - `mage_legendary_eclipsed_oracle_focus`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS` - `sets/mage_legendary_eclipsed_oracle_hands`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD` - `sets/mage_legendary_eclipsed_oracle_head`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS` - `sets/mage_legendary_eclipsed_oracle_legs`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS` - `sets/mage_legendary_eclipsed_oracle_shoulders`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF` - `sets/mage_legendary_eclipsed_oracle_staff`
+- `MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND` - `sets/mage_legendary_eclipsed_oracle_wand`
+- `MAGE_LEGENDARY_SILENT_ARCHON_CHEST` - `sets/mage_legendary_silent_archon_chest`
+- `MAGE_LEGENDARY_SILENT_ARCHON_FEET` - `sets/mage_legendary_silent_archon_feet`
+- `MAGE_LEGENDARY_SILENT_ARCHON_FOCUS` - `mage_legendary_silent_archon_focus`
+- `MAGE_LEGENDARY_SILENT_ARCHON_HANDS` - `sets/mage_legendary_silent_archon_hands`
+- `MAGE_LEGENDARY_SILENT_ARCHON_HEAD` - `sets/mage_legendary_silent_archon_head`
+- `MAGE_LEGENDARY_SILENT_ARCHON_LEGS` - `sets/mage_legendary_silent_archon_legs`
+- `MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS` - `sets/mage_legendary_silent_archon_shoulders`
+- `MAGE_LEGENDARY_SILENT_ARCHON_STAFF` - `sets/mage_legendary_silent_archon_staff`
+- `MAGE_LEGENDARY_SILENT_ARCHON_WAND` - `sets/mage_legendary_silent_archon_wand`
+- `MAGE_RARE_THREE_ELEMENTS_CHEST` - `sets/mage_rare_three_elements_chest`
+- `MAGE_RARE_THREE_ELEMENTS_FEET` - `sets/mage_rare_three_elements_feet`
+- `MAGE_RARE_THREE_ELEMENTS_FOCUS` - `mage_rare_three_elements_focus`
+- `MAGE_RARE_THREE_ELEMENTS_HANDS` - `sets/mage_rare_three_elements_hands`
+- `MAGE_RARE_THREE_ELEMENTS_HEAD` - `sets/mage_rare_three_elements_head`
+- `MAGE_RARE_THREE_ELEMENTS_LEGS` - `sets/mage_rare_three_elements_legs`
+- `MAGE_RARE_THREE_ELEMENTS_SHOULDERS` - `sets/mage_rare_three_elements_shoulders`
+- `MAGE_RARE_THREE_ELEMENTS_STAFF` - `sets/mage_rare_three_elements_staff`
+- `MAGE_RARE_THREE_ELEMENTS_WAND` - `sets/mage_rare_three_elements_wand`
+- `MAGE_UNCOMMON_FORGOTTEN_RUNES_FOCUS` - `mage_uncommon_forgotten_runes_focus`
+- `MANAKRISTALL` - `manakristall`
+- `MANAPYL` - `manapyl`
+- `MANASOL` - `manasol`
+- `MATOCHNOE_ZHALO` - `matochnoe_zhalo`
+- `MESHOCHEK_MONET` - `meshochek_monet`
+- `MESHOCHEK_REAGENTOV` - `meshochek_reagentov`
+- `MIASO_ZVERIA` - `miaso_zveria`
+- `MINERALIZOVANNAIA_KOST` - `mineralizovannaia_kost`
+- `MOKRAIA_TKAN` - `mokraia_tkan`
+- `MOLOT_ARK_TORA` - `molot_ark_tora`
+- `MOLOT_KHOZIAINA_ZHIL` - `imported/molot_khoziaina_zhil`
+- `NAPLECHNIKI_BAGROVOI_GARPII` - `naplechniki_bagrovoi_garpii`
+- `NARUCHI_GOBLINSKOGO_KAPKANSHCHIKA` - `imported/naruchi_goblinskogo_kapkanshchika`
+- `OBLOMOK_BASTIONNOI_BRONI` - `oblomok_bastionnoi_broni`
+- `OBLOMOK_KOSTI` - `oblomok_kosti`
+- `OBSIDIAN` - `obsidian`
+- `OBSIDIANOVAIA_KOZHA` - `obsidianovaia_kozha`
+- `OBSIDIANOVAIA_KROSHKA` - `obsidianovaia_kroshka`
+- `OBSIDIANOVAIA_PLITA` - `obsidianovaia_plita`
+- `OBSIDIANOVYI_KHITIN` - `obsidianovyi_khitin`
+- `OBUGLENNYI_KLYK` - `obuglennyi_klyk`
+- `OGNENNAIA_ESSENTSIIA` - `ognennaia_essentsiia`
+- `ORUZHEINAIA_DETAL` - `oruzheinaia_detal`
+- `ORUZHEINAIA_PLASTINA` - `oruzheinaia_plastina`
+- `ORUZHEINYI_FRAGMENT` - `oruzheinyi_fragment`
+- `OSKOLOCHNYI_ZHEZL` - `imported/oskolochnyi_zhezl`
+- `OSKOLOK_DUKHA` - `oskolok_dukha`
+- `OSKOLOK_DUSHI` - `oskolok_dushi`
+- `OSKOLOK_PANTSIRIA` - `oskolok_pantsiria`
+- `OSKOLOK_PERVOGO_STRAZHA` - `oskolok_pervogo_strazha`
+- `OSKOLOK_RASKOLA` - `oskolok_raskola`
+- `OSKOLOK_RUDY` - `oskolok_rudy`
+- `OSKOLOK_SERDTSA_BASTIONA` - `oskolok_serdtsa_bastiona`
+- `OSKOLOK_SVETA` - `oskolok_sveta`
+- `OSKOLOK_ZAKLINANIIA` - `oskolok_zaklinaniia`
+- `OSKVERNIONNOE_SEMIA` - `oskvernionnoe_semia`
+- `OSTATOK_DUSHI` - `ostatok_dushi`
+- `PADALNAIA_KOZHA` - `padalnaia_kozha`
+- `PAUCHII_OBEREG` - `imported/pauchii_obereg`
+- `PECHAT_BEZMOLVNOGO_SUDA` - `pechat_bezmolvnogo_suda`
+- `PECHAT_KHRANITELIA_RASKOLA` - `imported/pechat_khranitelia_raskola`
+- `PECHAT_MAGISTRA` - `pechat_magistra`
+- `PECHAT_MARSHALA` - `pechat_marshala`
+- `PECHAT_PREDVESTNIKA` - `imported/pechat_predvestnika`
+- `PECHAT_TRIEDINSTVA` - `pechat_triedinstva`
+- `PECHAT_UMBRY` - `pechat_umbry`
+- `PECHAT_VRAT` - `pechat_vrat`
+- `PEPELNAIA_PYL` - `pepelnaia_pyl`
+- `PEPELNOE_MIASO` - `pepelnoe_miaso`
+- `PEPELNYE_NAPLECHNIKI_DOZORNOGO` - `imported/pepelnye_naplechniki_dozornogo`
+- `PEPELNYI_REAGENT` - `pepelnyi_reagent`
+- `PERCHATKI_TRAVNIKA` - `imported/perchatki_travnika`
+- `PERO_ILI_KOGOT` - `pero_ili_kogot`
+- `PESHCHERNAIA_MEMBRANA_ILI_PANTSIR` - `peshchernaia_membrana_ili_pantsir`
+- `PESHCHERNAIA_SLIZ` - `peshchernaia_sliz`
+- `PLASHCH_BRODIACHEGO_NAIOMNIKA` - `imported/plashch_brodiachego_naiomnika`
+- `PLASHCH_KRYLATOGO_OKHOTNIKA` - `plashch_krylatogo_okhotnika`
+- `PLASHCH_LESNOI_TROPY` - `imported/plashch_lesnoi_tropy`
+- `PLOTNAIA_TKAN` - `plotnaia_tkan`
+- `PORCHENOE_MIASO` - `porchenoe_miaso`
+- `PORCHENYI_KHITIN` - `porchenyi_khitin`
+- `POSOKH_CHIORNOI_ZVEZDY` - `posokh_chiornoi_zvezdy`
+- `POSOKH_LESNOI_VEDMY` - `imported/posokh_lesnoi_vedmy`
+- `POSOKH_SORVANNOGO_ZAKLIATIIA` - `posokh_sorvannogo_zakliatiia`
+- `PROKLIATYI_OBEREG` - `prokliatyi_obereg`
+- `PROZRACHNOE_KRYLO` - `prozrachnoe_krylo`
+- `PRUZHINA_KAPKANA` - `pruzhina_kapkana`
+- `PYLTSA_ROEVIKA` - `pyltsa_roevika`
+- `PYL_OTRAZHENII` - `pyl_otrazhenii`
+- `PYL_PORCHI` - `pyl_porchi`
+- `RANGER_FANG_CHARM` - `ranger_fang_charm`
+- `RECRUIT_HEAVY_CHEST` - `warrior/item-warrior-chestplate`
+- `RECRUIT_IRON_SWORD` - `warrior/item-warrior-sword`
+- `RECRUIT_WOODEN_SHIELD` - `warrior/item-warrior-shield`
+- `REFORGE_STONE` - `ore`
+- `ROUGH_HIDE` - `leather`
+- `ROUGH_LEATHER` - `leather`
+- `RUDNYI_MESHOCHEK` - `rudnyi_meshochek`
+- `RUNICHESKAIA_NIT` - `runicheskaia_nit`
+- `RUNICHESKAIA_PLASTINA` - `runicheskaia_plastina`
+- `RUNICHESKOE_IADRO` - `runicheskoe_iadro`
+- `RUNNAIA_KROSHKA` - `runnaia_kroshka`
+- `RUNNAIA_PLASTINA` - `runnaia_plastina`
+- `RUNNAIA_PYL` - `runnaia_pyl`
+- `RUNNOE_SERDTSE_KOLOSSA` - `runnoe_serdtse_kolossa`
+- `RUNNYI_FONAR_SHTREKA` - `imported/runnyi_fonar_shtreka`
+- `RUNNYI_NAGRUDNIK_PEREVALA` - `imported/runnyi_nagrudnik_perevala`
+- `RVANAIA_SBRUIA` - `rvanaia_sbruia`
+- `RVANAIA_SHERST` - `rvanaia_sherst`
+- `SEKIRA_CHASHCHOBY` - `imported/sekira_chashchoby`
+- `SERDTSEVINA_LESNOI_PORCHI` - `serdtsevina_lesnoi_porchi`
+- `SERDTSE_BOLOTNOGO_SVETA` - `serdtse_bolotnogo_sveta`
+- `SERDTSE_CHASHCHI` - `serdtse_chashchi`
+- `SERDTSE_LESNOI_PORCHI` - `serdtse_lesnoi_porchi`
+- `SERDTSE_ZERKALNOGO_IADRA` - `serdtse_zerkalnogo_iadra`
+- `SFERA_CHIORNOGO_PLAMENI` - `imported/sfera_chiornogo_plameni`
+- `SFERA_POSLEDNEGO_REZERVA` - `sfera_poslednego_rezerva`
+- `SFERA_ZATMIONNOGO_ORAKULA` - `sfera_zatmionnogo_orakula`
+- `SGUSTOK_PORCHI` - `sgustok_porchi`
+- `SGUSTOK_SOKA` - `sgustok_soka`
+- `SHCHIT_CHASOVOGO_UMBRY` - `imported/shchit_chasovogo_umbry`
+- `SHERST` - `sherst`
+- `SHKURA_MATIOROGO_VOZHAKA` - `shkura_matiorogo_vozhaka`
+- `SLED_PORCHI` - `sled_porchi`
+- `SLIZ` - `sliz`
+- `SLIZISTYI_KLYK` - `slizistyi_klyk`
+- `SLOMANNYI_INSTRUMENT` - `slomannyi_instrument`
+- `SLUCHAINYI_OSKOLOK_SNARIAZHENIIA` - `sluchainyi_oskolok_snariazheniia`
+- `SLUCHAINYI_REAGENT` - `sluchainyi_reagent`
+- `SOSUD_PLENIONNOI_DUSHI` - `sosud_plenionnoi_dushi`
+- `SPATIAL_BOTTOMLESS_RING` - `spatial_bottomless_ring`
+- `SPATIAL_CRACKED_RING` - `spatial_cracked_ring`
+- `SPATIAL_EXPANDED_RING` - `spatial_expanded_ring`
+- `SPATIAL_MINOR_RING` - `spatial_minor_ring`
+- `SPATIAL_POCKET_SHARD` - `spatial_pocket_shard`
+- `SPATIAL_SEAL` - `spatial_seal`
+- `SPATIAL_VOID_SEAL` - `spatial_void_seal`
+- `SPIDER_SILK` - `spider_silk`
+- `STRELA_ILI_LEZVIE` - `strela_ili_lezvie`
+- `TERNOVYI_OTROSTOK` - `ternovyi_otrostok`
+- `TETIVA_ZHIVOI_LOZY` - `tetiva_zhivoi_lozy`
+- `THICK_HIDE` - `leather`
+- `THICK_LEATHER` - `leather`
+- `TIOMNAIA_ESSENTSIIA` - `tiomnaia_essentsiia`
+- `TIOMNAIA_RUNA` - `tiomnaia_runa`
+- `TIOMNOE_MIASO` - `tiomnoe_miaso`
+- `TIOMNYI_REAGENT` - `tiomnyi_reagent`
+- `TIOMNYI_SHIOLK` - `tiomnyi_shiolk`
+- `TKANEVYI_LOSKUT` - `tkanevyi_loskut`
+- `TLEIUSHCHAIA_ESSENTSIIA` - `tleiushchaia_essentsiia`
+- `TLEIUSHCHII_FOKUS` - `imported/tleiushchii_fokus`
+- `TONKOE_ZHALO` - `tonkoe_zhalo`
+- `TOPIANAIA_ZHELEZA` - `topianaia_zheleza`
+- `UGOLNOE_IADRO` - `ugolnoe_iadro`
+- `VENETS_IADOVITOI_MATRONY` - `venets_iadovitoi_matrony`
+- `WARRIOR_EPIC_CRIMSON_FURY_CHEST` - `sets/warrior_epic_crimson_fury_chest`
+- `WARRIOR_EPIC_CRIMSON_FURY_FEET` - `sets/warrior_epic_crimson_fury_feet`
+- `WARRIOR_EPIC_CRIMSON_FURY_HANDS` - `sets/warrior_epic_crimson_fury_hands`
+- `WARRIOR_EPIC_CRIMSON_FURY_HEAD` - `sets/warrior_epic_crimson_fury_head`
+- `WARRIOR_EPIC_CRIMSON_FURY_LEGS` - `sets/warrior_epic_crimson_fury_legs`
+- `WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS` - `sets/warrior_epic_crimson_fury_shoulders`
+- `WARRIOR_EPIC_CRIMSON_FURY_WEAPON` - `sets/warrior_epic_crimson_fury_weapon`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_CHEST` - `sets/warrior_legendary_black_bastion_chest`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_FEET` - `sets/warrior_legendary_black_bastion_feet`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_HANDS` - `sets/warrior_legendary_black_bastion_hands`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_HEAD` - `sets/warrior_legendary_black_bastion_head`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_LEGS` - `sets/warrior_legendary_black_bastion_legs`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD` - `sets/warrior_legendary_black_bastion_shield`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS` - `sets/warrior_legendary_black_bastion_shoulders`
+- `WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON` - `sets/warrior_legendary_black_bastion_weapon`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_CHEST` - `sets/warrior_legendary_first_guard_chest`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_FEET` - `sets/warrior_legendary_first_guard_feet`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_HANDS` - `sets/warrior_legendary_first_guard_hands`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_HEAD` - `sets/warrior_legendary_first_guard_head`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_LEGS` - `sets/warrior_legendary_first_guard_legs`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD` - `sets/warrior_legendary_first_guard_shield`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS` - `sets/warrior_legendary_first_guard_shoulders`
+- `WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON` - `sets/warrior_legendary_first_guard_weapon`
+- `WARRIOR_RARE_GREY_FANG_CHEST` - `sets/warrior_rare_grey_fang_chest`
+- `WARRIOR_RARE_GREY_FANG_FEET` - `sets/warrior_rare_grey_fang_feet`
+- `WARRIOR_RARE_GREY_FANG_HANDS` - `sets/warrior_rare_grey_fang_hands`
+- `WARRIOR_RARE_GREY_FANG_HEAD` - `sets/warrior_rare_grey_fang_head`
+- `WARRIOR_RARE_GREY_FANG_LEGS` - `sets/warrior_rare_grey_fang_legs`
+- `WARRIOR_RARE_GREY_FANG_SHIELD` - `sets/warrior_rare_grey_fang_shield`
+- `WARRIOR_RARE_GREY_FANG_SHOULDERS` - `sets/warrior_rare_grey_fang_shoulders`
+- `WARRIOR_RARE_GREY_FANG_WEAPON` - `sets/warrior_rare_grey_fang_weapon`
+- `WOLF_FANG` - `wolf_fang`
+- `WOLF_FANG_BLADE` - `wolf_fang_blade`
+- `ZARAZHIONNYI_KLYK` - `zarazhionnyi_klyk`
+- `ZERKALNAIA_PLASTINA` - `zerkalnaia_plastina`
+- `ZERKALNYI_BASTARD` - `zerkalnyi_bastard`
+- `ZERKALNYI_OSKOLOK` - `zerkalnyi_oskolok`
+- `ZHELEZNAIA_MELOCH` - `zheleznaia_meloch`
+- `ZHIOSTKAIA_SHCHETINA` - `zhiostkaia_shchetina`
+- `ZHIOSTKOE_MIASO` - `zhiostkoe_miaso`
+- `ZHIVAIA_KORA` - `zhivaia_kora`
+- `ZHIVOI_KOREN` - `zhivoi_koren`
+- `ZNAK_BASTIONA` - `znak_bastiona`
+- `ZNAK_GLASHATAIA` - `imported/znak_glashataia`
+- `ZNAK_ZATMENIIA` - `znak_zatmeniia`
+- `ZNAMIA_PEPELNOGO_MARSHALA` - `znamia_pepelnogo_marshala`
+
+## Item assets without an ItemDefinition
+
+- `items_outside_sets/ancient_mine/broodmother_poison_heart`
+- `items_outside_sets/ancient_mine/depths_guardian_bulwark`
+- `items_outside_sets/ancient_mine/depths_runic_cleaver`
+- `items_outside_sets/ancient_mine/forgotten_mine_lantern`
+- `items_outside_sets/ancient_mine/mine_watch_crossbow`
+- `items_outside_sets/ancient_mine/stoneheart_ring`
+- `items_outside_sets/black_bastion/ark_tor_hammer`
+- `items_outside_sets/black_bastion/ashen_marshal_banner`
+- `items_outside_sets/black_bastion/bastion_heart_shard`
+- `items_outside_sets/black_bastion/black_gate_crossbow`
+- `items_outside_sets/black_bastion/black_legacy_fragment`
+- `items_outside_sets/black_bastion/black_star_staff`
+- `items_outside_sets/black_bastion/colossus_runic_heart`
+- `items_outside_sets/black_bastion/commandant_key`
+- `items_outside_sets/black_bastion/eclipsed_oracle_orb`
+- `items_outside_sets/black_bastion/first_guardian_blade`
+- `items_outside_sets/black_bastion/inquisitor_censer`
+- `items_outside_sets/black_bastion/silent_banner_bow`
+- `items_outside_sets/black_bastion/silent_judgement_seal`
+- `items_outside_sets/corrupted_grove/corrupted_seed`
+- `items_outside_sets/corrupted_grove/crookedroot_crusher`
+- `items_outside_sets/corrupted_grove/grove_heart`
+- `items_outside_sets/corrupted_grove/living_vine_bowstring`
+- `items_outside_sets/corrupted_grove/purified_root_elixir_recipe`
+- `items_outside_sets/corrupted_grove/purifying_flame_censer`
+- `items_outside_sets/corrupted_grove/venom_matron_crown`
+- `items_outside_sets/eclipse_citadel/bastion_plate_blueprint`
+- `items_outside_sets/eclipse_citadel/broken_captain_blade`
+- `items_outside_sets/eclipse_citadel/eclipse_seal`
+- `items_outside_sets/eclipse_citadel/extinguished_light_censer`
+- `items_outside_sets/eclipse_citadel/inner_gate_shield`
+- `items_outside_sets/eclipse_citadel/umbra_smith_hammer`
+- `items_outside_sets/eclipse_citadel/viceroy_crown`
+- `items_outside_sets/open_world_early/deepwood_axe`
+- `items_outside_sets/open_world_early/deepwood_hood`
+- `items_outside_sets/open_world_early/dusty_road_blade`
+- `items_outside_sets/open_world_early/forest_trail_cloak`
+- `items_outside_sets/open_world_early/goblin_trapper_bracers`
+- `items_outside_sets/open_world_early/herbalist_gloves`
+- `items_outside_sets/open_world_early/mature_chieftain_fang`
+- `items_outside_sets/open_world_early/old_road_watch_bow`
+- `items_outside_sets/open_world_early/ringing_wing_bow`
+- `items_outside_sets/open_world_early/root_dew_ring`
+- `items_outside_sets/open_world_early/runic_mine_lantern`
+- `items_outside_sets/open_world_early/spider_charm`
+- `items_outside_sets/open_world_early/stone_eater_cuirass`
+- `items_outside_sets/open_world_early/vein_master_hammer`
+- `items_outside_sets/open_world_early/wandering_mercenary_cloak`
+- `items_outside_sets/open_world_late/ashen_knight_blade`
+- `items_outside_sets/open_world_late/bastion_watch_bow`
+- `items_outside_sets/open_world_late/black_flame_orb`
+- `items_outside_sets/open_world_late/blackstar_focus`
+- `items_outside_sets/open_world_late/blackstone_axe`
+- `items_outside_sets/open_world_late/bone_greatsword`
+- `items_outside_sets/open_world_late/captured_soul_vial`
+- `items_outside_sets/open_world_late/crimson_harpy_feathers`
+- `items_outside_sets/open_world_late/harbinger_seal`
+- `items_outside_sets/open_world_late/mountain_hunter_wing`
+- `items_outside_sets/open_world_late/pass_runic_cuirass`
+- `items_outside_sets/open_world_late/plague_priest_crown`
+- `items_outside_sets/open_world_mid/ashen_watch_shoulders`
+- `items_outside_sets/open_world_mid/basilisk_scale_cloak`
+- `items_outside_sets/open_world_mid/black_constellation_blade`
+- `items_outside_sets/open_world_mid/border_executioner_spear`
+- `items_outside_sets/open_world_mid/double_echo_bow`
+- `items_outside_sets/open_world_mid/drowned_pilgrim_lantern`
+- `items_outside_sets/open_world_mid/forest_witch_staff`
+- `items_outside_sets/open_world_mid/herald_mark`
+- `items_outside_sets/open_world_mid/interrupted_mana_staff`
+- `items_outside_sets/open_world_mid/marsh_mother_fang`
+- `items_outside_sets/open_world_mid/mature_chieftain_cuirass`
+- `items_outside_sets/open_world_mid/reflection_mirror_blade`
+- `items_outside_sets/open_world_mid/rift_keeper_seal`
+- `items_outside_sets/open_world_mid/shadow_poacher_hood`
+- `items_outside_sets/open_world_mid/shard_wand`
+- `items_outside_sets/open_world_mid/smoldering_focus`
+- `items_outside_sets/open_world_mid/umbra_sentinel_shield`
+- `items_outside_sets/shattered_order_citadel/broken_reflection_ring`
+- `items_outside_sets/shattered_order_citadel/last_reserve_orb`
+- `items_outside_sets/shattered_order_citadel/mirror_bastard_sword`
+- `items_outside_sets/shattered_order_citadel/mirror_core_heart`
+- `items_outside_sets/shattered_order_citadel/residual_mana_focus`
+- `items_outside_sets/shattered_order_citadel/stolen_soul_visage`
+- `items_outside_sets/shattered_order_citadel/triple_aspect_bow`
+- `items_outside_sets/shattered_order_citadel/triune_seal`
+- `materials_for_professions/gathering_early/gathering_early_01_forest_mint`
+- `materials_for_professions/gathering_early/gathering_early_02_silverleaf`
+- `materials_for_professions/gathering_early/gathering_early_03_dewy_blossom`
+- `materials_for_professions/gathering_early/gathering_early_04_field_flower`
+- `materials_for_professions/gathering_early/gathering_early_05_honey_grass`
+- `materials_for_professions/gathering_early/gathering_early_06_moon_petal`
+- `materials_for_professions/gathering_early/gathering_early_07_dawn_pollen`
+- `materials_for_professions/gathering_early/gathering_early_08_shadow_moss`
+- `materials_for_professions/gathering_early/gathering_early_09_hushroot`
+- `materials_for_professions/gathering_early/gathering_early_10_taint_bud`
+- `materials_for_professions/gathering_early/gathering_early_11_pure_spore`
+- `materials_for_professions/gathering_early/gathering_early_12_roadside_yarrow`
+- `materials_for_professions/gathering_early/gathering_early_13_dustleaf`
+- `materials_for_professions/gathering_early/gathering_early_14_mercenary_rosehip`
+- `materials_for_professions/gathering_early/gathering_early_15_stone_moss`
+- `materials_for_professions/gathering_early/gathering_early_16_glowcap`
+- `materials_for_professions/gathering_early/gathering_early_17_runic_lichen`
+- `materials_for_professions/gathering_late/gathering_late_01_mirror_thistle`
+- `materials_for_professions/gathering_late/gathering_late_02_mana_root`
+- `materials_for_professions/gathering_late/gathering_late_03_flower_of_twinned_light`
+- `materials_for_professions/gathering_late/gathering_late_04_mana_dust`
+- `materials_for_professions/gathering_late/gathering_late_05_ashroot`
+- `materials_for_professions/gathering_late/gathering_late_06_black_heather`
+- `materials_for_professions/gathering_late/gathering_late_07_fire_bloom`
+- `materials_for_professions/gathering_late/gathering_late_08_bloodbloom`
+- `materials_for_professions/gathering_late/gathering_late_09_grave_moss`
+- `materials_for_professions/gathering_late/gathering_late_10_soulleaf`
+- `materials_for_professions/gathering_late/gathering_late_11_essence_shard`
+- `materials_for_professions/gathering_late/gathering_late_12_black_starbloom`
+- `materials_for_professions/gathering_late/gathering_late_13_ashen_orchid`
+- `materials_for_professions/gathering_late/gathering_late_14_abyss_flower`
+- `materials_for_professions/gathering_mid/gathering_mid_01_tainted_fern`
+- `materials_for_professions/gathering_mid/gathering_mid_02_witchroot`
+- `materials_for_professions/gathering_mid/gathering_mid_03_black_spore`
+- `materials_for_professions/gathering_mid/gathering_mid_04_purified_sprout`
+- `materials_for_professions/gathering_mid/gathering_mid_05_smoldergrass`
+- `materials_for_professions/gathering_mid/gathering_mid_06_fire_root`
+- `materials_for_professions/gathering_mid/gathering_mid_07_ashen_rose`
+- `materials_for_professions/gathering_mid/gathering_mid_08_spectral_reed`
+- `materials_for_professions/gathering_mid/gathering_mid_09_moon_moss`
+- `materials_for_professions/gathering_mid/gathering_mid_10_silver_swamplily`
+- `materials_for_professions/gathering_mid/gathering_mid_11_swamp_spore`
+- `materials_for_professions/gathering_mid/gathering_mid_12_night_bellflower`
+- `materials_for_professions/gathering_mid/gathering_mid_13_umbral_root`
+- `materials_for_professions/gathering_mid/gathering_mid_14_star_pollen`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_01_light_and_durable_hides`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_02_whole_hides`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_03_beast_sinews`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_04_basilisk_scales`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_05_cave_membranes`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_06_tainted_hides`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_07_swamp_leathers`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_08_blackstone_hides`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_09_obsidian_hides`
+- `materials_for_professions/leatherworking_bundle/leatherworking_bundle_10_bone_sinews`
+- `materials_for_professions/mining_early/mining_early_01_soft_stone`
+- `materials_for_professions/mining_early/mining_early_02_copper_fragments`
+- `materials_for_professions/mining_early/mining_early_03_copper_ore`
+- `materials_for_professions/mining_early/mining_early_04_pale_gem`
+- `materials_for_professions/mining_early/mining_early_05_ferric_stone`
+- `materials_for_professions/mining_early/mining_early_06_forest_quartz`
+- `materials_for_professions/mining_early/mining_early_07_tin_ore`
+- `materials_for_professions/mining_early/mining_early_08_rough_stone`
+- `materials_for_professions/mining_early/mining_early_09_smoky_quartz`
+- `materials_for_professions/mining_early/mining_early_10_iron_ore`
+- `materials_for_professions/mining_early/mining_early_11_heavy_stone`
+- `materials_for_professions/mining_early/mining_early_12_runic_quartz`
+- `materials_for_professions/mining_early/mining_early_13_vein_heart`
+- `materials_for_professions/mining_late/mining_late_01_black_iron`
+- `materials_for_professions/mining_late/mining_late_02_obsidian`
+- `materials_for_professions/mining_late/mining_late_03_runic_ruby`
+- `materials_for_professions/mining_late/mining_late_04_heart_of_black_mountain`
+- `materials_for_professions/mining_late/mining_late_05_blood_garnet`
+- `materials_for_professions/mining_late/mining_late_06_necrotic_crystal`
+- `materials_for_professions/mining_late/mining_late_07_bastionite`
+- `materials_for_professions/mining_late/mining_late_08_black_diamond`
+- `materials_for_professions/mining_late/mining_late_09_bastion_heart`
+- `materials_for_professions/mining_mid/mining_mid_01_defiled_mineral`
+- `materials_for_professions/mining_mid/mining_mid_02_dark_gem`
+- `materials_for_professions/mining_mid/mining_mid_03_dark_iron`
+- `materials_for_professions/mining_mid/mining_mid_04_fire_opal`
+- `materials_for_professions/mining_mid/mining_mid_05_runic_ore`
+- `materials_for_professions/mining_mid/mining_mid_06_silver_ore`
+- `materials_for_professions/mining_mid/mining_mid_07_moonstone`
+- `materials_for_professions/mining_mid/mining_mid_08_umbral_sapphire`
+- `materials_for_professions/mining_mid/mining_mid_09_mirrored_ore`
+- `materials_for_professions/mining_mid/mining_mid_10_runestone`
+- `materials_for_professions/mining_mid/mining_mid_11_pure_mana_crystal`
+- `materials_for_professions/mining_mid/mining_mid_12_rift_heart`
+- `materials_for_professions/skinning_early/skinning_early_01_light_hide`
+- `materials_for_professions/skinning_early/skinning_early_02_whole_light_hide`
+- `materials_for_professions/skinning_early/skinning_early_03_beast_sinew`
+- `materials_for_professions/skinning_early/skinning_early_04_soft_hide`
+- `materials_for_professions/skinning_early/skinning_early_05_whole_deer_hide`
+- `materials_for_professions/skinning_early/skinning_early_06_durable_hide`
+- `materials_for_professions/skinning_early/skinning_early_07_dark_hide`
+- `materials_for_professions/skinning_early/skinning_early_08_predator_sinew`
+- `materials_for_professions/skinning_early/skinning_early_09_whole_alpha_hide`
+- `materials_for_professions/skinning_late/skinning_late_01_blackstone_hide`
+- `materials_for_professions/skinning_late/skinning_late_02_dense_black_hide`
+- `materials_for_professions/skinning_late/skinning_late_03_winged_membrane`
+- `materials_for_professions/skinning_late/skinning_late_04_stoneback_hide`
+- `materials_for_professions/skinning_late/skinning_late_05_dried_hide`
+- `materials_for_professions/skinning_late/skinning_late_06_crimson_leather`
+- `materials_for_professions/skinning_late/skinning_late_07_bone_sinew`
+- `materials_for_professions/skinning_late/skinning_late_08_obsidian_hide`
+- `materials_for_professions/skinning_late/skinning_late_09_whole_obsidian_hide`
+- `materials_for_professions/skinning_late/skinning_late_10_black_sinew`
+- `materials_for_professions/skinning_mid/skinning_mid_01_cave_leather`
+- `materials_for_professions/skinning_mid/skinning_mid_02_dense_membrane`
+- `materials_for_professions/skinning_mid/skinning_mid_03_mineralized_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_04_tainted_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_05_whole_tainted_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_06_plague_sinew`
+- `materials_for_professions/skinning_mid/skinning_mid_07_beast_heartstring`
+- `materials_for_professions/skinning_mid/skinning_mid_08_ashen_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_09_scorched_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_10_fire_sinew`
+- `materials_for_professions/skinning_mid/skinning_mid_11_swamp_hide`
+- `materials_for_professions/skinning_mid/skinning_mid_12_moon_scale`
+- `materials_for_professions/skinning_mid/skinning_mid_13_whole_swamp_hide`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_01_veteran_packleader_pelt`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_02_matriarch_stinger`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_03_core_of_forest_taint`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_04_heart_of_forest_taint`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_05_heart_of_boglight`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_06_broodmother_venom_heart`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_07_defiled_seed`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_08_mirror_core_heart`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_09_bastion_heart_shard`
+- `materials_not_used_in_professions/boss_trophies/boss_trophies_10_black_legacy_fragment`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_01_taint_dust`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_02_dark_essence`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_03_runic_shards`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_04_mana_salt`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_05_moon_dust`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_06_cursed_talisman`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_07_spirit_shard`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_08_eclipse_mark`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_09_umbra_seal`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_10_mana_crystal`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_11_reflection_dust`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_12_rift_shard`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_13_soul_remnant`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_14_marshal_seal`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_15_black_mana`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_16_magister_seal`
+- `materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_17_first_warden_shard`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_01_tough_meat`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_02_wolf_fang`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_03_tattered_fur`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_04_boar_meat`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_05_boar_tusk`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_06_coarse_bristle`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_07_cave_slime`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_08_mineralized_bone`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_09_ashen_meat`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_10_charred_fang`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_11_swamp_meat`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_12_slimy_fang`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_13_bone_dust`
+- `materials_not_used_in_professions/hunting_trophies/hunting_trophies_14_bone_fragment`
+
