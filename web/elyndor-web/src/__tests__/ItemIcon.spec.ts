@@ -14,10 +14,10 @@ describe('ItemIcon', () => {
 
   it('renders a canonical item asset', () => {
     const wrapper = mount(ItemIcon, {
-      props: { ...props, iconId: 'warrior/item-warrior-sword' },
+      props: { ...props, iconId: 'sets/ancient-mine/mine_tracker/mine_tracker_helmet' },
     })
 
-    expect(wrapper.get('img').attributes('src')).toMatch(/item-warrior-sword\.png$/)
+    expect(wrapper.get('img').attributes('src')).toMatch(/mine_tracker_helmet\.webp$/)
   })
 
   it('renders a generated fallback when IconId is absent', () => {
@@ -29,7 +29,7 @@ describe('ItemIcon', () => {
 
   it('replaces a browser-failed asset with a generated fallback', async () => {
     const wrapper = mount(ItemIcon, {
-      props: { ...props, iconId: 'warrior/item-warrior-sword' },
+      props: { ...props, iconId: 'sets/ancient-mine/mine_tracker/mine_tracker_helmet' },
     })
 
     await wrapper.get('img').trigger('error')

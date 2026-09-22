@@ -49,12 +49,21 @@ describe('authored content art', () => {
   })
 
   it('resolves the Heart of the Blighted Grove guardian helmet artwork', () => {
-    const art = itemArtUrl('sets/set_heart_of_blighted_grove_warrior_guardian_head')
+    const item = getItems().find(candidate => candidate.id === 'SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_GUARDIAN_HEAD')
+    const art = itemArtUrl(item?.iconId)
 
-    expect(art).toMatch(/set_heart_of_blighted_grove_warrior_guardian_head\.(png|webp)$/)
+    expect(item?.iconId).toBe('sets/heart-of-blighted-grove/heart_guardian/heart_guardian_helmet')
+    expect(art).toMatch(/sets\/heart-of-blighted-grove\/heart_guardian\/heart_guardian_helmet\.webp$/)
   })
 
-  it('resolves artwork for every imported raid set piece', () => {
+  it('resolves the Ancient Mine marksman helmet artwork from its canonical IconId', () => {
+    const item = getItems().find(candidate => candidate.id === 'SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HEAD')
+
+    expect(item?.iconId).toBe('sets/ancient-mine/mine_tracker/mine_tracker_helmet')
+    expect(itemArtUrl(item?.iconId)).toMatch(/sets\/ancient-mine\/mine_tracker\/mine_tracker_helmet\.webp$/)
+  })
+
+  it('resolves artwork for every authored set piece', () => {
     const importedSetIds = [
       'SET_HEART_OF_BLIGHTED_GROVE_',
       'SET_SHATTERED_ORDER_RAID_',
@@ -65,6 +74,5 @@ describe('authored content art', () => {
 
     expect(setItems.length).toBeGreaterThan(0)
     expect(missingArt).toEqual([])
-    expect(itemArtUrl('imported/runnyi_fonar_shtreka')).toMatch(/runnyi_fonar_shtreka\.webp$/)
   })
 })
