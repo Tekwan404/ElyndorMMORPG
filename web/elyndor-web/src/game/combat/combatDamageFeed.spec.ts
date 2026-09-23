@@ -32,8 +32,8 @@ describe('collectCombatDamageFeedHits', () => {
     ], 0, 'player', 'enemy')
 
     expect(result.hits).toEqual([
-      { sequence: 1, side: 'player', amount: 37, critical: false },
-      { sequence: 2, side: 'enemy', amount: 91, critical: false },
+      { sequence: 1, side: 'player', kind: 'damage', amount: 37, critical: false },
+      { sequence: 2, side: 'enemy', kind: 'damage', amount: 91, critical: false },
     ])
     expect(result.latestSequence).toBe(3)
   })
@@ -45,7 +45,7 @@ describe('collectCombatDamageFeedHits', () => {
     ], 0, 'player', 'enemy')
 
     expect(result.hits).toEqual([
-      { sequence: 11, side: 'enemy', amount: 173, critical: true },
+      { sequence: 11, side: 'enemy', kind: 'damage', amount: 173, critical: true },
     ])
   })
 
@@ -56,20 +56,34 @@ describe('collectCombatDamageFeedHits', () => {
     ], 0, 'player', 'enemy')
 
     expect(result.hits).toEqual([
-      { sequence: 13, side: 'player', amount: 42, critical: false },
+      { sequence: 13, side: 'player', kind: 'damage', amount: 42, critical: false },
     ])
   })
 
-  it('only returns events newer than the processed sequence cursor', () => {
+  it('uses the same floating feedback stream for healing', () => {
     const result = collectCombatDamageFeedHits([
       event(20, 'DamageDealt', 'player', 12),
-      event(21, 'DamageDealt', 'enemy', 28),
-      event(22, 'HealingApplied', 'player', 50),
+      event(21, 'HealingApplied', 'player', 50, 'player'),
+      event(22, 'HealingApplied', 'enemy', 18, 'enemy'),
     ], 20, 'player', 'enemy')
 
     expect(result.hits).toEqual([
-      { sequence: 21, side: 'enemy', amount: 28, critical: false },
+      { sequence: 21, side: 'player', kind: 'healing', amount: 50, critical: false },
+      { sequence: 22, side: 'enemy', kind: 'healing', amount: 18, critical: false },
     ])
     expect(result.latestSequence).toBe(22)
+  })
+
+  it('only returns supported events newer than the processed sequence cursor', () => {
+    const result = collectCombatDamageFeedHits([
+      event(30, 'DamageDealt', 'player', 12),
+      event(31, 'DamageDealt', 'enemy', 28),
+      event(32, 'ResourceChanged', 'player', 50),
+    ], 30, 'player', 'enemy')
+
+    expect(result.hits).toEqual([
+      { sequence: 31, side: 'enemy', kind: 'damage', amount: 28, critical: false },
+    ])
+    expect(result.latestSequence).toBe(32)
   })
 })
