@@ -83,13 +83,15 @@ describe('CombatLogPreview', () => {
     const wrapper = mount(CombatLogPreview)
     await settleTeleport()
 
+    expect(target.classList.contains('combat-log__has-preview')).toBe(true)
     expect(target.textContent).toContain('+25 здоровья')
     expect(target.textContent).toContain('120 урона · КРИТ')
     expect(target.textContent).toContain('Бой начался')
     wrapper.unmount()
+    expect(target.classList.contains('combat-log__has-preview')).toBe(false)
   })
 
-  it('keeps an empty-state summary and removes the preview when combat ends', async () => {
+  it('keeps an empty-state summary and restores the native summary when combat ends', async () => {
     const combat = useCombatSessionStore()
     combat.snapshot = activeSnapshot()
     combat.events = []
@@ -98,12 +100,15 @@ describe('CombatLogPreview', () => {
     const wrapper = mount(CombatLogPreview)
     await settleTeleport()
 
+    expect(target.classList.contains('combat-log__has-preview')).toBe(true)
     expect(target.textContent).toContain('Событий пока нет')
 
     combat.snapshot = activeSnapshot('Completed')
     await settleTeleport()
 
     expect(target.querySelector('[data-combat-log-preview]')).toBeNull()
+    expect(target.classList.contains('combat-log__has-preview')).toBe(false)
+    expect(target.querySelector('small')?.textContent).toBe('Событий пока нет')
     wrapper.unmount()
   })
 })
