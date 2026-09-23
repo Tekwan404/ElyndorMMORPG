@@ -2,6 +2,26 @@ using Elyndor.Contracts.Items;
 
 namespace Elyndor.Contracts.World;
 
+public sealed record WorldLocationResidentResponse(
+    string MonsterId,
+    string DisplayName,
+    int Level,
+    string Rank,
+    string Description,
+    string? ArtId,
+    int XpReward,
+    int GoldRewardMin,
+    int GoldRewardMax);
+
+public sealed record WorldLocationLootResponse(
+    string ItemId,
+    string Name,
+    string Type,
+    string Rarity,
+    int RequiredLevel,
+    string Description,
+    string? IconId);
+
 public sealed record WorldLocationResponse(
     string Id,
     string DisplayName,
@@ -13,7 +33,9 @@ public sealed record WorldLocationResponse(
     string? ArtId,
     string Description,
     decimal TravelDurationSeconds = 0,
-    bool AllowAfk = false);
+    bool AllowAfk = false,
+    IReadOnlyList<WorldLocationResidentResponse>? Residents = null,
+    IReadOnlyList<WorldLocationLootResponse>? Loot = null);
 
 public sealed record WorldContractResponse(
     string Id,
