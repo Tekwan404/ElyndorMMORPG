@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
@@ -10,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const combat = useCombatSessionStore()
+const portalReady = ref(false)
 let telemetryTimer: number | null = null
 
 const threatPercent = computed<number | null>(() => {
@@ -24,7 +26,13 @@ const threatPercent = computed<number | null>(() => {
   return Math.round(Math.min(100, Math.max(0, (entry.threat / maximumThreat) * 100)))
 })
 
-onMounted(() => {
+function allyArt(): string | null {
+  return props.ally ? resolveCharacterArt(props.ally.definitionId, 'MALE') : null
+}
+
+onMounted(async () => {
+  await nextTick()
+  portalReady.value = document.querySelector('.combat-hud__actor--enemy') !== null
   void combat.refreshCombatTelemetry()
   telemetryTimer = window.setInterval(() => {
     void combat.refreshCombatTelemetry()
@@ -37,23 +45,37 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Teleport to=".combat-hud__actor--enemy">
-    <Transition name="frontline-shift" mode="out-in">
-      <aside
-        v-if="ally"
-        :key="ally.actorId"
-        class="combat-frontline"
-        :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
-      >
-        <span class="combat-frontline__marker" aria-hidden="true">
-          <IconGenerator :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
-        </span>
-        <span class="combat-frontline__label">ЦЕЛЬ</span>
-        <strong>{{ ally.name }}</strong>
-        <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
-      </aside>
-    </Transition>
+  <Teleport v-if="portalReady" to=".combat-hud__actor--enemy">
+    <aside
+      v-if="ally"
+      :key="ally.actorId"
+      class="combat-frontline"
+      :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
+    >
+      <span class="combat-frontline__marker" aria-hidden="true">
+        <img v-if="allyArt()" :src="allyArt()!" alt="" class="combat-frontline__portrait" />
+        <IconGenerator v-else :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
+      </span>
+      <span class="combat-frontline__label">ЦЕЛЬ</span>
+      <strong>{{ ally.name }}</strong>
+      <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
+    </aside>
   </Teleport>
+
+  <aside
+    v-else-if="ally"
+    :key="`fallback-${ally.actorId}`"
+    class="combat-frontline combat-frontline--fallback"
+    :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
+  >
+    <span class="combat-frontline__marker" aria-hidden="true">
+      <img v-if="allyArt()" :src="allyArt()!" alt="" class="combat-frontline__portrait" />
+      <IconGenerator v-else :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
+    </span>
+    <span class="combat-frontline__label">ЦЕЛЬ</span>
+    <strong>{{ ally.name }}</strong>
+    <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
+  </aside>
 </template>
 
 <style scoped>
@@ -71,14 +93,35 @@ onUnmounted(() => {
   color: var(--ui-color-text-primary);
 }
 
+.combat-frontline--fallback {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 5;
+  max-width: 46%;
+  margin: 0;
+  background: rgb(7 11 18 / 92%);
+  transform: translateX(-50%);
+}
+
 .combat-frontline__marker {
   display: grid;
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
   place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(205 177 113 / 32%);
   border-radius: 50%;
+  background: rgb(8 12 20 / 85%);
   color: var(--ui-color-gold);
+}
+
+.combat-frontline__portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
 }
 
 .combat-frontline__marker :deep(.icon-generator) {
@@ -112,16 +155,5 @@ onUnmounted(() => {
   font-size: .54rem;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
-}
-
-.frontline-shift-enter-active,
-.frontline-shift-leave-active {
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.frontline-shift-enter-from,
-.frontline-shift-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
 }
 </style>
