@@ -49,7 +49,7 @@ describe('CombatAbilityHotbar', () => {
   it('keeps consumables outside the combat ability grid', () => {
     const wrapper = mountHotbar()
 
-    expect(wrapper.find('[data-combat-hotbar] [data-combat-consumable]').exists()).toBe(false)
+    expect(wrapper.find('[data-combat-abilities] [data-combat-consumable]').exists()).toBe(false)
     expect(wrapper.get('[data-combat-consumables] [data-combat-consumable="TEST_POTION"]').exists()).toBe(true)
     expect(wrapper.get('[data-ability-slot="TEST_STRIKE"]').text()).toContain('Тестовый удар')
   })
