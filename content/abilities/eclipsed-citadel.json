@@ -1,0 +1,115 @@
+{
+  "contentVersion": "0.25.0",
+  "balanceVersion": "0.21.0",
+  "publishedAtUtc": "2026-09-23T00:00:00+00:00",
+  "definitions": [
+    { "type": "ABILITY", "id": "SENTINEL_ASHEN_THRUST", "references": [] },
+    { "type": "ABILITY", "id": "SENTINEL_OATH_OF_OUTER_SEAL", "references": [] },
+    { "type": "ABILITY", "id": "GOLEM_BLACKSTONE_FRACTURE", "references": [] },
+    { "type": "ABILITY", "id": "VOID_WEAVER_VOID_THREAD", "references": [] },
+    { "type": "ABILITY", "id": "VOID_WEAVER_VEIL_RUPTURE", "references": [] },
+    { "type": "ABILITY", "id": "EXECUTIONER_BLACK_CONSTELLATION_MARK", "references": [] },
+    { "type": "ABILITY", "id": "EXECUTIONER_BLACK_VERDICT", "references": [] },
+    { "type": "ABILITY", "id": "ARCHON_DEAD_STAR_BRAND", "references": [] },
+    { "type": "ABILITY", "id": "ARCHON_ECLIPSE_ASH", "references": [] },
+    { "type": "ABILITY", "id": "ARCHON_STAR_FRACTURE", "references": [] },
+    { "type": "ABILITY", "id": "ARCHON_DEVOUR_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "ARCHON_DEAD_STAR_COLLAPSE", "references": [] }
+  ],
+  "effects": [
+    { "id": "SENTINEL_ASHEN_THRUST_ARMOR", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.9, "modifiedStat": "Armor", "modifierMode": "Multiplicative" },
+    { "id": "SENTINEL_OATH_OF_OUTER_SEAL_DAMAGE", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.2, "modifiedStat": "OutgoingDamageMultiplier", "modifierMode": "Percent" },
+    { "id": "GOLEM_BLACKSTONE_FRACTURE_ARMOR", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "Armor", "modifierMode": "Multiplicative" },
+    { "id": "VOID_WEAVER_VEIL_RUPTURE_RESISTANCE", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "MagicResistance", "modifierMode": "Multiplicative" },
+    { "id": "EXECUTIONER_BLACK_CONSTELLATION_MARK", "kind": "StatModifier", "duration": "00:00:10", "maxStacks": 3, "stackPolicy": "Stack", "magnitude": 0.05, "modifiedStat": "IncomingDamageMultiplier", "modifierMode": "Percent" },
+    { "id": "ARCHON_DEAD_STAR_BRAND_HEALING", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "HealingReceivedMultiplier", "modifierMode": "Multiplicative" },
+    { "id": "ARCHON_DEAD_STAR_VEIL", "kind": "Shield", "duration": "1.00:00:00", "maxStacks": 1, "stackPolicy": "Replace", "magnitude": 15000 },
+    { "id": "ARCHON_BROKEN_VEIL", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.25, "modifiedStat": "IncomingDamageMultiplier", "modifierMode": "Percent" },
+    { "id": "ARCHON_FINAL_ECLIPSE_DAMAGE", "kind": "StatModifier", "duration": "1.00:00:00", "maxStacks": 1, "stackPolicy": "Replace", "magnitude": 0.15, "modifiedStat": "OutgoingDamageMultiplier", "modifierMode": "Percent" },
+    { "id": "ARCHON_FINAL_ECLIPSE_HASTE", "kind": "StatModifier", "duration": "1.00:00:00", "maxStacks": 1, "stackPolicy": "Replace", "magnitude": 0.15, "modifiedStat": "AttackSpeed", "modifierMode": "Percent" },
+    { "id": "ARCHON_UNSTABLE_CORE", "kind": "StatModifier", "duration": "00:00:06", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.25, "modifiedStat": "IncomingDamageMultiplier", "modifierMode": "Percent" }
+  ],
+  "abilities": [
+    {
+      "id": "SENTINEL_ASHEN_THRUST", "iconId": "warrior-sunder-armor", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:07", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": false, "school": "PHYSICAL", "interruptible": false,
+      "actions": [
+        { "type": "Damage", "amount": 117.5, "damageType": "Physical", "attackPowerCoefficient": 0.6875 },
+        { "type": "ApplyEffect", "effect": { "id": "SENTINEL_ASHEN_THRUST_ARMOR", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.9, "modifiedStat": "Armor", "modifierMode": "Multiplicative" } }
+      ],
+      "displayName": "Пепельный выпад", "description": "Тяжёлый выпад, временно ослабляющий броню цели."
+    },
+    {
+      "id": "SENTINEL_OATH_OF_OUTER_SEAL", "iconId": "warrior-battle-cry", "type": "Casted", "targetType": "Self", "resourceCost": 0, "cooldown": "00:00:16", "castTime": "00:00:01.8000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": false, "school": "PHYSICAL", "interruptible": true,
+      "actions": [ { "type": "ApplyEffect", "effect": { "id": "SENTINEL_OATH_OF_OUTER_SEAL_DAMAGE", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.2, "modifiedStat": "OutgoingDamageMultiplier", "modifierMode": "Percent" } } ],
+      "displayName": "Клятва внешней печати", "description": "Прерываемая клятва, усиливающая урон часового."
+    },
+    {
+      "id": "GOLEM_BLACKSTONE_FRACTURE", "iconId": "warrior-heavy-blow", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:08", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": false, "school": "PHYSICAL", "interruptible": false,
+      "actions": [
+        { "type": "Damage", "amount": 141.75, "damageType": "Physical", "attackPowerCoefficient": 0.7425 },
+        { "type": "ApplyEffect", "effect": { "id": "GOLEM_BLACKSTONE_FRACTURE_ARMOR", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "Armor", "modifierMode": "Multiplicative" } }
+      ],
+      "displayName": "Раскол чёрного камня", "description": "Сокрушительный удар, временно снижающий броню цели."
+    },
+    {
+      "id": "VOID_WEAVER_VOID_THREAD", "iconId": "mage-arcane-missiles", "type": "Casted", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:06", "castTime": "00:00:01.5000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 60, "damageType": "Magical", "spellPowerCoefficient": 0.25, "canDodge": false },
+        { "type": "ApplyEffect", "effect": { "id": "VOID_WEAVER_VOID_THREAD_DOT", "kind": "DamageOverTime", "duration": "00:00:06", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 28, "tickInterval": "00:00:02", "periodicDamageType": "Magical" } }
+      ],
+      "displayName": "Нить Пустоты", "description": "Прерываемое заклинание, оставляющее на цели теневой урон со временем."
+    },
+    {
+      "id": "VOID_WEAVER_VEIL_RUPTURE", "iconId": "mage-arcane-explosion", "type": "Casted", "targetType": "AllEnemiesInCombat", "resourceCost": 0, "cooldown": "00:00:13", "castTime": "00:00:02.3000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 90, "damageType": "Magical", "spellPowerCoefficient": 0.45, "canDodge": false },
+        { "type": "ApplyEffect", "effect": { "id": "VOID_WEAVER_VEIL_RUPTURE_RESISTANCE", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "MagicResistance", "modifierMode": "Multiplicative" } }
+      ],
+      "displayName": "Разрыв покрова", "description": "Прерываемый групповой теневой удар, ослабляющий сопротивление магии."
+    },
+    {
+      "id": "EXECUTIONER_BLACK_CONSTELLATION_MARK", "iconId": "warrior-sunder-armor", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:06", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": false, "school": "PHYSICAL", "interruptible": false,
+      "actions": [
+        { "type": "Damage", "amount": 112, "damageType": "Physical", "attackPowerCoefficient": 0.58 },
+        { "type": "ApplyEffect", "effect": { "id": "EXECUTIONER_BLACK_CONSTELLATION_MARK", "kind": "StatModifier", "duration": "00:00:10", "maxStacks": 3, "stackPolicy": "Stack", "magnitude": 0.05, "modifiedStat": "IncomingDamageMultiplier", "modifierMode": "Percent" } }
+      ],
+      "displayName": "Метка Чёрного Созвездия", "description": "Удар, накладывающий до трёх стаков повышенного входящего урона."
+    },
+    {
+      "id": "EXECUTIONER_BLACK_VERDICT", "iconId": "warrior-heavy-blow", "type": "Casted", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:09", "castTime": "00:00:02", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": false, "school": "PHYSICAL", "interruptible": true,
+      "actions": [ { "type": "Damage", "amount": 201.6, "damageType": "Physical", "attackPowerCoefficient": 1.044 } ],
+      "displayName": "Чёрный приговор", "description": "Прерываемый тяжёлый удар финальной фазы."
+    },
+    {
+      "id": "ARCHON_DEAD_STAR_BRAND", "iconId": "mage-shadow-word-pain", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:07", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": false,
+      "actions": [
+        { "type": "Damage", "amount": 116, "damageType": "Magical", "spellPowerCoefficient": 0.8, "canDodge": false },
+        { "type": "ApplyEffect", "effect": { "id": "ARCHON_DEAD_STAR_BRAND_HEALING", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "HealingReceivedMultiplier", "modifierMode": "Multiplicative" } }
+      ],
+      "displayName": "Клеймо Погасшей Звезды", "description": "Теневой удар, временно снижающий получаемое лечение."
+    },
+    {
+      "id": "ARCHON_ECLIPSE_ASH", "iconId": "mage-shadow-word-pain", "type": "Casted", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:09", "castTime": "00:00:01.4000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [
+        { "type": "Damage", "amount": 80, "damageType": "Magical", "spellPowerCoefficient": 0.4, "canDodge": false },
+        { "type": "ApplyEffect", "effect": { "id": "ARCHON_ECLIPSE_ASH_DOT", "kind": "DamageOverTime", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 40, "tickInterval": "00:00:02", "periodicDamageType": "Magical" } }
+      ],
+      "displayName": "Пепел Затмения", "description": "Прерываемое заклинание, оставляющее на цели пепельный урон со временем."
+    },
+    {
+      "id": "ARCHON_STAR_FRACTURE", "iconId": "mage-arcane-explosion", "type": "Casted", "targetType": "AllEnemiesInCombat", "resourceCost": 0, "cooldown": "00:00:12", "castTime": "00:00:02.4000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [ { "type": "Damage", "amount": 88, "damageType": "Magical", "spellPowerCoefficient": 0.8, "canDodge": false } ],
+      "displayName": "Звёздный раскол", "description": "Прерываемый теневой удар по всей группе."
+    },
+    {
+      "id": "ARCHON_DEVOUR_LIGHT", "iconId": "mage-evocation", "type": "Casted", "targetType": "Self", "resourceCost": 0, "cooldown": "00:00:18", "castTime": "00:00:02.5000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [ { "type": "Healing", "amount": 2000, "healingCanCrit": false } ],
+      "displayName": "Поглощение света", "description": "Прерываемое восстановление здоровья Архонта."
+    },
+    {
+      "id": "ARCHON_DEAD_STAR_COLLAPSE", "iconId": "mage-blast-wave", "type": "Casted", "targetType": "AllEnemiesInCombat", "resourceCost": 0, "cooldown": "00:00:13", "castTime": "00:00:03", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "actions": [ { "type": "Damage", "amount": 186, "damageType": "Magical", "spellPowerCoefficient": 1, "canDodge": false } ],
+      "displayName": "Коллапс Погасшей Звезды", "description": "Опасный прерываемый теневой коллапс по всей группе."
+    }
+  ]
+}

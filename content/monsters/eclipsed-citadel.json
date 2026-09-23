@@ -25,9 +25,12 @@
       "autoAttackInterval": "00:00:02.1000000",
       "autoAttackBaseDamage": 94,
       "autoAttackAttackPowerCoefficient": 0.55,
-      "abilityIds": [],
-      "aiProfileId": "GOBLIN_BASIC_AI",
-      "version": 1,
+      "abilityIds": [
+        "SENTINEL_ASHEN_THRUST",
+        "SENTINEL_OATH_OF_OUTER_SEAL"
+      ],
+      "aiProfileId": "ECLIPSED_CITADEL_SENTINEL_AI",
+      "version": 2,
       "xpReward": 26000,
       "lootTableId": "ECLIPSED_CITADEL_E1_LOOT",
       "goldRewardMin": 110,
@@ -60,9 +63,11 @@
       "autoAttackInterval": "00:00:02.8000000",
       "autoAttackBaseDamage": 105,
       "autoAttackAttackPowerCoefficient": 0.55,
-      "abilityIds": [],
-      "aiProfileId": "BOAR_BASIC_AI",
-      "version": 1,
+      "abilityIds": [
+        "GOLEM_BLACKSTONE_FRACTURE"
+      ],
+      "aiProfileId": "ECLIPSED_CITADEL_GOLEM_AI",
+      "version": 2,
       "xpReward": 30000,
       "lootTableId": "ECLIPSED_CITADEL_E2_LOOT",
       "goldRewardMin": 125,
@@ -90,16 +95,17 @@
         "armorPenetration": 0.02,
         "magicPenetration": 0.02,
         "attackPower": 160,
-        "spellPower": 0
+        "spellPower": 160
       },
       "autoAttackInterval": "00:00:01.7500000",
       "autoAttackBaseDamage": 91,
       "autoAttackAttackPowerCoefficient": 0.5,
       "abilityIds": [
-        "BITE"
+        "VOID_WEAVER_VOID_THREAD",
+        "VOID_WEAVER_VEIL_RUPTURE"
       ],
-      "aiProfileId": "SPIDER_BASIC_AI",
-      "version": 1,
+      "aiProfileId": "ECLIPSED_CITADEL_VOID_WEAVER_AI",
+      "version": 2,
       "xpReward": 32000,
       "lootTableId": "ECLIPSED_CITADEL_E3_LOOT",
       "goldRewardMin": 135,
@@ -133,10 +139,11 @@
       "autoAttackBaseDamage": 112,
       "autoAttackAttackPowerCoefficient": 0.58,
       "abilityIds": [
-        "BITE"
+        "EXECUTIONER_BLACK_CONSTELLATION_MARK",
+        "EXECUTIONER_BLACK_VERDICT"
       ],
-      "aiProfileId": "WOLF_BASIC_AI",
-      "version": 1,
+      "aiProfileId": "ECLIPSED_CITADEL_EXECUTIONER_AI",
+      "version": 2,
       "xpReward": 36000,
       "lootTableId": "ECLIPSED_CITADEL_E4_LOOT",
       "goldRewardMin": 150,
@@ -164,14 +171,18 @@
         "armorPenetration": 0.02,
         "magicPenetration": 0.02,
         "attackPower": 215,
-        "spellPower": 0
+        "spellPower": 215
       },
       "autoAttackInterval": "00:00:02.0500000",
       "autoAttackBaseDamage": 138,
       "autoAttackAttackPowerCoefficient": 0.62,
-      "abilityIds": [],
-      "aiProfileId": "GOBLIN_BASIC_AI",
-      "version": 1,
+      "abilityIds": [
+        "ARCHON_DEAD_STAR_BRAND",
+        "ARCHON_ECLIPSE_ASH",
+        "ARCHON_STAR_FRACTURE"
+      ],
+      "aiProfileId": "ECLIPSED_CITADEL_ARCHON_AI",
+      "version": 2,
       "xpReward": 85000,
       "lootTableId": "ECLIPSED_CITADEL_BOSS_LOOT",
       "goldRewardMin": 500,
@@ -181,6 +192,95 @@
       "artId": "namestnik-tsitadeli",
       "autoAttackBaseDamageMin": 124,
       "autoAttackBaseDamageMax": 152
+    },
+    {
+      "id": "ARCHON_DEAD_STAR_CORE",
+      "name": "Ядро Погасшей Звезды",
+      "rank": "Normal",
+      "level": 25,
+      "maxHp": 2500,
+      "stats": {
+        "level": 25,
+        "accuracy": 0,
+        "dodge": 0,
+        "criticalChance": 0,
+        "criticalDamage": 1,
+        "armor": 0,
+        "magicResistance": 0,
+        "armorPenetration": 0,
+        "magicPenetration": 0,
+        "attackPower": 0,
+        "spellPower": 0
+      },
+      "autoAttackInterval": "01:00:00",
+      "autoAttackBaseDamage": 0,
+      "autoAttackAttackPowerCoefficient": 0,
+      "abilityIds": [],
+      "aiProfileId": "ARCHON_DEAD_STAR_CORE_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Ядро Погасшей Звезды",
+      "description": "Связанная с Архонтом боевая цель без собственной награды.",
+      "artId": "namestnik-tsitadeli",
+      "autoAttackBaseDamageMin": 0,
+      "autoAttackBaseDamageMax": 0
+    }
+  ],
+  "monsterAiProfiles": [
+    {
+      "id": "ECLIPSED_CITADEL_SENTINEL_AI",
+      "priorityAbilityIds": [ "SENTINEL_OATH_OF_OUTER_SEAL", "SENTINEL_ASHEN_THRUST" ],
+      "version": 1,
+      "abilityRules": [
+        { "abilityId": "SENTINEL_OATH_OF_OUTER_SEAL", "priority": 200, "initialDelay": "00:00:05" },
+        { "abilityId": "SENTINEL_ASHEN_THRUST", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_GOLEM_AI",
+      "priorityAbilityIds": [ "GOLEM_BLACKSTONE_FRACTURE" ],
+      "version": 1,
+      "abilityRules": [
+        { "abilityId": "GOLEM_BLACKSTONE_FRACTURE", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_VOID_WEAVER_AI",
+      "priorityAbilityIds": [ "VOID_WEAVER_VEIL_RUPTURE", "VOID_WEAVER_VOID_THREAD" ],
+      "version": 1,
+      "abilityRules": [
+        { "abilityId": "VOID_WEAVER_VEIL_RUPTURE", "priority": 200, "initialDelay": "00:00:07" },
+        { "abilityId": "VOID_WEAVER_VOID_THREAD", "priority": 100, "targetSelector": "RandomEnemy" }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_EXECUTIONER_AI",
+      "priorityAbilityIds": [ "EXECUTIONER_BLACK_VERDICT", "EXECUTIONER_BLACK_CONSTELLATION_MARK" ],
+      "version": 1,
+      "abilityRules": [
+        { "abilityId": "EXECUTIONER_BLACK_VERDICT", "priority": 200, "maxHpPercent": 35, "targetSelector": "CurrentThreatTarget" },
+        { "abilityId": "EXECUTIONER_BLACK_CONSTELLATION_MARK", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_ARCHON_AI",
+      "priorityAbilityIds": [ "ARCHON_DEAD_STAR_COLLAPSE", "ARCHON_DEVOUR_LIGHT", "ARCHON_STAR_FRACTURE", "ARCHON_ECLIPSE_ASH", "ARCHON_DEAD_STAR_BRAND" ],
+      "version": 1,
+      "abilityRules": [
+        { "abilityId": "ARCHON_DEAD_STAR_COLLAPSE", "priority": 500, "targetSelector": "EncounterOrder" },
+        { "abilityId": "ARCHON_DEVOUR_LIGHT", "priority": 400 },
+        { "abilityId": "ARCHON_STAR_FRACTURE", "priority": 300, "initialDelay": "00:00:06" },
+        { "abilityId": "ARCHON_ECLIPSE_ASH", "priority": 200, "targetSelector": "RandomEnemy" },
+        { "abilityId": "ARCHON_DEAD_STAR_BRAND", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+      ]
+    },
+    {
+      "id": "ARCHON_DEAD_STAR_CORE_AI",
+      "priorityAbilityIds": [],
+      "version": 1
     }
   ]
 }
