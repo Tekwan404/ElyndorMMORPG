@@ -108,6 +108,31 @@
   height: 62%;
 }
 
+/* Equipment gets a small slot pictogram without adding another line of text to every card. */
+#app .inventory-view .bag-cell .item-icon__slot-badge {
+  position: absolute;
+  z-index: 2;
+  bottom: 5px;
+  left: 5px;
+  display: grid;
+  width: 17px;
+  height: 17px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 50%;
+  background: rgb(7 10 17 / 86%);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 35%);
+  color: rgb(224 226 235 / 72%);
+  opacity: .86;
+  place-items: center;
+  pointer-events: none;
+}
+
+#app .inventory-view .bag-cell .item-icon__slot-badge svg {
+  width: 72%;
+  height: 72%;
+}
+
 /* NEW remains discoverable without covering the item art. Text stays in the DOM for tests/accessibility. */
 #app .inventory-view .bag-cell__new {
   top: 6px;
@@ -173,6 +198,16 @@
 @media (min-width: 960px) {
   #app .inventory-view .bag-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app .inventory-view .bag-cell {
+    transition: none;
+  }
+
+  #app .inventory-view .bag-cell:not(:disabled):active {
+    transform: none;
   }
 }
 
