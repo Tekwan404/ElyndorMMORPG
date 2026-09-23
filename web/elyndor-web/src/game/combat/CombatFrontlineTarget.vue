@@ -11,7 +11,10 @@ const props = defineProps<{
 }>()
 
 const combat = useCombatSessionStore()
-const portalReady = ref(false)
+const portalReady = ref(
+  typeof document !== 'undefined'
+    && document.querySelector('.combat-hud__actor--enemy') !== null,
+)
 let telemetryTimer: number | null = null
 
 const threatPercent = computed<number | null>(() => {
@@ -31,8 +34,10 @@ function allyArt(): string | null {
 }
 
 onMounted(async () => {
-  await nextTick()
-  portalReady.value = document.querySelector('.combat-hud__actor--enemy') !== null
+  if (!portalReady.value) {
+    await nextTick()
+    portalReady.value = document.querySelector('.combat-hud__actor--enemy') !== null
+  }
   void combat.refreshCombatTelemetry()
   telemetryTimer = window.setInterval(() => {
     void combat.refreshCombatTelemetry()
