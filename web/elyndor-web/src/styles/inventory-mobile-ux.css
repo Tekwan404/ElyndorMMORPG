@@ -1,0 +1,241 @@
+/* Inventory mobile UX pass.
+ * Presentation-only overrides: keep inventory, equipment and spatial-artifact rules in InventoryView/API.
+ */
+
+.inventory-view .inventory-header {
+  align-items: center;
+}
+
+.inventory-view .inventory-header p {
+  opacity: .72;
+  font-size: .54rem;
+  letter-spacing: .08em;
+}
+
+.inventory-view .inventory-header h1 {
+  font-size: clamp(1.45rem, 6vw, 2rem);
+  line-height: 1.05;
+}
+
+.inventory-view .capacity {
+  min-height: 2.25rem;
+  padding-inline: 11px;
+  border-color: color-mix(in srgb, var(--ui-color-primary) 22%, var(--ui-color-border));
+  background: linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 1.5%));
+}
+
+.inventory-view .capacity strong {
+  font-size: 1rem;
+}
+
+/* Capacity details stay available, but no longer compete with the primary used/total counter. */
+.inventory-view .spatial-capacity {
+  padding: 7px 10px;
+  border-color: rgb(255 255 255 / 6%);
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.inventory-view .spatial-capacity > div:first-child small {
+  opacity: .62;
+}
+
+.inventory-view .spatial-capacity > div:first-child strong {
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+  font-weight: 650;
+}
+
+.inventory-view .spatial-capacity__meta {
+  opacity: .82;
+}
+
+.inventory-view .inventory-tools {
+  gap: 7px;
+  padding-block: 7px;
+}
+
+.inventory-view .filter-chips {
+  gap: 5px;
+}
+
+.inventory-view .filter-chips button {
+  padding-inline: 11px;
+}
+
+.inventory-view .bag-surface {
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Five useful targets on normal phones; four only when the viewport is genuinely narrow. */
+.inventory-view .bag-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.inventory-view .bag-cell {
+  min-width: 0;
+  min-height: 56px;
+  border-radius: 11px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 90ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.inventory-view .bag-cell:not(:disabled):active {
+  transform: scale(.965);
+}
+
+.inventory-view .bag-cell__icon img {
+  width: 76%;
+  height: 76%;
+}
+
+.inventory-view .bag-cell__icon :is(.icon-generator svg) {
+  width: 62%;
+  height: 62%;
+}
+
+/* NEW remains discoverable without covering the item art. Text stays in the DOM for tests/accessibility. */
+.inventory-view .bag-cell__new {
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: #b9b2ff;
+  box-shadow: 0 0 0 2px rgb(13 12 27 / 82%), 0 0 7px rgb(146 136 255 / 36%);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Rarity should help scanning, not turn the whole inventory into a light show. */
+.inventory-view .bag-cell[data-rarity='Uncommon'] {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 7px rgb(78 178 103 / 7%);
+}
+
+.inventory-view .bag-cell[data-rarity='Rare'] {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 8px rgb(88 142 230 / 9%);
+}
+
+.inventory-view .bag-cell[data-rarity='Epic'] {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 9px rgb(146 95 225 / 11%);
+}
+
+.inventory-view .bag-cell[data-rarity='Legendary'],
+.inventory-view .bag-cell[data-rarity='Unique'] {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 11px rgb(232 200 102 / 14%);
+}
+
+.inventory-view .bag-cell[data-locked='true'] {
+  box-shadow: inset 0 0 0 1px rgb(232 200 102 / 12%);
+}
+
+.inventory-view .bag-cell__rarity {
+  right: 20%;
+  left: 20%;
+  opacity: .22;
+}
+
+@media (max-width: 359px) {
+  .inventory-view .bag-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .inventory-view .bag-cell {
+    min-height: 60px;
+  }
+}
+
+@media (min-width: 720px) {
+  .inventory-view .bag-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .inventory-view .bag-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+/* Inventory item details are a true mobile bottom sheet. */
+@media (max-width: 539px) {
+  .ui-modal__dialog:has(.item-detail) {
+    position: relative;
+    max-height: min(72dvh, 46rem);
+    overflow: auto;
+    border-radius: 20px 20px 12px 12px;
+    overscroll-behavior: contain;
+  }
+
+  .ui-modal__dialog:has(.item-detail)::before {
+    content: '';
+    position: sticky;
+    z-index: 7;
+    top: 7px;
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 7px auto -7px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 22%);
+    pointer-events: none;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .ui-modal__header {
+    position: sticky;
+    z-index: 6;
+    top: 0;
+    padding: 14px 14px 10px;
+    background: linear-gradient(180deg, rgb(20 25 31 / 100%), rgb(14 18 24 / 97%));
+  }
+
+  .ui-modal__dialog:has(.item-detail) .ui-modal__header h2 {
+    max-width: calc(100% - 3.25rem);
+    overflow: hidden;
+    font-size: .98rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .ui-modal__body {
+    padding: 12px 14px 8px;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .item-detail {
+    gap: 10px;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .item-detail__identity {
+    align-items: flex-start;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .item-detail__icon {
+    width: 3.8rem;
+    height: 3.8rem;
+    flex: 0 0 3.8rem;
+  }
+
+  .ui-modal__dialog:has(.item-detail) .ui-modal__actions {
+    position: sticky;
+    z-index: 8;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 14px calc(10px + var(--ui-safe-area-bottom));
+    border-top-color: rgb(255 255 255 / 8%);
+    background: linear-gradient(180deg, rgb(10 13 19 / 96%), rgb(6 9 14 / 100%));
+    backdrop-filter: blur(8px);
+  }
+
+  .ui-modal__dialog:has(.item-detail) .ui-modal__actions > * {
+    width: 100%;
+  }
+}
