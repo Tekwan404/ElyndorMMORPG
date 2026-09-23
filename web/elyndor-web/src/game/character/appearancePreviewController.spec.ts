@@ -5,9 +5,9 @@ import { createAppearancePreviewController } from '@/game/character/appearancePr
 describe('appearance preview controller', () => {
   it('captures real appearance once and restores it when preview closes', () => {
     let renderedAppearance: string | null = 'REAL_APPEARANCE'
-    const capture = vi.fn(() => renderedAppearance)
-    const applyPreview = vi.fn((cosmeticId: string) => { renderedAppearance = cosmeticId })
-    const restore = vi.fn((snapshot: string | null) => { renderedAppearance = snapshot })
+    const capture = vi.fn<() => string | null>(() => renderedAppearance)
+    const applyPreview = vi.fn<(cosmeticId: string) => void>((cosmeticId) => { renderedAppearance = cosmeticId })
+    const restore = vi.fn<(snapshot: string | null) => void>((snapshot) => { renderedAppearance = snapshot })
     const controller = createAppearancePreviewController({ capture, applyPreview, restore })
 
     controller.preview('COSMETIC_FIRE')
