@@ -5,7 +5,7 @@ import { usePartyStore } from '@/game/party/partyStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 const PARTY_INVITE_QUERY_PARAMETER = 'partyInvite'
-const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export function takePartyInviteId(location: Location, history: History): string | null {
   const url = new URL(location.href)
@@ -24,14 +24,15 @@ export function installPartyInviteDeepLink(pinia: Pinia): void {
   const session = useGameSessionStore(pinia)
   const party = usePartyStore(pinia)
   let handled = false
+  let stop: (() => void) | undefined
 
-  const stop = watch(
+  stop = watch(
     () => session.state,
     (state) => {
       if (handled || state !== 'world') return
 
       handled = true
-      stop()
+      stop?.()
       void party.acceptInvite(inviteId)
     },
     { immediate: true },
