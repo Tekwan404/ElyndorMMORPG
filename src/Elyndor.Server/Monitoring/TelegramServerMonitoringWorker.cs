@@ -83,6 +83,7 @@ public sealed partial class TelegramServerMonitoringWorker(
             + $"🕒 {now}\n"
             + $"🌐 Environment: {environmentName}\n"
             + $"⏱ Uptime: {FormatDuration(metrics.ProcessUptime)}\n\n"
+            + $"🎮 Players online: {metrics.OnlinePlayers}\n\n"
             + $"🖥 CPU: {cpu}  | process: {processCpu}\n"
             + $"🧠 RAM: {memory}\n"
             + $"💾 Disk: {disk}\n"
