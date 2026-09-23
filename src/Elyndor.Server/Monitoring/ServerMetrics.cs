@@ -12,7 +12,8 @@ public sealed record ServerMetricsSnapshot(
     long NetworkReceivedBytesPerSecond,
     long NetworkSentBytesPerSecond,
     TimeSpan ProcessUptime,
-    int ProcessorCount)
+    int ProcessorCount,
+    int OnlinePlayers)
 {
     public double MemoryPercent =>
         MemoryTotalBytes <= 0 ? 0 : MemoryUsedBytes * 100d / MemoryTotalBytes;
