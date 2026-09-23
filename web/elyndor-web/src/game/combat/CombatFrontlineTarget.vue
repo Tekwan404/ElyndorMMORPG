@@ -15,7 +15,8 @@ let telemetryTimer: number | null = null
 const threatPercent = computed<number | null>(() => {
   const current = combat.threat
   const ally = props.ally
-  if (!current || !ally) return null
+  const selectedEnemyActorId = combat.snapshot?.selectedTargetActorId ?? combat.snapshot?.enemy.actorId
+  if (!current || !ally || !selectedEnemyActorId || current.enemyActorId !== selectedEnemyActorId) return null
   const entry = current.entries.find(candidate => candidate.actorId === ally.actorId)
   if (!entry) return null
   const maximumThreat = Math.max(0, ...current.entries.map(candidate => candidate.threat))
