@@ -17,7 +17,7 @@ function event(
   return {
     sequence,
     type,
-    actorId: sourceActorId,
+    actorId: sourceActorId ?? targetActorId ?? 'combat',
     sourceActorId,
     targetActorId,
     definitionId: null,
