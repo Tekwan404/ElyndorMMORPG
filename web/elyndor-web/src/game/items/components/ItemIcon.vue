@@ -55,7 +55,7 @@ watch(() => props.iconId, () => { failedToLoad.value = false })
 </script>
 
 <template>
-  <span class="item-icon" :data-icon-id="iconId ?? undefined" :data-equipment-slot="equipmentSlot ?? undefined">
+  <span class="item-icon" :data-icon-id="iconId ?? undefined">
     <img
       v-if="source"
       class="item-icon__image"
