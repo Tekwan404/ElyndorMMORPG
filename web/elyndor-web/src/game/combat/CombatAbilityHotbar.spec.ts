@@ -50,7 +50,7 @@ describe('CombatAbilityHotbar', () => {
     const wrapper = mountHotbar()
 
     expect(wrapper.find('[data-combat-abilities] [data-combat-consumable]').exists()).toBe(false)
-    expect(wrapper.get('[data-combat-consumables] [data-combat-consumable="TEST_POTION"]').exists()).toBe(true)
+    expect(wrapper.find('[data-combat-consumables] [data-combat-consumable="TEST_POTION"]').exists()).toBe(true)
     expect(wrapper.get('[data-ability-slot="TEST_STRIKE"]').text()).toContain('Тестовый удар')
   })
 
@@ -81,4 +81,4 @@ describe('CombatAbilityHotbar', () => {
     expect(slot.attributes('aria-disabled')).toBe('true')
     expect(wrapper.emitted('use')).toBeUndefined()
   })
-})
+}
