@@ -1366,7 +1366,7 @@
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
-      "iconId": "sets/mage_legendary_eclipsed_oracle_feet",
+      "iconId": "sets/black-bastion/eclipsed_oracle/eclipsed_oracle_boots",
       "name": "Сапоги Затмённого Оракула",
       "type": "Equipment",
       "rarity": "Legendary",

@@ -70,6 +70,25 @@ describe('authored content art', () => {
     expect(itemArtUrl(item?.iconId)).toMatch(/sets\/ancient-mine\/mine_tracker\/mine_tracker_helmet\.webp$/)
   })
 
+  it('resolves the Eclipsed Oracle boots from their canonical set artwork', () => {
+    const item = getItems().find(candidate => candidate.id === 'MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET')
+
+    expect(item?.iconId).toBe('sets/black-bastion/eclipsed_oracle/eclipsed_oracle_boots')
+    expect(itemArtUrl(item?.iconId)).toMatch(/sets\/black-bastion\/eclipsed_oracle\/eclipsed_oracle_boots\.webp$/)
+  })
+
+  it('resolves the Echoes of the Deep hood artwork', () => {
+    const item = getItems().find(candidate => candidate.id === 'DUNGEON_MINES_MAGE_HOOD_RARE')
+
+    expect(itemArtUrl(item?.iconId)).toMatch(/dungeon_mines_mage_hood_rare\.webp$/)
+  })
+
+  it('resolves the drowned pilgrim lantern artwork', () => {
+    const item = getItems().find(candidate => candidate.id === 'FONAR_UTONUVSHEGO_PALOMNIKA')
+
+    expect(itemArtUrl(item?.iconId)).toMatch(/imported\/fonar_utonuvshego_palomnika\.webp$/)
+  })
+
   it('resolves artwork for every authored set piece', () => {
     const importedSetIds = [
       'SET_HEART_OF_BLIGHTED_GROVE_',
