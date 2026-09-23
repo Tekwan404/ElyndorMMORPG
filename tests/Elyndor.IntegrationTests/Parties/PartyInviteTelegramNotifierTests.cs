@@ -36,7 +36,7 @@ public sealed class PartyInviteTelegramNotifierTests(PostgresFixture postgres) :
             CreateInvite(inviterCharacterId, targetCharacterId),
             CancellationToken.None);
 
-        Assert.Equal(5002, sender.ChatId);
+        Assert.Equal(5002L, sender.ChatId);
         Assert.Equal(
             "👥 Leader приглашает вас в группу в Elyndor.\n\nОткройте игру и примите приглашение. Оно действует 5 минут.",
             sender.Text);
