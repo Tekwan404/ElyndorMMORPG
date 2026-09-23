@@ -53,12 +53,12 @@ function actorLabel(side: PreviewEntry['side'], event: CombatEvent): string {
   return 'БОЙ'
 }
 
-function eventText(event: CombatEvent): string | null {
+function eventText(event: CombatEvent, critical = false): string | null {
   const definition = abilityName(event.definitionId)
   const targetEnemy = enemies.value.find(enemy => enemy.actorId === (event.targetActorId ?? event.actorId))
   switch (event.type) {
     case 'DamageDealt':
-      return `${definition || 'Атака'} · ${Math.round(event.amount)} урона`
+      return `${definition || 'Атака'} · ${Math.round(event.amount)} урона${critical ? ' · КРИТ' : ''}`
     case 'DamageBlocked':
       return event.amountBeforeShields <= 0 ? 'Полный блок' : `Блок −${Math.round(event.amount)}`
     case 'HealingApplied':
@@ -98,12 +98,21 @@ function eventText(event: CombatEvent): string | null {
   }
 }
 
+function isCriticalDamage(index: number, event: CombatEvent): boolean {
+  if (event.type !== 'DamageDealt' || index <= 0) return false
+  const previous = combat.events[index - 1]
+  return previous?.type === 'CriticalHit'
+    && previous.sourceActorId === event.sourceActorId
+    && previous.targetActorId === event.targetActorId
+    && previous.amount === event.amount
+}
+
 const previewEntries = computed<PreviewEntry[]>(() => {
   const entries: PreviewEntry[] = []
   for (let index = combat.events.length - 1; index >= 0 && entries.length < 3; index -= 1) {
     const event = combat.events[index]
     if (!event) continue
-    const text = eventText(event)
+    const text = eventText(event, isCriticalDamage(index, event))
     if (!text) continue
     const side = eventSide(event)
     entries.push({
@@ -122,10 +131,10 @@ function cancelTargetFrame(): void {
   targetFrame = null
 }
 
-async function syncTarget(hasSnapshot: boolean): Promise<void> {
+async function syncTarget(active: boolean): Promise<void> {
   cancelTargetFrame()
   targetReady.value = false
-  if (!hasSnapshot) return
+  if (!active) return
 
   await nextTick()
   let attempts = 0
@@ -142,17 +151,21 @@ async function syncTarget(hasSnapshot: boolean): Promise<void> {
 }
 
 watch(
-  () => combat.snapshot?.sessionId ?? null,
-  sessionId => void syncTarget(Boolean(sessionId)),
+  [() => combat.snapshot?.sessionId ?? null, () => combat.isActive],
+  ([sessionId, active]) => void syncTarget(Boolean(sessionId) && active),
   { immediate: true },
 )
 
-onUnmounted(cancelTargetFrame)
+onUnmounted(() => {
+  cancelTargetFrame()
+  targetReady.value = false
+})
 </script>
 
 <template>
   <Teleport v-if="targetReady" to=".combat-log__toggle > span">
-    <span v-if="previewEntries.length" class="combat-log-preview" data-combat-log-preview aria-hidden="true">
+    <span class="combat-log-preview" data-combat-log-preview aria-hidden="true">
+      <span v-if="!previewEntries.length" class="combat-log-preview__empty">Событий пока нет</span>
       <span
         v-for="entry in previewEntries"
         :key="entry.key"
@@ -176,6 +189,14 @@ onUnmounted(cancelTargetFrame)
   min-width: 0;
   gap: 2px;
   margin-top: 2px;
+}
+
+.combat-log-preview__empty {
+  overflow: hidden;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .combat-log-preview__entry {
