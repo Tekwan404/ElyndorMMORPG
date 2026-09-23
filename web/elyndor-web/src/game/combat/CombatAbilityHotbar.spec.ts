@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type { CombatAbility, InventoryItem } from '@/api/contracts'
 import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
