@@ -81,4 +81,4 @@ describe('CombatAbilityHotbar', () => {
     expect(slot.attributes('aria-disabled')).toBe('true')
     expect(wrapper.emitted('use')).toBeUndefined()
   })
-}
+})
