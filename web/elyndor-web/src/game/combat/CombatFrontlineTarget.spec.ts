@@ -6,10 +6,40 @@ import type { CombatActorSnapshot, CombatSnapshot } from '@/api/contracts'
 import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 
-const ally = {
-  actorId: 'player-1',
-  name: 'tekwan',
-} as CombatActorSnapshot
+function actor(actorId: string, name: string, kind: CombatActorSnapshot['kind']): CombatActorSnapshot {
+  return {
+    actorId,
+    kind,
+    definitionId: actorId,
+    name,
+    hp: 100,
+    maxHp: 100,
+    resourceType: 'NONE',
+    resource: 0,
+    maxResource: 0,
+    autoAttackEnabled: false,
+    cooldowns: {},
+    knownAbilityIds: [],
+    abilities: [],
+    effects: [],
+  }
+}
+
+const ally = actor('player-1', 'tekwan', 'Player')
+
+function activeSnapshot(): CombatSnapshot {
+  return {
+    sessionId: 'session-1',
+    sequence: 1,
+    status: 'Active',
+    serverTimeUtc: '2026-09-23T15:00:00Z',
+    contentVersion: 'test-content',
+    balanceVersion: 'test-balance',
+    player: ally,
+    enemy: actor('enemy-1', 'Враг', 'Monster'),
+    selectedTargetActorId: 'enemy-1',
+  }
+}
 
 function createTarget(): HTMLElement {
   const target = document.createElement('section')
@@ -32,10 +62,7 @@ describe('CombatFrontlineTarget', () => {
   it('shows current aggro target and relative threat beside the enemy HUD', () => {
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'refreshCombatTelemetry').mockResolvedValue()
-    combat.snapshot = {
-      selectedTargetActorId: 'enemy-1',
-      enemy: { actorId: 'enemy-1' },
-    } as CombatSnapshot
+    combat.snapshot = activeSnapshot()
     combat.threat = {
       enemyActorId: 'enemy-1',
       enemyName: 'Враг',
@@ -66,10 +93,7 @@ describe('CombatFrontlineTarget', () => {
   it('does not show a stale threat percentage from another enemy', () => {
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'refreshCombatTelemetry').mockResolvedValue()
-    combat.snapshot = {
-      selectedTargetActorId: 'enemy-1',
-      enemy: { actorId: 'enemy-1' },
-    } as CombatSnapshot
+    combat.snapshot = activeSnapshot()
     combat.threat = {
       enemyActorId: 'enemy-2',
       enemyName: 'Другой враг',
