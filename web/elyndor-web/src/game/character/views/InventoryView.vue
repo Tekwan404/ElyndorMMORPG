@@ -26,7 +26,8 @@ const equipmentActionError = ref<string | null>(null)
 const typeFilter = ref<'all' | 'equipment' | 'artifact' | 'material' | 'consumable'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
-const sortMode = ref<'default' | 'rarity' | 'level' | 'name'>('default')
+const newOnly = ref(false)
+const sortMode = ref<'default' | 'rarity' | 'slot' | 'new' | 'level' | 'name'>('default')
 const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
 const contextualSlot = computed(() => props.slotFilter ?? null)
@@ -54,18 +55,27 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
     || (typeFilter.value === 'consumable' && item.type === 'Consumable')
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
   const equipableMatches = !equipableOnly.value || canEquipNow(item)
-  return contextualMatches && typeMatches && rarityMatches && equipableMatches
+  const newMatches = !newOnly.value || newItemIds.value.has(item.id)
+  return contextualMatches && typeMatches && rarityMatches && equipableMatches && newMatches
 }))
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
   if (sortMode.value === 'rarity') {
     items.sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity)
       || left.name.localeCompare(right.name))
+  } else if (sortMode.value === 'slot') {
+    items.sort((left, right) => typeLabel(left).localeCompare(typeLabel(right), 'ru')
+      || rarityRank(right.rarity) - rarityRank(left.rarity)
+      || left.name.localeCompare(right.name, 'ru'))
+  } else if (sortMode.value === 'new') {
+    items.sort((left, right) => Number(newItemIds.value.has(right.id)) - Number(newItemIds.value.has(left.id))
+      || rarityRank(right.rarity) - rarityRank(left.rarity)
+      || left.name.localeCompare(right.name, 'ru'))
   } else if (sortMode.value === 'level') {
     items.sort((left, right) => right.requiredLevel - left.requiredLevel
       || rarityRank(right.rarity) - rarityRank(left.rarity))
   } else if (sortMode.value === 'name') {
-    items.sort((left, right) => left.name.localeCompare(right.name))
+    items.sort((left, right) => left.name.localeCompare(right.name, 'ru'))
   }
   return items
 })
@@ -77,12 +87,13 @@ const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.valu
 const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
 const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
 const visibleCells = computed(() => {
-  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value) return sortedItems.value
+  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value || newOnly.value) return sortedItems.value
   const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
   return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
 })
 const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
 const activeFilterCount = computed(() => [
+  newOnly.value,
   rarityFilter.value !== 'all',
   equipableOnly.value,
   sortMode.value !== 'default',
@@ -419,6 +430,7 @@ function typeLabel(item: InventoryItem): string {
 }
 
 function resetFilters(): void {
+  newOnly.value = false
   rarityFilter.value = 'all'
   equipableOnly.value = false
   sortMode.value = 'default'
@@ -597,7 +609,15 @@ async function toggleSelectedLock(): Promise<void> {
       <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
         <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
-          <button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">Все</button>
+          <button type="button" :class="{ active: typeFilter === 'all' && !newOnly }" @click="typeFilter = 'all'; newOnly = false">Все</button>
+          <button
+            type="button"
+            data-inventory-new-filter
+            :class="{ active: newOnly }"
+            @click="newOnly = !newOnly"
+          >
+            Новые<span v-if="newItemIds.size"> · {{ newItemIds.size }}</span>
+          </button>
           <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
           <button type="button" :class="{ active: typeFilter === 'artifact' }" @click="typeFilter = 'artifact'">Артефакты</button>
           <button type="button" :class="{ active: typeFilter === 'consumable' }" @click="typeFilter = 'consumable'">Расходники</button>
@@ -648,7 +668,9 @@ async function toggleSelectedLock(): Promise<void> {
             <span class="sr-only">Сортировка предметов</span>
             <select v-model="sortMode" data-inventory-sort>
               <option value="default">Как получено</option>
+              <option value="new">Новые сначала</option>
               <option value="rarity">По редкости</option>
+              <option value="slot">По слоту</option>
               <option value="level">По уровню</option>
               <option value="name">По названию</option>
             </select>
@@ -664,15 +686,15 @@ async function toggleSelectedLock(): Promise<void> {
     <section v-if="inventory" class="bag-surface">
       <header v-if="bagItems.length" class="bag-surface__header">
         <div>
-          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? 'Все предметы' : 'Результат фильтра' }}</small>
-          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
+          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? 'Все предметы' : 'Результат фильтра' }}</small>
+          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
         </div>
         <span v-if="isContextualSlotMode">Выбор снаряжения</span>
-        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly">Фильтр активен</span>
+        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
       </header>
 
       <div
-        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly))"
+        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))"
         class="bag-grid"
       >
         <button
@@ -693,7 +715,7 @@ async function toggleSelectedLock(): Promise<void> {
           @click="openItem(item)"
         >
           <template v-if="item">
-            <span v-if="newItemIds.has(item.id)" class="bag-cell__new">НОВОЕ</span>
+            <span v-if="newItemIds.has(item.id)" class="bag-cell__new"><span class="sr-only">НОВОЕ</span></span>
             <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
               <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
             </span>
