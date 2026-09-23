@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using System.Text.Json;
 using Elyndor.Contracts.Identity;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Identity;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Server.Administration;
+using Elyndor.Server.Monitoring;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -26,7 +28,23 @@ public static class AuthenticationEndpoints
         if (mapDevelopmentEndpoint)
             group.MapPost("/development", AuthenticateDevelopmentAsync);
 
+        endpoints.MapPost("/api/v1/presence/heartbeat", RecordPresence)
+            .WithTags("System")
+            .RequireAuthorization();
+
         return endpoints;
+    }
+
+    private static IResult RecordPresence(
+        ClaimsPrincipal user,
+        IServerMetricsCollector metricsCollector)
+    {
+        string? subject = user.FindFirst("sub")?.Value;
+        if (!Guid.TryParse(subject, out Guid accountId) || accountId == Guid.Empty)
+            return Results.Unauthorized();
+
+        metricsCollector.RecordPlayerSeen(accountId);
+        return Results.NoContent();
     }
 
     private static IResult GetTelegramWebConfiguration(

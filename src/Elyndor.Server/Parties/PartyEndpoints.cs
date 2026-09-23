@@ -2,7 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Parties;
 using Elyndor.Core.Parties;
+using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Parties;
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Parties;
 
@@ -63,17 +66,35 @@ public static class PartyEndpoints
         InviteToPartyRequest request,
         ClaimsPrincipal user,
         PartyService service,
+        GameDbContext dbContext,
+        ITelegramMessageSender telegramMessageSender,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         if (!Enum.TryParse(request.Mode, true, out PartyInviteMode mode))
             return Results.Problem(statusCode: StatusCodes.Status422UnprocessableEntity);
-        return ToResult(await service.InviteAsync(
+
+        bool inviteAlreadyExisted = await dbContext.PartyInvites
+            .AsNoTracking()
+            .AnyAsync(invite => invite.Id == request.InviteId, cancellationToken);
+        PartyOperationResult result = await service.InviteAsync(
             accountId,
             request.InviteId,
             request.TargetCharacterId,
             mode,
-            cancellationToken));
+            cancellationToken);
+
+        if (result.IsSuccess && result.Invite is not null && !inviteAlreadyExisted)
+        {
+            PartyInviteTelegramNotifier notifier = new(
+                dbContext,
+                telegramMessageSender,
+                loggerFactory.CreateLogger<PartyInviteTelegramNotifier>());
+            await notifier.NotifyAsync(result.Invite, cancellationToken);
+        }
+
+        return ToResult(result);
     }
 
     private static async Task<IResult> AcceptInviteAsync(

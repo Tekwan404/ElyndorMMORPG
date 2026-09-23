@@ -88,6 +88,7 @@ public sealed class TelegramAdminUpdateProcessor(
         string state = GetState(metrics);
         string text = $"📊 Elyndor Status — {state}\n"
             + $"Uptime: {FormatDuration(metrics.ProcessUptime)}\n"
+            + $"👥 Players online: {metrics.OnlinePlayers}\n"
             + $"CPU: {FormatPercent(metrics.CpuPercent)}\n"
             + $"RAM: {metrics.MemoryUsedGiB:F1}/{metrics.MemoryTotalGiB:F1} GiB ({metrics.MemoryPercent:F0}%)\n"
             + $"Disk: {metrics.DiskUsedGiB:F1}/{metrics.DiskTotalGiB:F1} GiB ({metrics.DiskPercent:F0}%)\n"

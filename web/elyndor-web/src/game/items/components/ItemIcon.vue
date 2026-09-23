@@ -71,10 +71,16 @@ watch(() => props.iconId, () => { failedToLoad.value = false })
       :config="{ id: `item-${itemId}`, glyph: fallbackGlyph, category: fallbackCategory, rarity }"
       :label="decorative ? undefined : name"
     />
+    <IconGenerator
+      v-if="type === 'Equipment' && equipmentSlot"
+      class="item-icon__slot-badge"
+      :config="{ id: `slot-${itemId}`, glyph: fallbackGlyph, category: 'equipment' }"
+    />
   </span>
 </template>
 
 <style scoped>
-.item-icon { display: inline-grid; width: 100%; height: 100%; }
+.item-icon { position: relative; display: inline-grid; width: 100%; height: 100%; }
 .item-icon__image, .item-icon__fallback { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; }
+.item-icon__slot-badge { display: none; }
 </style>
