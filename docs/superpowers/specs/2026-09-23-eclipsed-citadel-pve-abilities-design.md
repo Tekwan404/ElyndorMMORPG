@@ -38,10 +38,10 @@ The content package composer and validator remain authoritative. IDs are additiv
 
 ### Void Weaver
 
-The inherited `BITE` and `SPIDER_BASIC_AI` are removed. The Weaver receives a spell-power baseline appropriate for a level-25 caster while preserving its existing HP, rewards and encounter position.
+The inherited `BITE` and `SPIDER_BASIC_AI` are removed. The Weaver receives `spellPower: 160` while preserving its existing HP, rewards and encounter position.
 
-- `VOID_WEAVER_VOID_THREAD`: 1.5-second interruptible random-target Shadow cast every six seconds; direct damage plus a three-tick, six-second Shadow DoT.
-- `VOID_WEAVER_VEIL_RUPTURE`: 2.3-second interruptible all-party Shadow cast, initial delay seven seconds and 13-second cooldown; applies a 15% multiplicative MagicResistance reduction for eight seconds.
+- `VOID_WEAVER_VOID_THREAD`: 1.5-second interruptible random-target Shadow cast every six seconds; 100 pre-mitigation direct damage (`60 + 0.25 * SpellPower`) plus a three-tick, six-second 28-damage Shadow DoT.
+- `VOID_WEAVER_VEIL_RUPTURE`: 2.3-second interruptible all-party Shadow cast for 162 pre-mitigation damage (`90 + 0.45 * SpellPower`), initial delay seven seconds and 13-second cooldown; applies a 15% multiplicative MagicResistance reduction for eight seconds.
 - `ECLIPSED_CITADEL_VOID_WEAVER_AI` prioritises Veil Rupture above Void Thread.
 
 ### Black Constellation Executioner
@@ -54,13 +54,13 @@ The inherited `BITE` and `WOLF_BASIC_AI` are removed.
 
 ## Archon encounter
 
-The Archon gets an appropriate level-25 spell-power baseline in addition to its existing melee profile. `ECLIPSED_CITADEL_ARCHON_ENCOUNTER` controls phase transitions; normal spell selection stays in `ECLIPSED_CITADEL_ARCHON_AI`.
+The Archon receives `spellPower: 215` in addition to its existing melee profile. `ECLIPSED_CITADEL_ARCHON_ENCOUNTER` controls phase transitions; normal spell selection stays in `ECLIPSED_CITADEL_ARCHON_AI`.
 
 ### Base ability set (100% to 70%)
 
-- `ARCHON_DEAD_STAR_BRAND`: instant current-target magical damage and an eight-second multiplicative 15% healing-received reduction (`0.85`).
-- `ARCHON_ECLIPSE_ASH`: 1.4-second interruptible random-target Shadow cast with an eight-second, four-tick DoT.
-- `ARCHON_STAR_FRACTURE`: 2.4-second interruptible party-wide spell; initial delay six seconds and 12-second cooldown.
+- `ARCHON_DEAD_STAR_BRAND`: instant current-target magical damage for 288 (`116 + 0.8 * SpellPower`) and an eight-second multiplicative 15% healing-received reduction (`0.85`).
+- `ARCHON_ECLIPSE_ASH`: 1.4-second interruptible random-target Shadow cast for 166 (`80 + 0.4 * SpellPower`) with an eight-second, four-tick 40-damage DoT.
+- `ARCHON_STAR_FRACTURE`: 2.4-second interruptible party-wide spell for 260 (`88 + 0.8 * SpellPower`); initial delay six seconds and 12-second cooldown.
 
 ### Core transition (at 70%)
 
@@ -81,11 +81,11 @@ The one-shot threshold applies two internal effects because one `EffectDefinitio
 - `ARCHON_FINAL_ECLIPSE_DAMAGE`: +15% outgoing damage.
 - `ARCHON_FINAL_ECLIPSE_HASTE`: +15% attack speed.
 
-The phase-three ability set adds `ARCHON_DEAD_STAR_COLLAPSE`: a three-second, interruptible, party-wide high-damage Shadow cast on a 13-second cooldown. An encounter `CastInterrupted` trigger keyed specifically to this ability applies `ARCHON_UNSTABLE_CORE`, increasing Archon incoming damage by 25% for six seconds. Interrupting any other cast does not activate this reward.
+The phase-three ability set adds `ARCHON_DEAD_STAR_COLLAPSE`: a three-second, interruptible, party-wide high-damage Shadow cast for 401 (`186 + SpellPower`) on a 13-second cooldown. An encounter `CastInterrupted` trigger keyed specifically to this ability applies `ARCHON_UNSTABLE_CORE`, increasing Archon incoming damage by 25% for six seconds. Interrupting any other cast does not activate this reward.
 
 ## Balance method
 
-Physical abilities preserve the stated relative ratios by scaling both the monster base-damage and attack-power coefficients. Spell direct damage and DoT values are calibrated against the existing level-25 dungeon caster conventions and checked through deterministic combat scenarios.
+Physical abilities preserve the stated relative ratios by scaling both the monster base-damage and attack-power coefficients: Sentinel Thrust is `117.5 + 0.6875 * AP`; Golem Fracture is `141.75 + 0.7425 * AP`; Executioner Mark is `112 + 0.58 * AP`; and Verdict is `201.6 + 1.044 * AP`. Spell values above are fixed level-25 content values and deterministic combat scenarios validate their actual post-mitigation pressure.
 
 The target is that a missed interrupt is recoverable by a normally equipped solo player, while repeated missed high-priority casts create unsustainable pressure. The Core receives no reward and cannot create an extra loot, XP or dungeon-completion path.
 
