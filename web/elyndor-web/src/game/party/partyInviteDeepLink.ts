@@ -23,18 +23,22 @@ export function installPartyInviteDeepLink(pinia: Pinia): void {
 
   const session = useGameSessionStore(pinia)
   const party = usePartyStore(pinia)
-  let handled = false
-  let stop: (() => void) | undefined
+  const acceptInvite = () => {
+    void party.acceptInvite(inviteId)
+  }
 
-  stop = watch(
+  if (session.state === 'world') {
+    acceptInvite()
+    return
+  }
+
+  const stop = watch(
     () => session.state,
     (state) => {
-      if (handled || state !== 'world') return
+      if (state !== 'world') return
 
-      handled = true
-      stop?.()
-      void party.acceptInvite(inviteId)
+      stop()
+      acceptInvite()
     },
-    { immediate: true },
   )
 }
