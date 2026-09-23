@@ -10,6 +10,7 @@ const props = defineProps<{
   aggroedActorIds: string[]
   selectedFriendlyTargetActorId: string | null
   participantStatus: (actorId: string) => string
+  canSelect: (actorId: string) => boolean
   participantGlyph: (actorId: string) => GlyphName
   roleLabel: (actor: CombatActorSnapshot) => string
   healthRatio: (actor: CombatActorSnapshot) => number
@@ -30,7 +31,7 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
 }
 
 function allyArt(ally: CombatActorSnapshot): string | null {
-  return resolveCharacterArt(ally.definitionId, 'MALE')
+  return resolveCharacterArt(ally.definitionId, ally.genderId ?? 'MALE')
 }
 </script>
 
@@ -62,6 +63,7 @@ function allyArt(ally: CombatActorSnapshot): string | null {
         :data-status="participantStatus(ally.actorId)"
         :aria-label="accessibleLabel(ally)"
         :aria-pressed="ally.actorId === selectedFriendlyTargetActorId"
+        :disabled="ally.hp <= 0 || !canSelect(ally.actorId)"
         @click="emit('select', ally.actorId)"
       >
         <span class="combat-ally-roster__portrait" aria-hidden="true">
@@ -109,6 +111,9 @@ function allyArt(ally: CombatActorSnapshot): string | null {
   top: 8px;
   left: 8px;
   width: min(48%, 13rem);
+  max-height: 6.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   gap: 4px;
   padding: 4px;
   border-color: rgb(170 163 255 / 20%);
@@ -118,7 +123,7 @@ function allyArt(ally: CombatActorSnapshot): string | null {
 
 .combat-ally-roster--battlefield .combat-ally-roster__header { display: none; }
 .combat-ally-roster--battlefield .combat-ally-roster__grid { grid-template-columns: 1fr; gap: 3px; }
-.combat-ally-roster--battlefield .combat-ally-roster__member { min-height: 34px; grid-template-columns: 1.45rem minmax(0, 1fr) auto; gap: 4px; padding: 3px 4px; }
+.combat-ally-roster--battlefield .combat-ally-roster__member { min-height: var(--ui-touch-target); grid-template-columns: 1.45rem minmax(0, 1fr) auto; gap: 4px; padding: 3px 4px; }
 .combat-ally-roster--battlefield .combat-ally-roster__portrait { width: 1.8rem; height: 1.8rem; font-size: .58rem; }
 .combat-ally-roster--battlefield .combat-ally-roster__identity { display: flex; align-items: center; gap: 3px; }
 .combat-ally-roster--battlefield .combat-ally-roster__identity strong { font-size: .52rem; }

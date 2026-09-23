@@ -180,7 +180,9 @@ internal static class CombatContractMapper
             actor.ConsumableCooldowns,
             actor.AutoAttackIntervalSeconds,
             actor.NextAutoAttackAtUtc,
-            actor.CurrentAggroTargetActorId);
+            actor.CurrentAggroTargetActorId,
+            actor.GenderId,
+            actor.MonsterRank?.ToString());
     }
 
     private static string ResolveAbilityDescription(

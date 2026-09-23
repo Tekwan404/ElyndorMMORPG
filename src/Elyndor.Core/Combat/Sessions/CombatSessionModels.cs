@@ -58,7 +58,8 @@ public sealed record CombatParticipantDefinition(
     MonsterRank? MonsterRank = null,
     bool IsCombatObject = false,
     bool RewardEligible = true,
-    IReadOnlyDictionary<string, int>? EquippedSetPieces = null);
+    IReadOnlyDictionary<string, int>? EquippedSetPieces = null,
+    string? GenderId = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
@@ -106,7 +107,9 @@ public sealed record CombatActorSnapshot(
     DateTimeOffset? NextAutoAttackAtUtc = null,
     Guid? CurrentAggroTargetActorId = null,
     bool IsCombatObject = false,
-    bool RewardEligible = true);
+    bool RewardEligible = true,
+    string? GenderId = null,
+    MonsterRank? MonsterRank = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

@@ -1458,7 +1458,8 @@ public sealed partial class CombatSession
                 0,
                 monster.AutoAttackBaseDamageMin,
                 monster.AutoAttackBaseDamageMax),
-            new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal));
+            new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal),
+            MonsterRank: monster.Rank);
     }
 
     private void ResolveEnemyAction(
@@ -2551,7 +2552,9 @@ public sealed partial class CombatSession
                 ? GetEnemyCurrentTargetActorId(definition.Actor.ActorId, CurrentTimeUtc)
                 : null,
             definition.IsCombatObject,
-            definition.RewardEligible);
+            definition.RewardEligible,
+            definition.GenderId,
+            definition.MonsterRank);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()

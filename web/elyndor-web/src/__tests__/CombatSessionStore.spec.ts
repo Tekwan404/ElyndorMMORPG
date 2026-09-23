@@ -270,6 +270,7 @@ describe('combatSession realtime authentication', () => {
     const store = useCombatSessionStore()
     const playerId = '00000000-0000-0000-0000-000000000211'
     const allyId = '00000000-0000-0000-0000-000000000212'
+    const companionId = '00000000-0000-0000-0000-000000000213'
     const enemyId = '00000000-0000-0000-0000-000000000311'
     store.snapshot = {
       sessionId: '00000000-0000-0000-0000-000000000111',
@@ -281,15 +282,56 @@ describe('combatSession realtime authentication', () => {
         { actorId: allyId, hp: 80, autoAttackEnabled: true },
       ],
       enemy: { actorId: enemyId, definitionId: 'WOLF' },
+      companion: { actorId: companionId, kind: 'Companion', hp: 50 },
       selectedTargetActorId: enemyId,
     } as never
 
     store.selectFriendlyTarget(allyId)
+    store.selectFriendlyTarget(companionId)
 
     expect(store.selectedFriendlyTargetActorId).toBe(allyId)
     expect((store.snapshot as unknown as { selectedTargetActorId?: string } | null)
       ?.selectedTargetActorId).toBe(enemyId)
     expect(signalRMock.invoke).not.toHaveBeenCalled()
+  })
+
+  it('keeps friendly selection through aggro refresh and clears it when the ally leaves combat', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const playerId = '00000000-0000-0000-0000-000000000211'
+    const allyId = '00000000-0000-0000-0000-000000000212'
+    const enemyId = '00000000-0000-0000-0000-000000000311'
+    const snapshot = {
+      sessionId: '00000000-0000-0000-0000-000000000111', status: 'Active', sequence: 1,
+      serverTimeUtc: '2026-09-14T12:00:00Z', contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: { actorId: playerId, hp: 100, autoAttackEnabled: true },
+      players: [
+        { actorId: playerId, hp: 100, autoAttackEnabled: true },
+        { actorId: allyId, hp: 80, autoAttackEnabled: true },
+      ],
+      participantRoster: [{ actorId: playerId, status: 'Active' }, { actorId: allyId, status: 'Active' }],
+      enemy: { actorId: enemyId, definitionId: 'WOLF', currentAggroTargetActorId: playerId },
+    }
+    signalRMock.invoke.mockImplementation(async () => ({
+      succeeded: true, errorCode: null, snapshot: {
+        ...snapshot,
+        sequence: 2,
+        enemy: { ...snapshot.enemy, currentAggroTargetActorId: allyId },
+      }, events: [], reward: null,
+    }))
+    const store = useCombatSessionStore()
+    await store.connect()
+    store.snapshot = snapshot as never
+    store.selectFriendlyTarget(allyId)
+    store.selectFriendlyTarget(enemyId)
+    expect(store.selectedFriendlyTargetActorId).toBe(allyId)
+
+    await store.resume()
+    expect(store.selectedFriendlyTargetActorId).toBe(allyId)
+
+    snapshot.players[1]!.hp = 0
+    snapshot.participantRoster[1]!.status = 'Dead'
+    await store.resume()
+    expect(store.selectedFriendlyTargetActorId).toBe(playerId)
   })
 
   it('uses the selected friendly target for a single-ally ability command', async () => {

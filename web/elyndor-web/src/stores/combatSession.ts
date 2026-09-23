@@ -11,6 +11,7 @@ import { apiClient, ApiRequestError } from '@/api/apiClient'
 import { usePartyStore } from '@/game/party/partyStore'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import type {
+  CombatActorSnapshot,
   CombatEvent,
   CombatLootRoll,
   CombatReward,
@@ -20,6 +21,15 @@ import type {
 } from '@/api/contracts'
 
 type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
+
+function activeFriendlyActors(current: CombatSnapshot): CombatActorSnapshot[] {
+  const rosterStatus = new Map(current.participantRoster?.map(item => [item.actorId, item.status]))
+  return [current.player, ...(current.players ?? [])]
+    .filter((actor, index, actors) => actor.hp > 0
+      && (rosterStatus.get(actor.actorId) ?? 'Active') === 'Active'
+      && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
+}
+
 export type CombatConnectionState =
   | 'disconnected'
   | 'connecting'
@@ -375,9 +385,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   function selectFriendlyTarget(targetActorId: string): void {
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
-    const activeFriendlies = [current.player, ...(current.players ?? [])]
-      .filter((actor, index, actors) =>
-        actor.hp > 0 && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
+    const activeFriendlies = activeFriendlyActors(current)
     if (activeFriendlies.some(actor => actor.actorId === targetActorId)) {
       selectedFriendlyTargetActorId.value = targetActorId
     }
@@ -399,6 +407,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       const update = await connection.invoke<CombatUpdate>('ResumeCombat')
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
+        selectedFriendlyTargetActorId.value = null
         events.value = []
         seenEventSequences.clear()
         reward.value = null
@@ -430,6 +439,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     )
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
+      selectedFriendlyTargetActorId.value = null
       events.value = []
       seenEventSequences.clear()
       encounterPresentation.value = null
@@ -580,6 +590,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       retryCommandIds.clear()
       clearAbilityQueue()
       snapshot.value = null
+      selectedFriendlyTargetActorId.value = null
       events.value = []
       seenEventSequences.clear()
       reward.value = null
@@ -636,13 +647,14 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   function normalizeFriendlyTarget(current: CombatSnapshot): void {
-    const activeFriendlies = [current.player, ...(current.players ?? [])]
-      .filter((actor, index, actors) =>
-        actor.hp > 0 && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
+    if (current.status !== 'Active') {
+      selectedFriendlyTargetActorId.value = null
+      return
+    }
+    const activeFriendlies = activeFriendlyActors(current)
     if (!activeFriendlies.some(actor => actor.actorId === selectedFriendlyTargetActorId.value)) {
-      selectedFriendlyTargetActorId.value = current.player.hp > 0
-        ? current.player.actorId
-        : activeFriendlies[0]?.actorId ?? null
+      selectedFriendlyTargetActorId.value = activeFriendlies.find(actor => actor.actorId === current.player.actorId)?.actorId
+        ?? activeFriendlies[0]?.actorId ?? null
     }
   }
 

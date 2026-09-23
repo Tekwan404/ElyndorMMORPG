@@ -778,6 +778,8 @@ export interface CombatActorSnapshot {
   level?: number
   artId?: string | null
   currentAggroTargetActorId?: string | null
+  genderId?: 'MALE' | 'FEMALE' | null
+  monsterRank?: 'Normal' | 'Elite' | 'Boss' | null
 }
 
 export interface CombatContributionSnapshot {

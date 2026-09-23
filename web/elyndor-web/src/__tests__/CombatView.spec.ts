@@ -166,8 +166,9 @@ describe('CombatView', () => {
     expect(wrapper.text()).toContain('Вы · Воин')
     expect(wrapper.text()).toContain('Маг')
     expect(wrapper.find('.combat-ally-roster__member--selected').exists()).toBe(false)
-    expect(wrapper.get('.combat-frontline').text()).toContain('Маг')
-    expect(wrapper.get('.combat-frontline__portrait').attributes('src')).toBeTruthy()
+    expect(wrapper.find('.combat-frontline').exists()).toBe(false)
+    expect(wrapper.findAll('[data-friendly-battlefield-actor]')).toHaveLength(2)
+    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).attributes('data-aggro')).toBe('true')
     expect(wrapper.find('.party-formation').exists()).toBe(false)
   })
 
@@ -185,6 +186,37 @@ describe('CombatView', () => {
     const wrapper = mount(CombatView)
 
     expect(wrapper.get('[data-combat-battlefield]').find('[data-combat-party-roster]').exists()).toBe(true)
+  })
+
+  it('shares friendly selection between roster and battlefield without following aggro', async () => {
+    const store = useCombatSessionStore()
+    const player = actor('Player', 'WARRIOR', 'Me', 160, 180, 40, 100, [])
+    const ally = actor('Player', 'MAGE', 'Ally', 70, 120, 60, 100, [])
+    ally.genderId = 'FEMALE'
+    const enemy = actor('Monster', 'WOLF', 'Wolf', 180, 180, 0, 0, [], 3, 'wolf')
+    enemy.currentAggroTargetActorId = player.actorId
+    store.snapshot = {
+      sessionId: crypto.randomUUID(), sequence: 4, status: 'Active',
+      serverTimeUtc: '2026-09-06T16:00:00Z', contentVersion: '0.10.1', balanceVersion: '0.8.0',
+      player, enemy, players: [player, ally],
+    }
+    const wrapper = mount(CombatView)
+
+    await wrapper.get('[data-combat-party-roster] button:nth-child(2)').trigger('click')
+    expect(store.selectedFriendlyTargetActorId).toBe(ally.actorId)
+    await wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).trigger('click')
+    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).attributes('data-selected')).toBe('true')
+    expect(wrapper.get('.combat-ally-roster__member--selected').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"] img`).attributes('src')).toContain('mage-female-transparent.webp')
+
+    store.snapshot!.enemy.currentAggroTargetActorId = ally.actorId
+    await wrapper.vm.$nextTick()
+    expect(store.selectedFriendlyTargetActorId).toBe(ally.actorId)
+    expect(wrapper.findAll(`[data-friendly-battlefield-actor="${ally.actorId}"]`)).toHaveLength(1)
+    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).attributes('data-aggro')).toBe('true')
+
+    await wrapper.get(`[data-combat-party-roster] button[aria-pressed="false"]`).trigger('click')
+    expect(store.selectedFriendlyTargetActorId).toBe(player.actorId)
   })
 
   it('renders consumables as entries of the universal twelve-slot hotbar', () => {

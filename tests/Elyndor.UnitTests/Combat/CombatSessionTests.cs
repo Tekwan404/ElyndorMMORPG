@@ -1258,6 +1258,44 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void PartyHealAcceptsActiveAllyButRejectsEnemyAndOutsideActor()
+    {
+        Guid allyId = Guid.NewGuid();
+        Guid companionId = Guid.NewGuid();
+        CombatSession session = CreateSingleAllyTargetingSession(true, allyId, companionId);
+
+        CombatCommandResult enemy = session.Handle(PlayerId, new UseAbilityCommand(
+            "heal-enemy", "ALLY_HEAL", EnemyId), Now);
+        CombatCommandResult outsider = session.Handle(PlayerId, new UseAbilityCommand(
+            "heal-outsider", "ALLY_HEAL", Guid.NewGuid()), Now);
+        CombatCommandResult companion = session.Handle(PlayerId, new UseAbilityCommand(
+            "heal-companion", "ALLY_HEAL", companionId), Now);
+        CombatCommandResult ally = session.Handle(PlayerId, new UseAbilityCommand(
+            "heal-ally", "ALLY_HEAL", allyId), Now);
+
+        Assert.Equal(CombatErrorCodes.InvalidTarget, enemy.ErrorCode);
+        Assert.Equal(CombatErrorCodes.InvalidTarget, outsider.ErrorCode);
+        Assert.Equal(CombatErrorCodes.InvalidTarget, companion.ErrorCode);
+        Assert.True(ally.Succeeded, ally.ErrorCode);
+        Assert.Equal(160, ally.Snapshot.Players!.Single(player => player.ActorId == allyId).Hp);
+        Assert.Equal("FEMALE", ally.Snapshot.Players!.Single(player => player.ActorId == allyId).GenderId);
+    }
+
+    [Fact]
+    public void SelfAbilityDoesNotFollowRequestedAllyTarget()
+    {
+        Guid allyId = Guid.NewGuid();
+        CombatSession session = CreateSingleAllyTargetingSession(true, allyId);
+
+        CombatCommandResult result = session.Handle(PlayerId, new UseAbilityCommand(
+            "self-heal", "SELF_HEAL", allyId), Now);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal(160, result.Snapshot.Player.Hp);
+        Assert.Equal(150, result.Snapshot.Players!.Single(player => player.ActorId == allyId).Hp);
+    }
+
+    [Fact]
     public void AllEnemiesAbilityHitsEveryAliveEnemyInEncounterOrderOnce()
     {
         CombatSession session = CreateTargetingSession(100, 100, 100);
@@ -1735,20 +1773,20 @@ public sealed class CombatSessionTests
             Now);
     }
 
-    private static CombatSession CreateSingleAllyTargetingSession(bool allowSelfTarget)
+    private static CombatSession CreateSingleAllyTargetingSession(bool allowSelfTarget, Guid? allyId = null, Guid? companionId = null)
     {
         CombatStats stats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: 0,
             CriticalDamage: 1, Armor: 10, MagicResistance: 5,
             ArmorPenetration: 0, MagicPenetration: 0, AttackPower: 30, SpellPower: 0);
         CombatParticipantDefinition player = new(
-            new CombatActorState(PlayerId, 200, 200, 100, 100, stats),
+            new CombatActorState(PlayerId, 200, allyId.HasValue ? 150 : 200, 100, 100, stats),
             CombatActorKind.Player,
             "WARRIOR",
             "Warrior",
             "RAGE",
             new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
-            new HashSet<string>(["ALLY_HEAL"], StringComparer.Ordinal),
+            new HashSet<string>(["ALLY_HEAL", "SELF_HEAL"], StringComparer.Ordinal),
             CanAutoAttack: false);
         CombatParticipantDefinition enemy = new(
             new CombatActorState(EnemyId, 200, 200, 0, 0, stats),
@@ -1777,18 +1815,45 @@ public sealed class CombatSessionTests
                     Amount: 10)
             ]);
 
+        AbilityDefinition selfHeal = heal with
+        {
+            Id = "SELF_HEAL",
+            TargetType = AbilityTargetType.Self
+        };
+        CombatParticipantDefinition? ally = allyId.HasValue
+            ? new CombatParticipantDefinition(
+                new CombatActorState(allyId.Value, 200, 150, 100, 100, stats),
+                CombatActorKind.Player, "MAGE", "Mage", "MANA",
+                new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+                new HashSet<string>(StringComparer.Ordinal),
+                CanAutoAttack: false,
+                GenderId: "FEMALE")
+            : null;
+        CombatParticipantDefinition? companion = companionId.HasValue
+            ? new CombatParticipantDefinition(
+                new CombatActorState(companionId.Value, 100, 100, 0, 0, stats),
+                CombatActorKind.Companion, "TEST_COMPANION", "Companion", "NONE",
+                new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+                new HashSet<string>(StringComparer.Ordinal))
+            : null;
+
         return new CombatSession(
             SessionId,
             player,
             enemy,
             new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
             {
-                [heal.Id] = heal
+                [heal.Id] = heal,
+                [selfHeal.Id] = selfHeal
             },
             new MonsterAiProfile("PASSIVE_ALLY_TARGETING_TEST_AI", []),
             ResolvedTalentModifiers.Empty,
             new SequenceGameRandom(Enumerable.Repeat(0.99m, 20).ToArray()),
-            Now);
+            Now,
+            companion: companion,
+            additionalPlayers: ally is null
+                ? null
+                : [new CombatPlayerDefinition(Guid.NewGuid(), ally, ResolvedTalentModifiers.Empty)]);
     }
 
     private static CombatSession CreateMultiEnemySession(

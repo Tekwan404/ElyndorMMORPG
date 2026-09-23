@@ -11,7 +11,7 @@ import CombatAbilityHotbar from '@/game/combat/CombatAbilityHotbar.vue'
 import CombatEffectStrip from '@/game/combat/CombatEffectStrip.vue'
 import CombatEnemyTargetList from '@/game/combat/CombatEnemyTargetList.vue'
 import CombatAllyRoster from '@/game/combat/CombatAllyRoster.vue'
-import CombatFrontlineTarget from '@/game/combat/CombatFrontlineTarget.vue'
+import CombatFriendlyActor from '@/game/combat/CombatFriendlyActor.vue'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
@@ -57,11 +57,15 @@ const selectedEnemy = computed(() => {
   const selectedActorId = snapshot.value?.selectedTargetActorId ?? snapshot.value?.enemy.actorId
   return combatEnemies.value.find(enemy => enemy.actorId === selectedActorId) ?? null
 })
-const frontlineAlly = computed(() => {
-  const actorId = selectedEnemy.value?.currentAggroTargetActorId
-  return actorId
-    ? combatAllies.value.find(ally => ally.actorId === actorId) ?? null
-    : null
+const visibleBattlefieldAllies = computed(() => {
+  const player = snapshot.value?.player
+  if (!player) return []
+  const visibleIds = new Set([
+    player.actorId,
+    selectedEnemy.value?.currentAggroTargetActorId,
+    combat.selectedFriendlyTargetActorId,
+  ])
+  return combatAllies.value.filter(ally => visibleIds.has(ally.actorId))
 })
 const aggroedAllyActorIds = computed(() => combatEnemies.value
   .map(enemy => enemy.currentAggroTargetActorId)
@@ -462,6 +466,11 @@ function combatParticipantStatus(actorId: string): string {
   return 'В бою'
 }
 
+function canSelectFriendly(actorId: string): boolean {
+  const participant = snapshot.value?.participantRoster?.find(item => item.actorId === actorId)
+  return participant === undefined || participant.status === 'Active'
+}
+
 function combatParticipantGlyph(actorId: string): GlyphName {
   const status = snapshot.value?.participantRoster?.find((participant) => participant.actorId === actorId)?.status
   if (status === 'Fled') return 'shadow'
@@ -583,6 +592,7 @@ onUnmounted(() => window.clearInterval(timer))
           :aggroed-actor-ids="aggroedAllyActorIds"
           :selected-friendly-target-actor-id="combat.selectedFriendlyTargetActorId"
           :participant-status="combatParticipantStatus"
+          :can-select="canSelectFriendly"
           :participant-glyph="combatParticipantGlyph"
           :role-label="combatPlayerRole"
           :health-ratio="combatPlayerHealthRatio"
@@ -614,7 +624,7 @@ onUnmounted(() => window.clearInterval(timer))
           <i><span :style="{ width: `${castProgress(enemyCast)}%` }" /></i>
         </div>
 
-        <div class="enemy-figure">
+        <div class="enemy-figure" :data-monster-rank="selectedEnemy?.monsterRank ?? 'Normal'">
           <img
             v-if="enemyPresentation.art"
             :src="enemyPresentation.art"
@@ -639,7 +649,18 @@ onUnmounted(() => window.clearInterval(timer))
           </div>
         </div>
 
-        <CombatFrontlineTarget :ally="frontlineAlly" />
+        <div v-if="combatAllies.length > 1" class="battlefield-friendly-line">
+          <CombatFriendlyActor
+            v-for="ally in visibleBattlefieldAllies"
+            :key="ally.actorId"
+            :actor="ally"
+            :selected="ally.actorId === combat.selectedFriendlyTargetActorId"
+            :aggro="aggroedAllyActorIds.includes(ally.actorId)"
+            :local="ally.actorId === snapshot.player.actorId"
+            :disabled="ally.hp <= 0 || !canSelectFriendly(ally.actorId)"
+            @select="combat.selectFriendlyTarget"
+          />
+        </div>
 
         <div
           v-if="recentFeedback"
@@ -650,7 +671,7 @@ onUnmounted(() => window.clearInterval(timer))
           {{ recentFeedback.text }}
         </div>
 
-        <div class="player-figure" aria-hidden="true">
+        <div v-if="combatAllies.length <= 1" class="player-figure" aria-hidden="true">
           <img v-if="playerArt" :src="playerArt" alt="" />
           <div v-else class="player-figure__fallback">
             {{ combatPlayerRole(snapshot.player).slice(0, 1) }}
@@ -1970,6 +1991,36 @@ onUnmounted(() => window.clearInterval(timer))
 
 .combat-screen--party .player-figure {
   left: 3%;
+}
+
+.combat-screen--party .battlefield { min-height: 18rem; }
+.battlefield-friendly-line {
+  position: absolute;
+  z-index: 3;
+  bottom: .65rem;
+  left: 1.5%;
+  display: grid;
+  width: 65%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 2px;
+}
+.combat-screen--party .enemy-figure {
+  top: auto;
+  right: 2%;
+  bottom: 1.4rem;
+  left: auto;
+  width: 31%;
+  height: 8.2rem;
+  pointer-events: none;
+}
+.combat-screen--party .enemy-figure[data-monster-rank='Elite'] { height: 9rem; }
+.combat-screen--party .enemy-figure[data-monster-rank='Boss'] { height: 10rem; }
+@media (max-width: 390px) {
+  .combat-screen--party .battlefield { min-height: 17rem; }
+  .combat-screen--party .enemy-figure { height: 7.8rem; }
+  .combat-screen--party .enemy-figure[data-monster-rank='Elite'] { height: 8.6rem; }
+  .combat-screen--party .enemy-figure[data-monster-rank='Boss'] { height: 9.4rem; }
 }
 
 @media (max-width: 520px) {

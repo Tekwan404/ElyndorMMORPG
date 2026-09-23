@@ -42,7 +42,9 @@ public sealed record CombatActorResponse(
     IReadOnlyDictionary<string, DateTimeOffset>? ConsumableCooldowns = null,
     double? AutoAttackIntervalSeconds = null,
     DateTimeOffset? NextAutoAttackAtUtc = null,
-    Guid? CurrentAggroTargetActorId = null);
+    Guid? CurrentAggroTargetActorId = null,
+    string? GenderId = null,
+    string? MonsterRank = null);
 
 public sealed record CombatContributionResponse(
     Guid CharacterId,

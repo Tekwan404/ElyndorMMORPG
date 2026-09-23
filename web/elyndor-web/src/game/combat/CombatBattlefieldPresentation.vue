@@ -81,6 +81,7 @@ const enemyArtProfile = computed<'beast' | 'boss' | 'humanoid'>(() => {
 
   return 'humanoid'
 })
+const enemySize = computed(() => selectedEnemy.value?.monsterRank ?? 'Normal')
 const slotLayoutActive = computed(() =>
   isSoloCombat.value && Boolean(playerArt.value) && Boolean(enemyArt.value),
 )
@@ -269,7 +270,7 @@ onUnmounted(() => {
         <div class="battlefield-slot__art-stage">
           <div
             class="battlefield-art battlefield-art--enemy"
-            :class="`battlefield-art--enemy-${enemyArtProfile}`"
+            :class="[`battlefield-art--enemy-${enemyArtProfile}`, `battlefield-art--enemy-size-${enemySize}`]"
           >
             <img v-if="enemyArt" :src="enemyArt" :alt="selectedEnemy?.name ?? ''" />
           </div>
@@ -457,15 +458,19 @@ onUnmounted(() => {
 .battlefield-art--enemy {
   width: 100%;
   height: 84%;
-  transform: translate3d(2%, 0, 0) scale(.98);
+  transform: translate3d(2%, 0, 0) scale(.74);
 }
 
 .battlefield-art--enemy-beast {
-  transform: translate3d(2%, 0, 0) scale(.67);
+  transform: translate3d(2%, 0, 0) scale(.5);
 }
 
-.battlefield-art--enemy-boss {
-  transform: translate3d(2%, 0, 0) scale(.84);
+.battlefield-art--enemy-size-Elite {
+  transform: translate3d(2%, 0, 0) scale(.82);
+}
+
+.battlefield-art--enemy-size-Boss {
+  transform: translate3d(2%, 0, 0) scale(.9);
 }
 
 .combat-level-badge {
@@ -642,8 +647,11 @@ onUnmounted(() => {
   }
 
   .battlefield-art--enemy-beast {
-    transform: translate3d(2%, 0, 0) scale(.66);
+    transform: translate3d(2%, 0, 0) scale(.5);
   }
+
+  .battlefield-art--enemy-size-Elite { transform: translate3d(2%, 0, 0) scale(.82); }
+  .battlefield-art--enemy-size-Boss { transform: translate3d(2%, 0, 0) scale(.9); }
 
   .combat-damage-feed--slot-player,
   .combat-damage-feed--slot-enemy {
