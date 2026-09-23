@@ -1,0 +1,96 @@
+{
+  "contentVersion": "0.25.0",
+  "balanceVersion": "0.21.0",
+  "publishedAtUtc": "2026-09-23T00:00:00+00:00",
+  "encounters": [
+    {
+      "id": "ECLIPSED_CITADEL_GOLEM_ENCOUNTER",
+      "monsterId": "ECLIPSED_CITADEL_GOLEM_L25",
+      "version": 1,
+      "displayName": "Каменный страж Бастиона",
+      "phases": [
+        {
+          "id": "OBSIDIAN_CARAPACE",
+          "displayName": "Обсидиановый панцирь",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 50, "once": true },
+          "actions": [
+            { "type": "Shield", "magnitude": 896, "duration": "00:00:10", "targetSelector": "BOSS" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL_ARCHON_ENCOUNTER",
+      "monsterId": "ECLIPSED_CITADEL_ARCHON_L25",
+      "version": 1,
+      "displayName": "Архонт Погасшей Звезды",
+      "phases": [
+        {
+          "id": "DEAD_STAR_CORE",
+          "displayName": "Покров мёртвой звезды",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 70, "once": true },
+          "actions": [
+            {
+              "type": "Summon",
+              "summon": {
+                "monsterId": "ARCHON_DEAD_STAR_CORE",
+                "count": 1,
+                "maxActive": 1,
+                "linkToCaster": true,
+                "despawnOnBossDeath": true,
+                "noReward": true,
+                "isCombatObject": true,
+                "auraEffectId": "ARCHON_DEAD_STAR_VEIL",
+                "auraTargetSelector": "BOSS"
+              }
+            }
+          ]
+        },
+        {
+          "id": "BROKEN_VEIL",
+          "displayName": "Расколотый покров",
+          "trigger": { "type": "AddDeath", "definitionId": "ARCHON_DEAD_STAR_CORE", "once": true },
+          "actions": [
+            { "type": "ApplyEffect", "effectId": "ARCHON_BROKEN_VEIL", "targetSelector": "BOSS" },
+            {
+              "type": "ChangeAbilitySet",
+              "abilityIds": [
+                "ARCHON_DEAD_STAR_BRAND",
+                "ARCHON_ECLIPSE_ASH",
+                "ARCHON_STAR_FRACTURE",
+                "ARCHON_DEVOUR_LIGHT"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "FINAL_ECLIPSE",
+          "displayName": "Последнее затмение",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 35, "once": true },
+          "actions": [
+            { "type": "ApplyEffect", "effectId": "ARCHON_FINAL_ECLIPSE_DAMAGE", "targetSelector": "BOSS" },
+            { "type": "ApplyEffect", "effectId": "ARCHON_FINAL_ECLIPSE_HASTE", "targetSelector": "BOSS" },
+            {
+              "type": "ChangeAbilitySet",
+              "abilityIds": [
+                "ARCHON_DEAD_STAR_BRAND",
+                "ARCHON_ECLIPSE_ASH",
+                "ARCHON_STAR_FRACTURE",
+                "ARCHON_DEVOUR_LIGHT",
+                "ARCHON_DEAD_STAR_COLLAPSE"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "UNSTABLE_CORE",
+          "displayName": "Нестабильное ядро",
+          "trigger": { "type": "CastInterrupted", "definitionId": "ARCHON_DEAD_STAR_COLLAPSE", "once": false },
+          "actions": [
+            { "type": "ApplyEffect", "effectId": "ARCHON_UNSTABLE_CORE", "targetSelector": "BOSS" }
+          ]
+        }
+      ]
+    }
+  ]
+}
