@@ -1,6 +1,7 @@
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Parties;
@@ -10,6 +11,9 @@ public sealed class PartyInviteTelegramNotifier(
     ITelegramMessageSender messageSender,
     ILogger<PartyInviteTelegramNotifier> logger)
 {
+    private const string PartyInviteBaseUrl = "https://elyndor.su/world";
+    private const string AcceptButtonText = "✅ Принять и войти";
+
     public async Task NotifyAsync(
         PartyInviteView invite,
         CancellationToken cancellationToken)
@@ -40,10 +44,23 @@ public sealed class PartyInviteTelegramNotifier(
             string displayName = string.IsNullOrWhiteSpace(inviterName)
                 ? "Игрок"
                 : inviterName;
+            string text = $"👥 {displayName} приглашает вас в группу в Elyndor.\n\nПриглашение действует 5 минут.";
+
+            if (messageSender is ITelegramWebAppMessageSender webAppMessageSender)
+            {
+                string webAppUrl = $"{PartyInviteBaseUrl}?partyInvite={invite.Id:D}";
+                await webAppMessageSender.SendWebAppAsync(
+                    telegramUserId.Value,
+                    text,
+                    AcceptButtonText,
+                    webAppUrl,
+                    cancellationToken);
+                return;
+            }
 
             await messageSender.SendAsync(
                 telegramUserId.Value,
-                $"👥 {displayName} приглашает вас в группу в Elyndor.\n\nОткройте игру и примите приглашение. Оно действует 5 минут.",
+                $"{text}\n\nОткройте игру и примите приглашение.",
                 cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
