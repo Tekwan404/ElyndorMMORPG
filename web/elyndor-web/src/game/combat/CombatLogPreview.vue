@@ -16,6 +16,7 @@ const combat = useCombatSessionStore()
 const session = useGameSessionStore()
 const targetReady = ref(false)
 let targetFrame: number | null = null
+let previewTarget: HTMLElement | null = null
 
 const enemies = computed(() => combat.snapshot?.enemies ?? (combat.snapshot ? [combat.snapshot.enemy] : []))
 const players = computed(() => combat.snapshot?.players ?? (combat.snapshot ? [combat.snapshot.player] : []))
@@ -131,15 +132,30 @@ function cancelTargetFrame(): void {
   targetFrame = null
 }
 
+function clearPreviewTarget(): void {
+  previewTarget?.classList.remove('combat-log__has-preview')
+  previewTarget = null
+}
+
+function bindPreviewTarget(target: HTMLElement): void {
+  if (previewTarget === target) return
+  clearPreviewTarget()
+  previewTarget = target
+  previewTarget.classList.add('combat-log__has-preview')
+}
+
 async function syncTarget(active: boolean): Promise<void> {
   cancelTargetFrame()
+  clearPreviewTarget()
   targetReady.value = false
   if (!active) return
 
   await nextTick()
   let attempts = 0
   const findTarget = (): void => {
-    targetReady.value = document.querySelector('.combat-log__toggle > span') !== null
+    const target = document.querySelector<HTMLElement>('.combat-log__toggle > span')
+    targetReady.value = target !== null
+    if (target) bindPreviewTarget(target)
     if (targetReady.value || attempts >= 20) {
       targetFrame = null
       return
@@ -158,6 +174,7 @@ watch(
 
 onUnmounted(() => {
   cancelTargetFrame()
+  clearPreviewTarget()
   targetReady.value = false
 })
 </script>
@@ -180,7 +197,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-:global(.combat-log__toggle > span > small) {
+:global(.combat-log__toggle > span.combat-log__has-preview > small) {
   display: none;
 }
 
