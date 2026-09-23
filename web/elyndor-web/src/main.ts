@@ -6,6 +6,7 @@ import router from './router'
 import './styles/tokens.css'
 import './styles/base.scss'
 import './styles/combat-icons.css'
+import './styles/inventory-mobile-ux.css'
 
 const app = createApp(App)
 
