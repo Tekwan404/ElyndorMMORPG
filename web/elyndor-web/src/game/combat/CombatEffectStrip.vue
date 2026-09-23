@@ -70,6 +70,7 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
     :class="`combat-effect-strip--${side}`"
     data-combat-effect-strip
   >
+    <span v-if="side === 'enemy'" class="combat-effect-strip__label">ЭФФЕКТЫ</span>
     <button
       v-for="effect in visibleEffects"
       :key="effectKey(effect)"
@@ -113,6 +114,7 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
 
 <style scoped>
 .combat-effect-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.combat-effect-strip__label { flex: 0 0 auto; padding: 2px 4px; border-radius: 4px; background: rgb(5 8 15 / 76%); color: var(--ui-color-text-muted); font-size: .43rem; font-weight: 800; letter-spacing: .06em; }
 .combat-effect-strip__effect, .combat-effect-strip__overflow { position: relative; display: grid; width: 34px; height: 34px; flex: none; place-items: center; padding: 2px; border: 1px solid rgb(191 183 255 / 38%); border-radius: 8px; background: rgb(5 8 15 / 88%); color: var(--ui-color-text-primary); font: inherit; }
 .combat-effect-strip__effect--selected { border-color: var(--ui-color-accent, #aaa3ff); box-shadow: 0 0 0 1px rgb(170 163 255 / 28%); }
 .combat-effect-strip__effect img, .combat-effect-strip__effect :deep(.icon-generator) { width: 25px; height: 25px; object-fit: cover; }
@@ -124,6 +126,7 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
 .combat-effect-strip__details p { margin: 3px 0; color: var(--ui-color-text-muted); font-size: .58rem; line-height: 1.35; }
 .combat-effect-strip__details small { display: inline-block; margin: 2px 8px 0 0; color: var(--ui-color-text-muted); font-size: .52rem; }
 .combat-effect-strip__details > button { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: transparent; color: var(--ui-color-text-primary); font: inherit; }
+.combat-effect-strip--enemy { align-items: center; }
 .combat-effect-strip--enemy .combat-effect-strip__effect { border-color: rgb(245 123 103 / 34%); }
 .combat-effect-strip--player { flex: 1; min-width: 0; }
 .combat-effect-strip--enemy .combat-effect-strip__details { width: min(76vw, 280px); }

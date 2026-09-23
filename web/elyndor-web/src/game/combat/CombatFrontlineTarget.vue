@@ -1,41 +1,165 @@
 <script setup lang="ts">
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = defineProps<{
   ally: CombatActorSnapshot | null
 }>()
 
+const combat = useCombatSessionStore()
+const portalReady = ref(
+  typeof document !== 'undefined'
+    && document.querySelector('.combat-hud__actor--enemy') !== null,
+)
+let telemetryTimer: number | null = null
+
+const threatPercent = computed<number | null>(() => {
+  const current = combat.threat
+  const ally = props.ally
+  const selectedEnemyActorId = combat.snapshot?.selectedTargetActorId ?? combat.snapshot?.enemy.actorId
+  if (!current || !ally || !selectedEnemyActorId || current.enemyActorId !== selectedEnemyActorId) return null
+  const entry = current.entries.find(candidate => candidate.actorId === ally.actorId)
+  if (!entry) return null
+  const maximumThreat = Math.max(0, ...current.entries.map(candidate => candidate.threat))
+  if (maximumThreat <= 0) return null
+  return Math.round(Math.min(100, Math.max(0, (entry.threat / maximumThreat) * 100)))
+})
+
 function allyArt(): string | null {
-  return props.ally ? resolveCharacterArt(props.ally.definitionId, 'MALE') : null
+  const definitionId = props.ally?.definitionId
+  return definitionId ? resolveCharacterArt(definitionId, 'MALE') : null
 }
+
+onMounted(async () => {
+  if (!portalReady.value) {
+    await nextTick()
+    portalReady.value = document.querySelector('.combat-hud__actor--enemy') !== null
+  }
+  void combat.refreshCombatTelemetry()
+  telemetryTimer = window.setInterval(() => {
+    void combat.refreshCombatTelemetry()
+  }, 1_000)
+})
+
+onUnmounted(() => {
+  if (telemetryTimer !== null) window.clearInterval(telemetryTimer)
+})
 </script>
 
 <template>
-  <Transition name="frontline-shift" mode="out-in">
-    <aside v-if="ally" :key="ally.actorId" class="combat-frontline" aria-label="Союзник под агро">
-      <span class="combat-frontline__marker">
-        <img v-if="allyArt()" :src="allyArt()!" :alt="ally.name" class="combat-frontline__portrait" />
-        <span class="combat-frontline__shield"><IconGenerator :config="{ id: `frontline-${ally.actorId}`, glyph: 'shield', category: 'utility' }" /></span>
+  <Teleport v-if="portalReady" to=".combat-hud__actor--enemy">
+    <aside
+      v-if="ally"
+      :key="ally.actorId"
+      class="combat-frontline"
+      :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
+    >
+      <span class="combat-frontline__marker" aria-hidden="true">
+        <img v-if="allyArt()" :src="allyArt()!" alt="" class="combat-frontline__portrait" />
+        <IconGenerator v-else :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
       </span>
-      <span class="combat-frontline__copy"><small>ПОД АГРО</small><strong>{{ ally.name }}</strong></span>
-      <span class="combat-frontline__hp">{{ Math.round((ally.hp / Math.max(ally.maxHp, 1)) * 100) }}%</span>
+      <span class="combat-frontline__label">ЦЕЛЬ</span>
+      <strong>{{ ally.name }}</strong>
+      <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
     </aside>
-  </Transition>
+  </Teleport>
+
+  <aside
+    v-else-if="ally"
+    :key="`fallback-${ally.actorId}`"
+    class="combat-frontline combat-frontline--fallback"
+    :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
+  >
+    <span class="combat-frontline__marker" aria-hidden="true">
+      <img v-if="allyArt()" :src="allyArt()!" alt="" class="combat-frontline__portrait" />
+      <IconGenerator v-else :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
+    </span>
+    <span class="combat-frontline__label">ЦЕЛЬ</span>
+    <strong>{{ ally.name }}</strong>
+    <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
+  </aside>
 </template>
 
 <style scoped>
-.combat-frontline { position: absolute; right: 29%; bottom: 11%; z-index: 3; display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; align-items: center; gap: 5px; max-width: 48%; min-height: 48px; padding: 4px 7px 4px 4px; border: 1px solid rgb(205 177 113 / 72%); border-radius: var(--ui-radius-md); background: linear-gradient(100deg, rgb(205 177 113 / 20%), rgb(6 10 18 / 92%)); box-shadow: 0 0 16px rgb(205 177 113 / 18%); color: var(--ui-color-text-primary); }
-.combat-frontline::after { position: absolute; right: -28px; width: 26px; height: 1px; background: linear-gradient(90deg, rgb(205 177 113 / 80%), transparent); content: ''; }
-.combat-frontline__marker { position: relative; display: grid; width: 2.6rem; height: 2.6rem; place-items: center; overflow: visible; border-radius: 50%; color: var(--ui-color-gold); }
-.combat-frontline__portrait { width: 100%; height: 100%; border: 1px solid rgb(205 177 113 / 55%); border-radius: 50%; background: rgb(8 12 20 / 85%); object-fit: cover; object-position: top center; }
-.combat-frontline__shield { position: absolute; right: -3px; bottom: -2px; display: grid; width: 1.05rem; height: 1.05rem; place-items: center; border: 1px solid rgb(205 177 113 / 60%); border-radius: 50%; background: #111827; }
-.combat-frontline__copy { display: grid; min-width: 0; gap: 1px; }
-.combat-frontline__copy small { color: var(--ui-color-gold-muted); font-size: .42rem; font-weight: 900; letter-spacing: .08em; }
-.combat-frontline__copy strong { overflow: hidden; font-size: .58rem; text-overflow: ellipsis; white-space: nowrap; }
-.combat-frontline__hp { color: #9be2c9; font-size: .56rem; font-weight: 900; }
-.frontline-shift-enter-active, .frontline-shift-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
-.frontline-shift-enter-from, .frontline-shift-leave-to { opacity: 0; transform: translateX(-10px); }
-@media (max-width: 360px) { .combat-frontline { right: 28%; max-width: 46%; } }
+.combat-frontline {
+  display: flex;
+  min-width: 0;
+  min-height: 26px;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+  padding: 3px 6px 3px 4px;
+  border: 1px solid rgb(205 177 113 / 38%);
+  border-radius: var(--ui-radius-round);
+  background: rgb(205 177 113 / 7%);
+  color: var(--ui-color-text-primary);
+}
+
+.combat-frontline--fallback {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 5;
+  max-width: 46%;
+  margin: 0;
+  background: rgb(7 11 18 / 92%);
+  transform: translateX(-50%);
+}
+
+.combat-frontline__marker {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(205 177 113 / 32%);
+  border-radius: 50%;
+  background: rgb(8 12 20 / 85%);
+  color: var(--ui-color-gold);
+}
+
+.combat-frontline__portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.combat-frontline__marker :deep(.icon-generator) {
+  width: 17px;
+  height: 17px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.combat-frontline__label {
+  flex: 0 0 auto;
+  color: var(--ui-color-gold-muted);
+  font-size: .46rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.combat-frontline strong {
+  overflow: hidden;
+  min-width: 0;
+  color: #f0dfb1;
+  font-size: .56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-frontline__threat {
+  flex: 0 0 auto;
+  color: #efa1ae;
+  font-size: .54rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
 </style>

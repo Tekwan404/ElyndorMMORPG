@@ -1,10 +1,12 @@
 import type { CombatEvent } from '@/api/contracts'
 
 export type CombatDamageFeedSide = 'player' | 'enemy'
+export type CombatDamageFeedKind = 'damage' | 'healing'
 
 export interface CombatDamageFeedHit {
   sequence: number
   side: CombatDamageFeedSide
+  kind: CombatDamageFeedKind
   amount: number
   critical: boolean
 }
@@ -35,7 +37,8 @@ export function collectCombatDamageFeedHits(
     const event = events[index]!
     latestSequence = Math.max(latestSequence, event.sequence)
 
-    if (event.sequence <= afterSequence || event.type !== 'DamageDealt' || event.amount <= 0) continue
+    if (event.sequence <= afterSequence || event.amount <= 0) continue
+    if (event.type !== 'DamageDealt' && event.type !== 'HealingApplied') continue
 
     const side: CombatDamageFeedSide | null = event.targetActorId === playerActorId
       ? 'player'
@@ -44,11 +47,13 @@ export function collectCombatDamageFeedHits(
         : null
     if (!side) continue
 
+    const kind: CombatDamageFeedKind = event.type === 'HealingApplied' ? 'healing' : 'damage'
     hits.push({
       sequence: event.sequence,
       side,
+      kind,
       amount: Math.max(1, Math.round(event.amount)),
-      critical: isCriticalDamage(events, index, event),
+      critical: kind === 'damage' && isCriticalDamage(events, index, event),
     })
   }
 

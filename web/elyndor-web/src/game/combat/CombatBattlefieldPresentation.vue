@@ -138,6 +138,11 @@ function pushDamageHit(hit: CombatDamageFeedHit): void {
   }, DAMAGE_FEED_LIFETIME_MS))
 }
 
+function damageFeedLabel(hit: CombatDamageFeedHit): string {
+  if (hit.kind === 'healing') return `+${hit.amount}`
+  return `${hit.critical ? 'КРИТ ' : ''}−${hit.amount}`
+}
+
 function processDamageEvents(): void {
   const snapshot = combat.snapshot
   const enemy = selectedEnemy.value
@@ -254,9 +259,12 @@ onUnmounted(() => {
             v-for="hit in playerDamageFeed"
             :key="hit.sequence"
             class="combat-damage-feed__hit"
-            :class="{ 'combat-damage-feed__hit--critical': hit.critical }"
+            :class="{
+              'combat-damage-feed__hit--critical': hit.critical,
+              'combat-damage-feed__hit--healing': hit.kind === 'healing',
+            }"
           >
-            {{ hit.critical ? 'КРИТ ' : '' }}−{{ hit.amount }}
+            {{ damageFeedLabel(hit) }}
           </span>
         </TransitionGroup>
       </div>
@@ -293,9 +301,12 @@ onUnmounted(() => {
             v-for="hit in enemyDamageFeed"
             :key="hit.sequence"
             class="combat-damage-feed__hit"
-            :class="{ 'combat-damage-feed__hit--critical': hit.critical }"
+            :class="{
+              'combat-damage-feed__hit--critical': hit.critical,
+              'combat-damage-feed__hit--healing': hit.kind === 'healing',
+            }"
           >
-            {{ hit.critical ? 'КРИТ ' : '' }}−{{ hit.amount }}
+            {{ damageFeedLabel(hit) }}
           </span>
         </TransitionGroup>
       </div>
@@ -329,9 +340,12 @@ onUnmounted(() => {
           v-for="hit in playerDamageFeed"
           :key="hit.sequence"
           class="combat-damage-feed__hit"
-          :class="{ 'combat-damage-feed__hit--critical': hit.critical }"
+          :class="{
+            'combat-damage-feed__hit--critical': hit.critical,
+            'combat-damage-feed__hit--healing': hit.kind === 'healing',
+          }"
         >
-          {{ hit.critical ? 'КРИТ ' : '' }}−{{ hit.amount }}
+          {{ damageFeedLabel(hit) }}
         </span>
       </TransitionGroup>
 
@@ -347,9 +361,12 @@ onUnmounted(() => {
           v-for="hit in enemyDamageFeed"
           :key="hit.sequence"
           class="combat-damage-feed__hit"
-          :class="{ 'combat-damage-feed__hit--critical': hit.critical }"
+          :class="{
+            'combat-damage-feed__hit--critical': hit.critical,
+            'combat-damage-feed__hit--healing': hit.kind === 'healing',
+          }"
         >
-          {{ hit.critical ? 'КРИТ ' : '' }}−{{ hit.amount }}
+          {{ damageFeedLabel(hit) }}
         </span>
       </TransitionGroup>
     </template>
@@ -372,7 +389,7 @@ onUnmounted(() => {
 }
 
 :global(.combat-screen:not(.combat-screen--party) .battlefield) {
-  min-height: 20.5rem;
+  min-height: 17.25rem;
 }
 
 :global(.battlefield[data-combat-slot-layout='solo'] > .player-figure),
@@ -384,7 +401,7 @@ onUnmounted(() => {
   bottom: .2rem;
   left: 4%;
   width: 42%;
-  height: clamp(13rem, 50vw, 15.5rem);
+  height: clamp(11.5rem, 46vw, 14rem);
   place-items: end center;
   opacity: .96;
 }
@@ -395,7 +412,7 @@ onUnmounted(() => {
   bottom: 1.15rem;
   left: auto;
   width: 48%;
-  height: clamp(11.5rem, 45vw, 13.5rem);
+  height: clamp(10.5rem, 41vw, 12.5rem);
   place-items: end center;
 }
 
@@ -407,8 +424,8 @@ onUnmounted(() => {
 
 .battlefield-slot {
   position: absolute;
-  top: 1.4rem;
-  bottom: .35rem;
+  top: 1.15rem;
+  bottom: .25rem;
   width: 39%;
   pointer-events: none;
 }
@@ -423,7 +440,7 @@ onUnmounted(() => {
 
 .battlefield-slot__art-stage {
   position: absolute;
-  inset: 0 0 1.65rem;
+  inset: 0 0 1.45rem;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -514,7 +531,7 @@ onUnmounted(() => {
 .combat-damage-feed {
   position: absolute;
   z-index: 6;
-  bottom: 5.1rem;
+  bottom: 4.65rem;
   display: flex;
   width: min(34%, 8.5rem);
   flex-direction: column;
@@ -534,7 +551,7 @@ onUnmounted(() => {
 
 .combat-damage-feed--slot-player,
 .combat-damage-feed--slot-enemy {
-  bottom: 4.6rem;
+  bottom: 4.15rem;
   width: min(48%, 7rem);
 }
 
@@ -573,6 +590,15 @@ onUnmounted(() => {
   color: rgb(239 216 159);
 }
 
+.combat-damage-feed__hit--healing,
+.combat-damage-feed--enemy .combat-damage-feed__hit--healing,
+.combat-damage-feed--slot-enemy .combat-damage-feed__hit--healing {
+  border-color: rgb(79 185 150 / 56%);
+  background: rgb(7 26 21 / 82%);
+  color: #9be2c9;
+  box-shadow: 0 5px 13px rgb(0 0 0 / 30%), 0 0 11px rgb(79 185 150 / 15%);
+}
+
 .combat-damage-feed__hit--critical {
   min-height: 1.55rem;
   padding-inline: 7px;
@@ -606,24 +632,24 @@ onUnmounted(() => {
 
 @media (max-width: 390px) {
   :global(.combat-screen:not(.combat-screen--party) .battlefield) {
-    min-height: 19.25rem;
+    min-height: 16.25rem;
   }
 
   :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .player-figure) {
     left: 2%;
     width: 44%;
-    height: 13.5rem;
+    height: 11.75rem;
   }
 
   :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure) {
     right: 1%;
     width: 50%;
-    height: 11.75rem;
+    height: 10.5rem;
   }
 
   .battlefield-slot {
-    top: 1.1rem;
-    bottom: .25rem;
+    top: .9rem;
+    bottom: .2rem;
     width: 40%;
   }
 
@@ -647,12 +673,12 @@ onUnmounted(() => {
 
   .combat-damage-feed--slot-player,
   .combat-damage-feed--slot-enemy {
-    bottom: 4.25rem;
+    bottom: 3.75rem;
     width: 50%;
   }
 
   .combat-damage-feed:not(.combat-damage-feed--slot-player):not(.combat-damage-feed--slot-enemy) {
-    bottom: 4.65rem;
+    bottom: 4.1rem;
     width: 36%;
   }
 
@@ -667,15 +693,15 @@ onUnmounted(() => {
 
 @media (max-width: 340px) {
   :global(.combat-screen:not(.combat-screen--party) .battlefield) {
-    min-height: 18rem;
+    min-height: 15.5rem;
   }
 
   :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .player-figure) {
-    height: 12.75rem;
+    height: 11.25rem;
   }
 
   :global(.combat-screen:not(.combat-screen--party) .battlefield:not([data-combat-slot-layout='solo']) > .enemy-figure) {
-    height: 11rem;
+    height: 10rem;
   }
 
   .battlefield-slot {
@@ -698,7 +724,7 @@ onUnmounted(() => {
 
   .combat-damage-feed--slot-player,
   .combat-damage-feed--slot-enemy {
-    bottom: 3.95rem;
+    bottom: 3.55rem;
   }
 
   .combat-damage-feed__hit {
