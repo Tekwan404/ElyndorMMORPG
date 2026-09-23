@@ -20,9 +20,19 @@ public interface ITelegramDocumentSender
         CancellationToken cancellationToken);
 }
 
+public interface ITelegramWebAppMessageSender
+{
+    Task SendWebAppAsync(
+        long chatId,
+        string text,
+        string buttonText,
+        string webAppUrl,
+        CancellationToken cancellationToken);
+}
+
 public sealed class TelegramBotMessageSender(
     HttpClient httpClient,
-    IOptions<AuthenticationOptions> authenticationOptions) : ITelegramMessageSender, ITelegramDocumentSender
+    IOptions<AuthenticationOptions> authenticationOptions) : ITelegramMessageSender, ITelegramDocumentSender, ITelegramWebAppMessageSender
 {
     private static readonly TimeSpan SendTimeout = TimeSpan.FromSeconds(7);
     private readonly ConcurrentDictionary<long, long> migratedChatIds = new();
@@ -39,6 +49,42 @@ public sealed class TelegramBotMessageSender(
             migratedChatIds[chatId] = migratedChatId;
             migratedChatIds[resolvedChatId] = migratedChatId;
             TelegramSendFailure? retryFailure = await TrySendMessageAsync(migratedChatId, text, cancellationToken);
+            if (retryFailure is null)
+                return;
+
+            throw CreateSendException(migratedChatId, retryFailure);
+        }
+
+        throw CreateSendException(resolvedChatId, failure);
+    }
+
+    public async Task SendWebAppAsync(
+        long chatId,
+        string text,
+        string buttonText,
+        string webAppUrl,
+        CancellationToken cancellationToken)
+    {
+        long resolvedChatId = ResolveChatId(chatId);
+        TelegramSendFailure? failure = await TrySendWebAppMessageAsync(
+            resolvedChatId,
+            text,
+            buttonText,
+            webAppUrl,
+            cancellationToken);
+        if (failure is null)
+            return;
+
+        if (failure.MigrateToChatId is long migratedChatId && migratedChatId != 0 && migratedChatId != resolvedChatId)
+        {
+            migratedChatIds[chatId] = migratedChatId;
+            migratedChatIds[resolvedChatId] = migratedChatId;
+            TelegramSendFailure? retryFailure = await TrySendWebAppMessageAsync(
+                migratedChatId,
+                text,
+                buttonText,
+                webAppUrl,
+                cancellationToken);
             if (retryFailure is null)
                 return;
 
@@ -99,6 +145,44 @@ public sealed class TelegramBotMessageSender(
         using HttpResponseMessage response = await httpClient.PostAsJsonAsync(
             $"https://api.telegram.org/bot{token}/sendMessage",
             new { chat_id = chatId, text },
+            timeout.Token);
+        return await ReadFailureAsync(response, timeout.Token);
+    }
+
+    private async Task<TelegramSendFailure?> TrySendWebAppMessageAsync(
+        long chatId,
+        string text,
+        string buttonText,
+        string webAppUrl,
+        CancellationToken cancellationToken)
+    {
+        string token = authenticationOptions.Value.Telegram.BotToken;
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(SendTimeout);
+
+        object payload = new
+        {
+            chat_id = chatId,
+            text,
+            reply_markup = new
+            {
+                inline_keyboard = new[]
+                {
+                    new[]
+                    {
+                        new
+                        {
+                            text = buttonText,
+                            web_app = new { url = webAppUrl }
+                        }
+                    }
+                }
+            }
+        };
+
+        using HttpResponseMessage response = await httpClient.PostAsJsonAsync(
+            $"https://api.telegram.org/bot{token}/sendMessage",
+            payload,
             timeout.Token);
         return await ReadFailureAsync(response, timeout.Token);
     }
