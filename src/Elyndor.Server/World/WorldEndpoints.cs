@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.World;
@@ -387,12 +388,36 @@ public static class WorldEndpoints
         LocationDefinition location,
         GameContentIndexes indexes)
     {
-        if (location.Encounters is not { Count: > 0 })
+        HashSet<string> monsterIds = new(StringComparer.Ordinal);
+
+        if (location.Encounters is { Count: > 0 })
+        {
+            foreach (WorldEncounterDefinition encounter in location.Encounters)
+                monsterIds.Add(encounter.MonsterId);
+        }
+
+        DungeonDefinition? dungeon = indexes.DungeonsById.TryGetValue(location.Id, out DungeonDefinition? directDungeon)
+            ? directDungeon
+            : indexes.DungeonsById.Values.FirstOrDefault(candidate =>
+                string.Equals(candidate.EntryLocationId, location.Id, StringComparison.Ordinal));
+
+        if (dungeon is not null)
+        {
+            foreach (DungeonEncounterDefinition encounter in dungeon.Encounters)
+            {
+                monsterIds.Add(encounter.MonsterId);
+                if (encounter.Adds is null)
+                    continue;
+
+                foreach (DungeonEncounterAddDefinition add in encounter.Adds)
+                    monsterIds.Add(add.MonsterId);
+            }
+        }
+
+        if (monsterIds.Count == 0)
             return [];
 
-        return location.Encounters
-            .Select(encounter => encounter.MonsterId)
-            .Distinct(StringComparer.Ordinal)
+        return monsterIds
             .Select(monsterId => indexes.MonstersById.TryGetValue(monsterId, out MonsterDefinition? monster)
                 ? monster
                 : null)
