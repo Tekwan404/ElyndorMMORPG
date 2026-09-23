@@ -45,19 +45,19 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     const session = useGameSessionStore()
     const mainHand = {
       ...equipment('MAIN_HAND_ART', 'Клинок', 'MainHand'),
-      iconId: 'warrior/item-warrior-sword',
+      iconId: 'items_outside_sets/open_world_early/dusty_road_blade',
       weaponCategory: 'ONE_HAND_SWORD',
       weaponBaseAttackIntervalSeconds: 2,
     }
     const offHand = {
       ...equipment('OFF_HAND_ART', 'Второй клинок', 'OffHand'),
-      iconId: 'warrior/item-warrior-sword',
+      iconId: 'items_outside_sets/open_world_early/dusty_road_blade',
       weaponCategory: 'ONE_HAND_SWORD',
       weaponBaseAttackIntervalSeconds: 2.5,
     }
     const chest = {
       ...equipment('CHEST_ART', 'Кираса', 'Chest'),
-      iconId: 'warrior/item-warrior-chestplate',
+      iconId: 'items_outside_sets/open_world_early/stone_eater_cuirass',
     }
     session.snapshot = snapshot({ mainHand, offHand, chest })
     session.snapshot.character!.stats.attackSpeed = 1.25

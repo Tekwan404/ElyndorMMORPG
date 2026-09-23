@@ -9,12 +9,19 @@ const monsterContentRoot = resolve(process.cwd(), '../../content/monsters')
 const itemContentRoot = resolve(process.cwd(), '../../content/items')
 
 function getItems() {
-  return readdirSync(itemContentRoot)
+  const composedItems = new Map<string, { id: string; iconId?: string; setId?: string }>()
+
+  readdirSync(itemContentRoot)
     .filter(fileName => fileName.endsWith('.json'))
-    .flatMap((fileName) => {
+    .sort((left, right) => left < right ? -1 : left > right ? 1 : 0)
+    .forEach((fileName) => {
       const raw = readFileSync(resolve(itemContentRoot, fileName), 'utf8').replace(/^\uFEFF/, '')
-      return (JSON.parse(raw) as { items: Array<{ id: string; iconId?: string; setId?: string }> }).items
+      const items = (JSON.parse(raw) as { items: Array<{ id: string; iconId?: string; setId?: string }> }).items
+
+      for (const item of items) composedItems.set(item.id, item)
     })
+
+  return [...composedItems.values()]
 }
 
 function getMonster(monsterId: string) {
