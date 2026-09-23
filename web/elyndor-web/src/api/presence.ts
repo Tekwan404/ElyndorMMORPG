@@ -10,18 +10,30 @@ async function sendHeartbeat(): Promise<void> {
 
   heartbeatInFlight = true
   try {
-    await apiClient.request<void>('/api/v1/presence/heartbeat', { method: 'POST' })
+    await apiClient.request<void>(
+      '/api/v1/presence/heartbeat',
+      { method: 'POST' },
+      false,
+    )
   } catch {
-    // Presence is best-effort and must never interrupt gameplay.
+    // Presence is best-effort and must never interrupt gameplay or trigger auth recovery.
   } finally {
     heartbeatInFlight = false
   }
 }
 
-function handleVisibilityChange(): void {
+function sendHeartbeatIfVisible(): void {
   if (document.visibilityState === 'visible') {
     void sendHeartbeat()
   }
+}
+
+function handleVisibilityChange(): void {
+  sendHeartbeatIfVisible()
+}
+
+function handleResume(): void {
+  sendHeartbeatIfVisible()
 }
 
 export function startPresenceHeartbeat(): void {
@@ -36,6 +48,8 @@ export function startPresenceHeartbeat(): void {
   }, PRESENCE_HEARTBEAT_INTERVAL_MS)
 
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  window.addEventListener('pageshow', handleResume)
+  window.addEventListener('online', handleResume)
 }
 
 export function stopPresenceHeartbeat(): void {
@@ -45,4 +59,6 @@ export function stopPresenceHeartbeat(): void {
   }
 
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  window.removeEventListener('pageshow', handleResume)
+  window.removeEventListener('online', handleResume)
 }
