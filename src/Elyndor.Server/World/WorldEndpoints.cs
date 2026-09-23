@@ -392,7 +392,7 @@ public static class WorldEndpoints
 
         if (location.Encounters is { Count: > 0 })
         {
-            foreach (WorldEncounterDefinition encounter in location.Encounters)
+            foreach (LocationEncounterDefinition encounter in location.Encounters)
                 monsterIds.Add(encounter.MonsterId);
         }
 
