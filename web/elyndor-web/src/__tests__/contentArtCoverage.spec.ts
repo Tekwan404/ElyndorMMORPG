@@ -89,6 +89,45 @@ describe('authored content art', () => {
     expect(itemArtUrl(item?.iconId)).toMatch(/imported\/fonar_utonuvshego_palomnika\.webp$/)
   })
 
+  it('resolves every unambiguous named world-equipment artwork', () => {
+    const expectedIconIds = {
+      LIK_POKHISHCHENNOI_DUSHI: 'items_outside_sets/shattered_order_citadel/stolen_soul_visage',
+      OSKOLOK_SERDTSA_BASTIONA: 'items_outside_sets/black_bastion/bastion_heart_shard',
+      RUNNOE_SERDTSE_KOLOSSA: 'items_outside_sets/black_bastion/colossus_runic_heart',
+      SERDTSE_CHASHCHI: 'items_outside_sets/corrupted_grove/grove_heart',
+      SFERA_POSLEDNEGO_REZERVA: 'items_outside_sets/shattered_order_citadel/last_reserve_orb',
+      SOSUD_PLENIONNOI_DUSHI: 'items_outside_sets/open_world_late/captured_soul_vial',
+      ZNAMIA_PEPELNOGO_MARSHALA: 'items_outside_sets/black_bastion/ashen_marshal_banner',
+      VENETS_IADOVITOI_MATRONY: 'items_outside_sets/corrupted_grove/venom_matron_crown',
+      ARBALET_CHIORNYKH_VRAT: 'items_outside_sets/black_bastion/black_gate_crossbow',
+      KLINOK_PERVOGO_STRAZHA: 'items_outside_sets/black_bastion/first_guardian_blade',
+      KLINOK_ZERKALNOGO_EKHA: 'items_outside_sets/open_world_mid/reflection_mirror_blade',
+      KLIUCH_KOMENDANTA: 'items_outside_sets/black_bastion/commandant_key',
+      KRUSHITEL_KRIVOKORNIA: 'items_outside_sets/corrupted_grove/crookedroot_crusher',
+      LUK_BEZMOLVNOGO_ZNAMENI: 'items_outside_sets/black_bastion/silent_banner_bow',
+      LUK_TROINOGO_ASPEKTA: 'items_outside_sets/shattered_order_citadel/triple_aspect_bow',
+      MOLOT_ARK_TORA: 'items_outside_sets/black_bastion/ark_tor_hammer',
+      POSOKH_CHIORNOI_ZVEZDY: 'items_outside_sets/black_bastion/black_star_staff',
+      POSOKH_SORVANNOGO_ZAKLIATIIA: 'items_outside_sets/open_world_mid/interrupted_mana_staff',
+      ZERKALNYI_BASTARD: 'items_outside_sets/shattered_order_citadel/mirror_bastard_sword',
+      FOKUS_CHIORNOI_ZVEZDY: 'items_outside_sets/open_world_late/blackstar_focus',
+      FOKUS_OSTATOCHNOI_MANY: 'items_outside_sets/shattered_order_citadel/residual_mana_focus',
+      KADILO_INKVIZITORA: 'items_outside_sets/black_bastion/inquisitor_censer',
+      KADILO_OCHISHCHAIUSHCHEGO_PLAMENI: 'items_outside_sets/corrupted_grove/purifying_flame_censer',
+      SFERA_ZATMIONNOGO_ORAKULA: 'items_outside_sets/black_bastion/eclipsed_oracle_orb',
+      KOLTSO_RAZBITOGO_OTRAZHENIIA: 'items_outside_sets/shattered_order_citadel/broken_reflection_ring',
+      PECHAT_BEZMOLVNOGO_SUDA: 'items_outside_sets/black_bastion/silent_judgement_seal',
+      PECHAT_TRIEDINSTVA: 'items_outside_sets/shattered_order_citadel/triune_seal',
+    }
+
+    for (const [itemId, expectedIconId] of Object.entries(expectedIconIds)) {
+      const item = getItems().find(candidate => candidate.id === itemId)
+
+      expect(item?.iconId).toBe(expectedIconId)
+      expect(itemArtUrl(item?.iconId)).toBeDefined()
+    }
+  })
+
   it('resolves artwork for every authored set piece', () => {
     const importedSetIds = [
       'SET_HEART_OF_BLIGHTED_GROVE_',

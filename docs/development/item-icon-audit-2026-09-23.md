@@ -7,10 +7,10 @@ Generated from final composed item definitions (later lexical content files over
 - Total ItemDefinitions: 783
 - With IconId: 673
 - Without IconId: 110
-- IconId with existing asset: 360
-- IconId whose asset is missing: 313
-- Items currently using fallback: 423
-- Item assets not referenced by an ItemDefinition: 247
+- IconId with existing asset: 519
+- IconId whose asset is missing: 152
+- Items currently using fallback: 262
+- Item assets not referenced by an ItemDefinition: 470
 
 ## Items without IconId
 
@@ -127,56 +127,25 @@ Generated from final composed item definitions (later lexical content files over
 
 ## Items whose IconId has no asset
 
-- `ACC_COMMON_2_AMULET` - `acc_common_2_amulet`
-- `ACC_COMMON_2_CLOAK` - `acc_common_2_cloak`
-- `ACC_COMMON_2_RING` - `acc_common_2_ring`
-- `ACC_UNCOMMON_6_AMULET` - `acc_uncommon_6_amulet`
-- `ACC_UNCOMMON_6_CLOAK` - `acc_uncommon_6_cloak`
-- `ACC_UNCOMMON_6_RING` - `acc_uncommon_6_ring`
-- `ARBALET_CHIORNYKH_VRAT` - `arbalet_chiornykh_vrat`
-- `ARCHER_COMMON_WHISPER_TRACKER_QUIVER` - `archer_common_whisper_tracker_quiver`
-- `ARCHER_EPIC_MOONLEAF_SHADOW_QUIVER` - `archer_epic_moonleaf_shadow_quiver`
-- `ARCHER_LEGENDARY_BLACK_CONSTELLATION_QUIVER` - `archer_legendary_black_constellation_quiver`
-- `ARCHER_LEGENDARY_STAR_HUNTER_QUIVER` - `archer_legendary_star_hunter_quiver`
-- `ARCHER_RARE_THORN_TRAIL_QUIVER` - `archer_rare_thorn_trail_quiver`
-- `ARCHER_UNCOMMON_GREY_TRAIL_QUIVER` - `archer_uncommon_grey_trail_quiver`
 - `BAGROVAIA_TKAN` - `bagrovaia_tkan`
 - `BAGROVAIA_ZHELEZA` - `bagrovaia_zheleza`
 - `BASTIONNAIA_TKAN` - `bastionnaia_tkan`
-- `BLIGHTED_GROVE_RING` - `warrior/item-warrior-ring`
 - `BOAR_TUSK` - `boar_tusk`
 - `BOLOTNAIA_KOZHA` - `bolotnaia_kozha`
 - `BOLOTNOE_IADRO` - `bolotnoe_iadro`
 - `BOLOTNOE_MIASO` - `bolotnoe_miaso`
-- `BROODMOTHER_FANG_CHARM` - `warrior/item-warrior-amulet`
-- `CHERNOKAMENNAIA_SEKIRA` - `imported/chernokamennaia_sekira`
 - `CHERNOKAMENNOE_IADRO` - `chernokamennoe_iadro`
-- `CHESHUICHATYI_PLASHCH_VASILISKA` - `imported/cheshuichatyi_plashch_vasiliska`
 - `CHIORNAIA_KORA` - `chiornaia_kora`
 - `CHIORNAIA_MANA` - `chiornaia_mana`
 - `CHIORNOE_ZHELEZO` - `chiornoe_zhelezo`
 - `CHIORNYI_KLYK` - `chiornyi_klyk`
 - `CHIORNYI_METALL` - `chiornyi_metall`
 - `CHITIN_FRAGMENT` - `chitin_fragment`
-- `DEEP_FOREST_CHARM` - `warrior/item-warrior-amulet`
-- `DOZORNYI_LUK_STAROGO_TRAKTA` - `imported/dozornyi_luk_starogo_trakta`
 - `DUNGEON_CATALYST` - `ore`
-- `DUNGEON_MINES_ARCHER_GLOVES_EPIC` - `dungeon_mines_archer_gloves_epic`
-- `DUNGEON_MINES_ARCHER_LEGENDARY_BOW` - `dungeon_mines_archer_legendary_bow`
-- `DUNGEON_MINES_ARCHER_LEGS_RARE` - `dungeon_mines_archer_legs_rare`
-- `DUNGEON_MINES_MAGE_BOOTS_EPIC` - `dungeon_mines_mage_boots_epic`
-- `DUNGEON_MINES_MAGE_HOOD_RARE` - `dungeon_mines_mage_hood_rare`
-- `DUNGEON_MINES_MAGE_LEGENDARY_STAFF` - `dungeon_mines_mage_legendary_staff`
-- `DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC` - `dungeon_mines_warrior_gauntlets_epic`
-- `DUNGEON_MINES_WARRIOR_HELM_RARE` - `dungeon_mines_warrior_helm_rare`
-- `DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD` - `dungeon_mines_warrior_legendary_shield`
 - `EKHO_KLASSA` - `ekho_klassa`
 - `EKHO_ZNAMENI` - `ekho_znameni`
 - `ENHANCEMENT_ORE` - `ore`
 - `FITIL` - `fitil`
-- `FOKUS_CHIORNOI_ZVEZDY` - `fokus_chiornoi_zvezdy`
-- `FOKUS_OSTATOCHNOI_MANY` - `fokus_ostatochnoi_many`
-- `FONAR_UTONUVSHEGO_PALOMNIKA` - `imported/fonar_utonuvshego_palomnika`
 - `FORGE_SCRAP` - `ore`
 - `FRAGMENT_CHIORNOGO_NASLEDIIA` - `fragment_chiornogo_naslediia`
 - `GLUBINNYI_IAD` - `glubinnyi_iad`
@@ -184,81 +153,19 @@ Generated from final composed item definitions (later lexical content files over
 - `IADOVITAIA_ZHELEZA` - `iadovitaia_zheleza`
 - `IADOVITOE_ZHALO` - `iadovitoe_zhalo`
 - `KABANE_MIASO` - `kabane_miaso`
-- `KADILO_INKVIZITORA` - `kadilo_inkvizitora`
-- `KADILO_OCHISHCHAIUSHCHEGO_PLAMENI` - `kadilo_ochishchaiushchego_plameni`
 - `KAMENNOE_IADRO` - `kamennoe_iadro`
-- `KAPIUSHON_CHASHCHOBY` - `imported/kapiushon_chashchoby`
-- `KAPIUSHON_TENEVOGO_BRAKONERA` - `imported/kapiushon_tenevogo_brakonera`
 - `KHITIN` - `khitin`
-- `KIRASA_KAMNEGLOTA` - `imported/kirasa_kamneglota`
-- `KIRASA_MATIOROGO_VOZHAKA` - `imported/kirasa_matiorogo_vozhaka`
 - `KLINOK_PALACHA_ZATMENIIA` - `klinok_palacha_zatmeniia`
-- `KLINOK_PEPELNOGO_RYTSARIA` - `imported/klinok_pepelnogo_rytsaria`
-- `KLINOK_PERVOGO_STRAZHA` - `klinok_pervogo_strazha`
-- `KLINOK_PYLNOI_DOROGI` - `imported/klinok_pylnoi_dorogi`
-- `KLINOK_ZERKALNOGO_EKHA` - `klinok_zerkalnogo_ekha`
-- `KLIUCH_KOMENDANTA` - `kliuch_komendanta`
 - `KLYK` - `klyk`
-- `KLYK_MATERI_TOPEI` - `imported/klyk_materi_topei`
-- `KLYK_MATIOROGO_VOZHAKA` - `imported/klyk_matiorogo_vozhaka`
-- `KOLTSO_KORNEVOI_ROSY` - `imported/koltso_kornevoi_rosy`
-- `KOLTSO_RAZBITOGO_OTRAZHENIIA` - `koltso_razbitogo_otrazheniia`
-- `KOPIO_PALACHA_GRANITSY` - `imported/kopio_palacha_granitsy`
-- `KORONA_CHUMNOGO_ZHRETSA` - `imported/korona_chumnogo_zhretsa`
 - `KOSTIANAIA_PYL` - `kostianaia_pyl`
 - `KOSTIANOI_KLINOK_MARSHALA` - `kostianoi_klinok_marshala`
 - `KOST_ILI_ROG` - `kost_ili_rog`
 - `KROVAVYI_REAGENT` - `krovavyi_reagent`
-- `KRUSHITEL_KRIVOKORNIA` - `krushitel_krivokornia`
 - `KUZNECHNAIA_DETAL` - `kuznechnaia_detal`
 - `LIGHT_HIDE` - `leather`
 - `LIGHT_LEATHER` - `leather`
-- `LIK_POKHISHCHENNOI_DUSHI` - `lik_pokhishchennoi_dushi`
 - `LOM` - `lom`
-- `LUK_BASTIONNOGO_DOZORA` - `imported/luk_bastionnogo_dozora`
-- `LUK_BEZMOLVNOGO_ZNAMENI` - `luk_bezmolvnogo_znameni`
-- `LUK_DVOINOGO_EKHA` - `imported/luk_dvoinogo_ekha`
-- `LUK_TROINOGO_ASPEKTA` - `luk_troinogo_aspekta`
-- `LUK_ZVONKOGO_KRYLA` - `imported/luk_zvonkogo_kryla`
 - `LUNNAIA_PYL` - `lunnaia_pyl`
-- `MAGE_COMMON_BLUE_CANDLE_FOCUS` - `mage_common_blue_candle_focus`
-- `MAGE_EPIC_SHATTERED_STAR_CHEST` - `sets/mage_epic_shattered_star_chest`
-- `MAGE_EPIC_SHATTERED_STAR_FEET` - `sets/mage_epic_shattered_star_feet`
-- `MAGE_EPIC_SHATTERED_STAR_FOCUS` - `mage_epic_shattered_star_focus`
-- `MAGE_EPIC_SHATTERED_STAR_HANDS` - `sets/mage_epic_shattered_star_hands`
-- `MAGE_EPIC_SHATTERED_STAR_HEAD` - `sets/mage_epic_shattered_star_head`
-- `MAGE_EPIC_SHATTERED_STAR_LEGS` - `sets/mage_epic_shattered_star_legs`
-- `MAGE_EPIC_SHATTERED_STAR_SHOULDERS` - `sets/mage_epic_shattered_star_shoulders`
-- `MAGE_EPIC_SHATTERED_STAR_STAFF` - `sets/mage_epic_shattered_star_staff`
-- `MAGE_EPIC_SHATTERED_STAR_WAND` - `sets/mage_epic_shattered_star_wand`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST` - `sets/mage_legendary_eclipsed_oracle_chest`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET` - `sets/mage_legendary_eclipsed_oracle_feet`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_FOCUS` - `mage_legendary_eclipsed_oracle_focus`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS` - `sets/mage_legendary_eclipsed_oracle_hands`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD` - `sets/mage_legendary_eclipsed_oracle_head`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS` - `sets/mage_legendary_eclipsed_oracle_legs`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS` - `sets/mage_legendary_eclipsed_oracle_shoulders`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF` - `sets/mage_legendary_eclipsed_oracle_staff`
-- `MAGE_LEGENDARY_ECLIPSED_ORACLE_WAND` - `sets/mage_legendary_eclipsed_oracle_wand`
-- `MAGE_LEGENDARY_SILENT_ARCHON_CHEST` - `sets/mage_legendary_silent_archon_chest`
-- `MAGE_LEGENDARY_SILENT_ARCHON_FEET` - `sets/mage_legendary_silent_archon_feet`
-- `MAGE_LEGENDARY_SILENT_ARCHON_FOCUS` - `mage_legendary_silent_archon_focus`
-- `MAGE_LEGENDARY_SILENT_ARCHON_HANDS` - `sets/mage_legendary_silent_archon_hands`
-- `MAGE_LEGENDARY_SILENT_ARCHON_HEAD` - `sets/mage_legendary_silent_archon_head`
-- `MAGE_LEGENDARY_SILENT_ARCHON_LEGS` - `sets/mage_legendary_silent_archon_legs`
-- `MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS` - `sets/mage_legendary_silent_archon_shoulders`
-- `MAGE_LEGENDARY_SILENT_ARCHON_STAFF` - `sets/mage_legendary_silent_archon_staff`
-- `MAGE_LEGENDARY_SILENT_ARCHON_WAND` - `sets/mage_legendary_silent_archon_wand`
-- `MAGE_RARE_THREE_ELEMENTS_CHEST` - `sets/mage_rare_three_elements_chest`
-- `MAGE_RARE_THREE_ELEMENTS_FEET` - `sets/mage_rare_three_elements_feet`
-- `MAGE_RARE_THREE_ELEMENTS_FOCUS` - `mage_rare_three_elements_focus`
-- `MAGE_RARE_THREE_ELEMENTS_HANDS` - `sets/mage_rare_three_elements_hands`
-- `MAGE_RARE_THREE_ELEMENTS_HEAD` - `sets/mage_rare_three_elements_head`
-- `MAGE_RARE_THREE_ELEMENTS_LEGS` - `sets/mage_rare_three_elements_legs`
-- `MAGE_RARE_THREE_ELEMENTS_SHOULDERS` - `sets/mage_rare_three_elements_shoulders`
-- `MAGE_RARE_THREE_ELEMENTS_STAFF` - `sets/mage_rare_three_elements_staff`
-- `MAGE_RARE_THREE_ELEMENTS_WAND` - `sets/mage_rare_three_elements_wand`
-- `MAGE_UNCOMMON_FORGOTTEN_RUNES_FOCUS` - `mage_uncommon_forgotten_runes_focus`
 - `MANAKRISTALL` - `manakristall`
 - `MANAPYL` - `manapyl`
 - `MANASOL` - `manasol`
@@ -268,10 +175,7 @@ Generated from final composed item definitions (later lexical content files over
 - `MIASO_ZVERIA` - `miaso_zveria`
 - `MINERALIZOVANNAIA_KOST` - `mineralizovannaia_kost`
 - `MOKRAIA_TKAN` - `mokraia_tkan`
-- `MOLOT_ARK_TORA` - `molot_ark_tora`
-- `MOLOT_KHOZIAINA_ZHIL` - `imported/molot_khoziaina_zhil`
 - `NAPLECHNIKI_BAGROVOI_GARPII` - `naplechniki_bagrovoi_garpii`
-- `NARUCHI_GOBLINSKOGO_KAPKANSHCHIKA` - `imported/naruchi_goblinskogo_kapkanshchika`
 - `OBLOMOK_BASTIONNOI_BRONI` - `oblomok_bastionnoi_broni`
 - `OBLOMOK_KOSTI` - `oblomok_kosti`
 - `OBSIDIAN` - `obsidian`
@@ -284,55 +188,37 @@ Generated from final composed item definitions (later lexical content files over
 - `ORUZHEINAIA_DETAL` - `oruzheinaia_detal`
 - `ORUZHEINAIA_PLASTINA` - `oruzheinaia_plastina`
 - `ORUZHEINYI_FRAGMENT` - `oruzheinyi_fragment`
-- `OSKOLOCHNYI_ZHEZL` - `imported/oskolochnyi_zhezl`
 - `OSKOLOK_DUKHA` - `oskolok_dukha`
 - `OSKOLOK_DUSHI` - `oskolok_dushi`
 - `OSKOLOK_PANTSIRIA` - `oskolok_pantsiria`
 - `OSKOLOK_PERVOGO_STRAZHA` - `oskolok_pervogo_strazha`
 - `OSKOLOK_RASKOLA` - `oskolok_raskola`
 - `OSKOLOK_RUDY` - `oskolok_rudy`
-- `OSKOLOK_SERDTSA_BASTIONA` - `oskolok_serdtsa_bastiona`
 - `OSKOLOK_SVETA` - `oskolok_sveta`
 - `OSKOLOK_ZAKLINANIIA` - `oskolok_zaklinaniia`
 - `OSKVERNIONNOE_SEMIA` - `oskvernionnoe_semia`
 - `OSTATOK_DUSHI` - `ostatok_dushi`
 - `PADALNAIA_KOZHA` - `padalnaia_kozha`
-- `PAUCHII_OBEREG` - `imported/pauchii_obereg`
-- `PECHAT_BEZMOLVNOGO_SUDA` - `pechat_bezmolvnogo_suda`
-- `PECHAT_KHRANITELIA_RASKOLA` - `imported/pechat_khranitelia_raskola`
 - `PECHAT_MAGISTRA` - `pechat_magistra`
 - `PECHAT_MARSHALA` - `pechat_marshala`
-- `PECHAT_PREDVESTNIKA` - `imported/pechat_predvestnika`
-- `PECHAT_TRIEDINSTVA` - `pechat_triedinstva`
 - `PECHAT_UMBRY` - `pechat_umbry`
 - `PECHAT_VRAT` - `pechat_vrat`
 - `PEPELNAIA_PYL` - `pepelnaia_pyl`
 - `PEPELNOE_MIASO` - `pepelnoe_miaso`
-- `PEPELNYE_NAPLECHNIKI_DOZORNOGO` - `imported/pepelnye_naplechniki_dozornogo`
 - `PEPELNYI_REAGENT` - `pepelnyi_reagent`
-- `PERCHATKI_TRAVNIKA` - `imported/perchatki_travnika`
 - `PERO_ILI_KOGOT` - `pero_ili_kogot`
 - `PESHCHERNAIA_MEMBRANA_ILI_PANTSIR` - `peshchernaia_membrana_ili_pantsir`
 - `PESHCHERNAIA_SLIZ` - `peshchernaia_sliz`
-- `PLASHCH_BRODIACHEGO_NAIOMNIKA` - `imported/plashch_brodiachego_naiomnika`
 - `PLASHCH_KRYLATOGO_OKHOTNIKA` - `plashch_krylatogo_okhotnika`
-- `PLASHCH_LESNOI_TROPY` - `imported/plashch_lesnoi_tropy`
 - `PLOTNAIA_TKAN` - `plotnaia_tkan`
 - `PORCHENOE_MIASO` - `porchenoe_miaso`
 - `PORCHENYI_KHITIN` - `porchenyi_khitin`
-- `POSOKH_CHIORNOI_ZVEZDY` - `posokh_chiornoi_zvezdy`
-- `POSOKH_LESNOI_VEDMY` - `imported/posokh_lesnoi_vedmy`
-- `POSOKH_SORVANNOGO_ZAKLIATIIA` - `posokh_sorvannogo_zakliatiia`
 - `PROKLIATYI_OBEREG` - `prokliatyi_obereg`
 - `PROZRACHNOE_KRYLO` - `prozrachnoe_krylo`
 - `PRUZHINA_KAPKANA` - `pruzhina_kapkana`
 - `PYLTSA_ROEVIKA` - `pyltsa_roevika`
 - `PYL_OTRAZHENII` - `pyl_otrazhenii`
 - `PYL_PORCHI` - `pyl_porchi`
-- `RANGER_FANG_CHARM` - `ranger_fang_charm`
-- `RECRUIT_HEAVY_CHEST` - `warrior/item-warrior-chestplate`
-- `RECRUIT_IRON_SWORD` - `warrior/item-warrior-sword`
-- `RECRUIT_WOODEN_SHIELD` - `warrior/item-warrior-shield`
 - `REFORGE_STONE` - `ore`
 - `ROUGH_HIDE` - `leather`
 - `ROUGH_LEATHER` - `leather`
@@ -343,23 +229,14 @@ Generated from final composed item definitions (later lexical content files over
 - `RUNNAIA_KROSHKA` - `runnaia_kroshka`
 - `RUNNAIA_PLASTINA` - `runnaia_plastina`
 - `RUNNAIA_PYL` - `runnaia_pyl`
-- `RUNNOE_SERDTSE_KOLOSSA` - `runnoe_serdtse_kolossa`
-- `RUNNYI_FONAR_SHTREKA` - `imported/runnyi_fonar_shtreka`
-- `RUNNYI_NAGRUDNIK_PEREVALA` - `imported/runnyi_nagrudnik_perevala`
 - `RVANAIA_SBRUIA` - `rvanaia_sbruia`
 - `RVANAIA_SHERST` - `rvanaia_sherst`
-- `SEKIRA_CHASHCHOBY` - `imported/sekira_chashchoby`
 - `SERDTSEVINA_LESNOI_PORCHI` - `serdtsevina_lesnoi_porchi`
 - `SERDTSE_BOLOTNOGO_SVETA` - `serdtse_bolotnogo_sveta`
-- `SERDTSE_CHASHCHI` - `serdtse_chashchi`
 - `SERDTSE_LESNOI_PORCHI` - `serdtse_lesnoi_porchi`
 - `SERDTSE_ZERKALNOGO_IADRA` - `serdtse_zerkalnogo_iadra`
-- `SFERA_CHIORNOGO_PLAMENI` - `imported/sfera_chiornogo_plameni`
-- `SFERA_POSLEDNEGO_REZERVA` - `sfera_poslednego_rezerva`
-- `SFERA_ZATMIONNOGO_ORAKULA` - `sfera_zatmionnogo_orakula`
 - `SGUSTOK_PORCHI` - `sgustok_porchi`
 - `SGUSTOK_SOKA` - `sgustok_soka`
-- `SHCHIT_CHASOVOGO_UMBRY` - `imported/shchit_chasovogo_umbry`
 - `SHERST` - `sherst`
 - `SHKURA_MATIOROGO_VOZHAKA` - `shkura_matiorogo_vozhaka`
 - `SLED_PORCHI` - `sled_porchi`
@@ -368,7 +245,6 @@ Generated from final composed item definitions (later lexical content files over
 - `SLOMANNYI_INSTRUMENT` - `slomannyi_instrument`
 - `SLUCHAINYI_OSKOLOK_SNARIAZHENIIA` - `sluchainyi_oskolok_snariazheniia`
 - `SLUCHAINYI_REAGENT` - `sluchainyi_reagent`
-- `SOSUD_PLENIONNOI_DUSHI` - `sosud_plenionnoi_dushi`
 - `SPATIAL_BOTTOMLESS_RING` - `spatial_bottomless_ring`
 - `SPATIAL_CRACKED_RING` - `spatial_cracked_ring`
 - `SPATIAL_EXPANDED_RING` - `spatial_expanded_ring`
@@ -389,47 +265,12 @@ Generated from final composed item definitions (later lexical content files over
 - `TIOMNYI_SHIOLK` - `tiomnyi_shiolk`
 - `TKANEVYI_LOSKUT` - `tkanevyi_loskut`
 - `TLEIUSHCHAIA_ESSENTSIIA` - `tleiushchaia_essentsiia`
-- `TLEIUSHCHII_FOKUS` - `imported/tleiushchii_fokus`
 - `TONKOE_ZHALO` - `tonkoe_zhalo`
 - `TOPIANAIA_ZHELEZA` - `topianaia_zheleza`
 - `UGOLNOE_IADRO` - `ugolnoe_iadro`
-- `VENETS_IADOVITOI_MATRONY` - `venets_iadovitoi_matrony`
-- `WARRIOR_EPIC_CRIMSON_FURY_CHEST` - `sets/warrior_epic_crimson_fury_chest`
-- `WARRIOR_EPIC_CRIMSON_FURY_FEET` - `sets/warrior_epic_crimson_fury_feet`
-- `WARRIOR_EPIC_CRIMSON_FURY_HANDS` - `sets/warrior_epic_crimson_fury_hands`
-- `WARRIOR_EPIC_CRIMSON_FURY_HEAD` - `sets/warrior_epic_crimson_fury_head`
-- `WARRIOR_EPIC_CRIMSON_FURY_LEGS` - `sets/warrior_epic_crimson_fury_legs`
-- `WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS` - `sets/warrior_epic_crimson_fury_shoulders`
-- `WARRIOR_EPIC_CRIMSON_FURY_WEAPON` - `sets/warrior_epic_crimson_fury_weapon`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_CHEST` - `sets/warrior_legendary_black_bastion_chest`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_FEET` - `sets/warrior_legendary_black_bastion_feet`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_HANDS` - `sets/warrior_legendary_black_bastion_hands`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_HEAD` - `sets/warrior_legendary_black_bastion_head`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_LEGS` - `sets/warrior_legendary_black_bastion_legs`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD` - `sets/warrior_legendary_black_bastion_shield`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS` - `sets/warrior_legendary_black_bastion_shoulders`
-- `WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON` - `sets/warrior_legendary_black_bastion_weapon`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_CHEST` - `sets/warrior_legendary_first_guard_chest`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_FEET` - `sets/warrior_legendary_first_guard_feet`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_HANDS` - `sets/warrior_legendary_first_guard_hands`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_HEAD` - `sets/warrior_legendary_first_guard_head`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_LEGS` - `sets/warrior_legendary_first_guard_legs`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD` - `sets/warrior_legendary_first_guard_shield`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS` - `sets/warrior_legendary_first_guard_shoulders`
-- `WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON` - `sets/warrior_legendary_first_guard_weapon`
-- `WARRIOR_RARE_GREY_FANG_CHEST` - `sets/warrior_rare_grey_fang_chest`
-- `WARRIOR_RARE_GREY_FANG_FEET` - `sets/warrior_rare_grey_fang_feet`
-- `WARRIOR_RARE_GREY_FANG_HANDS` - `sets/warrior_rare_grey_fang_hands`
-- `WARRIOR_RARE_GREY_FANG_HEAD` - `sets/warrior_rare_grey_fang_head`
-- `WARRIOR_RARE_GREY_FANG_LEGS` - `sets/warrior_rare_grey_fang_legs`
-- `WARRIOR_RARE_GREY_FANG_SHIELD` - `sets/warrior_rare_grey_fang_shield`
-- `WARRIOR_RARE_GREY_FANG_SHOULDERS` - `sets/warrior_rare_grey_fang_shoulders`
-- `WARRIOR_RARE_GREY_FANG_WEAPON` - `sets/warrior_rare_grey_fang_weapon`
 - `WOLF_FANG` - `wolf_fang`
-- `WOLF_FANG_BLADE` - `wolf_fang_blade`
 - `ZARAZHIONNYI_KLYK` - `zarazhionnyi_klyk`
 - `ZERKALNAIA_PLASTINA` - `zerkalnaia_plastina`
-- `ZERKALNYI_BASTARD` - `zerkalnyi_bastard`
 - `ZERKALNYI_OSKOLOK` - `zerkalnyi_oskolok`
 - `ZHELEZNAIA_MELOCH` - `zheleznaia_meloch`
 - `ZHIOSTKAIA_SHCHETINA` - `zhiostkaia_shchetina`
@@ -437,9 +278,7 @@ Generated from final composed item definitions (later lexical content files over
 - `ZHIVAIA_KORA` - `zhivaia_kora`
 - `ZHIVOI_KOREN` - `zhivoi_koren`
 - `ZNAK_BASTIONA` - `znak_bastiona`
-- `ZNAK_GLASHATAIA` - `imported/znak_glashataia`
 - `ZNAK_ZATMENIIA` - `znak_zatmeniia`
-- `ZNAMIA_PEPELNOGO_MARSHALA` - `znamia_pepelnogo_marshala`
 
 ## Item assets without an ItemDefinition
 
@@ -449,26 +288,10 @@ Generated from final composed item definitions (later lexical content files over
 - `items_outside_sets/ancient_mine/forgotten_mine_lantern`
 - `items_outside_sets/ancient_mine/mine_watch_crossbow`
 - `items_outside_sets/ancient_mine/stoneheart_ring`
-- `items_outside_sets/black_bastion/ark_tor_hammer`
-- `items_outside_sets/black_bastion/ashen_marshal_banner`
-- `items_outside_sets/black_bastion/bastion_heart_shard`
-- `items_outside_sets/black_bastion/black_gate_crossbow`
 - `items_outside_sets/black_bastion/black_legacy_fragment`
-- `items_outside_sets/black_bastion/black_star_staff`
-- `items_outside_sets/black_bastion/colossus_runic_heart`
-- `items_outside_sets/black_bastion/commandant_key`
-- `items_outside_sets/black_bastion/eclipsed_oracle_orb`
-- `items_outside_sets/black_bastion/first_guardian_blade`
-- `items_outside_sets/black_bastion/inquisitor_censer`
-- `items_outside_sets/black_bastion/silent_banner_bow`
-- `items_outside_sets/black_bastion/silent_judgement_seal`
 - `items_outside_sets/corrupted_grove/corrupted_seed`
-- `items_outside_sets/corrupted_grove/crookedroot_crusher`
-- `items_outside_sets/corrupted_grove/grove_heart`
 - `items_outside_sets/corrupted_grove/living_vine_bowstring`
 - `items_outside_sets/corrupted_grove/purified_root_elixir_recipe`
-- `items_outside_sets/corrupted_grove/purifying_flame_censer`
-- `items_outside_sets/corrupted_grove/venom_matron_crown`
 - `items_outside_sets/eclipse_citadel/bastion_plate_blueprint`
 - `items_outside_sets/eclipse_citadel/broken_captain_blade`
 - `items_outside_sets/eclipse_citadel/eclipse_seal`
@@ -494,10 +317,8 @@ Generated from final composed item definitions (later lexical content files over
 - `items_outside_sets/open_world_late/ashen_knight_blade`
 - `items_outside_sets/open_world_late/bastion_watch_bow`
 - `items_outside_sets/open_world_late/black_flame_orb`
-- `items_outside_sets/open_world_late/blackstar_focus`
 - `items_outside_sets/open_world_late/blackstone_axe`
 - `items_outside_sets/open_world_late/bone_greatsword`
-- `items_outside_sets/open_world_late/captured_soul_vial`
 - `items_outside_sets/open_world_late/crimson_harpy_feathers`
 - `items_outside_sets/open_world_late/harbinger_seal`
 - `items_outside_sets/open_world_late/mountain_hunter_wing`
@@ -511,23 +332,14 @@ Generated from final composed item definitions (later lexical content files over
 - `items_outside_sets/open_world_mid/drowned_pilgrim_lantern`
 - `items_outside_sets/open_world_mid/forest_witch_staff`
 - `items_outside_sets/open_world_mid/herald_mark`
-- `items_outside_sets/open_world_mid/interrupted_mana_staff`
 - `items_outside_sets/open_world_mid/marsh_mother_fang`
 - `items_outside_sets/open_world_mid/mature_chieftain_cuirass`
-- `items_outside_sets/open_world_mid/reflection_mirror_blade`
 - `items_outside_sets/open_world_mid/rift_keeper_seal`
 - `items_outside_sets/open_world_mid/shadow_poacher_hood`
 - `items_outside_sets/open_world_mid/shard_wand`
 - `items_outside_sets/open_world_mid/smoldering_focus`
 - `items_outside_sets/open_world_mid/umbra_sentinel_shield`
-- `items_outside_sets/shattered_order_citadel/broken_reflection_ring`
-- `items_outside_sets/shattered_order_citadel/last_reserve_orb`
-- `items_outside_sets/shattered_order_citadel/mirror_bastard_sword`
 - `items_outside_sets/shattered_order_citadel/mirror_core_heart`
-- `items_outside_sets/shattered_order_citadel/residual_mana_focus`
-- `items_outside_sets/shattered_order_citadel/stolen_soul_visage`
-- `items_outside_sets/shattered_order_citadel/triple_aspect_bow`
-- `items_outside_sets/shattered_order_citadel/triune_seal`
 - `materials_for_professions/gathering_early/gathering_early_01_forest_mint`
 - `materials_for_professions/gathering_early/gathering_early_02_silverleaf`
 - `materials_for_professions/gathering_early/gathering_early_03_dewy_blossom`
@@ -690,4 +502,254 @@ Generated from final composed item definitions (later lexical content files over
 - `materials_not_used_in_professions/hunting_trophies/hunting_trophies_12_slimy_fang`
 - `materials_not_used_in_professions/hunting_trophies/hunting_trophies_13_bone_dust`
 - `materials_not_used_in_professions/hunting_trophies/hunting_trophies_14_bone_fragment`
+- `sets/mage_epic_shattered_star_focus`
+- `sets/mage_legendary_eclipsed_oracle_feet`
+- `sets/mage_legendary_eclipsed_oracle_focus`
+- `sets/mage_legendary_silent_archon_focus`
+- `sets/mage_rare_three_elements_focus`
+- `sets/set_black_bastion_archer_beast_mastery_chest`
+- `sets/set_black_bastion_archer_beast_mastery_feet`
+- `sets/set_black_bastion_archer_beast_mastery_hands`
+- `sets/set_black_bastion_archer_beast_mastery_head`
+- `sets/set_black_bastion_archer_beast_mastery_legs`
+- `sets/set_black_bastion_archer_beast_mastery_shoulders`
+- `sets/set_black_bastion_archer_beast_mastery_waist`
+- `sets/set_black_bastion_archer_beast_mastery_wrist`
+- `sets/set_black_bastion_archer_marksmanship_chest`
+- `sets/set_black_bastion_archer_marksmanship_feet`
+- `sets/set_black_bastion_archer_marksmanship_hands`
+- `sets/set_black_bastion_archer_marksmanship_head`
+- `sets/set_black_bastion_archer_marksmanship_legs`
+- `sets/set_black_bastion_archer_marksmanship_shoulders`
+- `sets/set_black_bastion_archer_marksmanship_waist`
+- `sets/set_black_bastion_archer_marksmanship_wrist`
+- `sets/set_black_bastion_archer_survival_chest`
+- `sets/set_black_bastion_archer_survival_feet`
+- `sets/set_black_bastion_archer_survival_hands`
+- `sets/set_black_bastion_archer_survival_head`
+- `sets/set_black_bastion_archer_survival_legs`
+- `sets/set_black_bastion_archer_survival_shoulders`
+- `sets/set_black_bastion_archer_survival_waist`
+- `sets/set_black_bastion_archer_survival_wrist`
+- `sets/set_black_bastion_mage_arcane_chest`
+- `sets/set_black_bastion_mage_arcane_feet`
+- `sets/set_black_bastion_mage_arcane_hands`
+- `sets/set_black_bastion_mage_arcane_head`
+- `sets/set_black_bastion_mage_arcane_legs`
+- `sets/set_black_bastion_mage_arcane_shoulders`
+- `sets/set_black_bastion_mage_arcane_waist`
+- `sets/set_black_bastion_mage_arcane_wrist`
+- `sets/set_black_bastion_mage_fire_chest`
+- `sets/set_black_bastion_mage_fire_feet`
+- `sets/set_black_bastion_mage_fire_hands`
+- `sets/set_black_bastion_mage_fire_head`
+- `sets/set_black_bastion_mage_fire_legs`
+- `sets/set_black_bastion_mage_fire_shoulders`
+- `sets/set_black_bastion_mage_fire_waist`
+- `sets/set_black_bastion_mage_fire_wrist`
+- `sets/set_black_bastion_mage_frost_chest`
+- `sets/set_black_bastion_mage_frost_feet`
+- `sets/set_black_bastion_mage_frost_hands`
+- `sets/set_black_bastion_mage_frost_head`
+- `sets/set_black_bastion_mage_frost_legs`
+- `sets/set_black_bastion_mage_frost_shoulders`
+- `sets/set_black_bastion_mage_frost_waist`
+- `sets/set_black_bastion_mage_frost_wrist`
+- `sets/set_black_bastion_paladin_holy_chest`
+- `sets/set_black_bastion_paladin_holy_feet`
+- `sets/set_black_bastion_paladin_holy_hands`
+- `sets/set_black_bastion_paladin_holy_head`
+- `sets/set_black_bastion_paladin_holy_legs`
+- `sets/set_black_bastion_paladin_holy_shoulders`
+- `sets/set_black_bastion_paladin_holy_waist`
+- `sets/set_black_bastion_paladin_holy_wrist`
+- `sets/set_black_bastion_paladin_protection_chest`
+- `sets/set_black_bastion_paladin_protection_feet`
+- `sets/set_black_bastion_paladin_protection_hands`
+- `sets/set_black_bastion_paladin_protection_head`
+- `sets/set_black_bastion_paladin_protection_legs`
+- `sets/set_black_bastion_paladin_protection_shoulders`
+- `sets/set_black_bastion_paladin_protection_waist`
+- `sets/set_black_bastion_paladin_protection_wrist`
+- `sets/set_black_bastion_paladin_retribution_chest`
+- `sets/set_black_bastion_paladin_retribution_feet`
+- `sets/set_black_bastion_paladin_retribution_hands`
+- `sets/set_black_bastion_paladin_retribution_head`
+- `sets/set_black_bastion_paladin_retribution_legs`
+- `sets/set_black_bastion_paladin_retribution_shoulders`
+- `sets/set_black_bastion_paladin_retribution_waist`
+- `sets/set_black_bastion_paladin_retribution_wrist`
+- `sets/set_black_bastion_warrior_berserker_chest`
+- `sets/set_black_bastion_warrior_berserker_feet`
+- `sets/set_black_bastion_warrior_berserker_hands`
+- `sets/set_black_bastion_warrior_berserker_head`
+- `sets/set_black_bastion_warrior_berserker_legs`
+- `sets/set_black_bastion_warrior_berserker_shoulders`
+- `sets/set_black_bastion_warrior_berserker_waist`
+- `sets/set_black_bastion_warrior_berserker_wrist`
+- `sets/set_black_bastion_warrior_guardian_chest`
+- `sets/set_black_bastion_warrior_guardian_feet`
+- `sets/set_black_bastion_warrior_guardian_hands`
+- `sets/set_black_bastion_warrior_guardian_head`
+- `sets/set_black_bastion_warrior_guardian_legs`
+- `sets/set_black_bastion_warrior_guardian_shoulders`
+- `sets/set_black_bastion_warrior_guardian_waist`
+- `sets/set_black_bastion_warrior_guardian_wrist`
+- `sets/set_black_bastion_warrior_warlord_chest`
+- `sets/set_black_bastion_warrior_warlord_feet`
+- `sets/set_black_bastion_warrior_warlord_hands`
+- `sets/set_black_bastion_warrior_warlord_head`
+- `sets/set_black_bastion_warrior_warlord_legs`
+- `sets/set_black_bastion_warrior_warlord_shoulders`
+- `sets/set_black_bastion_warrior_warlord_waist`
+- `sets/set_black_bastion_warrior_warlord_wrist`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_chest`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_feet`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_hands`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_head`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_legs`
+- `sets/set_heart_of_blighted_grove_archer_beast_mastery_shoulders`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_chest`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_feet`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_hands`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_head`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_legs`
+- `sets/set_heart_of_blighted_grove_archer_marksmanship_shoulders`
+- `sets/set_heart_of_blighted_grove_archer_survival_chest`
+- `sets/set_heart_of_blighted_grove_archer_survival_feet`
+- `sets/set_heart_of_blighted_grove_archer_survival_hands`
+- `sets/set_heart_of_blighted_grove_archer_survival_head`
+- `sets/set_heart_of_blighted_grove_archer_survival_legs`
+- `sets/set_heart_of_blighted_grove_archer_survival_shoulders`
+- `sets/set_heart_of_blighted_grove_mage_arcane_chest`
+- `sets/set_heart_of_blighted_grove_mage_arcane_feet`
+- `sets/set_heart_of_blighted_grove_mage_arcane_hands`
+- `sets/set_heart_of_blighted_grove_mage_arcane_head`
+- `sets/set_heart_of_blighted_grove_mage_arcane_legs`
+- `sets/set_heart_of_blighted_grove_mage_arcane_shoulders`
+- `sets/set_heart_of_blighted_grove_mage_fire_chest`
+- `sets/set_heart_of_blighted_grove_mage_fire_feet`
+- `sets/set_heart_of_blighted_grove_mage_fire_hands`
+- `sets/set_heart_of_blighted_grove_mage_fire_head`
+- `sets/set_heart_of_blighted_grove_mage_fire_legs`
+- `sets/set_heart_of_blighted_grove_mage_fire_shoulders`
+- `sets/set_heart_of_blighted_grove_mage_frost_chest`
+- `sets/set_heart_of_blighted_grove_mage_frost_feet`
+- `sets/set_heart_of_blighted_grove_mage_frost_hands`
+- `sets/set_heart_of_blighted_grove_mage_frost_head`
+- `sets/set_heart_of_blighted_grove_mage_frost_legs`
+- `sets/set_heart_of_blighted_grove_mage_frost_shoulders`
+- `sets/set_heart_of_blighted_grove_paladin_holy_chest`
+- `sets/set_heart_of_blighted_grove_paladin_holy_feet`
+- `sets/set_heart_of_blighted_grove_paladin_holy_hands`
+- `sets/set_heart_of_blighted_grove_paladin_holy_head`
+- `sets/set_heart_of_blighted_grove_paladin_holy_legs`
+- `sets/set_heart_of_blighted_grove_paladin_holy_shoulders`
+- `sets/set_heart_of_blighted_grove_paladin_protection_chest`
+- `sets/set_heart_of_blighted_grove_paladin_protection_feet`
+- `sets/set_heart_of_blighted_grove_paladin_protection_hands`
+- `sets/set_heart_of_blighted_grove_paladin_protection_head`
+- `sets/set_heart_of_blighted_grove_paladin_protection_legs`
+- `sets/set_heart_of_blighted_grove_paladin_protection_shoulders`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_chest`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_feet`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_hands`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_head`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_legs`
+- `sets/set_heart_of_blighted_grove_paladin_retribution_shoulders`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_chest`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_feet`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_hands`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_head`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_legs`
+- `sets/set_heart_of_blighted_grove_warrior_berserker_shoulders`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_chest`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_feet`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_hands`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_head`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_legs`
+- `sets/set_heart_of_blighted_grove_warrior_guardian_shoulders`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_chest`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_feet`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_hands`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_head`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_legs`
+- `sets/set_heart_of_blighted_grove_warrior_warlord_shoulders`
+- `sets/set_shattered_order_raid_archer_beast_mastery_chest`
+- `sets/set_shattered_order_raid_archer_beast_mastery_feet`
+- `sets/set_shattered_order_raid_archer_beast_mastery_hands`
+- `sets/set_shattered_order_raid_archer_beast_mastery_head`
+- `sets/set_shattered_order_raid_archer_beast_mastery_legs`
+- `sets/set_shattered_order_raid_archer_beast_mastery_shoulders`
+- `sets/set_shattered_order_raid_archer_marksmanship_chest`
+- `sets/set_shattered_order_raid_archer_marksmanship_feet`
+- `sets/set_shattered_order_raid_archer_marksmanship_hands`
+- `sets/set_shattered_order_raid_archer_marksmanship_head`
+- `sets/set_shattered_order_raid_archer_marksmanship_legs`
+- `sets/set_shattered_order_raid_archer_marksmanship_shoulders`
+- `sets/set_shattered_order_raid_archer_survival_chest`
+- `sets/set_shattered_order_raid_archer_survival_feet`
+- `sets/set_shattered_order_raid_archer_survival_hands`
+- `sets/set_shattered_order_raid_archer_survival_head`
+- `sets/set_shattered_order_raid_archer_survival_legs`
+- `sets/set_shattered_order_raid_archer_survival_shoulders`
+- `sets/set_shattered_order_raid_mage_arcane_chest`
+- `sets/set_shattered_order_raid_mage_arcane_feet`
+- `sets/set_shattered_order_raid_mage_arcane_hands`
+- `sets/set_shattered_order_raid_mage_arcane_head`
+- `sets/set_shattered_order_raid_mage_arcane_legs`
+- `sets/set_shattered_order_raid_mage_arcane_shoulders`
+- `sets/set_shattered_order_raid_mage_fire_chest`
+- `sets/set_shattered_order_raid_mage_fire_feet`
+- `sets/set_shattered_order_raid_mage_fire_hands`
+- `sets/set_shattered_order_raid_mage_fire_head`
+- `sets/set_shattered_order_raid_mage_fire_legs`
+- `sets/set_shattered_order_raid_mage_fire_shoulders`
+- `sets/set_shattered_order_raid_mage_frost_chest`
+- `sets/set_shattered_order_raid_mage_frost_feet`
+- `sets/set_shattered_order_raid_mage_frost_hands`
+- `sets/set_shattered_order_raid_mage_frost_head`
+- `sets/set_shattered_order_raid_mage_frost_legs`
+- `sets/set_shattered_order_raid_mage_frost_shoulders`
+- `sets/set_shattered_order_raid_paladin_holy_chest`
+- `sets/set_shattered_order_raid_paladin_holy_feet`
+- `sets/set_shattered_order_raid_paladin_holy_hands`
+- `sets/set_shattered_order_raid_paladin_holy_head`
+- `sets/set_shattered_order_raid_paladin_holy_legs`
+- `sets/set_shattered_order_raid_paladin_holy_shoulders`
+- `sets/set_shattered_order_raid_paladin_protection_chest`
+- `sets/set_shattered_order_raid_paladin_protection_feet`
+- `sets/set_shattered_order_raid_paladin_protection_hands`
+- `sets/set_shattered_order_raid_paladin_protection_head`
+- `sets/set_shattered_order_raid_paladin_protection_legs`
+- `sets/set_shattered_order_raid_paladin_protection_shoulders`
+- `sets/set_shattered_order_raid_paladin_retribution_chest`
+- `sets/set_shattered_order_raid_paladin_retribution_feet`
+- `sets/set_shattered_order_raid_paladin_retribution_hands`
+- `sets/set_shattered_order_raid_paladin_retribution_head`
+- `sets/set_shattered_order_raid_paladin_retribution_legs`
+- `sets/set_shattered_order_raid_paladin_retribution_shoulders`
+- `sets/set_shattered_order_raid_warrior_berserker_chest`
+- `sets/set_shattered_order_raid_warrior_berserker_feet`
+- `sets/set_shattered_order_raid_warrior_berserker_hands`
+- `sets/set_shattered_order_raid_warrior_berserker_head`
+- `sets/set_shattered_order_raid_warrior_berserker_legs`
+- `sets/set_shattered_order_raid_warrior_berserker_shoulders`
+- `sets/set_shattered_order_raid_warrior_guardian_chest`
+- `sets/set_shattered_order_raid_warrior_guardian_feet`
+- `sets/set_shattered_order_raid_warrior_guardian_hands`
+- `sets/set_shattered_order_raid_warrior_guardian_head`
+- `sets/set_shattered_order_raid_warrior_guardian_legs`
+- `sets/set_shattered_order_raid_warrior_guardian_shoulders`
+- `sets/set_shattered_order_raid_warrior_warlord_chest`
+- `sets/set_shattered_order_raid_warrior_warlord_feet`
+- `sets/set_shattered_order_raid_warrior_warlord_hands`
+- `sets/set_shattered_order_raid_warrior_warlord_head`
+- `sets/set_shattered_order_raid_warrior_warlord_legs`
+- `sets/set_shattered_order_raid_warrior_warlord_shoulders`
+- `warrior/item-warrior-boots`
+- `warrior/item-warrior-cloak`
+- `warrior/item-warrior-gauntlets`
+- `warrior/item-warrior-helm`
+- `warrior/item-warrior-legguards`
 

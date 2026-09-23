@@ -1,4 +1,4 @@
-﻿{
+{
     "contentVersion":  "0.23.0",
     "balanceVersion":  "0.19.0",
     "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
@@ -444,7 +444,7 @@
                                 },
                       "description":  "Маг: интеллект, мана и усиление заклинаний после траты большого объёма ресурса.",
                       "version":  1,
-                      "iconId":  "fokus_chiornoi_zvezdy",
+                      "iconId":  "items_outside_sets/open_world_late/blackstar_focus",
                       "offHandCategory":  "FOCUS",
                       "itemLevelMin":  40,
                       "itemLevelMax":  40,
@@ -874,7 +874,7 @@
                       "version":  1,
                       "weaponBaseAttackIntervalSeconds":  2.4,
                       "weaponCategory":  "ONE_HAND_SWORD",
-                      "iconId":  "klinok_zerkalnogo_ekha",
+                      "iconId":  "items_outside_sets/open_world_mid/reflection_mirror_blade",
                       "weaponDamageMin":  86,
                       "weaponDamageMax":  119,
                       "itemLevelMin":  31,
@@ -2565,7 +2565,7 @@
                       "version":  1,
                       "weaponBaseAttackIntervalSeconds":  3.2,
                       "weaponCategory":  "STAFF",
-                      "iconId":  "posokh_sorvannogo_zakliatiia",
+                      "iconId":  "items_outside_sets/open_world_mid/interrupted_mana_staff",
                       "weaponDamageMin":  105,
                       "weaponDamageMax":  144,
                       "itemLevelMin":  31,
@@ -3296,7 +3296,7 @@
                                 },
                       "description":  "Универсальный аксессуар: победа над сильным противником временно восстанавливает часть основного ресурса.",
                       "version":  1,
-                      "iconId":  "sosud_plenionnoi_dushi",
+                      "iconId":  "items_outside_sets/open_world_late/captured_soul_vial",
                       "itemLevelMin":  38,
                       "itemLevelMax":  38,
                       "guaranteedAffixStatIds":  [
