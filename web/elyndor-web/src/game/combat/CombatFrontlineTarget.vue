@@ -1,10 +1,38 @@
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted } from 'vue'
+
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
-defineProps<{
+const props = defineProps<{
   ally: CombatActorSnapshot | null
 }>()
+
+const combat = useCombatSessionStore()
+let telemetryTimer: number | null = null
+
+const threatPercent = computed<number | null>(() => {
+  const current = combat.threat
+  const ally = props.ally
+  if (!current || !ally) return null
+  const entry = current.entries.find(candidate => candidate.actorId === ally.actorId)
+  if (!entry) return null
+  const maximumThreat = Math.max(0, ...current.entries.map(candidate => candidate.threat))
+  if (maximumThreat <= 0) return null
+  return Math.round(Math.min(100, Math.max(0, (entry.threat / maximumThreat) * 100)))
+})
+
+onMounted(() => {
+  void combat.refreshCombatTelemetry()
+  telemetryTimer = window.setInterval(() => {
+    void combat.refreshCombatTelemetry()
+  }, 1_000)
+})
+
+onUnmounted(() => {
+  if (telemetryTimer !== null) window.clearInterval(telemetryTimer)
+})
 </script>
 
 <template>
@@ -14,13 +42,14 @@ defineProps<{
         v-if="ally"
         :key="ally.actorId"
         class="combat-frontline"
-        :aria-label="`Противник держит агро на ${ally.name}`"
+        :aria-label="`Противник держит агро на ${ally.name}${threatPercent === null ? '' : `, угроза ${threatPercent}%`}`"
       >
         <span class="combat-frontline__marker" aria-hidden="true">
           <IconGenerator :config="{ id: `frontline-${ally.actorId}`, glyph: 'sword', category: 'utility' }" />
         </span>
         <span class="combat-frontline__label">ЦЕЛЬ</span>
         <strong>{{ ally.name }}</strong>
+        <span v-if="threatPercent !== null" class="combat-frontline__threat">{{ threatPercent }}%</span>
       </aside>
     </Transition>
   </Teleport>
@@ -74,6 +103,14 @@ defineProps<{
   font-size: .56rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.combat-frontline__threat {
+  flex: 0 0 auto;
+  color: #efa1ae;
+  font-size: .54rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 .frontline-shift-enter-active,
