@@ -58,7 +58,7 @@ public sealed class SpatialArtifactPremiumStoreServiceTests(PostgresFixture post
             CancellationToken.None);
 
         Assert.True(purchase.Succeeded);
-        Assert.Equal(800, purchase.CrystalBalance);
+        Assert.Equal(650, purchase.CrystalBalance);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Single(verify.CharacterItems.Where(item =>
