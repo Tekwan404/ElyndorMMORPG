@@ -6,13 +6,19 @@ namespace Elyndor.Server.Monitoring;
 public interface IServerMetricsCollector
 {
     Task<ServerMetricsSnapshot> CollectAsync(CancellationToken cancellationToken);
+
+    void RecordPlayerSeen(Guid accountId);
 }
 
-public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServerMetricsCollector
+public sealed class ServerMetricsCollector(
+    IHostEnvironment environment,
+    TimeProvider timeProvider) : IServerMetricsCollector
 {
-    private readonly DateTimeOffset _startedAt = DateTimeOffset.UtcNow;
+    private readonly DateTimeOffset _startedAt = timeProvider.GetUtcNow();
     private readonly Process _process = Process.GetCurrentProcess();
     private readonly string _contentRoot = environment.ContentRootPath;
+    private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly OnlinePlayerPresence _playerPresence = new(timeProvider);
     private readonly object _gate = new();
     private TimeSpan _lastProcessCpu;
     private DateTimeOffset _lastCpuAt;
@@ -21,10 +27,12 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
     private long _lastSent;
     private DateTimeOffset _lastNetworkAt;
 
+    public void RecordPlayerSeen(Guid accountId) => _playerPresence.MarkSeen(accountId);
+
     public Task<ServerMetricsSnapshot> CollectAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         double? hostCpu = null;
         double? processCpu = null;
         long received = 0;
@@ -98,7 +106,8 @@ public sealed class ServerMetricsCollector(IHostEnvironment environment) : IServ
             received,
             sent,
             now - _startedAt,
-            Environment.ProcessorCount);
+            Environment.ProcessorCount,
+            _playerPresence.CountOnline());
 
         return Task.FromResult(snapshot);
     }
