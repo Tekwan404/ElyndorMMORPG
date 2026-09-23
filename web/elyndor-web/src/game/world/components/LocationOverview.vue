@@ -3,22 +3,43 @@ import { computed, ref, watch } from 'vue'
 
 import { monsterArtUrl } from '@/assets/monsterArt'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
-import { locationPresentation } from '@/game/world/locationPresentation'
+import { usePartyStore } from '@/game/party/partyStore'
+import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import {
   loadLocationCatalog,
   type DetailedWorldLocation,
   type WorldLocationResident,
 } from '@/game/world/locationDetails'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { UIButton, UIModal } from '@/ui/components'
 
 const session = useGameSessionStore()
+const combat = useCombatSessionStore()
+const party = usePartyStore()
 const location = ref<DetailedWorldLocation | null>(null)
 const loading = ref(false)
 const failed = ref(false)
+const afkOpen = ref(false)
+const afkDurationMinutes = ref(60)
+const afkTargetMonsterId = ref<string | null>(null)
+const afkTargets = ref<{ monsterId: string; displayName: string }[]>([])
+const afkPreviewLoading = ref(false)
+const afkPreview = ref<Awaited<ReturnType<typeof session.previewAfkFarm>>>(null)
 
 const world = computed(() => session.snapshot?.world ?? null)
+const character = computed(() => session.snapshot?.character ?? null)
 const currentLocation = computed(() => world.value?.currentLocation ?? null)
+const currentLocationId = computed(() => currentLocation.value?.id ?? '')
 const isTravelling = computed(() => world.value?.travel !== null && world.value?.travel !== undefined)
+const isRegion = computed(() => locationKind(currentLocationId.value) === 'region')
+const activeAfkFarm = computed(() => session.snapshot?.afkFarm?.status === 'Active'
+  ? session.snapshot.afkFarm
+  : null)
+const canStartWorldCombat = computed(() =>
+  party.snapshot === null
+    || party.snapshot.leaderCharacterId === character.value?.id,
+)
 const presentation = computed(() => locationPresentation(
   currentLocation.value?.id,
   currentLocation.value?.displayName,
@@ -30,6 +51,20 @@ const localContracts = computed(() => {
   if (!locationId) return []
   return world.value?.contracts.filter(contract => contract.offerLocationId === locationId) ?? []
 })
+const canExplore = computed(() =>
+  isRegion.value
+  && !isTravelling.value
+  && !combat.isActive
+  && (location.value ?? currentLocation.value)?.dangerLevel !== 'SAFE'
+  && canStartWorldCombat.value,
+)
+const canUseAfkFarm = computed(() =>
+  isRegion.value
+  && !isTravelling.value
+  && !combat.isActive
+  && (location.value ?? currentLocation.value)?.allowAfk === true
+  && activeAfkFarm.value === null,
+)
 const levelLabel = computed(() => {
   const value = location.value ?? currentLocation.value
   if (!value) return ''
@@ -52,7 +87,7 @@ const activityLabels = computed(() => {
   if (!value) return []
 
   const activities: string[] = []
-  if (value.dangerLevel !== 'SAFE' && residents.value.length > 0) activities.push('Исследование')
+  if (canExplore.value) activities.push('Исследование')
   if (value.allowAfk) activities.push('Автоохота')
   if (localContracts.value.length > 0) activities.push(`Контракты · ${localContracts.value.length}`)
   return activities
@@ -92,11 +127,62 @@ function rarityClass(rarity: string): string {
   return `location-overview__loot--${rarity.toLowerCase()}`
 }
 
+async function explore(): Promise<void> {
+  if (!canExplore.value || session.mutationPending || combat.pending) return
+  const encounter = await session.explore()
+  if (!encounter) return
+  await combat.startCombat(encounter)
+}
+
+async function openAfkFarm(): Promise<void> {
+  if (!canUseAfkFarm.value) return
+  afkOpen.value = true
+  afkTargets.value = await session.getAfkFarmTargets()
+  await loadAfkPreview()
+}
+
+async function loadAfkPreview(): Promise<void> {
+  if (!currentLocationId.value || afkPreviewLoading.value) return
+  afkPreviewLoading.value = true
+  try {
+    afkPreview.value = await session.previewAfkFarm(
+      currentLocationId.value,
+      afkDurationMinutes.value,
+      afkTargetMonsterId.value,
+    )
+  } finally {
+    afkPreviewLoading.value = false
+  }
+}
+
+async function selectAfkDuration(durationMinutes: number): Promise<void> {
+  afkDurationMinutes.value = durationMinutes
+  await loadAfkPreview()
+}
+
+async function selectAfkTarget(targetMonsterId: string): Promise<void> {
+  afkTargetMonsterId.value = targetMonsterId || null
+  await loadAfkPreview()
+}
+
+async function startAfkFarm(): Promise<void> {
+  if (!currentLocationId.value || session.mutationPending) return
+  const started = await session.startAfkFarm(
+    currentLocationId.value,
+    afkDurationMinutes.value,
+    afkTargetMonsterId.value,
+  )
+  if (started) afkOpen.value = false
+}
+
 watch(
   [() => currentLocation.value?.id, () => session.snapshot?.contentVersion],
   async ([locationId, contentVersion]) => {
     location.value = null
     failed.value = false
+    afkOpen.value = false
+    afkPreview.value = null
+    afkTargetMonsterId.value = null
     if (!locationId || !contentVersion || isTravelling.value) return
 
     loading.value = true
@@ -136,6 +222,21 @@ watch(
         </p>
         <div v-if="activityLabels.length" class="location-overview__activities" aria-label="Доступные активности">
           <span v-for="activity in activityLabels" :key="activity">{{ activity }}</span>
+        </div>
+        <div v-if="canExplore && canStartWorldCombat" class="location-overview__actions" aria-label="Действия локации">
+          <UIButton
+            data-explore
+            :loading="session.mutationPending"
+            :disabled="combat.pending || isTravelling"
+            @click="explore"
+          >Исследовать</UIButton>
+          <UIButton
+            v-if="canUseAfkFarm"
+            data-afk-farming
+            variant="secondary"
+            :disabled="session.mutationPending || combat.pending"
+            @click="openAfkFarm"
+          >Автоматическая охота</UIButton>
         </div>
       </div>
     </div>
@@ -220,6 +321,45 @@ watch(
     <div v-else-if="failed" class="location-overview__state location-overview__state--muted">
       Подробности области недоступны. Основные действия локации остаются доступны ниже.
     </div>
+
+    <UIModal :open="afkOpen" title="Автоматическая охота" @close="afkOpen = false">
+      <div class="location-overview__afk" data-afk-farm-modal>
+        <p>Герой будет сражаться в этой области до окончания выбранного времени.</p>
+        <div class="location-overview__afk-duration" aria-label="Длительность автоматической охоты">
+          <UIButton
+            v-for="duration in [15, 60, 240]"
+            :key="duration"
+            :variant="afkDurationMinutes === duration ? 'primary' : 'secondary'"
+            :disabled="afkPreviewLoading || session.mutationPending"
+            @click="selectAfkDuration(duration)"
+          >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton>
+        </div>
+        <label v-if="afkTargets.length" class="location-overview__afk-target">
+          <span>Цель</span>
+          <select
+            :value="afkTargetMonsterId ?? ''"
+            :disabled="afkPreviewLoading || session.mutationPending"
+            @change="selectAfkTarget(($event.target as HTMLSelectElement).value)"
+          >
+            <option value="">Любые противники</option>
+            <option v-for="target in afkTargets" :key="target.monsterId" :value="target.monsterId">
+              {{ target.displayName }}
+            </option>
+          </select>
+        </label>
+        <div v-if="afkPreview" class="location-overview__afk-preview">
+          <span>Примерно {{ afkPreview.kills }} побед</span>
+          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
+          <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
+        </div>
+        <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>
+        <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия области.</p>
+      </div>
+      <template #actions>
+        <UIButton variant="secondary" @click="afkOpen = false">Отмена</UIButton>
+        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm">Начать</UIButton>
+      </template>
+    </UIModal>
   </section>
 </template>
 
@@ -272,7 +412,8 @@ watch(
 }
 
 .location-overview__eyebrow,
-.location-overview__activities {
+.location-overview__activities,
+.location-overview__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -480,8 +621,48 @@ watch(
   text-align: center;
 }
 
-.location-overview__state--muted {
-  opacity: .72;
+.location-overview__state--muted { opacity: .72; }
+
+.location-overview__afk,
+.location-overview__afk-preview,
+.location-overview__afk-target {
+  display: grid;
+  gap: 8px;
+}
+
+.location-overview__afk > p,
+.location-overview__afk-preview small {
+  margin: 0;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-sm);
+}
+
+.location-overview__afk-duration {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.location-overview__afk-target {
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-sm);
+}
+
+.location-overview__afk-target select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-surface-2);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+}
+
+.location-overview__afk-preview {
+  padding: 12px;
+  border: 1px solid rgb(102 141 225 / 35%);
+  border-radius: 12px;
+  background: rgb(61 81 137 / 14%);
 }
 
 @media (max-width: 620px) {
