@@ -11,7 +11,7 @@ public sealed class SpatialArtifactPremiumStoreContentTests
         {
             ["SPATIAL_CRACKED_RING"] = (5, 75),
             ["SPATIAL_MINOR_RING"] = (10, 125),
-            ["SPATIAL_EXPANDED_RING"] = (15, 200),
+            ["SPATIAL_EXPANDED_RING"] = (15, 350),
             ["SPATIAL_SEAL"] = (20, 300),
             ["SPATIAL_BOTTOMLESS_RING"] = (25, 425),
             ["SPATIAL_POCKET_SHARD"] = (30, 600),
