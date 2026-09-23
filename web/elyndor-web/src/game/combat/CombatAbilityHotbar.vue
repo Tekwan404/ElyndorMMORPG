@@ -36,6 +36,15 @@ function consumableState(item: InventoryItem): 'cooldown' | 'ready' | 'disabled'
   return props.consumableCanAffect(item) ? 'ready' : 'disabled'
 }
 
+function cooldownProgress(ability: CombatAbility): number {
+  if (ability.cooldownSeconds <= 0) return 0
+  return Math.min(100, Math.max(0, (props.cooldownRemaining(ability.id) / ability.cooldownSeconds) * 100))
+}
+
+function cooldownStyle(ability: CombatAbility): Record<string, string> {
+  return { '--cooldown-progress': `${cooldownProgress(ability)}%` }
+}
+
 function activateAbility(ability: CombatAbility | null): void {
   if (!ability) return
   if (suppressNextAbilityClick) {
@@ -130,8 +139,12 @@ onUnmounted(clearInspectionTimer)
       <span v-if="ability?.id === 'COMBUSTION' && combustionActive" class="combat-ability-hotbar__proc">АКТ.</span>
       <span v-if="ability && isQueued(ability.id)" class="combat-ability-hotbar__queue">{{ queuePosition(ability.id) }}</span>
       <small v-if="ability">{{ ability.displayName }}</small>
-      <b v-if="ability && cooldownRemaining(ability.id) > 0" class="combat-ability-hotbar__cooldown">
-        {{ Math.ceil(cooldownRemaining(ability.id)) }}с
+      <b
+        v-if="ability && cooldownRemaining(ability.id) > 0"
+        class="combat-ability-hotbar__cooldown"
+        :style="cooldownStyle(ability)"
+      >
+        <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
       </b>
       <span v-else-if="ability && ability.resourceCost > 0" class="combat-ability-hotbar__cost">
         {{ Math.round(ability.resourceCost) }}
@@ -195,7 +208,12 @@ onUnmounted(clearInspectionTimer)
         :config="{ id: `aura-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
       />
       <small>{{ ability.displayName }}</small>
-      <b v-if="cooldownRemaining(ability.id) > 0">{{ Math.ceil(cooldownRemaining(ability.id)) }}с</b>
+      <b
+        v-if="cooldownRemaining(ability.id) > 0"
+        :style="cooldownStyle(ability)"
+      >
+        <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
+      </b>
     </button>
   </section>
 
@@ -219,7 +237,9 @@ onUnmounted(clearInspectionTimer)
 .combat-ability-hotbar__icon img { width: 100%; height: 100%; object-fit: cover; }
 .combat-ability-hotbar__icon > i { width: 11px; height: 11px; border: 1px solid var(--ui-color-border); border-radius: 50%; }
 .combat-ability-hotbar__slot > small { width: 100%; overflow: hidden; color: var(--ui-color-text-secondary); font-size: .52rem; font-weight: 650; line-height: 1.1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
-.combat-ability-hotbar__cooldown { position: absolute; inset: 3px; display: grid; place-items: center; border-radius: 8px; background: rgb(1 3 7 / 76%); color: white; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.combat-ability-hotbar__cooldown { position: absolute; inset: 3px; display: grid; place-items: center; overflow: hidden; border-radius: 8px; background: conic-gradient(from 0deg, rgb(1 3 7 / 88%) var(--cooldown-progress), rgb(1 3 7 / 40%) 0); color: white; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.combat-ability-hotbar__cooldown::after { position: absolute; inset: 20%; border-radius: 50%; background: rgb(2 4 8 / 82%); content: ''; }
+.combat-ability-hotbar__cooldown > span { position: relative; z-index: 1; }
 .combat-ability-hotbar__cost { position: absolute; right: 3px; bottom: 17px; padding: 1px 3px; border-radius: 5px; background: rgb(2 4 8 / 84%); color: #bdb7ff; font-size: .45rem; }
 .combat-ability-hotbar__slot--queued { border-color: rgb(155 226 201 / 55%); box-shadow: inset 0 0 0 1px rgb(155 226 201 / 18%); }
 .combat-ability-hotbar__queue { position: absolute; top: 3px; left: 3px; z-index: 5; display: grid; width: 1rem; height: 1rem; place-items: center; border-radius: 50%; background: #9be2c9; color: #07110e; font-size: .48rem; font-weight: 900; }
@@ -249,7 +269,9 @@ onUnmounted(clearInspectionTimer)
 .combat-ability-hotbar__aura[aria-disabled='true'] { opacity: .45; }
 .combat-ability-hotbar__aura img, .combat-ability-hotbar__aura :deep(.icon-generator) { width: 24px; height: 24px; flex: none; }
 .combat-ability-hotbar__aura small { overflow: hidden; font-size: .52rem; text-overflow: ellipsis; white-space: nowrap; }
-.combat-ability-hotbar__aura b { position: absolute; inset: 2px; display: grid; place-items: center; border-radius: inherit; background: rgb(1 3 7 / 72%); color: white; font-size: .72rem; }
+.combat-ability-hotbar__aura b { --cooldown-progress: 100%; position: absolute; inset: 2px; display: grid; place-items: center; overflow: hidden; border-radius: inherit; background: conic-gradient(from 0deg, rgb(1 3 7 / 88%) var(--cooldown-progress), rgb(1 3 7 / 38%) 0); color: white; font-size: .72rem; }
+.combat-ability-hotbar__aura b::after { position: absolute; inset: 22%; border-radius: 50%; background: rgb(2 4 8 / 82%); content: ''; }
+.combat-ability-hotbar__aura b > span { position: relative; z-index: 1; }
 .combat-ability-hotbar__inspection { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-top: 5px; padding: 8px 10px; border: 1px solid rgb(146 136 255 / 38%); border-radius: var(--ui-radius-sm); background: rgb(8 11 20 / 96%); box-shadow: 0 5px 14px rgb(0 0 0 / 25%); }
 .combat-ability-hotbar__inspection strong { color: var(--ui-color-text-primary); font-size: .72rem; }
 .combat-ability-hotbar__inspection p { margin: 3px 0 0; color: var(--ui-color-text-muted); font-size: .62rem; line-height: 1.4; }
