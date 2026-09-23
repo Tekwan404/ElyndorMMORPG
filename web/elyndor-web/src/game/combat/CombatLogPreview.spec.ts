@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import type { CombatEvent, CombatSnapshot } from '@/api/contracts'
+import type { CombatActorSnapshot, CombatEvent, CombatSnapshot } from '@/api/contracts'
 import CombatLogPreview from '@/game/combat/CombatLogPreview.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 
@@ -27,21 +27,36 @@ function event(
   }
 }
 
-function activeSnapshot(status = 'Active'): CombatSnapshot {
+function actor(actorId: string, name: string, kind: CombatActorSnapshot['kind']): CombatActorSnapshot {
+  return {
+    actorId,
+    kind,
+    definitionId: actorId,
+    name,
+    hp: 100,
+    maxHp: 100,
+    resourceType: 'NONE',
+    resource: 0,
+    maxResource: 0,
+    autoAttackEnabled: false,
+    cooldowns: {},
+    knownAbilityIds: [],
+    abilities: [],
+    effects: [],
+  }
+}
+
+function activeSnapshot(status: CombatSnapshot['status'] = 'Active'): CombatSnapshot {
   return {
     sessionId: 'session-1',
+    sequence: 1,
     status,
-    player: {
-      actorId: 'player-1',
-      name: 'tekwan',
-      abilities: [],
-    },
-    enemy: {
-      actorId: 'enemy-1',
-      name: 'Враг',
-      abilities: [],
-    },
-  } as CombatSnapshot
+    serverTimeUtc: '2026-09-23T15:00:00Z',
+    contentVersion: 'test-content',
+    balanceVersion: 'test-balance',
+    player: actor('player-1', 'tekwan', 'Player'),
+    enemy: actor('enemy-1', 'Враг', 'Monster'),
+  }
 }
 
 function createLogTarget(): HTMLElement {
@@ -103,7 +118,7 @@ describe('CombatLogPreview', () => {
     expect(target.classList.contains('combat-log__has-preview')).toBe(true)
     expect(target.textContent).toContain('Событий пока нет')
 
-    combat.snapshot = activeSnapshot('Completed')
+    combat.snapshot = activeSnapshot('Victory')
     await settleTeleport()
 
     expect(target.querySelector('[data-combat-log-preview]')).toBeNull()
