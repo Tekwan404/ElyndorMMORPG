@@ -31,6 +31,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         Set<ReleaseAdminNotification>();
 
     public DbSet<Character> Characters => Set<Character>();
+    public DbSet<CharacterSkinOwnership> CharacterSkinOwnerships => Set<CharacterSkinOwnership>();
 
     public DbSet<CharacterVitals> CharacterVitals => Set<CharacterVitals>();
 

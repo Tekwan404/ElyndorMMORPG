@@ -68,6 +68,8 @@ public sealed class Character
 
     public string? ActiveCompanionProfileId { get; private set; }
 
+    public string? ActiveSkinId { get; private set; }
+
     public int Level { get; private set; }
 
     public long Experience { get; private set; }
@@ -123,6 +125,7 @@ public sealed class Character
     public void ChangeClass(string classId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(classId);
+        if (!string.Equals(ClassId, classId, StringComparison.Ordinal)) ActiveSkinId = null;
         ClassId = classId;
     }
 
@@ -137,6 +140,8 @@ public sealed class Character
         ArgumentException.ThrowIfNullOrWhiteSpace(companionProfileId);
         ActiveCompanionProfileId = companionProfileId;
     }
+
+    public void SelectSkin(string? skinId) => ActiveSkinId = skinId;
 
     private static string BuildPublicCode(Guid id)
     {

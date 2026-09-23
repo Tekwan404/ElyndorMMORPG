@@ -33,7 +33,7 @@ const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
 const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
   character.value
-    ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent')
+    ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent', character.value.activeSkinId)
     : null,
 )
 function worldLocationName(locationId: string): string {

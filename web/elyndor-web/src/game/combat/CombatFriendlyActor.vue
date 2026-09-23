@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
+import { useGameSessionStore } from '@/stores/gameSession'
 
 const props = defineProps<{
   actor: CombatActorSnapshot
@@ -12,7 +13,9 @@ const props = defineProps<{
   disabled: boolean
 }>()
 const emit = defineEmits<{ select: [actorId: string] }>()
-const art = computed(() => resolveCharacterArt(props.actor.definitionId, props.actor.genderId ?? 'MALE'))
+const session = useGameSessionStore()
+const art = computed(() => resolveCharacterArt(props.actor.definitionId, props.actor.genderId ?? 'MALE', 'transparent',
+  props.local ? session.snapshot?.character?.activeSkinId ?? props.actor.skinId : props.actor.skinId))
 const healthRatio = computed(() => props.actor.maxHp > 0
   ? Math.max(0, Math.min(100, props.actor.hp / props.actor.maxHp * 100))
   : 0)

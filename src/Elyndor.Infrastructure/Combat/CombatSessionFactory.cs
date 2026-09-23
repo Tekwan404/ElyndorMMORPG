@@ -221,7 +221,8 @@ public sealed class CombatSessionFactory(
                 || mainHandItem?.Definition.WeaponCategory is not null,
             OffHandAutoAttack: offHandAutoAttack,
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
-            GenderId: character.GenderId);
+            GenderId: character.GenderId,
+            SkinId: character.ActiveSkinId);
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -421,7 +422,8 @@ public sealed class CombatSessionFactory(
                 || mainHandItem?.Definition.WeaponCategory is not null,
             OffHandAutoAttack: offHandAutoAttack,
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
-            GenderId: character.GenderId);
+            GenderId: character.GenderId,
+            SkinId: character.ActiveSkinId);
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)

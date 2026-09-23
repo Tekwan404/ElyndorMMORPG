@@ -1,5 +1,6 @@
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
+using Elyndor.Core.Characters;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -29,6 +30,10 @@ internal static class PremiumStoreContentComposer
 
             package = package with
             {
+                CharacterSkins = ContentCompositionRules.MergeOptionalByKey(
+                    package.CharacterSkins,
+                    fragment.CharacterSkins,
+                    skin => skin.Id),
                 PremiumStoreOffers = ContentCompositionRules.MergeOptionalByKey(
                     package.PremiumStoreOffers,
                     fragment.PremiumStoreOffers,
@@ -40,5 +45,6 @@ internal static class PremiumStoreContentComposer
     }
 
     private sealed record PremiumStoreContentFragment(
-        IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null);
+        IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null,
+        IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null);
 }

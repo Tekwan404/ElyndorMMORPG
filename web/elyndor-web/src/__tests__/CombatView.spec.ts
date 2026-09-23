@@ -65,8 +65,8 @@ describe('CombatView', () => {
   })
 
   it.each([
-    ['MAGE', 'mage-male-transparent.webp'],
-    ['ARCHER', 'archer-male-transparent.webp'],
+    ['MAGE', 'mage-male-default.webp'],
+    ['ARCHER', 'archer-male-default.webp'],
   ] as const)('renders the personal combat portrait for %s', (classId, expectedAsset) => {
     const store = useCombatSessionStore()
     store.snapshot = {
@@ -207,7 +207,7 @@ describe('CombatView', () => {
     await wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).trigger('click')
     expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"]`).attributes('data-selected')).toBe('true')
     expect(wrapper.get('.combat-ally-roster__member--selected').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"] img`).attributes('src')).toContain('mage-female-transparent.webp')
+    expect(wrapper.get(`[data-friendly-battlefield-actor="${ally.actorId}"] img`).attributes('src')).toContain('mage-female-default.webp')
 
     store.snapshot!.enemy.currentAggroTargetActorId = ally.actorId
     await wrapper.vm.$nextTick()

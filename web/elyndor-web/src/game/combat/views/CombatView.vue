@@ -164,6 +164,7 @@ const playerArt = computed(() =>
         snapshot.value.player.definitionId,
         session.snapshot?.character?.genderId ?? 'MALE',
         'transparent',
+        session.snapshot?.character?.activeSkinId ?? snapshot.value.player.skinId,
       )
     : null,
 )

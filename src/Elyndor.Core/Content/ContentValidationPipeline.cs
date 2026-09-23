@@ -18,6 +18,7 @@ public sealed class ContentValidationPipeline
             new MetadataValidator(),
             new DefinitionValidator(),
             new CharacterValidator(),
+            new CharacterSkinValidator(),
             new AbilityValidator(),
             new TalentValidator(),
             new ItemValidator(),
@@ -84,6 +85,31 @@ public sealed class CharacterValidator : IContentValidationStage
             context.Package,
             context.Definitions ?? new HashSet<GameContentPackageValidator.ContentKey>(),
             context.Errors);
+}
+
+public sealed class CharacterSkinValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var index = 0; index < (context.Package.CharacterSkins?.Count ?? 0); index++)
+        {
+            var skin = context.Package.CharacterSkins![index];
+            string path = $"characterSkins[{index}]";
+            if (string.IsNullOrWhiteSpace(skin.Id) || !seen.Add(skin.Id))
+                context.Errors.Add(new("CHARACTER_SKIN_DUPLICATE_ID", path, "Skin id is empty or duplicated."));
+            if (string.IsNullOrWhiteSpace(skin.Name) || !(context.Package.ClassProfiles ?? []).Any(item => item.Id == skin.ClassId)
+                || skin.GenderId is not ("FEMALE" or "MALE") || skin.CrystalPrice < 0
+                || (skin.Purchasable && skin.CrystalPrice == 0))
+                context.Errors.Add(new("CHARACTER_SKIN_INVALID", path, "Skin name, class, gender or price is invalid."));
+            if (string.IsNullOrWhiteSpace(skin.ImageId)
+                || skin.ImageId.Contains('/') || skin.ImageId.Contains('\\') || skin.ImageId.Contains("..")
+                || !skin.ImageId.All(ch => char.IsAsciiLetterLower(ch) || char.IsAsciiDigit(ch) || ch == '-')
+                || string.IsNullOrWhiteSpace(skin.Id)
+                || !string.Equals(skin.ImageId, skin.Id.ToLowerInvariant().Replace('_', '-'), StringComparison.Ordinal))
+                context.Errors.Add(new("CHARACTER_SKIN_INVALID_IMAGE", path, "Skin image id must be a lowercase asset basename."));
+        }
+    }
 }
 
 public sealed class AbilityValidator : IContentValidationStage

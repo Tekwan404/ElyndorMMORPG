@@ -1,0 +1,31 @@
+{
+  "characterSkins": [
+    { "id": "WARRIOR_FEMALE_DEFAULT", "name": "Воительница", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-default", "crystalPrice": 0, "purchasable": false },
+    { "id": "WARRIOR_FEMALE_BIKINI", "name": "Алая искательница", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-bikini", "crystalPrice": 450 },
+    { "id": "WARRIOR_FEMALE_COMMANDER", "name": "Полководец", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-commander", "crystalPrice": 750 },
+    { "id": "WARRIOR_FEMALE_MIDGAME", "name": "Стальная странница", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-midgame", "crystalPrice": 550 },
+    { "id": "WARRIOR_FEMALE_ENDGAME", "name": "Владычица битвы", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-endgame", "crystalPrice": 900 },
+    { "id": "WARRIOR_FEMALE_FURY", "name": "Ярость", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-fury", "crystalPrice": 700 },
+    { "id": "WARRIOR_FEMALE_GUARDIAN", "name": "Хранительница", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-guardian", "crystalPrice": 700 },
+    { "id": "WARRIOR_FEMALE_ADMIN", "name": "Багровая королева", "classId": "WARRIOR", "genderId": "FEMALE", "imageId": "warrior-female-admin", "crystalPrice": 1200 },
+    { "id": "MAGE_FEMALE_DEFAULT", "name": "Чародейка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-default", "crystalPrice": 0, "purchasable": false },
+    { "id": "MAGE_FEMALE_ARCANE", "name": "Арканистка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-arcane", "crystalPrice": 650 },
+    { "id": "MAGE_FEMALE_ARCANE_DONATE", "name": "Звёздная арканистка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-arcane-donate", "crystalPrice": 850 },
+    { "id": "MAGE_FEMALE_BIKINI", "name": "Солнечная чародейка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-bikini", "crystalPrice": 450 },
+    { "id": "MAGE_FEMALE_FIRE", "name": "Пламенная чародейка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-fire", "crystalPrice": 650 },
+    { "id": "MAGE_FEMALE_FROZEN", "name": "Ледяная чародейка", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-frozen", "crystalPrice": 650 },
+    { "id": "MAGE_FEMALE_KRIO_DONATE", "name": "Владычица льда", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-krio-donate", "crystalPrice": 850 },
+    { "id": "MAGE_FEMALE_MIDGAME", "name": "Тайная ученица", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-midgame", "crystalPrice": 550 },
+    { "id": "MAGE_FEMALE_PYRO_DONATE", "name": "Владычица пламени", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-pyro-donate", "crystalPrice": 850 },
+    { "id": "MAGE_FEMALE_ADMIN", "name": "Багровая архимагиня", "classId": "MAGE", "genderId": "FEMALE", "imageId": "mage-female-admin", "crystalPrice": 1200 },
+    { "id": "PALADIN_FEMALE_DEFAULT", "name": "Паладин света", "classId": "PALADIN", "genderId": "FEMALE", "imageId": "paladin-female-default", "crystalPrice": 0, "purchasable": false },
+    { "id": "PALADIN_FEMALE_ADMIN", "name": "Багровая защитница", "classId": "PALADIN", "genderId": "FEMALE", "imageId": "paladin-female-admin", "crystalPrice": 1200 },
+    { "id": "ARCHER_FEMALE_DEFAULT", "name": "Лучница", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-default", "crystalPrice": 0, "purchasable": false },
+    { "id": "ARCHER_FEMALE_ACCURATE", "name": "Меткая стрела", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-accurate", "crystalPrice": 650 },
+    { "id": "ARCHER_FEMALE_BIKINI", "name": "Лесная охотница", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-bikini", "crystalPrice": 450 },
+    { "id": "ARCHER_FEMALE_ENDGAME", "name": "Повелительница стрел", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-endgame", "crystalPrice": 900 },
+    { "id": "ARCHER_FEMALE_MIDGAME", "name": "Следопыт", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-midgame", "crystalPrice": 550 },
+    { "id": "ARCHER_FEMALE_BEAST_MASTER", "name": "Повелительница зверей", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-beast-master", "crystalPrice": 750 },
+    { "id": "ARCHER_FEMALE_ADMIN", "name": "Багровая охотница", "classId": "ARCHER", "genderId": "FEMALE", "imageId": "archer-female-admin", "crystalPrice": 1200 }
+  ]
+}

@@ -25,7 +25,7 @@ const copied = ref(false)
 const sendBossCombatLogs = ref(isBossCombatLogEnabled())
 const character = computed(() => session.snapshot?.character ?? null)
 const portraitArt = computed(() => character.value
-  ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent')
+  ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent', character.value.activeSkinId)
   : null)
 
 watch(() => props.initialSection, section => {

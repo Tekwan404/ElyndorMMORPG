@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { PremiumStoreSnapshot } from '@/api/contracts'
 import { createAppearancePreviewController } from '@/game/character/appearancePreviewController'
 import PremiumStoreProductCard from '@/game/economy/components/PremiumStoreProductCard.vue'
+import CharacterSkinStoreView from '@/game/economy/views/CharacterSkinStoreView.vue'
 import {
   buildPremiumStoreProducts,
   PREMIUM_CURRENCY,
@@ -17,6 +18,7 @@ import { UIButton, UILoadingState } from '@/ui/components'
 
 const session = useGameSessionStore()
 const store = ref<PremiumStoreSnapshot | null>(null)
+const skinBalance = ref<number | null>(null)
 const error = ref<string | null>(null)
 const promoCode = ref('')
 const activeCategory = ref<PremiumStoreCategory>('recommended')
@@ -46,10 +48,16 @@ function formatBalance(value: number): string {
   return new Intl.NumberFormat('ru-RU').format(value)
 }
 
+function updateSkinBalance(balance: number): void {
+  skinBalance.value = balance
+  if (store.value) store.value = { ...store.value, crystalBalance: balance }
+}
+
 async function load(): Promise<void> {
   error.value = null
   try {
     store.value = await session.getPremiumStore()
+    skinBalance.value = null
   } catch {
     error.value = 'Не удалось загрузить лавку.'
   }
@@ -121,7 +129,7 @@ onBeforeUnmount(() => previewController.close())
       </div>
       <div class="currency-balance" :title="PREMIUM_CURRENCY.displayName">
         <span aria-hidden="true">{{ PREMIUM_CURRENCY.symbol }}</span>
-        <strong>{{ formatBalance(store?.crystalBalance ?? 0) }}</strong>
+        <strong>{{ formatBalance(skinBalance ?? store?.crystalBalance ?? 0) }}</strong>
         <button type="button" aria-label="Пополнить Осколки Эфира" @click="currencySheetOpen = true">+</button>
       </div>
     </header>
@@ -138,7 +146,8 @@ onBeforeUnmount(() => previewController.close())
       </button>
     </nav>
 
-    <UILoadingState v-if="!store && !error" state="loading" title="Открываем лавку" />
+    <CharacterSkinStoreView v-if="activeCategory === 'skins'" @balance="updateSkinBalance" />
+    <UILoadingState v-else-if="!store && !error" state="loading" title="Открываем лавку" />
     <div v-else-if="error && !store" class="store-error">
       <strong>{{ error }}</strong>
       <UIButton variant="secondary" @click="load">Повторить</UIButton>
@@ -164,7 +173,7 @@ onBeforeUnmount(() => previewController.close())
           </div>
         </section>
 
-        <section class="store-section">
+        <section v-if="bundles.length" class="store-section">
           <div class="section-heading"><div><small>ТЕМАТИЧЕСКИЕ КОЛЛЕКЦИИ</small><h2>Наборы</h2></div></div>
           <PremiumStoreProductCard v-for="product in bundles" :key="product.id" :product="product" layout="bundle" @open="openProduct" />
         </section>
@@ -235,7 +244,7 @@ onBeforeUnmount(() => previewController.close())
         <small>ПРЕМИАЛЬНАЯ ВАЛЮТА</small>
         <h2>{{ PREMIUM_CURRENCY.displayName }}</h2>
         <div class="ether-mark">{{ PREMIUM_CURRENCY.symbol }}</div>
-        <p>Баланс: <strong>{{ formatBalance(store?.crystalBalance ?? 0) }}</strong></p>
+        <p>Баланс: <strong>{{ formatBalance(skinBalance ?? store?.crystalBalance ?? 0) }}</strong></p>
         <p class="foundation-note">Экран готов как точка входа для purchase packs. Реальный billing в этой задаче не подключается.</p>
       </section>
     </div>

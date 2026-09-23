@@ -58,6 +58,28 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task BootstrapRestoresEquippedSkinAfterReconnect()
+    {
+        Guid accountId = await CreatePlayerAsync(withCharacter: true, gender: "FEMALE");
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Character character = await setup.Characters.SingleAsync();
+            character.SelectSkin("WARRIOR_FEMALE_FURY");
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        InventoryEquipmentService inventory = new(context, Content, timeProvider);
+        CharacterDerivedStateService derived = new(context, Content, inventory);
+        BootstrapService service = new(context, Content, Map, derived, timeProvider);
+
+        BootstrapSnapshot snapshot = await service.GetAsync(accountId, CancellationToken.None);
+
+        Assert.Equal("WARRIOR_FEMALE_FURY", snapshot.Character!.ActiveSkinId);
+    }
+
+    [Fact]
     public async Task BootstrapSupportsXpThresholdsAboveInt32ForValidCharacterLevels()
     {
         Guid accountId = await CreatePlayerAsync(withCharacter: true);
@@ -432,7 +454,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
             CancellationToken.None);
     }
 
-    private async Task<Guid> CreatePlayerAsync(bool withCharacter)
+    private async Task<Guid> CreatePlayerAsync(bool withCharacter, string gender = "MALE")
     {
         Guid accountId = Guid.CreateVersion7();
         await using GameDbContext context = postgres.CreateDbContext();
@@ -450,7 +472,7 @@ public sealed class BootstrapServiceTests(PostgresFixture postgres) : IAsyncLife
                 "Arthas",
                 $"ARTHAS{accountId:N}"[..16],
                 "HUMAN",
-                "MALE",
+                gender,
                 "WARRIOR",
                 Now);
             context.Characters.Add(character);

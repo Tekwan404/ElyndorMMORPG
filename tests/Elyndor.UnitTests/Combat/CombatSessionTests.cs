@@ -1279,6 +1279,7 @@ public sealed class CombatSessionTests
         Assert.True(ally.Succeeded, ally.ErrorCode);
         Assert.Equal(160, ally.Snapshot.Players!.Single(player => player.ActorId == allyId).Hp);
         Assert.Equal("FEMALE", ally.Snapshot.Players!.Single(player => player.ActorId == allyId).GenderId);
+        Assert.Equal("MAGE_FEMALE_FIRE", ally.Snapshot.Players!.Single(player => player.ActorId == allyId).SkinId);
     }
 
     [Fact]
@@ -1827,7 +1828,8 @@ public sealed class CombatSessionTests
                 new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
                 new HashSet<string>(StringComparer.Ordinal),
                 CanAutoAttack: false,
-                GenderId: "FEMALE")
+                GenderId: "FEMALE",
+                SkinId: "MAGE_FEMALE_FIRE")
             : null;
         CombatParticipantDefinition? companion = companionId.HasValue
             ? new CombatParticipantDefinition(

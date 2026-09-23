@@ -47,6 +47,7 @@ const playerArt = computed(() => {
     snapshot.player.definitionId,
     session.snapshot?.character?.genderId ?? 'MALE',
     'transparent',
+    session.snapshot?.character?.activeSkinId ?? snapshot.player.skinId,
   )
 })
 const enemyArt = computed(() => {

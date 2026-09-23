@@ -11,6 +11,7 @@ using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Professions;
+using Elyndor.Core.Characters;
 
 namespace Elyndor.Core.Content;
 
@@ -45,7 +46,8 @@ public sealed record GameContentPackage(
     AfkFarmRewardProfile? AfkFarm = null,
     IReadOnlyList<ProfessionDefinition>? Professions = null,
     IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
-    IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null);
+    IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
+    IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

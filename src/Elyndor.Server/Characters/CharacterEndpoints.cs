@@ -137,7 +137,8 @@ public static class CharacterEndpoints
             character.GenderId,
             character.ClassId,
             character.Level,
-            character.CreatedAtUtc);
+            character.CreatedAtUtc,
+            character.ActiveSkinId);
 
     private static CharacterCompanionResponse ToResponse(CharacterCompanionSnapshot snapshot) =>
         new(

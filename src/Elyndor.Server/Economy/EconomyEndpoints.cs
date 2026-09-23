@@ -18,6 +18,9 @@ public static class EconomyEndpoints
         endpoints.MapGet("/api/v1/economy/store", GetStoreAsync)
             .RequireAuthorization()
             .WithTags("Economy");
+        endpoints.MapGet("/api/v1/economy/skins", GetSkinsAsync).RequireAuthorization().WithTags("Economy");
+        endpoints.MapPost("/api/v1/economy/skins/purchase", PurchaseSkinAsync).RequireAuthorization().WithTags("Economy");
+        endpoints.MapPost("/api/v1/economy/skins/equip", EquipSkinAsync).RequireAuthorization().WithTags("Economy");
         endpoints.MapPost("/api/v1/economy/promo/redeem", RedeemPromoAsync)
             .RequireAuthorization()
             .WithTags("Economy");
@@ -32,6 +35,40 @@ public static class EconomyEndpoints
             offer.Offer.Sku, offer.Item.Id, offer.Item.Name, offer.Item.Description, offer.Item.Rarity.ToString(), offer.Item.IconId,
             offer.Offer.Quantity, offer.Offer.CrystalPrice, offer.CanPurchase)).ToArray()));
     }
+
+    private static async Task<IResult> GetSkinsAsync(ClaimsPrincipal user, CharacterSkinService service, CancellationToken cancellationToken)
+    {
+        if (!TryAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        CharacterSkinStoreSnapshot? store = await service.GetAsync(accountId, cancellationToken);
+        return store is null ? Results.NotFound() : Results.Ok(new CharacterSkinStoreResponse(store.CrystalBalance,
+            store.ActiveSkinId, store.Skins.Select(item => new CharacterSkinOfferResponse(item.Definition.Id,
+                item.Definition.Name, item.Definition.ClassId, item.Definition.GenderId, item.Definition.ImageId,
+                item.Definition.CrystalPrice, item.Owned, item.Eligible, item.Definition.Purchasable)).ToArray()));
+    }
+
+    private static async Task<IResult> PurchaseSkinAsync(CharacterSkinPurchaseRequest request, ClaimsPrincipal user,
+        CharacterSkinService service, CancellationToken cancellationToken)
+    {
+        if (!TryAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        CharacterSkinMutationResult result = await service.PurchaseAsync(accountId, request.SkinId, request.MutationId, cancellationToken);
+        return SkinResult(result);
+    }
+
+    private static async Task<IResult> EquipSkinAsync(CharacterSkinEquipRequest request, ClaimsPrincipal user,
+        CharacterSkinService service, CancellationToken cancellationToken)
+    {
+        if (!TryAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        CharacterSkinMutationResult result = await service.EquipAsync(accountId, request.SkinId, cancellationToken);
+        return SkinResult(result);
+    }
+
+    private static IResult SkinResult(CharacterSkinMutationResult result) => result.Succeeded
+        ? Results.Ok(new CharacterSkinMutationResponse(result.CrystalBalance, result.ActiveSkinId))
+        : Results.Problem(statusCode: StatusCodes.Status409Conflict,
+            extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
+
+    private static bool TryAccountId(ClaimsPrincipal user, out Guid accountId) =>
+        Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId) && accountId != Guid.Empty;
 
     private static async Task<IResult> GetWalletAsync(
         ClaimsPrincipal user,

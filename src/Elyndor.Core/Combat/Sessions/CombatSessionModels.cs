@@ -59,7 +59,8 @@ public sealed record CombatParticipantDefinition(
     bool IsCombatObject = false,
     bool RewardEligible = true,
     IReadOnlyDictionary<string, int>? EquippedSetPieces = null,
-    string? GenderId = null);
+    string? GenderId = null,
+    string? SkinId = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
@@ -109,7 +110,8 @@ public sealed record CombatActorSnapshot(
     bool IsCombatObject = false,
     bool RewardEligible = true,
     string? GenderId = null,
-    MonsterRank? MonsterRank = null);
+    MonsterRank? MonsterRank = null,
+    string? SkinId = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,

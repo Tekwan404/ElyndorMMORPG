@@ -1,6 +1,6 @@
 import type { PremiumStoreSnapshot } from '@/api/contracts'
 
-export type PremiumStoreCategory = 'recommended' | 'cosmetics' | 'artifacts' | 'convenience' | 'services'
+export type PremiumStoreCategory = 'recommended' | 'skins' | 'cosmetics' | 'artifacts' | 'convenience' | 'services'
 export type PremiumStoreProductType = 'cosmetic' | 'spatial-artifact' | 'consumable' | 'service' | 'bundle'
 export type PremiumStoreBadge = 'new' | 'popular' | 'limited'
 
@@ -46,21 +46,6 @@ type Presentation = Omit<PremiumStoreProduct, 'price' | 'owned' | 'canPurchase' 
 }
 
 const STORE_PRESENTATION: readonly Presentation[] = [
-  {
-    id: 'fire-sorceress',
-    category: 'cosmetics',
-    type: 'cosmetic',
-    title: 'Огненная чародейка',
-    subtitle: 'Облик мага',
-    description: 'Изменяет внешний вид персонажа. Не влияет на характеристики.',
-    artwork: 'fire-mage',
-    fallbackPrice: 650,
-    badge: 'new',
-    previewable: true,
-    repeatable: false,
-    cosmeticId: 'COSMETIC_MAGE_FIRE_SORCERESS',
-    featured: true,
-  },
   {
     id: 'wanderer-spatial-ring',
     sku: 'SPATIAL_EXPANDED_RING',
@@ -122,19 +107,6 @@ const STORE_PRESENTATION: readonly Presentation[] = [
     repeatable: false,
     cosmeticId: 'COSMETIC_BATTLE_ENTRY_ASH',
     previewable: true,
-  },
-  {
-    id: 'ash-border-collection',
-    category: 'recommended',
-    type: 'bundle',
-    title: 'Коллекция «Пепельная граница»',
-    subtitle: 'Облик + рамка + эффект входа',
-    description: 'Тематическая коллекция косметики Пепельной границы. Состав набора определяется контентом, а не разметкой экрана.',
-    artwork: 'ash-border',
-    fallbackPrice: 1200,
-    repeatable: false,
-    bundle: ['fire-sorceress', 'profile-frame', 'battle-entry-effect'],
-    badge: 'new',
   },
 ]
 
@@ -206,7 +178,8 @@ export function purchaseLabel(product: PremiumStoreProduct): string {
 
 export const PREMIUM_STORE_TABS: ReadonlyArray<{ id: PremiumStoreCategory; label: string }> = [
   { id: 'recommended', label: 'Рекомендуем' },
-  { id: 'cosmetics', label: 'Облики' },
+  { id: 'skins', label: 'Облики' },
+  { id: 'cosmetics', label: 'Украшения' },
   { id: 'artifacts', label: 'Артефакты' },
   { id: 'convenience', label: 'Удобства' },
   { id: 'services', label: 'Услуги' },

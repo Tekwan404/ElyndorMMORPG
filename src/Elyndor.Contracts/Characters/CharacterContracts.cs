@@ -16,7 +16,8 @@ public sealed record CharacterResponse(
     string GenderId,
     string ClassId,
     int Level,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? ActiveSkinId = null);
 
 public sealed record CompanionProfileResponse(
     string Id,

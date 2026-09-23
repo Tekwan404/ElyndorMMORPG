@@ -182,7 +182,8 @@ internal static class CombatContractMapper
             actor.NextAutoAttackAtUtc,
             actor.CurrentAggroTargetActorId,
             actor.GenderId,
-            actor.MonsterRank?.ToString());
+            actor.MonsterRank?.ToString(),
+            actor.SkinId);
     }
 
     private static string ResolveAbilityDescription(

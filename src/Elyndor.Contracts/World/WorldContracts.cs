@@ -78,7 +78,8 @@ public sealed record BootstrapCharacterResponse(
     CharacterStatsResponse Stats,
     IReadOnlyDictionary<string, CharacterStatBreakdownResponse> StatBreakdown,
     CharacterVitalsResponse Vitals,
-    InventoryResponse Inventory);
+    InventoryResponse Inventory,
+    string? ActiveSkinId = null);
 
 public sealed record CharacterStatsResponse(
     decimal Strength,

@@ -55,6 +55,7 @@ public static class DependencyInjection
 #pragma warning restore CS0618
         builder.Services.AddScoped<CrystalWalletService>();
         builder.Services.AddScoped<PremiumStoreService>();
+        builder.Services.AddScoped<CharacterSkinService>();
         builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<ProfessionService>();

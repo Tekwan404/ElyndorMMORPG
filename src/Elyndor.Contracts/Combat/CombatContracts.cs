@@ -44,7 +44,8 @@ public sealed record CombatActorResponse(
     DateTimeOffset? NextAutoAttackAtUtc = null,
     Guid? CurrentAggroTargetActorId = null,
     string? GenderId = null,
-    string? MonsterRank = null);
+    string? MonsterRank = null,
+    string? SkinId = null);
 
 public sealed record CombatContributionResponse(
     Guid CharacterId,
