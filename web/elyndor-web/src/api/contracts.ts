@@ -7,6 +7,9 @@ export interface AuthenticationResponse {
 export interface PremiumStoreOffer { sku: string; itemDefinitionId: string; name: string; description: string; rarity: string; iconId: string | null; quantity: number; crystalPrice: number; canPurchase: boolean }
 export interface PremiumStoreSnapshot { crystalBalance: number; offers: PremiumStoreOffer[] }
 export interface PremiumStorePurchaseResponse { crystalBalance: number }
+export interface CharacterSkinOffer { id: string; name: string; classId: string; genderId: string; imageId: string; crystalPrice: number; owned: boolean; eligible: boolean; purchasable: boolean }
+export interface CharacterSkinStoreSnapshot { crystalBalance: number; activeSkinId: string | null; skins: CharacterSkinOffer[] }
+export interface CharacterSkinMutationResponse { crystalBalance: number; activeSkinId: string | null }
 export interface PromoCodeRedemptionResponse { crystalBalance: number }
 
 export interface ContentAdminCurrent {
@@ -327,6 +330,7 @@ export interface CharacterSnapshot {
   publicCode?: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
+  activeSkinId?: string | null
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE' | 'PALADIN'
   level: number
   experience: number
@@ -779,6 +783,7 @@ export interface CombatActorSnapshot {
   artId?: string | null
   currentAggroTargetActorId?: string | null
   genderId?: 'MALE' | 'FEMALE' | null
+  skinId?: string | null
   monsterRank?: 'Normal' | 'Elite' | 'Boss' | null
 }
 

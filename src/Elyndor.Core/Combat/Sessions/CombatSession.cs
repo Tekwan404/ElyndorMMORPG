@@ -2554,7 +2554,8 @@ public sealed partial class CombatSession
             definition.IsCombatObject,
             definition.RewardEligible,
             definition.GenderId,
-            definition.MonsterRank);
+            definition.MonsterRank,
+            definition.SkinId);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()

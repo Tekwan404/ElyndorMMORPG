@@ -20,6 +20,8 @@ import type {
   MerchantSnapshot,
   PremiumStoreSnapshot,
   PremiumStorePurchaseResponse,
+  CharacterSkinStoreSnapshot,
+  CharacterSkinMutationResponse,
   ReleaseNotesHistory,
   ReleaseUpdate,
   PromoCodeRedemptionResponse,
@@ -539,6 +541,49 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
   }
 
+  async function getCharacterSkins(): Promise<CharacterSkinStoreSnapshot> {
+    return await apiClient.request<CharacterSkinStoreSnapshot>('/api/v1/economy/skins')
+  }
+
+  async function buyCharacterSkin(skinId: string): Promise<CharacterSkinMutationResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await runReplaySafeGameMutation<CharacterSkinMutationResponse>({
+        key: `skin:${skinId}`,
+        path: '/api/v1/economy/skins/purchase',
+        idField: 'mutationId',
+        intent: { skinId },
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
+  async function equipCharacterSkin(skinId: string | null): Promise<CharacterSkinMutationResponse | null> {
+    if (mutationPending.value) return null
+    mutationPending.value = true
+    errorCode.value = null
+    try {
+      const response = await apiClient.request<CharacterSkinMutationResponse>('/api/v1/economy/skins/equip', {
+        method: 'POST', body: JSON.stringify({ skinId }),
+      })
+      await refreshSnapshot()
+      return response
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      mutationPending.value = false
+    }
+  }
+
   async function buyPremiumStoreOffer(sku: string): Promise<PremiumStorePurchaseResponse | null> {
     if (mutationPending.value) return null
     mutationPending.value = true
@@ -754,6 +799,9 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     decideReforge,
     getMerchant,
     getPremiumStore,
+    getCharacterSkins,
+    buyCharacterSkin,
+    equipCharacterSkin,
     buyPremiumStoreOffer,
     redeemPromoCode,
     buyMerchantItem,

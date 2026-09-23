@@ -32,7 +32,7 @@ const selectedAbility = ref<KnownAbility | null>(null)
 const characterArt = computed(() => {
   const currentCharacter = character.value
   return currentCharacter
-    ? resolveCharacterArt(currentCharacter.classId, currentCharacter.genderId, 'transparent')
+    ? resolveCharacterArt(currentCharacter.classId, currentCharacter.genderId, 'transparent', currentCharacter.activeSkinId)
     : null
 })
 

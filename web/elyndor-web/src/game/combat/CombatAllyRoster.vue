@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { resolveCharacterArt } from '@/assets/characterArt'
+import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
@@ -19,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [actorId: string]
 }>()
+const session = useGameSessionStore()
 
 function isAggroed(actorId: string): boolean {
   return props.aggroedActorIds.includes(actorId)
@@ -31,7 +33,8 @@ function accessibleLabel(ally: CombatActorSnapshot): string {
 }
 
 function allyArt(ally: CombatActorSnapshot): string | null {
-  return resolveCharacterArt(ally.definitionId, ally.genderId ?? 'MALE')
+  return resolveCharacterArt(ally.definitionId, ally.genderId ?? 'MALE', 'transparent',
+    ally.actorId === props.playerActorId ? session.snapshot?.character?.activeSkinId ?? ally.skinId : ally.skinId)
 }
 </script>
 

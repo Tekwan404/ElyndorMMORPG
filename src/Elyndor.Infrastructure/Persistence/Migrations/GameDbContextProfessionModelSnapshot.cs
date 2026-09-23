@@ -205,6 +205,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("ActiveSkinId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("ClassId")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -309,6 +313,37 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_character_mutations_character_committed_at");
 
                     b.ToTable("character_mutations", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterSkinOwnership", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SkinId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("CrystalPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("PurchasedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "SkinId")
+                        .HasName("pk_character_skin_ownerships");
+
+                    b.HasIndex("OperationId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_character_skin_ownerships_operation_id");
+
+                    b.ToTable("character_skin_ownerships", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_character_skin_ownerships_price_positive", "\"CrystalPrice\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>
@@ -2288,6 +2323,16 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_character_mutations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Characters.CharacterSkinOwnership", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_character_skin_ownerships_characters_character_id");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Characters.CharacterVitals", b =>

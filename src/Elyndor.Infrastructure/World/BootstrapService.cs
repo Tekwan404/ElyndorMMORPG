@@ -52,7 +52,8 @@ public sealed record BootstrapCharacter(
     CharacterStats Stats,
     IReadOnlyDictionary<string, CharacterStatBreakdown> StatBreakdown,
     BootstrapVitals Vitals,
-    InventorySnapshot Inventory);
+    InventorySnapshot Inventory,
+    string? ActiveSkinId = null);
 
 public sealed record BootstrapVitals(
     decimal CurrentHp,
@@ -513,7 +514,8 @@ public sealed class BootstrapService(
                     currentResource,
                     effectiveResourceProfile.MaxValue,
                     checkpoint ? now : vitals.CheckpointedAtUtc),
-                derived.Inventory),
+                derived.Inventory,
+                character.ActiveSkinId),
             new BootstrapWorld(
                 ToLocation(current),
                 location.Version,

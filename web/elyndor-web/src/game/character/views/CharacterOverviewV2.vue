@@ -63,7 +63,7 @@ interface ItemStatRow {
 
 const characterArt = computed(() => {
   const current = character.value
-  return current ? resolveCharacterArt(current.classId, current.genderId, 'transparent') : null
+  return current ? resolveCharacterArt(current.classId, current.genderId, 'transparent', current.activeSkinId) : null
 })
 
 const equipment = computed<PaperdollSlot[]>(() => {
