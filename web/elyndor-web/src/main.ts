@@ -3,13 +3,16 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import { installPartyInviteDeepLink } from '@/game/party/partyInviteDeepLink'
 import './styles/tokens.css'
 import './styles/base.scss'
 import './styles/combat-icons.css'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
+installPartyInviteDeepLink(pinia)
 
 app.mount('#app')
