@@ -81,7 +81,7 @@
       "displayName": "Чёрный приговор", "description": "Прерываемый тяжёлый удар финальной фазы."
     },
     {
-      "id": "ARCHON_DEAD_STAR_BRAND", "iconId": "mage-shadow-word-pain", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:07", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": false,
+      "id": "ARCHON_DEAD_STAR_BRAND", "iconId": "mage-arcane-power", "type": "Instant", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:07", "castTime": "00:00:00", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": false,
       "actions": [
         { "type": "Damage", "amount": 116, "damageType": "Magical", "spellPowerCoefficient": 0.8, "canDodge": false },
         { "type": "ApplyEffect", "effect": { "id": "ARCHON_DEAD_STAR_BRAND_HEALING", "kind": "StatModifier", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 0.85, "modifiedStat": "HealingReceivedMultiplier", "modifierMode": "Multiplicative" } }
@@ -89,7 +89,7 @@
       "displayName": "Клеймо Погасшей Звезды", "description": "Теневой удар, временно снижающий получаемое лечение."
     },
     {
-      "id": "ARCHON_ECLIPSE_ASH", "iconId": "mage-shadow-word-pain", "type": "Casted", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:09", "castTime": "00:00:01.4000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
+      "id": "ARCHON_ECLIPSE_ASH", "iconId": "mage-arcane-spark", "type": "Casted", "targetType": "SingleEnemy", "resourceCost": 0, "cooldown": "00:00:09", "castTime": "00:00:01.4000000", "usesGlobalCooldown": false, "globalCooldownCategory": "None", "isSpell": true, "school": "SHADOW", "interruptible": true,
       "actions": [
         { "type": "Damage", "amount": 80, "damageType": "Magical", "spellPowerCoefficient": 0.4, "canDodge": false },
         { "type": "ApplyEffect", "effect": { "id": "ARCHON_ECLIPSE_ASH_DOT", "kind": "DamageOverTime", "duration": "00:00:08", "maxStacks": 1, "stackPolicy": "Refresh", "magnitude": 40, "tickInterval": "00:00:02", "periodicDamageType": "Magical" } }
