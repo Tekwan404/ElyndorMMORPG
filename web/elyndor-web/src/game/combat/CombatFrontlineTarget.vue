@@ -30,7 +30,8 @@ const threatPercent = computed<number | null>(() => {
 })
 
 function allyArt(): string | null {
-  return props.ally ? resolveCharacterArt(props.ally.definitionId, 'MALE') : null
+  const definitionId = props.ally?.definitionId
+  return definitionId ? resolveCharacterArt(definitionId, 'MALE') : null
 }
 
 onMounted(async () => {
