@@ -14,6 +14,12 @@ public sealed class PartyInviteTelegramNotifier(
     private const string PartyInviteBaseUrl = "https://elyndor.su/world";
     private const string AcceptButtonText = "✅ Принять и войти";
 
+    private static readonly Action<ILogger, Guid, Guid, Exception?> FailedToSendNotification =
+        LoggerMessage.Define<Guid, Guid>(
+            LogLevel.Warning,
+            new EventId(1, nameof(FailedToSendNotification)),
+            "Failed to send Telegram party invite notification for invite {InviteId} to character {TargetCharacterId}.");
+
     public async Task NotifyAsync(
         PartyInviteView invite,
         CancellationToken cancellationToken)
@@ -69,11 +75,11 @@ public sealed class PartyInviteTelegramNotifier(
         }
         catch (Exception exception)
         {
-            logger.LogWarning(
-                exception,
-                "Failed to send Telegram party invite notification for invite {InviteId} to character {TargetCharacterId}.",
+            FailedToSendNotification(
+                logger,
                 invite.Id,
-                invite.TargetCharacterId);
+                invite.TargetCharacterId,
+                exception);
         }
     }
 }
