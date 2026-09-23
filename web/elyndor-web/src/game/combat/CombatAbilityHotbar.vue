@@ -97,136 +97,139 @@ onUnmounted(clearInspectionTimer)
 </script>
 
 <template>
-  <div class="combat-ability-hotbar" aria-label="Боевые способности" data-combat-hotbar>
-    <button
-      v-for="(ability, index) in slots"
-      :key="ability?.id ?? `empty-${index}`"
-      type="button"
-      class="combat-ability-hotbar__slot"
-      :class="{
-        'combat-ability-hotbar__slot--empty': !ability,
-        'combat-ability-hotbar__slot--comet': ability?.id === 'FIRE_COMET',
-        'combat-ability-hotbar__slot--queued': ability && isQueued(ability.id),
-      }"
-      :data-ability-slot="ability?.id ?? ''"
-      :data-state="ability ? abilityState(ability) : 'empty'"
-      :disabled="!ability"
-      :aria-disabled="ability ? abilityState(ability) !== 'ready' : true"
-      :aria-label="ability?.displayName ?? 'Пустой слот'"
-      @pointerdown="ability && startInspection(ability)"
-      @pointerup="clearInspectionTimer"
-      @pointercancel="clearInspectionTimer"
-      @pointerleave="clearInspectionTimer"
-      @contextmenu.prevent
-      @click="activateAbility(ability)"
-    >
-      <span class="combat-ability-hotbar__icon">
-        <img v-if="ability && abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
-        <IconGenerator
-          v-else-if="ability"
-          :config="{ id: `ability-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
-        />
-        <i v-else />
-      </span>
-      <span
-        v-if="ability?.id === 'MAGE_FIREBALL'"
-        class="combat-ability-hotbar__markers"
-        :aria-label="`Криты Огненного шара: ${fireballStreak} из 3`"
-      >
-        <i v-for="marker in 3" :key="marker" :data-filled="marker <= fireballStreak" />
-      </span>
-      <span v-if="ability?.id === 'FIRE_COMET' && heatActive" class="combat-ability-hotbar__proc">ЖАР</span>
-      <span v-if="ability?.id === 'COMBUSTION' && combustionActive" class="combat-ability-hotbar__proc">АКТ.</span>
-      <span v-if="ability && isQueued(ability.id)" class="combat-ability-hotbar__queue">{{ queuePosition(ability.id) }}</span>
-      <small v-if="ability">{{ ability.displayName }}</small>
-      <b
-        v-if="ability && cooldownRemaining(ability.id) > 0"
-        class="combat-ability-hotbar__cooldown"
-        :style="cooldownStyle(ability)"
-      >
-        <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
-      </b>
-      <span v-else-if="ability && ability.resourceCost > 0" class="combat-ability-hotbar__cost">
-        {{ Math.round(ability.resourceCost) }}
-      </span>
-    </button>
-  </div>
-
-  <section v-if="consumables.length" class="combat-consumables" aria-label="Расходники" data-combat-consumables>
-    <header class="combat-consumables__header">
-      <strong>Расходники</strong>
-      <small>Быстрое использование</small>
-    </header>
-    <div class="combat-consumables__list">
+  <section class="combat-action-hotbar" data-combat-hotbar>
+    <div class="combat-ability-hotbar" aria-label="Боевые способности" data-combat-abilities>
       <button
-        v-for="item in consumables"
-        :key="item.definitionId"
+        v-for="(ability, index) in slots"
+        :key="ability?.id ?? `empty-${index}`"
         type="button"
-        class="combat-consumables__item"
-        :data-combat-consumable="item.definitionId"
-        :data-state="consumableState(item)"
-        :disabled="consumableState(item) !== 'ready'"
-        :aria-label="`${item.name}, ${item.quantity}`"
-        @click="activateConsumable(item)"
+        class="combat-ability-hotbar__slot"
+        :class="{
+          'combat-ability-hotbar__slot--empty': !ability,
+          'combat-ability-hotbar__slot--comet': ability?.id === 'FIRE_COMET',
+          'combat-ability-hotbar__slot--queued': ability && isQueued(ability.id),
+        }"
+        :data-ability-slot="ability?.id ?? ''"
+        :data-state="ability ? abilityState(ability) : 'empty'"
+        :disabled="!ability"
+        :aria-disabled="ability ? abilityState(ability) !== 'ready' : true"
+        :aria-label="ability?.displayName ?? 'Пустой слот'"
+        @pointerdown="ability && startInspection(ability)"
+        @pointerup="clearInspectionTimer"
+        @pointercancel="clearInspectionTimer"
+        @pointerleave="clearInspectionTimer"
+        @contextmenu.prevent
+        @click="activateAbility(ability)"
       >
-        <span class="combat-consumables__icon">
+        <span class="combat-ability-hotbar__icon">
+          <img v-if="ability && abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
           <IconGenerator
-            :config="{ id: `consumable-${item.definitionId}`, glyph: consumableGlyph(item), category: 'consumable' }"
+            v-else-if="ability"
+            :config="{ id: `ability-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
           />
+          <i v-else />
         </span>
-        <span class="combat-consumables__copy">
-          <small>{{ item.name }}</small>
-          <b>×{{ item.quantity }}</b>
+        <span
+          v-if="ability?.id === 'MAGE_FIREBALL'"
+          class="combat-ability-hotbar__markers"
+          :aria-label="`Криты Огненного шара: ${fireballStreak} из 3`"
+        >
+          <i v-for="marker in 3" :key="marker" :data-filled="marker <= fireballStreak" />
         </span>
-        <strong v-if="consumableCooldownRemaining(item) > 0" class="combat-consumables__cooldown">
-          {{ Math.ceil(consumableCooldownRemaining(item) / 1000) }}с
-        </strong>
+        <span v-if="ability?.id === 'FIRE_COMET' && heatActive" class="combat-ability-hotbar__proc">ЖАР</span>
+        <span v-if="ability?.id === 'COMBUSTION' && combustionActive" class="combat-ability-hotbar__proc">АКТ.</span>
+        <span v-if="ability && isQueued(ability.id)" class="combat-ability-hotbar__queue">{{ queuePosition(ability.id) }}</span>
+        <small v-if="ability">{{ ability.displayName }}</small>
+        <b
+          v-if="ability && cooldownRemaining(ability.id) > 0"
+          class="combat-ability-hotbar__cooldown"
+          :style="cooldownStyle(ability)"
+        >
+          <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
+        </b>
+        <span v-else-if="ability && ability.resourceCost > 0" class="combat-ability-hotbar__cost">
+          {{ Math.round(ability.resourceCost) }}
+        </span>
       </button>
     </div>
-  </section>
 
-  <section v-if="auraAbilities.length" class="combat-ability-hotbar__auras" aria-label="Ауры" data-combat-auras>
-    <span>Ауры</span>
-    <button
-      v-for="ability in auraAbilities"
-      :key="ability.id"
-      type="button"
-      class="combat-ability-hotbar__aura"
-      :data-aura-ability="ability.id"
-      :aria-disabled="abilityState(ability) !== 'ready'"
-      :aria-label="ability.displayName"
-      @pointerdown="startInspection(ability)"
-      @pointerup="clearInspectionTimer"
-      @pointercancel="clearInspectionTimer"
-      @pointerleave="clearInspectionTimer"
-      @contextmenu.prevent
-      @click="activateAura(ability)"
-    >
-      <img v-if="abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
-      <IconGenerator
-        v-else
-        :config="{ id: `aura-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
-      />
-      <small>{{ ability.displayName }}</small>
-      <b
-        v-if="cooldownRemaining(ability.id) > 0"
-        :style="cooldownStyle(ability)"
+    <section v-if="consumables.length" class="combat-consumables" aria-label="Расходники" data-combat-consumables>
+      <header class="combat-consumables__header">
+        <strong>Расходники</strong>
+        <small>Быстрое использование</small>
+      </header>
+      <div class="combat-consumables__list">
+        <button
+          v-for="item in consumables"
+          :key="item.definitionId"
+          type="button"
+          class="combat-consumables__item"
+          :data-combat-consumable="item.definitionId"
+          :data-state="consumableState(item)"
+          :disabled="consumableState(item) !== 'ready'"
+          :aria-label="`${item.name}, ${item.quantity}`"
+          @click="activateConsumable(item)"
+        >
+          <span class="combat-consumables__icon">
+            <IconGenerator
+              :config="{ id: `consumable-${item.definitionId}`, glyph: consumableGlyph(item), category: 'consumable' }"
+            />
+          </span>
+          <span class="combat-consumables__copy">
+            <small>{{ item.name }}</small>
+            <b>×{{ item.quantity }}</b>
+          </span>
+          <strong v-if="consumableCooldownRemaining(item) > 0" class="combat-consumables__cooldown">
+            {{ Math.ceil(consumableCooldownRemaining(item) / 1000) }}с
+          </strong>
+        </button>
+      </div>
+    </section>
+
+    <section v-if="auraAbilities.length" class="combat-ability-hotbar__auras" aria-label="Ауры" data-combat-auras>
+      <span>Ауры</span>
+      <button
+        v-for="ability in auraAbilities"
+        :key="ability.id"
+        type="button"
+        class="combat-ability-hotbar__aura"
+        :data-aura-ability="ability.id"
+        :aria-disabled="abilityState(ability) !== 'ready'"
+        :aria-label="ability.displayName"
+        @pointerdown="startInspection(ability)"
+        @pointerup="clearInspectionTimer"
+        @pointercancel="clearInspectionTimer"
+        @pointerleave="clearInspectionTimer"
+        @contextmenu.prevent
+        @click="activateAura(ability)"
       >
-        <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
-      </b>
-    </button>
-  </section>
+        <img v-if="abilityIcon(ability)" :src="abilityIcon(ability)" alt="" />
+        <IconGenerator
+          v-else
+          :config="{ id: `aura-${ability.id}`, glyph: abilityGlyph(ability), category: 'skill' }"
+        />
+        <small>{{ ability.displayName }}</small>
+        <b
+          v-if="cooldownRemaining(ability.id) > 0"
+          :style="cooldownStyle(ability)"
+        >
+          <span>{{ Math.ceil(cooldownRemaining(ability.id)) }}с</span>
+        </b>
+      </button>
+    </section>
 
-  <section v-if="inspectedAbility" class="combat-ability-hotbar__inspection" data-ability-inspection aria-live="polite">
-    <div>
-      <strong>{{ inspectedAbility.displayName }}</strong>
-      <p>{{ inspectedAbility.description || 'Описание способности пока не добавлено.' }}</p>
-    </div>
-    <button type="button" aria-label="Закрыть описание способности" @click="inspectedAbility = null">×</button>
+    <section v-if="inspectedAbility" class="combat-ability-hotbar__inspection" data-ability-inspection aria-live="polite">
+      <div>
+        <strong>{{ inspectedAbility.displayName }}</strong>
+        <p>{{ inspectedAbility.description || 'Описание способности пока не добавлено.' }}</p>
+      </div>
+      <button type="button" aria-label="Закрыть описание способности" @click="inspectedAbility = null">×</button>
+    </section>
   </section>
 </template>
 
 <style scoped>
+.combat-action-hotbar { display: grid; gap: 5px; }
 .combat-ability-hotbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
 .combat-ability-hotbar__slot { position: relative; display: grid; min-width: 0; min-height: 60px; place-items: center; align-content: center; gap: 3px; padding: 4px 3px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(255 255 255 / 2.5%), rgb(2 5 9 / 45%)); color: var(--ui-color-text-primary); font: inherit; }
 .combat-ability-hotbar__slot[data-state='ready'] { border-color: rgb(146 136 255 / 42%); box-shadow: inset 0 0 0 1px rgb(146 136 255 / 6%); }
