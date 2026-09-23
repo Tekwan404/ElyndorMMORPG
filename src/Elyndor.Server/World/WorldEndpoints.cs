@@ -3,6 +3,8 @@ using System.Security.Claims;
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
+using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Items;
@@ -19,10 +21,13 @@ public static class WorldEndpoints
 
         group.MapGet("/bootstrap", GetBootstrapAsync);
         group.MapGet("/world/locations", (IContentSnapshotProvider contentProvider) =>
-            Results.Ok(contentProvider.GetCurrent().WorldMap.Locations
+        {
+            GameContentSnapshot content = contentProvider.GetCurrent();
+            return Results.Ok(content.WorldMap.Locations
                 .OrderBy(location => location.Id, StringComparer.Ordinal)
-                .Select(ToLocation)
-                .ToArray()));
+                .Select(location => ToLocation(location, content.Indexes))
+                .ToArray());
+        });
         group.MapPost("/world/explore", ExploreAsync);
         group.MapPost("/world/travel", TravelAsync);
         group.MapPost("/world/contracts/accept", AcceptContractAsync);
@@ -355,8 +360,14 @@ public static class WorldEndpoints
             location.TravelDurationSeconds,
             location.AllowAfk);
 
-    private static WorldLocationResponse ToLocation(LocationDefinition location) =>
-        new(
+    private static WorldLocationResponse ToLocation(
+        LocationDefinition location,
+        GameContentIndexes indexes)
+    {
+        IReadOnlyList<WorldLocationResidentResponse> residents = BuildResidents(location, indexes);
+        IReadOnlyList<WorldLocationLootResponse> loot = BuildLoot(residents, indexes);
+
+        return new WorldLocationResponse(
             location.Id,
             location.DisplayName,
             location.DangerLevel,
@@ -366,7 +377,107 @@ public static class WorldEndpoints
             location.RequiredContractId,
             location.ArtId,
             location.Description,
-            AllowAfk: location.AllowAfk);
+            location.TravelDurationSeconds,
+            location.AllowAfk,
+            residents,
+            loot);
+    }
+
+    private static IReadOnlyList<WorldLocationResidentResponse> BuildResidents(
+        LocationDefinition location,
+        GameContentIndexes indexes)
+    {
+        if (location.Encounters is not { Count: > 0 })
+            return Array.Empty<WorldLocationResidentResponse>();
+
+        return location.Encounters
+            .Select(encounter => encounter.MonsterId)
+            .Distinct(StringComparer.Ordinal)
+            .Select(monsterId => indexes.MonstersById.TryGetValue(monsterId, out MonsterDefinition? monster)
+                ? monster
+                : null)
+            .Where(monster => monster is not null)
+            .Select(monster => new WorldLocationResidentResponse(
+                monster!.Id,
+                monster.DisplayName ?? monster.Name,
+                monster.Level,
+                monster.Rank.ToString(),
+                monster.Description,
+                monster.ArtId,
+                monster.XpReward,
+                monster.GoldRewardMin,
+                monster.GoldRewardMax))
+            .OrderBy(resident => MonsterRankOrder(resident.Rank))
+            .ThenBy(resident => resident.Level)
+            .ThenBy(resident => resident.DisplayName, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<WorldLocationLootResponse> BuildLoot(
+        IReadOnlyList<WorldLocationResidentResponse> residents,
+        GameContentIndexes indexes)
+    {
+        HashSet<string> itemIds = new(StringComparer.Ordinal);
+
+        foreach (WorldLocationResidentResponse resident in residents)
+        {
+            if (!indexes.MonstersById.TryGetValue(resident.MonsterId, out MonsterDefinition? monster)
+                || string.IsNullOrWhiteSpace(monster.LootTableId)
+                || !indexes.LootTablesById.TryGetValue(monster.LootTableId, out LootTableDefinition? lootTable))
+            {
+                continue;
+            }
+
+            foreach (LootTableEntry entry in lootTable.Entries)
+                itemIds.Add(entry.ItemId);
+
+            if (lootTable.SelectionGroups is null)
+                continue;
+
+            foreach (LootSelectionGroup group in lootTable.SelectionGroups)
+            {
+                foreach (LootSelectionEntry entry in group.Entries)
+                    itemIds.Add(entry.ItemId);
+            }
+        }
+
+        return itemIds
+            .Select(itemId => indexes.ItemsById.TryGetValue(itemId, out ItemDefinition? item)
+                ? item
+                : null)
+            .Where(item => item is not null)
+            .Select(item => new WorldLocationLootResponse(
+                item!.Id,
+                item.Name,
+                item.Type.ToString(),
+                item.Rarity.ToString(),
+                item.RequiredLevel,
+                item.Description,
+                item.IconId))
+            .OrderByDescending(item => ItemRarityOrder(item.Rarity))
+            .ThenBy(item => item.Type, StringComparer.Ordinal)
+            .ThenBy(item => item.Name, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static int MonsterRankOrder(string rank) => rank switch
+    {
+        nameof(MonsterRank.Normal) => 0,
+        nameof(MonsterRank.Elite) => 1,
+        nameof(MonsterRank.Boss) => 2,
+        _ => 3
+    };
+
+    private static int ItemRarityOrder(string rarity) => rarity switch
+    {
+        nameof(ItemRarity.Unique) => 6,
+        nameof(ItemRarity.Legendary) => 5,
+        nameof(ItemRarity.Epic) => 4,
+        nameof(ItemRarity.Rare) => 3,
+        nameof(ItemRarity.Uncommon) => 2,
+        nameof(ItemRarity.Common) => 1,
+        _ => 0
+    };
 
     private static bool TryGetAccountId(
         ClaimsPrincipal user,
