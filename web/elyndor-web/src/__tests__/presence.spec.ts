@@ -63,13 +63,18 @@ describe('presence heartbeat', () => {
     expect(request).toHaveBeenCalledTimes(2)
   })
 
-  it('refreshes presence after browser restore and network recovery', () => {
+  it('refreshes presence after browser restore and network recovery', async () => {
     vi.spyOn(apiClient, 'getAccessToken').mockReturnValue('token')
     const request = vi.spyOn(apiClient, 'request').mockResolvedValue(undefined)
 
     startPresenceHeartbeat()
+    await Promise.resolve()
+
     window.dispatchEvent(new Event('pageshow'))
+    await Promise.resolve()
+
     window.dispatchEvent(new Event('online'))
+    await Promise.resolve()
 
     expect(request).toHaveBeenCalledTimes(3)
   })
