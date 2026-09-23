@@ -364,8 +364,8 @@ public static class WorldEndpoints
         LocationDefinition location,
         GameContentIndexes indexes)
     {
-        IReadOnlyList<WorldLocationResidentResponse> residents = BuildResidents(location, indexes);
-        IReadOnlyList<WorldLocationLootResponse> loot = BuildLoot(residents, indexes);
+        WorldLocationResidentResponse[] residents = BuildResidents(location, indexes);
+        WorldLocationLootResponse[] loot = BuildLoot(residents, indexes);
 
         return new WorldLocationResponse(
             location.Id,
@@ -383,12 +383,12 @@ public static class WorldEndpoints
             loot);
     }
 
-    private static IReadOnlyList<WorldLocationResidentResponse> BuildResidents(
+    private static WorldLocationResidentResponse[] BuildResidents(
         LocationDefinition location,
         GameContentIndexes indexes)
     {
         if (location.Encounters is not { Count: > 0 })
-            return Array.Empty<WorldLocationResidentResponse>();
+            return [];
 
         return location.Encounters
             .Select(encounter => encounter.MonsterId)
@@ -413,8 +413,8 @@ public static class WorldEndpoints
             .ToArray();
     }
 
-    private static IReadOnlyList<WorldLocationLootResponse> BuildLoot(
-        IReadOnlyList<WorldLocationResidentResponse> residents,
+    private static WorldLocationLootResponse[] BuildLoot(
+        WorldLocationResidentResponse[] residents,
         GameContentIndexes indexes)
     {
         HashSet<string> itemIds = new(StringComparer.Ordinal);
