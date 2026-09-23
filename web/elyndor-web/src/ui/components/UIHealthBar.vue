@@ -17,6 +17,12 @@ const safeValue = computed(() => Math.min(Math.max(0, props.value), safeMax.valu
 const percentage = computed(() =>
   safeMax.value === 0 ? 0 : (safeValue.value / safeMax.value) * 100,
 )
+const healthState = computed(() => {
+  if (props.tone !== 'hp') return null
+  if (percentage.value <= 25) return 'critical'
+  if (percentage.value <= 50) return 'warning'
+  return 'healthy'
+})
 
 function formatBarValue(value: number): string {
   const rounded = Math.round(value * 10) / 10
@@ -25,7 +31,10 @@ function formatBarValue(value: number): string {
 </script>
 
 <template>
-  <div class="ui-bar" :class="`ui-bar--${tone}`">
+  <div
+    class="ui-bar"
+    :class="[`ui-bar--${tone}`, healthState ? `ui-bar--${healthState}` : null]"
+  >
     <div v-if="label || showValue" class="ui-bar__meta">
       <span>{{ label }}</span
       ><span v-if="showValue">{{ formatBarValue(safeValue) }} / {{ formatBarValue(safeMax) }}</span>
@@ -53,6 +62,22 @@ function formatBarValue(value: number): string {
 .ui-bar--rage { --ui-bar-color: var(--ui-color-rage); }
 .ui-bar--focus { --ui-bar-color: var(--ui-color-focus-resource); }
 .ui-bar--mana { --ui-bar-color: var(--ui-color-mana); }
+
+:global(.combat-hud__actor--player) .ui-bar--hp {
+  --ui-bar-color: #4fb996;
+}
+
+:global(.combat-hud__actor--player) .ui-bar--hp.ui-bar--warning {
+  --ui-bar-color: #d7a64f;
+}
+
+:global(.combat-hud__actor--player) .ui-bar--hp.ui-bar--critical {
+  --ui-bar-color: #e0606e;
+}
+
+:global(.combat-hud__actor--enemy) .ui-bar--hp {
+  --ui-bar-color: var(--ui-color-danger);
+}
 
 .ui-bar__meta {
   display: flex;
@@ -90,7 +115,7 @@ function formatBarValue(value: number): string {
     linear-gradient(180deg, rgb(255 255 255 / 20%), transparent 48%),
     linear-gradient(90deg, color-mix(in srgb, var(--ui-bar-color) 72%, black), var(--ui-bar-color));
   box-shadow: 0 0 10px color-mix(in srgb, var(--ui-bar-color) 35%, transparent);
-  transition: width var(--ui-transition-normal);
+  transition: width var(--ui-transition-normal), background-color var(--ui-transition-normal);
 }
 
 .ui-bar__fill::after {
