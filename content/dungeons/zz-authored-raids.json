@@ -1,235 +1,75 @@
-﻿{
-    "contentVersion":  "0.23.0",
-    "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
-    "dungeons":  [
-                     {
-                         "id":  "HEART_OF_BLIGHTED_GROVE_RAID",
-                         "displayName":  "Сердце Осквернённой Чащи",
-                         "description":  "Первый рейд 20 уровня: четыре босса, шесть слотов комплектов и профессиональные рейдовые материалы.",
-                         "minimumLevel":  20,
-                         "maximumLevel":  20,
-                         "entryLocationId":  "HEART_OF_BLIGHTED_GROVE",
-                         "minimumPartySize":  1,
-                         "maximumPartySize":  5,
-                         "encounters":  [
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
-                                                "checkpointId":  "RAID_01",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
-                                                "checkpointId":  "RAID_02",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
-                                                "checkpointId":  "RAID_03",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
-                                                "checkpointId":  "RAID_04",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
-                                                "checkpointId":  "RAID_05",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
-                                                "checkpointId":  "RAID_06",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
-                                                "checkpointId":  "RAID_07",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
-                                                "monsterId":  "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
-                                                "checkpointId":  "RAID_08",
-                                                "isBoss":  true
-                                            }
-                                        ]
-                     },
-                     {
-                         "id":  "SHATTERED_ORDER_CITADEL_RAID",
-                         "displayName":  "Цитадель Расколотого Ордена",
-                         "description":  "Рейд 30 уровня на зеркальную магию, ману, щиты и отражения.",
-                         "minimumLevel":  30,
-                         "maximumLevel":  30,
-                         "entryLocationId":  "SHATTERED_ORDER_CITADEL",
-                         "minimumPartySize":  1,
-                         "maximumPartySize":  5,
-                         "encounters":  [
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
-                                                "checkpointId":  "RAID_01",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
-                                                "checkpointId":  "RAID_02",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
-                                                "checkpointId":  "RAID_03",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
-                                                "checkpointId":  "RAID_04",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
-                                                "checkpointId":  "RAID_05",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
-                                                "checkpointId":  "RAID_06",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
-                                                "checkpointId":  "RAID_07",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
-                                                "checkpointId":  "RAID_08",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
-                                                "checkpointId":  "RAID_09",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
-                                                "checkpointId":  "RAID_10",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
-                                                "checkpointId":  "RAID_11",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
-                                                "monsterId":  "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
-                                                "checkpointId":  "RAID_12",
-                                                "isBoss":  true
-                                            }
-                                        ]
-                     },
-                     {
-                         "id":  "BLACK_BASTION_RAID",
-                         "displayName":  "Чёрный Бастион",
-                         "description":  "Финальный рейд диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
-                         "minimumLevel":  40,
-                         "maximumLevel":  40,
-                         "entryLocationId":  "BLACK_BASTION",
-                         "minimumPartySize":  1,
-                         "maximumPartySize":  5,
-                         "encounters":  [
-                                            {
-                                                "id":  "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
-                                                "monsterId":  "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
-                                                "checkpointId":  "RAID_01",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BASTIONNYI_PALACH_L40",
-                                                "monsterId":  "BLACK_BASTION_BASTIONNYI_PALACH_L40",
-                                                "checkpointId":  "RAID_02",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
-                                                "monsterId":  "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
-                                                "checkpointId":  "RAID_03",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
-                                                "monsterId":  "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
-                                                "checkpointId":  "RAID_04",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
-                                                "monsterId":  "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
-                                                "checkpointId":  "RAID_05",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
-                                                "monsterId":  "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
-                                                "checkpointId":  "RAID_06",
-                                                "isBoss":  false
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
-                                                "checkpointId":  "RAID_07",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
-                                                "checkpointId":  "RAID_08",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
-                                                "checkpointId":  "RAID_09",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
-                                                "checkpointId":  "RAID_10",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
-                                                "checkpointId":  "RAID_11",
-                                                "isBoss":  true
-                                            },
-                                            {
-                                                "id":  "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
-                                                "monsterId":  "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
-                                                "checkpointId":  "RAID_12",
-                                                "isBoss":  true
-                                            }
-                                        ]
-                     }
-                 ]
+{
+  "contentVersion": "0.23.0",
+  "balanceVersion": "0.19.0",
+  "publishedAtUtc": "2026-09-17T00:00:00+00:00",
+  "dungeons": [
+    {
+      "id": "HEART_OF_BLIGHTED_GROVE",
+      "displayName": "Сердце Осквернённой Чащи",
+      "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
+      "minimumLevel": 20,
+      "maximumLevel": 20,
+      "entryLocationId": "HEART_OF_BLIGHTED_GROVE",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        { "id": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20", "checkpointId": "DUNGEON_01", "isBoss": false },
+        { "id": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20", "checkpointId": "DUNGEON_02", "isBoss": false },
+        { "id": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20", "checkpointId": "DUNGEON_03", "isBoss": false },
+        { "id": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20", "checkpointId": "DUNGEON_04", "isBoss": false },
+        { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20", "checkpointId": "DUNGEON_05", "isBoss": true },
+        { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20", "checkpointId": "DUNGEON_06", "isBoss": true },
+        { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20", "checkpointId": "DUNGEON_07", "isBoss": true },
+        { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20", "checkpointId": "DUNGEON_08", "isBoss": true }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL",
+      "displayName": "Цитадель Расколотого Ордена",
+      "description": "Подземелье 30 уровня на зеркальную магию, ману, щиты и отражения.",
+      "minimumLevel": 30,
+      "maximumLevel": 30,
+      "entryLocationId": "SHATTERED_ORDER_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        { "id": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "checkpointId": "DUNGEON_01", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "checkpointId": "DUNGEON_02", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "checkpointId": "DUNGEON_03", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "checkpointId": "DUNGEON_04", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "checkpointId": "DUNGEON_05", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "checkpointId": "DUNGEON_06", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "checkpointId": "DUNGEON_07", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "checkpointId": "DUNGEON_08", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "checkpointId": "DUNGEON_09", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "checkpointId": "DUNGEON_10", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "checkpointId": "DUNGEON_11", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "checkpointId": "DUNGEON_12", "isBoss": true }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION",
+      "displayName": "Чёрный Бастион",
+      "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+      "minimumLevel": 40,
+      "maximumLevel": 40,
+      "entryLocationId": "BLACK_BASTION",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        { "id": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40", "monsterId": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40", "checkpointId": "DUNGEON_01", "isBoss": false },
+        { "id": "BLACK_BASTION_BASTIONNYI_PALACH_L40", "monsterId": "BLACK_BASTION_BASTIONNYI_PALACH_L40", "checkpointId": "DUNGEON_02", "isBoss": false },
+        { "id": "BLACK_BASTION_PEPELNYI_RYTSAR_L40", "monsterId": "BLACK_BASTION_PEPELNYI_RYTSAR_L40", "checkpointId": "DUNGEON_03", "isBoss": false },
+        { "id": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40", "monsterId": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40", "checkpointId": "DUNGEON_04", "isBoss": false },
+        { "id": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40", "monsterId": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40", "checkpointId": "DUNGEON_05", "isBoss": false },
+        { "id": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40", "monsterId": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40", "checkpointId": "DUNGEON_06", "isBoss": false },
+        { "id": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40", "monsterId": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40", "checkpointId": "DUNGEON_07", "isBoss": true },
+        { "id": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40", "monsterId": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40", "checkpointId": "DUNGEON_08", "isBoss": true },
+        { "id": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40", "monsterId": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40", "checkpointId": "DUNGEON_09", "isBoss": true },
+        { "id": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "monsterId": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "checkpointId": "DUNGEON_10", "isBoss": true },
+        { "id": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "monsterId": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "checkpointId": "DUNGEON_11", "isBoss": true },
+        { "id": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "monsterId": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "checkpointId": "DUNGEON_12", "isBoss": true }
+      ]
+    }
+  ]
 }
