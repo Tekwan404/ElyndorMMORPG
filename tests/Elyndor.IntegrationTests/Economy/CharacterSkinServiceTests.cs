@@ -71,6 +71,26 @@ public sealed class CharacterSkinServiceTests(PostgresFixture postgres) : IAsync
         Assert.True((await skins.EquipAsync(accountId, "MAGE_FEMALE_DEFAULT", CancellationToken.None)).Succeeded);
     }
 
+    [Fact]
+    public async Task CatalogContainsOnlySkinsCompatibleWithTheCharacter()
+    {
+        Guid accountId = await CreateAccountAsync("FEMALE", "MAGE");
+        await using GameDbContext db = postgres.CreateDbContext();
+        var skins = new CharacterSkinService(db,
+            new StaticContentSnapshotProvider(await GameContentPackageLoader.LoadAsync(RepositoryContentPath())),
+            new FixedTimeProvider());
+
+        CharacterSkinStoreSnapshot catalog = (await skins.GetAsync(accountId, CancellationToken.None))!;
+
+        Assert.NotEmpty(catalog.Skins);
+        Assert.All(catalog.Skins, skin =>
+        {
+            Assert.Equal("MAGE", skin.Definition.ClassId);
+            Assert.Equal("FEMALE", skin.Definition.GenderId);
+            Assert.True(skin.Eligible);
+        });
+    }
+
     private async Task<Guid> CreateAccountAsync(string gender, string classId)
     {
         Guid accountId = Guid.CreateVersion7();

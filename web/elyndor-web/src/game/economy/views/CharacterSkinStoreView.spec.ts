@@ -33,14 +33,12 @@ describe('character skin shop', () => {
     store.equipCharacterSkin.mockResolvedValue({ crystalBalance: 1000, activeSkinId: 'MAGE_FEMALE_FIRE' })
   })
 
-  it('shows a real preview and locks other-class skins', async () => {
+  it('shows a real preview and never renders skins for another class', async () => {
     const wrapper = mount(CharacterSkinStoreView)
     await flushPromises()
 
     expect(wrapper.find('img[alt="Пламенная чародейка"]').attributes('src')).toContain('mage-female-fire.webp')
-    expect(wrapper.text()).toContain('Только для класса')
-    const locked = wrapper.findAll('.skin-card').find(card => card.text().includes('Лучница'))
-    expect(locked?.find('button').attributes('disabled')).toBeDefined()
+    expect(wrapper.findAll('.skin-card')).toHaveLength(1)
   })
 
   it('buys a compatible skin through the game session', async () => {
@@ -61,5 +59,6 @@ describe('character skin shop', () => {
 
     expect(store.equipCharacterSkin).toHaveBeenCalledWith('MAGE_FEMALE_FIRE')
     expect(store.buyCharacterSkin).not.toHaveBeenCalled()
+    expect(wrapper.find('.skin-card--active').exists()).toBe(true)
   })
 })
