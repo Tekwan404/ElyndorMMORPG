@@ -5,12 +5,13 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryItemResponseTests
 {
     [Fact]
-    public void WeaponDamageRangeIsIncludedInStructuredResponseAndDescription()
+    public void WeaponDamageRangeIsStructuredAndDoesNotMutateLore()
     {
+        const string lore = "Закалённый клинок с потемневшей от времени гардой.";
         InventoryItemResponse item = new(
             Id: Guid.NewGuid(),
             DefinitionId: "TEST_SWORD",
-            Name: "Тестовый меч",
+            Name: "Меч дозорного",
             Type: "Equipment",
             Rarity: "Rare",
             RequiredLevel: 10,
@@ -21,7 +22,7 @@ public sealed class InventoryItemResponseTests
                 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0),
-            Description: "Клинок для проверки.",
+            Description: lore,
             SetId: null,
             WeaponCategory: "ONE_HAND_SWORD",
             ArmorCategory: null,
@@ -40,16 +41,17 @@ public sealed class InventoryItemResponseTests
 
         Assert.Equal(12.5m, item.WeaponDamageMin);
         Assert.Equal(18.75m, item.WeaponDamageMax);
-        Assert.Contains("Урон оружия: 12.5–18.75.", item.Description, StringComparison.Ordinal);
+        Assert.Equal(lore, item.Description);
     }
 
     [Fact]
-    public void WeaponAndBlockPresentationCanBeShownTogether()
+    public void WeaponAndBlockPresentationRemainStructuredWithoutChangingLore()
     {
+        const string lore = "Тяжёлое оружие с усиленной гардой.";
         InventoryItemResponse item = new(
             Id: Guid.NewGuid(),
             DefinitionId: "TEST_SHIELD_WEAPON",
-            Name: "Тестовый предмет",
+            Name: "Клинок бастиона",
             Type: "Equipment",
             Rarity: "Epic",
             RequiredLevel: 10,
@@ -60,7 +62,7 @@ public sealed class InventoryItemResponseTests
                 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0),
-            Description: "Проверка нескольких боевых параметров.",
+            Description: lore,
             SetId: null,
             WeaponCategory: "ONE_HAND_SWORD",
             ArmorCategory: null,
@@ -80,8 +82,12 @@ public sealed class InventoryItemResponseTests
             WeaponDamageMin: 10,
             WeaponDamageMax: 16);
 
-        Assert.Contains("Урон оружия: 10–16.", item.Description, StringComparison.Ordinal);
-        Assert.Contains("Шанс блока: 15%. Сила блока: 20–30.", item.Description, StringComparison.Ordinal);
+        Assert.Equal(lore, item.Description);
+        Assert.Equal(10m, item.WeaponDamageMin);
+        Assert.Equal(16m, item.WeaponDamageMax);
+        Assert.Equal(15m, item.BlockChancePercent);
+        Assert.Equal(20m, item.BlockValueMin);
+        Assert.Equal(30m, item.BlockValueMax);
     }
 
     [Fact]

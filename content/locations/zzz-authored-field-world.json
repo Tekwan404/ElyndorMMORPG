@@ -13,7 +13,7 @@
       "maximumLevel": 5,
       "requiredContractId": null,
       "artId": "shepchushchii-les",
-      "description": "Первый лес, волки, кабаны, пауки. Визуальная тема: шепчущий лес в стилистике Elyndor.",
+      "description": "Тихий приграничный лес, где за каждым деревом следят волки, кабаны и пауки.",
       "allowAfk": true
     },
     {
@@ -26,7 +26,7 @@
       "maximumLevel": 8,
       "requiredContractId": null,
       "artId": "tsvetochnaia-poliana",
-      "description": "Ранний хаб профессий и светлая зона. Визуальная тема: цветочная поляна в стилистике Elyndor.",
+      "description": "Солнечная поляна у первых ремесленных мастерских. Здесь начинаются первые промыслы.",
       "allowAfk": true
     },
     {
@@ -39,7 +39,7 @@
       "maximumLevel": 11,
       "requiredContractId": null,
       "artId": "glubokii-les",
-      "description": "Порча, ловушки, гоблины и усиленные звери. Визуальная тема: глубокий лес в стилистике Elyndor.",
+      "description": "В чаще прячутся гоблины и звери, поражённые порчей. Ловушки не дадут расслабиться.",
       "allowAfk": true
     },
     {
@@ -52,7 +52,7 @@
       "maximumLevel": 14,
       "requiredContractId": null,
       "artId": "staryi-trakt",
-      "description": "Разбойники, наёмники, подрывники и дорога. Визуальная тема: старый тракт в стилистике Elyndor.",
+      "description": "Старый тракт кишит разбойниками, наёмниками и подрывниками.",
       "allowAfk": true
     },
     {
@@ -65,7 +65,7 @@
       "maximumLevel": 16,
       "requiredContractId": null,
       "artId": "kamennye-otrogi",
-      "description": "Руда, тяжёлая броня и вход в древнюю шахту. Визуальная тема: каменные отроги в стилистике Elyndor.",
+      "description": "В скалах добывают руду; путь ведёт к древней шахте, где тяжёлая броня особенно важна.",
       "allowAfk": true
     },
     {
@@ -78,7 +78,7 @@
       "maximumLevel": 20,
       "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
       "artId": "oskvernionnaia-chashcha",
-      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Визуальная тема: осквернённая чаща в стилистике Elyndor.",
+      "description": "Осквернённая чаща полна яда и чумы. Стань сильнее, прежде чем спуститься в подземелье.",
       "allowAfk": true
     },
     {
@@ -91,7 +91,7 @@
       "maximumLevel": 23,
       "requiredContractId": null,
       "artId": "pepelnaia-granitsa",
-      "description": "Организованное затмение, огонь и руны. Визуальная тема: пепельная граница в стилистике Elyndor.",
+      "description": "На пепельной границе сторонники затмения разжигают огонь и чертят руны.",
       "allowAfk": true
     },
     {
@@ -104,7 +104,7 @@
       "maximumLevel": 26,
       "requiredContractId": null,
       "artId": "topi-lunnogo-pepla",
-      "description": "Яд, болезнь, высасывание здоровья и магические болота. Визуальная тема: топи лунного пепла в стилистике Elyndor.",
+      "description": "Топи лунного пепла отравляют тело болезнью и высасывают силы.",
       "allowAfk": true
     },
     {
@@ -117,7 +117,7 @@
       "maximumLevel": 29,
       "requiredContractId": null,
       "artId": "predmestia-zatmeniia",
-      "description": "Армия цитадели, руны, конструкты и кузницы. Визуальная тема: предместья затмения в стилистике Elyndor.",
+      "description": "В предместьях цитадели ждут рунические конструкты и раскалённые кузницы.",
       "allowAfk": true
     },
     {
@@ -130,7 +130,7 @@
       "maximumLevel": 32,
       "requiredContractId": null,
       "artId": "zemli-raskola",
-      "description": "Отражения, мана, щиты и зеркальная магия. Визуальная тема: земли раскола в стилистике Elyndor.",
+      "description": "Среди отражений и зеркальной магии искажается течение маны и рушатся привычные щиты.",
       "allowAfk": true
     },
     {
@@ -143,7 +143,7 @@
       "maximumLevel": 35,
       "requiredContractId": null,
       "artId": "chernokamennoe-nagore",
-      "description": "Позднее горное дело, тяжёлая броня, огонь и кузни. Визуальная тема: чернокаменное нагорье в стилистике Elyndor.",
+      "description": "Чернокаменные горы закаляют путников: здесь жар кузниц, руда и тяжёлые доспехи.",
       "allowAfk": true
     },
     {
@@ -156,7 +156,7 @@
       "maximumLevel": 38,
       "requiredContractId": null,
       "artId": "bagrovaia-pustosh",
-      "description": "Нежить, души, проклятия и некромантия. Визуальная тема: багровая пустошь в стилистике Elyndor.",
+      "description": "Багровая пустошь хранит души нежити и проклятия некромантов.",
       "allowAfk": true
     },
     {
@@ -169,7 +169,7 @@
       "maximumLevel": 40,
       "requiredContractId": null,
       "artId": "obsidianovyi-predel",
-      "description": "Преддверие чёрного бастиона и финальная открытого мира-подготовка. Визуальная тема: обсидиановый предел в стилистике Elyndor.",
+      "description": "На обсидиановом пределе начинается последний путь к Чёрному бастиону.",
       "allowAfk": true
     },
     {

@@ -6,8 +6,9 @@ namespace Elyndor.UnitTests.Items;
 public sealed class InventoryItemResponseBlockTests
 {
     [Fact]
-    public void ShieldBlockProfileRoundTripsWithReadableTooltip()
+    public void ShieldBlockProfileRoundTripsWithoutMutatingLore()
     {
+        const string lore = "Массивный щит Хранителя Глубин.";
         InventoryItemResponse response = new(
             Guid.CreateVersion7(),
             "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
@@ -19,11 +20,11 @@ public sealed class InventoryItemResponseBlockTests
             "OffHand",
             null,
             new ItemStatsResponse(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0),
-            "Массивный щит Хранителя Глубин.",
+            lore,
             null,
             null,
             null,
-            ["WARRIOR"],
+            [],
             null,
             0,
             0,
@@ -37,13 +38,15 @@ public sealed class InventoryItemResponseBlockTests
             BlockValueMin: 28m,
             BlockValueMax: 42m);
 
-        Assert.Contains("Шанс блока: 4%", response.Description);
-        Assert.Contains("Сила блока: 28–42", response.Description);
+        Assert.Equal(lore, response.Description);
+        Assert.Equal(4m, response.BlockChancePercent);
+        Assert.Equal(28m, response.BlockValueMin);
+        Assert.Equal(42m, response.BlockValueMax);
 
         string json = JsonSerializer.Serialize(response);
         InventoryItemResponse restored = JsonSerializer.Deserialize<InventoryItemResponse>(json)!;
 
-        Assert.Equal(response.Description, restored.Description);
+        Assert.Equal(lore, restored.Description);
         Assert.Equal(4m, restored.BlockChancePercent);
         Assert.Equal(28m, restored.BlockValueMin);
         Assert.Equal(42m, restored.BlockValueMax);
@@ -67,7 +70,7 @@ public sealed class InventoryItemResponseBlockTests
             null,
             "ONE_HAND_SWORD",
             null,
-            ["WARRIOR"],
+            [],
             2m,
             0,
             0,

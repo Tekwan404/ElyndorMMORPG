@@ -27,6 +27,7 @@ public sealed class ContentValidationPipeline
             new MonsterValidator(),
             new EncounterContentValidator(),
             new WorldValidator(),
+            new PlayerFacingTextValidationStage(),
             new DungeonValidator()
         ]);
 
@@ -274,6 +275,12 @@ public sealed class WorldValidator : IContentValidationStage
         GameContentPackageValidator.ValidateQuests(context.Package, context.Errors);
         context.Errors.AddRange(WorldEncounterContentValidator.Validate(context.Package));
     }
+}
+
+public sealed class PlayerFacingTextValidationStage : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        PlayerFacingTextValidator.Validate(context.Package, context.Errors);
 }
 
 public sealed class DungeonValidator : IContentValidationStage

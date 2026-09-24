@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Elyndor.Contracts.Items;
 
 public sealed record ItemStatsResponse(
@@ -20,6 +18,37 @@ public sealed record ItemStatsResponse(
     decimal MagicPenetration,
     decimal AttackSpeed,
     decimal MaxResource);
+
+public sealed record EquipmentSetBonusPresentationResponse(
+    int RequiredPieces,
+    decimal AttackSpeedPercent,
+    decimal DodgePercent,
+    decimal MaxHpFlat,
+    decimal AttackPowerFlat,
+    decimal SpellPowerFlat,
+    decimal CriticalChancePercent,
+    decimal CriticalDamagePercent,
+    decimal AccuracyPercent,
+    decimal ArmorFlat,
+    decimal MagicResistanceFlat,
+    decimal ArmorPenetrationPercent,
+    decimal MagicPenetrationPercent,
+    decimal MaxResourceFlat);
+
+public sealed record EquipmentSetPresentationResponse(
+    string Id,
+    string Name,
+    IReadOnlyList<EquipmentSetBonusPresentationResponse> Bonuses);
+
+public sealed record ClassEquipmentRulesResponse(
+    string ClassId,
+    IReadOnlyList<string> AllowedWeaponCategories,
+    IReadOnlyList<string> AllowedArmorCategories,
+    IReadOnlyList<string> AllowedOffHandCategories);
+
+public sealed record InventoryPresentationResponse(
+    IReadOnlyList<EquipmentSetPresentationResponse> EquipmentSets,
+    IReadOnlyList<ClassEquipmentRulesResponse> ClassRules);
 
 public sealed record ConsumableActionResponse(
     string Type,
@@ -96,51 +125,6 @@ public sealed record InventoryItemResponse(
     // Generated instances already own their authoritative resolved ItemLevel, so expose it
     // directly on the inventory item without asking clients to conflate it with RequiredLevel.
     public int? ItemLevel => GeneratedItem?.ItemLevel;
-
-    public string Description { get; init; } = BuildDescription(
-        Description,
-        BlockChancePercent,
-        BlockValueMin,
-        BlockValueMax,
-        WeaponDamageMin,
-        WeaponDamageMax);
-
-    private static string BuildDescription(
-        string description,
-        decimal blockChancePercent,
-        decimal blockValueMin,
-        decimal blockValueMax,
-        decimal? weaponDamageMin,
-        decimal? weaponDamageMax)
-    {
-        List<string> details = [];
-
-        if (weaponDamageMin.HasValue
-            && weaponDamageMax.HasValue
-            && weaponDamageMin.Value >= 0
-            && weaponDamageMax.Value >= weaponDamageMin.Value
-            && weaponDamageMax.Value > 0
-            && !description.Contains("Урон оружия:", StringComparison.Ordinal))
-        {
-            details.Add(
-                $"Урон оружия: {FormatNumber(weaponDamageMin.Value)}–{FormatNumber(weaponDamageMax.Value)}.");
-        }
-
-        if (blockChancePercent > 0
-            && blockValueMax > 0
-            && !description.Contains("Шанс блока:", StringComparison.Ordinal))
-        {
-            details.Add(
-                $"Шанс блока: {FormatNumber(blockChancePercent)}%. Сила блока: {FormatNumber(blockValueMin)}–{FormatNumber(blockValueMax)}.");
-        }
-
-        return details.Count == 0
-            ? description
-            : $"{description}\n\n{string.Join(" ", details)}";
-    }
-
-    private static string FormatNumber(decimal value) =>
-        decimal.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
 }
 
 public sealed record EquipmentSlotsResponse(

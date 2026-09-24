@@ -4,6 +4,14 @@ import { computed, ref, watch } from 'vue'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
+import {
+  armorCategoryLabel,
+  equipmentCompatibilityReason as contentEquipmentCompatibilityReason,
+  setBonusSummary,
+  setPieceLabel,
+  setPresentationForItem,
+  type InventoryPresentation,
+} from '@/game/items/inventoryPresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState, UIModal } from '@/ui/components'
@@ -16,6 +24,9 @@ const props = defineProps<{
 const session = useGameSessionStore()
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
+const inventoryPresentation = ref<InventoryPresentation | null>(null)
+const inventoryPresentationError = ref(false)
+let inventoryPresentationRequestSequence = 0
 const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
 const spatialInventoryError = ref(false)
 const spatialActionPending = ref(false)
@@ -122,6 +133,14 @@ const comparisonRows = computed(() => {
     })
     .filter(row => row.candidateValue !== 0 || row.equippedValue !== 0)
 })
+const selectedSetPresentation = computed(() =>
+  setPresentationForItem(selectedItem.value, inventoryPresentation.value),
+)
+const selectedClassRules = computed(() => {
+  const classId = character.value?.classId
+  if (!classId) return null
+  return inventoryPresentation.value?.classRules.find(rule => rule.classId === classId) ?? null
+})
 
 const comparisonStats: readonly {
   label: string
@@ -150,24 +169,7 @@ function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
 }
 
 function equipmentCompatibilityReason(item: InventoryItem): string | null {
-  const current = character.value
-  if (!current || item.type !== 'Equipment') return null
-  if (current.classId === 'WARRIOR') {
-    if (item.armorCategory && item.armorCategory !== 'HEAVY') return 'Воин может носить только тяжёлую броню.'
-    if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) {
-      return 'Воин не может использовать этот тип оружия.'
-    }
-  } else if (current.classId === 'ARCHER') {
-    if (item.armorCategory && item.armorCategory !== 'LEATHER') return 'Лучник может носить только кожаную броню.'
-    if (item.weaponCategory && item.weaponCategory !== 'BOW') return 'Лучник не может использовать этот тип оружия.'
-  } else if (current.classId === 'MAGE') {
-    if (item.armorCategory && item.armorCategory !== 'CLOTH') return 'Маг может носить только тканевую броню.'
-    if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) {
-      return 'Маг не может использовать этот тип оружия.'
-    }
-  }
-
-  return null
+  return contentEquipmentCompatibilityReason(item, selectedClassRules.value)
 }
 
 function equipmentLevelReason(item: InventoryItem): string | null {
@@ -350,6 +352,25 @@ function markItemSeen(itemId: string): void {
   newItemIds.value = next
 }
 
+async function refreshInventoryPresentation(): Promise<void> {
+  const requestSequence = ++inventoryPresentationRequestSequence
+  if (!character.value?.id) {
+    inventoryPresentation.value = null
+    inventoryPresentationError.value = false
+    return
+  }
+
+  try {
+    const response = await apiClient.request<InventoryPresentation>('/api/v1/inventory/presentation')
+    if (requestSequence !== inventoryPresentationRequestSequence) return
+    inventoryPresentation.value = response
+    inventoryPresentationError.value = false
+  } catch {
+    if (requestSequence !== inventoryPresentationRequestSequence) return
+    inventoryPresentationError.value = true
+  }
+}
+
 async function refreshSpatialInventory(): Promise<void> {
   const requestSequence = ++spatialInventoryRequestSequence
   if (!character.value?.id) {
@@ -375,6 +396,11 @@ const inventorySnapshotKey = computed(() => [
     `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
   ),
 ].join('|'))
+const inventoryPresentationKey = computed(() => [
+  character.value?.id ?? '',
+  character.value?.classProfileVersion ?? '',
+  session.snapshot?.contentVersion ?? '',
+].join(':'))
 
 watch(
   inventorySnapshotKey,
@@ -384,9 +410,27 @@ watch(
   },
   { immediate: true },
 )
+watch(
+  inventoryPresentationKey,
+  () => void refreshInventoryPresentation(),
+  { immediate: true },
+)
 
 function statRows(item: InventoryItem): string[] {
+  const systemItem = item as InventoryItem & {
+    blockChancePercent?: number
+    blockValueMin?: number
+    blockValueMax?: number
+    weaponDamageMin?: number | null
+    weaponDamageMax?: number | null
+  }
   return [
+    systemItem.weaponDamageMin !== null && systemItem.weaponDamageMin !== undefined
+      && systemItem.weaponDamageMax !== null && systemItem.weaponDamageMax !== undefined
+      && systemItem.weaponDamageMax > 0
+      ? `Урон оружия: ${formatNumber(systemItem.weaponDamageMin)}–${formatNumber(systemItem.weaponDamageMax)}` : '',
+    systemItem.blockChancePercent && systemItem.blockValueMax
+      ? `Шанс блока: ${formatNumber(systemItem.blockChancePercent)}% · Сила блока: ${formatNumber(systemItem.blockValueMin ?? 0)}–${formatNumber(systemItem.blockValueMax)}` : '',
     item.stats.strength ? `Сила +${item.stats.strength}` : '',
     item.stats.agility ? `Ловкость +${item.stats.agility}` : '',
     item.stats.intellect ? `Интеллект +${item.stats.intellect}` : '',
@@ -441,7 +485,6 @@ function inventoryActionError(code: string | null): string | null {
   if (code === 'inventory_armor_category_restricted') return 'Этот тип брони недоступен вашему классу.'
   if (code === 'inventory_weapon_category_restricted') return 'Этот тип оружия недоступен вашему классу.'
   if (code === 'inventory_off_hand_category_restricted') return 'Этот предмет нельзя взять во вторую руку вашим классом.'
-  if (code === 'inventory_class_restricted') return 'Этот предмет предназначен для другого класса.'
   if (code === 'inventory_required_level') return 'Недостаточный уровень для этого предмета.'
   if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
   if (code === 'inventory_two_handed_conflict') return 'Двуручное оружие конфликтует со второй рукой.'
@@ -610,12 +653,7 @@ async function toggleSelectedLock(): Promise<void> {
         <small>Категория</small>
         <div class="filter-chips filter-chips--scroll">
           <button type="button" :class="{ active: typeFilter === 'all' && !newOnly }" @click="typeFilter = 'all'; newOnly = false">Все</button>
-          <button
-            type="button"
-            data-inventory-new-filter
-            :class="{ active: newOnly }"
-            @click="newOnly = !newOnly"
-          >
+          <button type="button" data-inventory-new-filter :class="{ active: newOnly }" @click="newOnly = !newOnly">
             Новые<span v-if="newItemIds.size"> · {{ newItemIds.size }}</span>
           </button>
           <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
@@ -624,12 +662,7 @@ async function toggleSelectedLock(): Promise<void> {
           <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
         </div>
       </div>
-      <UIButton
-        v-if="!isContextualSlotMode"
-        variant="secondary"
-        data-open-inventory-filters
-        @click="filtersOpen = true"
-      >
+      <UIButton v-if="!isContextualSlotMode" variant="secondary" data-open-inventory-filters @click="filtersOpen = true">
         Фильтры<span v-if="activeFilterCount"> · {{ activeFilterCount }}</span>
       </UIButton>
       <span v-else class="inventory-tools__context">Фильтр слота: {{ slotLabel(contextualSlot) }}</span>
@@ -640,14 +673,7 @@ async function toggleSelectedLock(): Promise<void> {
         <div class="filter-row">
           <small>Доступность</small>
           <div class="filter-chips">
-            <button
-              type="button"
-              data-inventory-equipable-filter
-              :class="{ active: equipableOnly }"
-              @click="equipableOnly = !equipableOnly"
-            >
-              Можно надеть
-            </button>
+            <button type="button" data-inventory-equipable-filter :class="{ active: equipableOnly }" @click="equipableOnly = !equipableOnly">Можно надеть</button>
           </div>
         </div>
         <div class="filter-row filter-row--rarity">
@@ -693,18 +719,12 @@ async function toggleSelectedLock(): Promise<void> {
         <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
       </header>
 
-      <div
-        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))"
-        class="bag-grid"
-      >
+      <div v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))" class="bag-grid">
         <button
           v-for="(item, index) in visibleCells"
           :key="item?.id ?? `empty-${index}`"
           class="bag-cell"
-          :class="{
-            'bag-cell--empty': !item,
-            'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined,
-          }"
+          :class="{ 'bag-cell--empty': !item, 'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined }"
           :data-rarity="item?.rarity"
           :data-item-id="item?.id"
           :data-new="item ? newItemIds.has(item.id) : undefined"
@@ -722,30 +742,15 @@ async function toggleSelectedLock(): Promise<void> {
             <span class="bag-cell__icon">
               <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
             </span>
-            <ItemQualityStars
-              v-if="item.generatedItem"
-              class="bag-cell__quality"
-              :id="`inventory-${item.id}`"
-              :stars="item.generatedItem.stars"
-            />
+            <ItemQualityStars v-if="item.generatedItem" class="bag-cell__quality" :id="`inventory-${item.id}`" :stars="item.generatedItem.stars" />
             <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
             <i class="bag-cell__rarity" aria-hidden="true" />
           </template>
         </button>
       </div>
 
-      <UILoadingState
-        v-else-if="bagItems.length === 0"
-        state="empty"
-        title="Инвентарь пуст"
-        message="Исследуйте мир и побеждайте противников, чтобы находить добычу."
-      />
-      <UILoadingState
-        v-else
-        state="empty"
-        title="Ничего не найдено"
-        :message="isContextualSlotMode ? 'В рюкзаке нет предметов для выбранного слота.' : 'Измените выбранные фильтры.'"
-      />
+      <UILoadingState v-else-if="bagItems.length === 0" state="empty" title="Инвентарь пуст" message="Исследуйте мир и побеждайте противников, чтобы находить добычу." />
+      <UILoadingState v-else state="empty" title="Ничего не найдено" :message="isContextualSlotMode ? 'В рюкзаке нет предметов для выбранного слота.' : 'Измените выбранные фильтры.'" />
     </section>
 
     <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="openItem(null)">
@@ -756,172 +761,68 @@ async function toggleSelectedLock(): Promise<void> {
           </span>
           <div>
             <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
-            <ItemQualityStars
-              v-if="selectedItem.generatedItem"
-              :id="`inventory-detail-${selectedItem.id}`"
-              :stars="selectedItem.generatedItem.stars"
-            />
+            <ItemQualityStars v-if="selectedItem.generatedItem" :id="`inventory-detail-${selectedItem.id}`" :stars="selectedItem.generatedItem.stars" />
             <strong>Количество: {{ selectedItem.quantity }}</strong>
             <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
           </div>
         </div>
-        <section
-          v-if="selectedItem.type === 'Equipment'"
-          class="item-detail__levels"
-          aria-label="Уровни предмета"
-        >
-          <div data-item-level>
-            <small>УРОВЕНЬ ПРЕДМЕТА</small>
-            <strong>{{ resolvedItemLevel(selectedItem) ?? '—' }}</strong>
-            <span>сила снаряжения</span>
-          </div>
-          <div data-required-level>
-            <small>ТРЕБУЕМЫЙ УРОВЕНЬ</small>
-            <strong>{{ selectedItem.requiredLevel }}</strong>
-            <span>для экипировки</span>
-          </div>
+        <section v-if="selectedItem.type === 'Equipment'" class="item-detail__levels" aria-label="Уровни предмета">
+          <div data-item-level><small>УРОВЕНЬ ПРЕДМЕТА</small><strong>{{ resolvedItemLevel(selectedItem) ?? '—' }}</strong><span>сила снаряжения</span></div>
+          <div data-required-level><small>ТРЕБУЕМЫЙ УРОВЕНЬ</small><strong>{{ selectedItem.requiredLevel }}</strong><span>для экипировки</span></div>
         </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
+        <p v-if="selectedItem.armorCategory" class="item-detail__hint" data-armor-category>
+          Тип брони: <strong>{{ armorCategoryLabel(selectedItem.armorCategory) }}</strong>
+        </p>
         <p v-if="isSpatialArtifact(selectedItem)" class="item-detail__hint" data-spatial-artifact-hint>
           Используется в отдельном слоте пространственного артефакта и не занимает обычный слот экипировки.
-          <template v-if="spatialInventory?.equippedArtifact">
-            Сейчас надето: {{ spatialInventory.equippedArtifact.name }} (+{{ spatialInventory.equippedArtifact.capacityBonus }}).
-          </template>
+          <template v-if="spatialInventory?.equippedArtifact">Сейчас надето: {{ spatialInventory.equippedArtifact.name }} (+{{ spatialInventory.equippedArtifact.capacityBonus }}).</template>
         </p>
-        <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
-          Характеристики этого экземпляра определились при получении предмета.
-        </p>
+        <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">Характеристики этого экземпляра определились при получении предмета.</p>
         <section v-if="selectedItem.generatedItem" class="item-quality-summary" aria-label="Качество предмета">
-          <div>
-            <small>МОЩЬ ПРЕДМЕТА</small>
-            <strong>{{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong>
-          </div>
-          <div>
-            <small>КАЧЕСТВО</small>
-            <strong>{{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong>
-          </div>
+          <div><small>МОЩЬ ПРЕДМЕТА</small><strong>{{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong></div>
+          <div><small>КАЧЕСТВО</small><strong>{{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong></div>
           <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect">ИДЕАЛЬНОЕ КАЧЕСТВО</span>
         </section>
-        <dl v-if="statRows(selectedItem).length">
-          <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
-        </dl>
+        <dl v-if="statRows(selectedItem).length"><div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
 
         <section v-if="comparisonItem" class="item-comparison" aria-label="Сравнение с надетым предметом">
-          <header>
-            <div>
-              <small>СРАВНЕНИЕ</small>
-              <strong>Сейчас: {{ comparisonItem.name }}</strong>
-            </div>
-            <span>{{ typeLabel(comparisonItem) }}</span>
-          </header>
+          <header><div><small>СРАВНЕНИЕ</small><strong>Сейчас: {{ comparisonItem.name }}</strong></div><span>{{ typeLabel(comparisonItem) }}</span></header>
           <div v-if="comparisonRows.length" class="comparison-grid">
-            <div v-for="row in comparisonRows" :key="row.label">
-              <span>{{ row.label }}</span>
-              <small>{{ formatNumber(row.equippedValue) }} → {{ formatNumber(row.candidateValue) }}</small>
-              <b :data-delta="row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same'">
-                {{ comparisonDeltaLabel(row.delta) }}
-              </b>
-            </div>
+            <div v-for="row in comparisonRows" :key="row.label"><span>{{ row.label }}</span><small>{{ formatNumber(row.equippedValue) }} → {{ formatNumber(row.candidateValue) }}</small><b :data-delta="row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same'">{{ comparisonDeltaLabel(row.delta) }}</b></div>
           </div>
           <p v-else class="item-detail__hint">Характеристики предметов совпадают.</p>
         </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
-        <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
-        <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">
-          Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ selectedItem.sellPriceGold }} золота.
+        <div v-if="selectedSetPresentation" class="item-detail__hint" data-item-set>
+          <strong>Комплект «{{ selectedSetPresentation.name }}»</strong>
+          <p v-for="bonus in selectedSetPresentation.bonuses" :key="bonus.requiredPieces">
+            {{ bonus.requiredPieces }} {{ setPieceLabel(bonus.requiredPieces) }} — {{ setBonusSummary(bonus) }}
+          </p>
+        </div>
+        <p v-else-if="selectedItem.setId && inventoryPresentationError" class="item-detail__hint" data-item-set-unavailable>
+          Данные комплекта временно недоступны.
         </p>
+        <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ selectedItem.sellPriceGold }} золота.</p>
         <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
         <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
-        <p
-          v-if="selectedEquipmentCompatibilityReason"
-          class="item-detail__error"
-          data-equip-restriction
-        >
-          {{ selectedEquipmentCompatibilityReason }}
-        </p>
-        <p
-          v-else-if="selectedEquipmentLevelReason"
-          class="item-detail__hint"
-          data-equip-level-requirement
-        >
-          {{ selectedEquipmentLevelReason }}
-        </p>
-        <p
-          v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
-          class="item-detail__error"
-          role="alert"
-        >
-          {{ inventoryActionError(equipmentActionError) }}
-        </p>
-        <p
-          v-if="isSpatialArtifact(selectedItem) && spatialActionErrorLabel(spatialActionError)"
-          class="item-detail__error"
-          role="alert"
-          data-spatial-item-action-error
-        >
-          {{ spatialActionErrorLabel(spatialActionError) }}
-        </p>
+        <p v-if="selectedEquipmentCompatibilityReason" class="item-detail__error" data-equip-restriction>{{ selectedEquipmentCompatibilityReason }}</p>
+        <p v-else-if="selectedEquipmentLevelReason" class="item-detail__hint" data-equip-level-requirement>{{ selectedEquipmentLevelReason }}</p>
+        <p v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)" class="item-detail__error" role="alert">{{ inventoryActionError(equipmentActionError) }}</p>
+        <p v-if="isSpatialArtifact(selectedItem) && spatialActionErrorLabel(spatialActionError)" class="item-detail__error" role="alert" data-spatial-item-action-error>{{ spatialActionErrorLabel(spatialActionError) }}</p>
       </article>
       <template #actions>
         <template v-if="selectedItem?.type === 'Equipment' && !selectedEquipmentCompatibilityReason">
           <template v-if="isOneHandWeapon(selectedItem)">
-            <UIButton
-              v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
-              data-equip-target="MainHand"
-              :loading="session.mutationPending"
-              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
-              @click="equipSelected('MainHand')"
-            >
-              В основную руку
-            </UIButton>
-            <UIButton
-              v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
-              data-equip-target="OffHand"
-              :loading="session.mutationPending"
-              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
-              @click="equipSelected('OffHand')"
-            >
-              Во вторую руку
-            </UIButton>
+            <UIButton v-if="!isContextualSlotMode || isContextualTarget('MainHand')" data-equip-target="MainHand" :loading="session.mutationPending" :disabled="session.mutationPending || selectedEquipmentLevelReason !== null" @click="equipSelected('MainHand')">В основную руку</UIButton>
+            <UIButton v-if="!isContextualSlotMode || isContextualTarget('OffHand')" data-equip-target="OffHand" :loading="session.mutationPending" :disabled="session.mutationPending || selectedEquipmentLevelReason !== null" @click="equipSelected('OffHand')">Во вторую руку</UIButton>
           </template>
-          <UIButton
-            v-else
-            data-equip-action
-            :loading="session.mutationPending"
-            :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
-            @click="equipSelected()"
-          >
-            Надеть
-          </UIButton>
+          <UIButton v-else data-equip-action :loading="session.mutationPending" :disabled="session.mutationPending || selectedEquipmentLevelReason !== null" @click="equipSelected()">Надеть</UIButton>
         </template>
-        <UIButton
-          v-if="isSpatialArtifact(selectedItem)"
-          data-equip-spatial-artifact
-          :loading="spatialActionPending"
-          :disabled="spatialActionPending || (character?.level ?? 0) < (selectedItem?.requiredLevel ?? 0)"
-          @click="equipSelectedSpatialArtifact"
-        >
-          {{ spatialInventory?.equippedArtifact ? 'Заменить' : 'Надеть' }}
-        </UIButton>
-        <UIButton
-          v-if="selectedItem?.type === 'Consumable'"
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending || !canUseConsumableOutOfCombat(selectedItem)"
-          @click="useSelected"
-        >
-          Использовать
-        </UIButton>
-        <UIButton
-          v-if="selectedItem"
-          variant="secondary"
-          data-item-lock-action
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending || spatialActionPending"
-          @click="toggleSelectedLock"
-        >
-          {{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}
-        </UIButton>
+        <UIButton v-if="isSpatialArtifact(selectedItem)" data-equip-spatial-artifact :loading="spatialActionPending" :disabled="spatialActionPending || (character?.level ?? 0) < (selectedItem?.requiredLevel ?? 0)" @click="equipSelectedSpatialArtifact">{{ spatialInventory?.equippedArtifact ? 'Заменить' : 'Надеть' }}</UIButton>
+        <UIButton v-if="selectedItem?.type === 'Consumable'" :loading="session.mutationPending" :disabled="session.mutationPending || !canUseConsumableOutOfCombat(selectedItem)" @click="useSelected">Использовать</UIButton>
+        <UIButton v-if="selectedItem" variant="secondary" data-item-lock-action :loading="session.mutationPending" :disabled="session.mutationPending || spatialActionPending" @click="toggleSelectedLock">{{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}</UIButton>
       </template>
     </UIModal>
   </section>
@@ -1039,583 +940,96 @@ async function toggleSelectedLock(): Promise<void> {
   font-weight: 700;
 }
 
-.spatial-capacity__action:disabled {
-  opacity: .55;
-}
+.spatial-capacity__action:disabled { opacity: .55; }
+.spatial-capacity__overflow { color: var(--ui-color-warning); font-weight: 700; }
+.spatial-capacity__error { margin: 0; padding: var(--ui-space-2) var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); }
 
-.spatial-capacity__overflow {
-  color: var(--ui-color-warning);
-  font-weight: 700;
-}
+.inventory-tools { display: grid; gap: var(--ui-space-2); padding-block: var(--ui-space-2); border-block: 1px solid rgb(255 255 255 / 6%); }
+.filter-row { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); align-items: center; gap: var(--ui-space-2); }
+.filter-row > small { color: var(--ui-color-text-muted); font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.filter-chips { display: flex; gap: 6px; }
+.filter-chips--scroll { overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.filter-chips--scroll::-webkit-scrollbar { display: none; }
+.filter-chips button { min-height: var(--ui-touch-target); flex: 0 0 auto; padding: 0 var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); background: rgb(255 255 255 / 2%); color: var(--ui-color-text-muted); font: inherit; font-size: .62rem; white-space: nowrap; }
+.filter-chips button.active { border-color: color-mix(in srgb, var(--ui-color-primary) 58%, var(--ui-color-border)); background: rgb(146 136 255 / 9%); color: #d5d2ff; }
+.sort-select { display: block; min-width: 0; }
+.sort-select select { width: min(100%, 15rem); min-height: var(--ui-touch-target); padding: 0 var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); background: var(--ui-color-surface-2); color: var(--ui-color-text-secondary); font: inherit; font-size: .62rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 
-.spatial-capacity__error {
-  margin: 0;
-  padding: var(--ui-space-2) var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-}
-
-.inventory-tools {
-  display: grid;
-  gap: var(--ui-space-2);
-  padding-block: var(--ui-space-2);
-  border-block: 1px solid rgb(255 255 255 / 6%);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 3.2rem minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ui-space-2);
-}
-
-.filter-row > small {
-  color: var(--ui-color-text-muted);
-  font-size: .58rem;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.filter-chips {
-  display: flex;
-  gap: 6px;
-}
-
-.filter-chips--scroll {
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-}
-
-.filter-chips--scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.filter-chips button {
-  min-height: var(--ui-touch-target);
-  flex: 0 0 auto;
-  padding: 0 var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  background: rgb(255 255 255 / 2%);
-  color: var(--ui-color-text-muted);
-  font: inherit;
-  font-size: .62rem;
-  white-space: nowrap;
-}
-
-.filter-chips button.active {
-  border-color: color-mix(in srgb, var(--ui-color-primary) 58%, var(--ui-color-border));
-  background: rgb(146 136 255 / 9%);
-  color: #d5d2ff;
-}
-
-.sort-select {
-  display: block;
-  min-width: 0;
-}
-
-.sort-select select {
-  width: min(100%, 15rem);
-  min-height: var(--ui-touch-target);
-  padding: 0 var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-text-secondary);
-  font: inherit;
-  font-size: .62rem;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
-
-.bag-surface {
-  display: grid;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-lg);
-  background:
-    radial-gradient(circle at 50% 0, rgb(146 136 255 / 5%), transparent 13rem),
-    linear-gradient(180deg, rgb(14 19 31 / 72%), rgb(7 10 17 / 70%));
-  box-shadow: var(--ui-shadow-inset);
-}
-
-.bag-surface__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ui-space-3);
-}
-
-.bag-surface__header > div {
-  display: grid;
-  gap: 1px;
-}
-
-.bag-surface__header small,
-.bag-surface__header > span {
-  color: var(--ui-color-text-muted);
-  font-size: .58rem;
-}
-
-.bag-surface__header strong {
-  font-size: var(--ui-font-size-sm);
-}
-
-.bag-surface__header > span {
-  padding: 4px 7px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-}
-
-.bag-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ui-space-2);
-}
-
-.bag-cell {
-  position: relative;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-md);
-  background:
-    radial-gradient(circle at 50% 35%, rgb(255 255 255 / 4%), transparent 62%),
-    var(--ui-color-surface-2);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%);
-  color: var(--ui-color-text-primary);
-}
-
+.bag-surface { display: grid; gap: var(--ui-space-3); padding: var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-lg); background: radial-gradient(circle at 50% 0, rgb(146 136 255 / 5%), transparent 13rem), linear-gradient(180deg, rgb(14 19 31 / 72%), rgb(7 10 17 / 70%)); box-shadow: var(--ui-shadow-inset); }
+.bag-surface__header { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); }
+.bag-surface__header > div { display: grid; gap: 1px; }
+.bag-surface__header small, .bag-surface__header > span { color: var(--ui-color-text-muted); font-size: .58rem; }
+.bag-surface__header strong { font-size: var(--ui-font-size-sm); }
+.bag-surface__header > span { padding: 4px 7px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-round); }
+.bag-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ui-space-2); }
+.bag-cell { position: relative; aspect-ratio: 1; overflow: hidden; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-md); background: radial-gradient(circle at 50% 35%, rgb(255 255 255 / 4%), transparent 62%), var(--ui-color-surface-2); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%); color: var(--ui-color-text-primary); }
 .bag-cell[data-rarity='Uncommon'] { border-color: color-mix(in srgb, var(--ui-color-success) 70%, var(--ui-color-border)); }
 .bag-cell[data-rarity='Rare'] { border-color: color-mix(in srgb, var(--ui-color-secondary) 72%, var(--ui-color-border)); }
 .bag-cell[data-rarity='Epic'] { border-color: color-mix(in srgb, var(--ui-color-primary) 82%, var(--ui-color-border)); }
-.bag-cell[data-rarity='Legendary'],
-.bag-cell[data-rarity='Unique'] {
-  border-color: var(--ui-color-gold);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 12px rgb(232 200 102 / 10%);
-}
+.bag-cell[data-rarity='Legendary'], .bag-cell[data-rarity='Unique'] { border-color: var(--ui-color-gold); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 12px rgb(232 200 102 / 10%); }
+.bag-cell[data-locked='true'] { box-shadow: inset 0 0 0 1px rgb(232 200 102 / 12%), 0 0 12px rgb(232 200 102 / 8%); }
+.bag-cell--empty { opacity: .24; }
+.bag-cell__icon { display: grid; height: 100%; place-items: center; font-size: clamp(1.35rem, 7vw, 1.85rem); }
+.bag-cell__new { position: absolute; z-index: 2; top: 4px; left: 4px; padding: 2px 4px; border: 1px solid rgb(184 177 255 / 48%); border-radius: 4px; background: rgb(20 17 44 / 92%); color: #c8c3ff; font-size: .47rem; font-weight: 800; letter-spacing: .04em; }
+.bag-cell__lock { position: absolute; z-index: 2; top: 4px; right: 4px; display: grid; width: 1rem; height: 1rem; place-items: center; border: 1px solid rgb(232 200 102 / 48%); border-radius: 50%; background: rgb(31 27 12 / 92%); color: var(--ui-color-gold); font-size: .45rem; }
+.bag-cell__quantity { position: absolute; right: 4px; bottom: 3px; padding: 1px 4px; border-radius: 5px; background: #080b14e8; color: white; font-size: .67rem; }
+.bag-cell__quality { position: absolute; z-index: 2; right: 4px; bottom: 3px; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 86%)); }
+.bag-cell__quality :deep(.item-quality-stars__star) { width: .5rem; height: .5rem; }
+.bag-cell--generated .bag-cell__quantity { bottom: .85rem; }
+.bag-cell__icon img { width: 68%; height: 68%; object-fit: contain; }
+.bag-cell__icon :deep(.icon-generator svg) { width: 54%; height: 54%; }
+.item-detail__icon img { width: 100%; height: 100%; object-fit: cover; }
+.bag-cell__rarity { position: absolute; right: 15%; bottom: 0; left: 15%; height: 2px; border-radius: var(--ui-radius-round); background: currentColor; opacity: .34; }
 
-.bag-cell[data-locked='true'] {
-  box-shadow: inset 0 0 0 1px rgb(232 200 102 / 12%), 0 0 12px rgb(232 200 102 / 8%);
-}
+.item-detail { display: grid; gap: var(--ui-space-3); }
+.item-detail p { margin: 0; }
+.item-detail__identity { display: flex; align-items: center; gap: var(--ui-space-3); }
+.item-detail__identity > div { display: grid; gap: 2px; }
+.item-detail__identity p, .item-detail__roll { margin: 0; padding: 7px 9px; border: 1px solid rgb(146 136 255 / 24%); border-radius: var(--ui-radius-sm); background: rgb(146 136 255 / 6%); color: #c9c5ff; font-size: .62rem; line-height: 1.4; }
+.item-detail__levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-border); }
+.item-detail__levels > div { display: grid; gap: 2px; padding: 10px var(--ui-space-3); background: var(--ui-color-surface-2); }
+.item-detail__levels small { color: var(--ui-color-text-muted); font-size: .52rem; font-weight: 800; letter-spacing: .06em; }
+.item-detail__levels strong { color: var(--ui-color-text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.item-detail__levels span { color: var(--ui-color-text-muted); font-size: .56rem; }
+.item-quality-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--ui-color-gold) 32%, var(--ui-color-border)); border-radius: var(--ui-radius-md); background: linear-gradient(135deg, rgb(232 200 102 / 8%), rgb(255 255 255 / 1%)); }
+.item-quality-summary > div { display: grid; gap: 2px; padding: var(--ui-space-3); }
+.item-quality-summary small { color: var(--ui-color-text-muted); font-size: .54rem; font-weight: 800; letter-spacing: .07em; }
+.item-quality-summary strong { color: var(--ui-color-text-primary); font-size: .7rem; font-variant-numeric: tabular-nums; }
+.item-quality-summary__perfect { grid-column: 1 / -1; padding: 7px var(--ui-space-3); border-top: 1px solid rgb(232 200 102 / 20%); color: var(--ui-color-gold); font-size: .58rem; font-weight: 900; letter-spacing: .08em; text-align: center; }
+.item-detail__description { color: var(--ui-color-text-muted); }
+.item-detail__locked { width: fit-content; margin-top: 2px; padding: 3px 6px; border: 1px solid rgb(232 200 102 / 38%); border-radius: var(--ui-radius-round); color: var(--ui-color-gold); font-size: .54rem; font-weight: 800; letter-spacing: .07em; }
+.item-detail__icon { display: grid; width: 4.4rem; height: 4.4rem; place-items: center; border: 1px solid var(--ui-color-border-strong); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: var(--ui-color-primary); font-size: 2rem; }
+.item-detail__icon[data-rarity='Legendary'], .item-detail__icon[data-rarity='Unique'] { border-color: var(--ui-color-gold); color: var(--ui-color-gold); }
+.item-detail dl { display: grid; gap: var(--ui-space-1); margin: 0; padding: var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: rgb(255 255 255 / 1.5%); }
+.item-detail dl div { color: var(--ui-color-success); }
+.item-comparison { display: grid; gap: var(--ui-space-2); padding: var(--ui-space-3); border: 1px solid color-mix(in srgb, var(--ui-color-primary) 34%, var(--ui-color-border)); border-radius: var(--ui-radius-md); background: linear-gradient(180deg, rgb(146 136 255 / 6%), rgb(255 255 255 / 1%)); }
+.item-comparison > header { display: flex; align-items: start; justify-content: space-between; gap: var(--ui-space-2); }
+.item-comparison > header > div { display: grid; gap: 2px; }
+.item-comparison > header small, .item-comparison > header > span { color: var(--ui-color-text-muted); font-size: .58rem; }
+.item-comparison > header small { color: #b8b1ff; font-weight: 700; letter-spacing: .08em; }
+.comparison-grid { display: grid; gap: 5px; }
+.comparison-grid > div { display: grid; grid-template-columns: minmax(0, 1fr) auto 3.6rem; align-items: center; gap: var(--ui-space-2); padding-top: 5px; border-top: 1px solid rgb(255 255 255 / 5%); font-size: .67rem; }
+.comparison-grid small { color: var(--ui-color-text-muted); font-variant-numeric: tabular-nums; }
+.comparison-grid b { justify-self: end; color: var(--ui-color-text-muted); font-variant-numeric: tabular-nums; }
+.comparison-grid b[data-delta='up'] { color: var(--ui-color-success); }
+.comparison-grid b[data-delta='down'] { color: var(--ui-color-danger); }
+.item-detail__error { margin: 0; padding: var(--ui-space-2) var(--ui-space-3); border: 1px solid rgb(216 95 114 / 28%); border-radius: var(--ui-radius-md); background: rgb(216 95 114 / 6%); color: #ef9bab; font-size: .68rem; }
+.item-detail__hint { padding: var(--ui-space-3); border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-md); background: var(--ui-color-surface-2); color: var(--ui-color-text-muted); font-size: var(--ui-font-size-sm); }
+.item-detail__hint--locked { border-color: rgb(232 200 102 / 26%); background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2)); color: #d8c77e; }
+.inventory-tools__primary { display: grid; gap: var(--ui-space-2); }
+.inventory-tools__primary > small, .inventory-tools__context { color: var(--ui-color-text-muted); font-size: var(--ui-font-size-xs); font-weight: 700; }
+.inventory-tools > :deep(.ui-button) { width: 100%; }
+.inventory-filter-sheet { display: grid; gap: var(--ui-space-4); }
+.inventory-filter-sheet .filter-row { grid-template-columns: 5rem minmax(0, 1fr); }
+.bag-cell__icon :deep(.icon-generator), .item-detail__icon :deep(.icon-generator) { border: 0; border-radius: inherit; background: transparent; box-shadow: none; }
+.bag-cell__lock :deep(.icon-generator) { border: 0; border-radius: inherit; background: transparent; box-shadow: none; color: var(--ui-color-gold); }
 
-.bag-cell--empty {
-  opacity: .24;
-}
-
-.bag-cell__icon {
-  display: grid;
-  height: 100%;
-  place-items: center;
-  font-size: clamp(1.35rem, 7vw, 1.85rem);
-}
-
-.bag-cell__new {
-  position: absolute;
-  z-index: 2;
-  top: 4px;
-  left: 4px;
-  padding: 2px 4px;
-  border: 1px solid rgb(184 177 255 / 48%);
-  border-radius: 4px;
-  background: rgb(20 17 44 / 92%);
-  color: #c8c3ff;
-  font-size: .47rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-}
-
-.bag-cell__lock {
-  position: absolute;
-  z-index: 2;
-  top: 4px;
-  right: 4px;
-  display: grid;
-  width: 1rem;
-  height: 1rem;
-  place-items: center;
-  border: 1px solid rgb(232 200 102 / 48%);
-  border-radius: 50%;
-  background: rgb(31 27 12 / 92%);
-  color: var(--ui-color-gold);
-  font-size: .45rem;
-}
-
-.bag-cell__quantity {
-  position: absolute;
-  right: 4px;
-  bottom: 3px;
-  padding: 1px 4px;
-  border-radius: 5px;
-  background: #080b14e8;
-  color: white;
-  font-size: .67rem;
-}
-
-.bag-cell__quality {
-  position: absolute;
-  z-index: 2;
-  right: 4px;
-  bottom: 3px;
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 86%));
-}
-
-.bag-cell__quality :deep(.item-quality-stars__star) {
-  width: .5rem;
-  height: .5rem;
-}
-
-.bag-cell--generated .bag-cell__quantity {
-  bottom: .85rem;
-}
-
-.bag-cell__icon img {
-  width: 68%;
-  height: 68%;
-  object-fit: contain;
-}
-
-.bag-cell__icon :deep(.icon-generator svg) {
-  width: 54%;
-  height: 54%;
-}
-
-.item-detail__icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.bag-cell__rarity {
-  position: absolute;
-  right: 15%;
-  bottom: 0;
-  left: 15%;
-  height: 2px;
-  border-radius: var(--ui-radius-round);
-  background: currentColor;
-  opacity: .34;
-}
-
-.item-detail {
-  display: grid;
-  gap: var(--ui-space-3);
-}
-
-.item-detail p {
-  margin: 0;
-}
-
-.item-detail__identity {
-  display: flex;
-  align-items: center;
-  gap: var(--ui-space-3);
-}
-
-.item-detail__identity > div {
-  display: grid;
-  gap: 2px;
-}
-
-.item-detail__identity p,
-.item-detail__roll {
-  margin: 0;
-  padding: 7px 9px;
-  border: 1px solid rgb(146 136 255 / 24%);
-  border-radius: var(--ui-radius-sm);
-  background: rgb(146 136 255 / 6%);
-  color: #c9c5ff;
-  font-size: .62rem;
-  line-height: 1.4;
-}
-
-.item-detail__levels {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: var(--ui-color-border);
-}
-
-.item-detail__levels > div {
-  display: grid;
-  gap: 2px;
-  padding: 10px var(--ui-space-3);
-  background: var(--ui-color-surface-2);
-}
-
-.item-detail__levels small {
-  color: var(--ui-color-text-muted);
-  font-size: .52rem;
-  font-weight: 800;
-  letter-spacing: .06em;
-}
-
-.item-detail__levels strong {
-  color: var(--ui-color-text-primary);
-  font-size: 1rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.item-detail__levels span {
-  color: var(--ui-color-text-muted);
-  font-size: .56rem;
-}
-
-.item-quality-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 32%, var(--ui-color-border));
-  border-radius: var(--ui-radius-md);
-  background: linear-gradient(135deg, rgb(232 200 102 / 8%), rgb(255 255 255 / 1%));
-}
-
-.item-quality-summary > div {
-  display: grid;
-  gap: 2px;
-  padding: var(--ui-space-3);
-}
-
-.item-quality-summary small {
-  color: var(--ui-color-text-muted);
-  font-size: .54rem;
-  font-weight: 800;
-  letter-spacing: .07em;
-}
-
-.item-quality-summary strong {
-  color: var(--ui-color-text-primary);
-  font-size: .7rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.item-quality-summary__perfect {
-  grid-column: 1 / -1;
-  padding: 7px var(--ui-space-3);
-  border-top: 1px solid rgb(232 200 102 / 20%);
-  color: var(--ui-color-gold);
-  font-size: .58rem;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-align: center;
-}
-
-.item-detail__description {
-  color: var(--ui-color-text-muted);
-}
-
-.item-detail__locked {
-  width: fit-content;
-  margin-top: 2px;
-  padding: 3px 6px;
-  border: 1px solid rgb(232 200 102 / 38%);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-gold);
-  font-size: .54rem;
-  font-weight: 800;
-  letter-spacing: .07em;
-}
-
-.item-detail__icon {
-  display: grid;
-  width: 4.4rem;
-  height: 4.4rem;
-  place-items: center;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-primary);
-  font-size: 2rem;
-}
-
-.item-detail__icon[data-rarity='Legendary'],
-.item-detail__icon[data-rarity='Unique'] {
-  border-color: var(--ui-color-gold);
-  color: var(--ui-color-gold);
-}
-
-.item-detail dl {
-  display: grid;
-  gap: var(--ui-space-1);
-  margin: 0;
-  padding: var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: rgb(255 255 255 / 1.5%);
-}
-
-.item-detail dl div {
-  color: var(--ui-color-success);
-}
-
-.item-comparison {
-  display: grid;
-  gap: var(--ui-space-2);
-  padding: var(--ui-space-3);
-  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 34%, var(--ui-color-border));
-  border-radius: var(--ui-radius-md);
-  background: linear-gradient(180deg, rgb(146 136 255 / 6%), rgb(255 255 255 / 1%));
-}
-
-.item-comparison > header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--ui-space-2);
-}
-
-.item-comparison > header > div {
-  display: grid;
-  gap: 2px;
-}
-
-.item-comparison > header small,
-.item-comparison > header > span {
-  color: var(--ui-color-text-muted);
-  font-size: .58rem;
-}
-
-.item-comparison > header small {
-  color: #b8b1ff;
-  font-weight: 700;
-  letter-spacing: .08em;
-}
-
-.comparison-grid {
-  display: grid;
-  gap: 5px;
-}
-
-.comparison-grid > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 3.6rem;
-  align-items: center;
-  gap: var(--ui-space-2);
-  padding-top: 5px;
-  border-top: 1px solid rgb(255 255 255 / 5%);
-  font-size: .67rem;
-}
-
-.comparison-grid small {
-  color: var(--ui-color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.comparison-grid b {
-  justify-self: end;
-  color: var(--ui-color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.comparison-grid b[data-delta='up'] {
-  color: var(--ui-color-success);
-}
-
-.comparison-grid b[data-delta='down'] {
-  color: var(--ui-color-danger);
-}
-
-.item-detail__error {
-  margin: 0;
-  padding: var(--ui-space-2) var(--ui-space-3);
-  border: 1px solid rgb(216 95 114 / 28%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(216 95 114 / 6%);
-  color: #ef9bab;
-  font-size: .68rem;
-}
-
-.item-detail__hint {
-  padding: var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
-}
-
-.item-detail__hint--locked {
-  border-color: rgb(232 200 102 / 26%);
-  background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2));
-  color: #d8c77e;
-}
-
-.inventory-tools__primary {
-  display: grid;
-  gap: var(--ui-space-2);
-}
-
-.inventory-tools__primary > small,
-.inventory-tools__context {
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-xs);
-  font-weight: 700;
-}
-
-.inventory-tools > :deep(.ui-button) {
-  width: 100%;
-}
-
-.inventory-filter-sheet {
-  display: grid;
-  gap: var(--ui-space-4);
-}
-
-.inventory-filter-sheet .filter-row {
-  grid-template-columns: 5rem minmax(0, 1fr);
-}
-
-.bag-cell__icon :deep(.icon-generator),
-.item-detail__icon :deep(.icon-generator) {
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-  box-shadow: none;
-}
-
-.bag-cell__lock :deep(.icon-generator) {
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ui-color-gold);
-}
-
-@media (min-width: 520px) {
-  .bag-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-
+@media (min-width: 520px) { .bag-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 @media (max-width: 360px) {
-  .inventory-view {
-    padding-inline: var(--ui-space-2);
-  }
-
-  .bag-surface {
-    padding-inline: var(--ui-space-2);
-  }
-
-  .bag-grid {
-    gap: 6px;
-  }
-
-  .filter-row {
-    grid-template-columns: 2.8rem minmax(0, 1fr);
-  }
+  .inventory-view { padding-inline: var(--ui-space-2); }
+  .bag-surface { padding-inline: var(--ui-space-2); }
+  .bag-grid { gap: 6px; }
+  .filter-row { grid-template-columns: 2.8rem minmax(0, 1fr); }
 }
 </style>
