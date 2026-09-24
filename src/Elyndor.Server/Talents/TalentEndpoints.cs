@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Talents;
+using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Talents;
 using Elyndor.Infrastructure.Characters;
@@ -24,10 +25,14 @@ public static class TalentEndpoints
         ClaimsPrincipal user,
         HttpContext context,
         TalentService service,
+        IContentSnapshotProvider contentProvider,
         CancellationToken cancellationToken)
     {
         return TryGetAccountId(user, out Guid accountId)
-            ? ToResult(await service.GetAsync(accountId, cancellationToken), context)
+            ? ToResult(
+                await service.GetAsync(accountId, cancellationToken),
+                context,
+                contentProvider.GetCurrent())
             : Results.Unauthorized();
     }
 
@@ -37,6 +42,7 @@ public static class TalentEndpoints
         HttpContext context,
         TalentService service,
         CharacterOperationGuard operationGuard,
+        IContentSnapshotProvider contentProvider,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -52,7 +58,8 @@ public static class TalentEndpoints
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context),
+                context,
+                contentProvider.GetCurrent()),
             () => InCombatProblem(context),
             cancellationToken);
     }
@@ -63,6 +70,7 @@ public static class TalentEndpoints
         HttpContext context,
         TalentService service,
         CharacterOperationGuard operationGuard,
+        IContentSnapshotProvider contentProvider,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -77,7 +85,8 @@ public static class TalentEndpoints
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context),
+                context,
+                contentProvider.GetCurrent()),
             () => InCombatProblem(context),
             cancellationToken);
     }
@@ -88,6 +97,7 @@ public static class TalentEndpoints
         HttpContext context,
         TalentService service,
         CharacterOperationGuard operationGuard,
+        IContentSnapshotProvider contentProvider,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -102,7 +112,8 @@ public static class TalentEndpoints
                     request.ExpectedStateVersion,
                     request.MutationId,
                     cancellationToken),
-                context),
+                context,
+                contentProvider.GetCurrent()),
             () => InCombatProblem(context),
             cancellationToken);
     }
@@ -116,9 +127,12 @@ public static class TalentEndpoints
                 ["correlationId"] = context.TraceIdentifier
             });
 
-    private static IResult ToResult(TalentOperationResult result, HttpContext context)
+    private static IResult ToResult(
+        TalentOperationResult result,
+        HttpContext context,
+        GameContentSnapshot content)
     {
-        if (result.IsSuccess) return Results.Ok(ToResponse(result.Snapshot!));
+        if (result.IsSuccess) return Results.Ok(ToResponse(result.Snapshot!, content));
         int status = result.ErrorCode switch
         {
             TalentErrorCodes.Conflict or TalentErrorCodes.MutationConflict =>
@@ -135,7 +149,9 @@ public static class TalentEndpoints
             });
     }
 
-    private static TalentSnapshotResponse ToResponse(TalentStateSnapshot snapshot)
+    private static TalentSnapshotResponse ToResponse(
+        TalentStateSnapshot snapshot,
+        GameContentSnapshot content)
     {
         IReadOnlyDictionary<string, int> activeRanks =
             snapshot.State.GetRanks(snapshot.State.ActiveLoadoutId);
@@ -154,24 +170,7 @@ public static class TalentEndpoints
                 branch.Name,
                 branch.Fantasy,
                 branch.NodeCount)).ToArray(),
-            snapshot.Tree.Nodes.Select(node => new TalentNodeResponse(
-                node.Id,
-                node.BranchId,
-                node.Tier,
-                node.RequiredSpentPoints,
-                node.Name,
-                node.EnglishName,
-                node.MaxRank,
-                node.Prerequisites.Select(item => new TalentPrerequisiteResponse(
-                    item.TalentId,
-                    item.RequiredRank)).ToArray(),
-                node.Description,
-                node.RequiredLevel,
-                node.IconId,
-                TalentRuntimeAvailability.RuntimeStatus(node),
-                node.Modifiers?.FirstOrDefault(modifier =>
-                    modifier.Type == TalentModifierType.AbilityModifier
-                    && modifier.Key == TalentModifierKeys.UnlockAbility)?.TargetId)).ToArray(),
+            snapshot.Tree.Nodes.Select(node => ToNodeResponse(node, content)).ToArray(),
             [
                 new TalentLoadoutResponse(
                     TalentLoadoutIds.Loadout1,
@@ -182,6 +181,42 @@ public static class TalentEndpoints
                     snapshot.Loadout2Ranks,
                     snapshot.Loadout2Ranks.Values.Sum())
             ]);
+    }
+
+    private static TalentNodeResponse ToNodeResponse(
+        TalentDefinition node,
+        GameContentSnapshot content)
+    {
+        string? unlockedAbilityId = node.Modifiers?.FirstOrDefault(modifier =>
+            modifier.Type == TalentModifierType.AbilityModifier
+            && modifier.Key == TalentModifierKeys.UnlockAbility)?.TargetId;
+        string? unlockedAbilityName = null;
+
+        if (!string.IsNullOrWhiteSpace(unlockedAbilityId)
+            && content.Indexes.AbilitiesById.TryGetValue(unlockedAbilityId, out var ability))
+        {
+            unlockedAbilityName = string.IsNullOrWhiteSpace(ability.DisplayName)
+                ? ability.Id
+                : ability.DisplayName;
+        }
+
+        return new TalentNodeResponse(
+            node.Id,
+            node.BranchId,
+            node.Tier,
+            node.RequiredSpentPoints,
+            node.Name,
+            node.EnglishName,
+            node.MaxRank,
+            node.Prerequisites.Select(item => new TalentPrerequisiteResponse(
+                item.TalentId,
+                item.RequiredRank)).ToArray(),
+            node.Description,
+            node.RequiredLevel,
+            node.IconId,
+            TalentRuntimeAvailability.RuntimeStatus(node),
+            unlockedAbilityId,
+            unlockedAbilityName);
     }
 
     private static bool TryGetAccountId(

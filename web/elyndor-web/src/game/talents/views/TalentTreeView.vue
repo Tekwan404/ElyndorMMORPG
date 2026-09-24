@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { TalentLoadoutId, TalentNode, TalentSnapshot } from '@/api/contracts'
+import { unlockedAbilityLabel } from '@/game/talents/talentAbilityPresentation'
 import { resolveTalentArt } from '@/game/talents/talentArt'
 import {
   resolveWarriorTalentVisualPosition,
@@ -168,20 +169,6 @@ function mutationErrorLabel(code: string): string {
     talent_level_required: 'Нужен более высокий уровень.',
     talent_state_conflict: 'Таланты изменились. Данные обновлены.',
   }[code] ?? 'Не удалось изменить таланты. Попробуйте ещё раз.'
-}
-
-function abilityLabel(abilityId: string): string {
-  return {
-    STRIKE: 'Удар', WILD_STRIKE: 'Дикий удар', WHIRLWIND: 'Вихрь', BASTION: 'Бастион',
-    BERSERK: 'Берсерк', SHIELD_BASH: 'Удар щитом', PROVOKE: 'Провокация',
-    HEAVY_BLOW: 'Тяжёлый удар', BATTLE_FOCUS: 'Боевой фокус', BATTLE_SHOUT: 'Боевой клич',
-    MAGE_FIREBALL: 'Огненный шар', MAGE_ARCANE_SPARK: 'Тайная искра', MAGE_ICE_SHARD: 'Ледяной осколок',
-    FLAME_FLASH: 'Вспышка', FIRE_WAVE: 'Огненная волна', COMBUSTION: 'Возгорание', FIRE_COMET: 'Огненная комета',
-    ARCANE_BURST: 'Тайный взрыв', MANA_OVERLOAD: 'Перегрузка маны',
-    ARCANE_CASCADE: 'Арканный каскад', ARCANE_SEAL: 'Тайная печать',
-    ICE_LANCE: 'Ледяное копьё', ICE_FRACTURE: 'Ледяной раскол',
-    HEART_OF_WINTER: 'Сердце зимы', FROST_SEAL: 'Морозная печать',
-  }[abilityId] ?? 'Способность'
 }
 
 function talentName(talentId: string): string {
@@ -369,7 +356,7 @@ onMounted(loadTalents)
           <div><p>{{ activeBranch.name }} · ряд {{ visualRowFor(selectedTalent) }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
         </div>
         <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
-        <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
+        <p v-if="unlockedAbilityLabel(selectedTalent)" class="talent-detail__ability">Открывает способность «{{ unlockedAbilityLabel(selectedTalent) }}»</p>
         <p v-if="selectedTalent.runtimeStatus !== 'SUPPORTED'" class="talent-detail__deferred">Талант пока недоступен.</p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
