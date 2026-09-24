@@ -30,7 +30,7 @@ const healthRatio = computed(() => props.actor.maxHp > 0
     :data-aggro="aggro"
     :data-local="local"
     :aria-pressed="selected"
-    :aria-label="`${actor.name}, ${Math.round(healthRatio)}% HP${aggro ? ', aggro' : ''}`"
+    :aria-label="`${actor.name}, ${Math.round(healthRatio)}% HP${aggro ? ', под агро' : ''}`"
     :disabled="disabled"
     @click="emit('select', actor.actorId)"
   >
@@ -39,7 +39,7 @@ const healthRatio = computed(() => props.actor.maxHp > 0
       <b v-else>{{ actor.name.slice(0, 1).toUpperCase() }}</b>
     </span>
     <span class="combat-friendly-actor__status">
-      <span v-if="aggro" class="combat-friendly-actor__marker">AGGRO</span>
+      <span v-if="aggro" class="combat-friendly-actor__marker">АГРО</span>
       <span v-if="selected" class="combat-friendly-actor__marker combat-friendly-actor__marker--selected">ЦЕЛЬ</span>
     </span>
     <span class="combat-friendly-actor__name">{{ actor.name }}</span>
@@ -49,6 +49,7 @@ const healthRatio = computed(() => props.actor.maxHp > 0
 
 <style scoped>
 .combat-friendly-actor {
+  position: relative;
   display: flex;
   width: 100%;
   min-width: 0;

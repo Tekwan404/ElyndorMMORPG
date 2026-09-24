@@ -82,6 +82,22 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal(21, locations.Length);
         Assert.Contains(locations, location =>
             string.Equals(location.Id, "SHATTERED_ORDER_CITADEL_TEST", StringComparison.Ordinal));
+        WorldLocationResponse forest = Assert.Single(locations, location =>
+            string.Equals(location.Id, "WHISPERING_FOREST", StringComparison.Ordinal));
+        Assert.NotEmpty(forest.Residents ?? []);
+        Assert.All(forest.Residents!, resident =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(resident.MonsterId));
+            Assert.False(string.IsNullOrWhiteSpace(resident.DisplayName));
+            Assert.True(resident.Level > 0);
+        });
+        Assert.NotEmpty(forest.Loot ?? []);
+        Assert.All(forest.Loot!, item =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(item.ItemId));
+            Assert.False(string.IsNullOrWhiteSpace(item.Name));
+            Assert.False(string.IsNullOrWhiteSpace(item.IconId));
+        });
 
         HttpResponseMessage forestTravelResponse = await client.PostAsJsonAsync(
             "/api/v1/world/travel",
