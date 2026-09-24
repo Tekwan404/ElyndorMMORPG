@@ -5,7 +5,7 @@ public sealed record TalentNodeResponse(
     string Id, string BranchId, int Tier, int RequiredSpentPoints, string Name,
     string EnglishName, int MaxRank, IReadOnlyList<TalentPrerequisiteResponse> Prerequisites,
     string Description, int? RequiredLevel, string? IconId, string RuntimeStatus,
-    string? UnlockedAbilityId);
+    string? UnlockedAbilityId, string? UnlockedAbilityName);
 public sealed record TalentBranchResponse(string Id, string Name, string Fantasy, int NodeCount);
 public sealed record TalentLoadoutResponse(string Id, IReadOnlyDictionary<string, int> SelectedRanks, int SpentPoints);
 public sealed record TalentSnapshotResponse(
