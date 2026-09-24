@@ -142,6 +142,24 @@ public sealed class EncounterActionPlannerTests
         Assert.Contains(errors, error => error.Contains("summon", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(101)]
+    public void InvalidSummonInitialHealthPercentageIsRejected(decimal initialHpPercent)
+    {
+        EncounterDefinition encounter = SinglePhase(
+            new EncounterActionDefinition(
+                EncounterActionType.Summon,
+                Summon: new SummonDefinition(
+                    "TEST_ADD",
+                    Count: 1,
+                    InitialHpPercent: initialHpPercent)));
+
+        Assert.Contains(
+            EncounterDefinitionValidator.Validate(encounter),
+            error => error.Contains("summon", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static EncounterDefinition SinglePhase(
         params EncounterActionDefinition[] actions) =>
         new(

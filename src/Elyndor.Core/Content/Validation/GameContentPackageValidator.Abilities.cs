@@ -83,6 +83,7 @@ public static partial class GameContentPackageValidator
                         && (string.IsNullOrWhiteSpace(ability.DisplayName)
                             || string.IsNullOrWhiteSpace(ability.Description))
                     || ability.Actions?.Any(action => action.Amount < 0
+                            && action.Type != AbilityActionType.ResourceChange
                         || action.AttackPowerCoefficient < 0
                         || action.ArmorPenetrationBonus < 0
                         || action.Delay is { } delay && delay < TimeSpan.Zero

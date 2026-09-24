@@ -40,6 +40,7 @@ public sealed class LinkedSummonRegistry
         if (string.IsNullOrWhiteSpace(definition.MonsterId)
             || definition.Count <= 0
             || definition.MaxActive < 0
+            || definition.InitialHpPercent is <= 0 or > 100
             || definition.Lifetime is { } lifetime && lifetime <= TimeSpan.Zero)
         {
             throw new ArgumentException("Summon definition is invalid.", nameof(definition));

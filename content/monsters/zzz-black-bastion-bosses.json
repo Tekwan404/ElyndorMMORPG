@@ -1,0 +1,113 @@
+{
+  "contentVersion": "0.26.0",
+  "balanceVersion": "0.22.0",
+  "publishedAtUtc": "2026-09-25T00:00:00+00:00",
+  "monsters": [
+    {
+      "id": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40", "name": "Комендант Врат Рагнор", "rank": "Boss", "level": 40, "maxHp": 85000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 7, "criticalChance": 12, "criticalDamage": 1, "armor": 297, "magicResistance": 134, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 364, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.1500", "autoAttackBaseDamage": 224.8, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 202, "autoAttackBaseDamageMax": 247,
+      "abilityIds": [ "RAGNOR_CLEAVE", "RAGNOR_BLACK_FLAME", "RAGNOR_WAR_STOMP" ], "aiProfileId": "BLACK_BASTION_RAGNOR_AI", "version": 2,
+      "xpReward": 248625, "lootTableId": "LOOT_BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40", "goldRewardMin": 880, "goldRewardMax": 1189,
+      "displayName": "Комендант Врат Рагнор", "description": "Комендант Чёрного Бастиона, давящий группу рассечениями, чёрным пламенем и оглушающими ударами.", "artId": "komendant-vrat-ragnor"
+    },
+    {
+      "id": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40", "name": "Инквизитор Сейра", "rank": "Boss", "level": 40, "maxHp": 90000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 7, "criticalChance": 12, "criticalDamage": 1, "armor": 297, "magicResistance": 134, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 364, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.1500", "autoAttackBaseDamage": 224.8, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 202, "autoAttackBaseDamageMax": 247,
+      "abilityIds": [ "SEIRA_DARK_SMITE", "SEIRA_BLACK_AEGIS" ], "aiProfileId": "BLACK_BASTION_SEIRA_AI", "version": 2,
+      "xpReward": 272025, "lootTableId": "LOOT_BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40", "goldRewardMin": 948, "goldRewardMax": 1282,
+      "displayName": "Инквизитор Сейра", "description": "Тёмная инквизиторша, защищающая и возвращающая в бой своего Палача.", "artId": "inkvizitor-seira"
+    },
+    {
+      "id": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40", "name": "Рунный Колосс Арк-Тор", "rank": "Boss", "level": 40, "maxHp": 100000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 6, "criticalChance": 12, "criticalDamage": 1, "armor": 380, "magicResistance": 140, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 364, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.7500", "autoAttackBaseDamage": 236.0, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 212, "autoAttackBaseDamageMax": 260,
+      "abilityIds": [ "ARK_TOR_STONE_SMASH" ], "aiProfileId": "BLACK_BASTION_ARK_TOR_AI", "version": 2,
+      "xpReward": 295425, "lootTableId": "LOOT_BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40", "goldRewardMin": 1017, "goldRewardMax": 1374,
+      "displayName": "Рунный Колосс Арк-Тор", "description": "Рунный исполин, постепенно пробуждающий каменных хранителей зала.", "artId": "runnyi-koloss-ark-tor"
+    },
+    {
+      "id": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "name": "Маршал Пепельного Знамени", "rank": "Boss", "level": 40, "maxHp": 105000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 7, "criticalChance": 12, "criticalDamage": 1, "armor": 297, "magicResistance": 134, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 364, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.1500", "autoAttackBaseDamage": 224.8, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 202, "autoAttackBaseDamageMax": 247,
+      "abilityIds": [ "ASHEN_MARSHAL_FLURRY", "ASHEN_MARSHAL_ENRAGE", "ASHEN_MARSHAL_SUNDER" ], "aiProfileId": "BLACK_BASTION_MARSHAL_AI", "version": 2,
+      "xpReward": 318824, "lootTableId": "LOOT_BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "goldRewardMin": 1085, "goldRewardMax": 1467,
+      "displayName": "Маршал Пепельного Знамени", "description": "Полевой командир, зовущий резервистов и лекаря, когда бой складывается не в его пользу.", "artId": "marshal-pepelnogo-znameni"
+    },
+    {
+      "id": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "name": "Магистр Чёрной Звезды", "rank": "Boss", "level": 40, "maxHp": 115000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 7, "criticalChance": 12, "criticalDamage": 1, "armor": 232, "magicResistance": 194, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 200, "spellPower": 328 },
+      "autoAttackInterval": "00:00:02.3500", "autoAttackBaseDamage": 197.8, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 178, "autoAttackBaseDamageMax": 218,
+      "abilityIds": [ "BLACK_STAR_MANA_BURN", "BLACK_STAR_INFERNO", "BLACK_STAR_LIVING_BOMB" ], "aiProfileId": "BLACK_BASTION_BLACK_STAR_AI", "version": 2,
+      "xpReward": 342225, "lootTableId": "LOOT_BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "goldRewardMin": 1154, "goldRewardMax": 1559,
+      "displayName": "Магистр Чёрной Звезды", "description": "Магистр разрушительной звёздной магии, отмечающий игроков живой бомбой.", "artId": "magistr-chiornoi-zvezdy"
+    },
+    {
+      "id": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "name": "Первый Страж Мор-Кар", "rank": "Boss", "level": 40, "maxHp": 130000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 6, "criticalChance": 12, "criticalDamage": 1, "armor": 380, "magicResistance": 140, "armorPenetration": 0.053, "magicPenetration": 0.053, "attackPower": 364, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.7500", "autoAttackBaseDamage": 236.0, "autoAttackAttackPowerCoefficient": 0.55, "autoAttackBaseDamageMin": 212, "autoAttackBaseDamageMax": 260,
+      "abilityIds": [ "MOR_KAR_HAND_OF_THE_FIRST", "MOR_KAR_ANCIENT_WEAPON", "MOR_KAR_AVATAR", "MOR_KAR_GUARDIAN_MARK" ], "aiProfileId": "BLACK_BASTION_MOR_KAR_AI", "version": 2,
+      "xpReward": 365625, "lootTableId": "LOOT_BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "goldRewardMin": 1222, "goldRewardMax": 1652,
+      "displayName": "Первый Страж Мор-Кар", "description": "Первый Страж Бастиона, сочетающий тяжёлые серии ударов, клейма и защитный аватар.", "artId": "pervyi-strazh-mor-kar"
+    },
+    {
+      "id": "SEIRA_INQUISITION_EXECUTIONER", "name": "Палач Инквизиции", "rank": "Elite", "level": 40, "maxHp": 24000,
+      "stats": { "level": 40, "accuracy": 101, "dodge": 6, "criticalChance": 10, "criticalDamage": 1, "armor": 250, "magicResistance": 110, "armorPenetration": 0.04, "magicPenetration": 0, "attackPower": 300, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.3", "autoAttackBaseDamage": 170, "autoAttackAttackPowerCoefficient": 0.5, "autoAttackBaseDamageMin": 153, "autoAttackBaseDamageMax": 187,
+      "abilityIds": [ "SEIRA_EXECUTIONER_CLEAVE" ], "aiProfileId": "SEIRA_EXECUTIONER_AI", "version": 1, "xpReward": 0, "lootTableId": null, "goldRewardMin": 0, "goldRewardMax": 0,
+      "displayName": "Палач Инквизиции", "description": "Связанный с Сейрой защитник без отдельной награды.", "artId": "alebardshchik-bastiona"
+    },
+    {
+      "id": "ARK_TOR_RUNE_SENTINEL", "name": "Рунный хранитель", "rank": "Elite", "level": 40, "maxHp": 11000,
+      "stats": { "level": 40, "accuracy": 100, "dodge": 3, "criticalChance": 6, "criticalDamage": 1, "armor": 300, "magicResistance": 120, "armorPenetration": 0.02, "magicPenetration": 0, "attackPower": 230, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.7", "autoAttackBaseDamage": 130, "autoAttackAttackPowerCoefficient": 0.45, "autoAttackBaseDamageMin": 117, "autoAttackBaseDamageMax": 143,
+      "abilityIds": [ "RUNE_GUARDIAN_WHIRLWIND" ], "aiProfileId": "ARK_TOR_RUNE_SENTINEL_AI", "version": 1, "xpReward": 0, "lootTableId": null, "goldRewardMin": 0, "goldRewardMax": 0,
+      "displayName": "Рунный хранитель", "description": "Пробуждённый Арк-Тором страж без отдельной награды.", "artId": "runnyi-koloss-ark-tor"
+    },
+    {
+      "id": "ASHEN_RESERVIST", "name": "Пепельный резервист", "rank": "Normal", "level": 40, "maxHp": 9000,
+      "stats": { "level": 40, "accuracy": 100, "dodge": 6, "criticalChance": 7, "criticalDamage": 1, "armor": 220, "magicResistance": 90, "armorPenetration": 0.02, "magicPenetration": 0, "attackPower": 220, "spellPower": 0 },
+      "autoAttackInterval": "00:00:02.2", "autoAttackBaseDamage": 120, "autoAttackAttackPowerCoefficient": 0.42, "autoAttackBaseDamageMin": 108, "autoAttackBaseDamageMax": 132,
+      "abilityIds": [ "ASHEN_RESERVIST_STRIKE" ], "aiProfileId": "ASHEN_RESERVIST_AI", "version": 1, "xpReward": 0, "lootTableId": null, "goldRewardMin": 0, "goldRewardMax": 0,
+      "displayName": "Пепельный резервист", "description": "Подкрепление Маршала без отдельной награды.", "artId": "soldat-zatmeniia"
+    },
+    {
+      "id": "ASHEN_FIELD_MEDIC", "name": "Полевой лекарь", "rank": "Normal", "level": 40, "maxHp": 7500,
+      "stats": { "level": 40, "accuracy": 100, "dodge": 7, "criticalChance": 5, "criticalDamage": 1, "armor": 150, "magicResistance": 150, "armorPenetration": 0, "magicPenetration": 0.02, "attackPower": 80, "spellPower": 240 },
+      "autoAttackInterval": "00:00:03", "autoAttackBaseDamage": 70, "autoAttackAttackPowerCoefficient": 0.2, "autoAttackBaseDamageMin": 63, "autoAttackBaseDamageMax": 77,
+      "abilityIds": [ "ASHEN_MEDIC_HEAL" ], "aiProfileId": "ASHEN_FIELD_MEDIC_AI", "version": 1, "xpReward": 0, "lootTableId": null, "goldRewardMin": 0, "goldRewardMax": 0,
+      "displayName": "Полевой лекарь", "description": "Приоритетная цель, прерываемо лечащая Маршала.", "artId": "inkvizitor-seira"
+    }
+  ],
+  "monsterAiProfiles": [
+    { "id": "BLACK_BASTION_RAGNOR_AI", "priorityAbilityIds": [ "RAGNOR_BLACK_FLAME", "RAGNOR_WAR_STOMP", "RAGNOR_FRENZY_CLEAVE", "RAGNOR_CLEAVE" ], "version": 1, "abilityRules": [
+      { "abilityId": "RAGNOR_BLACK_FLAME", "priority": 300, "initialDelay": "00:00:05", "targetSelector": "RandomEnemy" },
+      { "abilityId": "RAGNOR_WAR_STOMP", "priority": 200, "initialDelay": "00:00:08" },
+      { "abilityId": "RAGNOR_FRENZY_CLEAVE", "priority": 110, "targetSelector": "CurrentThreatTarget" },
+      { "abilityId": "RAGNOR_CLEAVE", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+    ] },
+    { "id": "BLACK_BASTION_SEIRA_AI", "priorityAbilityIds": [ "SEIRA_INQUISITOR_HEAL", "SEIRA_BLACK_AEGIS", "SEIRA_DARK_SMITE" ], "version": 1, "abilityRules": [
+      { "abilityId": "SEIRA_INQUISITOR_HEAL", "priority": 300, "targetSelector": "LowestHpAlly" },
+      { "abilityId": "SEIRA_BLACK_AEGIS", "priority": 200 },
+      { "abilityId": "SEIRA_DARK_SMITE", "priority": 100, "targetSelector": "RandomEnemy" }
+    ] },
+    { "id": "BLACK_BASTION_ARK_TOR_AI", "priorityAbilityIds": [ "ARK_TOR_STONE_SMASH" ], "version": 1, "abilityRules": [ { "abilityId": "ARK_TOR_STONE_SMASH", "priority": 100, "targetSelector": "CurrentThreatTarget" } ] },
+    { "id": "BLACK_BASTION_MARSHAL_AI", "priorityAbilityIds": [ "ASHEN_MARSHAL_ENRAGE", "ASHEN_MARSHAL_FLURRY", "ASHEN_MARSHAL_SUNDER" ], "version": 1, "abilityRules": [
+      { "abilityId": "ASHEN_MARSHAL_ENRAGE", "priority": 300 }, { "abilityId": "ASHEN_MARSHAL_FLURRY", "priority": 200 }, { "abilityId": "ASHEN_MARSHAL_SUNDER", "priority": 100, "targetSelector": "CurrentThreatTarget" }
+    ] },
+    { "id": "BLACK_BASTION_BLACK_STAR_AI", "priorityAbilityIds": [ "BLACK_STAR_ARMAGEDDON", "BLACK_STAR_LIVING_BOMB", "BLACK_STAR_INFERNO", "BLACK_STAR_MANA_BURN" ], "version": 1, "abilityRules": [
+      { "abilityId": "BLACK_STAR_ARMAGEDDON", "priority": 400 }, { "abilityId": "BLACK_STAR_LIVING_BOMB", "priority": 300, "initialDelay": "00:00:06", "targetSelector": "RandomEnemy" },
+      { "abilityId": "BLACK_STAR_INFERNO", "priority": 200, "initialDelay": "00:00:10" }, { "abilityId": "BLACK_STAR_MANA_BURN", "priority": 100, "targetSelector": "RandomManaUser" }
+    ] },
+    { "id": "BLACK_BASTION_MOR_KAR_AI", "priorityAbilityIds": [ "MOR_KAR_AVATAR", "MOR_KAR_HAND_OF_THE_FIRST", "MOR_KAR_GUARDIAN_MARK", "MOR_KAR_ANCIENT_WEAPON", "MOR_KAR_BASTION_TREMOR" ], "version": 1, "abilityRules": [
+      { "abilityId": "MOR_KAR_AVATAR", "priority": 500, "initialDelay": "00:00:12" }, { "abilityId": "MOR_KAR_HAND_OF_THE_FIRST", "priority": 400, "targetSelector": "RandomEnemy" },
+      { "abilityId": "MOR_KAR_GUARDIAN_MARK", "priority": 300, "targetSelector": "CurrentThreatTarget" }, { "abilityId": "MOR_KAR_ANCIENT_WEAPON", "priority": 200, "targetSelector": "CurrentThreatTarget" },
+      { "abilityId": "MOR_KAR_BASTION_TREMOR", "priority": 100 }
+    ] },
+    { "id": "SEIRA_EXECUTIONER_AI", "priorityAbilityIds": [ "SEIRA_EXECUTIONER_CLEAVE" ], "version": 1, "abilityRules": [ { "abilityId": "SEIRA_EXECUTIONER_CLEAVE", "priority": 100, "targetSelector": "CurrentThreatTarget" } ] },
+    { "id": "ARK_TOR_RUNE_SENTINEL_AI", "priorityAbilityIds": [ "RUNE_GUARDIAN_WHIRLWIND" ], "version": 1, "abilityRules": [ { "abilityId": "RUNE_GUARDIAN_WHIRLWIND", "priority": 100 } ] },
+    { "id": "ASHEN_RESERVIST_AI", "priorityAbilityIds": [ "ASHEN_RESERVIST_STRIKE" ], "version": 1, "abilityRules": [ { "abilityId": "ASHEN_RESERVIST_STRIKE", "priority": 100, "targetSelector": "CurrentThreatTarget" } ] },
+    { "id": "ASHEN_FIELD_MEDIC_AI", "priorityAbilityIds": [ "ASHEN_MEDIC_HEAL" ], "version": 1, "abilityRules": [ { "abilityId": "ASHEN_MEDIC_HEAL", "priority": 100, "targetSelector": "OwnerLinkedTarget" } ] }
+  ]
+}

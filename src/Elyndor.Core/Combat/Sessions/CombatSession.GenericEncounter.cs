@@ -389,6 +389,13 @@ public sealed partial class CombatSession
                 now,
                 summon.IsCombatObject,
                 rewardEligible: !summon.NoReward);
+            if (summon.InitialHpPercent < 100)
+            {
+                decimal missingHp = spawned.Actor.MaxHp
+                    * (100m - summon.InitialHpPercent)
+                    / 100m;
+                spawned.Actor.ApplyDamage(missingHp);
+            }
             Guid[] auraTargetActorIds = string.IsNullOrWhiteSpace(summon.AuraEffectId)
                 ? []
                 : ResolveGenericEncounterTargets(summon.AuraTargetSelector, now)

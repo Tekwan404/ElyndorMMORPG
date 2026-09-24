@@ -55,7 +55,8 @@ public sealed record SummonDefinition(
     bool NoReward = true,
     bool IsCombatObject = false,
     string? AuraEffectId = null,
-    string? AuraTargetSelector = null);
+    string? AuraTargetSelector = null,
+    decimal InitialHpPercent = 100);
 
 public sealed record EncounterTriggerDefinition(
     EncounterTriggerType Type,
@@ -217,6 +218,7 @@ public static class EncounterDefinitionValidator
                     || string.IsNullOrWhiteSpace(action.Summon.MonsterId)
                     || action.Summon.Count <= 0
                     || action.Summon.MaxActive < 0
+                    || action.Summon.InitialHpPercent is <= 0 or > 100
                     || action.Summon.Lifetime is { } lifetime && lifetime <= TimeSpan.Zero
                     || action.Summon.AuraEffectId is not null
                         && string.IsNullOrWhiteSpace(action.Summon.AuraEffectId)

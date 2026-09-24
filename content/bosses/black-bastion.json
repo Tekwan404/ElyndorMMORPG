@@ -1,0 +1,61 @@
+{
+  "contentVersion": "0.26.0",
+  "balanceVersion": "0.22.0",
+  "publishedAtUtc": "2026-09-25T00:00:00+00:00",
+  "encounters": [
+    {
+      "id": "BLACK_BASTION_RAGNOR_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40", "version": 1, "displayName": "Комендант Врат Рагнор",
+      "phases": [
+        { "id": "COMMANDER_FRENZY", "displayName": "Ярость Коменданта", "trigger": { "type": "HpAtOrBelow", "threshold": 35, "once": true }, "actions": [
+          { "type": "ApplyEffect", "effectId": "RAGNOR_COMMANDER_FRENZY_HASTE", "targetSelector": "BOSS" }
+        ], "abilityIds": [ "RAGNOR_FRENZY_CLEAVE", "RAGNOR_BLACK_FLAME", "RAGNOR_WAR_STOMP" ] }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION_SEIRA_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40", "version": 1, "displayName": "Инквизитор Сейра",
+      "phases": [
+        { "id": "INQUISITION_EXECUTIONER", "displayName": "Защитник Инквизиции", "trigger": { "type": "CombatStart", "once": true }, "actions": [
+          { "type": "Summon", "summon": { "monsterId": "SEIRA_INQUISITION_EXECUTIONER", "count": 1, "maxActive": 1, "linkToCaster": true, "despawnOnBossDeath": true, "noReward": true, "auraEffectId": "SEIRA_EXECUTIONER_GUARD", "auraTargetSelector": "BOSS" } }
+        ] },
+        { "id": "FINAL_CONFESSION", "displayName": "Последняя исповедь", "trigger": { "type": "HpAtOrBelow", "threshold": 50, "once": true }, "actions": [
+          { "type": "ApplyEffect", "effectId": "SEIRA_FINAL_CONFESSION_SLEEP", "targetSelector": "ALL_PARTY_MEMBERS" },
+          { "type": "Summon", "delay": "00:00:02", "summon": { "monsterId": "SEIRA_INQUISITION_EXECUTIONER", "count": 1, "maxActive": 1, "linkToCaster": true, "despawnOnBossDeath": true, "noReward": true, "auraEffectId": "SEIRA_EXECUTIONER_GUARD", "auraTargetSelector": "BOSS", "initialHpPercent": 60 } },
+          { "type": "ChangeAbilitySet", "abilityIds": [ "SEIRA_DARK_SMITE", "SEIRA_BLACK_AEGIS", "SEIRA_INQUISITOR_HEAL" ] }
+        ] }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION_ARK_TOR_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40", "version": 1, "displayName": "Рунный Колосс Арк-Тор",
+      "phases": [
+        { "id": "AWAKEN_SENTINEL_1", "displayName": "Пробуждение руны", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:08", "once": true }, "actions": [ { "type": "Summon", "summon": { "monsterId": "ARK_TOR_RUNE_SENTINEL", "count": 1, "maxActive": 3, "despawnOnBossDeath": true, "noReward": true } } ] },
+        { "id": "AWAKEN_SENTINEL_2", "displayName": "Пробуждение руны", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:20", "once": true }, "actions": [ { "type": "Summon", "summon": { "monsterId": "ARK_TOR_RUNE_SENTINEL", "count": 1, "maxActive": 3, "despawnOnBossDeath": true, "noReward": true } } ] },
+        { "id": "AWAKEN_SENTINEL_3", "displayName": "Пробуждение руны", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:32", "once": true }, "actions": [ { "type": "Summon", "summon": { "monsterId": "ARK_TOR_RUNE_SENTINEL", "count": 1, "maxActive": 3, "despawnOnBossDeath": true, "noReward": true } } ] },
+        { "id": "AWAKEN_GUARDIANS", "displayName": "Пробуждение хранителей", "trigger": { "type": "HpAtOrBelow", "threshold": 66, "once": true }, "actions": [ { "type": "Summon", "summon": { "monsterId": "ARK_TOR_RUNE_SENTINEL", "count": 2, "maxActive": 3, "despawnOnBossDeath": true, "noReward": true } } ] },
+        { "id": "AWAKEN_WARDERS", "displayName": "Пробуждение старших стражей", "trigger": { "type": "HpAtOrBelow", "threshold": 33, "once": true }, "actions": [ { "type": "Summon", "summon": { "monsterId": "ARK_TOR_RUNE_SENTINEL", "count": 2, "maxActive": 3, "despawnOnBossDeath": true, "noReward": true } } ] }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION_MARSHAL_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "version": 1, "displayName": "Маршал Пепельного Знамени",
+      "phases": [
+        { "id": "INTRUDER_ALERT", "displayName": "Тревога: нарушители", "trigger": { "type": "HpAtOrBelow", "threshold": 40, "once": true }, "actions": [
+          { "type": "Summon", "summon": { "monsterId": "ASHEN_RESERVIST", "count": 2, "maxActive": 2, "despawnOnBossDeath": true, "noReward": true } },
+          { "type": "Summon", "summon": { "monsterId": "ASHEN_FIELD_MEDIC", "count": 1, "maxActive": 1, "linkToCaster": true, "despawnOnBossDeath": true, "noReward": true } }
+        ] }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION_BLACK_STAR_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "version": 1, "displayName": "Магистр Чёрной Звезды",
+      "phases": [
+        { "id": "ARMAGEDDON", "displayName": "Армагеддон Чёрной Звезды", "trigger": { "type": "HpAtOrBelow", "threshold": 5, "once": true }, "actions": [], "abilityIds": [ "BLACK_STAR_MANA_BURN", "BLACK_STAR_INFERNO", "BLACK_STAR_LIVING_BOMB", "BLACK_STAR_ARMAGEDDON" ] }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION_MOR_KAR_ENCOUNTER", "monsterId": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "version": 1, "displayName": "Первый Страж Мор-Кар",
+      "phases": [
+        { "id": "LAST_WATCH", "displayName": "Последний дозор", "trigger": { "type": "HpAtOrBelow", "threshold": 20, "once": true }, "actions": [
+          { "type": "ApplyEffect", "effectId": "MOR_KAR_LAST_WATCH_HASTE", "targetSelector": "BOSS" }
+        ], "abilityIds": [ "MOR_KAR_HAND_OF_THE_FIRST", "MOR_KAR_ANCIENT_WEAPON", "MOR_KAR_GUARDIAN_MARK", "MOR_KAR_BASTION_TREMOR" ] }
+      ]
+    }
+  ]
+}

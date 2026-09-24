@@ -224,6 +224,34 @@ public sealed class GameContentPackageValidatorTests
     }
 
     [Fact]
+    public void ValidateAcceptsNegativeResourceChangeForTargetedResourceDrain()
+    {
+        AbilityDefinition manaBurn = new(
+            "TEST_MANA_BURN",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "SHADOW",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.ResourceChange,
+                    Amount: -20,
+                    ResourceTarget: AbilityResourceTarget.Target)
+            ]);
+        GameContentPackage package = CreatePackage() with { Abilities = [manaBurn] };
+
+        Assert.DoesNotContain(
+            GameContentPackageValidator.Validate(package),
+            error => error.Code == "INVALID_ABILITY_DEFINITION");
+    }
+
+    [Fact]
     public void ValidateRejectsCircularTalentPrerequisites()
     {
         GameContentPackage package = CreatePackage() with
