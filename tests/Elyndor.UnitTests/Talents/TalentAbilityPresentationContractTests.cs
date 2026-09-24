@@ -5,7 +5,7 @@ namespace Elyndor.UnitTests.Talents;
 public sealed class TalentAbilityPresentationContractTests
 {
     [Fact]
-    public void TalentNodeResponse_carries_unlocked_ability_name()
+    public void TalentNodeResponseCarriesUnlockedAbilityName()
     {
         TalentNodeResponse response = new(
             "TALENT_ID",
