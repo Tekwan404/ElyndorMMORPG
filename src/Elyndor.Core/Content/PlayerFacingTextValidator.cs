@@ -1,4 +1,5 @@
 using Elyndor.Core.Items;
+using Elyndor.Core.World;
 
 namespace Elyndor.Core.Content;
 
@@ -65,12 +66,12 @@ internal static class PlayerFacingTextValidator
     }
 
     private static void ValidateLocations(
-        IReadOnlyList<World.LocationDefinition> locations,
+        IReadOnlyList<LocationDefinition> locations,
         List<ContentValidationError> errors)
     {
         for (var index = 0; index < locations.Count; index++)
         {
-            World.LocationDefinition location = locations[index];
+            LocationDefinition location = locations[index];
             ValidateForbiddenFragments(
                 location.Description,
                 $"locations[{index}].description",
