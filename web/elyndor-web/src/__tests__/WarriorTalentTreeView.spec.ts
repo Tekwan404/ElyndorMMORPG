@@ -64,6 +64,24 @@ describe('WarriorTalentTreeView', () => {
     wrapper.unmount()
   })
 
+  it('shows the localized name of an ability unlocked by a talent', async () => {
+    vi.mocked(apiClient.request).mockResolvedValueOnce({
+      ...snapshot,
+      nodes: [{
+        ...snapshot.nodes[0],
+        unlockedAbilityId: 'WARRIOR_SHIELD_WALL',
+        unlockedAbilityName: 'Shield Wall',
+      }],
+    })
+
+    const wrapper = mount(WarriorTalentTreeView)
+    await flushPromises()
+    await wrapper.get('[data-talent-node]').trigger('click')
+
+    expect(document.body.textContent).toContain('Открывает способность «Shield Wall»')
+    wrapper.unmount()
+  })
+
   it('disables learning an upgradable talent when there are no available points', async () => {
     vi.mocked(apiClient.request).mockResolvedValueOnce({
       ...snapshot,
