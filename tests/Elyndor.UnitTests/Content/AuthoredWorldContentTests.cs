@@ -66,22 +66,21 @@ public sealed class AuthoredWorldContentTests
     }
 
     [Fact]
-    public async Task AuthoredRaidsAreStaticContentWithEmptyMobBehaviorAndResolvableLoot()
+    public async Task AuthoredDungeonsAreStaticContentWithEmptyMobBehaviorAndResolvableLoot()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
         GameContentIndexes indexes = GameContentIndexes.For(package);
-        string[] raidIds = ["HEART_OF_BLIGHTED_GROVE", "SHATTERED_ORDER_CITADEL", "BLACK_BASTION"];
-        string[] dungeonIds = raidIds.Select(id => $"{id}_RAID").ToArray();
+        string[] dungeonIds = ["HEART_OF_BLIGHTED_GROVE", "SHATTERED_ORDER_CITADEL", "BLACK_BASTION"];
 
         Assert.Equal(3, package.Dungeons!.Count(dungeon => dungeonIds.Contains(dungeon.Id)));
-        foreach (string raidId in raidIds)
+        foreach (string dungeonId in dungeonIds)
         {
-            Assert.True(indexes.LocationsById.TryGetValue(raidId, out var location));
+            Assert.True(indexes.LocationsById.TryGetValue(dungeonId, out var location));
             Assert.False(location!.AllowAfk);
             Assert.NotNull(location.ArtId);
 
-            var dungeon = package.Dungeons!.Single(definition => definition.Id == $"{raidId}_RAID");
-            Assert.Equal(raidId, dungeon.EntryLocationId);
+            var dungeon = package.Dungeons!.Single(definition => definition.Id == dungeonId);
+            Assert.Equal(dungeonId, dungeon.EntryLocationId);
             Assert.NotEmpty(dungeon.Encounters);
 
             foreach (var encounter in dungeon.Encounters)
