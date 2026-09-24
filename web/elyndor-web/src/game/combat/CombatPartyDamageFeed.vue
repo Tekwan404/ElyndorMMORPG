@@ -128,6 +128,7 @@ watch(
     enemyDamageFeed.value = []
     lastProcessedDamageSequence = currentEventSequence()
   },
+  { flush: 'sync' },
 )
 
 watch(
