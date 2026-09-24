@@ -8,6 +8,8 @@ import './styles/tokens.css'
 import './styles/base.scss'
 import './styles/combat-icons.css'
 import './styles/inventory-mobile-ux.css'
+import './styles/combat-layout-v2.css'
+import './styles/combat-layout-v2-polish.css'
 
 const app = createApp(App)
 const pinia = createPinia()
