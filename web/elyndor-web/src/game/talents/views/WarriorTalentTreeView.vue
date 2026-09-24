@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue'
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { TalentBranchId, TalentLoadoutId, TalentNode, TalentSnapshot } from '@/api/contracts'
 import { resolveTalentArt } from '@/game/talents/talentArt'
+import { unlockedAbilityLabel } from '@/game/talents/talentAbilityPresentation'
 import {
   resolveWarriorTalentVisualPosition,
   WARRIOR_TALENT_VISUAL_COLUMN_COUNT,
@@ -158,21 +159,6 @@ function mutationErrorLabel(code: string): string {
     talent_level_required: 'Уровень персонажа пока недостаточен.',
     talent_state_conflict: 'Состояние талантов изменилось. Данные обновлены.',
   }[code] ?? `Не удалось изменить таланты. Код ошибки: ${code}`
-}
-
-function abilityLabel(abilityId: string): string {
-  return {
-    STRIKE: 'Удар',
-    WILD_STRIKE: 'Дикий удар',
-    WHIRLWIND: 'Вихрь',
-    BASTION: 'Бастион',
-    BERSERK: 'Берсерк',
-    SHIELD_BASH: 'Удар щитом',
-    PROVOKE: 'Провокация',
-    HEAVY_BLOW: 'Тяжёлый удар',
-    BATTLE_FOCUS: 'Боевой фокус',
-    BATTLE_SHOUT: 'Боевой клич',
-  }[abilityId] ?? abilityId.replace(/_/g, ' ')
 }
 
 function talentName(talentId: string): string {
@@ -374,7 +360,7 @@ onMounted(loadTalents)
           <div><p>{{ activeBranch.name }} · ряд {{ visualRowFor(selectedTalent) }}</p><strong>Ранг {{ rankFor(selectedTalent.id) }}/{{ selectedTalent.maxRank }}</strong></div>
         </div>
         <p class="talent-detail__state">{{ stateLabel(selectedTalent) }}</p>
-        <p v-if="selectedTalent.unlockedAbilityId" class="talent-detail__ability">Открывает способность «{{ abilityLabel(selectedTalent.unlockedAbilityId) }}»</p>
+        <p v-if="unlockedAbilityLabel(selectedTalent)" class="talent-detail__ability">Открывает способность «{{ unlockedAbilityLabel(selectedTalent) }}»</p>
         <p v-if="selectedTalent.runtimeStatus === 'DEFERRED'" class="talent-detail__deferred">Этот эффект пока не участвует в бою. Он подготовлен для одной из следующих игровых систем.</p>
         <p class="talent-detail__description">{{ selectedTalent.description }}</p>
         <dl>
