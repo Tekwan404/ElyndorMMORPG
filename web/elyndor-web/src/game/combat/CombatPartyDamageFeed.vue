@@ -47,9 +47,13 @@ function clearDamageFeed(): void {
   enemyDamageFeed.value = []
 }
 
+function currentEventSequence(): number {
+  return Math.max(0, ...combat.events.map(event => event.sequence))
+}
+
 function primeCursor(): void {
   clearDamageFeed()
-  lastProcessedDamageSequence = Math.max(0, ...combat.events.map(event => event.sequence))
+  lastProcessedDamageSequence = currentEventSequence()
 }
 
 function removeHit(hit: CombatDamageFeedHit): void {
@@ -72,7 +76,7 @@ function pushHit(hit: CombatDamageFeedHit): void {
 function processDamageEvents(): void {
   const snapshot = combat.snapshot
   const enemy = selectedEnemy.value
-  if (!snapshot || !enemy || !isPartyCombat.value) return
+  if (!snapshot || !enemy || !isPartyCombat.value || !combat.isActive) return
 
   const batch = collectCombatDamageFeedHits(
     combat.events,
@@ -87,7 +91,10 @@ function processDamageEvents(): void {
 async function syncBattlefield(active: boolean): Promise<void> {
   cancelBattlefieldFrame()
   battlefieldReady.value = false
-  if (!active || !isPartyCombat.value) return
+  if (!active || !isPartyCombat.value) {
+    primeCursor()
+    return
+  }
 
   await nextTick()
   let attempts = 0
@@ -119,7 +126,7 @@ watch(
   () => {
     for (const entry of enemyDamageFeed.value) clearRemovalTimer(entry.sequence)
     enemyDamageFeed.value = []
-    lastProcessedDamageSequence = Math.max(0, ...combat.events.map(event => event.sequence))
+    lastProcessedDamageSequence = currentEventSequence()
   },
 )
 
