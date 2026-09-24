@@ -6,10 +6,11 @@ import CharacterOverviewView from '@/game/character/views/CharacterOverviewV2.vu
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import CompanionView from '@/game/character/views/CompanionView.vue'
 import InventoryView from '@/game/character/views/InventoryView.vue'
+import CharacterSkinStoreView from '@/game/economy/views/CharacterSkinStoreView.vue'
 import TalentTreeView from '@/game/talents/views/TalentTreeView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
-type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion'
+type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion' | 'skins'
 
 const session = useGameSessionStore()
 const activeTab = ref<HeroTab>('character')
@@ -21,6 +22,7 @@ const tabs: readonly { id: HeroTab; label: string; available: boolean | 'talents
   { id: 'character', label: 'Персонаж', available: true },
   { id: 'inventory', label: 'Инвентарь', available: true },
   { id: 'stats', label: 'Характеристики', available: true },
+  { id: 'skins', label: 'Облики', available: true },
   { id: 'talents', label: 'Таланты', available: 'talents' },
   { id: 'companion', label: 'Спутник', available: 'companion' },
 ]
@@ -124,6 +126,7 @@ function openStats(): void {
     />
     <TalentTreeView v-else-if="activeTab === 'talents' && hasTalentTree" />
     <CompanionView v-else-if="activeTab === 'companion' && hasCompanion" />
+    <CharacterSkinStoreView v-else-if="activeTab === 'skins'" />
     <template v-else-if="activeTab === 'inventory'">
       <div v-if="requestedSlot" class="slot-picker-nav">
         <button type="button" data-close-slot-inventory @click="returnToCharacter">
@@ -195,7 +198,7 @@ function openStats(): void {
   z-index: var(--ui-z-sticky);
   top: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(max-content, 1fr));
+  grid-template-columns: repeat(5, minmax(max-content, 1fr));
   gap: 2px;
   overflow-x: auto;
   padding: 6px var(--ui-space-3);
@@ -206,7 +209,7 @@ function openStats(): void {
   scrollbar-width: none;
 }
 
-.hero-tabs--with-companion { grid-template-columns: repeat(5, minmax(max-content, 1fr)); }
+.hero-tabs--with-companion { grid-template-columns: repeat(6, minmax(max-content, 1fr)); }
 
 .hero-tabs::-webkit-scrollbar {
   display: none;

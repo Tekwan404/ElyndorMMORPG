@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { BootstrapSnapshot } from '@/api/contracts'
 import { apiClient } from '@/api/apiClient'
 import { clearPendingGameMutation } from '@/api/replaySafeMutation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -127,6 +128,25 @@ describe('gameSession', () => {
     expect(body.isLocked).toBe(true)
     expect(body.mutationId).toMatch(/^[0-9a-f-]{36}$/i)
     expect(request.mock.calls[1]?.[0]).toBe('/api/v1/bootstrap')
+  })
+
+  it('updates the active skin in the shared character snapshot before the post-equip refresh completes', async () => {
+    let resolveRefresh: ((value: unknown) => void) | undefined
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ crystalBalance: 1000, activeSkinId: 'MAGE_FEMALE_FIRE' })
+      .mockImplementationOnce(() => new Promise(resolve => { resolveRefresh = resolve }))
+    const store = useGameSessionStore()
+    store.snapshot = {
+      accountId: crypto.randomUUID(),
+      character: { activeSkinId: null },
+    } as unknown as BootstrapSnapshot
+
+    const equip = store.equipCharacterSkin('MAGE_FEMALE_FIRE')
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+
+    expect(store.snapshot?.character?.activeSkinId).toBe('MAGE_FEMALE_FIRE')
+    resolveRefresh?.(store.snapshot)
+    await equip
   })
 
   it('restores the stable world state after a transparent token refresh', async () => {

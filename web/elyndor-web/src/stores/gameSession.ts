@@ -101,6 +101,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     scheduleTravelCompletionRefresh()
   }
 
+  function applyActiveSkin(activeSkinId: string | null): void {
+    if (!snapshot.value?.character) return
+    snapshot.value = {
+      ...snapshot.value,
+      character: { ...snapshot.value.character, activeSkinId },
+    }
+  }
+
   async function acknowledgeRelease(releaseId: string): Promise<void> {
     await apiClient.request<void>(`/api/v1/releases/${encodeURIComponent(releaseId)}/acknowledge`, {
       method: 'POST',
@@ -574,6 +582,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       const response = await apiClient.request<CharacterSkinMutationResponse>('/api/v1/economy/skins/equip', {
         method: 'POST', body: JSON.stringify({ skinId }),
       })
+      applyActiveSkin(response.activeSkinId)
       await refreshSnapshot()
       return response
     } catch (error) {

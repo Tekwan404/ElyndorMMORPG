@@ -12,8 +12,13 @@ const catalog = ref<CharacterSkinStoreSnapshot | null>(null)
 const error = ref<string | null>(null)
 const selectedId = ref<string | null>(null)
 const activeSkinId = computed(() => catalog.value?.activeSkinId ?? null)
-const skins = computed(() => [...(catalog.value?.skins ?? [])].sort((a, b) =>
-  Number(b.eligible) - Number(a.eligible) || a.classId.localeCompare(b.classId) || a.crystalPrice - b.crystalPrice))
+const skins = computed(() => {
+  const character = session.snapshot?.character
+  if (!character) return []
+  return [...(catalog.value?.skins ?? [])]
+    .filter(skin => skin.eligible && skin.classId === character.classId && skin.genderId === character.genderId)
+    .sort((a, b) => a.crystalPrice - b.crystalPrice)
+})
 
 function skinState(skin: CharacterSkinOffer): string {
   if (!skin.eligible) return 'Недоступно'
@@ -47,7 +52,15 @@ async function act(skin: CharacterSkinOffer): Promise<void> {
     ? await session.equipCharacterSkin(skin.id)
     : await session.buyCharacterSkin(skin.id)
   if (!result) error.value = 'Не удалось применить облик. Проверьте баланс и повторите попытку.'
-  else await load()
+  else if (catalog.value) {
+    catalog.value = {
+      ...catalog.value,
+      crystalBalance: result.crystalBalance,
+      activeSkinId: result.activeSkinId,
+      skins: catalog.value.skins.map(candidate => candidate.id === skin.id ? { ...candidate, owned: true } : candidate),
+    }
+    emit('balance', result.crystalBalance)
+  }
   selectedId.value = null
 }
 

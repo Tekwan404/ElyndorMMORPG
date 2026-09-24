@@ -27,9 +27,8 @@ public sealed class CharacterSkinService(GameDbContext db, IContentSnapshotProvi
         string[] owned = await db.CharacterSkinOwnerships.AsNoTracking()
             .Where(item => item.CharacterId == character.Id).Select(item => item.SkinId).ToArrayAsync(ct);
         CharacterSkinOffer[] skins = (contentProvider.GetCurrent().Package.CharacterSkins ?? [])
-            .Where(item => item.Enabled && item.GenderId == "FEMALE")
-            .Select(item => new CharacterSkinOffer(item, !item.Purchasable || owned.Contains(item.Id),
-                item.ClassId == character.ClassId && item.GenderId == character.GenderId))
+            .Where(item => item.Enabled && item.ClassId == character.ClassId && item.GenderId == character.GenderId)
+            .Select(item => new CharacterSkinOffer(item, !item.Purchasable || owned.Contains(item.Id), true))
             .ToArray();
         return new(balance, character.ActiveSkinId, skins);
     }

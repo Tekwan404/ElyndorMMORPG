@@ -80,6 +80,28 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-companion-view]').exists()).toBe(true)
   })
 
+  it('opens the skins tab from the hero screen', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([], 'MAGE')
+
+    const wrapper = mount(HeroView, {
+      global: {
+        stubs: {
+          CharacterOverviewView: true,
+          CharacterStatsView: true,
+          InventoryView: true,
+          TalentTreeView: true,
+          CharacterSkinStoreView: { template: '<div data-character-skin-wardrobe />' },
+        },
+      },
+    })
+
+    await wrapper.get('[data-hero-tab="skins"]').trigger('click')
+
+    expect(wrapper.get('[data-hero-tab="skins"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-character-skin-wardrobe]').exists()).toBe(true)
+  })
+
   it('opens empty equipment slots in a contextual picker with an explicit back action', async () => {
     const session = useGameSessionStore()
     const helmet = equipment('TEST_HELMET', 'Шлем стража', 'Head')
