@@ -23,6 +23,11 @@ const overflowCount = computed(() => Math.max(0, props.effects.length - initiall
 const selectedEffect = computed(() =>
   props.effects.find(effect => effectKey(effect) === selectedEffectKey.value) ?? null,
 )
+const criticalEffect = computed(() =>
+  props.side === 'player'
+    ? props.effects.find(effect => effect.id === 'BLACK_STAR_LIVING_BOMB_MARK') ?? null
+    : null,
+)
 
 function effectKey(effect: CombatEffectSnapshot): string {
   return `${effect.id}:${effect.expiresAtUtc}`
@@ -40,6 +45,11 @@ function effectDescription(effect: CombatEffectSnapshot): string {
 
 function remainingSeconds(effect: CombatEffectSnapshot): number {
   return Math.max(0, Math.ceil((Date.parse(effect.expiresAtUtc) - props.now) / 1_000))
+}
+
+function preciseRemainingSeconds(effect: CombatEffectSnapshot): string {
+  const remaining = Math.max(0, (Date.parse(effect.expiresAtUtc) - props.now) / 1_000)
+  return remaining.toFixed(1)
 }
 
 function effectArt(effect: CombatEffectSnapshot): string | undefined {
@@ -70,6 +80,19 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
     :class="`combat-effect-strip--${side}`"
     data-combat-effect-strip
   >
+    <div
+      v-if="criticalEffect"
+      class="combat-effect-strip__critical-warning"
+      data-critical-effect-warning
+      role="alert"
+      aria-live="assertive"
+    >
+      <span aria-hidden="true">💀</span>
+      <strong>ЧЁРНАЯ ЗВЕЗДА</strong>
+      <span aria-hidden="true">·</span>
+      <b>{{ preciseRemainingSeconds(criticalEffect) }}</b>
+    </div>
+
     <button
       v-for="effect in visibleEffects"
       :key="effectKey(effect)"
@@ -113,6 +136,9 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
 
 <style scoped>
 .combat-effect-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.combat-effect-strip__critical-warning { display: flex; width: 100%; min-height: 38px; align-items: center; justify-content: center; gap: 7px; padding: 6px 10px; border: 1px solid rgb(255 92 78 / 72%); border-radius: var(--ui-radius-sm); background: linear-gradient(90deg, rgb(45 4 9 / 96%), rgb(94 12 17 / 96%), rgb(45 4 9 / 96%)); box-shadow: 0 0 16px rgb(255 52 45 / 24%); color: #fff1dc; text-align: center; }
+.combat-effect-strip__critical-warning strong { font-size: clamp(.68rem, 3.2vw, .82rem); letter-spacing: .08em; }
+.combat-effect-strip__critical-warning b { min-width: 3ch; color: #ffcf66; font-size: clamp(.78rem, 3.8vw, .96rem); font-variant-numeric: tabular-nums; }
 .combat-effect-strip__effect, .combat-effect-strip__overflow { position: relative; display: grid; width: 34px; height: 34px; flex: none; place-items: center; padding: 2px; border: 1px solid rgb(191 183 255 / 38%); border-radius: 8px; background: rgb(5 8 15 / 88%); color: var(--ui-color-text-primary); font: inherit; }
 .combat-effect-strip__effect--selected { border-color: var(--ui-color-accent, #aaa3ff); box-shadow: 0 0 0 1px rgb(170 163 255 / 28%); }
 .combat-effect-strip__effect img, .combat-effect-strip__effect :deep(.icon-generator) { width: 25px; height: 25px; object-fit: cover; }

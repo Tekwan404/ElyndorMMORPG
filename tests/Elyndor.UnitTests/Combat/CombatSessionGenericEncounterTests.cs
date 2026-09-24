@@ -76,6 +76,51 @@ public sealed class CombatSessionGenericEncounterTests
     }
 
     [Fact]
+    public void SummonCanStartAtConfiguredHealthPercentage()
+    {
+        MonsterDefinition add = Monster(
+            "TEST_WOUNDED_ADD",
+            abilityIds: [],
+            aiProfileId: "ADD_PASSIVE",
+            autoAttackInterval: TimeSpan.FromHours(1));
+        EncounterDefinition encounter = new(
+            "TEST_WOUNDED_SUMMON_ENCOUNTER",
+            "TEST_BOSS",
+            [
+                new EncounterPhaseDefinition(
+                    "OPEN",
+                    new EncounterTriggerDefinition(EncounterTriggerType.CombatStart),
+                    [
+                        new EncounterActionDefinition(
+                            EncounterActionType.Summon,
+                            Summon: new SummonDefinition(
+                                add.Id,
+                                Count: 1,
+                                MaxActive: 1,
+                                InitialHpPercent: 60))
+                    ])
+            ]);
+        CombatSession session = Session(
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
+            abilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
+            bossAi: new MonsterAiProfile("BOSS_PASSIVE", []),
+            bossAutoAttackInterval: TimeSpan.FromHours(1));
+
+        session.ConfigureGenericEncounter(
+            encounter,
+            new Dictionary<string, EncounterEnemyProfile>(StringComparer.Ordinal)
+            {
+                [add.Id] = new(add, new MonsterAiProfile("ADD_PASSIVE", []))
+            },
+            new Dictionary<string, EffectDefinition>(StringComparer.Ordinal));
+
+        CombatActorSnapshot summoned = Assert.Single(
+            session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == add.Id);
+        Assert.Equal(summoned.MaxHp * 0.6m, summoned.Hp);
+    }
+
+    [Fact]
     public void LinkedCombatObjectAppliesAuraUntilDestroyedAndIsRewardIneligible()
     {
         AbilityDefinition strike = DamageAbility("OBJECT_STRIKE", 50);

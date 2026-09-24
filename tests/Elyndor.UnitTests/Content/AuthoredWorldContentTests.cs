@@ -66,7 +66,7 @@ public sealed class AuthoredWorldContentTests
     }
 
     [Fact]
-    public async Task AuthoredDungeonsAreStaticContentWithEmptyMobBehaviorAndResolvableLoot()
+    public async Task AuthoredDungeonsKeepResolvableLootAndOnlyBlackBastionBossesHaveBehavior()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
         GameContentIndexes indexes = GameContentIndexes.For(package);
@@ -86,8 +86,17 @@ public sealed class AuthoredWorldContentTests
             foreach (var encounter in dungeon.Encounters)
             {
                 Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
-                Assert.Empty(monster!.AbilityIds);
-                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                if (dungeonId == "BLACK_BASTION" && encounter.IsBoss)
+                {
+                    Assert.NotEmpty(monster!.AbilityIds);
+                    Assert.StartsWith("BLACK_BASTION_", monster.AiProfileId);
+                    Assert.True(indexes.EncountersByMonsterId.ContainsKey(monster.Id));
+                }
+                else
+                {
+                    Assert.Empty(monster!.AbilityIds);
+                    Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                }
                 Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
                 Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
                 var lootItemIds = lootTable!.Entries.Select(entry => entry.ItemId)

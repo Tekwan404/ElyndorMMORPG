@@ -28,4 +28,29 @@ describe('CombatEffectStrip', () => {
     expect(wrapper.get('[data-effect-inspection]').text()).toContain(effect.description)
     expect(wrapper.get('[data-effect-inspection]').text()).toContain('Стаки: 2')
   })
+
+  it('shows a prominent countdown for living black star on the affected player', () => {
+    const effect: CombatEffectSnapshot = {
+      id: 'BLACK_STAR_LIVING_BOMB_MARK',
+      displayName: 'Живая Чёрная Звезда',
+      description: 'Взрывается по окончании эффекта.',
+      iconId: null,
+      stacks: 1,
+      expiresAtUtc: '2026-09-18T10:00:06.200Z',
+    }
+    const now = Date.parse('2026-09-18T10:00:00.000Z')
+
+    const player = mount(CombatEffectStrip, {
+      props: { effects: [effect], now, side: 'player' },
+    })
+    const enemy = mount(CombatEffectStrip, {
+      props: { effects: [effect], now, side: 'enemy' },
+    })
+
+    const warning = player.get('[data-critical-effect-warning]').text()
+    expect(warning).toContain('ЧЁРНАЯ ЗВЕЗДА')
+    expect(warning).toContain('·')
+    expect(warning).toContain('6.2')
+    expect(enemy.find('[data-critical-effect-warning]').exists()).toBe(false)
+  })
 })
