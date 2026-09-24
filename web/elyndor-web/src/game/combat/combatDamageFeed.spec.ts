@@ -38,6 +38,26 @@ describe('collectCombatDamageFeedHits', () => {
     expect(result.latestSequence).toBe(3)
   })
 
+  it('accepts damage to the selected enemy from another party member', () => {
+    const result = collectCombatDamageFeedHits([
+      event(4, 'DamageDealt', 'enemy', 64, 'party-ally'),
+    ], 0, 'player', 'enemy')
+
+    expect(result.hits).toEqual([
+      { sequence: 4, side: 'enemy', amount: 64, critical: false },
+    ])
+  })
+
+  it('keeps incoming local-player damage visible regardless of which enemy dealt it', () => {
+    const result = collectCombatDamageFeedHits([
+      event(5, 'DamageDealt', 'player', 31, 'other-enemy'),
+    ], 0, 'player', 'selected-enemy')
+
+    expect(result.hits).toEqual([
+      { sequence: 5, side: 'player', amount: 31, critical: false },
+    ])
+  })
+
   it('marks a damage event as critical when it follows the matching CriticalHit event', () => {
     const result = collectCombatDamageFeedHits([
       event(10, 'CriticalHit', 'enemy', 173, 'player'),
