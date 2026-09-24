@@ -15,9 +15,9 @@ const activeSkinId = computed(() => catalog.value?.activeSkinId ?? null)
 const skins = computed(() => {
   const character = session.snapshot?.character
   if (!character) return []
-  return (catalog.value?.skins ?? [])
+  return [...(catalog.value?.skins ?? [])]
     .filter(skin => skin.eligible && skin.classId === character.classId && skin.genderId === character.genderId)
-    .toSorted((a, b) => a.crystalPrice - b.crystalPrice)
+    .sort((a, b) => a.crystalPrice - b.crystalPrice)
 })
 
 function skinState(skin: CharacterSkinOffer): string {

@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { BootstrapSnapshot } from '@/api/contracts'
 import { apiClient } from '@/api/apiClient'
 import { clearPendingGameMutation } from '@/api/replaySafeMutation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -138,7 +139,7 @@ describe('gameSession', () => {
     store.snapshot = {
       accountId: crypto.randomUUID(),
       character: { activeSkinId: null },
-    } as never
+    } as unknown as BootstrapSnapshot
 
     const equip = store.equipCharacterSkin('MAGE_FEMALE_FIRE')
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
