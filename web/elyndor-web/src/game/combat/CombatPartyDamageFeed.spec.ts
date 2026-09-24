@@ -139,6 +139,26 @@ describe('CombatPartyDamageFeed', () => {
     wrapper.unmount()
   })
 
+  it('keeps a fresh hit when target snapshot and events arrive in the same update turn', async () => {
+    const combat = useCombatSessionStore()
+    combat.snapshot = snapshot(true)
+    const wrapper = mount(CombatPartyDamageFeed, { attachTo: document.body })
+    await flushPromises()
+
+    combat.events = [damage(1, 'ally', 'enemy-1', 64)]
+    await flushPromises()
+
+    combat.snapshot = { ...combat.snapshot!, selectedTargetActorId: 'enemy-2', sequence: 2 }
+    combat.events = [...combat.events, damage(2, 'ally', 'enemy-2', 52)]
+    await flushPromises()
+
+    const battlefield = document.querySelector('[data-combat-battlefield]')!
+    const copy = battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent ?? ''
+    expect(copy).not.toContain('−64')
+    expect(copy).toContain('−52')
+    wrapper.unmount()
+  })
+
   it('clears transient hits when party combat collapses to solo and does not replay them', async () => {
     const combat = useCombatSessionStore()
     combat.snapshot = snapshot(true)
