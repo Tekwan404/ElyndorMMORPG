@@ -10,7 +10,6 @@ import CombatView from '@/game/combat/views/CombatView.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
-import StoneSpursLocationView from '@/game/world/views/StoneSpursLocationView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -233,11 +232,6 @@ onMounted(() => {
       <WorldMapView
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
-      />
-      <StoneSpursLocationView
-        v-else-if="session.state === 'world' && activeView === 'location' && currentLocation?.id === 'STONE_SPURS'"
-        :open-guild="openGuildOnLocation"
-        @open-party="openMenu('party')"
       />
       <WorldView
         v-else-if="session.state === 'world' && activeView === 'location'"
