@@ -82,6 +82,11 @@ function clearInspectionTimer(): void {
   }
 }
 
+function cancelInspection(): void {
+  clearInspectionTimer()
+  suppressedAbilityId = null
+}
+
 function activateAura(ability: CombatAbility): void {
   if (shouldSuppressActivation(ability.id)) return
   inspectedAbility.value = null
@@ -96,7 +101,7 @@ function queuePosition(abilityId: string): number {
   return props.queuedAbilityIds.indexOf(abilityId) + 1
 }
 
-onUnmounted(clearInspectionTimer)
+onUnmounted(cancelInspection)
 </script>
 
 <template>
@@ -119,8 +124,8 @@ onUnmounted(clearInspectionTimer)
         :aria-label="ability?.displayName ?? 'Пустой слот'"
         @pointerdown="ability && startInspection(ability)"
         @pointerup="clearInspectionTimer"
-        @pointercancel="clearInspectionTimer"
-        @pointerleave="clearInspectionTimer"
+        @pointercancel="cancelInspection"
+        @pointerleave="cancelInspection"
         @contextmenu.prevent
         @click="activateAbility(ability)"
       >
@@ -207,8 +212,8 @@ onUnmounted(clearInspectionTimer)
         :aria-label="ability.displayName"
         @pointerdown="startInspection(ability)"
         @pointerup="clearInspectionTimer"
-        @pointercancel="clearInspectionTimer"
-        @pointerleave="clearInspectionTimer"
+        @pointercancel="cancelInspection"
+        @pointerleave="cancelInspection"
         @contextmenu.prevent
         @click="activateAura(ability)"
       >
