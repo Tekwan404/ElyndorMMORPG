@@ -2,6 +2,7 @@
 import { onUnmounted, ref } from 'vue'
 
 import type { CombatAbility, InventoryItem } from '@/api/contracts'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
@@ -29,7 +30,7 @@ const emit = defineEmits<{
 
 const inspectedAbility = ref<CombatAbility | null>(null)
 let inspectionTimer: ReturnType<typeof setTimeout> | undefined
-let suppressNextAbilityClick = false
+let suppressedAbilityId: string | null = null
 
 function consumableState(item: InventoryItem): 'cooldown' | 'ready' | 'disabled' {
   if (props.consumableCooldownRemaining(item) > 0) return 'cooldown'
@@ -45,26 +46,31 @@ function cooldownStyle(ability: CombatAbility): Record<string, string> {
   return { '--cooldown-progress': `${cooldownProgress(ability)}%` }
 }
 
+function shouldSuppressActivation(abilityId: string): boolean {
+  if (suppressedAbilityId === null) return false
+  const suppress = suppressedAbilityId === abilityId
+  suppressedAbilityId = null
+  return suppress
+}
+
 function activateAbility(ability: CombatAbility | null): void {
   if (!ability) return
-  if (suppressNextAbilityClick) {
-    suppressNextAbilityClick = false
-    return
-  }
+  if (shouldSuppressActivation(ability.id)) return
   inspectedAbility.value = null
   if (props.abilityState(ability) === 'ready') emit('use', ability)
 }
 
 function activateConsumable(item: InventoryItem): void {
+  suppressedAbilityId = null
   if (consumableState(item) === 'ready') emit('useConsumable', item)
 }
 
 function startInspection(ability: CombatAbility): void {
   clearInspectionTimer()
-  suppressNextAbilityClick = false
+  suppressedAbilityId = null
   inspectionTimer = setTimeout(() => {
     inspectedAbility.value = ability
-    suppressNextAbilityClick = true
+    suppressedAbilityId = ability.id
     inspectionTimer = undefined
   }, 500)
 }
@@ -76,11 +82,13 @@ function clearInspectionTimer(): void {
   }
 }
 
+function cancelInspection(): void {
+  clearInspectionTimer()
+  suppressedAbilityId = null
+}
+
 function activateAura(ability: CombatAbility): void {
-  if (suppressNextAbilityClick) {
-    suppressNextAbilityClick = false
-    return
-  }
+  if (shouldSuppressActivation(ability.id)) return
   inspectedAbility.value = null
   if (props.abilityState(ability) === 'ready') emit('use', ability)
 }
@@ -93,7 +101,7 @@ function queuePosition(abilityId: string): number {
   return props.queuedAbilityIds.indexOf(abilityId) + 1
 }
 
-onUnmounted(clearInspectionTimer)
+onUnmounted(cancelInspection)
 </script>
 
 <template>
@@ -116,8 +124,8 @@ onUnmounted(clearInspectionTimer)
         :aria-label="ability?.displayName ?? 'Пустой слот'"
         @pointerdown="ability && startInspection(ability)"
         @pointerup="clearInspectionTimer"
-        @pointercancel="clearInspectionTimer"
-        @pointerleave="clearInspectionTimer"
+        @pointercancel="cancelInspection"
+        @pointerleave="cancelInspection"
         @contextmenu.prevent
         @click="activateAbility(ability)"
       >
@@ -171,8 +179,14 @@ onUnmounted(clearInspectionTimer)
           @click="activateConsumable(item)"
         >
           <span class="combat-consumables__icon">
-            <IconGenerator
-              :config="{ id: `consumable-${item.definitionId}`, glyph: consumableGlyph(item), category: 'consumable' }"
+            <ItemIcon
+              :icon-id="item.iconId"
+              :item-id="item.definitionId"
+              :name="item.name"
+              :type="item.type"
+              :rarity="item.rarity"
+              loading="eager"
+              decorative
             />
           </span>
           <span class="combat-consumables__copy">
@@ -198,8 +212,8 @@ onUnmounted(clearInspectionTimer)
         :aria-label="ability.displayName"
         @pointerdown="startInspection(ability)"
         @pointerup="clearInspectionTimer"
-        @pointercancel="clearInspectionTimer"
-        @pointerleave="clearInspectionTimer"
+        @pointercancel="cancelInspection"
+        @pointerleave="cancelInspection"
         @contextmenu.prevent
         @click="activateAura(ability)"
       >
@@ -257,6 +271,7 @@ onUnmounted(clearInspectionTimer)
 .combat-consumables__item { position: relative; display: grid; min-width: 7rem; min-height: var(--ui-touch-target); flex: 0 0 auto; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 5px; padding: 4px 7px 4px 5px; border: 1px solid rgb(79 185 150 / 30%); border-radius: var(--ui-radius-sm); background: rgb(4 11 12 / 72%); color: var(--ui-color-text-primary); font: inherit; text-align: left; touch-action: manipulation; }
 .combat-consumables__item[data-state='disabled'], .combat-consumables__item[data-state='cooldown'] { opacity: .48; }
 .combat-consumables__icon { display: grid; width: 32px; height: 32px; place-items: center; overflow: hidden; border: 1px solid rgb(79 185 150 / 24%); border-radius: 8px; background: rgb(3 9 10 / 90%); color: #9be2c9; }
+.combat-consumables__icon :deep(.item-icon) { width: 100%; height: 100%; }
 .combat-consumables__copy { display: grid; min-width: 0; gap: 1px; }
 .combat-consumables__copy small { overflow: hidden; color: var(--ui-color-text-secondary); font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
 .combat-consumables__copy b { color: #9be2c9; font-size: .52rem; }

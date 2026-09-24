@@ -26,10 +26,15 @@ function isAggroed(actorId: string): boolean {
   return props.aggroedActorIds.includes(actorId)
 }
 
+function isSelectable(ally: CombatActorSnapshot): boolean {
+  return ally.hp > 0 && props.canSelect(ally.actorId)
+}
+
 function accessibleLabel(ally: CombatActorSnapshot): string {
   const selected = ally.actorId === props.selectedFriendlyTargetActorId ? ', выбранная дружеская цель' : ''
   const underAttack = isAggroed(ally.actorId) ? ', противник атакует этого союзника' : ''
-  return `${ally.name}, ${props.roleLabel(ally)}, здоровье ${Math.round(props.healthRatio(ally))}%${selected}${underAttack}`
+  const status = props.participantStatus(ally.actorId)
+  return `${ally.name}, ${props.roleLabel(ally)}, здоровье ${Math.round(props.healthRatio(ally))}%, состояние: ${status}${selected}${underAttack}`
 }
 
 function allyArt(ally: CombatActorSnapshot): string | null {
@@ -64,9 +69,10 @@ function allyArt(ally: CombatActorSnapshot): string | null {
           'combat-ally-roster__member--aggro': isAggroed(ally.actorId),
         }"
         :data-status="participantStatus(ally.actorId)"
+        :data-selectable="isSelectable(ally)"
         :aria-label="accessibleLabel(ally)"
         :aria-pressed="ally.actorId === selectedFriendlyTargetActorId"
-        :disabled="ally.hp <= 0 || !canSelect(ally.actorId)"
+        :disabled="!isSelectable(ally)"
         @click="emit('select', ally.actorId)"
       >
         <span class="combat-ally-roster__portrait" aria-hidden="true">
@@ -96,7 +102,8 @@ function allyArt(ally: CombatActorSnapshot): string | null {
 .combat-ally-roster__member--selected { border-color: rgb(205 177 113 / 72%); box-shadow: inset 0 0 0 1px rgb(205 177 113 / 18%); }
 .combat-ally-roster__member--self { border-color: rgb(170 163 255 / 56%); background: linear-gradient(105deg, rgb(146 136 255 / 11%), rgb(5 8 13 / 88%)); }
 .combat-ally-roster__member--aggro { border-color: rgb(205 177 113 / 72%); box-shadow: 0 0 11px rgb(205 177 113 / 15%); }
-.combat-ally-roster__member[data-status='Fled'], .combat-ally-roster__member[data-status='Dead'] { opacity: .58; }
+.combat-ally-roster__member[data-selectable='false'] { opacity: .58; }
+.combat-ally-roster__member:disabled { cursor: default; }
 .combat-ally-roster__portrait { display: grid; width: 2rem; height: 2rem; place-items: center; overflow: hidden; border: 1px solid rgb(205 177 113 / 42%); border-radius: 50%; background: radial-gradient(circle, rgb(205 177 113 / 20%), rgb(9 12 18 / 96%) 68%); color: #ecd797; font-family: var(--ui-font-display); font-size: .8rem; }
 .combat-ally-roster__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .combat-ally-roster__body { display: grid; min-width: 0; gap: 2px; }

@@ -54,8 +54,11 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
       type="button"
       :class="{ active: enemy.actorId === selectedTargetActorId }"
       :aria-label="accessibleLabel(enemy)"
+      :aria-pressed="enemy.actorId === selectedTargetActorId"
       :disabled="disabled"
       :data-target-actor-id="enemy.actorId"
+      :data-selected="enemy.actorId === selectedTargetActorId"
+      :data-aggro-target-actor-id="enemy.currentAggroTargetActorId ?? undefined"
       @click="emit('select', enemy.actorId)"
     >
       <span>{{ enemy.name }}</span>
@@ -83,7 +86,7 @@ function accessibleLabel(enemy: CombatActorSnapshot): string {
 
 <style scoped>
 .combat-enemy-targets { display: grid; gap: 5px; }
-.combat-enemy-targets button { display: grid; min-height: var(--ui-touch-target); grid-template-columns: 2.1rem minmax(0, 1fr); grid-template-rows: auto auto auto; align-items: center; column-gap: 7px; padding: 5px 7px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: rgb(5 8 13 / 82%); color: var(--ui-color-text-primary); font: inherit; text-align: left; }
+.combat-enemy-targets button { display: grid; min-height: var(--ui-touch-target); grid-template-columns: 2.1rem minmax(0, 1fr); grid-template-rows: auto auto auto; align-items: center; column-gap: 7px; padding: 5px 7px; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: rgb(5 8 13 / 82%); color: var(--ui-color-text-primary); font: inherit; text-align: left; touch-action: manipulation; }
 .combat-enemy-targets button.active { border-color: rgb(216 95 114 / 65%); box-shadow: inset 0 0 0 1px rgb(216 95 114 / 15%); }
 .combat-enemy-targets button > span:first-child { grid-column: 2; overflow: hidden; font-size: var(--ui-font-size-xs); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .combat-enemy-targets__aggro { grid-column: 2; overflow: hidden; color: var(--ui-color-gold-muted); font-size: .5rem; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
