@@ -265,6 +265,7 @@ app.MapWorldEndpoints();
 app.MapQuestEndpoints();
 app.MapTalentEndpoints();
 app.MapInventoryEndpoints();
+app.MapInventoryPresentationEndpoints();
 app.MapSpatialInventoryEndpoints();
 app.MapItemStarUpgradePreviewEndpoints();
 app.MapEconomyEndpoints();
