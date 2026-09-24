@@ -580,7 +580,9 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     errorCode.value = null
     try {
       const response = await apiClient.request<CharacterSkinMutationResponse>('/api/v1/economy/skins/equip', {
-        method: 'POST', body: JSON.stringify({ skinId }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skinId }),
       })
       applyActiveSkin(response.activeSkinId)
       await refreshSnapshot()

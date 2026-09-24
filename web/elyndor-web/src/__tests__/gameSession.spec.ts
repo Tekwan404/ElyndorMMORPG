@@ -149,6 +149,25 @@ describe('gameSession', () => {
     await equip
   })
 
+  it('sends the equip skin payload as JSON', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ crystalBalance: 1000, activeSkinId: 'MAGE_FEMALE_FIRE' })
+      .mockResolvedValueOnce({
+        accountId: crypto.randomUUID(),
+        character: null,
+        world: null,
+        contentVersion: '0.1.0',
+        balanceVersion: '0.1.0',
+        serverTimeUtc: '2026-09-24T00:00:00Z',
+      })
+    const store = useGameSessionStore()
+
+    await store.equipCharacterSkin('MAGE_FEMALE_FIRE')
+
+    expect(request.mock.calls[0]?.[0]).toBe('/api/v1/economy/skins/equip')
+    expect(new Headers(request.mock.calls[0]?.[1]?.headers).get('Content-Type')).toBe('application/json')
+  })
+
   it('restores the stable world state after a transparent token refresh', async () => {
     const request = vi.spyOn(apiClient, 'request').mockResolvedValue({ accessToken: 'renewed-token', expiresAtUtc: '2026-09-01T19:15:00Z', roles: [] })
     const store = useGameSessionStore()
