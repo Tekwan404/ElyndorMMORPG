@@ -1,0 +1,347 @@
+/*
+ * Combat layout v2 — composition polish.
+ *
+ * Keep mechanics and targeting untouched. This layer only reduces dead space,
+ * protects actor art from overlays and makes the mobile battlefield read as a
+ * single scene instead of stacked web cards.
+ */
+
+.combat-screen .combat-hud__actor .ui-bar {
+  gap: 2px;
+}
+
+.combat-screen .combat-hud__actor .ui-bar__track {
+  height: 7px;
+}
+
+.combat-screen .battlefield .combat-ally-roster--battlefield,
+.combat-screen .battlefield .combat-enemy-targets--battlefield {
+  z-index: 8;
+}
+
+.combat-screen .battlefield .combat-ally-roster--battlefield {
+  max-height: 4.8rem;
+  overflow: hidden;
+}
+
+.combat-screen .battlefield .combat-enemy-targets--battlefield {
+  max-height: 4.8rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.combat-screen .battlefield .combat-enemy-targets--battlefield::-webkit-scrollbar {
+  display: none;
+}
+
+.combat-screen .battlefield .combat-ally-roster--battlefield,
+.combat-screen .battlefield .combat-enemy-targets--battlefield button {
+  box-shadow:
+    0 5px 14px rgb(0 0 0 / 24%),
+    inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+
+.combat-screen .battlefield-friendly-line {
+  z-index: 4;
+}
+
+.combat-screen .battlefield-friendly-line .combat-friendly-actor[data-local='true'] {
+  order: -2;
+}
+
+.combat-screen .battlefield-friendly-line .combat-friendly-actor[data-selected='true']:not([data-local='true']) {
+  order: -1;
+}
+
+.combat-screen .battlefield-friendly-line .combat-friendly-actor[data-aggro='true'] {
+  isolation: isolate;
+}
+
+.combat-screen .battlefield-friendly-line .combat-friendly-actor[data-aggro='true']::after {
+  position: absolute;
+  inset: 14% 8% 3%;
+  z-index: -1;
+  border-radius: 48%;
+  background: radial-gradient(circle at 50% 72%, rgb(212 70 82 / 23%), transparent 68%);
+  content: '';
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+section.combat-screen .battlefield .enemy-figure,
+section.combat-screen .battlefield .player-figure,
+.combat-screen .battlefield-friendly-line .combat-friendly-actor__art {
+  transition:
+    width 160ms ease,
+    height 160ms ease,
+    transform 160ms ease,
+    filter 160ms ease;
+}
+
+section.combat-screen .battlefield .enemy-figure[data-monster-rank='Boss'] img {
+  filter:
+    drop-shadow(0 .9rem 1.15rem rgb(0 0 0 / 72%))
+    drop-shadow(0 0 1rem rgb(130 54 71 / 13%));
+}
+
+section.combat-screen .battlefield .combat-feedback {
+  z-index: 7;
+  width: max-content;
+  max-width: min(52%, 15rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-screen .combat-actions {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 3%),
+    0 -8px 24px rgb(0 0 0 / 15%);
+}
+
+@media (max-width: 420px) {
+  .combat-screen {
+    gap: 5px;
+    padding: 5px 6px calc(10px + var(--ui-safe-area-bottom));
+  }
+
+  .combat-screen .combat-hud {
+    gap: 4px;
+  }
+
+  .combat-screen .combat-hud__actor {
+    gap: 2px;
+    padding: 4px 5px;
+    border-radius: 8px;
+  }
+
+  .combat-screen .combat-hud__identity strong {
+    font-size: .6rem;
+  }
+
+  .combat-screen .combat-hud__actor .ui-bar__meta {
+    gap: 3px;
+    font-size: .43rem;
+    line-height: 1.05;
+  }
+
+  .combat-screen .combat-hud__actor .ui-bar__track {
+    height: 6px;
+  }
+
+  /*
+   * 21rem left too much empty vertical space on phone screens. The actor art
+   * still has ~11rem of stage height, while selectors keep a separate top band.
+   */
+  section.combat-screen .battlefield {
+    min-height: clamp(18.35rem, 76vw, 19.25rem) !important;
+    border-radius: 10px;
+    background-position: center 45%;
+  }
+
+  section.combat-screen .battlefield::after {
+    bottom: 8%;
+    height: 12%;
+  }
+
+  .combat-screen .battlefield .combat-ally-roster--battlefield {
+    top: 5px;
+    left: 5px;
+    width: 55%;
+    max-height: 3.9rem;
+    padding: 2px;
+  }
+
+  .combat-screen .battlefield .combat-ally-roster--battlefield .combat-ally-roster__member {
+    min-width: 4.15rem;
+    min-height: 40px;
+    flex-basis: 4.15rem;
+    grid-template-columns: 1.45rem minmax(0, 1fr);
+    padding: 3px;
+  }
+
+  .combat-screen .battlefield .combat-ally-roster--battlefield .combat-ally-roster__portrait {
+    width: 1.45rem;
+    height: 1.45rem;
+  }
+
+  .combat-screen .battlefield .combat-enemy-targets--battlefield {
+    top: 5px;
+    right: 5px;
+    width: 39%;
+    max-height: 4.2rem;
+  }
+
+  .combat-screen .battlefield .combat-enemy-targets--battlefield button {
+    min-height: 40px;
+    grid-template-columns: 1.45rem minmax(0, 1fr);
+    padding: 3px;
+  }
+
+  .combat-screen .battlefield .combat-enemy-targets--battlefield .combat-enemy-targets__portrait {
+    width: 1.45rem;
+    height: 1.45rem;
+  }
+
+  section.combat-screen .battlefield .player-figure {
+    bottom: .1rem !important;
+    left: 4px !important;
+    width: 32% !important;
+    height: 10.25rem !important;
+  }
+
+  section.combat-screen .battlefield .enemy-figure {
+    right: 5px !important;
+    bottom: .7rem !important;
+    width: 35% !important;
+    height: 9.25rem !important;
+  }
+
+  section.combat-screen .battlefield .enemy-figure[data-monster-rank='Elite'] {
+    width: 37% !important;
+    height: 10rem !important;
+  }
+
+  section.combat-screen .battlefield .enemy-figure[data-monster-rank='Boss'] {
+    width: 39% !important;
+    height: 10.85rem !important;
+  }
+
+  section.combat-screen.combat-screen--party .battlefield .battlefield-friendly-line {
+    bottom: .15rem !important;
+    left: 5px !important;
+    width: 59% !important;
+    gap: 2px;
+  }
+
+  .combat-screen .battlefield-friendly-line .combat-friendly-actor {
+    min-height: 6.35rem;
+    padding-bottom: 4px;
+  }
+
+  .combat-screen .battlefield-friendly-line .combat-friendly-actor__art {
+    height: 6.15rem;
+  }
+
+  .combat-screen .battlefield-friendly-line .combat-friendly-actor__name {
+    font-size: .44rem;
+  }
+
+  .combat-screen .battlefield-friendly-line .combat-friendly-actor__bar {
+    width: 90%;
+  }
+
+  section.combat-screen .battlefield .effect-strip--enemy {
+    top: 3.4rem;
+    right: 5px;
+    max-width: 39%;
+  }
+
+  section.combat-screen .battlefield .cast-bar--enemy {
+    top: 5.15rem;
+    right: 5px;
+    width: 39%;
+    padding: 4px 5px;
+  }
+
+  section.combat-screen .battlefield .cast-bar--enemy strong {
+    font-size: .5rem;
+  }
+
+  section.combat-screen .battlefield .cast-bar--enemy small {
+    font-size: .43rem;
+  }
+
+  section.combat-screen .battlefield .combat-feedback {
+    bottom: 38%;
+    max-width: 50%;
+    padding: 3px 6px;
+    font-size: .48rem;
+  }
+
+  section.combat-screen .battlefield .companion-figure {
+    bottom: .3rem;
+    left: 27%;
+    max-width: 7.5rem;
+    transform: scale(.88);
+    transform-origin: left bottom;
+  }
+
+  .combat-screen .combat-actions {
+    gap: 4px;
+    padding: 5px;
+    border-radius: 10px;
+  }
+
+  .combat-screen .combat-utility-strip {
+    gap: 3px;
+  }
+
+  .combat-screen .combat-utility-strip .utility-action {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 360px) {
+  section.combat-screen .battlefield {
+    min-height: 18rem !important;
+  }
+
+  .combat-screen .battlefield .combat-ally-roster--battlefield {
+    width: 56%;
+  }
+
+  .combat-screen .battlefield .combat-enemy-targets--battlefield {
+    width: 38%;
+  }
+
+  section.combat-screen .battlefield .player-figure {
+    width: 31% !important;
+    height: 9.6rem !important;
+  }
+
+  section.combat-screen .battlefield .enemy-figure {
+    width: 34% !important;
+    height: 8.8rem !important;
+  }
+
+  section.combat-screen .battlefield .enemy-figure[data-monster-rank='Boss'] {
+    width: 38% !important;
+    height: 10.2rem !important;
+  }
+
+  .combat-screen .battlefield-friendly-line .combat-friendly-actor__art {
+    height: 5.65rem;
+  }
+
+  section.combat-screen .battlefield .combat-feedback {
+    bottom: 36%;
+    max-width: 48%;
+  }
+}
+
+@media (min-width: 421px) and (max-width: 699px) {
+  section.combat-screen .battlefield {
+    min-height: clamp(20rem, 61vw, 23rem) !important;
+  }
+}
+
+@media (min-width: 700px) {
+  .combat-screen .combat-hud {
+    gap: 7px;
+  }
+
+  .combat-screen .combat-hud__actor {
+    padding: 6px 8px;
+  }
+
+  .combat-screen .battlefield .combat-ally-roster--battlefield,
+  .combat-screen .battlefield .combat-enemy-targets--battlefield {
+    max-height: 5.5rem;
+  }
+
+  section.combat-screen.combat-screen--party .battlefield .battlefield-friendly-line {
+    width: 55% !important;
+  }
+}
