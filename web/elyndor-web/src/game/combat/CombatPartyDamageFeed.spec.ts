@@ -70,6 +70,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   document.body.innerHTML = ''
   vi.unstubAllGlobals()
 })
@@ -135,6 +136,46 @@ describe('CombatPartyDamageFeed', () => {
     combat.events = [...combat.events, damage(2, 'ally', 'enemy-2', 52)]
     await flushPromises()
     expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent).toContain('−52')
+    wrapper.unmount()
+  })
+
+  it('clears transient hits when party combat collapses to solo and does not replay them', async () => {
+    const combat = useCombatSessionStore()
+    combat.snapshot = snapshot(true)
+    const wrapper = mount(CombatPartyDamageFeed, { attachTo: document.body })
+    await flushPromises()
+
+    combat.events = [damage(1, 'ally', 'enemy-1', 64)]
+    await flushPromises()
+    const battlefield = document.querySelector('[data-combat-battlefield]')!
+    expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent).toContain('−64')
+
+    const solo = snapshot(false)
+    combat.snapshot = { ...solo, sequence: 1 }
+    await flushPromises()
+    expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')).toBeNull()
+
+    combat.snapshot = { ...snapshot(true), sequence: 1 }
+    await flushPromises()
+    expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent ?? '').not.toContain('−64')
+    wrapper.unmount()
+  })
+
+  it('removes transient damage numbers after their presentation lifetime', async () => {
+    vi.useFakeTimers()
+    const combat = useCombatSessionStore()
+    combat.snapshot = snapshot(true)
+    const wrapper = mount(CombatPartyDamageFeed, { attachTo: document.body })
+    await flushPromises()
+
+    combat.events = [damage(1, 'ally', 'enemy-1', 64)]
+    await flushPromises()
+    const battlefield = document.querySelector('[data-combat-battlefield]')!
+    expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent).toContain('−64')
+
+    vi.advanceTimersByTime(1_700)
+    await wrapper.vm.$nextTick()
+    expect(battlefield.querySelector('[data-combat-party-enemy-damage-feed]')?.textContent ?? '').not.toContain('−64')
     wrapper.unmount()
   })
 })
