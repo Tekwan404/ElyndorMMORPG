@@ -266,7 +266,12 @@ public sealed class ItemSalvageService(
         GameContentSnapshot content,
         CancellationToken cancellationToken)
     {
-        int used = await InventoryCapacity.CountUsedSlotsAsync(dbContext, characterId, cancellationToken) - 1;
+        InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
+            dbContext,
+            characterId,
+            content,
+            cancellationToken);
+        int used = Math.Max(0, capacity.UsedSlots - 1);
         int required = 0;
         foreach ((ItemDefinition definition, int quantity) in rewards)
         {
@@ -277,7 +282,7 @@ public sealed class ItemSalvageService(
                 quantity,
                 cancellationToken);
         }
-        return used + required <= InventoryCapacity.Resolve(content);
+        return used + required <= capacity.Capacity;
     }
 
     private async Task GrantAsync(Guid characterId, ItemDefinition definition, int quantity, CancellationToken cancellationToken)
