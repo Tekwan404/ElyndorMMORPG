@@ -408,9 +408,9 @@ const additionalMapLocations = [
   ['OBSIDIAN_EDGE', 'Обсидиановый предел', 38],
   ['ANCIENT_MINE', 'Древняя шахта', 15],
   ['ECLIPSED_CITADEL', 'Цитадель Затмения', 25],
-  ['SHATTERED_ORDER_CITADEL_TEST', 'Цитадель Расколотого Ордена', 30],
+  ['SHATTERED_ORDER_CITADEL_TEST', 'Обсерватория Расколотого Зеркала', 25],
   ['HEART_OF_BLIGHTED_GROVE', 'Сердце Осквернённой Чащи', 20],
-  ['SHATTERED_ORDER_CITADEL', 'Цитадель Расколотого Ордена · рейд', 30],
+  ['SHATTERED_ORDER_CITADEL', 'Цитадель Расколотого Ордена', 30],
   ['BLACK_BASTION', 'Чёрный Бастион', 40],
   ['BROODMOTHER_LAIR', 'Логово Прародительницы', 12],
 ] as const

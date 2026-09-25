@@ -1,7 +1,7 @@
 {
-    "contentVersion":  "0.24.1",
+    "contentVersion":"0.28.0",
     "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-18T07:22:00+00:00",
+    "publishedAtUtc":"2026-09-25T00:00:00+00:00",
     "monsters":  [
                      {
                          "id":  "WHISPERING_FOREST_MOLODOI_VOLK_L1",
@@ -1961,7 +1961,7 @@
                          "goldRewardMin":  47,
                          "goldRewardMax":  63,
                          "displayName":  "Порченый кабан",
-                         "description":  "Порченый кабан. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Порченый кабан. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "porchenyi-kaban"
                      },
                      {
@@ -1998,7 +1998,7 @@
                          "goldRewardMin":  47,
                          "goldRewardMax":  63,
                          "displayName":  "Порченый волк",
-                         "description":  "Порченый волк. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Порченый волк. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "porchenyi-volk"
                      },
                      {
@@ -2035,7 +2035,7 @@
                          "goldRewardMin":  80,
                          "goldRewardMax":  108,
                          "displayName":  "Матёрый вожак",
-                         "description":  "Матёрый вожак. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Матёрый вожак. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "matioryi-vozhak"
                      },
                      {
@@ -2072,7 +2072,7 @@
                          "goldRewardMin":  51,
                          "goldRewardMax":  69,
                          "displayName":  "Порченый паук",
-                         "description":  "Порченый паук. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Порченый паук. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "porchenyi-pauk"
                      },
                      {
@@ -2109,7 +2109,7 @@
                          "goldRewardMin":  51,
                          "goldRewardMax":  69,
                          "displayName":  "Пепельный налётчик",
-                         "description":  "Пепельный налётчик. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Пепельный налётчик. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "pepelnyi-naliotchik"
                      },
                      {
@@ -2146,7 +2146,7 @@
                          "goldRewardMin":  55,
                          "goldRewardMax":  75,
                          "displayName":  "Теневой браконьер",
-                         "description":  "Теневой браконьер. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Теневой браконьер. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "tenevoi-brakoner"
                      },
                      {
@@ -2183,7 +2183,7 @@
                          "goldRewardMin":  55,
                          "goldRewardMax":  75,
                          "displayName":  "Браконьер чащи",
-                         "description":  "Браконьер чащи. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Браконьер чащи. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "brakoner-chashchi"
                      },
                      {
@@ -2220,7 +2220,7 @@
                          "goldRewardMin":  55,
                          "goldRewardMax":  75,
                          "displayName":  "Собиратель порчи",
-                         "description":  "Собиратель порчи. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Собиратель порчи. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "sobiratel-porchi"
                      },
                      {
@@ -2257,7 +2257,7 @@
                          "goldRewardMin":  80,
                          "goldRewardMax":  108,
                          "displayName":  "Лесная ведьма",
-                         "description":  "Лесная ведьма. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Лесная ведьма. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "lesnaia-vedma"
                      },
                      {
@@ -2294,7 +2294,7 @@
                          "goldRewardMin":  60,
                          "goldRewardMax":  80,
                          "displayName":  "Заражённый олень",
-                         "description":  "Заражённый олень. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Заражённый олень. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "zarazhionnyi-olen"
                      },
                      {
@@ -2331,7 +2331,7 @@
                          "goldRewardMin":  60,
                          "goldRewardMax":  80,
                          "displayName":  "Шипастый хищник",
-                         "description":  "Шипастый хищник. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Шипастый хищник. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "shipastyi-khishchnik"
                      },
                      {
@@ -2368,7 +2368,7 @@
                          "goldRewardMin":  64,
                          "goldRewardMax":  86,
                          "displayName":  "Болотный василиск",
-                         "description":  "Болотный василиск. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Болотный василиск. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "bolotnyi-vasilisk"
                      },
                      {
@@ -2405,7 +2405,7 @@
                          "goldRewardMin":  64,
                          "goldRewardMax":  86,
                          "displayName":  "Ядовитая матрона чащи",
-                         "description":  "Ядовитая матрона чащи. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Ядовитая матрона чащи. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "iadovitaia-matrona-chashchi"
                      },
                      {
@@ -2442,7 +2442,7 @@
                          "goldRewardMin":  64,
                          "goldRewardMax":  86,
                          "displayName":  "Порченный древень",
-                         "description":  "Порченный древень. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Порченный древень. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "porchennyi-dreven"
                      },
                      {
@@ -2479,7 +2479,7 @@
                          "goldRewardMin":  68,
                          "goldRewardMax":  92,
                          "displayName":  "Лозовый душитель",
-                         "description":  "Лозовый душитель. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Лозовый душитель. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "lozovyi-dushitel"
                      },
                      {
@@ -2516,7 +2516,7 @@
                          "goldRewardMin":  85,
                          "goldRewardMax":  115,
                          "displayName":  "Глашатай порчи",
-                         "description":  "Глашатай порчи. порча, яд, чума и подготовка к рейду 20.",
+                         "description":  "Глашатай порчи. порча, яд, чума и подготовка к подземелью 20.",
                          "artId":  "glashatai-porchi"
                      },
                      {

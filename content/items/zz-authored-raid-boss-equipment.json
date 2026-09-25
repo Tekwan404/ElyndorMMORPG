@@ -1,7 +1,7 @@
 {
-    "contentVersion":  "0.23.0",
+    "contentVersion":"0.28.0",
     "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "publishedAtUtc":"2026-09-25T00:00:00+00:00",
     "items":  [
                   {
                       "id":  "ARBALET_CHIORNYKH_VRAT",
@@ -166,7 +166,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Воин и паладин; один из главных рейдовых трофеев.",
+                      "description":  "Воин и паладин; один из главных трофеев Чёрного Бастиона.",
                       "version":  1,
                       "weaponBaseAttackIntervalSeconds":  3.2,
                       "weaponCategory":  "TWO_HAND_SWORD",
@@ -221,7 +221,7 @@
                   },
                   {
                       "id":  "KOLTSO_RAZBITOGO_OTRAZHENIIA",
-                      "name":  "Кольцо разбитого отражения",
+                      "name":  "Кольцо Единой Клятвы",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -234,7 +234,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Универсальное; снижает часть отражённого урона.",
+                      "description":  "Универсальное кольцо, сохранившее силу неудавшейся клятвы Каэль-Мора.",
                       "version":  1,
                       "iconId":  "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
                       "itemLevelMin":  30,
@@ -462,7 +462,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Материал для рейдовых рецептов.",
+                      "description":  "Материал для рецептов Сердца Осквернённой Чащи.",
                       "version":  1,
                       "iconId":  "oskvernionnoe_semia"
                   },
@@ -498,7 +498,7 @@
                   },
                   {
                       "id":  "PECHAT_TRIEDINSTVA",
-                      "name":  "Печать Триединства",
+                      "name":  "Печать Верховного Магистра",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -623,7 +623,7 @@
                   },
                   {
                       "id":  "SERDTSE_ZERKALNOGO_IADRA",
-                      "name":  "Сердце зеркального ядра",
+                      "name":  "Осколок Единой Клятвы",
                       "type":  "Material",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -636,7 +636,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Материал для рейдовых рецептов 30–35.",
+                      "description":  "Материал для подземельных рецептов 30–35 уровней.",
                       "version":  1,
                       "iconId":  "serdtse_zerkalnogo_iadra"
                   },
@@ -6354,7 +6354,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_CHEST",
-                      "name":  "Нагрудник «Клятва Зеркального Зверолова»",
+                      "name":  "Нагрудник «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6367,7 +6367,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6388,7 +6388,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_FEET",
-                      "name":  "Сапоги «Клятва Зеркального Зверолова»",
+                      "name":  "Сапоги «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6401,7 +6401,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6422,7 +6422,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_HANDS",
-                      "name":  "Рукавицы «Клятва Зеркального Зверолова»",
+                      "name":  "Рукавицы «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6435,7 +6435,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6456,7 +6456,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_HEAD",
-                      "name":  "Шлем «Клятва Зеркального Зверолова»",
+                      "name":  "Шлем «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6469,7 +6469,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6490,7 +6490,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_LEGS",
-                      "name":  "Поножи «Клятва Зеркального Зверолова»",
+                      "name":  "Поножи «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6503,7 +6503,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6524,7 +6524,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY_SHOULDERS",
-                      "name":  "Наплечники «Клятва Зеркального Зверолова»",
+                      "name":  "Наплечники «Клятва Зверолова Ордена»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6537,7 +6537,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Клятва Зеркального Зверолова» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
+                      "description":  "Часть комплекта «Клятва Зверолова Ордена» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                       "armorCategory":  "LEATHER",
@@ -6558,7 +6558,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_CHEST",
-                      "name":  "Нагрудник «Регалии Стрелка Между Мирами»",
+                      "name":  "Нагрудник «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6571,7 +6571,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6592,7 +6592,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_FEET",
-                      "name":  "Сапоги «Регалии Стрелка Между Мирами»",
+                      "name":  "Сапоги «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6605,7 +6605,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6626,7 +6626,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_HANDS",
-                      "name":  "Рукавицы «Регалии Стрелка Между Мирами»",
+                      "name":  "Рукавицы «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6639,7 +6639,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6660,7 +6660,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_HEAD",
-                      "name":  "Шлем «Регалии Стрелка Между Мирами»",
+                      "name":  "Шлем «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6673,7 +6673,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6694,7 +6694,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_LEGS",
-                      "name":  "Поножи «Регалии Стрелка Между Мирами»",
+                      "name":  "Поножи «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6707,7 +6707,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6728,7 +6728,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP_SHOULDERS",
-                      "name":  "Наплечники «Регалии Стрелка Между Мирами»",
+                      "name":  "Наплечники «Регалии Стрелка Чёрного Знамени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6741,7 +6741,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Стрелка Между Мирами» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
+                      "description":  "Часть комплекта «Регалии Стрелка Чёрного Знамени» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                       "armorCategory":  "LEATHER",
@@ -6966,7 +6966,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_CHEST",
-                      "name":  "Нагрудник «Одеяния Расколотой Звезды»",
+                      "name":  "Нагрудник «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -6979,7 +6979,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7000,7 +7000,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_FEET",
-                      "name":  "Сапоги «Одеяния Расколотой Звезды»",
+                      "name":  "Сапоги «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7013,7 +7013,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7034,7 +7034,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_HANDS",
-                      "name":  "Рукавицы «Одеяния Расколотой Звезды»",
+                      "name":  "Рукавицы «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7047,7 +7047,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7068,7 +7068,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_HEAD",
-                      "name":  "Шлем «Одеяния Расколотой Звезды»",
+                      "name":  "Шлем «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7081,7 +7081,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7102,7 +7102,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_LEGS",
-                      "name":  "Поножи «Одеяния Расколотой Звезды»",
+                      "name":  "Поножи «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7115,7 +7115,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7136,7 +7136,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE_SHOULDERS",
-                      "name":  "Наплечники «Одеяния Расколотой Звезды»",
+                      "name":  "Наплечники «Ризы Единой Клятвы»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7149,7 +7149,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Расколотой Звезды» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
+                      "description":  "Часть комплекта «Ризы Единой Клятвы» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                       "armorCategory":  "CLOTH",
@@ -7170,7 +7170,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_CHEST",
-                      "name":  "Нагрудник «Одеяния Пылающего Раскола»",
+                      "name":  "Нагрудник «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7183,7 +7183,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7204,7 +7204,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_FEET",
-                      "name":  "Сапоги «Одеяния Пылающего Раскола»",
+                      "name":  "Сапоги «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7217,7 +7217,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7238,7 +7238,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_HANDS",
-                      "name":  "Рукавицы «Одеяния Пылающего Раскола»",
+                      "name":  "Рукавицы «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7251,7 +7251,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7272,7 +7272,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_HEAD",
-                      "name":  "Шлем «Одеяния Пылающего Раскола»",
+                      "name":  "Шлем «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7285,7 +7285,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7306,7 +7306,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_LEGS",
-                      "name":  "Поножи «Одеяния Пылающего Раскола»",
+                      "name":  "Поножи «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7319,7 +7319,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7340,7 +7340,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE_SHOULDERS",
-                      "name":  "Наплечники «Одеяния Пылающего Раскола»",
+                      "name":  "Наплечники «Одеяния Запретного Пламени»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7353,7 +7353,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Одеяния Пылающего Раскола» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
+                      "description":  "Часть комплекта «Одеяния Запретного Пламени» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, горение.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                       "armorCategory":  "CLOTH",
@@ -7374,7 +7374,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_CHEST",
-                      "name":  "Нагрудник «Покров Зеркального Инея»",
+                      "name":  "Нагрудник «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7387,7 +7387,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7408,7 +7408,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_FEET",
-                      "name":  "Сапоги «Покров Зеркального Инея»",
+                      "name":  "Сапоги «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7421,7 +7421,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7442,7 +7442,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_HANDS",
-                      "name":  "Рукавицы «Покров Зеркального Инея»",
+                      "name":  "Рукавицы «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7455,7 +7455,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7476,7 +7476,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_HEAD",
-                      "name":  "Шлем «Покров Зеркального Инея»",
+                      "name":  "Шлем «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7489,7 +7489,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7510,7 +7510,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_LEGS",
-                      "name":  "Поножи «Покров Зеркального Инея»",
+                      "name":  "Поножи «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7523,7 +7523,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7544,7 +7544,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST_SHOULDERS",
-                      "name":  "Наплечники «Покров Зеркального Инея»",
+                      "name":  "Наплечники «Покров Хладного Архива»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7557,7 +7557,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Покров Зеркального Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
+                      "description":  "Часть комплекта «Покров Хладного Архива» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                       "armorCategory":  "CLOTH",
@@ -7782,7 +7782,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_CHEST",
-                      "name":  "Нагрудник «Доспех Зеркального Стража»",
+                      "name":  "Нагрудник «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7795,7 +7795,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7816,7 +7816,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_FEET",
-                      "name":  "Сапоги «Доспех Зеркального Стража»",
+                      "name":  "Сапоги «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7829,7 +7829,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7850,7 +7850,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_HANDS",
-                      "name":  "Рукавицы «Доспех Зеркального Стража»",
+                      "name":  "Рукавицы «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7863,7 +7863,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7884,7 +7884,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_HEAD",
-                      "name":  "Шлем «Доспех Зеркального Стража»",
+                      "name":  "Шлем «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7897,7 +7897,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7918,7 +7918,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_LEGS",
-                      "name":  "Поножи «Доспех Зеркального Стража»",
+                      "name":  "Поножи «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7931,7 +7931,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7952,7 +7952,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION_SHOULDERS",
-                      "name":  "Наплечники «Доспех Зеркального Стража»",
+                      "name":  "Наплечники «Доспех Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7965,7 +7965,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Доспех Зеркального Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
+                      "description":  "Часть комплекта «Доспех Сломанного Щита» для класса Паладин, ветка Защита. Основа: сила, выносливость, блок, щиты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                       "armorCategory":  "HEAVY",
@@ -7986,7 +7986,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_CHEST",
-                      "name":  "Нагрудник «Латы Триединого Правосудия»",
+                      "name":  "Нагрудник «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -7999,7 +7999,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8020,7 +8020,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_FEET",
-                      "name":  "Сапоги «Латы Триединого Правосудия»",
+                      "name":  "Сапоги «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8033,7 +8033,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8054,7 +8054,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_HANDS",
-                      "name":  "Рукавицы «Латы Триединого Правосудия»",
+                      "name":  "Рукавицы «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8067,7 +8067,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8088,7 +8088,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_HEAD",
-                      "name":  "Шлем «Латы Триединого Правосудия»",
+                      "name":  "Шлем «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8101,7 +8101,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8122,7 +8122,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_LEGS",
-                      "name":  "Поножи «Латы Триединого Правосудия»",
+                      "name":  "Поножи «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8135,7 +8135,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8156,7 +8156,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION_SHOULDERS",
-                      "name":  "Наплечники «Латы Триединого Правосудия»",
+                      "name":  "Наплечники «Латы Последнего Приговора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8169,7 +8169,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Латы Триединого Правосудия» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
+                      "description":  "Часть комплекта «Латы Последнего Приговора» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                       "armorCategory":  "HEAVY",
@@ -8394,7 +8394,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_CHEST",
-                      "name":  "Нагрудник «Наследие Первого Стража»",
+                      "name":  "Нагрудник «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8407,7 +8407,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8428,7 +8428,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_FEET",
-                      "name":  "Сапоги «Наследие Первого Стража»",
+                      "name":  "Сапоги «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8441,7 +8441,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8462,7 +8462,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_HANDS",
-                      "name":  "Рукавицы «Наследие Первого Стража»",
+                      "name":  "Рукавицы «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8475,7 +8475,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8496,7 +8496,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_HEAD",
-                      "name":  "Шлем «Наследие Первого Стража»",
+                      "name":  "Шлем «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8509,7 +8509,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8530,7 +8530,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_LEGS",
-                      "name":  "Поножи «Наследие Первого Стража»",
+                      "name":  "Поножи «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8543,7 +8543,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8564,7 +8564,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN_SHOULDERS",
-                      "name":  "Наплечники «Наследие Первого Стража»",
+                      "name":  "Наплечники «Оплот Сломанного Щита»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8577,7 +8577,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Наследие Первого Стража» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
+                      "description":  "Часть комплекта «Оплот Сломанного Щита» для класса Воин, ветка Страж. Основа: сила, броня, блок.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                       "armorCategory":  "HEAVY",
@@ -8598,7 +8598,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_CHEST",
-                      "name":  "Нагрудник «Регалии Зеркального Маршала»",
+                      "name":  "Нагрудник «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8611,7 +8611,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8632,7 +8632,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_FEET",
-                      "name":  "Сапоги «Регалии Зеркального Маршала»",
+                      "name":  "Сапоги «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8645,7 +8645,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8666,7 +8666,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_HANDS",
-                      "name":  "Рукавицы «Регалии Зеркального Маршала»",
+                      "name":  "Рукавицы «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8679,7 +8679,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8700,7 +8700,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_HEAD",
-                      "name":  "Шлем «Регалии Зеркального Маршала»",
+                      "name":  "Шлем «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8713,7 +8713,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8734,7 +8734,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_LEGS",
-                      "name":  "Поножи «Регалии Зеркального Маршала»",
+                      "name":  "Поножи «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8747,7 +8747,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8768,7 +8768,7 @@
                   },
                   {
                       "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD_SHOULDERS",
-                      "name":  "Наплечники «Регалии Зеркального Маршала»",
+                      "name":  "Наплечники «Регалии Павшего Командора»",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8781,7 +8781,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Часть комплекта «Регалии Зеркального Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
+                      "description":  "Часть комплекта «Регалии Павшего Командора» для класса Воин, ветка Командир. Основа: сила, выносливость, командные эффекты.",
                       "version":  1,
                       "setId":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                       "armorCategory":  "HEAVY",
@@ -8916,7 +8916,7 @@
                   },
                   {
                       "id":  "ZERKALNYI_BASTARD",
-                      "name":  "Зеркальный бастард",
+                      "name":  "Бастард Сломанного Щита",
                       "type":  "Equipment",
                       "rarity":  "Epic",
                       "requiredLevel":  30,
@@ -8929,7 +8929,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Воин и паладин; после получения отражённого урона усиливает следующий удар.",
+                      "description":  "Тяжёлый клинок кастеляна Торвальда для воина и паладина.",
                       "version":  1,
                       "weaponBaseAttackIntervalSeconds":  3.2,
                       "weaponCategory":  "TWO_HAND_SWORD",

@@ -27,7 +27,7 @@ const LOCATION_IDS = [
 ]
 
 describe('world map placement', () => {
-  it('has a hand-authored position for every current world, dungeon, and raid location', () => {
+  it('has a hand-authored position for every current world and dungeon location', () => {
     expect(Object.keys(WORLD_MAP_POSITIONS).sort()).toEqual([...LOCATION_IDS].sort())
   })
 

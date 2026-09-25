@@ -1,7 +1,7 @@
 {
-    "contentVersion":  "0.23.0",
+    "contentVersion":"0.28.0",
     "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "publishedAtUtc":"2026-09-25T00:00:00+00:00",
     "equipmentSets":  [
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_GUARDIAN",
@@ -89,7 +89,7 @@
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
-                              "name":  "Наследие Первого Стража",
+                              "name":  "Оплот Сломанного Щита",
                               "bonuses":  [
 
                                           ]
@@ -103,42 +103,42 @@
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
-                              "name":  "Регалии Зеркального Маршала",
+                              "name":  "Регалии Павшего Командора",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
-                              "name":  "Одеяния Пылающего Раскола",
+                              "name":  "Одеяния Запретного Пламени",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
-                              "name":  "Одеяния Расколотой Звезды",
+                              "name":  "Ризы Единой Клятвы",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
-                              "name":  "Покров Зеркального Инея",
+                              "name":  "Покров Хладного Архива",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
-                              "name":  "Регалии Стрелка Между Мирами",
+                              "name":  "Регалии Стрелка Чёрного Знамени",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
-                              "name":  "Клятва Зеркального Зверолова",
+                              "name":  "Клятва Зверолова Ордена",
                               "bonuses":  [
 
                                           ]
@@ -159,14 +159,14 @@
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
-                              "name":  "Доспех Зеркального Стража",
+                              "name":  "Доспех Сломанного Щита",
                               "bonuses":  [
 
                                           ]
                           },
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
-                              "name":  "Латы Триединого Правосудия",
+                              "name":  "Латы Последнего Приговора",
                               "bonuses":  [
 
                                           ]

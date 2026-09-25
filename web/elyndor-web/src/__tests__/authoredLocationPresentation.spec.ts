@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { locationPresentation } from '@/game/world/locationPresentation'
 
 describe('authored location presentation', () => {
-  it('resolves authored field zones and raid entrances to their imported art', () => {
+  it('presents every authored group instance as a dungeon', () => {
     for (const id of [
       'FLOWER_MEADOW',
       'OLD_ROAD',
@@ -25,8 +25,15 @@ describe('authored location presentation', () => {
       expect(presentation.label).not.toBe('Неизвестная область')
     }
 
-    expect(locationPresentation('HEART_OF_BLIGHTED_GROVE').dangerLabel).toBe('Рейд · 20 уровень')
-    expect(locationPresentation('SHATTERED_ORDER_CITADEL').dangerLabel).toBe('Рейд · 30 уровень')
-    expect(locationPresentation('BLACK_BASTION').dangerLabel).toBe('Рейд · 40 уровень')
+    expect(locationPresentation('HEART_OF_BLIGHTED_GROVE').dangerLabel).toBe(
+      'Подземелье · 20 уровень',
+    )
+    expect(locationPresentation('SHATTERED_ORDER_CITADEL').dangerLabel).toBe(
+      'Подземелье · 30 уровень',
+    )
+    expect(locationPresentation('BLACK_BASTION').dangerLabel).toBe('Подземелье · 40 уровень')
+    expect(locationPresentation('SHATTERED_ORDER_CITADEL_TEST').label).toBe(
+      'Обсерватория Расколотого Зеркала',
+    )
   })
 })

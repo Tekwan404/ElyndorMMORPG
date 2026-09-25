@@ -119,6 +119,23 @@ public sealed class AuthoredWorldContentTests
             profile.Id == "AUTHORED_EMPTY_AI" && profile.PriorityAbilityIds.Count == 0);
     }
 
+    [Fact]
+    public async Task PublishedGameCopyDoesNotPresentCurrentContentAsRaids()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        List<string?> publishedCopy =
+        [
+            .. package.Dungeons!.SelectMany(item => new[] { item.DisplayName, item.Description }),
+            .. package.Locations!.SelectMany(item => new[] { item.DisplayName, item.Description }),
+            .. package.Monsters!.SelectMany(item => new[] { item.DisplayName, item.Description }),
+            .. package.Items!.SelectMany(item => new[] { item.Name, item.Description }),
+            .. package.EquipmentSets!.Select(item => item.Name)
+        ];
+
+        Assert.DoesNotContain(publishedCopy, value =>
+            value?.Contains("рейд", StringComparison.OrdinalIgnoreCase) == true);
+    }
+
     private static string RepositoryContentPath()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

@@ -42,7 +42,7 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
     dangerLabel: 'Подземелье',
   },
   SHATTERED_ORDER_CITADEL_TEST: {
-    label: 'Цитадель Расколотого Ордена',
+    label: 'Обсерватория Расколотого Зеркала',
     art: gameArt.locations.SHATTERED_ORDER_CITADEL_TEST,
     kind: 'dungeon',
     dangerLabel: 'Тестовое подземелье',
@@ -72,9 +72,9 @@ Object.assign(PRESENTATIONS, {
   BLACKSTONE_HIGHLANDS: { label: 'Чернокаменное нагорье', art: gameArt.locations.BLACKSTONE_HIGHLANDS, kind: 'region', dangerLabel: 'Высокий риск' },
   CRIMSON_WASTELAND: { label: 'Багровая пустошь', art: gameArt.locations.CRIMSON_WASTELAND, kind: 'region', dangerLabel: 'Высокий риск' },
   OBSIDIAN_EDGE: { label: 'Обсидиановый предел', art: gameArt.locations.OBSIDIAN_EDGE, kind: 'region', dangerLabel: 'Смертельная опасность' },
-  HEART_OF_BLIGHTED_GROVE: { label: 'Сердце Осквернённой Чащи', art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 20 уровень' },
-  SHATTERED_ORDER_CITADEL: { label: 'Цитадель Расколотого Ордена', art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 30 уровень' },
-  BLACK_BASTION: { label: 'Чёрный Бастион', art: gameArt.locations.BLACK_BASTION_RAID, kind: 'dungeon', dangerLabel: 'Рейд · 40 уровень' },
+  HEART_OF_BLIGHTED_GROVE: { label: 'Сердце Осквернённой Чащи', art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 20 уровень' },
+  SHATTERED_ORDER_CITADEL: { label: 'Цитадель Расколотого Ордена', art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 30 уровень' },
+  BLACK_BASTION: { label: 'Чёрный Бастион', art: gameArt.locations.BLACK_BASTION_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 40 уровень' },
 })
 
 const FALLBACK_PRESENTATION: LocationPresentation = {

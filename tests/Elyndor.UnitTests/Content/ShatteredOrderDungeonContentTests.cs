@@ -60,6 +60,35 @@ public sealed class ShatteredOrderDungeonContentTests
     }
 
     [Fact]
+    public async Task CitadelRewardsUseFallenOrderRatherThanMirrorLore()
+    {
+        GameContentPackage package = await LoadAsync();
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+        var dungeon = package.Dungeons!.Single(item => item.Id == "SHATTERED_ORDER_CITADEL");
+        HashSet<string> rewardItemIds = dungeon.Encounters
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId].LootTableId)
+            .Where(lootTableId => lootTableId is not null)
+            .Select(lootTableId => indexes.LootTablesById[lootTableId!])
+            .SelectMany(lootTable => lootTable.Entries.Select(entry => entry.ItemId)
+                .Concat((lootTable.SelectionGroups ?? []).SelectMany(group => group.Entries)
+                    .Select(entry => entry.ItemId)))
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.NotEmpty(rewardItemIds);
+        Assert.All(rewardItemIds, itemId =>
+        {
+            var item = indexes.ItemsById[itemId];
+            Assert.False(ContainsLegacyMirrorLore(item.Name), $"{itemId}: {item.Name}");
+            Assert.False(ContainsLegacyMirrorLore(item.Description), $"{itemId}: {item.Description}");
+        });
+        Assert.All(
+            package.EquipmentSets!.Where(set => set.Id.StartsWith(
+                "SET_SHATTERED_ORDER_RAID_",
+                StringComparison.Ordinal)),
+            set => Assert.False(ContainsLegacyMirrorLore(set.Name), $"{set.Id}: {set.Name}"));
+    }
+
+    [Fact]
     public async Task BossPhasesMatchApprovedThresholdsAndBoundAdds()
     {
         GameContentPackage package = await LoadAsync();
@@ -143,6 +172,12 @@ public sealed class ShatteredOrderDungeonContentTests
 
     private static Task<GameContentPackage> LoadAsync() =>
         GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+
+    private static bool ContainsLegacyMirrorLore(string? value) =>
+        value?.Contains("зеркал", StringComparison.OrdinalIgnoreCase) == true
+        || value?.Contains("отраж", StringComparison.OrdinalIgnoreCase) == true
+        || value?.Contains("между мирами", StringComparison.OrdinalIgnoreCase) == true
+        || value?.Contains("триедин", StringComparison.OrdinalIgnoreCase) == true;
 
     private static string RepositoryContentPath()
     {

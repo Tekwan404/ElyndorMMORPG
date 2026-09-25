@@ -1,7 +1,7 @@
 {
-    "contentVersion":  "0.23.0",
+    "contentVersion":"0.28.0",
     "balanceVersion":  "0.19.0",
-    "publishedAtUtc":  "2026-09-17T00:00:00+00:00",
+    "publishedAtUtc":"2026-09-25T00:00:00+00:00",
     "items":  [
                   {
                       "id":  "BAGROVAIA_TKAN",
@@ -2131,7 +2131,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Очень редкий мировой трофей 40 уровня; сильный универсальный аксессуар, но не обязательный для прохождения рейда.",
+                      "description":  "Очень редкий мировой трофей 40 уровня; сильный универсальный аксессуар, но не обязательный для прохождения подземелий.",
                       "version":  1,
                       "iconId": "imported/pechat_predvestnika",
                       "itemLevelMin":  40,
@@ -3018,7 +3018,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Ключевой реагент для нескольких рецептов 20 уровня и рейдового ремесла.",
+                      "description":  "Ключевой реагент для нескольких рецептов 20 уровня и ремесла подземелий.",
                       "version":  1,
                       "iconId":  "serdtse_lesnoi_porchi"
                   },
@@ -3647,7 +3647,7 @@
                   },
                   {
                       "id":  "ZERKALNYI_OSKOLOK",
-                      "name":  "Зеркальный осколок",
+                      "name":  "Осколок печати Ордена",
                       "type":  "Material",
                       "rarity":  "Common",
                       "requiredLevel":  27,
@@ -3660,7 +3660,7 @@
                                     "intellect":  0,
                                     "stamina":  0
                                 },
-                      "description":  "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+                      "description":  "Фрагмент древней печати Расколотого Ордена. Источник и шанс определены в таблицах добычи и профессий.",
                       "version":  1,
                       "iconId":  "zerkalnyi_oskolok"
                   },
