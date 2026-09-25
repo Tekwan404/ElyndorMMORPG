@@ -14,13 +14,13 @@ defineProps<{ threatPercent?: number | null }>()
 .aggro-indicator {
   position: absolute;
   z-index: 5;
-  top: .25rem;
-  right: .2rem;
+  top: 0.25rem;
+  right: 0.2rem;
   display: inline-flex;
   min-height: 1.35rem;
   align-items: center;
-  gap: .18rem;
-  padding: .15rem .32rem;
+  gap: 0.18rem;
+  padding: 0.15rem 0.32rem;
   border: 1px solid rgb(241 102 112 / 65%);
   border-radius: 999px;
   background: rgb(42 9 15 / 88%);
@@ -29,7 +29,15 @@ defineProps<{ threatPercent?: number | null }>()
   line-height: 1;
   pointer-events: none;
 }
-.aggro-indicator span { font-size: .48rem; }
-.aggro-indicator b { font-size: .5rem; letter-spacing: .07em; }
-.aggro-indicator small { color: #f6c0c5; font-size: .46rem; }
+.aggro-indicator span {
+  font-size: 0.48rem;
+}
+.aggro-indicator b {
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+}
+.aggro-indicator small {
+  color: #f6c0c5;
+  font-size: 0.46rem;
+}
 </style>

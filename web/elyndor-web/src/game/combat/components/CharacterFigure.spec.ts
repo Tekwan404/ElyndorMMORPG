@@ -28,7 +28,14 @@ describe('CharacterFigure', () => {
 
   it('renders selected and aggro as two states on one actor', () => {
     const wrapper = mount(CharacterFigure, {
-      props: { actor, selected: true, aggro: true, local: false, disabled: false, frontline: true },
+      props: {
+        actor,
+        selected: true,
+        aggro: true,
+        local: false,
+        disabled: false,
+        frontline: true,
+      },
     })
 
     expect(wrapper.findAll('[data-character-figure="ally"]')).toHaveLength(1)
@@ -40,7 +47,14 @@ describe('CharacterFigure', () => {
 
   it('emits the actor id from a touch-sized button', async () => {
     const wrapper = mount(CharacterFigure, {
-      props: { actor, selected: false, aggro: false, local: false, disabled: false, frontline: false },
+      props: {
+        actor,
+        selected: false,
+        aggro: false,
+        local: false,
+        disabled: false,
+        frontline: false,
+      },
     })
 
     await wrapper.get('button').trigger('click')
@@ -49,9 +63,16 @@ describe('CharacterFigure', () => {
     expect(wrapper.get('button').attributes('aria-label')).toContain('Мира')
   })
 
-  it('loads frontline art eagerly and rear art lazily with responsive sizes', async () => {
+  it('loads every visible actor eagerly while prioritizing frontline responsive art', async () => {
     const wrapper = mount(CharacterFigure, {
-      props: { actor, selected: false, aggro: false, local: false, disabled: false, frontline: true },
+      props: {
+        actor,
+        selected: false,
+        aggro: false,
+        local: false,
+        disabled: false,
+        frontline: true,
+      },
     })
 
     expect(wrapper.get('img').attributes('loading')).toBe('eager')
@@ -59,7 +80,7 @@ describe('CharacterFigure', () => {
     expect(wrapper.get('img').attributes('sizes')).toContain('390px')
 
     await wrapper.setProps({ frontline: false })
-    expect(wrapper.get('img').attributes('loading')).toBe('lazy')
+    expect(wrapper.get('img').attributes('loading')).toBe('eager')
     expect(wrapper.get('img').attributes('fetchpriority')).toBe('low')
   })
 

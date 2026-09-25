@@ -16,18 +16,22 @@ const reportingSessions = new Set<string>()
 
 async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<void> {
   if (
-    reportedSessions.has(sessionId)
-    || reportingSessions.has(sessionId)
-    || !isBossCombatLogEnabled()
-  ) return
+    reportedSessions.has(sessionId) ||
+    reportingSessions.has(sessionId) ||
+    !isBossCombatLogEnabled()
+  )
+    return
 
   reportingSessions.add(sessionId)
   try {
-    const response = await apiClient.request<BossCombatLogResponse>('/api/v1/combat/boss-log/telegram-v2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId }),
-    })
+    const response = await apiClient.request<BossCombatLogResponse>(
+      '/api/v1/combat/boss-log/telegram-v2',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      },
+    )
 
     if (response.sent) {
       reportedSessions.add(sessionId)
@@ -42,12 +46,18 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
 
     console.warn('[boss-combat-log] beta combat log was not sent', response.errorCode)
     if (attempt < 2) {
-      window.setTimeout(() => void reportTerminalCombat(sessionId, attempt + 1), 500 * (attempt + 1))
+      window.setTimeout(
+        () => void reportTerminalCombat(sessionId, attempt + 1),
+        500 * (attempt + 1),
+      )
     }
   } catch (error) {
     console.warn('[boss-combat-log] failed to send beta combat log', error)
     if (attempt < 2) {
-      window.setTimeout(() => void reportTerminalCombat(sessionId, attempt + 1), 500 * (attempt + 1))
+      window.setTimeout(
+        () => void reportTerminalCombat(sessionId, attempt + 1),
+        500 * (attempt + 1),
+      )
     }
   } finally {
     reportingSessions.delete(sessionId)
@@ -56,7 +66,7 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
 
 watch(
   () => combat.snapshot?.status ?? null,
-  status => {
+  (status) => {
     if (!status || status === 'Active') return
     const sessionId = combat.snapshot?.sessionId
     if (!sessionId) return
@@ -67,3 +77,7 @@ watch(
   },
 )
 </script>
+
+<template>
+  <span v-if="false" />
+</template>

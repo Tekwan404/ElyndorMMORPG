@@ -42,10 +42,11 @@ export function projectBattleEvents(
     const previous = events[index - 1]
 
     if (event.type === 'DamageDealt' && event.targetActorId) {
-      const critical = previous?.type === 'CriticalHit'
-        && previous.sourceActorId === event.sourceActorId
-        && previous.targetActorId === event.targetActorId
-        && previous.amount === event.amount
+      const critical =
+        previous?.type === 'CriticalHit' &&
+        previous.sourceActorId === event.sourceActorId &&
+        previous.targetActorId === event.targetActorId &&
+        previous.amount === event.amount
       numbers.push({
         key: event.sequence,
         targetActorId: event.targetActorId,
@@ -94,24 +95,70 @@ function eventText(event: CombatEvent, context: BattleEventProjectionContext): s
   const sourceName = actorName(event.sourceActorId ?? event.actorId, context)
   const targetName = actorName(event.targetActorId ?? event.actorId, context)
   const abilityName = event.definitionId
-    ? context.abilityNames.get(event.definitionId) ?? event.definitionId
+    ? (context.abilityNames.get(event.definitionId) ?? readableIdentifier(event.definitionId))
     : 'способность'
 
   switch (event.type) {
-    case 'DamageDealt': return `${sourceName}: ${Math.round(event.amount)} урона`
-    case 'HealingApplied': return `${sourceName} восстанавливает ${targetName}: ${Math.round(event.amount)} здоровья`
-    case 'Dodge': return `${targetName} уклоняется`
-    case 'AbilityUsed': return `${sourceName} использует «${abilityName}»`
-    case 'ActorJoined': return `${targetName} вступает в бой`
-    case 'ActorLeft': return `${targetName} покидает бой`
-    case 'TargetChanged': return `${sourceName} выбирает цель: ${targetName}`
-    case 'ActorDied': return `${targetName} погибает`
-    case 'EnemyKilled': return `${targetName} повержен`
-    case 'CombatStarted': return 'Бой начался'
-    case 'CombatEnded': return 'Бой завершён'
-    case 'AbilityInterrupted': return `«${abilityName}» прервана`
-    default: return event.definitionId ? `${sourceName}: ${abilityName}` : 'Событие боя'
+    case 'DamageDealt':
+      return `${sourceName}: ${Math.round(event.amount)} урона`
+    case 'AutoAttackStarted':
+      return `${sourceName} включает автоатаку`
+    case 'AutoAttackStopped':
+      return `${sourceName} останавливает автоатаку`
+    case 'UnblockableHit':
+      return `${sourceName}: неблокируемый удар`
+    case 'DamageBlocked':
+      return event.amountBeforeShields <= 0
+        ? `${targetName}: полный блок`
+        : `${targetName} блокирует ${Math.round(event.amount)} урона`
+    case 'HealingApplied':
+      return `${sourceName} восстанавливает ${targetName}: ${Math.round(event.amount)} здоровья`
+    case 'Dodge':
+      return `${targetName} уклоняется`
+    case 'AbilityUsed':
+      return `${sourceName} использует «${abilityName}»`
+    case 'EffectApplied':
+      return `${targetName}: наложен эффект «${abilityName}»`
+    case 'EffectRefreshed':
+      return `${targetName}: обновлён эффект «${abilityName}»`
+    case 'ConsumableUsed':
+      return `${sourceName} использует «${abilityName}»`
+    case 'TauntApplied':
+      return `${sourceName} провоцирует ${targetName}`
+    case 'ActorJoined':
+      return `${targetName} вступает в бой`
+    case 'ActorLeft':
+      return `${targetName} покидает бой`
+    case 'ActorSummoned':
+      return `${sourceName} призывает ${targetName}`
+    case 'TargetChanged':
+      return `${sourceName} выбирает цель: ${targetName}`
+    case 'ActorDied':
+      return `${targetName} погибает`
+    case 'EnemyKilled':
+      return `${targetName} повержен`
+    case 'CombatStarted':
+      return 'Бой начался'
+    case 'CombatEnded':
+      return event.definitionId === 'Victory'
+        ? 'Победа'
+        : event.definitionId === 'Defeat'
+          ? 'Поражение'
+          : event.definitionId === 'FLED'
+            ? 'Вы покинули бой'
+            : 'Бой завершён'
+    case 'AbilityInterrupted':
+      return `«${abilityName}» прервана`
+    default:
+      return event.definitionId ? `${sourceName}: ${abilityName}` : 'Событие боя'
   }
+}
+
+function readableIdentifier(identifier: string): string {
+  return identifier
+    .toLocaleLowerCase('ru-RU')
+    .replace(/_/g, ' ')
+    .replace(/^./u, (first) => first.toLocaleUpperCase('ru-RU'))
 }
 
 function actorName(actorId: string | null, context: BattleEventProjectionContext): string {

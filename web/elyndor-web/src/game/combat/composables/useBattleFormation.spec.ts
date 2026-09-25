@@ -83,9 +83,21 @@ describe('buildBattleFormation', () => {
     const selectedLast = buildBattleFormation(input({ selectedActorId: 'ally-4' }))
 
     expect(
-      selectedLast.slots.map(({ actorId, x, y, scale, zIndex }) => ({ actorId, x, y, scale, zIndex })),
+      selectedLast.slots.map(({ actorId, x, y, scale, zIndex }) => ({
+        actorId,
+        x,
+        y,
+        scale,
+        zIndex,
+      })),
     ).toEqual(
-      selectedFirst.slots.map(({ actorId, x, y, scale, zIndex }) => ({ actorId, x, y, scale, zIndex })),
+      selectedFirst.slots.map(({ actorId, x, y, scale, zIndex }) => ({
+        actorId,
+        x,
+        y,
+        scale,
+        zIndex,
+      })),
     )
   })
 

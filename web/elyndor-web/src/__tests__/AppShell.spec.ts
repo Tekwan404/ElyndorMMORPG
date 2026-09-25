@@ -25,25 +25,34 @@ describe('AppShell', () => {
     session.snapshot.world!.currentLocation.id = 'ANCIENT_MINE'
     const characterId = session.snapshot.character!.id
     const party = usePartyStore()
-    party.snapshot = { partyId: 'party', leaderCharacterId: characterId, members: [], version: 1 }
+    party.snapshot = {
+      partyId: 'party',
+      leaderCharacterId: characterId,
+      members: [],
+      version: 1,
+    }
     vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
     const dungeon = useDungeonStore()
-    dungeon.previews = [{
-      id: 'ANCIENT_MINE',
-      displayName: 'Древняя шахта',
-      description: 'Тестовое подземелье',
-      minimumLevel: 1,
-      maximumLevel: 60,
-      entryLocationId: 'ANCIENT_MINE',
-      minimumPartySize: 1,
-      maximumPartySize: 5,
-      encounters: [{
-        id: 'encounter-0',
-        monsterId: 'DEEP_WOLF_L6',
-        checkpointId: 'MINE_ENTRANCE',
-        isBoss: false,
-      }],
-    }]
+    dungeon.previews = [
+      {
+        id: 'ANCIENT_MINE',
+        displayName: 'Древняя шахта',
+        description: 'Тестовое подземелье',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        entryLocationId: 'ANCIENT_MINE',
+        minimumPartySize: 1,
+        maximumPartySize: 5,
+        encounters: [
+          {
+            id: 'encounter-0',
+            monsterId: 'DEEP_WOLF_L6',
+            checkpointId: 'MINE_ENTRANCE',
+            isBoss: false,
+          },
+        ],
+      },
+    ]
     dungeon.current = {
       runId: 'run',
       dungeonId: 'ANCIENT_MINE',
@@ -55,24 +64,32 @@ describe('AppShell', () => {
       encounterCount: 1,
       partyId: 'party',
       members: [{ characterId, state: 'Active', joinedAtUtc: '2026-09-13T00:00:00Z' }],
-      encounters: [{
-        encounterId: 'encounter-0',
-        encounterIndex: 0,
-        monsterId: 'DEEP_WOLF_L6',
-        state: 'Pending',
-        wipeCount: 0,
-        characterIds: [],
-      }],
+      encounters: [
+        {
+          encounterId: 'encounter-0',
+          encounterIndex: 0,
+          monsterId: 'DEEP_WOLF_L6',
+          state: 'Pending',
+          wipeCount: 0,
+          characterIds: [],
+        },
+      ],
     }
     vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
     const combat = useCombatSessionStore()
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
     vi.spyOn(combat, 'resume').mockResolvedValue(true)
     vi.spyOn(combat, 'startDungeonEncounter').mockImplementation(async () => {
-      combat.$patch({ snapshot: { status: 'Active' } as NonNullable<typeof combat.snapshot> })
+      combat.$patch({
+        snapshot: { status: 'Active' } as NonNullable<typeof combat.snapshot>,
+      })
       return true
     })
-    const wrapper = mount(AppShell, { global: { stubs: { BattleScreen: { template: '<div data-global-combat />' } } } })
+    const wrapper = mount(AppShell, {
+      global: {
+        stubs: { BattleScreen: { template: '<div data-global-combat />' } },
+      },
+    })
     await flushPromises()
     await wrapper.get('[data-start-dungeon]').trigger('click')
     await flushPromises()
@@ -94,22 +111,22 @@ describe('AppShell', () => {
         displayName: 'Starter Town',
         dangerLevel: 'SAFE',
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
       {
         id: 'WHISPERING_FOREST',
         displayName: 'Whispering Forest',
         dangerLevel: 'ADVENTURE',
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
     ])
     const store = useGameSessionStore()
@@ -234,10 +251,12 @@ describe('AppShell', () => {
 
     expect(wrapper.get('[data-nav="quests"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('[data-quest-view]').text()).toContain('Контракт: Прародительница')
-    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
-      .toContain('Паучья Прародительница')
-    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text())
-      .toContain('2000 опыта')
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text()).toContain(
+      'Паучья Прародительница',
+    )
+    expect(wrapper.get('[data-quest-id="CONTRACT_BROODMOTHER_GATE"]').text()).toContain(
+      '2000 опыта',
+    )
   })
 
   it('opens the map when an empty journal sends the player back into the world', async () => {
@@ -371,11 +390,11 @@ function worldSnapshot() {
         displayName: 'Starter Town',
         dangerLevel: 'SAFE' as const,
         recommendedLevel: 1,
-      minimumLevel: 1,
-      maximumLevel: 60,
-      requiredContractId: null,
-      artId: null,
-      description: 'Test location',
+        minimumLevel: 1,
+        maximumLevel: 60,
+        requiredContractId: null,
+        artId: null,
+        description: 'Test location',
       },
       version: 1,
       outgoingTransitions: [],

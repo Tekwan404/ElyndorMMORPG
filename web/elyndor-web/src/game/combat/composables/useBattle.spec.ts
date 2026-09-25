@@ -11,11 +11,7 @@ import type { CombatActorSnapshot, CombatSnapshot } from '@/api/contracts'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useBattle } from './useBattle'
 
-function actor(
-  actorId: string,
-  kind: CombatActorSnapshot['kind'],
-  hp = 100,
-): CombatActorSnapshot {
+function actor(actorId: string, kind: CombatActorSnapshot['kind'], hp = 100): CombatActorSnapshot {
   return {
     actorId,
     kind,
@@ -37,7 +33,10 @@ function actor(
 function snapshot(): CombatSnapshot {
   const local = actor('local', 'Player')
   const ally = actor('ally', 'Player')
-  const enemy = { ...actor('enemy', 'Monster'), currentAggroTargetActorId: 'local' }
+  const enemy = {
+    ...actor('enemy', 'Monster'),
+    currentAggroTargetActorId: 'local',
+  }
   return {
     sessionId: 'session',
     sequence: 1,

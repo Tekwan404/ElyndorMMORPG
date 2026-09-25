@@ -1,6 +1,6 @@
 /* Closed-beta UX corrections kept isolated from AFK work. */
 
-/* CombatView already contains the full expandable combat journal. */
+/* BattleScreen owns the expandable combat journal. */
 body .combat-telemetry .combat-telemetry__feed {
   display: none !important;
   visibility: hidden !important;
@@ -35,22 +35,21 @@ body .combat-telemetry .combat-telemetry__feed {
 
 /* Audit follow-up: enemy is the primary combat focal point, not another equal web card. */
 .combat-screen .combat-hud {
-  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr) !important;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr) !important;
 }
 
 .combat-screen .combat-hud__actor--enemy {
   padding: 8px 10px !important;
   border-color: rgb(216 95 114 / 48%) !important;
   background:
-    linear-gradient(110deg, rgb(116 38 53 / 15%), transparent 58%),
-    rgb(8 12 20 / 96%) !important;
+    linear-gradient(110deg, rgb(116 38 53 / 15%), transparent 58%), rgb(8 12 20 / 96%) !important;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 3%),
     0 7px 18px rgb(0 0 0 / 18%) !important;
 }
 
 .combat-screen .combat-hud__actor--enemy .combat-hud__identity strong {
-  font-size: .82rem !important;
+  font-size: 0.82rem !important;
 }
 
 .combat-screen .battlefield {
@@ -67,7 +66,7 @@ body .combat-telemetry .combat-telemetry__feed {
 .combat-screen .player-figure {
   width: 6.8rem !important;
   height: 8.8rem !important;
-  opacity: .64 !important;
+  opacity: 0.64 !important;
 }
 
 /* Audit follow-up: this tab is the player's journal, not only a quest list. */
@@ -129,7 +128,7 @@ body .combat-telemetry .combat-telemetry__feed {
 }
 
 .game-shell .xp > span {
-  opacity: .78;
+  opacity: 0.78;
 }
 
 .game-shell .xp small {
@@ -140,9 +139,9 @@ body .combat-telemetry .combat-telemetry__feed {
   min-width: 0;
   padding-inline: 6px;
   overflow: hidden;
-  font-size: .52rem !important;
+  font-size: 0.52rem !important;
   line-height: 1 !important;
-  letter-spacing: .015em;
+  letter-spacing: 0.015em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -182,9 +181,7 @@ body .combat-telemetry .combat-telemetry__feed {
   padding: 10px 12px;
   border: 1px solid rgb(146 136 255 / 16%);
   border-radius: var(--ui-radius-md);
-  background:
-    linear-gradient(90deg, rgb(100 93 199 / 9%), transparent 55%),
-    rgb(3 7 13 / 72%);
+  background: linear-gradient(90deg, rgb(100 93 199 / 9%), transparent 55%), rgb(3 7 13 / 72%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
 }
 
@@ -217,7 +214,7 @@ body .combat-telemetry .combat-telemetry__feed {
 
 .overview .equipment-summary {
   display: grid !important;
-  grid-template-columns: minmax(7rem, .8fr) minmax(10rem, 1.2fr);
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(10rem, 1.2fr);
   align-items: stretch !important;
   gap: 10px !important;
   margin: 0 var(--ui-space-3) var(--ui-space-3) !important;
@@ -260,7 +257,7 @@ body .combat-telemetry .combat-telemetry__feed {
   }
 
   .combat-screen .combat-hud {
-    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) !important;
   }
 
   .combat-screen .battlefield {
@@ -273,7 +270,7 @@ body .combat-telemetry .combat-telemetry__feed {
   }
 
   .game-shell .xp small {
-    font-size: .49rem !important;
+    font-size: 0.49rem !important;
   }
 
   .world-map__header {
@@ -302,6 +299,6 @@ body .combat-telemetry .combat-telemetry__feed {
   }
 
   .overview .progression__heading > span {
-    font-size: .54rem !important;
+    font-size: 0.54rem !important;
   }
 }

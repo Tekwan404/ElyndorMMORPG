@@ -107,7 +107,10 @@ export function protectedBoundsOverlap(left: NormalizedRect, right: NormalizedRe
 }
 
 export function buildBattleFormation(input: BattleFormationInput): BattleFormationResult {
-  const constraints = { ...DEFAULT_FORMATION_CONSTRAINTS, ...input.constraints }
+  const constraints = {
+    ...DEFAULT_FORMATION_CONSTRAINTS,
+    ...input.constraints,
+  }
   const actorIds = [...new Set(input.actorIds.filter(Boolean))]
   const frontlineActorId = resolveFrontlineActorId(actorIds, input.aggroActorId, input.localActorId)
   const allVisibleSlots = createSlots(actorIds, frontlineActorId, input, constraints)
@@ -131,10 +134,7 @@ export function buildBattleFormation(input: BattleFormationInput): BattleFormati
 
   return {
     mode: 'frontline-three',
-    slots: [
-      ...visibleActorIds.map((actorId) => fallbackByActorId.get(actorId)!),
-      ...hiddenSlots,
-    ],
+    slots: [...visibleActorIds.map((actorId) => fallbackByActorId.get(actorId)!), ...hiddenSlots],
     overflowActorIds: actorIds.filter((actorId) => !visibleSet.has(actorId)),
     constraints,
   }

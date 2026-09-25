@@ -24,7 +24,11 @@ describe('projectBattleEvents', () => {
       event(1, 'DamageDealt'),
       event(2, 'CriticalHit', { amount: 91 }),
       event(3, 'DamageDealt', { amount: 91 }),
-      event(4, 'HealingApplied', { targetActorId: 'ally', actorId: 'ally', amount: 35 }),
+      event(4, 'HealingApplied', {
+        targetActorId: 'ally',
+        actorId: 'ally',
+        amount: 35,
+      }),
       event(5, 'Dodge', { amount: 0 }),
     ]
 
@@ -52,7 +56,10 @@ describe('projectBattleEvents', () => {
       [
         event(1, 'AbilityUsed'),
         event(2, 'ActorJoined', { actorId: 'ally', targetActorId: 'ally' }),
-        event(3, 'TargetChanged', { sourceActorId: 'enemy', targetActorId: 'ally' }),
+        event(3, 'TargetChanged', {
+          sourceActorId: 'enemy',
+          targetActorId: 'ally',
+        }),
         event(4, 'ActorLeft', { actorId: 'ally', targetActorId: 'ally' }),
       ],
       {
@@ -72,6 +79,33 @@ describe('projectBattleEvents', () => {
       'Мира вступает в бой',
       'Жрец отражений выбирает цель: Мира',
       'Мира покидает бой',
+    ])
+  })
+
+  it('keeps operational combat events readable without exposing raw identifiers', () => {
+    const result = projectBattleEvents(
+      [
+        event(1, 'AutoAttackStarted'),
+        event(2, 'DamageBlocked', { actorId: 'local', targetActorId: 'local', amount: 18 }),
+        event(3, 'EffectApplied', { definitionId: 'UNKNOWN_EFFECT' }),
+        event(4, 'CombatEnded', { definitionId: 'Victory' }),
+      ],
+      {
+        actorNames: new Map([
+          ['local', 'Текван'],
+          ['enemy', 'Жрец отражений'],
+        ]),
+        abilityNames: new Map(),
+        enemyActorIds: new Set(['enemy']),
+        localActorId: 'local',
+      },
+    )
+
+    expect(result.logEntries.map((entry) => entry.text)).toEqual([
+      'Текван включает автоатаку',
+      'Текван блокирует 18 урона',
+      'Жрец отражений: наложен эффект «Unknown effect»',
+      'Победа',
     ])
   })
 })

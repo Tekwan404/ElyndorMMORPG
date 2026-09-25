@@ -32,7 +32,12 @@ const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
 const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
   character.value
-    ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent', character.value.activeSkinId)
+    ? resolveCharacterArt(
+        character.value.classId,
+        character.value.genderId,
+        'transparent',
+        character.value.activeSkinId,
+      )
     : null,
 )
 function worldLocationName(locationId: string): string {
@@ -62,18 +67,16 @@ const connectionLabel = computed(() => {
 const sessionErrorMessage = computed(() => {
   const code = session.errorCode
   if (!code) return 'Не удалось восстановить состояние мира.'
-  if (code === 'network_unavailable') return 'Не удалось связаться с сервером. Проверьте подключение и попробуйте снова.'
-  if (code === 'authentication_failed') return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
+  if (code === 'network_unavailable')
+    return 'Не удалось связаться с сервером. Проверьте подключение и попробуйте снова.'
+  if (code === 'authentication_failed')
+    return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
   if (code === 'bootstrap_failed') return 'Не удалось загрузить состояние персонажа и мира.'
   if (code === 'internal_server_error' || code === 'http_500') {
-    const trace = session.errorCorrelationId
-      ? ` ID запроса: ${session.errorCorrelationId}`
-      : ''
+    const trace = session.errorCorrelationId ? ` ID запроса: ${session.errorCorrelationId}` : ''
     return `Сервер не смог восстановить состояние игры.${trace}`
   }
-  const trace = session.errorCorrelationId
-    ? ` · ID: ${session.errorCorrelationId}`
-    : ''
+  const trace = session.errorCorrelationId ? ` · ID: ${session.errorCorrelationId}` : ''
   return `Не удалось продолжить игру. Код ошибки: ${code}${trace}`
 })
 
@@ -86,8 +89,19 @@ const navigation: readonly {
 }[] = [
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
-  { id: 'location', label: 'Локация', icon: gameArt.navigation.location, enabled: true, primary: true },
-  { id: 'quests', label: 'Квесты', icon: gameArt.navigation.quests, enabled: true },
+  {
+    id: 'location',
+    label: 'Локация',
+    icon: gameArt.navigation.location,
+    enabled: true,
+    primary: true,
+  },
+  {
+    id: 'quests',
+    label: 'Квесты',
+    icon: gameArt.navigation.quests,
+    enabled: true,
+  },
   { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: true },
 ]
 
@@ -137,20 +151,27 @@ async function acknowledgeRelease(): Promise<void> {
   }
 }
 
-watch(() => session.state, async state => {
-  if (state !== 'world') return
-  try {
-    await combat.connect()
-    await combat.resume()
-  } catch {
-    // The combat store retains the connection error and supports retry/reconnect.
-  }
-}, { immediate: true })
+watch(
+  () => session.state,
+  async (state) => {
+    if (state !== 'world') return
+    try {
+      await combat.connect()
+      await combat.resume()
+    } catch {
+      // The combat store retains the connection error and supports retry/reconnect.
+    }
+  },
+  { immediate: true },
+)
 
-watch(() => combat.isActive, (active, wasActive) => {
-  if (active) openLocation()
-  if (!active && wasActive) void session.refreshSnapshot()
-})
+watch(
+  () => combat.isActive,
+  (active, wasActive) => {
+    if (active) openLocation()
+    if (!active && wasActive) void session.refreshSnapshot()
+  },
+)
 
 onMounted(() => {
   initializeTelegramWebApp()
@@ -190,8 +211,17 @@ onMounted(() => {
       </div>
 
       <div class="hud__bars">
-        <UIHealthBar label="Здоровье" :value="character.vitals.currentHp" :max="character.vitals.maxHp" />
-        <UIHealthBar :label="resourceName" :tone="resourceTone" :value="character.vitals.currentResource" :max="character.vitals.maxResource" />
+        <UIHealthBar
+          label="Здоровье"
+          :value="character.vitals.currentHp"
+          :max="character.vitals.maxHp"
+        />
+        <UIHealthBar
+          :label="resourceName"
+          :tone="resourceTone"
+          :value="character.vitals.currentResource"
+          :max="character.vitals.maxResource"
+        />
       </div>
 
       <div class="hud__context">
@@ -206,7 +236,11 @@ onMounted(() => {
           :aria-valuenow="character.experience"
           :aria-valuemax="character.xpToNextLevel || 1"
         >
-          <span :style="{ width: `${character.xpToNextLevel ? Math.min(100, character.experience / character.xpToNextLevel * 100) : 100}%` }" />
+          <span
+            :style="{
+              width: `${character.xpToNextLevel ? Math.min(100, (character.experience / character.xpToNextLevel) * 100) : 100}%`,
+            }"
+          />
           <small>{{ character.experience }} / {{ character.xpToNextLevel || 'МАКС.' }} XP</small>
         </div>
       </div>
@@ -225,10 +259,15 @@ onMounted(() => {
         title="Связь с миром потеряна"
         :message="sessionErrorMessage"
       >
-        <UIButton data-retry-session variant="secondary" @click="session.start">Повторить вход</UIButton>
+        <UIButton data-retry-session variant="secondary" @click="session.start"
+          >Повторить вход</UIButton
+        >
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
-      <BattleScreen v-else-if="session.state === 'world' && combat.isActive" @leave="openLocation()" />
+      <BattleScreen
+        v-else-if="session.state === 'world' && combat.isActive"
+        @leave="openLocation()"
+      />
       <WorldMapView
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
@@ -251,7 +290,11 @@ onMounted(() => {
       />
     </main>
 
-    <nav v-if="session.state === 'world' && !combat.isActive" class="navigation" aria-label="Основная навигация">
+    <nav
+      v-if="session.state === 'world' && !combat.isActive"
+      class="navigation"
+      aria-label="Основная навигация"
+    >
       <button
         v-for="item in navigation"
         :key="item.id"
@@ -282,13 +325,24 @@ onMounted(() => {
         <p class="release-update__version">Версия {{ releaseUpdate.id }}</p>
         <ul>
           <li v-for="entry in releaseUpdate.entries" :key="`${entry.kind}-${entry.text}`">
-            <b :data-kind="entry.kind">{{ entry.kind === 'Added' ? 'Добавлено' : entry.kind === 'Changed' ? 'Изменено' : 'Исправлено' }}</b>
+            <b :data-kind="entry.kind">{{
+              entry.kind === 'Added'
+                ? 'Добавлено'
+                : entry.kind === 'Changed'
+                  ? 'Изменено'
+                  : 'Исправлено'
+            }}</b>
             <span>{{ entry.text }}</span>
           </li>
         </ul>
       </section>
       <template #actions>
-        <UIButton data-release-acknowledge :loading="acknowledgingRelease" @click="acknowledgeRelease">Понятно</UIButton>
+        <UIButton
+          data-release-acknowledge
+          :loading="acknowledgingRelease"
+          @click="acknowledgeRelease"
+          >Понятно</UIButton
+        >
       </template>
     </UIModal>
   </div>
@@ -305,8 +359,7 @@ onMounted(() => {
   overflow: hidden;
   border-inline: 1px solid var(--ui-color-frame);
   background:
-    radial-gradient(circle at 50% -4rem, rgb(209 170 98 / 9%), transparent 22rem),
-    rgb(5 7 13 / 98%);
+    radial-gradient(circle at 50% -4rem, rgb(209 170 98 / 9%), transparent 22rem), rgb(5 7 13 / 98%);
   color: var(--ui-color-text-primary);
 }
 
@@ -327,11 +380,8 @@ onMounted(() => {
   z-index: 3;
   display: grid;
   gap: 6px;
-  padding:
-    calc(7px + var(--ui-safe-area-top))
-    calc(var(--ui-space-3) + var(--ui-safe-area-right))
-    7px
-    calc(var(--ui-space-3) + var(--ui-safe-area-left));
+  padding: calc(7px + var(--ui-safe-area-top)) calc(var(--ui-space-3) + var(--ui-safe-area-right))
+    7px calc(var(--ui-space-3) + var(--ui-safe-area-left));
   border-bottom: 1px solid rgb(205 177 113 / 24%);
   background:
     radial-gradient(circle at 18% 22%, rgb(209 170 98 / 8%), transparent 11rem),
@@ -374,8 +424,7 @@ onMounted(() => {
   border: 1px solid color-mix(in srgb, var(--ui-color-gold) 58%, var(--ui-color-border));
   border-radius: var(--ui-radius-md);
   background:
-    radial-gradient(circle at 50% 25%, rgb(209 170 98 / 16%), transparent 58%),
-    rgb(7 10 17 / 95%);
+    radial-gradient(circle at 50% 25%, rgb(209 170 98 / 16%), transparent 58%), rgb(7 10 17 / 95%);
   box-shadow:
     inset 0 0 0 2px rgb(255 255 255 / 3%),
     0 0 14px rgb(209 170 98 / 12%);
@@ -408,13 +457,13 @@ onMounted(() => {
   color: var(--ui-color-gold);
   font-size: var(--ui-font-size-xs);
   font-weight: 800;
-  letter-spacing: .17em;
+  letter-spacing: 0.17em;
 }
 
 .hud__identity b {
   overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 1.08;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -503,7 +552,7 @@ onMounted(() => {
   width: 15px;
   height: 15px;
   object-fit: contain;
-  opacity: .78;
+  opacity: 0.78;
 }
 
 .hud__context > button span {
@@ -561,10 +610,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
-  padding:
-    3px
-    calc(4px + var(--ui-safe-area-right))
-    calc(4px + var(--ui-safe-area-bottom))
+  padding: 3px calc(4px + var(--ui-safe-area-right)) calc(4px + var(--ui-safe-area-bottom))
     calc(4px + var(--ui-safe-area-left));
   border-top: 1px solid rgb(205 177 113 / 28%);
   background:
@@ -608,7 +654,7 @@ onMounted(() => {
 .navigation__item:disabled {
   color: var(--ui-color-disabled);
   cursor: not-allowed;
-  opacity: .28;
+  opacity: 0.28;
 }
 
 .navigation__item--active {
@@ -636,7 +682,7 @@ onMounted(() => {
 }
 
 .navigation__item:active:not(:disabled) {
-  transform: scale(.96);
+  transform: scale(0.96);
 }
 
 .navigation__icon-wrap {
@@ -650,8 +696,10 @@ onMounted(() => {
   width: 25px;
   height: 25px;
   object-fit: contain;
-  filter: grayscale(.2) saturate(.76) brightness(.86);
-  transition: filter var(--ui-transition-fast), transform var(--ui-transition-fast);
+  filter: grayscale(0.2) saturate(0.76) brightness(0.86);
+  transition:
+    filter var(--ui-transition-fast),
+    transform var(--ui-transition-fast);
 }
 
 .navigation__item--primary .navigation__icon {
@@ -660,7 +708,7 @@ onMounted(() => {
 }
 
 .navigation__item--active .navigation__icon {
-  filter: saturate(1.15) brightness(1.1) drop-shadow(0 0 .38rem rgb(209 170 98 / 52%));
+  filter: saturate(1.15) brightness(1.1) drop-shadow(0 0 0.38rem rgb(209 170 98 / 52%));
   transform: translateY(-1px);
 }
 
@@ -687,14 +735,46 @@ onMounted(() => {
   display: none;
 }
 
-.release-update { display: grid; gap: 10px; }
-.release-update__version { margin: 0; color: var(--ui-color-gold); font-size: var(--ui-font-size-xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.release-update ul { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
-.release-update li { display: grid; gap: 2px; }
-.release-update li b { color: var(--ui-color-gold); font-size: var(--ui-font-size-xs); letter-spacing: .06em; text-transform: uppercase; }
-.release-update li b[data-kind='Fixed'] { color: var(--ui-color-success); }
-.release-update li b[data-kind='Changed'] { color: #b9a5f6; }
-.release-update li span { color: var(--ui-color-text-secondary); font-size: var(--ui-font-size-sm); line-height: 1.4; }
+.release-update {
+  display: grid;
+  gap: 10px;
+}
+.release-update__version {
+  margin: 0;
+  color: var(--ui-color-gold);
+  font-size: var(--ui-font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.release-update ul {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.release-update li {
+  display: grid;
+  gap: 2px;
+}
+.release-update li b {
+  color: var(--ui-color-gold);
+  font-size: var(--ui-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.release-update li b[data-kind='Fixed'] {
+  color: var(--ui-color-success);
+}
+.release-update li b[data-kind='Changed'] {
+  color: #b9a5f6;
+}
+.release-update li span {
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-sm);
+  line-height: 1.4;
+}
 
 @media (max-width: 360px) {
   .hud {
@@ -713,7 +793,9 @@ onMounted(() => {
 @media (min-width: 582px) {
   .game-shell {
     border-inline: 1px solid var(--ui-color-border-strong);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 2%), 0 24px 70px rgb(0 0 0 / 42%);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 2%),
+      0 24px 70px rgb(0 0 0 / 42%);
   }
 }
 </style>

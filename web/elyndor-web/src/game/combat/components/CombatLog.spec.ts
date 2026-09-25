@@ -5,13 +5,28 @@ import type { BattleLogEntry } from '@/game/combat/battleEventPresentation'
 import CombatLog from './CombatLog.vue'
 
 const entries: BattleLogEntry[] = [
-  { key: 1, side: 'player', text: 'Текван: 42 урона', occurredAtUtc: '2026-09-25T12:00:00Z', eventType: 'DamageDealt' },
-  { key: 2, side: 'enemy', text: 'Жрец: 20 урона', occurredAtUtc: '2026-09-25T12:00:01Z', eventType: 'DamageDealt' },
+  {
+    key: 1,
+    side: 'player',
+    text: 'Текван: 42 урона',
+    occurredAtUtc: '2026-09-25T12:00:00Z',
+    eventType: 'DamageDealt',
+  },
+  {
+    key: 2,
+    side: 'enemy',
+    text: 'Жрец: 20 урона',
+    occurredAtUtc: '2026-09-25T12:00:01Z',
+    eventType: 'DamageDealt',
+  },
 ]
 
 describe('CombatLog', () => {
   it('starts as one latest-event row and opens an accessible drawer', async () => {
-    const wrapper = mount(CombatLog, { props: { entries }, attachTo: document.body })
+    const wrapper = mount(CombatLog, {
+      props: { entries },
+      attachTo: document.body,
+    })
 
     expect(wrapper.get('[data-combat-log-toggle]').text()).toContain('Жрец: 20 урона')
     expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
@@ -26,7 +41,10 @@ describe('CombatLog', () => {
   })
 
   it('closes on Escape and restores focus to the toggle', async () => {
-    const wrapper = mount(CombatLog, { props: { entries }, attachTo: document.body })
+    const wrapper = mount(CombatLog, {
+      props: { entries },
+      attachTo: document.body,
+    })
     const toggle = wrapper.get<HTMLButtonElement>('[data-combat-log-toggle]')
     await toggle.trigger('click')
 

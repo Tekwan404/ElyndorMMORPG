@@ -24,15 +24,15 @@ defineProps<{ label?: string }>()
 
 .target-selection b {
   position: absolute;
-  top: .3rem;
+  top: 0.3rem;
   left: 50%;
-  padding: .12rem .38rem;
+  padding: 0.12rem 0.38rem;
   border: 1px solid rgb(232 197 111 / 62%);
   border-radius: 999px;
   background: rgb(8 9 14 / 82%);
   color: #f4d98d;
-  font-size: .48rem;
-  letter-spacing: .08em;
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
   transform: translateX(-50%);
 }
 
@@ -43,16 +43,40 @@ defineProps<{ label?: string }>()
   border-color: #ebca72;
   border-style: solid;
 }
-.target-selection__corner--tl { top: 0; left: 0; border-width: 2px 0 0 2px; border-radius: 10px 0 0; }
-.target-selection__corner--tr { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 10px 0 0; }
-.target-selection__corner--bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-radius: 0 0 0 10px; }
-.target-selection__corner--br { right: 0; bottom: 0; border-width: 0 2px 2px 0; border-radius: 0 0 10px; }
+.target-selection__corner--tl {
+  top: 0;
+  left: 0;
+  border-width: 2px 0 0 2px;
+  border-radius: 10px 0 0;
+}
+.target-selection__corner--tr {
+  top: 0;
+  right: 0;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 10px 0 0;
+}
+.target-selection__corner--bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 10px;
+}
+.target-selection__corner--br {
+  right: 0;
+  bottom: 0;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 10px;
+}
 
 @media (prefers-reduced-motion: no-preference) {
-  .target-selection { animation: selection-breathe 1.8s ease-in-out infinite; }
+  .target-selection {
+    animation: selection-breathe 1.8s ease-in-out infinite;
+  }
 }
 
 @keyframes selection-breathe {
-  50% { filter: drop-shadow(0 0 11px rgb(232 197 111 / 75%)); }
+  50% {
+    filter: drop-shadow(0 0 11px rgb(232 197 111 / 75%));
+  }
 }
 </style>

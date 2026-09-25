@@ -53,7 +53,9 @@ describe('BattleArena', () => {
 
     const wrapper = mountArena(allies)
 
-    const renderedIds = wrapper.findAll('[data-character-figure]').map((node) => node.attributes('data-character-figure'))
+    const renderedIds = wrapper
+      .findAll('[data-character-figure]')
+      .map((node) => node.attributes('data-character-figure'))
     expect(renderedIds).toHaveLength(count)
     expect(new Set(renderedIds).size).toBe(count)
   })

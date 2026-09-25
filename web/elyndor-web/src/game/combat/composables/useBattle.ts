@@ -51,29 +51,42 @@ export function useBattle() {
     return enemies.value.find((actor) => actor.actorId === selectedActorId) ?? current.enemy
   })
   const selectedFriendlyActorId = computed(() => selectedFriendlyTargetActorId.value)
-  const selectedFriendlyActor = computed(() =>
-    allies.value.find((actor) => actor.actorId === selectedFriendlyActorId.value) ?? null,
+  const selectedFriendlyActor = computed(
+    () => allies.value.find((actor) => actor.actorId === selectedFriendlyActorId.value) ?? null,
   )
-  const aggroActorIds = computed(() => [...new Set(
-    enemies.value
-      .map((enemy) => enemy.currentAggroTargetActorId)
-      .filter((actorId): actorId is string => Boolean(actorId)),
-  )])
+  const aggroActorIds = computed(() => [
+    ...new Set(
+      enemies.value
+        .map((enemy) => enemy.currentAggroTargetActorId)
+        .filter((actorId): actorId is string => Boolean(actorId)),
+    ),
+  ])
   const companion = computed(() => snapshot.value?.companion ?? null)
-  const actorNames = computed(() => new Map(
-    [...allies.value, ...enemies.value, ...(companion.value ? [companion.value] : [])]
-      .map((actor) => [actor.actorId, actor.name]),
-  ))
-  const abilityNames = computed(() => new Map(
-    [...(snapshot.value?.player.abilities ?? []), ...enemies.value.flatMap((enemy) => enemy.abilities)]
-      .map((ability) => [ability.id, ability.displayName]),
-  ))
-  const eventProjection = computed(() => projectBattleEvents(events.value, {
-    actorNames: actorNames.value,
-    abilityNames: abilityNames.value,
-    enemyActorIds: new Set(enemies.value.map((enemy) => enemy.actorId)),
-    localActorId: snapshot.value?.player.actorId ?? '',
-  }))
+  const actorNames = computed(
+    () =>
+      new Map(
+        [...allies.value, ...enemies.value, ...(companion.value ? [companion.value] : [])].map(
+          (actor) => [actor.actorId, actor.name],
+        ),
+      ),
+  )
+  const abilityNames = computed(
+    () =>
+      new Map(
+        [
+          ...(snapshot.value?.player.abilities ?? []),
+          ...enemies.value.flatMap((enemy) => enemy.abilities),
+        ].map((ability) => [ability.id, ability.displayName]),
+      ),
+  )
+  const eventProjection = computed(() =>
+    projectBattleEvents(events.value, {
+      actorNames: actorNames.value,
+      abilityNames: abilityNames.value,
+      enemyActorIds: new Set(enemies.value.map((enemy) => enemy.actorId)),
+      localActorId: snapshot.value?.player.actorId ?? '',
+    }),
+  )
 
   function selectFriendlyActor(actorId: string): void {
     combat.selectFriendlyTarget(actorId)

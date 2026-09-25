@@ -11,7 +11,7 @@ const session = useGameSessionStore()
 watch(
   [
     () => session.snapshot?.character?.id ?? '',
-    () => combat.snapshot?.player.abilities.map(ability => ability.id).join('|') ?? '',
+    () => combat.snapshot?.player.abilities.map((ability) => ability.id).join('|') ?? '',
   ],
   () => {
     const characterId = session.snapshot?.character?.id
@@ -19,10 +19,14 @@ watch(
     if (!characterId || !player || player.abilities.length < 2) return
 
     const ordered = orderCombatAbilities(characterId, player.abilities)
-    const currentIds = player.abilities.map(ability => ability.id).join('|')
-    const orderedIds = ordered.map(ability => ability.id).join('|')
+    const currentIds = player.abilities.map((ability) => ability.id).join('|')
+    const orderedIds = ordered.map((ability) => ability.id).join('|')
     if (currentIds !== orderedIds) player.abilities = ordered
   },
   { immediate: true },
 )
 </script>
+
+<template>
+  <span v-if="false" />
+</template>
