@@ -8,6 +8,7 @@ public static class DungeonEncounterMechanicIds
     public const string VelariusMana = "VELARIUS_MANA";
     public const string MorEtSouls = "MOR_ET_SOULS";
     public const string AzraelTriune = "AZRAEL_TRIUNE";
+    public const string KaelMorTrials = "KAEL_MOR_TRIALS";
 }
 
 public static class DungeonEncounterAddRoles
@@ -23,6 +24,8 @@ public static class DungeonEncounterAddRoles
     public const string Fire = "FIRE";
     public const string Frost = "FROST";
     public const string Void = "VOID";
+    public const string TrialDefender = "TRIAL_DEFENDER";
+    public const string TrialCaster = "TRIAL_CASTER";
 }
 
 public sealed record DungeonEncounterAddDefinition(

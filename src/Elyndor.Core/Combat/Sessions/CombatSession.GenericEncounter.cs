@@ -140,7 +140,12 @@ public sealed partial class CombatSession
             {
                 if (phase.Trigger.Type != EncounterTriggerType.ElapsedTime
                     || phase.Trigger.Elapsed is not { } elapsed
-                    || phase.Trigger.Once && _genericEncounterState.HasFired(phase.Id))
+                    || phase.Trigger.Once && _genericEncounterState.HasFired(phase.Id)
+                    || phase.Trigger.PhaseId is { } requiredPhaseId
+                        && !string.Equals(
+                            requiredPhaseId,
+                            _genericEncounterState.CurrentPhaseId,
+                            StringComparison.Ordinal))
                 {
                     continue;
                 }

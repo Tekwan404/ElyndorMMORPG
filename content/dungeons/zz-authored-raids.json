@@ -26,25 +26,28 @@
     {
       "id": "SHATTERED_ORDER_CITADEL",
       "displayName": "Цитадель Расколотого Ордена",
-      "description": "Подземелье 30 уровня на зеркальную магию, ману, щиты и отражения.",
+      "description": "Некогда Орден защищал северные земли. После смерти Великого Магистра его командиры начали гражданскую войну, маги обратились к запретным ритуалам, а павших рыцарей снова подняли на службу.",
       "minimumLevel": 30,
       "maximumLevel": 30,
       "entryLocationId": "SHATTERED_ORDER_CITADEL",
       "minimumPartySize": 1,
       "maximumPartySize": 5,
       "encounters": [
-        { "id": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "checkpointId": "DUNGEON_01", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "checkpointId": "DUNGEON_02", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "checkpointId": "DUNGEON_03", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "checkpointId": "DUNGEON_04", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "checkpointId": "DUNGEON_05", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "checkpointId": "DUNGEON_06", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "checkpointId": "DUNGEON_07", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "checkpointId": "DUNGEON_08", "isBoss": false },
-        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "checkpointId": "DUNGEON_09", "isBoss": true },
-        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "checkpointId": "DUNGEON_10", "isBoss": true },
-        { "id": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "checkpointId": "DUNGEON_11", "isBoss": true },
-        { "id": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "checkpointId": "DUNGEON_12", "isBoss": true }
+        { "id": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30", "checkpointId": "GATES_01", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30", "checkpointId": "GATES_02", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30", "checkpointId": "GATES_TORVALD", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30", "checkpointId": "ARCHIVE_01", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "monsterId": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30", "checkpointId": "ARCHIVE_02", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30", "checkpointId": "ARCHIVE_ELLARIA", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30", "checkpointId": "FALLEN_01", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "monsterId": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30", "checkpointId": "FALLEN_02", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30", "checkpointId": "FALLEN_03", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30", "checkpointId": "FALLEN_REVAN", "isBoss": true },
+        { "id": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "monsterId": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30", "checkpointId": "OATH_01", "isBoss": false },
+        { "id": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30", "checkpointId": "OATH_KAEL_MOR", "isBoss": true, "mechanicId": "KAEL_MOR_TRIALS", "adds": [
+          { "role": "TRIAL_DEFENDER", "monsterId": "SHATTERED_ORDER_TRIAL_DEFENDER" },
+          { "role": "TRIAL_CASTER", "monsterId": "SHATTERED_ORDER_TRIAL_CASTER" }
+        ] }
       ]
     },
     {

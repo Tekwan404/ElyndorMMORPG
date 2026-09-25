@@ -119,6 +119,11 @@ public static partial class GameContentPackageValidator
                 DungeonEncounterAddRoles.Frost,
                 DungeonEncounterAddRoles.Void
             ],
+            DungeonEncounterMechanicIds.KaelMorTrials =>
+            [
+                DungeonEncounterAddRoles.TrialDefender,
+                DungeonEncounterAddRoles.TrialCaster
+            ],
             _ => null
         };
 

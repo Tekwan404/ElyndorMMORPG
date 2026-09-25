@@ -130,7 +130,7 @@
       "maximumLevel": 32,
       "requiredContractId": null,
       "artId": "zemli-raskola",
-      "description": "Отражения, мана, щиты и зеркальная магия. Визуальная тема: земли раскола в стилистике Elyndor.",
+      "description": "Разорённые земли вокруг древней крепости, где остатки воинского Ордена продолжают гражданскую войну.",
       "allowAfk": true
     },
     {
@@ -195,7 +195,7 @@
       "maximumLevel": 30,
       "requiredContractId": null,
       "artId": "tsitadel-raskolotogo-ordena",
-      "description": "Подземелье 30 уровня на зеркальную магию, ману, щиты и отражения.",
+      "description": "Подземелье 30 уровня о гражданской войне древнего Ордена, запретной магии и поднятых рыцарях.",
       "allowAfk": false
     },
     {

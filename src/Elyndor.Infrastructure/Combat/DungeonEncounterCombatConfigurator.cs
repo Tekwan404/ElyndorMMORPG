@@ -48,6 +48,9 @@ internal static class DungeonEncounterCombatConfigurator
             case DungeonEncounterMechanicIds.AzraelTriune:
                 session.ConfigureAzraelEncounter(BuildAzraelProfile(encounter, contentSnapshot.Indexes));
                 break;
+            case DungeonEncounterMechanicIds.KaelMorTrials:
+                session.ConfigureKaelMorEncounter(BuildKaelMorProfile(encounter, contentSnapshot.Indexes));
+                break;
             default:
                 throw new InvalidOperationException(
                     $"Dungeon encounter mechanic '{encounter.MechanicId}' is not supported by combat runtime.");
@@ -118,6 +121,20 @@ internal static class DungeonEncounterCombatConfigurator
             profiles.Add(role, ResolveEnemyProfile(add, indexes));
         }
         return new AzraelCombatEncounterProfile(profiles);
+    }
+
+    private static KaelMorCombatEncounterProfile BuildKaelMorProfile(
+        DungeonEncounterDefinition encounter,
+        GameContentIndexes indexes)
+    {
+        IReadOnlyList<DungeonEncounterAddDefinition> adds = RequireAdds(encounter);
+        DungeonEncounterAddDefinition defender = adds.Single(add =>
+            string.Equals(add.Role, DungeonEncounterAddRoles.TrialDefender, StringComparison.Ordinal));
+        DungeonEncounterAddDefinition caster = adds.Single(add =>
+            string.Equals(add.Role, DungeonEncounterAddRoles.TrialCaster, StringComparison.Ordinal));
+        return new KaelMorCombatEncounterProfile(
+            ResolveEnemyProfile(defender, indexes),
+            ResolveEnemyProfile(caster, indexes));
     }
 
     private static IReadOnlyList<DungeonEncounterAddDefinition> RequireAdds(

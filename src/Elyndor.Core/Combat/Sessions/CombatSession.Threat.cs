@@ -37,6 +37,7 @@ public sealed partial class CombatSession
             ProcessVelariusEncounterEvent(combatEvent);
             ProcessMorEtEncounterEvent(combatEvent);
             ProcessAzraelEncounterEvent(combatEvent);
+            ProcessKaelMorEncounterEvent(combatEvent);
             ProcessEnemyInterruptUtilityEvent(combatEvent);
             ProcessPaladinKernelEvent(combatEvent);
         }

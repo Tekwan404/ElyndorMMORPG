@@ -224,6 +224,58 @@ public sealed class ShatteredOrderCombatSessionTests
         Assert.DoesNotContain(finalBoss.Effects, effect => effect.Id == "AZRAEL_PHASE_GUARD");
     }
 
+    [Fact]
+    public void KaelMorTrialRewardsSuccessAndFailureHealsAndEmpowersBoss()
+    {
+        Dictionary<string, AbilityDefinition> abilities = CommonPlayerAbilities();
+        CombatParticipantDefinition player = CreatePlayer(abilities.Keys);
+        CombatParticipantDefinition boss = CreateBoss("KAEL_MOR_BOSS", 1_000, [], TimeSpan.FromHours(1));
+        CombatSession session = CreateSession(
+            player,
+            boss,
+            abilities,
+            new MonsterAiProfile("KAEL_MOR_AI", []));
+        session.ConfigureKaelMorEncounter(new KaelMorCombatEncounterProfile(
+            Profile("KAEL_MOR_DEFENDER", [], abilities, 100),
+            Profile("KAEL_MOR_CASTER", [], abilities, 100)));
+
+        CombatCommandResult firstTrial = session.Handle(
+            new UseAbilityCommand("trial-75", "HIT_350", BossId),
+            Now);
+        CombatActorSnapshot[] firstAdds = firstTrial.Snapshot.Enemies!
+            .Where(enemy => enemy.DefinitionId is "KAEL_MOR_DEFENDER" or "KAEL_MOR_CASTER" && enemy.Hp > 0)
+            .ToArray();
+        Assert.Equal(2, firstAdds.Length);
+        Assert.Equal(firstAdds[0].ActorId, firstTrial.Snapshot.SelectedTargetActorId);
+
+        CombatCommandResult firstKill = session.Handle(
+            new UseAbilityCommand("trial-first-kill", "NUKE", firstAdds[0].ActorId),
+            Now.AddMilliseconds(1));
+        Assert.True(firstKill.Succeeded, firstKill.ErrorCode);
+        CombatCommandResult secondKill = session.Handle(
+            new UseAbilityCommand("trial-second-kill", "NUKE", firstAdds[1].ActorId),
+            Now.AddMilliseconds(2));
+        Assert.Contains(secondKill.Snapshot.Player.Effects, effect =>
+            effect.Id == "KAEL_MOR_TRIAL_SUCCESS_DAMAGE");
+        Assert.Contains(secondKill.Snapshot.Player.Effects, effect =>
+            effect.Id == "KAEL_MOR_TRIAL_SUCCESS_HEALING");
+
+        _ = session.Handle(new UseAbilityCommand("approach-50", "PING", BossId), Now.AddMilliseconds(3));
+        CombatCommandResult secondTrial = session.Handle(
+            new UseAbilityCommand("trial-50", "PING", BossId),
+            Now.AddMilliseconds(4));
+        decimal beforeFailureHp = Enemy(secondTrial.Snapshot, "KAEL_MOR_BOSS").Hp;
+        Assert.Equal(2, secondTrial.Snapshot.Enemies!.Count(enemy =>
+            enemy.DefinitionId is "KAEL_MOR_DEFENDER" or "KAEL_MOR_CASTER" && enemy.Hp > 0));
+
+        CombatCommandResult timeout = session.AdvanceTo(Now.AddSeconds(15).AddMilliseconds(4));
+        Assert.Equal(beforeFailureHp + 50, Enemy(timeout.Snapshot, "KAEL_MOR_BOSS").Hp);
+        Assert.Contains(Enemy(timeout.Snapshot, "KAEL_MOR_BOSS").Effects, effect =>
+            effect.Id == "KAEL_MOR_SOUL_OF_THE_FALLEN");
+        Assert.DoesNotContain(timeout.Snapshot.Enemies!, enemy =>
+            enemy.DefinitionId is "KAEL_MOR_DEFENDER" or "KAEL_MOR_CASTER" && enemy.Hp > 0);
+    }
+
     private static CombatSession CreateSession(
         CombatParticipantDefinition player,
         CombatParticipantDefinition boss,

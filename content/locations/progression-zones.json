@@ -197,7 +197,7 @@
     },
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
-      "displayName": "Цитадель Расколотого Ордена",
+      "displayName": "Обсерватория Расколотого Зеркала",
       "dangerLevel": "SAFE",
       "recommendedLevel": 25,
       "transitions": [
@@ -208,7 +208,7 @@
       "maximumLevel": 25,
       "requiredContractId": null,
       "artId": "ancient-ruins",
-      "description": "Испытательная версия Цитадели Расколотого Ордена. Награды и основной прогресс здесь отключены.",
+      "description": "Подземелье 25 уровня о зеркальной магии, мане, щитах и расколотых отражениях. Награды и основной прогресс здесь отключены.",
       "travelDurationSeconds": 0
     }
   ]

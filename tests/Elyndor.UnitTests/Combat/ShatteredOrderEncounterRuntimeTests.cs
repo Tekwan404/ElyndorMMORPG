@@ -82,4 +82,35 @@ public sealed class ShatteredOrderEncounterRuntimeTests
         Assert.True(runtime.SplitCompleted);
         Assert.Null(runtime.WindowExpiresAtUtc);
     }
+
+    [Fact]
+    public void KaelMorRunsThreeSequentialOwnerBoundTrials()
+    {
+        KaelMorTrialEncounterRuntime runtime = new(KaelMorTrialEncounterDefinition.Default);
+        Guid owner = Guid.Parse("40000000-0000-0000-0000-000000000001");
+        Guid defender = Guid.Parse("50000000-0000-0000-0000-000000000001");
+        Guid caster = Guid.Parse("50000000-0000-0000-0000-000000000002");
+
+        Assert.True(runtime.TryBeginNextTrial(7_500, 10_000, [owner], Now, out Guid selected));
+        Assert.Equal(owner, selected);
+        runtime.RegisterAdd(defender);
+        runtime.RegisterAdd(caster);
+        Assert.True(runtime.CanActorTargetEnemy(owner, defender));
+        Assert.False(runtime.CanActorTargetEnemy(owner, Guid.NewGuid()));
+        Assert.False(runtime.CanActorTargetEnemy(Guid.NewGuid(), defender));
+        Assert.Null(runtime.RegisterAddDeath(defender));
+        KaelMorTrialState success = Assert.IsType<KaelMorTrialState>(runtime.RegisterAddDeath(caster));
+        Assert.Equal(owner, success.OwnerActorId);
+
+        Assert.True(runtime.TryBeginNextTrial(5_000, 10_000, [owner], Now, out _));
+        runtime.RegisterAdd(defender);
+        runtime.RegisterAdd(caster);
+        Assert.Null(runtime.RegisterTimeout(defender, Now.AddSeconds(14)));
+        KaelMorTrialState failure = Assert.IsType<KaelMorTrialState>(
+            runtime.RegisterTimeout(defender, Now.AddSeconds(15)));
+        Assert.Equal(2, failure.ActiveAddActorIds.Count);
+
+        Assert.True(runtime.TryBeginNextTrial(2_500, 10_000, [owner], Now, out _));
+        Assert.Equal(0, runtime.RemainingTrials);
+    }
 }

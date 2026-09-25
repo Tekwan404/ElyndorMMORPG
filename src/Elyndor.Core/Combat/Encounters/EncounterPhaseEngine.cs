@@ -74,8 +74,19 @@ public static class EncounterPhaseEngine
     private static bool Matches(
         EncounterTriggerDefinition trigger,
         EncounterRuntimeSnapshot snapshot,
-        EncounterPhaseRuntimeState state) =>
-        trigger.Type switch
+        EncounterPhaseRuntimeState state)
+    {
+        if (trigger.Type != EncounterTriggerType.PhaseStart
+            && trigger.PhaseId is { } requiredPhaseId
+            && !string.Equals(
+                requiredPhaseId,
+                snapshot.CurrentPhaseId ?? state.CurrentPhaseId,
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return trigger.Type switch
         {
             EncounterTriggerType.CombatStart => snapshot.Now <= snapshot.StartedAtUtc,
             EncounterTriggerType.HpAtOrBelow => snapshot.HpPercent <= trigger.Threshold,
@@ -103,6 +114,7 @@ public static class EncounterPhaseEngine
                 StringComparison.Ordinal),
             _ => false
         };
+    }
 
     private static bool MatchesEvent(
         EncounterTriggerDefinition trigger,

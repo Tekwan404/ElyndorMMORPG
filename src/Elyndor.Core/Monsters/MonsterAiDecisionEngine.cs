@@ -55,11 +55,14 @@ public static class MonsterAiDecisionEngine
                 continue;
             }
 
+            AbilityTargetCandidate[] ruleTargetCandidates = targetCandidates
+                .Where(candidate => IsWithinTargetHpRange(rule, candidate))
+                .ToArray();
             Guid[] targetActorIds = ResolveTargets(
                 rule,
                 ability,
                 monster,
-                targetCandidates,
+                ruleTargetCandidates,
                 random,
                 currentThreatTargetId,
                 ownerLinkedTargetId);
@@ -70,6 +73,20 @@ public static class MonsterAiDecisionEngine
         }
 
         return null;
+    }
+
+    private static bool IsWithinTargetHpRange(
+        MonsterAbilityRule rule,
+        AbilityTargetCandidate candidate)
+    {
+        if (rule.TargetMinHpPercent is null && rule.TargetMaxHpPercent is null)
+            return true;
+        if (candidate.CurrentHp <= 0 || candidate.MaxHp <= 0)
+            return false;
+
+        decimal hpPercent = candidate.CurrentHp / candidate.MaxHp * 100m;
+        return (rule.TargetMinHpPercent is not { } minHp || hpPercent >= minHp)
+            && (rule.TargetMaxHpPercent is not { } maxHp || hpPercent <= maxHp);
     }
 
     private static Guid[] ResolveTargets(

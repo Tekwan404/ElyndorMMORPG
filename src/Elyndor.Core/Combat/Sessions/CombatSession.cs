@@ -1054,6 +1054,7 @@ public sealed partial class CombatSession
                     out CombatParticipantDefinition? selected)
                 && !selected.Actor.IsDead
                 && selected.Actor.IsTargetable(now)
+                && CanPlayerTargetKaelMorEnemy(_player.Actor.ActorId, targetActorId)
                     ? [targetActorId]
                     : [];
         }
@@ -1091,7 +1092,10 @@ public sealed partial class CombatSession
             return [];
 
         return _enemies
-            .Where(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(now))
+            .Where(enemy =>
+                !enemy.Actor.IsDead
+                && enemy.Actor.IsTargetable(now)
+                && CanPlayerTargetKaelMorEnemy(_player.Actor.ActorId, enemy.Actor.ActorId))
             .Take(targetLimit)
             .Select(enemy => enemy.Actor.ActorId)
             .ToArray();

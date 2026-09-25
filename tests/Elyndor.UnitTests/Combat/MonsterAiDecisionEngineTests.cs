@@ -229,6 +229,40 @@ public sealed class MonsterAiDecisionEngineTests
         Assert.Null(second);
     }
 
+    [Fact]
+    public void TargetHpRuleUsesExecuteOnlyAgainstWoundedTarget()
+    {
+        CombatActorState monster = Monster();
+        AbilityDefinition execute = Ability("EXECUTE", AbilityTargetType.SingleEnemy);
+        AbilityDefinition fallback = Ability("FALLBACK", AbilityTargetType.SingleEnemy);
+        MonsterAiProfile profile = new(
+            "AI",
+            [],
+            AbilityRules:
+            [
+                new MonsterAbilityRule(
+                    execute.Id,
+                    Priority: 100,
+                    TargetSelector: AbilityTargetSelectorProfile.CurrentThreatTarget,
+                    TargetMaxHpPercent: 30),
+                new MonsterAbilityRule(fallback.Id, Priority: 10)
+            ]);
+        AbilityTargetCandidate healthy = Enemy() with { CurrentHp = 80, MaxHp = 100 };
+        AbilityTargetCandidate wounded = healthy with { CurrentHp = 30 };
+
+        MonsterAiDecision? healthyDecision = MonsterAiDecisionEngine.Select(
+            profile, monster, new HashSet<string>([execute.Id, fallback.Id]), Abilities(execute, fallback),
+            [healthy], StartedAt, StartedAt, new MonsterAbilitySchedulerState(), new SequenceGameRandom(),
+            currentThreatTargetId: healthy.ActorId);
+        MonsterAiDecision? woundedDecision = MonsterAiDecisionEngine.Select(
+            profile, monster, new HashSet<string>([execute.Id, fallback.Id]), Abilities(execute, fallback),
+            [wounded], StartedAt, StartedAt, new MonsterAbilitySchedulerState(), new SequenceGameRandom(),
+            currentThreatTargetId: wounded.ActorId);
+
+        Assert.Equal(fallback.Id, healthyDecision!.Ability.Id);
+        Assert.Equal(execute.Id, woundedDecision!.Ability.Id);
+    }
+
     private static CombatActorState Monster() =>
         CombatActorState.CreateDummy(
             100,

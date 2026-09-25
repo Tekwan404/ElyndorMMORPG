@@ -201,6 +201,32 @@ public sealed class EncounterPhaseEngineTests
             error => error.Contains("once-per-combat", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void OptionalPhaseGateStopsElapsedTriggerAfterEncounterChangesPhase()
+    {
+        EncounterDefinition definition = new(
+            "PHASE_GATED_TIMER",
+            "BOSS",
+            [
+                new EncounterPhaseDefinition(
+                    "SUMMON",
+                    new EncounterTriggerDefinition(
+                        EncounterTriggerType.ElapsedTime,
+                        Elapsed: TimeSpan.FromSeconds(5),
+                        PhaseId: "SUMMONING"),
+                    [new EncounterActionDefinition(EncounterActionType.ResourceChange, ResourceAmount: -1)])
+            ]);
+        EncounterPhaseRuntimeState state = new();
+        state.SetCurrentPhase("FINAL");
+
+        IReadOnlyList<EncounterPhaseResolution> resolutions = EncounterPhaseEngine.Evaluate(
+            definition,
+            Snapshot(100),
+            state);
+
+        Assert.Empty(resolutions);
+    }
+
     private static EncounterRuntimeSnapshot Snapshot(decimal hp) =>
         new(
             hp,

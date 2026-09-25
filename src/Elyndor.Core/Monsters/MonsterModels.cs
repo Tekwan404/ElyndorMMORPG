@@ -56,7 +56,9 @@ public sealed record MonsterAbilityRule(
     TimeSpan? InitialDelay = null,
     TimeSpan? CooldownJitter = null,
     string? RequiredEffectId = null,
-    string? ForbiddenEffectId = null);
+    string? ForbiddenEffectId = null,
+    decimal? TargetMinHpPercent = null,
+    decimal? TargetMaxHpPercent = null);
 
 public sealed record MonsterAiProfile(
     string Id,

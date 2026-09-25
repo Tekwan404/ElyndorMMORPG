@@ -1,0 +1,94 @@
+{
+  "contentVersion": "0.27.0",
+  "balanceVersion": "0.23.0",
+  "publishedAtUtc": "2026-09-25T00:00:00+00:00",
+  "encounters": [
+    {
+      "id": "SHATTERED_ORDER_TORVALD_ENCOUNTER",
+      "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
+      "version": 1,
+      "displayName": "Кастелян Торвальд Сломанный Щит",
+      "phases": [
+        {
+          "id": "TORVALD_LAST_DEFENSE",
+          "displayName": "Последняя оборона",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 40, "once": true },
+          "actions": [
+            { "type": "ApplyEffect", "effectId": "TORVALD_LAST_DEFENSE_HASTE", "targetSelector": "BOSS" },
+            { "type": "ApplyEffect", "effectId": "TORVALD_LAST_DEFENSE_DAMAGE", "targetSelector": "BOSS" },
+            { "type": "ApplyEffect", "effectId": "TORVALD_BROKEN_SHIELD_ARMOR", "targetSelector": "BOSS" }
+          ],
+          "abilityIds": ["TORVALD_TRAITOR_MARK", "TORVALD_CLEAVE"]
+        }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_ELLARIA_ENCOUNTER",
+      "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
+      "version": 1,
+      "displayName": "Архивариус Эллария Хладная",
+      "phases": [
+        {
+          "id": "ELLARIA_FORBIDDEN_FOLIO_70",
+          "displayName": "Пробуждение запретного фолианта",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 70, "once": true },
+          "actions": [
+            { "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_CORRUPTED_FOLIO", "count": 1, "maxActive": 1, "linkToCaster": true, "despawnOnBossDeath": true, "noReward": true, "isCombatObject": true, "auraEffectId": "ELLARIA_FOLIO_EMPOWERMENT", "auraTargetSelector": "BOSS" } }
+          ]
+        },
+        {
+          "id": "ELLARIA_FORBIDDEN_FOLIO_35",
+          "displayName": "Пробуждение второго фолианта",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 35, "once": true },
+          "actions": [
+            { "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_CORRUPTED_FOLIO", "count": 1, "maxActive": 1, "linkToCaster": true, "despawnOnBossDeath": true, "noReward": true, "isCombatObject": true, "auraEffectId": "ELLARIA_FOLIO_EMPOWERMENT", "auraTargetSelector": "BOSS" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_REVAN_ENCOUNTER",
+      "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
+      "version": 1,
+      "displayName": "Командор Реван Чёрный Клинок",
+      "phases": [
+        { "id": "REVAN_UNHOLY_AURA", "displayName": "Нечестивая аура", "trigger": { "type": "CombatStart", "once": true }, "actions": [{ "type": "ApplyEffect", "effectId": "REVAN_UNHOLY_AURA_EFFECT", "targetSelector": "ALL_PARTY_MEMBERS" }] },
+        { "id": "REVAN_RAISE_FALLEN_1", "displayName": "Поднять павших", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:10", "phaseId": "REVAN_UNHOLY_AURA", "once": true }, "actions": [{ "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_FALLEN_KNIGHT_SUMMON", "count": 2, "maxActive": 4, "despawnOnBossDeath": true, "noReward": true } }] },
+        { "id": "REVAN_RAISE_FALLEN_2", "displayName": "Поднять павших", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:28", "phaseId": "REVAN_RAISE_FALLEN_1", "once": true }, "actions": [{ "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_FALLEN_KNIGHT_SUMMON", "count": 2, "maxActive": 4, "despawnOnBossDeath": true, "noReward": true } }] },
+        { "id": "REVAN_RAISE_FALLEN_3", "displayName": "Поднять павших", "trigger": { "type": "ElapsedTime", "elapsed": "00:00:46", "phaseId": "REVAN_RAISE_FALLEN_2", "once": true }, "actions": [{ "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_FALLEN_KNIGHT_SUMMON", "count": 2, "maxActive": 4, "despawnOnBossDeath": true, "noReward": true } }] },
+        {
+          "id": "REVAN_MARCH_OF_THE_DEAD",
+          "displayName": "Марш мёртвых",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 30, "once": true },
+          "actions": [
+            { "type": "Summon", "summon": { "monsterId": "SHATTERED_ORDER_FALLEN_KNIGHT_SUMMON", "count": 2, "maxActive": 4, "despawnOnBossDeath": true, "noReward": true } },
+            { "type": "ApplyEffect", "effectId": "REVAN_MARCH_HASTE", "targetSelector": "BOSS" }
+          ],
+          "abilityIds": ["REVAN_MORTAL_STRIKE", "REVAN_DARK_BLADE"]
+        }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_KAEL_MOR_ENCOUNTER",
+      "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
+      "version": 1,
+      "displayName": "Верховный Магистр Каэль-Мор",
+      "phases": [
+        { "id": "KAEL_MOR_TRIAL_75", "displayName": "Испытание Раскола", "trigger": { "type": "HpAtOrBelow", "threshold": 75, "once": true }, "actions": [], "abilityIds": ["KAEL_MOR_DARK_BOLTS", "KAEL_MOR_MASTER_CURSE", "KAEL_MOR_ORDER_SEAL"] },
+        { "id": "KAEL_MOR_TRIAL_50", "displayName": "Испытание Раскола", "trigger": { "type": "HpAtOrBelow", "threshold": 50, "once": true }, "actions": [], "abilityIds": ["KAEL_MOR_DARK_BOLTS", "KAEL_MOR_MASTER_CURSE", "KAEL_MOR_ORDER_SEAL"] },
+        { "id": "KAEL_MOR_TRIAL_25", "displayName": "Испытание Раскола", "trigger": { "type": "HpAtOrBelow", "threshold": 25, "once": true }, "actions": [], "abilityIds": ["KAEL_MOR_DARK_BOLTS", "KAEL_MOR_MASTER_CURSE", "KAEL_MOR_ORDER_SEAL"] },
+        {
+          "id": "KAEL_MOR_LAST_GRAND_MASTER",
+          "displayName": "Последний Магистр",
+          "trigger": { "type": "HpAtOrBelow", "threshold": 20, "once": true },
+          "actions": [
+            { "type": "ApplyEffect", "effectId": "KAEL_MOR_LAST_HASTE", "targetSelector": "BOSS" },
+            { "type": "ApplyEffect", "effectId": "KAEL_MOR_LAST_POWER", "targetSelector": "BOSS" },
+            { "type": "ApplyEffect", "effectId": "KAEL_MOR_LAST_AURA", "targetSelector": "ALL_PARTY_MEMBERS" }
+          ],
+          "abilityIds": ["KAEL_MOR_DARK_BOLTS_FINAL", "KAEL_MOR_ORDER_SEAL"]
+        }
+      ]
+    }
+  ]
+}

@@ -86,11 +86,15 @@ public sealed class AuthoredWorldContentTests
             foreach (var encounter in dungeon.Encounters)
             {
                 Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
-                if (dungeonId == "BLACK_BASTION" && encounter.IsBoss)
+                if (dungeonId == "SHATTERED_ORDER_CITADEL"
+                    || dungeonId == "BLACK_BASTION" && encounter.IsBoss)
                 {
                     Assert.NotEmpty(monster!.AbilityIds);
-                    Assert.StartsWith("BLACK_BASTION_", monster.AiProfileId);
-                    Assert.True(indexes.EncountersByMonsterId.ContainsKey(monster.Id));
+                    Assert.StartsWith(
+                        dungeonId == "BLACK_BASTION" ? "BLACK_BASTION_" : "SHATTERED_ORDER_",
+                        monster.AiProfileId);
+                    if (encounter.IsBoss)
+                        Assert.True(indexes.EncountersByMonsterId.ContainsKey(monster.Id));
                 }
                 else
                 {

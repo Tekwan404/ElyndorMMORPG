@@ -154,7 +154,12 @@ public static partial class GameContentPackageValidator
                     || rule.MaxHpPercent is < 0 or > 100
                     || rule.MinHpPercent is { } minHp
                         && rule.MaxHpPercent is { } maxHp
-                        && minHp > maxHp;
+                        && minHp > maxHp
+                    || rule.TargetMinHpPercent is < 0 or > 100
+                    || rule.TargetMaxHpPercent is < 0 or > 100
+                    || rule.TargetMinHpPercent is { } targetMinHp
+                        && rule.TargetMaxHpPercent is { } targetMaxHp
+                        && targetMinHp > targetMaxHp;
                 bool timingInvalid = rule.InitialDelay is { } initialDelay
                         && initialDelay < TimeSpan.Zero
                     || rule.CooldownJitter is { } cooldownJitter
