@@ -1,393 +1,165 @@
 # Elyndor
 
-**Telegram Mini App MMORPG — MASTER Source of Truth v7.1**
+Elyndor — mobile-first dark-fantasy MMORPG. Сейчас игра запускается как Telegram Mini App, но игровая архитектура и доменная модель не должны зависеть от Telegram сильнее, чем требуется для identity/entry flow.
 
-Этот репозиторий — текущая единая база проекта Elyndor: игровые системы, архитектура, балансные правила, UI/UX-спецификации, код, контент и утверждённые визуальные референсы.
+> **Текущий снимок:** `main` @ `78ef47a` (25 сентября 2026).  
+> Этот README описывает **то, что реально есть в `main` сейчас**. Дизайн будущих систем живёт в `docs/source-of-truth/`.
 
-> Если открываешь проект впервые — начни с этого файла.
+## Что уже работает
+
+### Игровой цикл
+
+- Telegram identity, аккаунт, персонаж и восстановление игровой сессии.
+- Мир, travel, server-driven экран текущей локации и exploration encounters.
+- Обычный бой, боссы и подземелья через server-authoritative `CombatSession`.
+- Прогрессия, XP, характеристики, ресурсы классов, предметы, экипировка и loot.
+- Контракты/quest flow, AFK/auto-hunt foundation и награды.
+- Party до **5 игроков**, приглашения и Telegram-уведомления о приглашении.
+- Reconnect в активный бой и защита reward/mutation путей от повторного применения там, где это уже покрыто системой.
+
+### Классы
+
+В character creation доступны четыре класса:
+
+| Класс | Ресурс | Текущее состояние |
+| --- | --- | --- |
+| Warrior | Rage | playable; активный runtime-content включает Guardian slice, а полный дизайн дерева содержит Guardian / Berserker / Commander |
+| Archer | Focus (+ Mana для Arcane mechanics) | playable; companion/pet и три talent-направления присутствуют в content |
+| Mage | Mana | playable; Fire / Arcane / Frost talent content присутствует |
+| Paladin | Mana | playable; ability/talent content и character-creation flow присутствуют |
+
+Важно: наличие talent/content definition не означает, что каждая механика каждого узла уже прошла полный gameplay regression. Полный four-class ability/talent pass остаётся отдельной задачей.
+
+### Бой и UI
+
+В `main` уже используется единый battle screen для solo и party:
+
+- mobile-first battlefield без отдельного party-экрана;
+- союзники представлены персонажами на арене;
+- выбор ally/enemy target;
+- aggro state отделён от выбранной цели;
+- skills и consumables разделены;
+- floating damage/healing feedback;
+- cooldown/readiness states;
+- сворачиваемый combat log drawer;
+- адаптация под узкие mobile viewport'ы и party до 5 игроков;
+- Playwright preview tests на геометрию/overflow/formation.
+
+### Подземелья и боссы
+
+Authored high-level group content сейчас оформлен как **dungeons на 1–5 игроков**, а не как production raid flow.
+
+В content/runtime присутствуют, среди прочего:
+
+- Ancient Mine;
+- Eclipsed Citadel;
+- Shattered Order Citadel;
+- Black Bastion.
+
+Black Bastion имеет data-driven набор из шести boss encounters с отдельными механиками/AI.
+
+### Инвентарь и экипировка
+
+Текущая модель инвентаря — **единый inventory + Spatial Artifact**:
+
+- базовая вместимость: **30 слотов**;
+- один экипированный Spatial Artifact добавляет capacity;
+- artifact не занимает обычный inventory slot, пока экипирован;
+- equip/unequip/swap/salvage используют effective capacity;
+- mobile inventory использует адаптивную сетку и item bottom sheet.
+
+Старое правило `40 slots` больше не является текущим состоянием игры.
+
+### Косметика и магазин
+
+- Premium Store имеет mobile-first storefront.
+- Игровая premium currency отображается как `CRYSTAL` domain currency / player-facing ether-shard presentation.
+- Реальные backend-backed offers покупаются authoritative purchase flow.
+- Некоторые витринные cosmetics/services остаются presentation foundation и не становятся «фейковой покупкой», пока нет backend domain.
+- Реализован wardrobe/skin flow: совместимые облики, ownership, equip и обновление appearance в бою/игре.
+
+### Presence и Telegram integration
+
+- authenticated browser heartbeat и online-count monitoring;
+- Telegram party invite notification с Web App deep-link;
+- Telegram admin/monitoring infrastructure;
+- Telegram остаётся текущим entry channel, но gameplay state хранится сервером и в PostgreSQL.
+
+## Что ещё не считается завершённым
+
+Следующие области не надо выдавать за готовый production feature:
+
+- полноценный Raid gameplay: raid domain/эксперименты существуют, но текущий production content идёт через dungeon pipeline; незавершённый raid PR не является частью `main`;
+- полный runtime-аудит всех talents/abilities четырёх классов;
+- единый окончательно закрытый item-icon pipeline для всех предметов;
+- полный player-facing text/content audit всех предметов и локаций;
+- PvP;
+- завершённые Trade/Auction/Guild/Crafting/Professions как production-ready игровые циклы;
+- endgame 30–60 как полностью отполированный content layer.
+
+## Технический стек
+
+- **Backend:** .NET 10, ASP.NET Core, EF Core, PostgreSQL 18, SignalR.
+- **Frontend:** Vue 3, TypeScript, Vite, Pinia.
+- **Local orchestration:** .NET Aspire.
+- **Testing:** xUnit/.NET tests, Vitest, Playwright, content validation.
+- **Observability:** OpenTelemetry / Aspire dashboard.
+- **Architecture:** modular monolith, server-authoritative gameplay, data-driven content.
+
+## Структура репозитория
+
+```text
+apphost/                 Aspire orchestration
+src/                     backend/domain/server
+web/elyndor-web/         player frontend
+admin/                    admin tooling/frontend where applicable
+content/                  versioned gameplay content
+reference/                approved visual/UI references
+docs/source-of-truth/     gameplay, architecture and UI contracts
+docs/development/         only active developer workflow docs
+docs/deployment/          production/VPS operations
+tests/                    backend/integration tests
+tools/                    validators and developer tooling
+```
+
+Документация намеренно разделена так:
+
+1. `README.md` — **as-built snapshot**, что реально есть сейчас.
+2. `docs/source-of-truth/` — authoritative gameplay/architecture/UI contracts.
+3. `docs/development/` — только актуальные инструкции разработки.
+4. `docs/deployment/` — актуальная эксплуатация.
+5. Одноразовые implementation plans, старые audit snapshots и AI planning notes в активной документации не хранятся: история уже есть в Git.
 
 ## Быстрый старт
 
-Читайте в таком порядке:
-
-```text
-README.md
-→ docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
-→ docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
-→ нужный system document 01–31
-→ нужный UI document UI_01–UI_20
-→ docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
-→ reference/UI_*.png
-```
-
-## Что является источником истины
-
-При конфликте документов действует строгий приоритет:
-
-```text
-01–31 SYSTEM SOURCE OF TRUTH
-        ↓
-UI_01–UI_20 UI/UX SPECIFICATIONS
-        ↓
-docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
-        ↓
-PNG/JPG REFERENCES
-```
-
-То есть картинка никогда не может переопределить игровую механику. Случайные уровни, цифры, названия, валюты, кнопки и подписи на AI-референсе — только визуальный наполнитель, если они не подтверждены Markdown-документами.
-
-## Структура проекта
-
-### Инженерные и управляющие документы
-
-```text
-docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
-docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
-docs/source-of-truth/architecture/00_DEVELOPMENT_STACK.md
-docs/source-of-truth/architecture/00_COMPATIBILITY_MATRIX.md
-docs/source-of-truth/architecture/00_CONTENT_AND_BALANCE_PROFILES.md
-docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
-docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md
-docs/source-of-truth/ui/00_UI_UX_CONCEPT.md
-docs/source-of-truth/ui/00_UI_PACK_SUMMARY.md
-docs/archive/00_FULL_AUDIT_V7_1.md
-docs/archive/00_MANIFEST.md
-```
-
-### Игровые системы 01–31
-
-```text
-01  Time
-02  Combat
-03  AFK Farming
-04  World & Locations
-05  Character
-06  Attributes & Stats
-07  Resources
-08  Effects
-09  Damage & Healing
-10  Abilities
-11  Progression
-12  Classes
-13  Items & Equipment
-14  Loot
-15  Monster & AI
-16  Talents
-17  Quests
-18  Bosses & World Events
-19  Class Roster & Character Creation
-20  Party
-21  Companion & Pet
-22  Warrior Talent Tree
-23  Archer Talent Tree
-24  Equipment Sets 5–30
-25  Mage Talent Tree
-26  Currency & Economy
-27  Trade & Auction
-28  Dungeon
-29  Crafting & Professions
-30  Guild
-31  Raid Group
-```
-
-### UI/UX 01–20
-
-```text
-UI_01  Global Game Shell
-UI_02  World & Location
-UI_03  Hero
-UI_04  Inventory & Items
-UI_05  Character Stats
-UI_06  Talents
-UI_07  Companion
-UI_08  Normal Combat
-UI_09  World Boss / Raid Combat
-UI_10  Party
-UI_11  Quests
-UI_12  City Location
-UI_13  Merchant
-UI_14  Auction
-UI_15  Dungeon
-UI_16  Crafting & Professions
-UI_17  Menu
-UI_18  Wallet & Economy
-UI_19  Settings & System States
-UI_20  Guild
-```
-
-## Текущий фундамент игры
-
-```text
-Level Cap             60
-Playable Classes      Warrior / Archer / Mage
-Future Classes        Priest / Rogue
-Party                  max 5
-Raid                   max 20, subgroups of 5
-Guild                  default 50 members
-Talent Loadouts        exactly 2
-Talent Points @ 60     59
-Inventory              default 40 slots
-```
-
-Ресурсы:
-
-```text
-Warrior       Rage
-Archer        Focus
-Arcane Archer Mana
-Mage          Mana
-```
-
-Активные характеристики:
-
-```text
-Strength
-Agility
-Intellect
-Stamina
-
-AttackPower
-SpellPower
-CriticalChance
-CriticalDamage
-Accuracy
-ArmorPenetration
-MagicPenetration
-AttackSpeed
-
-Armor
-MagicResistance
-Dodge
-```
-
-Не использовать как активные Stats без отдельного изменения Source of Truth:
-
-```text
-Spirit
-Block
-Parry
-CastSpeed
-MovementSpeed
-```
-
-Текущий control set:
-
-```text
-STUN
-SILENCE
-```
-
-## Экономика
-
-```text
-GOLD
-→ основная игровая валюта
-→ tradeable
-→ Auction currency
-
-CRYSTAL
-→ rare/premium currency
-→ может добываться игровым путём
-→ non-tradeable
-→ не используется на Auction
-```
-
-Telegram Stars — внешний payment rail, а не внутренняя игровая валюта.
-
-Auction сейчас:
-
-```text
-fixed-price BUYOUT ONLY
-```
-
-## Мир и навигация
-
-Главная нижняя навигация:
-
-```text
-МИР | ГЕРОЙ | ЛОКАЦИЯ | КВЕСТЫ | МЕНЮ
-```
-
-Во время Combat она скрывается.
-
-Ключевое правило:
-
-```text
-МИР      → куда можно отправиться
-ЛОКАЦИЯ  → что можно делать там, где персонаж находится сейчас
-```
-
-Город — это Location, а не отдельная глобальная вкладка.
-
-Travel занимает реальное время и продолжается офлайн.
-
-## Герой и экипировка
-
-Character-centered UI:
-
-```text
-Персонаж
-Инвентарь
-Характеристики
-Таланты
-Спутник — только Archer
-```
-
-Визуальная экипировка внедряется поэтапно:
-
-```text
-Legendary / Unique
-→ Epic
-→ Rare
-→ Uncommon / Common
-```
-
-Gameplay item и displayed appearance разделены архитектурно. Это оставляет фундамент под будущий Transmog.
-
-## Таланты
-
-```text
-Warrior = 96 nodes
-Archer  = 96 nodes
-Mage    = 96 nodes
-```
-
-У каждого класса 3 ветки. Гибридные билды разрешены. У персонажа ровно 2 сохранённых loadout.
-
-## Профессии
-
-```text
-Blacksmithing
-Alchemy
-Cooking
-```
-
-Все три текущие профессии можно развивать одним персонажем.
-
-## Визуальный стиль
-
-Основной документ:
-
-```text
-docs/source-of-truth/ui/00_MASTER_UI_REFERENCE.md
-```
-
-Текущие утверждённые composite boards:
-
-```text
-reference/UI_01-02_GLOBAL_SHELL_WORLD.png
-...
-reference/UI_19-20_SETTINGS_GUILD.png
-```
-
-Каталог `references/` из исторического v7.1 manifest был удалён и не является доступным источником в текущем checkout. Актуальное соответствие экранов и composite boards находится в `docs/source-of-truth/ui/00_UI_REFERENCE_INDEX.md`.
-
-Ключевой visual language:
-
-```text
-modern dark fantasy MMORPG
-deep navy / black
-blue-violet magic light
-restrained gold accents
-bright detailed MMO icons
-large character / enemy / location art
-semi-transparent dark panels
-mobile-first readability
-```
-
-## Стек
-
-Базовое направление:
-
-```text
-.NET 10
-ASP.NET Core
-EF Core
-PostgreSQL
-SignalR
-Quartz.NET
-Redis only for a measured need
-Vue 3 + TypeScript
-Telegram Mini App
-OpenTelemetry / Aspire
-```
-
-Архитектура — modular monolith. Не превращать игровые модули в микросервисы без реальной необходимости.
-
-## Как вносить изменения
-
-Если меняется игровая механика:
-
-```text
-1. изменить system document 01–31
-2. проверить dependent systems
-3. изменить dependent UI document
-4. обновить compatibility / roadmap при необходимости
-5. обновить visual reference только после механики
-6. прогнать полный audit
-```
-
-Нельзя молча менять механику только в UI-картинке или в одном prompt.
-
-## Что делать дальше
-
-Текущий пакет уже содержит полный архитектурный и UI/UX foundation. Следующий рабочий цикл:
-
-```text
-UI spec
-→ final visual reference
-→ implementation tasks
-→ implementation
-→ playtest
-→ refine
-```
-
-Для начала реализации используйте:
-
-```text
-docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
-docs/source-of-truth/architecture/00_DEVELOPMENT_ROADMAP.md
-docs/source-of-truth/ui/UI_01_GLOBAL_GAME_SHELL.md
-docs/source-of-truth/ui/UI_02_WORLD_AND_LOCATION.md
-docs/source-of-truth/ui/UI_03_HERO.md
-docs/source-of-truth/ui/UI_08_NORMAL_COMBAT.md
-```
-
-## Проверка пакета
-
-Последний полный аудит:
-
-```text
-docs/archive/00_FULL_AUDIT_V7_1.md
-```
-
-Integrity hashes:
-
-```text
-docs/archive/00_MANIFEST.md
-```
-
-## Development
-
-Первый компилируемый foundation находится в `src/`, `apphost/`, `web/`, `tests/` и `content/`.
-
-Engineering foundation зафиксирован в `docs/source-of-truth/architecture/PHASE_00_ENGINEERING_FOUNDATION_IMPLEMENTATION.md`. Актуальный implementation status намеренно не дублируется в README: его нужно сверять по `AGENTS.md` и документам в `docs/source-of-truth/phases/`. Общий roadmap находится в `docs/source-of-truth/phases/ELYNDOR_PHASES_0-5.md`. Для работы через coding agents сначала читать `AGENTS.md`.
-
-Локальный стек запускается через Aspire:
+Требования: .NET 10 SDK, Node.js 24 LTS (или поддерживаемый Node 22.18+), Docker Desktop/совместимый container runtime.
 
 ```powershell
 npm ci --prefix web/elyndor-web
 dotnet run --project apphost/Elyndor.AppHost
 ```
 
-Static game content проверяется той же командой, которую запускает CI:
+Полная локальная инструкция: `docs/development/getting-started.md`.
+
+Основные проверки:
 
 ```powershell
+dotnet build Elyndor.slnx --configuration Release
+dotnet test Elyndor.slnx --configuration Release
 dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
+npm run lint --prefix web/elyndor-web
+npm run test:unit --prefix web/elyndor-web
+npm run build --prefix web/elyndor-web
+npm run test:e2e --prefix web/elyndor-web
 ```
 
-Подробности окружения, secrets policy и команды проверки: `docs/development/getting-started.md`.
+## Правила изменения игры
 
-Полный production runbook для REG.RU VPS, PostgreSQL, Caddy, DNS, Telegram, backup/rollback и выкладки обновлений: `docs/deployment/vps-production.md`.
+- `main` не используется для feature-work напрямую.
+- Gameplay/backend authoritative; клиент не является источником результата боя, награды или identity.
+- Контент versioned/data-driven и проходит validation.
+- Новая механика сначала меняет соответствующий Source of Truth, затем implementation и tests.
+- Один PR — одна логическая задача.
+- После крупного вертикального среза: automated checks → local playtest → Telegram/mobile playtest → polish.
 
-Правила внесения изменений: `CONTRIBUTING.md`. Git/PR policy: `docs/development/git-workflow.md`.
+См. `AGENTS.md`, `CONTRIBUTING.md`, `docs/development/git-workflow.md` и `docs/source-of-truth/README.md`.
