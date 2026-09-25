@@ -8,8 +8,8 @@ const emit = defineEmits<{ toggleAutoAttack: []; flee: []; resetTraining: [] }>(
 </script>
 
 <template>
-  <section class="battle-controls" aria-label="Управление боем">
-    <button type="button" class="battle-controls__auto" :data-active="autoAttackEnabled" :disabled="disabled" @click="emit('toggleAutoAttack')">
+  <section class="battle-controls" aria-label="Управление боем" data-combat-utility-strip>
+    <button type="button" class="battle-controls__auto" :class="{ active: autoAttackEnabled }" data-autoattack-toggle :data-active="autoAttackEnabled" :disabled="disabled" @click="emit('toggleAutoAttack')">
       <span aria-hidden="true">⚔</span>
       <b>Автоатака</b>
       <small>{{ autoAttackEnabled ? 'Включена' : 'Выключена' }}</small>

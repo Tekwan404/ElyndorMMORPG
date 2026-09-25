@@ -19,6 +19,10 @@ export function useBattle() {
     diagnostic,
     trainingStats,
     encounterPresentation,
+    abilityQueue,
+    isParticipantActive,
+    isAwaitingAttachment,
+    isTraining,
   } = storeToRefs(combat)
 
   const allies = computed<CombatActorSnapshot[]>(() => {
@@ -86,6 +90,10 @@ export function useBattle() {
     diagnostic,
     trainingStats,
     encounterPresentation,
+    abilityQueue,
+    isParticipantActive,
+    isAwaitingAttachment,
+    isTraining,
     allies,
     enemies,
     selectedEnemy,

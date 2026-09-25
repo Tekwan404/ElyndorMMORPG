@@ -33,7 +33,7 @@ const visibleAllies = computed(() => props.allies.slice(0, 5))
 </script>
 
 <template>
-  <nav class="allies-strip" aria-label="Участники группы" data-allies-strip>
+  <nav class="allies-strip" aria-label="Участники группы" data-allies-strip data-combat-party-roster>
     <button
       v-for="ally in visibleAllies"
       :key="ally.actorId"

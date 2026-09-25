@@ -76,7 +76,7 @@ onUnmounted(cancelInspection)
 </script>
 
 <template>
-  <section class="skill-panel" aria-labelledby="battle-skills-title" data-skill-panel>
+  <section class="skill-panel" aria-labelledby="battle-skills-title" data-skill-panel data-combat-hotbar>
     <header class="skill-panel__header">
       <h2 id="battle-skills-title">Умения</h2>
       <small>Удерживайте для описания</small>

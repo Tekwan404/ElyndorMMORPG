@@ -72,7 +72,7 @@ describe('AppShell', () => {
       combat.$patch({ snapshot: { status: 'Active' } as NonNullable<typeof combat.snapshot> })
       return true
     })
-    const wrapper = mount(AppShell, { global: { stubs: { CombatView: { template: '<div data-global-combat />' } } } })
+    const wrapper = mount(AppShell, { global: { stubs: { BattleScreen: { template: '<div data-global-combat />' } } } })
     await flushPromises()
     await wrapper.get('[data-start-dungeon]').trigger('click')
     await flushPromises()

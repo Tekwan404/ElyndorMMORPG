@@ -23,6 +23,7 @@ function available(item: InventoryItem): boolean {
         v-for="item in items"
         :key="item.definitionId"
         type="button"
+        :data-combat-consumable="item.definitionId"
         :disabled="!available(item)"
         :aria-label="`${item.name}, ${item.quantity} шт.`"
         @click="emit('use', item)"

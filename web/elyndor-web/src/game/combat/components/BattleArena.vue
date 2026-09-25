@@ -16,12 +16,14 @@ const props = withDefaults(defineProps<{
   selectedEnemyActorId: string | null
   aggroActorIds: readonly string[]
   numbers: readonly CombatNumberPresentation[]
+  companion?: CombatActorSnapshot | null
   battlefieldArt?: string | null
   disabled: boolean
   layoutWidthPx?: number
 }>(), {
   battlefieldArt: null,
   layoutWidthPx: 390,
+  companion: null,
 })
 
 const emit = defineEmits<{
@@ -52,6 +54,9 @@ const backgroundStyle = computed(() => props.battlefieldArt
 const enemyArt = computed(() => primaryEnemy.value
   ? monsterArtUrl(primaryEnemy.value.artId, primaryEnemy.value.definitionId)
   : undefined)
+const companionArt = computed(() => props.companion
+  ? monsterArtUrl(props.companion.artId, props.companion.definitionId)
+  : undefined)
 const enemyScale = computed(() => {
   if (primaryEnemy.value?.monsterRank === 'Boss') return 'boss'
   if (primaryEnemy.value?.monsterRank === 'Elite') return 'elite'
@@ -79,6 +84,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
     :style="backgroundStyle"
     :data-formation-mode="formation.mode"
     data-battle-arena
+    data-combat-battlefield
     aria-label="Поле боя"
   >
     <div class="battle-arena__vignette" aria-hidden="true" />
@@ -89,6 +95,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
         :key="enemy.actorId"
         type="button"
         :aria-pressed="enemy.actorId === selectedEnemyActorId"
+        :data-target-actor-id="enemy.actorId"
         :disabled="disabled || enemy.hp <= 0"
         @click="emit('selectEnemy', enemy.actorId)"
       >
@@ -122,7 +129,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
     <button
       v-if="primaryEnemy"
       type="button"
-      class="battle-arena__enemy"
+      class="battle-arena__enemy enemy-figure"
       :data-enemy-scale="enemyScale"
       :aria-label="`${primaryEnemy.name}, ${Math.round(enemyHealthRatio)}% HP`"
       :disabled="disabled || primaryEnemy.hp <= 0"
@@ -139,6 +146,11 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
       </span>
       <CombatNumbers :actor-id="primaryEnemy.actorId" :entries="numbers" />
     </button>
+
+    <aside v-if="companion" class="battle-arena__companion" :data-dead="companion.hp <= 0" data-combat-companion>
+      <span><img v-if="companionArt" :src="companionArt" alt=""><b v-else>{{ companion.name.slice(0, 1) }}</b></span>
+      <div><strong>{{ companion.name }}</strong><i><b :style="{ width: `${companion.maxHp > 0 ? companion.hp / companion.maxHp * 100 : 0}%` }" /></i></div>
+    </aside>
 
     <p v-if="formation.overflowActorIds.length" class="battle-arena__overflow">
       Ещё {{ formation.overflowActorIds.length }} в полоске группы
@@ -178,6 +190,14 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
 .battle-arena__enemy-strip button { display: grid; min-width: 4.5rem; min-height: 44px; gap: .15rem; padding: .3rem; border: 1px solid rgb(205 93 110 / 35%); border-radius: 7px; background: rgb(4 6 11 / 84%); color: #e8dfd2; font: inherit; font-size: .52rem; }
 .battle-arena__enemy-strip button[aria-pressed='true'] { border-color: #df7182; box-shadow: 0 0 10px rgb(210 69 91 / 25%); }
 .battle-arena__overflow { position: absolute; z-index: 80; bottom: .45rem; left: .5rem; margin: 0; padding: .2rem .38rem; border-radius: 999px; background: rgb(5 7 12 / 78%); color: #cabf9e; font-size: .5rem; }
+.battle-arena__companion { position: absolute; z-index: 65; bottom: .45rem; left: .45rem; display: grid; width: min(7.5rem, 30%); grid-template-columns: 2rem minmax(0, 1fr); align-items: center; gap: .3rem; padding: .25rem; border: 1px solid rgb(95 170 145 / 30%); border-radius: 7px; background: rgb(4 11 13 / 82%); }
+.battle-arena__companion[data-dead='true'] { filter: grayscale(.8); opacity: .5; }
+.battle-arena__companion > span { display: grid; width: 2rem; height: 2rem; place-items: center; overflow: hidden; border-radius: 50%; }
+.battle-arena__companion img { width: 100%; height: 100%; object-fit: contain; }
+.battle-arena__companion div { display: grid; min-width: 0; gap: 2px; }
+.battle-arena__companion strong { overflow: hidden; font-size: .5rem; text-overflow: ellipsis; white-space: nowrap; }
+.battle-arena__companion i { display: block; height: 3px; overflow: hidden; border-radius: 999px; background: #07100d; }
+.battle-arena__companion i b { display: block; height: 100%; background: #6bc59f; }
 
 @media (max-width: 380px), (max-height: 740px) {
   .battle-arena { min-height: 25.5rem; }

@@ -50,6 +50,7 @@ const accessibleLabel = computed(() => [
   <article
     class="character-figure"
     :data-character-figure="actor.actorId"
+    :data-friendly-battlefield-actor="actor.actorId"
     :data-selected="selected"
     :data-aggro="aggro"
     :data-frontline="frontline"
