@@ -1,17 +1,18 @@
 # Elyndor — Source of Truth
 
-Этот каталог хранит **действующие контракты игры**, а не журнал разработки.
+Этот каталог хранит **действующие контракты игры**, а не журнал разработки и не generated reports.
 
-Текущее реализованное состояние всегда кратко описывается в корневом `README.md`. Source of Truth отвечает на другой вопрос: **как система должна работать и какие правила нельзя тихо менять в коде**.
+Текущее реализованное состояние кратко описывается в корневом `README.md`. Source of Truth отвечает на другой вопрос: **как система должна работать и какие правила нельзя тихо менять в коде**.
 
 ## Структура
 
 ```text
 architecture/   stack, roadmap, product/technical boundaries, compatibility
-content/        content-specific contracts and authored content rules
 gameplay/       authoritative gameplay systems 01–31
 ui/             UI/UX contracts and visual-reference mapping
 ```
+
+Authoritative authored gameplay data находится непосредственно в `/content`. Generated art audits/import manifests не являются Source of Truth и не должны жить в этом каталоге.
 
 Исторические implementation plans, старые audit snapshots и agent-generated planning files здесь не хранятся. Для истории используется Git.
 
@@ -78,7 +79,7 @@ Roadmap — направление развития, а не чеклист те
 
 1. обновить соответствующий system contract;
 2. обновить зависимый UI/content contract;
-3. изменить implementation;
+3. изменить implementation/content;
 4. добавить/обновить tests и validators;
 5. обновить root README, если изменился заметный current-state boundary.
 
