@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 async function openPreview(page: Page, party: number, width = 390, height = 844): Promise<void> {
   await page.setViewportSize({ width, height })
   await page.goto(`/dev/battle?party=${party}`)
-  await expect(page.locator('[data-battle-screen]')).toBeVisible()
+  await expect(page.locator('[data-battle-screen]')).toBeVisible({ timeout: 15_000 })
   await expect(page.locator('[data-character-figure]')).toHaveCount(party)
   await expect
     .poll(() =>
@@ -14,7 +14,7 @@ async function openPreview(page: Page, party: number, width = 390, height = 844)
             images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0),
         ),
     )
-    .toBe(true)
+    .toBe(true, { timeout: 15_000 })
 }
 
 test('three-player baseline fits without scroll and protects the arena', async ({ page }) => {

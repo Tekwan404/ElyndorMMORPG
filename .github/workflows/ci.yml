@@ -125,6 +125,12 @@ jobs:
         working-directory: web/elyndor-web
         run: npx playwright install chromium
 
+      - name: Test battle screen development preview
+        working-directory: web/elyndor-web
+        env:
+          ELYNDOR_E2E_UI_PREVIEW: "true"
+        run: npm run test:e2e -- e2e/battle-screen.spec.ts
+
       - name: Start real E2E server
         env:
           ASPNETCORE_ENVIRONMENT: Development

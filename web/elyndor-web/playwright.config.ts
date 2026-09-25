@@ -1,6 +1,11 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 
+const usesExternalServer = Boolean(process.env.ELYNDOR_E2E_BASE_URL)
+const usesDevelopmentPreview = process.env.ELYNDOR_E2E_UI_PREVIEW === 'true'
+const usesRealBackend = process.env.ELYNDOR_E2E_REAL === 'true'
+const localServerPort = usesDevelopmentPreview || !process.env.CI ? 5173 : 4173
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -12,6 +17,7 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: usesRealBackend ? ['**/battle-screen.spec.ts'] : [],
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {
@@ -36,7 +42,7 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL:
       process.env.ELYNDOR_E2E_BASE_URL ??
-      (process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173'),
+      `http://localhost:${localServerPort}`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -61,16 +67,16 @@ export default defineConfig({
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.ELYNDOR_E2E_BASE_URL
+  webServer: usesExternalServer
     ? undefined
     : {
         /**
-         * Use the dev server by default for faster feedback loop.
-         * Use the preview server on CI for more realistic testing.
+         * Use the dev server locally and for development-only UI previews.
+         * Other CI browser tests use the production preview server.
          * Playwright will re-use the local server if there is already a dev-server running.
          */
-        command: process.env.CI ? 'npm run preview' : 'npm run dev',
-        port: process.env.CI ? 4173 : 5173,
+        command: usesDevelopmentPreview || !process.env.CI ? 'npm run dev' : 'npm run preview',
+        port: localServerPort,
         reuseExistingServer: !process.env.CI,
       },
 })
