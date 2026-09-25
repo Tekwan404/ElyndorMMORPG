@@ -24,7 +24,7 @@ Elyndor — mobile-first dark-fantasy MMORPG. Сейчас игра запуск
 | Класс | Ресурс | Текущее состояние |
 | --- | --- | --- |
 | Warrior | Rage | playable; активный runtime-content включает Guardian slice, а полный дизайн дерева содержит Guardian / Berserker / Commander |
-| Archer | Focus (+ Mana для Arcane mechanics) | playable; companion/pet и три talent-направления присутствуют в content |
+| Archer | Focus | playable; companion/pet и три talent-направления присутствуют в content |
 | Mage | Mana | playable; Fire / Arcane / Frost talent content присутствует |
 | Paladin | Mana | playable; ability/talent content и character-creation flow присутствуют |
 
@@ -111,8 +111,7 @@ Black Bastion имеет data-driven набор из шести boss encounters 
 ```text
 apphost/                 Aspire orchestration
 src/                     backend/domain/server
-web/elyndor-web/         player frontend
-admin/                    admin tooling/frontend where applicable
+web/                     player/admin web applications
 content/                  versioned gameplay content
 reference/                approved visual/UI references
 docs/source-of-truth/     gameplay, architecture and UI contracts
