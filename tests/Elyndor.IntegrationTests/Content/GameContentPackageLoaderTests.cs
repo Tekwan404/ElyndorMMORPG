@@ -10,6 +10,14 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class GameContentPackageLoaderTests
 {
+    private static readonly string[] LegendaryBlackBastionSetIds =
+    [
+        "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
+        "SET_BLACK_BASTION_MAGE_ARCANE",
+        "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
+        "SET_BLACK_BASTION_PALADIN_PROTECTION"
+    ];
+
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
@@ -36,8 +44,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.28.0", package.ContentVersion);
-        Assert.Equal("0.23.0", package.BalanceVersion);
+        Assert.Equal("0.29.0", package.ContentVersion);
+        Assert.Equal("0.24.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -224,6 +232,32 @@ public sealed class GameContentPackageLoaderTests
         Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
         Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
         Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
+    }
+
+    [Fact]
+    public async Task BlackBastionHasOneCompleteLegendarySignatureSetPerClass()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        ItemDefinition[] blackBastionSetItems = package.Items!
+            .Where(item => item.SetId?.StartsWith("SET_BLACK_BASTION_", StringComparison.Ordinal) == true)
+            .ToArray();
+        ItemDefinition[] legendarySetItems = blackBastionSetItems
+            .Where(item => LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .ToArray();
+        ItemDefinition[] epicSetItems = blackBastionSetItems
+            .Where(item => !LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.Equal(96, blackBastionSetItems.Length);
+        Assert.Equal(32, legendarySetItems.Length);
+        Assert.All(legendarySetItems, item => Assert.Equal(ItemRarity.Legendary, item.Rarity));
+        Assert.Equal(64, epicSetItems.Length);
+        Assert.All(epicSetItems, item => Assert.Equal(ItemRarity.Epic, item.Rarity));
+        Assert.All(
+            LegendaryBlackBastionSetIds,
+            setId => Assert.Equal(8, legendarySetItems.Count(item => item.SetId == setId)));
     }
 
     [Fact]
