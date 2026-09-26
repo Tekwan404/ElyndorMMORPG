@@ -11,6 +11,9 @@ bool strictItemIcons = args.Any(argument =>
 bool auditItemIcons = args.Any(argument =>
     string.Equals(argument, "--audit-item-icons", StringComparison.Ordinal))
     || strictItemIcons;
+string? analysisExportDirectory = args
+    .FirstOrDefault(argument => argument.StartsWith("--export-analysis=", StringComparison.Ordinal))?
+    .Split('=', 2)[1];
 string? packageArgument = args.FirstOrDefault(argument =>
     !argument.StartsWith("--", StringComparison.Ordinal));
 string packagePath = Path.GetFullPath(
@@ -84,6 +87,13 @@ try
                     + $"ranks={entry.MaxRank} modifiers={entry.Modifiers.Count}");
             }
         }
+    }
+
+    if (!string.IsNullOrWhiteSpace(analysisExportDirectory))
+    {
+        string outputDirectory = Path.GetFullPath(analysisExportDirectory);
+        await ContentAuditExporter.ExportAsync(package, outputDirectory, CancellationToken.None);
+        Console.WriteLine($"Content analysis exported to: {outputDirectory}");
     }
 
     return 0;

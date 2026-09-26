@@ -1,0 +1,1694 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.31.0",
+  "balanceVersion": "0.26.0",
+  "publishedAtUtc": "2026-09-26T18:56:00+00:00",
+  "totals": {
+    "locations": 21,
+    "dungeons": 6
+  },
+  "locations": [
+    {
+      "id": "ANCIENT_MINE",
+      "name": "Древняя шахта",
+      "level": 15,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 16
+      },
+      "description": "Вход в Древнюю шахту. В глубинах скрываются сильные противники и ценные трофеи.",
+      "dangerLevel": "SAFE",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "DEEP_FOREST"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": [
+        "ANCIENT_MINE"
+      ]
+    },
+    {
+      "id": "ASHEN_BORDER",
+      "name": "Пепельная граница",
+      "level": 20,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 23
+      },
+      "description": "Организованное затмение, огонь и руны. Визуальная тема: пепельная граница в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "pepelnaia-granitsa",
+      "transitions": [
+        "BLIGHTED_GROVE",
+        "MOON_ASH_MARSHES"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "ASHEN_BORDER_REKRUT_ZATMENIIA_L18",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_STRELOK_L18",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PALACH_GRANITSY_L22",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "ASHEN_BORDER_KULTIST_ZATMENIIA_L19",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_ZAKLINATEL_TLEIUSHCHIKH_RUN_L20",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_GLASHATAI_ZATMENIIA_L22",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_OBUGLENNYI_DREVEN_L21",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_VOLK_L22",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_NALIOTCHIK_L22",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_DOZORNYI_GRANITSY_L23",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_GONCHII_ZVER_L23",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "BLACKSTONE_HIGHLANDS",
+      "name": "Чернокаменное нагорье",
+      "level": 32,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 35
+      },
+      "description": "Позднее горное дело, тяжёлая броня, огонь и кузни. Визуальная тема: чернокаменное нагорье в стилистике Elyndor.",
+      "dangerLevel": "DEADLY",
+      "artId": "chernokamennoe-nagore",
+      "transitions": [
+        "SHATTERED_LANDS",
+        "CRIMSON_WASTELAND"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_VOLK_L30",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_BRONESPIN_L30",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_KRYLATYI_OKHOTNIK_L31",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_OBSIDIANOVYI_SKORPION_L32",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_GORNYI_NALIOTCHIK_L32",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_KUZNETS_CHIORNOGO_ZHELEZA_L32",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_RUNNYI_GOLEM_L34",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_KAMENNOE_CHUDOVISHCHE_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_STRAZH_CHIORNOGO_PEREVALA_L34",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_GROMILA_L35",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "BLACK_BASTION",
+      "name": "Чёрный Бастион",
+      "level": 40,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 40
+      },
+      "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+      "dangerLevel": "SAFE",
+      "artId": "chiornyi-bastion",
+      "transitions": [
+        "OBSIDIAN_EDGE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": null,
+      "dungeonIds": [
+        "BLACK_BASTION"
+      ]
+    },
+    {
+      "id": "BLIGHTED_GROVE",
+      "name": "Осквернённая чаща",
+      "level": 18,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 20
+      },
+      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Визуальная тема: осквернённая чаща в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "oskvernionnaia-chashcha",
+      "transitions": [
+        "BROODMOTHER_LAIR",
+        "STONE_SPURS",
+        "ASHEN_BORDER",
+        "HEART_OF_BLIGHTED_GROVE"
+      ],
+      "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENYI_KABAN_L15",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENYI_VOLK_L15",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_SOBIRATEL_PORCHI_L17",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_BOLOTNYI_VASILISK_L19",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
+          "weight": 0.28
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "BROODMOTHER_LAIR",
+      "name": "Логово Прародительницы",
+      "level": 14,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 14
+      },
+      "description": "Изолированное логово древней паучьей Прародительницы. Победа даёт награды и прогресс контракта, но не служит ключом к обычным зонам мира.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "DEEP_FOREST",
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [
+        {
+          "monsterId": "SPIDER_BROODMOTHER_L14",
+          "weight": 1
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "CRIMSON_WASTELAND",
+      "name": "Багровая пустошь",
+      "level": 36,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 38
+      },
+      "description": "Нежить, души, проклятия и некромантия. Визуальная тема: багровая пустошь в стилистике Elyndor.",
+      "dangerLevel": "DEADLY",
+      "artId": "bagrovaia-pustosh",
+      "transitions": [
+        "BLACKSTONE_HIGHLANDS",
+        "OBSIDIAN_EDGE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_SHAKAL_L33",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_RYTSAR_L33",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_ISPOLIN_L33",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_BAGROVYI_KULTIST_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_CHUMNOI_ZHRETS_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_TENEVOI_NEKROMANT_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_PADALSHCHIK_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_BAGROVAIA_GARPIIA_L34",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_POZHIRATEL_DUSH_L35",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_BEZYMIANNYI_MARSHAL_L37",
+          "weight": 0.18
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_VELIKAN_L35",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_PREDVESTNIK_PUSTOSHI_L37",
+          "weight": 0.18
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KHODIACHII_MERTVETS_L35",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_RAZLOZHIVSHIISIA_PEKHOTINETS_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_SKELET_MECHNIK_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_SKELET_LUCHNIK_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_CHUMNOI_SLUGA_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KLADBISHCHENSKII_AKOLIT_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_PIOS_L37",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_POGREBALNYI_STRAZH_L37",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_MERTVENNYI_RYTSAR_L37",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_NADSMOTRSHCHIK_L37",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_CHUMNOI_MAGISTR_L37",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_MOGILNYI_KOLDUN_L38",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_VLADYKA_SKLEPA_L38",
+          "weight": 0.18
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "DEEP_FOREST",
+      "name": "Глубокий лес",
+      "level": 8,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 11
+      },
+      "description": "Порча, ловушки, гоблины и усиленные звери. Визуальная тема: глубокий лес в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "glubokii-les",
+      "transitions": [
+        "WHISPERING_FOREST",
+        "FLOWER_MEADOW",
+        "OLD_ROAD",
+        "STONE_SPURS",
+        "BROODMOTHER_LAIR"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_ALFA_VOLK_L7",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_LESNOI_DUKH_L10",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "DEEP_FOREST_SGUSTOK_LESNOI_PORCHI_L11",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "ECLIPSED_CITADEL",
+      "name": "Цитадель Затмения",
+      "level": 25,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 25
+      },
+      "description": "Вход в Цитадель Затмения. За её стенами ждут опасные враги, легендарные комплекты и именное оружие.",
+      "dangerLevel": "SAFE",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": [
+        "ECLIPSED_CITADEL"
+      ]
+    },
+    {
+      "id": "ECLIPSE_OUTSKIRTS",
+      "name": "Предместья Затмения",
+      "level": 26,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 29
+      },
+      "description": "Армия цитадели, руны, конструкты и кузницы. Визуальная тема: предместья затмения в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "predmestia-zatmeniia",
+      "transitions": [
+        "MOON_ASH_MARSHES",
+        "ECLIPSED_CITADEL",
+        "SHATTERED_LANDS"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_REKRUT_ZATMENIIA_L24",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_STRELOK_ZATMENIIA_L25",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_PALACH_ZATMENIIA_L28",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_MOGILNYI_AKOLIT_L26",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_POKHITITEL_OSKOLKOV_L26",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_ZAKLINATEL_RASKOLA_L27",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_PODMASTERE_RUNNOGO_KUZNETSA_L28",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_RUNNYI_STRAZH_ZATMENIIA_L28",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_CHASOVOI_UMBRY_L29",
+          "weight": 0.28
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "FLOWER_MEADOW",
+      "name": "Цветочная поляна",
+      "level": 6,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 8
+      },
+      "description": "Ранний хаб профессий и светлая зона. Визуальная тема: цветочная поляна в стилистике Elyndor.",
+      "dangerLevel": "ADVENTURE",
+      "artId": "tsvetochnaia-poliana",
+      "transitions": [
+        "STARTER_TOWN",
+        "WHISPERING_FOREST",
+        "DEEP_FOREST",
+        "OLD_ROAD"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "FLOWER_MEADOW_POLEVOI_VOLK_L4",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_LUGOVOI_KABAN_L5",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_ODICHAVSHII_OLEN_L5",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_ZHALIASHCHII_ROEVIK_L6",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_TERNOVYI_BES_L7",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_KORNEVOI_DUKH_L7",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_POLEVOI_MARODIOR_L8",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "HEART_OF_BLIGHTED_GROVE",
+      "name": "Сердце Осквернённой Чащи",
+      "level": 20,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 20
+      },
+      "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
+      "dangerLevel": "SAFE",
+      "artId": "serdtse-oskvernionnoi-chashchi",
+      "transitions": [
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": null,
+      "dungeonIds": [
+        "HEART_OF_BLIGHTED_GROVE"
+      ]
+    },
+    {
+      "id": "MOON_ASH_MARSHES",
+      "name": "Топи Лунного Пепла",
+      "level": 24,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 26
+      },
+      "description": "Яд, болезнь, высасывание здоровья и магические болота. Визуальная тема: топи лунного пепла в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "topi-lunnogo-pepla",
+      "transitions": [
+        "ASHEN_BORDER",
+        "ECLIPSE_OUTSKIRTS"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNYI_KLYK_L21",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_LUNNYI_VASILISK_L21",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_TOPIANOI_ROEVIK_L22",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_PIIAVOCHNIK_L22",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_UTONUVSHII_PALOMNIK_L23",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_VEDMA_TRIASINY_L23",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNYI_STRAZH_L23",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_MATER_TOPEI_L25",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNYI_POZHIRATEL_L24",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_VEDMAK_TOPEI_L25",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "OBSIDIAN_EDGE",
+      "name": "Обсидиановый предел",
+      "level": 38,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 40
+      },
+      "description": "Преддверие чёрного бастиона и финальная открытого мира-подготовка. Визуальная тема: обсидиановый предел в стилистике Elyndor.",
+      "dangerLevel": "DEADLY",
+      "artId": "obsidianovyi-predel",
+      "transitions": [
+        "CRIMSON_WASTELAND",
+        "BLACK_BASTION"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "OBSIDIAN_EDGE_OBSIDIANOVYI_GONCHII_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_PEPELNYI_RYTSAR_L36",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_STRELOK_BASTIONA_L37",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_INKVIZITOR_BASTIONA_L37",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_RUNNYI_RAZRUSHITEL_L37",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_CHIORNYI_GOLEM_L39",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_PRIZRACHNYI_ZNAMENOSETS_L38",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_MAGISTR_BASTIONA_L39",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_STRAZH_VRAT_L39",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_PREDVESTNIK_PERVOGO_STRAZHA_L39",
+          "weight": 0.18
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_OBSIDIANOVYI_CHASOVOI_L40",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_BASTIONNYI_PALACH_L40",
+          "weight": 0.28
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "OLD_ROAD",
+      "name": "Старый тракт",
+      "level": 12,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 14
+      },
+      "description": "Разбойники, наёмники, подрывники и дорога. Визуальная тема: старый тракт в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "staryi-trakt",
+      "transitions": [
+        "FLOWER_MEADOW",
+        "DEEP_FOREST",
+        "STONE_SPURS"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "OLD_ROAD_GRABITELI_L9",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_LUCHNIKI_L9",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_NAIOMNIKI_L10",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_PODRYVNIKI_L10",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_KAPITAN_L13",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OLD_ROAD_GOBLIN_MARODIOR_L11",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_BOEVOI_PIOS_TRAKTA_L12",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_DOROZHNYI_PADALSHCHIK_L12",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OLD_ROAD_RAZBOINIK_LUCHNIK_L13",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_BRODIACHII_NAIOMNIK_L13",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_RAZBOINIK_PODRYVNIK_L14",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "OLD_ROAD_DOROZHNYI_MARODIOR_L14",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "SHATTERED_LANDS",
+      "name": "Земли Раскола",
+      "level": 30,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 32
+      },
+      "description": "Разорённые земли вокруг древней крепости, где остатки воинского Ордена продолжают гражданскую войну.",
+      "dangerLevel": "DEADLY",
+      "artId": "zemli-raskola",
+      "transitions": [
+        "ECLIPSE_OUTSKIRTS",
+        "BLACKSTONE_HIGHLANDS",
+        "SHATTERED_ORDER_CITADEL"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "SHATTERED_LANDS_FANATIK_RASKOLA_L27",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_RYTSAR_RASKOLA_L27",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_STRELOK_RASKOLA_L28",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ZHRETS_OTRAZHENII_L28",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_PROVODNIK_MANY_L28",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_PUSTOTNYI_UCHENIK_L29",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OTRAZHENIE_VOINA_L29",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OTRAZHENIE_MAGA_L29",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OTRAZHENIE_LUCHNIKA_L30",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ZERKALNYI_STRAZH_L30",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_KHRANITEL_RASKOLA_L31",
+          "weight": 0.18
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OSKOLOCHNYI_STRAZH_L30",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_CHARODEI_RASKOLA_L31",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+          "weight": 0.18
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL",
+      "name": "Цитадель Расколотого Ордена",
+      "level": 30,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 30
+      },
+      "description": "Подземелье 30 уровня о гражданской войне древнего Ордена, запретной магии и поднятых рыцарях.",
+      "dangerLevel": "SAFE",
+      "artId": "tsitadel-raskolotogo-ordena",
+      "transitions": [
+        "SHATTERED_LANDS"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": null,
+      "dungeonIds": [
+        "SHATTERED_ORDER_CITADEL"
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "name": "Обсерватория Расколотого Зеркала",
+      "level": 25,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 25
+      },
+      "description": "Подземелье 25 уровня о зеркальной магии, мане, щитах и расколотых отражениях. Награды и основной прогресс здесь отключены.",
+      "dangerLevel": "SAFE",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": [
+        "SHATTERED_ORDER_CITADEL_TEST"
+      ]
+    },
+    {
+      "id": "STARTER_TOWN",
+      "name": "Стартовый город",
+      "level": 1,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 60
+      },
+      "description": "Безопасный город искателей приключений. Здесь можно восстановиться, подготовиться и отправиться на охоту.",
+      "dangerLevel": "SAFE",
+      "artId": "starter-town",
+      "transitions": [
+        "WHISPERING_FOREST"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": []
+    },
+    {
+      "id": "STONE_SPURS",
+      "name": "Каменные отроги",
+      "level": 14,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 16
+      },
+      "description": "Руда, тяжёлая броня и вход в древнюю шахту. Визуальная тема: каменные отроги в стилистике Elyndor.",
+      "dangerLevel": "DANGEROUS",
+      "artId": "kamennye-otrogi",
+      "transitions": [
+        "DEEP_FOREST",
+        "OLD_ROAD",
+        "ANCIENT_MINE",
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "STONE_SPURS_NETOPYR_L12",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_POLZUN_L12",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_RUDNYI_ZHUK_L15",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "STONE_SPURS_OBEZUMEVSHII_SHAKHTIOR_L14",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_GLUBINNYI_LAZUTCHIK_L14",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_RUNNOKAMENNYI_STRAZH_L14",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_KAMNEGLOT_L15",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "STONE_SPURS_KHOZIAIN_ZHIL_L16",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "STONE_SPURS_MOLODOI_KAMNEGLOT_L16",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    },
+    {
+      "id": "WHISPERING_FOREST",
+      "name": "Шепчущий лес",
+      "level": 3,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "description": "Первый лес, волки, кабаны, пауки. Визуальная тема: шепчущий лес в стилистике Elyndor.",
+      "dangerLevel": "ADVENTURE",
+      "artId": "shepchushchii-les",
+      "transitions": [
+        "STARTER_TOWN",
+        "FLOWER_MEADOW",
+        "DEEP_FOREST"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_SERYI_VOLK_L1",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_KABAN_L2",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_PAUK_L3",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_VOLK_L3",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_KABAN_L4",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+          "weight": 0.28
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+          "weight": 1.0
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
+          "weight": 1.0
+        }
+      ],
+      "dungeonIds": []
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "ANCIENT_MINE",
+      "name": "Древняя шахта",
+      "level": null,
+      "levelRange": {
+        "minimum": 14,
+        "maximum": 16
+      },
+      "description": "Древняя шахта для группы 1–5 игроков 14–16 уровня. Пять последовательных столкновений, редкие и эпические предметы по пути и очень редкие легендарные трофеи с Прародительницы Глубин.",
+      "entryLocationId": "ANCIENT_MINE",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "MINE_GUARDIAN_1",
+          "monsterId": "ANCIENT_MINE_WOLF_L15",
+          "checkpointId": "MINE_ENTRANCE",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "MINE_GUARDIAN_2",
+          "monsterId": "ANCIENT_MINE_BOAR_L15",
+          "checkpointId": "OLD_LIFT",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "MINE_GUARDIAN_3",
+          "monsterId": "ANCIENT_MINE_SPIDER_L16",
+          "checkpointId": "CRYSTAL_GALLERY",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "MINE_GUARDIAN_4",
+          "monsterId": "ANCIENT_MINE_GOBLIN_L16",
+          "checkpointId": "LOWER_SHAFT",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "MINE_BOSS",
+          "monsterId": "ANCIENT_MINE_BROODMOTHER_L16",
+          "checkpointId": "ANCIENT_HEART",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        }
+      ]
+    },
+    {
+      "id": "HEART_OF_BLIGHTED_GROVE",
+      "name": "Сердце Осквернённой Чащи",
+      "level": 20,
+      "levelRange": {
+        "minimum": 20,
+        "maximum": 20
+      },
+      "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
+      "entryLocationId": "HEART_OF_BLIGHTED_GROVE",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
+          "checkpointId": "DUNGEON_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
+          "checkpointId": "DUNGEON_02",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
+          "checkpointId": "DUNGEON_03",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
+          "checkpointId": "DUNGEON_04",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
+          "checkpointId": "DUNGEON_05",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
+          "checkpointId": "DUNGEON_06",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
+          "checkpointId": "DUNGEON_07",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
+          "checkpointId": "DUNGEON_08",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        }
+      ]
+    },
+    {
+      "id": "ECLIPSED_CITADEL",
+      "name": "Цитадель Затмения",
+      "level": 25,
+      "levelRange": {
+        "minimum": 25,
+        "maximum": 25
+      },
+      "description": "Эндгейм-подземелье 25 уровня. Четыре элитных стража и Архонт Погасшей Звезды охраняют легендарные комплекты Чёрного Бастиона, Затмённого Оракула и Чёрного Созвездия.",
+      "entryLocationId": "ECLIPSED_CITADEL",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "CITADEL_WARDEN_1",
+          "monsterId": "ECLIPSED_CITADEL_SENTINEL_L25",
+          "checkpointId": "OUTER_SEAL",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "CITADEL_WARDEN_2",
+          "monsterId": "ECLIPSED_CITADEL_GOLEM_L25",
+          "checkpointId": "BLACK_HALL",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "CITADEL_WARDEN_3",
+          "monsterId": "ECLIPSED_CITADEL_WEAVER_L25",
+          "checkpointId": "STAR_VAULT",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "CITADEL_WARDEN_4",
+          "monsterId": "ECLIPSED_CITADEL_EXECUTIONER_L25",
+          "checkpointId": "ECLIPSE_GATE",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "CITADEL_BOSS",
+          "monsterId": "ECLIPSED_CITADEL_ARCHON_L25",
+          "checkpointId": "DEAD_STAR_THRONE",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "name": "Обсерватория Расколотого Зеркала",
+      "level": 25,
+      "levelRange": {
+        "minimum": 25,
+        "maximum": 25
+      },
+      "description": "Заброшенная обсерватория магов отражений. Неудачный эксперимент разделил её обитателей, души и магические отражения. Награды, лут, золото и опыт намеренно отключены.",
+      "entryLocationId": "SHATTERED_ORDER_CITADEL_TEST",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_MIRROR_CASTELLAN",
+          "monsterId": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
+          "checkpointId": "MIRROR_HALL",
+          "isBoss": true,
+          "mechanicId": "MIRROR_BARRIER",
+          "adds": [
+            {
+              "role": "GUARDIAN",
+              "monsterId": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25"
+            },
+            {
+              "role": "PRIEST",
+              "monsterId": "SHATTERED_ORDER_MIRROR_PRIEST_L25"
+            },
+            {
+              "role": "EXECUTIONER",
+              "monsterId": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_VELARIUS",
+          "monsterId": "SHATTERED_ORDER_VELARIUS_L25",
+          "checkpointId": "ARCANE_SANCTUM",
+          "isBoss": true,
+          "mechanicId": "VELARIUS_MANA",
+          "adds": [
+            {
+              "role": "MANA_FEEDER",
+              "monsterId": "SHATTERED_ORDER_MANA_FEEDER_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_MOR_ET",
+          "monsterId": "SHATTERED_ORDER_MOR_ET_L25",
+          "checkpointId": "SOUL_VAULT",
+          "isBoss": true,
+          "mechanicId": "MOR_ET_SOULS",
+          "adds": [
+            {
+              "role": "SOUL_WARRIOR",
+              "monsterId": "SHATTERED_ORDER_SOUL_WARRIOR_L25"
+            },
+            {
+              "role": "SOUL_MAGE",
+              "monsterId": "SHATTERED_ORDER_SOUL_MAGE_L25"
+            },
+            {
+              "role": "SOUL_ARCHER",
+              "monsterId": "SHATTERED_ORDER_SOUL_ARCHER_L25"
+            },
+            {
+              "role": "SOUL_PALADIN",
+              "monsterId": "SHATTERED_ORDER_SOUL_PALADIN_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_AZRAEL",
+          "monsterId": "SHATTERED_ORDER_AZRAEL_L25",
+          "checkpointId": "TRIUNE_THRONE",
+          "isBoss": true,
+          "mechanicId": "AZRAEL_TRIUNE",
+          "adds": [
+            {
+              "role": "FIRE",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_FIRE_L25"
+            },
+            {
+              "role": "FROST",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_FROST_L25"
+            },
+            {
+              "role": "VOID",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_VOID_L25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL",
+      "name": "Цитадель Расколотого Ордена",
+      "level": 30,
+      "levelRange": {
+        "minimum": 30,
+        "maximum": 30
+      },
+      "description": "Некогда Орден защищал северные земли. После смерти Великого Магистра его командиры начали гражданскую войну, маги обратились к запретным ритуалам, а павших рыцарей снова подняли на службу.",
+      "entryLocationId": "SHATTERED_ORDER_CITADEL",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
+          "checkpointId": "GATES_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
+          "checkpointId": "GATES_02",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
+          "checkpointId": "GATES_TORVALD",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
+          "checkpointId": "ARCHIVE_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
+          "checkpointId": "ARCHIVE_02",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
+          "checkpointId": "ARCHIVE_ELLARIA",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
+          "checkpointId": "FALLEN_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
+          "checkpointId": "FALLEN_02",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
+          "checkpointId": "FALLEN_03",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
+          "checkpointId": "FALLEN_REVAN",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
+          "checkpointId": "OATH_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
+          "checkpointId": "OATH_KAEL_MOR",
+          "isBoss": true,
+          "mechanicId": "KAEL_MOR_TRIALS",
+          "adds": [
+            {
+              "role": "TRIAL_DEFENDER",
+              "monsterId": "SHATTERED_ORDER_TRIAL_DEFENDER"
+            },
+            {
+              "role": "TRIAL_CASTER",
+              "monsterId": "SHATTERED_ORDER_TRIAL_CASTER"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BLACK_BASTION",
+      "name": "Чёрный Бастион",
+      "level": 40,
+      "levelRange": {
+        "minimum": 40,
+        "maximum": 40
+      },
+      "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+      "entryLocationId": "BLACK_BASTION",
+      "partySize": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "encounters": [
+        {
+          "id": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
+          "monsterId": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
+          "checkpointId": "DUNGEON_01",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BASTIONNYI_PALACH_L40",
+          "monsterId": "BLACK_BASTION_BASTIONNYI_PALACH_L40",
+          "checkpointId": "DUNGEON_02",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
+          "monsterId": "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
+          "checkpointId": "DUNGEON_03",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
+          "monsterId": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
+          "checkpointId": "DUNGEON_04",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
+          "monsterId": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
+          "checkpointId": "DUNGEON_05",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
+          "monsterId": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
+          "checkpointId": "DUNGEON_06",
+          "isBoss": false,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
+          "checkpointId": "DUNGEON_07",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
+          "monsterId": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
+          "checkpointId": "DUNGEON_08",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
+          "checkpointId": "DUNGEON_09",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
+          "monsterId": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
+          "checkpointId": "DUNGEON_10",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
+          "monsterId": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
+          "checkpointId": "DUNGEON_11",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
+          "checkpointId": "DUNGEON_12",
+          "isBoss": true,
+          "mechanicId": null,
+          "adds": null
+        }
+      ]
+    }
+  ]
+}
