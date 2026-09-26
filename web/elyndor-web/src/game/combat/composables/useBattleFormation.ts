@@ -66,7 +66,14 @@ const FRONTLINE_SLOT: SlotTemplate = {
 
 const SOLO_FRONTLINE_SLOT: SlotTemplate = {
   id: 'solo-frontline',
-  bounds: { x: 0.03, y: 0.12, width: 0.44, height: 0.84 },
+  bounds: { x: 0.03, y: 0.16, width: 0.4, height: 0.8 },
+  scale: 1,
+  zIndex: 50,
+}
+
+const MOBILE_SOLO_FRONTLINE_SLOT: SlotTemplate = {
+  id: 'solo-frontline',
+  bounds: { x: 0.02, y: 0.18, width: 0.38, height: 0.78 },
   scale: 1,
   zIndex: 50,
 }
@@ -157,7 +164,9 @@ function createSlots(
     const baseSlot = BASE_SLOTS[index] ?? BASE_SLOTS[BASE_SLOTS.length - 1]!
     const isFrontline = actorId === frontlineActorId
     const renderedSlot = actorIds.length === 1
-      ? SOLO_FRONTLINE_SLOT
+      ? input.viewportWidthPx <= 480
+        ? MOBILE_SOLO_FRONTLINE_SLOT
+        : SOLO_FRONTLINE_SLOT
       : isFrontline
         ? FRONTLINE_SLOT
         : baseSlot

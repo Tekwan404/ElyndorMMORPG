@@ -249,8 +249,8 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   right: 1.5%;
   bottom: 4%;
   display: grid;
-  width: 43%;
-  height: 82%;
+  width: 45%;
+  height: 84%;
   min-width: 44px;
   min-height: 44px;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -263,12 +263,12 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   touch-action: manipulation;
 }
 .battle-arena__enemy[data-enemy-scale='elite'] {
-  width: 46%;
-  height: 86%;
+  width: 48%;
+  height: 88%;
 }
 .battle-arena__enemy[data-enemy-scale='boss'] {
-  width: 49%;
-  height: 90%;
+  width: 51%;
+  height: 92%;
 }
 .battle-arena__enemy:focus-visible {
   outline: 2px solid #df7182;
@@ -423,6 +423,20 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
 @media (max-width: 380px), (max-height: 740px) {
   .battle-arena {
     min-height: 25.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .battle-arena__enemy {
+    width: 56%;
+    height: 88%;
+  }
+  .battle-arena__enemy[data-enemy-scale='elite'] {
+    width: 58%;
+    height: 91%;
+  }
+  .battle-arena__enemy[data-enemy-scale='boss'] {
+    width: 60%;
+    height: 94%;
   }
 }
 @media (prefers-reduced-motion: reduce) {

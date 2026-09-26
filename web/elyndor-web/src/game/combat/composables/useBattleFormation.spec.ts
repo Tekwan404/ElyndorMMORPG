@@ -32,7 +32,7 @@ describe('buildBattleFormation', () => {
       actorId: 'local',
       slotId: 'solo-frontline',
       scale: 1,
-      bounds: { x: 0.03, y: 0.12, width: 0.44, height: 0.84 },
+      bounds: { x: 0.02, y: 0.18, width: 0.38, height: 0.78 },
     })
   })
 
