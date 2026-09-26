@@ -10,7 +10,7 @@ namespace Elyndor.IntegrationTests.Combat;
 public sealed class CombatRealtimeEventFilteringTests
 {
     [Fact]
-    public void RealtimePayloadOmitsCombatRegenButKeepsCombatEvents()
+    public void RealtimePayloadKeepsCompleteSequencedEventStream()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         Guid actorId = Guid.CreateVersion7();
@@ -33,8 +33,9 @@ public sealed class CombatRealtimeEventFilteringTests
 
         CombatUpdateResponse response = (CombatUpdateResponse)method.Invoke(null, [result, content])!;
 
-        Assert.Equal(2, response.Events.Count);
-        Assert.DoesNotContain(response.Events, item => item.DefinitionId == "COMBAT_REGEN");
+        Assert.Equal(3, response.Events.Count);
+        Assert.Equal([1, 2, 3], response.Events.Select(item => item.Sequence));
+        Assert.Contains(response.Events, item => item.DefinitionId == "COMBAT_REGEN");
         Assert.Contains(response.Events, item => item.DefinitionId == "MAGE_FIREBALL" && item.Type == CombatEventType.ResourceChanged.ToString());
         Assert.Contains(response.Events, item => item.DefinitionId == "MAGE_FIREBALL" && item.Type == CombatEventType.AbilityStarted.ToString());
     }
