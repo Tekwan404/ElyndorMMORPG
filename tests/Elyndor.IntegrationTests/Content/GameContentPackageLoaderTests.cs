@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Talents;
@@ -44,8 +45,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.29.0", package.ContentVersion);
-        Assert.Equal("0.24.0", package.BalanceVersion);
+        Assert.Equal("0.30.0", package.ContentVersion);
+        Assert.Equal("0.25.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -64,8 +65,11 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("MANA", mage.ResourceProfileId);
         Assert.Equal(MageWeaponCategories, mage.AllowedWeaponCategories);
         Assert.Equal(MageArmorCategories, mage.AllowedArmorCategories);
-        Assert.Empty(mage.StartingAbilityIds ?? []);
+        Assert.Equal(["MAGE_FIREBALL"], mage.StartingAbilityIds ?? []);
         Assert.Empty(mage.AbilityUnlocks ?? []);
+        Assert.Contains(
+            "MAGE_FIREBALL",
+            CharacterKnownAbilityResolver.Resolve(mage, level: 1));
         Assert.NotNull(mage.CombatAutoAttack);
 
         TalentTreeDefinition mageTree = Assert.Single(
@@ -80,6 +84,12 @@ public sealed class GameContentPackageLoaderTests
                 mageTree.Nodes.Count(node => node.BranchId == branch.Id)));
         Assert.Equal(96, mageTree.Nodes.Count);
         Assert.Equal(208, mageTree.Nodes.Sum(node => node.MaxRank));
+        TalentDefinition improvedFireball = Assert.Single(
+            mageTree.Nodes,
+            node => node.Id == "F-1-1");
+        Assert.DoesNotContain(
+            improvedFireball.Modifiers ?? [],
+            modifier => modifier.Key == TalentModifierKeys.UnlockAbility);
         Assert.Contains(
             mageTree.Nodes,
             node => node.Id == "A-3-4"

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.17.0",
-  "balanceVersion": "0.14.0",
-  "publishedAtUtc": "2026-09-09T08:30:00+00:00",
+  "contentVersion": "0.30.0",
+  "balanceVersion": "0.25.0",
+  "publishedAtUtc": "2026-09-26T13:30:00+00:00",
   "classProfiles": [
     {
       "id": "MAGE",
@@ -27,7 +27,9 @@
         "CLOTH"
       ],
       "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
-      "startingAbilityIds": [],
+      "startingAbilityIds": [
+        "MAGE_FIREBALL"
+      ],
       "startingEquipmentItemIds": [
         "APPRENTICE_STAFF"
       ],

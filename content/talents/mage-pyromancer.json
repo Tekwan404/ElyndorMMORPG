@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.21.0",
-  "balanceVersion": "0.16.0",
-  "publishedAtUtc": "2026-09-14T19:00:00+00:00",
+  "contentVersion": "0.30.0",
+  "balanceVersion": "0.25.0",
+  "publishedAtUtc": "2026-09-26T13:30:00+00:00",
   "talentTrees": [{
     "id": "MAGE_TREE", "classId": "MAGE", "maxSpendablePoints": 59, "version": 2,
     "branches": [
@@ -10,7 +10,7 @@
       {"id":"FROST","name":"Лёд","fantasy":"Chill → Freeze / Deep Chill → Shatter → Ice Lance → Winter's Chill","nodeCount":32}
     ],
     "nodes": [
-      {"id":"F-1-1","iconId": "FIRE_01","branchId":"FIRE","tier":1,"requiredSpentPoints":0,"name":"Улучшенный Огненный шар","englishName":"Improved Fireball","maxRank":5,"prerequisites":[],"description":"Первый ранг открывает Огненный шар. Время каста уменьшается на 0,05 / 0,10 / 0,15 / 0,20 / 0,25 сек.","modifiers":[{"type":"AbilityModifier","key":"UNLOCK_ABILITY","values":[1,1,1,1,1],"targetId":"MAGE_FIREBALL"},{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[0.05,0.10,0.15,0.20,0.25],"runtimeStatus":"Supported"}],"version":2},
+      {"id":"F-1-1","iconId": "FIRE_01","branchId":"FIRE","tier":1,"requiredSpentPoints":0,"name":"Улучшенный Огненный шар","englishName":"Improved Fireball","maxRank":5,"prerequisites":[],"description":"Время каста Огненного шара уменьшается на 0,05 / 0,10 / 0,15 / 0,20 / 0,25 сек.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[0.05,0.10,0.15,0.20,0.25],"runtimeStatus":"Supported"}],"version":2},
       {"id":"F-1-2","iconId": "FIRE_02","branchId":"FIRE","tier":1,"requiredSpentPoints":0,"name":"Испепеление","englishName":"Incineration","maxRank":2,"prerequisites":[],"description":"Крит Огненного взрыва и Ожога +3% / +6%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[3,6],"runtimeStatus":"Supported"}],"version":2},
       {"id":"F-1-3","iconId": "FIRE_03","branchId":"FIRE","tier":1,"requiredSpentPoints":0,"name":"Пылающая душа","englishName":"Burning Soul","maxRank":2,"prerequisites":[],"description":"Threat Fire −10% / −20%; стоимость Fireball и Scorch −3% / −6%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[10,20],"secondaryValues":[3,6],"runtimeStatus":"Supported"}],"version":2},
       {"id":"F-1-4","iconId": "FIRE_04","branchId":"FIRE","tier":1,"requiredSpentPoints":0,"name":"Экономное пламя","englishName":"Efficient Flame","maxRank":3,"prerequisites":[],"description":"Стоимость Fire-заклинаний −4% / −8% / −12%.","modifiers":[{"type":"EventTriggered","key":"ON_ABILITY_USED","values":[4,8,12],"runtimeStatus":"Supported"}],"version":2},

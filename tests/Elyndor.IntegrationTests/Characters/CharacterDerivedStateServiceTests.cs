@@ -61,7 +61,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
         Assert.Equal(198, state.Stats.Intellect);
         Assert.Equal(1090, state.EffectiveResourceProfile.MaxValue);
         Assert.Equal("MANA", state.BaseResourceProfile.Id);
-        Assert.Empty(state.KnownAbilityIds);
+        Assert.Equal(["MAGE_FIREBALL"], state.KnownAbilityIds);
     }
 
     [Fact]
