@@ -583,7 +583,10 @@ public sealed class InventoryEquipmentService(
                         InventoryErrorCodes.ConsumableNotNeeded);
                 }
 
-                vitals.Checkpoint(nextHp, nextResource, now);
+                DateTimeOffset checkpointAtUtc = now < vitals.CheckpointedAtUtc
+                    ? vitals.CheckpointedAtUtc
+                    : now;
+                vitals.Checkpoint(nextHp, nextResource, checkpointAtUtc);
                 ConsumeOne(item);
                 return null;
             },
