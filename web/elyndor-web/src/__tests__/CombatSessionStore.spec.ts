@@ -371,6 +371,68 @@ describe('combatSession realtime authentication', () => {
     expect(useAbilityCall?.[3]).toBe(allyId)
   })
 
+  it('keeps target selection responsive while a consumable request is pending', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const sessionId = '00000000-0000-0000-0000-000000000161'
+    const playerId = '00000000-0000-0000-0000-000000000261'
+    const firstEnemyId = '00000000-0000-0000-0000-000000000361'
+    const secondEnemyId = '00000000-0000-0000-0000-000000000362'
+    let finishConsumable!: () => void
+    const consumableResponse = new Promise<void>((resolve) => {
+      finishConsumable = resolve
+    })
+    signalRMock.invoke.mockImplementation(async (method) => {
+      if (method === 'UseConsumable') {
+        await consumableResponse
+      }
+      return {
+        succeeded: true,
+        errorCode: null,
+        snapshot: {
+          sessionId,
+          status: 'Active',
+          sequence: 1,
+          serverTimeUtc: '2026-09-14T12:00:00Z',
+          player: { actorId: playerId, cooldowns: {}, abilities: [] },
+          enemy: { actorId: firstEnemyId, definitionId: 'WOLF' },
+          enemies: [
+            { actorId: firstEnemyId, definitionId: 'WOLF' },
+            { actorId: secondEnemyId, definitionId: 'WOLF_ALPHA' },
+          ],
+          selectedTargetActorId: firstEnemyId,
+        },
+        events: [],
+        reward: null,
+      }
+    })
+
+    const store = useCombatSessionStore()
+    await store.connect()
+    store.snapshot = {
+      sessionId,
+      status: 'Active',
+      sequence: 1,
+      serverTimeUtc: '2026-09-14T12:00:00Z',
+      player: { actorId: playerId, cooldowns: {}, abilities: [] },
+      enemy: { actorId: firstEnemyId, definitionId: 'WOLF' },
+      enemies: [
+        { actorId: firstEnemyId, definitionId: 'WOLF' },
+        { actorId: secondEnemyId, definitionId: 'WOLF_ALPHA' },
+      ],
+      selectedTargetActorId: firstEnemyId,
+    } as never
+
+    const consumable = store.useConsumable('SMALL_HEALING_POTION')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.some(([method]) => method === 'UseConsumable')).toBe(true)
+    })
+    await store.selectTarget(secondEnemyId)
+
+    expect(signalRMock.invoke.mock.calls.some(([method]) => method === 'SelectTarget')).toBe(true)
+    finishConsumable()
+    await consumable
+  })
+
   it('keeps the exact SignalR start stage when negotiate/transport fails', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     signalRMock.startError = new Error('Failed to complete negotiation with the server')

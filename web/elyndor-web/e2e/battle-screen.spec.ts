@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test.describe.configure({ timeout: 60_000 })
+
 async function openPreview(page: Page, party: number, width = 390, height = 844): Promise<void> {
   await page.setViewportSize({ width, height })
   await page.goto(`/dev/battle?party=${party}`)

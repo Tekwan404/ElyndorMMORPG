@@ -26,6 +26,11 @@ const selectedProduct = ref<PremiumStoreProduct | null>(null)
 const currencySheetOpen = ref(false)
 const previewCosmeticId = ref<string | null>(null)
 const equippedCosmeticId = ref<string | null>(null)
+const promoPending = computed(() => session.isMutationDomainPending('premium:promo:'))
+const selectedProductPending = computed(() => Boolean(
+  selectedProduct.value?.sku
+  && session.isMutationPending(`premium:buy:${selectedProduct.value.sku}`),
+))
 
 const previewController = createAppearancePreviewController({
   capture: () => previewCosmeticId.value,
@@ -181,8 +186,8 @@ onBeforeUnmount(() => previewController.close())
         <details class="promo-panel">
           <summary>Есть промокод?</summary>
           <form class="promo-form" @submit.prevent="redeem">
-            <input v-model="promoCode" aria-label="Промокод" autocomplete="off" maxlength="64" placeholder="ВВЕДИТЕ КОД" :disabled="session.mutationPending" />
-            <UIButton type="submit" variant="secondary" :disabled="!promoCode.trim() || session.mutationPending" :loading="session.mutationPending">Применить</UIButton>
+            <input v-model="promoCode" aria-label="Промокод" autocomplete="off" maxlength="64" placeholder="ВВЕДИТЕ КОД" :disabled="promoPending" />
+            <UIButton type="submit" variant="secondary" :disabled="!promoCode.trim() || promoPending" :loading="promoPending">Применить</UIButton>
           </form>
         </details>
       </main>
@@ -226,8 +231,8 @@ onBeforeUnmount(() => previewController.close())
           <div class="detail-actions">
             <UIButton v-if="selectedProduct.previewable && selectedProduct.cosmeticId" variant="secondary" @click="preview(selectedProduct)">ПРИМЕРИТЬ</UIButton>
             <UIButton
-              :disabled="(!selectedProduct.backendBacked && !selectedProduct.owned) || (!selectedProduct.canPurchase && !selectedProduct.owned) || session.mutationPending"
-              :loading="session.mutationPending"
+              :disabled="(!selectedProduct.backendBacked && !selectedProduct.owned) || (!selectedProduct.canPurchase && !selectedProduct.owned) || selectedProductPending"
+              :loading="selectedProductPending"
               @click="purchase(selectedProduct)"
             >
               {{ selectedProduct.backendBacked || selectedProduct.owned ? purchaseLabel(selectedProduct) : `${PREMIUM_CURRENCY.symbol} ${selectedProduct.price} — ПРИОБРЕСТИ` }}

@@ -45,7 +45,7 @@ async function load(): Promise<void> {
 }
 
 async function act(skin: CharacterSkinOffer): Promise<void> {
-  if (!skin.eligible || session.mutationPending || skinState(skin) === 'Используется') return
+  if (!skin.eligible || skinPending(skin) || skinState(skin) === 'Используется') return
   selectedId.value = skin.id
   error.value = null
   const result = skin.owned
@@ -62,6 +62,11 @@ async function act(skin: CharacterSkinOffer): Promise<void> {
     emit('balance', result.crystalBalance)
   }
   selectedId.value = null
+}
+
+function skinPending(skin: CharacterSkinOffer): boolean {
+  return session.isMutationPending(`skin:buy:${skin.id}`)
+    || session.isMutationPending(`skin:equip:${skin.id}`)
 }
 
 onMounted(load)
@@ -89,7 +94,7 @@ onMounted(load)
           <p v-if="restriction(skin)" class="skin-card__restriction">{{ restriction(skin) }}</p>
           <div class="skin-card__footer">
             <span class="skin-card__price">{{ skin.purchasable ? `✦ ${skin.crystalPrice}` : 'Базовый' }}</span>
-            <button type="button" :disabled="!skin.eligible || session.mutationPending || skinState(skin) === 'Используется'" @click="act(skin)">
+            <button type="button" :disabled="!skin.eligible || skinPending(skin) || skinState(skin) === 'Используется'" @click="act(skin)">
               {{ selectedId === skin.id ? 'Подождите…' : skin.owned && skinState(skin) === 'Куплено' ? 'Надеть' : skinState(skin) }}
             </button>
           </div>

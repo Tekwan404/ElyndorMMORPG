@@ -72,6 +72,73 @@ describe('gameSession', () => {
     expect(request).toHaveBeenCalledTimes(2)
   })
 
+  it('allows unrelated mutation domains to proceed independently', async () => {
+    let finishCompanion!: (value: unknown) => void
+    const companionResponse = new Promise(resolve => {
+      finishCompanion = resolve
+    })
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/character/companion/select') return await companionResponse
+      if (path === '/api/v1/world/explore') return { encounterId: crypto.randomUUID() }
+      return {
+        accountId: crypto.randomUUID(),
+        character: null,
+        world: null,
+        contentVersion: '0.1.0',
+        balanceVersion: '0.1.0',
+        serverTimeUtc: '2026-09-26T00:00:00Z',
+      }
+    })
+    const store = useGameSessionStore()
+
+    const companion = store.selectCompanion('WOLF')
+    await vi.waitFor(() => {
+      expect(request.mock.calls.some(([path]) => path === '/api/v1/character/companion/select')).toBe(true)
+    })
+    const encounter = await store.explore()
+
+    expect(encounter).not.toBeNull()
+    expect(request.mock.calls.some(([path]) => path === '/api/v1/world/explore')).toBe(true)
+    finishCompanion({ selectedPhysicalProfileId: 'WOLF' })
+    await companion
+  })
+
+  it('serializes canonical snapshot refreshes from concurrent mutation domains', async () => {
+    const refreshResolvers: Array<(value: BootstrapSnapshot) => void> = []
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(
+      () => new Promise<BootstrapSnapshot>(resolve => refreshResolvers.push(resolve)),
+    )
+    const store = useGameSessionStore()
+
+    const first = store.refreshSnapshot()
+    const second = store.refreshSnapshot()
+
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1))
+    refreshResolvers[0]?.({
+      accountId: crypto.randomUUID(),
+      character: null,
+      world: null,
+      contentVersion: '0.1.0',
+      balanceVersion: '0.1.0',
+      serverTimeUtc: '2026-09-26T00:00:00Z',
+    })
+    await first
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+
+    const latestSnapshot = {
+      accountId: crypto.randomUUID(),
+      character: null,
+      world: null,
+      contentVersion: '0.1.1',
+      balanceVersion: '0.1.0',
+      serverTimeUtc: '2026-09-26T00:00:01Z',
+    } as BootstrapSnapshot
+    refreshResolvers[1]?.(latestSnapshot)
+    await second
+
+    expect(store.snapshot).toEqual(latestSnapshot)
+  })
+
   it('reuses the travel request id after a lost response', async () => {
     const request = vi.spyOn(apiClient, 'request')
       .mockRejectedValueOnce(new TypeError('response lost'))

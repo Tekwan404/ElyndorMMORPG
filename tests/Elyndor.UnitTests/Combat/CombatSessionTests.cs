@@ -1521,6 +1521,112 @@ public sealed class CombatSessionTests
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
     }
 
+    [Fact]
+    public async Task RegistryRetriesTerminalFinalizationWithoutReplayingGameplay()
+    {
+        CombatSession session = CreateSession(enemyHp: 1, playerResource: 100, canAutoAttack: false);
+        ManualTimeProvider time = new(Now);
+        ThrowOnceFinalizer finalizer = new();
+        RecordingPublisher publisher = new();
+        using CombatSessionRegistry registry = new(
+            time, publisher, finalizer, NullLogger<CombatSessionRegistry>.Instance);
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => registry.ExecuteAsync(
+            accountId,
+            (active, now) => active.Handle(
+                new UseAbilityCommand("terminal-finalizer-retry", "STRIKE", EnemyId), now),
+            CancellationToken.None));
+
+        time.FireLatest();
+        await finalizer.Completed.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(2, finalizer.CallCount);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.EnemyKilled);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.CombatEnded);
+        Assert.Equal(CombatSessionStatus.Victory, registry.Resume(accountId).Snapshot!.Status);
+        Assert.Single(publisher.AccountIds);
+        Assert.False(time.Latest!.IsScheduled);
+    }
+
+    [Fact]
+    public async Task RegistryRetriesPublishWithoutReplayingCompletedCommand()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000);
+        ManualTimeProvider time = new(Now);
+        ThrowOncePublisher publisher = new();
+        using CombatSessionRegistry registry = new(
+            time, publisher, new NullFinalizer(), NullLogger<CombatSessionRegistry>.Instance);
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => registry.ExecuteAsync(
+            accountId,
+            (active, now) => active.Handle(new StopAutoAttackCommand("publish-retry"), now),
+            CancellationToken.None));
+
+        time.FireLatest();
+        await publisher.Completed.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(2, publisher.CallCount);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
+        Assert.True(registry.Resume(accountId).Succeeded);
+    }
+
+    [Fact]
+    public async Task RegistryReschedulesActiveSessionWhenAdvanceThrows()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000, gameRandom: new ThrowOnceRandom());
+        ManualTimeProvider time = new(Now);
+        RecordingPublisher publisher = new();
+        using CombatSessionRegistry registry = new(
+            time, publisher, new NullFinalizer(), NullLogger<CombatSessionRegistry>.Instance);
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+
+        time.Advance(TimeSpan.FromSeconds(3));
+        ManualTimer failedTick = time.Latest!;
+        failedTick.Fire();
+        await WaitUntilAsync(() => !ReferenceEquals(time.Latest, failedTick));
+
+        ManualTimer recovery = time.Latest!;
+        recovery.Fire();
+        await WaitUntilAsync(() => !ReferenceEquals(time.Latest, recovery));
+
+        time.FireLatest();
+        await WaitUntilAsync(() => publisher.AccountIds.Count > 0);
+
+        Assert.Equal(CombatSessionStatus.Active, registry.Resume(accountId).Snapshot!.Status);
+        Assert.NotNull(time.Latest);
+    }
+
+    [Fact]
+    public void SessionRetainsBoundedEventTailAndReportsWhenFullResyncIsRequired()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000, gameRandom: new ConstantRandom());
+        for (int index = 0; index < CombatSession.RetainedEventLimit + 10; index++)
+        {
+            CombatCommandResult result = index % 2 == 0
+                ? session.Handle(new StopAutoAttackCommand($"stop-{index}"), Now)
+                : session.Handle(new StartAutoAttackCommand($"start-{index}"), Now);
+            Assert.True(result.Succeeded, result.ErrorCode);
+        }
+
+        IReadOnlyList<CombatEvent> staleTail = session.GetRetainedEventsAfter(
+            0,
+            out bool fullResyncRequired);
+        IReadOnlyList<CombatEvent> recentTail = session.GetRetainedEventsAfter(
+            session.Sequence - 2,
+            out bool recentFullResyncRequired);
+
+        Assert.True(fullResyncRequired);
+        Assert.Empty(staleTail);
+        Assert.False(recentFullResyncRequired);
+        Assert.Equal(2, recentTail.Count);
+        Assert.True(session.GetEventsAfter(0).Count <= CombatSession.RetainedEventLimit);
+    }
+
     private static CombatSession CreateMultiEnemyAiSession(
         AutoAttackProfile firstAutoAttack,
         AutoAttackProfile secondAutoAttack,
@@ -1946,7 +2052,8 @@ public sealed class CombatSessionTests
         bool canAutoAttack = true,
         IReadOnlyDictionary<string, DateTimeOffset>? initialPlayerCooldowns = null,
         CombatSummonProfile? summonProfile = null,
-        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
+        IGameRandom? gameRandom = null)
     {
         CombatStats playerStats = new(
             Level: 3, Accuracy: 100, Dodge: 0, CriticalChance: playerCriticalChance,
@@ -2002,7 +2109,7 @@ public sealed class CombatSessionTests
         };
         MonsterAiProfile ai = new("WOLF_BASIC_AI", ["BITE"]);
         decimal[] randomValues = Enumerable.Repeat(0.99m, 100).ToArray();
-        IGameRandom random = new SequenceGameRandom(randomValues);
+        IGameRandom random = gameRandom ?? new SequenceGameRandom(randomValues);
 
         return new CombatSession(
             SessionId, player, enemy, abilities, ai,
@@ -2023,6 +2130,13 @@ public sealed class CombatSessionTests
         item.DefinitionId,
         item.Amount
     };
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+        while (!condition())
+            await Task.Delay(10, timeout.Token);
+    }
 
     private sealed class NullPublisher : ICombatUpdatePublisher
     {
@@ -2052,6 +2166,104 @@ public sealed class CombatSessionTests
             CombatSessionSnapshot snapshot,
             CancellationToken cancellationToken) =>
             Task.FromResult<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?>(null);
+    }
+
+    private sealed class ThrowOnceFinalizer : ICombatSessionFinalizer
+    {
+        public int CallCount { get; private set; }
+        public TaskCompletionSource Completed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?> FinalizeAsync(
+            Guid characterId,
+            CombatSessionSnapshot snapshot,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+            if (CallCount == 1)
+                throw new InvalidOperationException("Injected finalizer failure.");
+            Completed.TrySetResult();
+            return Task.FromResult<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?>(null);
+        }
+    }
+
+    private sealed class ThrowOncePublisher : ICombatUpdatePublisher
+    {
+        public int CallCount { get; private set; }
+        public TaskCompletionSource Completed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task PublishAsync(
+            Guid accountId,
+            CombatOperationResult update,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+            if (CallCount == 1)
+                throw new InvalidOperationException("Injected publisher failure.");
+            Completed.TrySetResult();
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public ManualTimer? Latest { get; private set; }
+        public override DateTimeOffset GetUtcNow() => now;
+        public void Advance(TimeSpan elapsed) => now += elapsed;
+
+        public override ITimer CreateTimer(
+            TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            Latest = new ManualTimer(callback, state, dueTime);
+            return Latest;
+        }
+
+        public void FireLatest() => Latest!.Fire();
+    }
+
+    private sealed class ThrowOnceRandom : IGameRandom
+    {
+        private bool _thrown;
+
+        public decimal NextUnit()
+        {
+            if (!_thrown)
+            {
+                _thrown = true;
+                throw new InvalidOperationException("Injected AdvanceTo failure.");
+            }
+
+            return 0.99m;
+        }
+    }
+
+    private sealed class ConstantRandom : IGameRandom
+    {
+        public decimal NextUnit() => 0.99m;
+    }
+
+    private sealed class ManualTimer(TimerCallback callback, object? state, TimeSpan dueTime) : ITimer
+    {
+        public bool IsScheduled { get; private set; } = dueTime != Timeout.InfiniteTimeSpan;
+
+        public void Fire()
+        {
+            Assert.True(IsScheduled);
+            IsScheduled = false;
+            callback(state);
+        }
+
+        public bool Change(TimeSpan dueTime, TimeSpan period)
+        {
+            IsScheduled = dueTime != Timeout.InfiniteTimeSpan;
+            return true;
+        }
+
+        public void Dispose() => IsScheduled = false;
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class FrozenTimeProvider(DateTimeOffset now) : TimeProvider

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 defineProps<{
   autoAttackEnabled: boolean
-  disabled: boolean
+  autoAttackDisabled: boolean
+  lifecycleDisabled: boolean
+  fleeDisabled: boolean
   training: boolean
 }>()
 const emit = defineEmits<{
@@ -25,26 +27,26 @@ const emit = defineEmits<{
       :class="{ active: autoAttackEnabled }"
       data-autoattack-toggle
       :data-active="autoAttackEnabled"
-      :disabled="disabled"
+      :disabled="autoAttackDisabled"
       @click="emit('toggleAutoAttack')"
     >
       <span aria-hidden="true">⚔</span>
       <b>Автоатака</b>
       <small>{{ autoAttackEnabled ? 'Включена' : 'Выключена' }}</small>
     </button>
-    <button v-if="training" type="button" :disabled="disabled" @click="emit('resetTraining')">
+    <button v-if="training" type="button" :disabled="lifecycleDisabled" @click="emit('resetTraining')">
       <span aria-hidden="true">↻</span><b>Сбросить</b><small>Новый замер</small>
     </button>
     <button
       v-if="training"
       type="button"
       data-leave-combat
-      :disabled="disabled"
+      :disabled="lifecycleDisabled"
       @click="emit('leave')"
     >
       <span aria-hidden="true">←</span><b>Завершить</b><small>Покинуть тренировку</small>
     </button>
-    <button v-else type="button" :disabled="disabled" @click="emit('flee')">
+    <button v-else type="button" :disabled="fleeDisabled" @click="emit('flee')">
       <span aria-hidden="true">↗</span><b>Сбежать</b><small>Остаться в локации</small>
     </button>
   </section>

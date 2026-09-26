@@ -41,7 +41,6 @@ const activeAbilities = computed(() => {
   return orderCombatAbilities(session.snapshot?.character?.id ?? '', abilities).slice(0, 12)
 })
 const queuedAbilityIds = computed(() => battle.abilityQueue.value.map((queued) => queued.abilityId))
-const needsLayoutScroll = computed(() => activeAbilities.value.length > 4)
 const battlefieldArt = computed(() => {
   const locationId = session.snapshot?.world?.currentLocation.id
   return locationId ? locationPresentation(locationId).art : gameArt.world.combatWhispering
@@ -177,7 +176,6 @@ onUnmounted(() => window.clearInterval(timer))
 <template>
   <section
     class="battle-screen"
-    :class="{ 'battle-screen--scroll-fallback': needsLayoutScroll }"
     :data-party-size="battle.allies.value.length || undefined"
     :data-skill-rows="Math.max(1, Math.ceil(activeAbilities.length / 4))"
     data-battle-screen
@@ -189,7 +187,7 @@ onUnmounted(() => window.clearInterval(timer))
         :allies="battle.allies.value"
         :selected-friendly-actor-id="battle.selectedFriendlyActorId.value"
         :aggro-actor-ids="battle.aggroActorIds.value"
-        :disabled="battle.pending.value || !isActive"
+        :disabled="battle.targetPending.value || !isActive"
         @select-friendly="battle.selectFriendlyActor"
       />
 
@@ -201,7 +199,7 @@ onUnmounted(() => window.clearInterval(timer))
         <div>
           <strong>Бой уже идёт</strong><small>Войдите, чтобы присоединиться к группе.</small>
         </div>
-        <UIButton :disabled="battle.pending.value" @click="battle.attachCombat(snapshot.sessionId)"
+        <UIButton :disabled="battle.lifecyclePending.value" @click="battle.attachCombat(snapshot.sessionId)"
           >Войти в бой</UIButton
         >
       </section>
@@ -217,7 +215,7 @@ onUnmounted(() => window.clearInterval(timer))
           :numbers="battle.eventProjection.value.numbers"
           :companion="battle.companion.value"
           :battlefield-art="battlefieldArt"
-          :disabled="battle.pending.value || !isActive"
+          :disabled="battle.targetPending.value || !isActive"
           @select-friendly="battle.selectFriendlyActor"
           @select-enemy="battle.selectEnemyActor"
         />
@@ -291,7 +289,7 @@ onUnmounted(() => window.clearInterval(timer))
           :resource="localActor.resource"
           :queued-ability-ids="queuedAbilityIds"
           :now="now"
-          :disabled="battle.pending.value"
+          :disabled="battle.abilityPending.value"
           @use="useAbility"
         />
         <ConsumableBar
@@ -299,12 +297,14 @@ onUnmounted(() => window.clearInterval(timer))
           :items="combatConsumables"
           :cooldown-remaining="consumableCooldownRemaining"
           :can-use="consumableCanAffect"
-          :disabled="battle.pending.value"
+          :is-pending="item => battle.isConsumablePending(item.definitionId)"
           @use="useConsumable"
         />
         <BattleControls
           :auto-attack-enabled="localActor.autoAttackEnabled"
-          :disabled="battle.pending.value"
+          :auto-attack-disabled="battle.autoAttackPending.value"
+          :lifecycle-disabled="battle.lifecyclePending.value"
+          :flee-disabled="battle.fleePending.value"
           :training="battle.isTraining.value"
           @toggle-auto-attack="battle.toggleAutoAttack"
           @flee="fleeConfirmationOpen = true"
@@ -350,21 +350,21 @@ onUnmounted(() => window.clearInterval(timer))
           <div class="loot-roll__actions">
             <button
               type="button"
-              :disabled="battle.pending.value || !roll.canNeed"
+              :disabled="battle.isLootPending(roll.lootRollId) || !roll.canNeed"
               @click="battle.chooseLootRoll(roll.lootRollId, 'Need')"
             >
               Нужно
             </button>
             <button
               type="button"
-              :disabled="battle.pending.value"
+              :disabled="battle.isLootPending(roll.lootRollId)"
               @click="battle.chooseLootRoll(roll.lootRollId, 'Greed')"
             >
               Претендовать
             </button>
             <button
               type="button"
-              :disabled="battle.pending.value"
+              :disabled="battle.isLootPending(roll.lootRollId)"
               @click="battle.chooseLootRoll(roll.lootRollId, 'Pass')"
             >
               Отказаться
@@ -386,7 +386,7 @@ onUnmounted(() => window.clearInterval(timer))
         <p>После выхода вернуться в этот бой нельзя.</p>
         <template #actions>
           <UIButton variant="ghost" @click="fleeConfirmationOpen = false">Остаться</UIButton>
-          <UIButton variant="danger" :loading="battle.pending.value" @click="fleeBattle"
+          <UIButton variant="danger" :loading="battle.fleePending.value" @click="fleeBattle"
             >Сбежать</UIButton
           >
         </template>
@@ -415,11 +415,6 @@ onUnmounted(() => window.clearInterval(timer))
   overflow: hidden;
   background: radial-gradient(circle at 50% 18%, rgb(82 59 119 / 13%), transparent 26rem), #05070c;
   color: #eee6da;
-}
-.battle-screen--scroll-fallback {
-  height: auto;
-  min-height: 100svh;
-  overflow-y: auto;
 }
 .battle-screen__arena-wrap {
   position: relative;
@@ -598,13 +593,13 @@ onUnmounted(() => window.clearInterval(timer))
 }
 
 @media (max-width: 390px) and (min-height: 760px) {
-  .battle-screen:not(.battle-screen--scroll-fallback) :deep(.skill-panel__header) {
+  .battle-screen :deep(.skill-panel__header) {
     display: none;
   }
-  .battle-screen:not(.battle-screen--scroll-fallback) :deep(.skill-panel) {
+  .battle-screen :deep(.skill-panel) {
     padding: 0.3rem;
   }
-  .battle-screen:not(.battle-screen--scroll-fallback) :deep(.skill-panel__ability) {
+  .battle-screen :deep(.skill-panel__ability) {
     min-height: 64px;
   }
 }

@@ -10,8 +10,6 @@ namespace Elyndor.Server.Combat;
 
 internal static class CombatContractMapper
 {
-    private const string CombatRegenDefinitionId = "COMBAT_REGEN";
-
     public static CombatUpdateResponse ToResponse(
         CombatOperationResult result,
         GameContentPackage fallbackContent)
@@ -22,10 +20,7 @@ internal static class CombatContractMapper
         result.Succeeded,
         result.ErrorCode,
         result.Snapshot is null ? null : ToResponse(result.Snapshot, content),
-        result.Events
-            .Where(ShouldPublishRealtimeEvent)
-            .Select(ToResponse)
-            .ToArray(),
+        result.Events.Select(ToResponse).ToArray(),
         result.Reward?.Progression is null
             ? null
             : new CombatRewardResponse(
@@ -52,15 +47,9 @@ internal static class CombatContractMapper
                     roll.EligibleCharacterIds,
                     roll.CanNeed,
                     roll.IconId,
-                    roll.Type?.ToString())).ToArray()));
+                    roll.Type?.ToString())).ToArray()),
+        result.FullResyncRequired);
     }
-
-    private static bool ShouldPublishRealtimeEvent(CombatEvent combatEvent) =>
-        combatEvent.Type != CombatEventType.ResourceChanged
-        || !string.Equals(
-            combatEvent.DefinitionId,
-            CombatRegenDefinitionId,
-            StringComparison.Ordinal);
 
     private static CombatSnapshotResponse ToResponse(
         CombatSessionSnapshot snapshot,

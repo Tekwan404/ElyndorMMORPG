@@ -6,12 +6,12 @@ const props = defineProps<{
   items: readonly InventoryItem[]
   cooldownRemaining: (item: InventoryItem) => number
   canUse: (item: InventoryItem) => boolean
-  disabled: boolean
+  isPending: (item: InventoryItem) => boolean
 }>()
 const emit = defineEmits<{ use: [item: InventoryItem] }>()
 
 function available(item: InventoryItem): boolean {
-  return !props.disabled && props.cooldownRemaining(item) <= 0 && props.canUse(item)
+  return !props.isPending(item) && props.cooldownRemaining(item) <= 0 && props.canUse(item)
 }
 </script>
 

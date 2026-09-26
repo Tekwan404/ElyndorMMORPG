@@ -99,7 +99,13 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const lootRolls = ref<CombatLootRoll[]>([])
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
-  const pending = ref(false)
+  const pendingOperations = ref<Set<string>>(new Set())
+  const pending = computed(() => pendingOperations.value.size > 0)
+  const abilityPending = computed(() => hasPendingPrefix('ability:'))
+  const targetPending = computed(() => pendingOperations.value.has('target'))
+  const autoAttackPending = computed(() => pendingOperations.value.has('auto-attack'))
+  const fleePending = computed(() => pendingOperations.value.has('flee'))
+  const lifecyclePending = computed(() => pendingOperations.value.has('lifecycle'))
   const abilityQueue = ref<QueuedAbility[]>([])
   const selectedFriendlyTargetActorId = ref<string | null>(null)
   const latencyMs = ref<number | null>(null)
@@ -132,8 +138,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let telemetryBusy = false
   let abilitySending = false
   let abilitySendingId: string | null = null
+  let gapRecoveryPromise: Promise<void> | null = null
   const retryCommandIds = new Map<string, string>()
   const seenEventSequences = new Set<number>()
+  let lastAppliedSequence = 0
 
   async function connect(): Promise<void> {
     if (connection?.state === HubConnectionState.Connected) return
@@ -233,7 +241,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     reward.value = null
     clearLootRolls()
     encounterPresentation.value = encounter
-    const succeeded = await invoke('StartCombat', encounter.encounterId)
+    const succeeded = await invoke('lifecycle', 'StartCombat', encounter.encounterId)
     if (!succeeded) encounterPresentation.value = null
     return succeeded
   }
@@ -242,23 +250,23 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     reward.value = null
     clearLootRolls()
     encounterPresentation.value = null
-    return await invoke('StartTraining')
+    return await invoke('lifecycle', 'StartTraining')
   }
 
   async function startDungeonEncounter(runId: string): Promise<boolean> {
     reward.value = null
     clearLootRolls()
-    return await invoke('StartDungeonEncounter', runId)
+    return await invoke('lifecycle', 'StartDungeonEncounter', runId)
   }
 
   async function attachCombat(sessionId: string): Promise<boolean> {
     if (!sessionId) return false
-    return await invoke('AttachCombat', sessionId)
+    return await invoke('lifecycle', 'AttachCombat', sessionId)
   }
 
   async function resetTraining(): Promise<boolean> {
     if (!isTraining.value) return false
-    return await invoke('ResetTraining')
+    return await invoke('lifecycle', 'ResetTraining')
   }
 
   async function useAbility(abilityId: string, requestedTargetActorId?: string): Promise<void> {
@@ -290,7 +298,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function drainAbilityQueue(): Promise<void> {
-    if (abilitySending || pending.value || abilityQueue.value.length === 0) {
+    if (abilitySending || abilityQueue.value.length === 0) {
       if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain(20)
       return
     }
@@ -336,7 +344,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       await invokeRetryableCommand(
         `UseAbility:${sessionId}:${abilityId}:${queued.targetActorId}`,
         commandId => invokeWithOutcome(
-          'UseAbility', sessionId, abilityId, queued.targetActorId, commandId),
+          `ability:${abilityId}`, 'UseAbility', sessionId, abilityId, queued.targetActorId, commandId),
       )
     } finally {
       abilitySending = false
@@ -358,7 +366,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const sessionId = snapshot.value.sessionId
     await invokeRetryableCommand(
       `UseConsumable:${sessionId}:${itemDefinitionId}`,
-      commandId => invokeWithOutcome('UseConsumable', sessionId, itemDefinitionId, commandId),
+      commandId => invokeWithOutcome(
+        `consumable:${itemDefinitionId}`, 'UseConsumable', sessionId, itemDefinitionId, commandId),
     )
   }
 
@@ -368,7 +377,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const method = snapshot.value.player.autoAttackEnabled ? 'StopAutoAttack' : 'StartAutoAttack'
     await invokeRetryableCommand(
       `${method}:${sessionId}`,
-      commandId => invokeWithOutcome(method, sessionId, commandId),
+      commandId => invokeWithOutcome('auto-attack', method, sessionId, commandId),
     )
   }
 
@@ -378,7 +387,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (snapshot.value.selectedTargetActorId === targetActorId) return
     await invokeRetryableCommand(
       `SelectTarget:${sessionId}:${targetActorId}`,
-      commandId => invokeWithOutcome('SelectTarget', sessionId, targetActorId, commandId),
+      commandId => invokeWithOutcome('target', 'SelectTarget', sessionId, targetActorId, commandId),
     )
   }
 
@@ -401,15 +410,16 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return current.player.actorId
   }
 
-  async function resume(): Promise<boolean> {
+  async function resume(lastSeenSequence = highestAppliedSequence()): Promise<boolean> {
     if (connection?.state !== HubConnectionState.Connected) return false
     try {
-      const update = await connection.invoke<CombatUpdate>('ResumeCombat')
+      const update = await connection.invoke<CombatUpdate>('ResumeCombatFromSequence', lastSeenSequence)
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         selectedFriendlyTargetActorId.value = null
         events.value = []
         seenEventSequences.clear()
+        lastAppliedSequence = 0
         reward.value = null
         encounterPresentation.value = null
         trainingStats.value = emptyTrainingStats()
@@ -435,13 +445,14 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const sessionId = snapshot.value.sessionId
     const succeeded = await invokeRetryableCommand(
       `LeaveCombat:${sessionId}`,
-      commandId => invokeWithOutcome('LeaveCombat', commandId),
+      commandId => invokeWithOutcome('lifecycle', 'LeaveCombat', commandId),
     )
     if (succeeded || errorCode.value === 'combat_not_found') {
       snapshot.value = null
       selectedFriendlyTargetActorId.value = null
       events.value = []
       seenEventSequences.clear()
+      lastAppliedSequence = 0
       encounterPresentation.value = null
       trainingStats.value = emptyTrainingStats()
       threat.value = null
@@ -457,20 +468,26 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return await invokeRetryableCommand(
       `FleeCombat:${snapshot.value.sessionId}`,
       commandId => invokeWithOutcome(
-        'FleeCombat',
+        'flee', 'FleeCombat',
         snapshot.value!.sessionId,
         commandId,
       ),
     )
   }
 
-  async function invoke(method: string, ...args: unknown[]): Promise<boolean> {
-    return (await invokeWithOutcome(method, ...args)).succeeded
+  async function invoke(pendingKey: string, method: string, ...args: unknown[]): Promise<boolean> {
+    return (await invokeWithOutcome(pendingKey, method, ...args)).succeeded
   }
 
-  async function invokeWithOutcome(method: string, ...args: unknown[]): Promise<InvokeOutcome> {
-    if (pending.value) return { succeeded: false, receivedResponse: false }
-    pending.value = true
+  async function invokeWithOutcome(
+    pendingKey: string,
+    method: string,
+    ...args: unknown[]
+  ): Promise<InvokeOutcome> {
+    if (pendingOperations.value.has(pendingKey)) {
+      return { succeeded: false, receivedResponse: false }
+    }
+    setOperationPending(pendingKey, true)
     errorCode.value = null
     diagnostic.value = null
     let connected = false
@@ -486,7 +503,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       }
       return { succeeded: false, receivedResponse: false }
     } finally {
-      pending.value = false
+      setOperationPending(pendingKey, false)
     }
   }
 
@@ -524,8 +541,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     lootRollId: string,
     choice: 'Need' | 'Greed' | 'Pass',
   ): Promise<boolean> {
-    if (pending.value) return false
-    pending.value = true
+    const pendingKey = `loot:${lootRollId}`
+    if (pendingOperations.value.has(pendingKey)) return false
+    setOperationPending(pendingKey, true)
     errorCode.value = null
     diagnostic.value = null
     try {
@@ -552,8 +570,30 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       recordFailure('hub_invoke', 'ChooseLootRoll', error)
       return false
     } finally {
-      pending.value = false
+      setOperationPending(pendingKey, false)
     }
+  }
+
+  function setOperationPending(key: string, value: boolean): void {
+    const next = new Set(pendingOperations.value)
+    if (value) next.add(key)
+    else next.delete(key)
+    pendingOperations.value = next
+  }
+
+  function hasPendingPrefix(prefix: string): boolean {
+    for (const key of pendingOperations.value) {
+      if (key.startsWith(prefix)) return true
+    }
+    return false
+  }
+
+  function isConsumablePending(itemDefinitionId: string): boolean {
+    return pendingOperations.value.has(`consumable:${itemDefinitionId}`)
+  }
+
+  function isLootPending(lootRollId: string): boolean {
+    return pendingOperations.value.has(`loot:${lootRollId}`)
   }
 
   async function invokeRetryableCommand(
@@ -576,6 +616,19 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
     const incomingSnapshot = update.snapshot
     const currentSnapshot = snapshot.value
+    const newSession = incomingSnapshot !== null
+      && snapshot.value?.sessionId !== incomingSnapshot.sessionId
+    if (!update.fullResyncRequired && hasSequenceGap(update.events)) {
+      recoverSequenceGap()
+      return
+    }
+
+    if (update.fullResyncRequired) {
+      events.value = []
+      seenEventSequences.clear()
+      trainingStats.value = emptyTrainingStats()
+      lastAppliedSequence = incomingSnapshot?.sequence ?? 0
+    }
     const isStaleSameSession = incomingSnapshot !== null
       && currentSnapshot !== null
       && incomingSnapshot.sessionId === currentSnapshot.sessionId
@@ -584,8 +637,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     errorCode.value = null
     diagnostic.value = null
 
-    const newSession = incomingSnapshot !== null
-      && snapshot.value?.sessionId !== incomingSnapshot.sessionId
     if (newSession && incomingSnapshot) {
       retryCommandIds.clear()
       clearAbilityQueue()
@@ -593,6 +644,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       selectedFriendlyTargetActorId.value = null
       events.value = []
       seenEventSequences.clear()
+      lastAppliedSequence = update.fullResyncRequired ? incomingSnapshot.sequence : 0
       reward.value = null
       threat.value = null
       clearLootRolls()
@@ -637,6 +689,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       events.value = [...bySequence.values()]
         .sort((left, right) => left.sequence - right.sequence)
         .slice(-COMBAT_EVENT_BUFFER_LIMIT)
+      lastAppliedSequence = Math.max(lastAppliedSequence, ...fresh.map(event => event.sequence))
     }
     accumulateTrainingStats(fresh, snapshot.value ?? incomingSnapshot)
     if (!isStaleSameSession && update.reward) {
@@ -644,6 +697,32 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
     if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
+  }
+
+  function highestAppliedSequence(): number {
+    return lastAppliedSequence
+  }
+
+  function hasSequenceGap(incoming: CombatEvent[]): boolean {
+    const unseen = incoming
+      .filter(event => !seenEventSequences.has(event.sequence))
+      .sort((left, right) => left.sequence - right.sequence)
+    if (unseen.length === 0) return false
+    let expected = highestAppliedSequence() + 1
+    for (const event of unseen) {
+      if (event.sequence !== expected) return true
+      expected++
+    }
+    return false
+  }
+
+  function recoverSequenceGap(): void {
+    if (gapRecoveryPromise || connection?.state !== HubConnectionState.Connected) return
+    gapRecoveryPromise = resume(highestAppliedSequence())
+      .then(() => undefined)
+      .finally(() => {
+        gapRecoveryPromise = null
+      })
   }
 
   function normalizeFriendlyTarget(current: CombatSnapshot): void {
@@ -739,6 +818,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     errorCode,
     diagnostic,
     pending,
+    abilityPending,
+    targetPending,
+    autoAttackPending,
+    fleePending,
+    lifecyclePending,
     abilityQueue,
     selectedFriendlyTargetActorId,
     latencyMs,
@@ -768,6 +852,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     refreshCombatTelemetry,
     refreshLootRolls,
     chooseLootRoll,
+    isConsumablePending,
+    isLootPending,
   }
 })
 

@@ -9,6 +9,7 @@ const store = vi.hoisted(() => ({
   buyCharacterSkin: vi.fn<(skinId: string) => Promise<CharacterSkinMutationResponse>>(),
   equipCharacterSkin: vi.fn<(skinId: string | null) => Promise<CharacterSkinMutationResponse>>(),
   mutationPending: false,
+  isMutationPending: vi.fn<() => boolean>(() => false),
   snapshot: { character: { classId: 'MAGE', genderId: 'FEMALE' } },
 }))
 

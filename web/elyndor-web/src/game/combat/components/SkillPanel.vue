@@ -304,6 +304,19 @@ onUnmounted(cancelInspection)
 
 @media (max-width: 390px) {
   .skill-panel__grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .skill-panel__grid::-webkit-scrollbar {
+    display: none;
+  }
+  .skill-panel__ability {
+    min-width: calc((100% - 0.9rem) / 4);
+    scroll-snap-align: start;
+  }
+  .skill-panel__grid {
     gap: 0.24rem;
   }
   .skill-panel__ability {

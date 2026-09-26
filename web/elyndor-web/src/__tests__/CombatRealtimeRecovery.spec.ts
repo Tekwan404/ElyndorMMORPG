@@ -72,7 +72,7 @@ describe('combat realtime recovery', () => {
 
   it('moves through reconnecting and syncing before restoring authoritative state', async () => {
     realtimeMock.invoke.mockImplementation(async (method) => {
-      if (method === 'ResumeCombat') {
+      if (method === 'ResumeCombatFromSequence') {
         return {
           succeeded: false,
           errorCode: 'combat_not_found',
@@ -100,7 +100,7 @@ describe('combat realtime recovery', () => {
     })
 
     expect(store.lastResyncedAtUtc).not.toBeNull()
-    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombat')
+    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 0)
     expect(partyRefresh).toHaveBeenCalledTimes(1)
     expect(dungeonRefresh).toHaveBeenCalledTimes(1)
     expect(store.diagnostic).toBeNull()
@@ -170,7 +170,7 @@ describe('combat realtime recovery', () => {
     expect(store.reward).toBeNull()
   })
 
-  it('accepts a late event from a stale snapshot when it fills an earlier sequence gap', async () => {
+  it('requests and applies the missing event tail when a sequence gap is detected', async () => {
     const store = useCombatSessionStore()
     await store.connect()
 
@@ -179,9 +179,9 @@ describe('combat realtime recovery', () => {
     const enemyId = '00000000-0000-0000-0000-000000000513'
     const currentSnapshot = {
       sessionId,
-      sequence: 51,
+      sequence: 3,
       status: 'Active',
-      serverTimeUtc: '2026-09-12T10:00:51Z',
+      serverTimeUtc: '2026-09-12T10:00:03Z',
       contentVersion: '1',
       balanceVersion: '1',
       player: { actorId: playerId, abilities: [], cooldowns: {} },
@@ -190,47 +190,50 @@ describe('combat realtime recovery', () => {
     const handler = realtimeMock.handlers.get('CombatUpdated')
     expect(handler).toBeDefined()
 
+    const event = (sequence: number) => ({
+      sequence,
+      type: 'DamageDealt',
+      actorId: playerId,
+      sourceActorId: playerId,
+      targetActorId: enemyId,
+      definitionId: 'AUTO_ATTACK',
+      amount: sequence,
+      amountBeforeShields: sequence,
+      serverTimeUtc: `2026-09-12T10:00:0${sequence}Z`,
+    })
+    realtimeMock.invoke.mockImplementation(async (method, lastSeenSequence) => {
+      if (method !== 'ResumeCombatFromSequence') return null
+      expect(lastSeenSequence).toBe(1)
+      return {
+        succeeded: true,
+        errorCode: null,
+        snapshot: currentSnapshot,
+        events: [event(2), event(3)],
+        reward: null,
+        fullResyncRequired: false,
+      }
+    })
+
+    handler?.({
+      succeeded: true,
+      errorCode: null,
+      snapshot: { ...currentSnapshot, sequence: 1 },
+      events: [event(1)],
+      reward: null,
+    })
+
     handler?.({
       succeeded: true,
       errorCode: null,
       snapshot: currentSnapshot,
-      events: [{
-        sequence: 51,
-        type: 'DamageDealt',
-        actorId: playerId,
-        sourceActorId: playerId,
-        targetActorId: enemyId,
-        definitionId: 'AUTO_ATTACK',
-        amount: 51,
-        amountBeforeShields: 51,
-        serverTimeUtc: '2026-09-12T10:00:51Z',
-      }],
+      events: [event(3)],
       reward: null,
     })
 
-    handler?.({
-      succeeded: true,
-      errorCode: null,
-      snapshot: {
-        ...currentSnapshot,
-        sequence: 50,
-        serverTimeUtc: '2026-09-12T10:00:50Z',
-      },
-      events: [{
-        sequence: 50,
-        type: 'ResourceChanged',
-        actorId: playerId,
-        sourceActorId: playerId,
-        targetActorId: playerId,
-        definitionId: 'COMBAT_REGEN',
-        amount: 0.02,
-        amountBeforeShields: 0,
-        serverTimeUtc: '2026-09-12T10:00:50Z',
-      }],
-      reward: null,
+    await vi.waitFor(() => {
+      expect(store.events.map((item) => item.sequence)).toEqual([1, 2, 3])
     })
-
-    expect(store.snapshot?.sequence).toBe(51)
-    expect(store.events.map((event) => event.sequence)).toEqual([50, 51])
+    expect(store.snapshot?.sequence).toBe(3)
+    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 1)
   })
 })

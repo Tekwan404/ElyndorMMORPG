@@ -53,9 +53,11 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   const errorCorrelationId = ref<string | null>(null)
   const roles = ref<string[]>([])
   const mutationPending = ref(false)
+  const pendingMutations = ref<Set<string>>(new Set())
   const isReady = computed(() => state.value === 'needs-character' || state.value === 'world')
   const isAdmin = computed(() => roles.value.includes('SUPER_ADMIN'))
   let travelRefreshTimer: ReturnType<typeof setTimeout> | null = null
+  let snapshotRefreshTail: Promise<void> = Promise.resolve()
 
   apiClient.setReauthenticate(async () => authenticate(true))
 
@@ -96,9 +98,14 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function refreshSnapshot(): Promise<void> {
-    snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
-    scheduleTravelCompletionRefresh()
+  function refreshSnapshot(): Promise<void> {
+    const refresh = snapshotRefreshTail.then(async () => {
+      snapshot.value = await apiClient.request<BootstrapSnapshot>('/api/v1/bootstrap')
+      scheduleTravelCompletionRefresh()
+    })
+
+    snapshotRefreshTail = refresh.catch(() => undefined)
+    return refresh
   }
 
   function applyActiveSkin(activeSkinId: string | null): void {
@@ -188,8 +195,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function selectCompanion(companionProfileId: string): Promise<CharacterCompanionSnapshot | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = 'companion:select'
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -207,7 +214,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -241,8 +248,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function claimQuest(questId: string): Promise<QuestClaimResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `quest:claim:${questId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -260,7 +267,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -269,8 +276,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function explore(): Promise<WorldEncounter | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = 'world:explore'
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -279,7 +286,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -308,8 +315,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function startAfkFarm(locationId: string, durationMinutes: number, targetMonsterId: string | null = null): Promise<AfkFarmState | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = 'afk:start'
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -324,13 +331,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
   async function stopAfkFarm(): Promise<AfkFarmState | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = 'afk:stop'
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -341,7 +348,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -398,8 +405,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     characterItemId: string,
     confirmedHighValue: boolean,
   ): Promise<ItemSalvageResponseV2 | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `inventory:salvage:${characterItemId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -415,7 +422,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -467,8 +474,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     characterItemId: string,
     slotKey: string,
   ): Promise<ItemReforgeResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `inventory:reforge:${characterItemId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -484,13 +491,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
   async function enhanceItem(characterItemId: string): Promise<ItemEnhancementResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `inventory:enhance:${characterItemId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -506,7 +513,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -518,8 +525,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     operationId: string,
     acceptProposed: boolean,
   ): Promise<ItemReforgeResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `inventory:reforge-decision:${operationId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -537,7 +544,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -554,8 +561,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function buyCharacterSkin(skinId: string): Promise<CharacterSkinMutationResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `skin:buy:${skinId}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     try {
       const response = await runReplaySafeGameMutation<CharacterSkinMutationResponse>({
@@ -570,13 +577,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
   async function equipCharacterSkin(skinId: string | null): Promise<CharacterSkinMutationResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `skin:equip:${skinId ?? 'default'}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     try {
       const response = await apiClient.request<CharacterSkinMutationResponse>('/api/v1/economy/skins/equip', {
@@ -591,13 +598,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
   async function buyPremiumStoreOffer(sku: string): Promise<PremiumStorePurchaseResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `premium:buy:${sku}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     try {
       const response = await runReplaySafeGameMutation<PremiumStorePurchaseResponse>({
@@ -612,13 +619,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
   async function redeemPromoCode(code: string): Promise<PromoCodeRedemptionResponse | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = `premium:promo:${code.trim().toUpperCase()}`
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     try {
       const response = await runReplaySafeGameMutation<PromoCodeRedemptionResponse>({
@@ -633,7 +640,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -678,8 +685,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     path: string,
     intent: Record<string, unknown>,
   ): Promise<MerchantSnapshot | null> {
-    if (mutationPending.value) return null
-    mutationPending.value = true
+    const pendingKey = key
+    if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -695,7 +702,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       handleError(error)
       return null
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
   }
 
@@ -705,8 +712,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     idField: ReplaySafeIdField,
     intent: Record<string, unknown>,
   ): Promise<void> {
-    if (mutationPending.value) return
-    mutationPending.value = true
+    if (!beginMutation(key)) return
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -720,13 +726,13 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         state.value = snapshot.value?.character ? 'world' : 'needs-character'
       }
     } finally {
-      mutationPending.value = false
+      endMutation(key)
     }
   }
 
   async function mutate(path: string, body: object): Promise<void> {
-    if (mutationPending.value) return
-    mutationPending.value = true
+    const pendingKey = `mutation:${path}`
+    if (!beginMutation(pendingKey)) return
     errorCode.value = null
     errorCorrelationId.value = null
     try {
@@ -744,8 +750,35 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         state.value = snapshot.value?.character ? 'world' : 'needs-character'
       }
     } finally {
-      mutationPending.value = false
+      endMutation(pendingKey)
     }
+  }
+
+  function beginMutation(key: string): boolean {
+    if (pendingMutations.value.has(key)) return false
+    const next = new Set(pendingMutations.value)
+    next.add(key)
+    pendingMutations.value = next
+    mutationPending.value = true
+    return true
+  }
+
+  function endMutation(key: string): void {
+    const next = new Set(pendingMutations.value)
+    next.delete(key)
+    pendingMutations.value = next
+    mutationPending.value = next.size > 0
+  }
+
+  function isMutationPending(key: string): boolean {
+    return pendingMutations.value.has(key)
+  }
+
+  function isMutationDomainPending(prefix: string): boolean {
+    for (const key of pendingMutations.value) {
+      if (key.startsWith(prefix)) return true
+    }
+    return false
   }
 
   function handleError(error: unknown): void {
@@ -773,6 +806,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     errorCorrelationId,
     roles,
     mutationPending,
+    isMutationPending,
+    isMutationDomainPending,
     isReady,
     isAdmin,
     authenticate,

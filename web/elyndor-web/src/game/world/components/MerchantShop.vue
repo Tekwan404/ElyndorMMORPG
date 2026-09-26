@@ -20,6 +20,8 @@ const selectedOfferId = ref<string | null>(null)
 const searchQuery = ref('')
 const activeFilter = ref<'all' | MerchantItem['type']>('all')
 const merchantFilters = ['all', 'Equipment', 'Consumable', 'Material'] as const
+const buyPending = computed(() => session.isMutationPending('merchant:buy'))
+const sellPending = computed(() => session.isMutationDomainPending('merchant:sell-'))
 
 const sellableItems = computed(() => session.snapshot?.character?.inventory.items
   .filter((item) =>
@@ -231,8 +233,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               </div>
               <UIButton
                 data-buy-selected
-                :loading="session.mutationPending"
-                :disabled="session.mutationPending || (merchant?.gold ?? 0) < selectedOffer.buyPriceGold"
+                :loading="buyPending"
+                :disabled="buyPending || (merchant?.gold ?? 0) < selectedOffer.buyPriceGold"
                 @click="buy(selectedOffer.definitionId)"
               >
                 Купить · ● {{ selectedOffer.buyPriceGold }}
@@ -275,11 +277,11 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               <strong>● {{ item.sellPriceGold }}</strong>
             </div>
             <div class="sell-card__actions">
-              <UIButton variant="ghost" :disabled="session.mutationPending" @click="sell(item, 1)">
+              <UIButton variant="ghost" :disabled="sellPending" @click="sell(item, 1)">
                 1 шт.
               </UIButton>
               <UIButton
-                :disabled="session.mutationPending"
+                :disabled="sellPending"
                 @click="sell(item, item.quantity)"
               >
                 {{ item.quantity > 1 ? 'Всё' : 'Продать' }} · {{ item.sellPriceGold * item.quantity }}

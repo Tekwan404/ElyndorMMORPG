@@ -164,4 +164,5 @@ public sealed record CombatUpdateResponse(
     string? ErrorCode,
     CombatSnapshotResponse? Snapshot,
     IReadOnlyList<CombatEventResponse> Events,
-    CombatRewardResponse? Reward);
+    CombatRewardResponse? Reward,
+    bool FullResyncRequired = false);

@@ -860,6 +860,7 @@ export interface CombatUpdate {
   snapshot: CombatSnapshot | null
   events: CombatEvent[]
   reward: CombatReward | null
+  fullResyncRequired?: boolean
 }
 
 export interface CombatReward {

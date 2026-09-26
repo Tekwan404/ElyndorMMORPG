@@ -95,6 +95,26 @@ describe('BattleScreen', () => {
     expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
   })
 
+  it('keeps the arena fixed when abilities require a second hotbar row', () => {
+    const store = useCombatSessionStore()
+    const local = actor('local', 'Player', [1, 2, 3, 4, 5, 6, 7, 8].map(ability))
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: local,
+      enemy: actor('enemy', 'Monster'),
+    }
+
+    const wrapper = mount(BattleScreen)
+
+    expect(wrapper.get('[data-battle-screen]').classes()).not.toContain('battle-screen--scroll-fallback')
+    expect(wrapper.get('[data-battle-screen]').attributes('data-skill-rows')).toBe('2')
+  })
+
   it('keeps roster selection independent from a later aggro change', async () => {
     const store = useCombatSessionStore()
     const local = actor('local', 'Player')

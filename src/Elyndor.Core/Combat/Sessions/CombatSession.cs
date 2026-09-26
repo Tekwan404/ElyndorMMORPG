@@ -13,6 +13,7 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
+    public const int RetainedEventLimit = 500;
     private static readonly ParticipationPolicy DefaultParticipationPolicy = new(
         TimeSpan.FromSeconds(5),
         minimumQualifyingActions: 1,
@@ -704,6 +705,15 @@ public sealed partial class CombatSession
 
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>
         _events.Where(item => item.Sequence > sequence).ToArray();
+
+    public IReadOnlyList<CombatEvent> GetRetainedEventsAfter(
+        long sequence,
+        out bool fullResyncRequired)
+    {
+        long earliestRetainedSequence = _events.Count == 0 ? Sequence + 1 : _events[0].Sequence;
+        fullResyncRequired = sequence < earliestRetainedSequence - 1;
+        return fullResyncRequired ? [] : GetEventsAfter(sequence);
+    }
 
     public CombatSessionSnapshot Snapshot(Guid? requesterCharacterId = null)
     {
@@ -2428,6 +2438,8 @@ public sealed partial class CombatSession
         Sequence++;
         CombatEvent sequenced = combatEvent with { Sequence = Sequence };
         _events.Add(sequenced);
+        if (_events.Count > RetainedEventLimit)
+            _events.RemoveRange(0, _events.Count - RetainedEventLimit);
         _contributionLedger.Record(sequenced);
     }
 

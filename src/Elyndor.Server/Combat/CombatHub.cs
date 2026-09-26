@@ -118,12 +118,20 @@ public sealed class CombatHub(
                 targetActorId,
                 Context.ConnectionAborted));
 
-    public async Task<CombatUpdateResponse> ResumeCombat()
+    public Task<CombatUpdateResponse> ResumeCombat() => ResumeCombatCore(null);
+
+    public Task<CombatUpdateResponse> ResumeCombatFromSequence(long lastSeenSequence) =>
+        ResumeCombatCore(Math.Max(0, lastSeenSequence));
+
+    private async Task<CombatUpdateResponse> ResumeCombatCore(long? lastSeenSequence)
     {
         Guid accountId = GetAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(combat.Resume(accountId), contentProvider.GetCurrent().Package);
+        CombatOperationResult result = lastSeenSequence is { } sequence
+            ? await registry.ResumeAsync(accountId, sequence, cancellationToken)
+            : registry.Resume(accountId);
+        return CombatContractMapper.ToResponse(result, contentProvider.GetCurrent().Package);
     }
 
     public async Task<CombatUpdateResponse> AttachCombat(Guid sessionId)
