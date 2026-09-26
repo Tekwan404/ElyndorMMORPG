@@ -1,111 +1,96 @@
-Elyndor — Item, Equipment and Inventory System Specification
+# Elyndor — Item, Equipment and Inventory System
 
-Document: docs/source-of-truth/gameplay/13_ITEM_EQUIPMENT_SYSTEM.md
-System: Items / Equipment / Inventory
-Status: Foundation / Source of Truth
-Version: 0.1
+**System:** Items / Equipment / Inventory  
+**Status:** Source of Truth  
+**Updated:** 2026-09-25
 
-1. Назначение
+## 1. Ownership
 
-Item System определяет игровые предметы, инвентарь и экипировку персонажа.
+Item System owns:
 
-Система отвечает за:
+- `ItemDefinition` and `ItemInstance`;
+- stacks and inventory occupancy;
+- equipment slots and equip/unequip/swap;
+- item requirements and stat modifiers;
+- weapon/armor/off-hand profiles;
+- Spatial Artifact capacity;
+- safe item mutations and persistence.
 
-Item Definition;
-Item Instance;
-типы предметов;
-стэки;
-инвентарь;
-слоты экипировки;
-equip / unequip;
-requirements;
-weapon properties;
-item stat modifiers;
-безопасное получение и удаление предметов;
-persistence.
+Loot chance, encounter rewards, quests, trade, crafting and combat formulas belong to their own systems.
 
-Система не определяет:
+## 2. Definition vs instance
 
-loot chance;
-кто получает предмет после убийства;
-квестовую логику;
-экономику;
-торговлю;
-крафт;
-Damage formulas;
-Talent rules;
-Monster AI.
+`ItemDefinition` is versioned content. `ItemInstance` is an owned concrete item/stack.
 
-2. Основной принцип
+A definition may contain rarity, max stack, equipment slot, weapon/armor profile, level/class requirements, stats, set id, icon/art id, consumable actions, trade policy and appearance metadata.
 
-Предмет существует в двух уровнях:
+Equipment is normally non-stackable. Materials/consumables may stack according to their definition.
 
-ItemDefinition — шаблон контента.
-ItemInstance — конкретный экземпляр, принадлежащий персонажу или находящийся в reward state.
+## 3. Inventory model
 
-3. Item Definition
+Elyndor uses **one continuous inventory**, not a bag-window model.
 
-ItemDefinition
-  ├── ItemDefinitionId
-  ├── Name
-  ├── ItemType
-  ├── Rarity
-  ├── MaxStack
-  ├── EquipmentSlot, optional
-  ├── WeaponTag, optional
-  ├── ArmorTag, optional
-  ├── RequiredLevel
-  ├── AllowedClassIds / AllowedClassTags, optional
-  ├── FixedStatModifiers
-  ├── WeaponProfile, optional
-  ├── AffixPoolId, optional
-  ├── AffixCountProfileId, optional
-  ├── SpecialEffectIds, optional
-  ├── SetId, optional
-  ├── UniqueEquippedGroup, optional
-  ├── TradePolicyId, optional
-  ├── VendorValueProfileId, optional
-  ├── AppearanceProfileId, optional
-  ├── Flags
-  ├── Version
-  └── Metadata
+```text
+BaseCapacity = 30
+EffectiveCapacity = BaseCapacity + EquippedSpatialArtifact.CapacityBonus
+```
 
-4. Item Instance
+Rules:
 
-ItemInstance
-  ├── ItemInstanceId
-  ├── ItemDefinitionId
-  ├── OwnerCharacterId
-  ├── Quantity
-  ├── State
-  ├── RolledAffixes[]
-  ├── AcquiredAt
-  ├── SourceType
-  ├── SourceId
-  ├── BindState
-  ├── BoundToCharacterId, optional
-  ├── TransactionLockId, optional
-  ├── InstanceVersion
-  └── InstanceMetadata
+- exactly one Spatial Artifact may provide capacity at a time;
+- the equipped Spatial Artifact does not consume a normal inventory slot;
+- an unequipped/replaced artifact is an ordinary inventory item and therefore consumes a slot;
+- player-created overflow is not allowed;
+- equip, unequip, swap, salvage and other occupancy-changing mutations must validate **effective capacity**, never a hardcoded base capacity;
+- UI presents `used / effective capacity` as the primary value.
 
-Для обычной gear InstanceMetadata должен быть минимальным.
+Spatial Artifact content may expose different capacity bonuses; current content is authoritative for the exact catalog.
 
-5. Item Types
+There is no Weight System.
 
-core ItemType:
+## 4. Slot accounting
 
-WEAPON
-ARMOR
-ACCESSORY
-CONSUMABLE
-QUEST
-MATERIAL
+One inventory slot contains either:
 
-Consumable/Material могут существовать как предметы.
+- one non-stackable item instance; or
+- one stack of a stackable definition.
 
-### 5.1 Consumables V2
+Equipped normal gear does not occupy an inventory slot. When gear is unequipped, the projected inventory must have room for it.
 
-Consumable является data-driven набором server-authoritative actions:
+For stackable rewards, the server fills compatible partial stacks first and creates new stacks only when required.
+
+A reward must never disappear silently because inventory is full. The calling reward/loot system must preserve or reject the reward according to its authoritative flow.
+
+## 5. Equipment slots
+
+Current equipment model includes the regular character slots used by runtime/content, including main hand, off hand, armor and accessories. The exact set is defined by current contracts/content and may evolve without introducing client-side authority.
+
+Equip validation is server-authoritative and includes at minimum:
+
+- ownership/existence;
+- item is equipable;
+- target-slot compatibility;
+- level/class requirements;
+- weapon/armor permissions;
+- handedness/off-hand rules;
+- combat-state restrictions;
+- projected inventory capacity for displaced items.
+
+Equip/swap is atomic: either all involved moves succeed or none do.
+
+Changing equipment during active combat is disallowed unless a future system contract explicitly introduces a controlled exception.
+
+## 6. Weapons and off-hand
+
+Two-handed weapons occupy `MAIN_HAND` and require a compatible empty/displaced off-hand state in the same atomic transaction.
+
+A one-handed weapon in `OFF_HAND` requires an authoritative dual-wield permission; merely being a one-handed weapon does not grant that permission.
+
+Shields are an off-hand equipment category with their own defensive profile. Shield/block mechanics are resolved by current Stats/Damage/Talent contracts and runtime; clients do not calculate authoritative block results.
+
+## 7. Consumables
+
+Consumables are data-driven server-authoritative actions such as:
 
 ```text
 RESTORE_HP
@@ -114,1011 +99,36 @@ APPLY_EFFECT
 REMOVE_EFFECT
 ```
 
-`ItemDefinition.ConsumableActions` содержит минимум одно действие.
+Definitions validate action shape, referenced resources/effects and cooldown category. Items are consumed only after the full command is valid. Combat-only effects are not executed through an out-of-combat durable shortcut.
 
-Правила action shape:
+Consumable cooldowns are authoritative and category-based where defined.
 
-- `RESTORE_HP` требует `Amount > 0`;
-- `RESTORE_RESOURCE` требует `Amount > 0` и существующий `ResourceType`;
-- `APPLY_EFFECT` требует существующий `EffectId`;
-- `REMOVE_EFFECT` задаёт ровно один selector: `EffectId` или `DispelCategory`.
+## 8. Sets and presentation
 
-Consumable не хранит отдельный gameplay special-case `HealAmount`.
+`SetId`, set display name and bonus thresholds come from backend/content presentation data. The client must not hardcode a set name or assume fixed thresholds.
 
-Каждый consumable имеет:
+`IconId`/art resolution is presentation data attached to authoritative item definitions. Missing art may use a safe fallback, but presentation fallback must never change gameplay identity.
 
-```text
-ConsumableCooldownCategoryId
-ConsumableCooldownSeconds
-```
+Gameplay item identity and displayed cosmetic appearance are separate concepts. Cosmetic/skin systems do not mutate the underlying combat item definition.
 
-Cooldown является server-authoritative и хранится отдельно по category. Два предмета одной категории делят cooldown; разные категории не блокируют друг друга.
+## 9. Persistence and safety
 
-Обычные prototype categories:
+Item mutations that can be retried or race with another mutation must remain transaction-safe and idempotent where the operation requires it.
 
-```text
-HEALING_POTION
-RESOURCE_POTION
-UTILITY_POTION
-```
+Never:
 
-Боевой порядок использования:
+- trust client-provided final stats/capacity;
+- silently drop displaced gear or rewards;
+- use a frontend capacity constant;
+- let an equipped Spatial Artifact count as both equipped capacity and an occupied backpack slot;
+- duplicate an item during reconnect/retry.
 
-```text
-resolve item from pinned content
-→ resolve referenced effects/resources
-→ validate full action set
-→ validate category cooldown
-→ verify at least one action changes state
-→ consume one inventory item
-→ execute the already validated CombatSession command
-→ start category cooldown
-```
+## 10. Current implementation boundary
 
-Если validation не прошла или item не нужен, inventory mutation не выполняется.
+As of the 2026-09-25 `main` snapshot:
 
-`RESTORE_RESOURCE` может использоваться только когда action ResourceType совпадает с authoritative resource type персонажа.
-
-`APPLY_EFFECT` и `REMOVE_EFFECT` в prototype являются combat-runtime actions и не исполняются через out-of-combat durable inventory endpoint.
-
-Вне боя разрешены только durable `RESTORE_HP` и подходящий `RESTORE_RESOURCE`; если item содержит combat-only action, item не списывается.
-
-Training sandbox не разрешает permanent consumable use.
-
-6. Rarity
-
-Authoritative rarity set:
-
-```text
-COMMON
-UNCOMMON
-RARE
-EPIC
-LEGENDARY
-UNIQUE
-```
-
-Rarity влияет на:
-- визуальное представление;
-- доступный item/stat budget;
-- допустимое число affixes;
-- доступность SpecialEffect / UniqueRule;
-- loot pools.
-
-Rarity сама по себе не умножает Stats автоматически. Конкретную силу определяют ItemDefinition, RewardTier, affixes и special effects.
-
-7. Inventory
-
-Персонаж имеет Inventory.
-
-Inventory хранит ItemInstance, которые не экипированы.
-
-Базовое правило:
-
-Inventory Capacity = 40 slots
-
-Это текущий data-driven default; Capacity может быть изменён отдельным inventory/content profile.
-
-Weight System отсутствует.
-
-8. Inventory Slot
-
-Один inventory slot содержит:
-
-один non-stackable ItemInstance;
-или один stack одного ItemDefinition.
-
-9. Stackable Items
-
-MaxStack определяется ItemDefinition.
-
-Equipment:
-MaxStack = 1
-
-Материалы/Quest items:
-могут иметь MaxStack > 1.
-
-При добавлении stackable item сервер сначала пытается заполнить существующие неполные stacks, затем создаёт новый stack.
-
-10. Inventory Capacity
-
-Если места недостаточно:
-
-операция получения Item не должна молча уничтожать награду.
-
-Reward systems должны поддерживать Pending Reward / Pending Loot state.
-
-Item System возвращает:
-
-SUCCESS
-PARTIAL
-NO_SPACE
-
-Loot/Quest System решают дальнейшее поведение.
-
-11. Equipment
-
-Equipment — отдельное состояние предметов персонажа.
-
-Экипированный ItemInstance не занимает обычный inventory slot.
-
-При Unequip предмет должен вернуться в Inventory.
-
-Если Inventory заполнен:
-
-Unequip отклоняется, если операция не является заменой предмета в том же атомарном equip transaction.
-
-12. Equipment Slots
-
-Базовое правило:
-
-MAIN_HAND
-OFF_HAND
-HEAD
-CHEST
-HANDS
-LEGS
-FEET
-AMULET
-RING_1
-RING_2
-
-Набор является content configuration и может быть расширен.
-
-13. Equip Operation
-
-Equip request:
-
-CharacterId
-ItemInstanceId
-TargetSlot
-
-Server validation:
-
-персонаж владеет предметом;
-предмет существует;
-предмет является equipable;
-TargetSlot совместим;
-RequiredLevel выполнен;
-Class requirements выполнены;
-WeaponTag разрешён Class System;
-ArmorTag разрешён Class System;
-персонаж жив, если это требуется;
-предмет не заблокирован другой transaction.
-
-14. Atomic Equip
-
-Equip выполняется атомарно.
-
-Если слот занят:
-
-OldItem → Inventory
-NewItem → EquipmentSlot
-
-Обе операции либо выполняются вместе, либо не выполняются.
-
-Нельзя получить состояние, где оба предмета потерялись или оба заняли один слот.
-
-15. Equip During Combat
-
-Для текущей системы базовое правило:
-
-смена экипировки во время IN_COMBAT запрещена.
-
-Причины:
-
-предсказуемость Stats;
-исключение swap-exploits;
-проще Combat Snapshot;
-проще UI.
-
-16. Two-Handed Weapons
-
-WeaponProfile может содержать:
-
-HandsRequired = 1 or 2
-
-Two-handed weapon может быть экипирован только в:
-
-MAIN_HAND
-
-Попытка экипировать two-handed weapon непосредственно в OFF_HAND отклоняется сервером.
-
-Если экипируется two-handed weapon:
-
-OFF_HAND должен быть пуст.
-
-Если OFF_HAND занят:
-
-сервер пытается переместить item в Inventory атомарно.
-
-Если места нет:
-Equip отклоняется.
-
-17. Off-Hand
-
-OFF_HAND может содержать:
-
-one-hand weapon, только если активный equipment permission разрешает dual-wield;
-shield;
-future focus/offhand accessory.
-
-Для prototype permission `DUAL_WIELD_ONE_HAND_WEAPON` является server-authoritative и может приходить из активного Talent loadout. Наличие `ONE_HAND_*` оружия в AllowedWeaponCategories само по себе не разрешает OFF_HAND. Клиент может выбрать MainHand/OffHand, но сервер повторно валидирует permission, handedness и конфликт с two-handed MAIN_HAND.
-
-Щит является отдельной off-hand категорией, а не WeaponTag:
-
-OffHandCategory = SHIELD
-
-Core shield profile:
-
-BlockChancePercent;
-BlockValueMin;
-BlockValueMax;
-Armor, optional;
-other approved item stats.
-
-BlockChance определяет server-authoritative шанс блока входящего Physical Damage.
-При успешном блоке сервер роллит BlockValue в диапазоне BlockValueMin–BlockValueMax.
-Damage System определяет точный порядок применения блока.
-
-Shield нельзя экипировать вместе с two-handed MAIN_HAND weapon.
-При экипировке two-handed weapon существующий OFF_HAND снимается атомарно.
-
-18. Weapon Profile
-
-WeaponProfile
-  ├── WeaponTag
-  ├── MinWeaponDamage
-  ├── MaxWeaponDamage
-  ├── BaseAttackInterval
-  ├── DamageType
-  └── HandsRequired
-
-BaseAttackInterval является источником базовой скорости Auto Attack согласно Combat System.
-
-19. Weapon Damage Roll
-
-Конкретный Auto Attack может получать BaseWeaponDamage из WeaponProfile.
-
-core:
-
-WeaponDamage = server random value between MinWeaponDamage and MaxWeaponDamage
-
-Дальнейший scaling выполняет Damage and Healing System / Combat calculation context.
-
-20. Unarmed
-
-UnarmedProfile является fallback combat profile только для классов, которым Class System разрешает бой без оружия.
-
-ClassDefinition определяет:
-
-AllowUnarmed
-
-Если:
-
-AllowUnarmed = true
-AND MAIN_HAND не содержит валидного weapon
-
-Combat System использует UnarmedProfile.
-
-UnarmedProfile имеет:
-
-MinDamage;
-MaxDamage;
-BaseAttackInterval;
-DamageType.
-
-Если:
-
-AllowUnarmed = false
-AND MAIN_HAND не содержит валидного weapon
-
-персонаж не выполняет Auto Attack.
-
-Это не запрещает способности, которые Ability System явно разрешает использовать без оружия.
-
-Текущий playable roster:
-
-```text
-Warrior → AllowUnarmed = true
-Archer  → AllowUnarmed = false
-Mage    → AllowUnarmed = false
-```
-
-Future classes определяют `AllowUnarmed` в собственном ClassDefinition.
-
-UnarmedProfile не является ItemInstance.
-
-21. Armor Items
-
-Armor item может давать:
-
-Armor;
-MagicResistance;
-Stamina;
-primary attributes;
-другие утверждённые Stats.
-
-ArmorTag определяет class requirement.
-
-Authoritative prototype armor identities:
-
-```text
-Mage    → CLOTH
-Archer  → LEATHER
-Warrior → HEAVY
-```
-
-Эти категории являются строгими разрешениями ClassProfile, а не рекомендациями.
-ArmorTag не задаёт формулу mitigation.
-
-22. Accessories
-
-Accessory может давать Stats без ArmorTag.
-
-Базовые accessory slots:
-
-```text
-CLOAK
-AMULET
-RING_1
-RING_2
-```
-
-23. Stat Modifiers
-
-ItemDefinition.StatModifiers использует модель Attributes and Stats System.
-
-Пример:
-
-+10 Strength
-+5 Stamina
-+2% CriticalChance
-+20 Armor
-
-Item System не пересчитывает FinalStats самостоятельно.
-
-24. Equipment Stat Pipeline
-
-Equip changed
-  ↓
-Equipment Source changed
-  ↓
-Stats cache invalidated
-  ↓
-FinalStats recalculated
-  ↓
-Resource maximums re-evaluated if needed
-
-25. CurrentHP при смене Stamina
-
-Если предмет снимается и MaxHP уменьшается:
-
-Resource System применяет свои clamp rules.
-
-Item System не изменяет CurrentHP напрямую.
-
-26. Attack Speed Item Modifiers
-
-Оружие задаёт BaseAttackInterval.
-
-Другие предметы могут давать AttackSpeed modifier.
-
-Stats System вычисляет Final AttackSpeed.
-
-Combat System определяет будущий Auto Attack interval.
-
-27. Class Requirements
-
-Item может использовать:
-
-AllowedClassIds;
-WeaponTag;
-ArmorTag.
-
-Рекомендуется предпочитать tag-based permissions через Class System.
-
-AllowedClassIds использовать только для действительно class-specific items.
-
-28. Level Requirements
-
-RequiredLevel проверяется при Equip.
-
-Предмет может находиться в Inventory ниже RequiredLevel.
-
-29. Item Ownership
-
-Один ItemInstance имеет не более одного OwnerCharacterId.
-
-Клиент не может менять OwnerCharacterId.
-
-30. Item State
-
-core ItemState:
-
-INVENTORY
-EQUIPPED
-PENDING_REWARD
-AUCTION_ESCROW
-DESTROYED
-
-DESTROYED является terminal state для удалённого item instance.
-
-31. Destroy Item
-
-Игрок может удалить обычный Item только через подтверждённое серверное действие.
-
-Для текущей системы нельзя уничтожать:
-
-equipped item без unequip;
-quest-protected item;
-item, locked transaction.
-
-32. Quest Item
-
-QUEST item может иметь:
-
-QuestProtected = true
-
-Quest System может использовать ItemObtained/ItemRemoved events.
-
-Item System не знает, какой objective выполнен.
-
-33. Item Acquisition
-
-Item может появиться через:
-
-Loot System;
-Quest Reward;
-starting class equipment;
-Merchant Purchase;
-Player Trade;
-Auction Purchase;
-Crafting Result;
-scripted grant;
-admin/debug grant.
-
-Каждый grant должен иметь SourceType + SourceId.
-
-34. Item Grant Idempotency
-
-ItemGrant должен иметь уникальный GrantId.
-
-Повторная обработка одного GrantId не создаёт дубликат.
-
-35. Item Removal
-
-Removal request должен указывать:
-
-ItemInstanceId / stack;
-Quantity;
-Reason;
-SourceId.
-
-Количество не может стать отрицательным.
-
-36. Equipment Requirements and Talents
-
-Talent может:
-
-изменять Stats;
-модифицировать способность;
-требовать определённый WeaponTag.
-
-Talent System проверяет equipment condition динамически.
-
-Item System не активирует Talent самостоятельно.
-
-37. Affixes and Item Variability
-
-Item System архитектурно поддерживает random affixes.
-
-Предмет может использовать один из content profiles:
-
-```text
-FIXED
-AFFIXED
-LEGENDARY
-UNIQUE
-SET_PIECE
-```
-
-Random affix не обязателен для каждого предмета.
-
-Affix roll выполняется только если:
-- ItemDefinition имеет `AffixPoolId`;
-- source/reward tier разрешает вариативность;
-- Rarity profile задаёт допустимое число affixes.
-
-Сгенерированные affixes сохраняются в ItemInstance и никогда не перебрасываются из-за reconnect/restart.
-
-Legendary и Unique используют те же Item/Effect механики, но могут иметь `SpecialEffectIds` и `UniqueEquippedGroup`.
-
-38. Item Power
-
-Не требуется универсальный ItemPower score как источник механики.
-
-Если UI позже покажет Gear Score, он является derived display value.
-
-39. Persistence
-
-Сохраняются:
-
-ItemInstance;
-OwnerCharacterId;
-Quantity;
-State;
-Equipment slot;
-inventory placement;
-acquisition source.
-
-ItemDefinition является content data.
-
-40. Transaction Safety
-
-Следующие операции должны быть atomic:
-
-Item Grant;
-Equip;
-Unequip;
-Stack Merge;
-Item Remove;
-Reward Claim.
-
-41. Restart Recovery
-
-После restart:
-
-inventory восстанавливается;
-equipment восстанавливается;
-Stats пересчитываются;
-PENDING_REWARD не теряется;
-незавершённые item transactions не должны создавать duplication.
-
-42. Events
-
-Item System эмитит:
-
-ItemGranted
-ItemObtained
-ItemRemoved
-ItemEquipped
-ItemUnequipped
-InventoryFull
-ItemDestroyed
-EquipmentChanged
-
-Event payload содержит:
-
-CharacterId;
-ItemDefinitionId;
-ItemInstanceId;
-Quantity;
-SourceType;
-SourceId.
-
-43. Quest Integration
-
-Quest System может слушать:
-
-ItemObtained;
-ItemRemoved;
-ItemEquipped.
-
-Collect objective не должен зависеть только от события, если objective требует «иметь N предметов сейчас».
-
-Quest System может запросить авторитетный current inventory count.
-
-44. Loot Integration
-
-Loot System создаёт ItemGrant.
-
-Item System возвращает:
-
-granted;
-pending/no-space;
-rejected.
-
-Loot System сохраняет reward state до успешного получения.
-
-45. Equipment Philosophy
-
-Первый тест должен давать игроку заметный upgrade.
-
-Новый предмет должен быть понятен:
-
-больше damage;
-больше survivability;
-другая secondary stat;
-подходящий class identity.
-
-Не нужен огромный список почти одинаковых предметов.
-
-46. Item Invariants
-
-INVARIANT-01
-ItemDefinition и ItemInstance являются разными сущностями.
-
-INVARIANT-02
-Клиент не может создавать ItemInstance.
-
-INVARIANT-03
-Клиент не может изменять ownership.
-
-INVARIANT-04
-Equip validation выполняется сервером.
-
-INVARIANT-05
-Equip является atomic operation.
-
-INVARIANT-06
-Смена equipment в Combat запрещена для core.
-
-INVARIANT-07
-Weapon BaseAttackInterval приходит из WeaponProfile.
-
-INVARIANT-08
-Item Stats проходят через Attributes and Stats System.
-
-INVARIANT-09
-Item System не определяет Damage mitigation formulas.
-
-INVARIANT-10
-Item System не определяет Loot chance.
-
-INVARIANT-11
-Reward не должен теряться только из-за полного Inventory.
-
-INVARIANT-12
-ItemGrant должен быть idempotent.
-
-INVARIANT-13
-Equipment items MaxStack = 1.
-
-INVARIANT-14
-FinalStats пересчитываются после EquipmentChanged.
-
-INVARIANT-15
-Durability отсутствует в core.
-
-47. Out of Scope
-
-Этот документ пока не определяет:
-
-durability;
-repair;
-sockets;
-gems;
-enchanting;
-random affixes;
-procedural items;
-item sets;
-transmog;
-auction;
-player trade;
-mail;
-bank;
-crafting;
-salvage;
-vendor economy;
-bind on pickup;
-bind on equip;
-item degradation;
-weight;
-gear score mechanics;
-PvP equipment normalization;
-конкретный полный список items;
-UI inventory drag-and-drop.
-
----
-
-# Source of Truth Revision v2
-
-- Item architecture сразу поддерживает fixed items, random affixes, set pieces, legendary effects и unique rules; контент может вводиться поэтапно.
-- Rarity set: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, UNIQUE.
-- Официальные equipment slots включают CLOAK.
-- Shield является отдельной OFF_HAND категорией и даёт data-driven BlockChance + BlockValue range; Parry остаётся вне core.
-- Обычный gear не содержит прямых `PHYSICAL_PET/SPIRIT_PET Damage/Crit/AttackSpeed` процентов.
-- RequiredLevel обязателен для экипируемых предметов.
-- Set bonuses реализуются data-driven через SetDefinition.
-
-
-## Full ItemDefinition fields
-
-```text
-ItemDefinition
-├── ItemDefinitionId
-├── Name
-├── ItemType
-├── Rarity
-├── RequiredLevel
-├── AllowedClassIds / ClassTags
-├── EquipmentSlot
-├── WeaponTag / ArmorTag
-├── FixedStatModifiers
-├── AffixPoolId, optional
-├── AffixCountProfile, optional
-├── SpecialEffectIds, optional
-├── SetId, optional
-├── UniqueEquippedGroup, optional
-├── TradePolicyId, optional
-├── VendorValueProfileId, optional
-├── AppearanceProfileId, optional
-├── VisualPriority, optional
-├── WeaponProfile, optional
-├── Flags
-└── Version
-```
-
-## Equipment Slots
-
-```text
-MAIN_HAND
-OFF_HAND
-HEAD
-CHEST
-HANDS
-LEGS
-FEET
-CLOAK
-AMULET
-RING_1
-RING_2
-```
-
-Лук/арбалет может блокировать обычный OFF_HAND и использовать отдельный `QUIVER` как item tag/content concept; отдельный slot вводится только если это понадобится UI/балансу.
-
-## Item generation
-
-```text
-Base Item
-+ RequiredLevel / RewardTier budget
-+ Rarity budget
-+ Fixed modifiers
-+ Rolled Affixes (если definition разрешает)
-+ Legendary Effect / Unique Rule (если применимо)
-```
-
-Один и тот же Legendary Effect не может бесконтрольно складываться; для этого используется `UniqueEquippedGroup`.
-
----
-
-# 48. Visual Equipment / Appearance
-
-Экипируемый предмет может иметь отдельный визуальный профиль.
-
-Gameplay и presentation разделены:
-
-```text
-Item stats / requirements / effects
-!=
-Item appearance
-```
-
-Базовый контракт:
-
-```text
-ItemDefinition
-└── AppearanceProfileId, optional
-```
-
-`AppearanceProfileId` не изменяет Stats, Damage, Resource или требования экипировки.
-
-## 48.1. Видимые equipment slots
-
-Внешний вид персонажа может собираться по слоям:
-
-```text
-Base Character
-+ Race/Gender body
-+ HEAD
-+ CHEST
-+ HANDS
-+ LEGS
-+ FEET
-+ CLOAK
-+ MAIN_HAND
-+ OFF_HAND
-```
-
-`AMULET`, `RING_1`, `RING_2` по умолчанию не требуют отдельного отображения на модели персонажа.
-
-## 48.2. Rarity и уникальный внешний вид
-
-Любой предмет технически может иметь `AppearanceProfileId`.
-
-Контентный приоритет:
-
-```text
-COMMON / UNCOMMON / RARE
-→ могут использовать общие appearance families
-
-EPIC
-→ чаще получает отдельные детали/варианты
-
-LEGENDARY / UNIQUE
-→ должен иметь возможность получить уникальный узнаваемый appearance
-```
-
-Legendary/Unique не обязаны всегда иметь уникальную модель, но engine и content schema это поддерживают.
-
-## 48.3. Equipment state → appearance
-
-Server остаётся источником истины для того, **что экипировано**.
-
-Frontend строит внешний вид из подтверждённого Equipment State:
-
-```text
-Equipped ItemInstance
-→ ItemDefinition
-→ AppearanceProfileId
-→ Character renderer
-```
-
-Клиент не может визуально подменить экипировку и тем самым изменить gameplay state.
-
-## 48.4. Visual conflicts
-
-Если два appearance layer конфликтуют, применяется data-driven presentation policy.
-
-Примеры:
-
-```text
-full helmet may hide hair
-two-handed weapon may hide OFF_HAND visual
-hood may hide some hair styles
-large cloak may use compatible chest variant
-```
-
-Это presentation rule, не Equipment validation rule, если gameplay явно не требует иного.
-
-## 48.5. Transmog-ready architecture
-
-Архитектура поддерживает будущий cosmetic override:
-
-```text
-EquippedItemDefinitionId
-→ gameplay source
-
-DisplayedAppearanceProfileId
-→ cosmetic source
-```
-
-Это позволяет в будущем носить сильный предмет, но отображать уже открытый внешний вид другого предмета.
-
-Transmog:
-- не меняет Item stats;
-- не меняет Rarity;
-- не меняет requirements;
-- не меняет ownership;
-- не должен храниться как подмена Equipped Item.
-
-До отдельного Cosmetic/Transmog System используется обычный `AppearanceProfileId` экипированного предмета.
-
-## 48.6. Initial implementation priority
-
-Для первого полноценного визуального equipment pass:
-
-```text
-1. MAIN_HAND / weapon
-2. HEAD
-3. CHEST
-4. CLOAK
-5. HANDS
-6. LEGS
-7. FEET
-8. OFF_HAND
-```
-
-Оружие, шлем, нагрудник и плащ дают наибольшую визуальную отдачу и должны быть реализованы первыми.
-
-## 48.7. Appearance invariants
-
-1. Appearance не влияет на combat formulas.
-2. Equipment System остаётся owner экипированного ItemInstance.
-3. Character renderer не является owner gameplay equipment state.
-4. Legendary/Unique могут иметь уникальный appearance.
-5. Accessories не обязаны иметь body-layer visual.
-6. Cosmetic override не заменяет EquippedItemId.
-7. Race/Gender влияют только на совместимый presentation variant, а не на power.
-
-# 49. Economy / Trade / Crafting Integration
-
-## 49.1. Trade Policy
-
-ItemDefinition хранит один authoritative `TradePolicyId`.
-
-```text
-ItemTradePolicy
-├── Tradeable
-├── Auctionable
-├── VendorSellAllowed
-└── BindRule
-```
-
-BindRule:
-
-```text
-NONE
-BIND_ON_EQUIP
-BIND_ON_PICKUP
-CHARACTER_BOUND
-```
-
-Trade/Auction System оркестрирует передачу, но Item System остаётся owner ItemInstance и binding state.
-
-## 49.2. Bind State
-
-```text
-BindState
-UNBOUND
-CHARACTER_BOUND
-```
-
-`BIND_ON_EQUIP` переводит ItemInstance в `CHARACTER_BOUND` при первом подтверждённом Equip.
-
-`BIND_ON_PICKUP` применяет bind при ItemGrant конкретному персонажу.
-
-Bound item не может быть передан/выставлен, если policy не разрешает это явно.
-
-## 49.3. Transaction Lock
-
-ItemInstance может иметь:
-
-```text
-TransactionLockId
-```
-
-Lock используется Trade и другими атомарными операциями.
-
-Locked item нельзя:
-- equip/unequip;
-- destroy;
-- vendor sell;
-- auction;
-- consume as crafting ingredient.
-
-Lock не меняет ownership.
-
-## 49.4. Auction Escrow
-
-Auction listing переводит item:
-
-```text
-INVENTORY → AUCTION_ESCROW
-```
-
-Предмет в escrow:
-- не находится в обычном inventory;
-- не может быть использован;
-- остаётся связан с seller/listing до settlement;
-- переходит buyer только через подтверждённый Auction purchase.
-
-## 49.5. Vendor Value
-
-ItemDefinition может иметь:
-
-```text
-VendorValueProfileId
-```
-
-или explicit base vendor value.
-
-Economy System рассчитывает окончательную цену NPC sell/buy.
-Item System не хранит Gold.
-
-## 49.6. Crafting Result
-
-Crafting System:
-- не создаёт ItemInstance напрямую;
-- вызывает ItemGrant/ItemGenerator;
-- передаёт CraftOperationId как SourceId;
-- использует те же Rarity/Affix/Trade/Bind rules.
-
-## 49.7. New item invariants
-
-1. ItemInstance не может одновременно быть `EQUIPPED` и `AUCTION_ESCROW`.
-2. Transaction-locked item не мутируется сторонней операцией.
-3. BindState изменяет только Item System по подтверждённой policy.
-4. Economy/Trade/Crafting не редактируют item stats.
-5. Auction escrow не является вторым владельцем ItemInstance.
+- base inventory capacity is 30;
+- Spatial Inventory V1 is implemented;
+- effective capacity is used by equipment and salvage paths covered by current regressions;
+- mobile inventory UX is implemented;
+- full all-item icon/presentation audit is still ongoing work and should not be described as universally complete.
