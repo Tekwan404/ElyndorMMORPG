@@ -4,8 +4,6 @@ using System.Security.Claims;
 using System.Text;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Sessions;
-using Elyndor.Core.Content;
-using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
@@ -34,7 +32,6 @@ public static class BossCombatLogEndpoints
         BossCombatLogRequest request,
         ClaimsPrincipal user,
         CombatSessionRegistry registry,
-        IContentSnapshotProvider contentProvider,
         GameDbContext dbContext,
         ITelegramMessageSender messageSender,
         CancellationToken cancellationToken)
@@ -57,16 +54,14 @@ public static class BossCombatLogEndpoints
         if (snapshot.Status == CombatSessionStatus.Active)
             return Results.Ok(new BossCombatLogResponse(false, "combat_log_combat_active"));
 
-        GameContentSnapshot content = current.ContentSnapshot ?? contentProvider.GetCurrent();
         CombatActorSnapshot[] enemies = (snapshot.Enemies ?? [snapshot.Enemy]).ToArray();
-        MonsterDefinition[] bossDefinitions = enemies
-            .Select(enemy => content.Package.Monsters?.FirstOrDefault(monster =>
-                string.Equals(monster.Id, enemy.DefinitionId, StringComparison.Ordinal)))
-            .Where(monster => monster?.Rank == MonsterRank.Boss)
-            .Cast<MonsterDefinition>()
-            .ToArray();
-        if (bossDefinitions.Length == 0)
-            return Results.Ok(new BossCombatLogResponse(false, "combat_log_not_boss"));
+        if (!TrainingDummyCombatLogPolicy.IsEligible(
+                enemies.Select(enemy => enemy.DefinitionId)))
+        {
+            return Results.Ok(new BossCombatLogResponse(
+                false,
+                TrainingDummyCombatLogPolicy.IneligibleErrorCode));
+        }
 
         IReadOnlyList<CombatEvent>? authoritativeEvents = null;
         CombatOperationResult historyRead = await registry.ExecuteAsync(
@@ -111,11 +106,9 @@ public static class BossCombatLogEndpoints
                 "Configured Telegram sender does not support document delivery.");
         }
 
-        string log = BuildLog(snapshot, logEvents, bossDefinitions);
-        string bossName = string.Join(", ", bossDefinitions.Select(boss =>
-            boss.DisplayName ?? boss.Name));
-        string fileName = $"elyndor-boss-{request.SessionId:N}.txt";
-        string caption = $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {logEvents.Length} событий";
+        string log = BuildLog(snapshot, logEvents);
+        string fileName = $"elyndor-training-dummy-{request.SessionId:N}.txt";
+        string caption = $"⚔️ Elyndor · {TrainingDummyCombatLogPolicy.DisplayName} · {logEvents.Length} событий";
 
         await documentSender.SendDocumentAsync(
             telegramUserId.Value,
@@ -145,8 +138,7 @@ public static class BossCombatLogEndpoints
 
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
-        IReadOnlyList<BossCombatLogEventRequest> events,
-        IReadOnlyList<MonsterDefinition> bosses)
+        IReadOnlyList<BossCombatLogEventRequest> events)
     {
         Dictionary<Guid, string> actorNames = new();
         foreach (CombatActorSnapshot actor in snapshot.Players ?? [snapshot.Player])
@@ -163,8 +155,6 @@ public static class BossCombatLogEndpoints
         int rawRegenEvents = ordered.Count(IsCombatRegen);
         int compactedRegenGroups = CountCombatRegenGroups(ordered);
 
-        string bossName = string.Join(", ", bosses.Select(boss =>
-            boss.DisplayName ?? boss.Name));
         string result = snapshot.Status switch
         {
             CombatSessionStatus.Victory => "ПОБЕДА",
@@ -174,8 +164,8 @@ public static class BossCombatLogEndpoints
         };
 
         StringBuilder builder = new();
-        builder.AppendLine("⚔️ ELYNDOR · ЛОГ БОЯ С БОССОМ");
-        builder.Append("Босс: ").AppendLine(bossName);
+        builder.AppendLine("⚔️ ELYNDOR · ЛОГ ТРЕНИРОВКИ НА МАНЕКЕНЕ");
+        builder.Append("Цель: ").AppendLine(TrainingDummyCombatLogPolicy.DisplayName);
         builder.Append("Результат: ").AppendLine(result);
         builder.Append("Сессия: ").AppendLine(snapshot.SessionId.ToString("D"));
         builder.Append("Контент: ").Append(snapshot.ContentVersion)

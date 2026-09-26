@@ -4,7 +4,10 @@ import { RouterLink } from 'vue-router'
 
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
-import { isBossCombatLogEnabled, setBossCombatLogEnabled } from '@/game/combat/bossCombatLogSettings'
+import {
+  isTrainingDummyCombatLogEnabled,
+  setTrainingDummyCombatLogEnabled,
+} from '@/game/combat/trainingDummyCombatLogSettings'
 import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
 import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
 import ProfessionView from '@/game/professions/views/ProfessionView.vue'
@@ -22,7 +25,7 @@ const emit = defineEmits<{ 'open-world': [] }>()
 const session = useGameSessionStore()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
-const sendBossCombatLogs = ref(isBossCombatLogEnabled())
+const sendTrainingDummyCombatLogs = ref(isTrainingDummyCombatLogEnabled())
 const character = computed(() => session.snapshot?.character ?? null)
 const portraitArt = computed(() => character.value
   ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent', character.value.activeSkinId)
@@ -40,8 +43,8 @@ async function copyPublicCode(): Promise<void> {
   window.setTimeout(() => { copied.value = false }, 1600)
 }
 
-function updateBossCombatLogPreference(): void {
-  setBossCombatLogEnabled(sendBossCombatLogs.value)
+function updateTrainingDummyCombatLogPreference(): void {
+  setTrainingDummyCombatLogEnabled(sendTrainingDummyCombatLogs.value)
 }
 </script>
 
@@ -126,21 +129,21 @@ function updateBossCombatLogPreference(): void {
       </RouterLink>
     </nav>
 
-    <section v-if="activeSection === 'profile' && session.isAdmin" class="menu-setting" data-boss-log-setting>
+    <section v-if="activeSection === 'profile' && session.isAdmin" class="menu-setting" data-training-dummy-log-setting>
       <div class="menu-setting__copy">
         <small>ДИАГНОСТИКА</small>
-        <strong>Отчёты о боях с боссами</strong>
-        <span>После боя технический отчёт будет отправлен в Telegram.</span>
+        <strong>Отчёты с тренировочного манекена</strong>
+        <span>После завершения тренировки технический отчёт будет отправлен в Telegram.</span>
       </div>
       <label class="menu-switch">
         <input
-          v-model="sendBossCombatLogs"
+          v-model="sendTrainingDummyCombatLogs"
           type="checkbox"
-          aria-label="Отправлять отчёты о боях с боссами в Telegram"
-          @change="updateBossCombatLogPreference"
+          aria-label="Отправлять отчёты с тренировочного манекена в Telegram"
+          @change="updateTrainingDummyCombatLogPreference"
         />
         <span class="menu-switch__track" aria-hidden="true"><i /></span>
-        <b>{{ sendBossCombatLogs ? 'Вкл.' : 'Выкл.' }}</b>
+        <b>{{ sendTrainingDummyCombatLogs ? 'Вкл.' : 'Выкл.' }}</b>
       </label>
     </section>
 

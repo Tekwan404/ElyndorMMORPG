@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 
 import { startPresenceHeartbeat, stopPresenceHeartbeat } from '@/api/presence'
-import BossCombatLogReporter from '@/game/combat/BossCombatLogReporter.vue'
+import TrainingDummyCombatLogReporter from '@/game/combat/TrainingDummyCombatLogReporter.vue'
 import CombatBlockFeedback from '@/game/combat/CombatBlockFeedback.vue'
 import CombatHotbarOrderSync from '@/game/combat/CombatHotbarOrderSync.vue'
 import BetaErrorOverlay from '@/ui/BetaErrorOverlay.vue'
@@ -16,7 +16,7 @@ onUnmounted(stopPresenceHeartbeat)
 <template>
   <RouterView />
   <CombatHotbarOrderSync />
-  <BossCombatLogReporter />
+  <TrainingDummyCombatLogReporter />
   <CombatBlockFeedback />
   <BetaErrorOverlay />
 </template>

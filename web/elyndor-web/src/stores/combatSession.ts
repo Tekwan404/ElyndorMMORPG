@@ -10,6 +10,7 @@ import {
 import { apiClient, ApiRequestError } from '@/api/apiClient'
 import { usePartyStore } from '@/game/party/partyStore'
 import { useDungeonStore } from '@/game/party/dungeonStore'
+import { TRAINING_DUMMY_ID } from '@/game/combat/trainingDummy'
 import type {
   CombatActorSnapshot,
   CombatEvent,
@@ -77,7 +78,6 @@ interface QueuedAbility {
   targetActorId: string
 }
 
-const TRAINING_DUMMY_ID = 'TRAINING_DUMMY'
 const ABILITY_QUEUE_WINDOW_MS = 250
 const COMBAT_EVENT_BUFFER_LIMIT = 1500
 const emptyTrainingStats = (): TrainingStats => ({

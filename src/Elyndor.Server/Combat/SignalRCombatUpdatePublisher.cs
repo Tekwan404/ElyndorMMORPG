@@ -17,7 +17,7 @@ public sealed class SignalRCombatUpdatePublisher(
     {
         // Keep a short-lived server-side copy of combat history before the client is told
         // that the fight ended. A following fight is then free to clear the runtime session
-        // without racing boss-log delivery.
+        // without racing training-dummy log delivery.
         BossCombatLogArchive.Capture(accountId, update, timeProvider.GetUtcNow());
 
         CombatUpdateResponse response = CombatContractMapper.ToResponse(update, contentProvider.GetCurrent().Package);

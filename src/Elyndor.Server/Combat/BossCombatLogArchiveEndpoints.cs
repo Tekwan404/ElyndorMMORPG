@@ -6,7 +6,6 @@ using System.Text;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
-using Elyndor.Core.Monsters;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
@@ -33,7 +32,6 @@ public static class BossCombatLogArchiveEndpoints
         BossCombatLogRequest request,
         ClaimsPrincipal user,
         CombatSessionRegistry registry,
-        IContentSnapshotProvider contentProvider,
         GameDbContext dbContext,
         ITelegramMessageSender messageSender,
         ILoggerFactory loggerFactory,
@@ -96,10 +94,9 @@ public static class BossCombatLogArchiveEndpoints
             snapshot,
             events,
             contentSnapshot,
-            contentProvider,
             dbContext,
             messageSender,
-            loggerFactory.CreateLogger("Elyndor.BossCombatLog"),
+            loggerFactory.CreateLogger("Elyndor.TrainingDummyCombatLog"),
             timeProvider.GetUtcNow(),
             cancellationToken);
 
@@ -122,20 +119,20 @@ internal static class BossCombatLogArchive
         LoggerMessage.Define<Guid>(
             LogLevel.Error,
             new EventId(2301, nameof(DocumentSenderUnavailable)),
-            "Boss combat log sender does not support documents for session {SessionId}.");
+            "Training dummy combat log sender does not support documents for session {SessionId}.");
 
     private static readonly Action<ILogger, Guid, Guid, Exception?> DeliveryFailed =
         LoggerMessage.Define<Guid, Guid>(
             LogLevel.Error,
             new EventId(2302, nameof(DeliveryFailed)),
-            "Failed to send boss combat log {SessionId} for account {AccountId}; "
+            "Failed to send training dummy combat log {SessionId} for account {AccountId}; "
             + "the archived log is retained for retry.");
 
     private static readonly Action<ILogger, Guid, Guid, int, int, Exception?> DeliverySucceeded =
         LoggerMessage.Define<Guid, Guid, int, int>(
             LogLevel.Information,
             new EventId(2303, nameof(DeliverySucceeded)),
-            "Sent boss combat log {SessionId} for account {AccountId} "
+            "Sent training dummy combat log {SessionId} for account {AccountId} "
             + "with {EventCount} events ({DroppedEventCount} dropped from archive).");
 
     public static void Capture(
@@ -146,7 +143,10 @@ internal static class BossCombatLogArchive
         CombatSessionSnapshot? snapshot = update.Snapshot;
         if (accountId == Guid.Empty
             || snapshot is null
-            || snapshot.SessionId == Guid.Empty)
+            || snapshot.SessionId == Guid.Empty
+            || !TrainingDummyCombatLogPolicy.IsEligible(
+                (snapshot.Enemies ?? [snapshot.Enemy])
+                    .Select(enemy => enemy.DefinitionId)))
         {
             return;
         }
@@ -166,7 +166,6 @@ internal static class BossCombatLogArchive
         CombatSessionSnapshot? authoritativeSnapshot,
         IReadOnlyList<CombatEvent>? authoritativeEvents,
         GameContentSnapshot? authoritativeContent,
-        IContentSnapshotProvider contentProvider,
         GameDbContext dbContext,
         ITelegramMessageSender messageSender,
         ILogger logger,
@@ -207,7 +206,6 @@ internal static class BossCombatLogArchive
         {
             CombatSessionSnapshot snapshot;
             CombatEvent[] events;
-            GameContentSnapshot? archivedContent;
             int droppedEvents;
             bool alreadySent;
 
@@ -215,7 +213,6 @@ internal static class BossCombatLogArchive
             {
                 snapshot = entry.Snapshot;
                 events = entry.Events.Values.ToArray();
-                archivedContent = entry.ContentSnapshot;
                 droppedEvents = entry.DroppedEvents;
                 alreadySent = entry.Sent;
                 entry.UpdatedAtUtc = nowUtc;
@@ -227,22 +224,15 @@ internal static class BossCombatLogArchive
             if (snapshot.Status == CombatSessionStatus.Active)
                 return new BossCombatLogResponse(false, "combat_log_combat_active");
 
-            GameContentSnapshot content =
-                archivedContent ?? contentProvider.GetCurrent();
             CombatActorSnapshot[] enemies =
                 (snapshot.Enemies ?? [snapshot.Enemy]).ToArray();
-            MonsterDefinition[] bosses = enemies
-                .Select(enemy => content.Package.Monsters?.FirstOrDefault(monster =>
-                    string.Equals(
-                        monster.Id,
-                        enemy.DefinitionId,
-                        StringComparison.Ordinal)))
-                .Where(monster => monster?.Rank == MonsterRank.Boss)
-                .Cast<MonsterDefinition>()
-                .ToArray();
-
-            if (bosses.Length == 0)
-                return new BossCombatLogResponse(false, "combat_log_not_boss");
+            if (!TrainingDummyCombatLogPolicy.IsEligible(
+                    enemies.Select(enemy => enemy.DefinitionId)))
+            {
+                return new BossCombatLogResponse(
+                    false,
+                    TrainingDummyCombatLogPolicy.IneligibleErrorCode);
+            }
 
             if (events.Length == 0)
                 return new BossCombatLogResponse(false, "combat_log_empty");
@@ -270,13 +260,10 @@ internal static class BossCombatLogArchive
             CombatEvent[] ordered = events
                 .OrderBy(combatEvent => combatEvent.Sequence)
                 .ToArray();
-            string bossName = string.Join(
-                ", ",
-                bosses.Select(boss => boss.DisplayName ?? boss.Name));
-            string log = BuildLog(snapshot, ordered, bosses, droppedEvents);
-            string fileName = $"elyndor-boss-{sessionId:N}.txt";
+            string log = BuildLog(snapshot, ordered, droppedEvents);
+            string fileName = $"elyndor-training-dummy-{sessionId:N}.txt";
             string caption =
-                $"⚔️ Elyndor · {Sanitize(bossName, 180)} · {ordered.Length} событий";
+                $"⚔️ Elyndor · {TrainingDummyCombatLogPolicy.DisplayName} · {ordered.Length} событий";
 
             try
             {
@@ -382,7 +369,6 @@ internal static class BossCombatLogArchive
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
         CombatEvent[] events,
-        MonsterDefinition[] bosses,
         int droppedEvents)
     {
         Dictionary<Guid, string> actorNames = new();
@@ -393,9 +379,6 @@ internal static class BossCombatLogArchive
         if (snapshot.Companion is not null)
             actorNames[snapshot.Companion.ActorId] = snapshot.Companion.Name;
 
-        string bossName = string.Join(
-            ", ",
-            bosses.Select(boss => boss.DisplayName ?? boss.Name));
         string result = snapshot.Status switch
         {
             CombatSessionStatus.Victory => "ПОБЕДА",
@@ -407,8 +390,8 @@ internal static class BossCombatLogArchive
         long[] missingSequences = FindMissingSequences(events);
 
         StringBuilder builder = new();
-        builder.AppendLine("⚔️ ELYNDOR · ЛОГ БОЯ С БОССОМ");
-        builder.Append("Босс: ").AppendLine(bossName);
+        builder.AppendLine("⚔️ ELYNDOR · ЛОГ ТРЕНИРОВКИ НА МАНЕКЕНЕ");
+        builder.Append("Цель: ").AppendLine(TrainingDummyCombatLogPolicy.DisplayName);
         builder.Append("Результат: ").AppendLine(result);
         builder.Append("Сессия: ").AppendLine(snapshot.SessionId.ToString("D"));
         builder.Append("Контент: ").Append(snapshot.ContentVersion)

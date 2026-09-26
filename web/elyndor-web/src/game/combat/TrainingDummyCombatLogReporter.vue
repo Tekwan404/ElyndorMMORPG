@@ -2,10 +2,11 @@
 import { watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
-import { isBossCombatLogEnabled } from '@/game/combat/bossCombatLogSettings'
+import { isTrainingDummyCombat } from '@/game/combat/trainingDummy'
+import { isTrainingDummyCombatLogEnabled } from '@/game/combat/trainingDummyCombatLogSettings'
 import { useCombatSessionStore } from '@/stores/combatSession'
 
-interface BossCombatLogResponse {
+interface CombatLogResponse {
   sent: boolean
   errorCode: string | null
 }
@@ -18,13 +19,13 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
   if (
     reportedSessions.has(sessionId) ||
     reportingSessions.has(sessionId) ||
-    !isBossCombatLogEnabled()
+    !isTrainingDummyCombatLogEnabled()
   )
     return
 
   reportingSessions.add(sessionId)
   try {
-    const response = await apiClient.request<BossCombatLogResponse>(
+    const response = await apiClient.request<CombatLogResponse>(
       '/api/v1/combat/boss-log/telegram-v2',
       {
         method: 'POST',
@@ -38,13 +39,15 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
       return
     }
 
-    // A normal non-boss fight should never be retried or spam the endpoint.
-    if (response.errorCode === 'combat_log_not_boss') {
+    if (
+      response.errorCode === 'combat_log_not_training_dummy' ||
+      response.errorCode === 'combat_log_not_boss'
+    ) {
       reportedSessions.add(sessionId)
       return
     }
 
-    console.warn('[boss-combat-log] beta combat log was not sent', response.errorCode)
+    console.warn('[training-dummy-combat-log] beta combat log was not sent', response.errorCode)
     if (attempt < 2) {
       window.setTimeout(
         () => void reportTerminalCombat(sessionId, attempt + 1),
@@ -52,7 +55,7 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
       )
     }
   } catch (error) {
-    console.warn('[boss-combat-log] failed to send beta combat log', error)
+    console.warn('[training-dummy-combat-log] failed to send beta combat log', error)
     if (attempt < 2) {
       window.setTimeout(
         () => void reportTerminalCombat(sessionId, attempt + 1),
@@ -65,15 +68,13 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
 }
 
 watch(
-  () => combat.snapshot?.status ?? null,
-  (status) => {
-    if (!status || status === 'Active') return
-    const sessionId = combat.snapshot?.sessionId
-    if (!sessionId) return
+  () => combat.snapshot,
+  (snapshot) => {
+    if (!snapshot || snapshot.status === 'Active' || !isTrainingDummyCombat(snapshot)) return
 
     // The server archives combat updates before publishing the terminal SignalR event,
     // so this export remains available even if another fight starts immediately.
-    void reportTerminalCombat(sessionId)
+    void reportTerminalCombat(snapshot.sessionId)
   },
 )
 </script>
