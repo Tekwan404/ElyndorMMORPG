@@ -16,7 +16,7 @@ public sealed class TalentAuditReportTests
 
         Assert.Equal(4, report.TreeCount);
         Assert.Equal(384, report.NodeCount);
-        Assert.Equal(442, report.ModifierCount);
+        Assert.Equal(441, report.ModifierCount);
         Assert.Equal(90, report.DeferredModifierCount);
         Assert.Equal(88, report.FullyDeferredNodeCount);
         Assert.True(

@@ -42,6 +42,9 @@ public sealed class ContentPublicationPublishedAtRestoreTests(PostgresFixture po
                             .ToArray()
                     }
                     : merchant)
+                .ToArray(),
+            PremiumStoreOffers = (bundled.PremiumStoreOffers ?? [])
+                .Where(offer => offer.ItemDefinitionId != EnhancementOreId)
                 .ToArray()
         };
 
@@ -56,6 +59,9 @@ public sealed class ContentPublicationPublishedAtRestoreTests(PostgresFixture po
                 .Single(merchant => merchant.Id == MarcusSuppliesId)
                 .ItemIds,
             itemId => itemId == EnhancementOreId);
+        Assert.DoesNotContain(
+            stalePublished.PremiumStoreOffers ?? [],
+            offer => offer.ItemDefinitionId == EnhancementOreId);
 
         MutableTimeProvider timeProvider = new(bundled.PublishedAtUtc.AddHours(1));
         Guid revisionId;
