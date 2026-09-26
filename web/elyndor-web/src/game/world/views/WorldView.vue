@@ -1,18 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
+import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import LocationOverview from '@/game/world/components/LocationOverview.vue'
+import { locationKind } from '@/game/world/locationPresentation'
+import { useGameSessionStore } from '@/stores/gameSession'
 
 import WorldViewLegacy from './WorldViewLegacy.vue'
 
 const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
 const emit = defineEmits<{ 'open-party': [] }>()
+const session = useGameSessionStore()
+const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
+const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
 </script>
 
 <template>
   <section class="location-screen">
-    <LocationOverview />
+    <LocationOverview>
+      <template v-if="isDungeonLocation && currentLocationId" #primary-actions>
+        <DungeonLocationCard
+          :dungeon-id="currentLocationId"
+          @open-party="emit('open-party')"
+        />
+      </template>
+    </LocationOverview>
     <div class="location-screen__systems">
       <WorldViewLegacy
         :open-guild="props.openGuild"
+        :show-dungeon-location-card="false"
         @open-party="emit('open-party')"
       />
     </div>

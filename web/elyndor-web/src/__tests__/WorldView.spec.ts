@@ -56,6 +56,38 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
+  it('places dungeon actions above location residents without rendering a duplicate card', () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot()
+    store.snapshot.world!.currentLocation.id = 'ANCIENT_MINE'
+
+    const wrapper = mount(WorldView, {
+      global: {
+        stubs: {
+          LocationOverview: {
+            template: '<section data-location-overview><div data-location-hero /><slot name="primary-actions" /><div data-location-residents /></section>',
+          },
+          DungeonLocationCard: {
+            props: ['dungeonId'],
+            template: '<div data-dungeon-location-card />',
+          },
+          WorldViewLegacy: {
+            props: ['showDungeonLocationCard'],
+            template: '<div data-world-systems :data-show-dungeon-card="String(showDungeonLocationCard)" />',
+          },
+        },
+      },
+    })
+
+    expect(wrapper.findAll('[data-dungeon-location-card]')).toHaveLength(1)
+    expect(wrapper.get('[data-world-systems]').attributes('data-show-dungeon-card')).toBe('false')
+    const overview = wrapper.get('[data-location-overview]').element
+    const actions = wrapper.get('[data-dungeon-location-card]').element
+    const residents = wrapper.get('[data-location-residents]').element
+    expect(overview.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_CONTAINED_BY).not.toBe(0)
+    expect(actions.compareDocumentPosition(residents) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
+  })
+
   it('offers automatic hunting only from the eligible current location', async () => {
     const forestStore = useGameSessionStore()
     forestStore.snapshot = snapshot('WHISPERING_FOREST')

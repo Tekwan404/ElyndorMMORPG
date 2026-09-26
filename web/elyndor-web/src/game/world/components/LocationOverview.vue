@@ -241,17 +241,19 @@ watch(
       </div>
     </div>
 
+    <slot name="primary-actions" />
+
     <div v-if="loading" class="location-overview__state">Загружаем сведения об области…</div>
 
     <template v-else-if="location">
-      <section v-if="residents.length" class="location-overview__section" data-location-residents>
-        <header>
+      <details v-if="residents.length" class="location-overview__section" data-location-residents>
+        <summary data-location-disclosure="residents">
           <div>
             <small>ОБИТАТЕЛИ</small>
             <h2>Кого можно встретить</h2>
           </div>
-          <span>{{ residents.length }}</span>
-        </header>
+          <span class="location-overview__section-count">{{ residents.length }}</span>
+        </summary>
 
         <div class="location-overview__residents">
           <article v-for="resident in residents" :key="resident.monsterId" class="location-overview__resident">
@@ -277,16 +279,16 @@ watch(
             </div>
           </article>
         </div>
-      </section>
+      </details>
 
-      <section v-if="loot.length" class="location-overview__section" data-location-loot>
-        <header>
+      <details v-if="loot.length" class="location-overview__section" data-location-loot>
+        <summary data-location-disclosure="loot">
           <div>
             <small>ДОБЫЧА</small>
             <h2>Что здесь встречается</h2>
           </div>
-          <span>{{ loot.length }}</span>
-        </header>
+          <span class="location-overview__section-count">{{ loot.length }}</span>
+        </summary>
 
         <div class="location-overview__loot-grid">
           <article
@@ -311,7 +313,7 @@ watch(
             </div>
           </article>
         </div>
-      </section>
+      </details>
 
       <div v-if="!residents.length && !loot.length" class="location-overview__quiet">
         Здесь нет открытого списка противников или добычи. Доступные действия показаны ниже.
@@ -455,26 +457,61 @@ watch(
 
 .location-overview__section {
   display: grid;
-  gap: 10px;
   padding: 13px;
   border: 1px solid rgb(205 177 113 / 15%);
   border-radius: 15px;
   background: linear-gradient(180deg, rgb(20 24 34 / 94%), rgb(11 14 21 / 96%));
 }
 
-.location-overview__section > header {
+.location-overview__section > summary {
   display: flex;
-  align-items: end;
+  min-height: 44px;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin: -13px;
+  padding: 13px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.location-overview__section header > div {
+.location-overview__section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.location-overview__section > summary:focus-visible {
+  border-radius: 14px;
+  outline: 2px solid rgb(224 190 106 / 78%);
+  outline-offset: 2px;
+}
+
+.location-overview__section[open] > summary {
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgb(205 177 113 / 12%);
+}
+
+.location-overview__section > summary::after {
+  flex: 0 0 auto;
+  width: 22px;
+  color: #c5a867;
+  content: '⌄';
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+  transition: transform 180ms ease-out;
+}
+
+.location-overview__section[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.location-overview__section summary > div {
   display: grid;
   gap: 2px;
 }
 
-.location-overview__section header small {
+.location-overview__section summary small {
   color: #a98b51;
   font-size: 9px;
   font-weight: 800;
@@ -486,9 +523,18 @@ watch(
   font-size: 15px;
 }
 
-.location-overview__section header > span {
+.location-overview__section-count {
+  margin-left: auto;
+  padding: 3px 7px;
+  border: 1px solid rgb(205 177 113 / 16%);
+  border-radius: 999px;
+  background: rgb(4 7 12 / 42%);
   color: #8e887c;
   font-size: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-overview__section > summary::after { transition: none; }
 }
 
 .location-overview__residents {

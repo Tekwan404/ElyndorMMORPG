@@ -14,7 +14,10 @@ import { usePartyStore } from '@/game/party/partyStore'
 import { UIButton, UICard, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
-const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
+const props = withDefaults(
+  defineProps<{ openGuild?: boolean; showDungeonLocationCard?: boolean }>(),
+  { openGuild: false, showDungeonLocationCard: true },
+)
 const emit = defineEmits<{ 'open-party': [] }>()
 
 type CombatResult = 'Victory' | 'Defeat' | 'Cancelled'
@@ -360,7 +363,7 @@ onMounted(() => {
     </section>
 
     <DungeonLocationCard
-      v-if="isDungeonLocation && currentLocationId"
+      v-if="props.showDungeonLocationCard && isDungeonLocation && currentLocationId"
       :dungeon-id="currentLocationId"
       @open-party="emit('open-party')"
     />
