@@ -67,12 +67,16 @@ test('solo character remains prominent on mobile and desktop', async ({ page }) 
       return {
         actorWidthRatio: actorRect.width / arenaRect.width,
         actorHeightRatio: actorRect.height / arenaRect.height,
+        enemyWidthRatio: enemyRect.width / arenaRect.width,
+        enemyHeightRatio: enemyRect.height / arenaRect.height,
         actorsOverlap: actorRect.right > enemyRect.left,
       }
     })
 
     expect(geometry.actorWidthRatio).toBeGreaterThanOrEqual(0.43)
     expect(geometry.actorHeightRatio).toBeGreaterThanOrEqual(0.83)
+    expect(geometry.enemyWidthRatio).toBeGreaterThanOrEqual(0.42)
+    expect(geometry.enemyHeightRatio).toBeGreaterThanOrEqual(0.81)
     expect(geometry.actorsOverlap).toBe(false)
     await page.screenshot({
       path: `../../output/playwright/battle-screen-solo-${viewport.name}.png`,

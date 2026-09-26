@@ -249,8 +249,8 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   right: 1.5%;
   bottom: 4%;
   display: grid;
-  width: 34%;
-  height: 68%;
+  width: 43%;
+  height: 82%;
   min-width: 44px;
   min-height: 44px;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -263,12 +263,12 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   touch-action: manipulation;
 }
 .battle-arena__enemy[data-enemy-scale='elite'] {
-  width: 37%;
-  height: 72%;
+  width: 46%;
+  height: 86%;
 }
 .battle-arena__enemy[data-enemy-scale='boss'] {
-  width: 41%;
-  height: 76%;
+  width: 49%;
+  height: 90%;
 }
 .battle-arena__enemy:focus-visible {
   outline: 2px solid #df7182;
