@@ -51,6 +51,36 @@ test('three-player baseline fits without scroll and protects the arena', async (
   })
 })
 
+test('solo character remains prominent on mobile and desktop', async ({ page }) => {
+  for (const viewport of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'desktop', width: 820, height: 900 },
+  ]) {
+    await openPreview(page, 1, viewport.width, viewport.height)
+
+    const geometry = await page.locator('[data-battle-arena]').evaluate((arena) => {
+      const actor = arena.querySelector<HTMLElement>('[data-slot-id="solo-frontline"]')!
+      const enemy = arena.querySelector<HTMLElement>('.battle-arena__enemy')!
+      const arenaRect = arena.getBoundingClientRect()
+      const actorRect = actor.getBoundingClientRect()
+      const enemyRect = enemy.getBoundingClientRect()
+      return {
+        actorWidthRatio: actorRect.width / arenaRect.width,
+        actorHeightRatio: actorRect.height / arenaRect.height,
+        actorsOverlap: actorRect.right > enemyRect.left,
+      }
+    })
+
+    expect(geometry.actorWidthRatio).toBeGreaterThanOrEqual(0.43)
+    expect(geometry.actorHeightRatio).toBeGreaterThanOrEqual(0.83)
+    expect(geometry.actorsOverlap).toBe(false)
+    await page.screenshot({
+      path: `../../output/playwright/battle-screen-solo-${viewport.name}.png`,
+      fullPage: true,
+    })
+  }
+})
+
 test('five-player formation stays readable and selection does not follow aggro', async ({
   page,
 }) => {

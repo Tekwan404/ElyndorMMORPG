@@ -64,6 +64,13 @@ const FRONTLINE_SLOT: SlotTemplate = {
   zIndex: 50,
 }
 
+const SOLO_FRONTLINE_SLOT: SlotTemplate = {
+  id: 'solo-frontline',
+  bounds: { x: 0.03, y: 0.12, width: 0.44, height: 0.84 },
+  scale: 1,
+  zIndex: 50,
+}
+
 const BASE_SLOTS: readonly SlotTemplate[] = [
   {
     id: 'rear-left',
@@ -149,7 +156,11 @@ function createSlots(
   return actorIds.map((actorId, index) => {
     const baseSlot = BASE_SLOTS[index] ?? BASE_SLOTS[BASE_SLOTS.length - 1]!
     const isFrontline = actorId === frontlineActorId
-    const renderedSlot = isFrontline ? FRONTLINE_SLOT : baseSlot
+    const renderedSlot = actorIds.length === 1
+      ? SOLO_FRONTLINE_SLOT
+      : isFrontline
+        ? FRONTLINE_SLOT
+        : baseSlot
     const bounds = renderedSlot.bounds
     const protectedUpperBodyBounds = expandRect(
       {

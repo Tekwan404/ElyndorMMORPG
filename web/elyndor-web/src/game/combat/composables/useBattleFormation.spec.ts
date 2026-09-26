@@ -22,6 +22,20 @@ function input(overrides: Partial<BattleFormationInput> = {}): BattleFormationIn
 }
 
 describe('buildBattleFormation', () => {
+  it('gives a solo player a full-size battlefield slot', () => {
+    const result = buildBattleFormation(
+      input({ actorIds: ['local'], aggroActorId: 'local', selectedActorId: 'local' }),
+    )
+
+    expect(result.slots).toHaveLength(1)
+    expect(result.slots[0]).toMatchObject({
+      actorId: 'local',
+      slotId: 'solo-frontline',
+      scale: 1,
+      bounds: { x: 0.03, y: 0.12, width: 0.44, height: 0.84 },
+    })
+  })
+
   it.each([
     { count: 1, width: 360 },
     { count: 2, width: 390 },
