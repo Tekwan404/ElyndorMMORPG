@@ -67,7 +67,8 @@ public sealed record CombatPlayerDefinition(
     CombatParticipantDefinition Participant,
     ResolvedTalentModifiers TalentModifiers,
     IReadOnlyDictionary<string, DateTimeOffset>? InitialCooldowns = null,
-    bool InitiallyAttached = true);
+    bool InitiallyAttached = true,
+    Guid CharacterId = default);
 
 public sealed record CombatEffectSnapshot(
     string Id,
