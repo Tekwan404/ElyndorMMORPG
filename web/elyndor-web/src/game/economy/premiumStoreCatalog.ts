@@ -18,7 +18,7 @@ export interface PremiumStoreProduct {
   title: string
   subtitle?: string
   description: string
-  artwork: 'fire-mage' | 'spatial-ring' | 'reforge' | 'service' | 'profile-frame' | 'battle-entry' | 'ash-border' | 'item'
+  artwork: 'fire-mage' | 'spatial-ring' | 'reforge' | 'enhancement-ore' | 'forge-scrap' | 'service' | 'profile-frame' | 'battle-entry' | 'ash-border' | 'item'
   price: number
   quantity?: number
   badge?: PremiumStoreBadge
@@ -61,6 +61,7 @@ const STORE_PRESENTATION: readonly Presentation[] = [
   },
   {
     id: 'reforge-stones-10',
+    sku: 'REFORGE_STONES_SMALL',
     category: 'convenience',
     type: 'consumable',
     title: 'Камни перековки',
@@ -72,6 +73,35 @@ const STORE_PRESENTATION: readonly Presentation[] = [
     badge: 'popular',
     repeatable: true,
     unitPriceLabel: '1 шт. = 2,5 ✦',
+  },
+  {
+    id: 'enhancement-ore-20',
+    sku: 'ENHANCEMENT_ORE_SMALL',
+    category: 'convenience',
+    type: 'consumable',
+    title: 'Закалочная руда',
+    subtitle: '×20',
+    description: 'Материал для усиления снаряжения от +1 до +5. После покупки сразу попадает в инвентарь.',
+    artwork: 'enhancement-ore',
+    fallbackPrice: 30,
+    quantity: 20,
+    badge: 'new',
+    repeatable: true,
+    unitPriceLabel: '1 шт. = 1,5 ✦',
+  },
+  {
+    id: 'forge-scrap-20',
+    sku: 'FORGE_SCRAP_SMALL',
+    category: 'convenience',
+    type: 'consumable',
+    title: 'Кузнечный лом',
+    subtitle: '×20',
+    description: 'Базовый материал для кузнечных работ. После покупки сразу попадает в инвентарь.',
+    artwork: 'forge-scrap',
+    fallbackPrice: 20,
+    quantity: 20,
+    repeatable: true,
+    unitPriceLabel: '1 шт. = 1 ✦',
   },
   {
     id: 'rename-character',

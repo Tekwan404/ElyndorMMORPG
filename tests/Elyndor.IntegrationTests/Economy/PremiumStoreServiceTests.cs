@@ -37,6 +37,28 @@ public sealed class PremiumStoreServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(10, verify.CharacterItems.Where(item => item.ItemDefinitionId == "REFORGE_STONE").Sum(item => item.Quantity));
     }
 
+    [Fact]
+    public async Task EnhancementOreOfferUsesServerPriceAndReplayGrantsOreOnlyOnce()
+    {
+        Guid accountId = await CreateAccountAsync();
+        await using GameDbContext context = postgres.CreateDbContext();
+        CrystalWalletService wallet = new(context, new FixedTimeProvider(Now));
+        await wallet.GrantAsync(accountId, Guid.CreateVersion7(), CrystalLedgerEntryType.AdminGrant, 100, "test", CancellationToken.None);
+        PremiumStoreService store = new(context, new StaticContentSnapshotProvider(
+            await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"))), new FixedTimeProvider(Now));
+        Guid mutationId = Guid.CreateVersion7();
+
+        PremiumStorePurchaseResult first = await store.PurchaseAsync(accountId, "ENHANCEMENT_ORE_SMALL", mutationId, CancellationToken.None);
+        PremiumStorePurchaseResult replay = await store.PurchaseAsync(accountId, "ENHANCEMENT_ORE_SMALL", mutationId, CancellationToken.None);
+
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.Equal(70, first.CrystalBalance);
+        Assert.Equal(first.CrystalBalance, replay.CrystalBalance);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(20, verify.CharacterItems.Where(item => item.ItemDefinitionId == "ENHANCEMENT_ORE").Sum(item => item.Quantity));
+    }
+
     private async Task<Guid> CreateAccountAsync()
     {
         Guid accountId = Guid.CreateVersion7();

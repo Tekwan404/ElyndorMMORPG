@@ -1,0 +1,12 @@
+{
+  "premiumStoreOffers": [
+    {
+      "sku": "ENHANCEMENT_ORE_SMALL",
+      "itemDefinitionId": "ENHANCEMENT_ORE",
+      "quantity": 20,
+      "crystalPrice": 30,
+      "enabled": true,
+      "perAccountLimit": 20
+    }
+  ]
+}

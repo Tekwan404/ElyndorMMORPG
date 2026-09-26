@@ -54,4 +54,34 @@ describe('premium storefront catalog', () => {
       backendBacked: false,
     })
   })
+
+  it('maps the enhancement ore offer to the forge storefront presentation', () => {
+    const store = snapshot()
+    store.offers.push({
+      sku: 'ENHANCEMENT_ORE_SMALL',
+      itemDefinitionId: 'ENHANCEMENT_ORE',
+      name: 'Закалочная руда',
+      description: 'Материал для усиления снаряжения от +1 до +5.',
+      rarity: 'Uncommon',
+      iconId: 'ore',
+      quantity: 20,
+      crystalPrice: 30,
+      canPurchase: true,
+    })
+
+    const ore = buildPremiumStoreProducts(store).find((product) => product.id === 'enhancement-ore-20')
+
+    expect(ore).toMatchObject({
+      sku: 'ENHANCEMENT_ORE_SMALL',
+      title: 'Закалочная руда',
+      subtitle: '×20',
+      price: 30,
+      quantity: 20,
+      artwork: 'enhancement-ore',
+      badge: 'new',
+      repeatable: true,
+      backendBacked: true,
+      canPurchase: true,
+    })
+  })
 })
