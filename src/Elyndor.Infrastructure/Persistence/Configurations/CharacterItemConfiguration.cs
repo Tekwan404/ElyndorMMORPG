@@ -15,6 +15,8 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
                 "ck_character_items_quantity_positive",
                 "\"Quantity\" > 0"));
         builder.HasKey(item => item.Id).HasName("pk_character_items");
+        builder.Property(item => item.Storage).HasMaxLength(16).HasDefaultValue("INVENTORY");
+        builder.HasQueryFilter(item => item.Storage == "INVENTORY");
         builder.Property(item => item.ItemDefinitionId).HasMaxLength(64).IsRequired();
         builder.Property(item => item.DefinitionVersion).HasDefaultValue(1).IsRequired();
         builder.Property(item => item.RolledStrength).HasPrecision(18, 4);
@@ -40,7 +42,10 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
         builder.Property(item => item.ReforgeCount).HasDefaultValue(0).IsRequired();
         builder.Property(item => item.EnhancementLevel).HasDefaultValue(0).IsRequired();
         builder.Property(item => item.BindState).HasMaxLength(16).HasDefaultValue(ItemBindStates.Unbound).IsRequired();
-        builder.Property(item => item.TransactionLockId);
+        builder.Property(item => item.TransactionLockId).IsConcurrencyToken();
+        builder.Property(item => item.CharacterId).IsConcurrencyToken();
+        builder.Property(item => item.Quantity).IsConcurrencyToken();
+        builder.Property(item => item.Storage).IsConcurrencyToken();
         builder.Property(item => item.SourceType).HasMaxLength(32);
         builder.Property(item => item.SourceOperationId);
         builder.Property(item => item.SourceEntryId).HasMaxLength(128);

@@ -58,6 +58,13 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterSkinService>();
         builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
+        builder.Services.AddScoped<CommerceTransaction>();
+        builder.Services.AddScoped<PlayerTradeService>();
+        builder.Services.AddScoped<AuctionSettlementService>();
+        builder.Services.AddOptions<AuctionOptions>().BindConfiguration("Auction")
+            .Validate(x => x.ListingFeeRate >= 0 && x.ListingFeeRate <= 1 && x.SaleTaxRate >= 0 && x.SaleTaxRate <= 1 && x.MinimumListingFee >= 0 && x.MaxActiveListings > 0)
+            .ValidateOnStart();
+        builder.Services.AddHostedService<CommerceExpiryWorker>();
         builder.Services.AddScoped<ProfessionService>();
         builder.Services.AddScoped<ProfessionCorpseService>();
         builder.Services.AddScoped<ContentRevisionStore>();

@@ -290,7 +290,7 @@ public sealed class ItemSalvageService(
         if (quantity <= 0) return;
         CharacterItem[] stacks = await dbContext.CharacterItems.Where(item => item.CharacterId == characterId
             && item.ItemDefinitionId == definition.Id && item.DefinitionVersion == definition.Version
-            && item.Quantity < definition.MaxStack).OrderBy(item => item.AcquiredAtUtc).ToArrayAsync(cancellationToken);
+            && item.Quantity < definition.MaxStack && item.TransactionLockId == null).OrderBy(item => item.AcquiredAtUtc).ToArrayAsync(cancellationToken);
         int remaining = quantity;
         foreach (CharacterItem stack in stacks)
         {

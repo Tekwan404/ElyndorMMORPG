@@ -31,6 +31,9 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         Set<ReleaseAdminNotification>();
 
     public DbSet<Character> Characters => Set<Character>();
+    public DbSet<PlayerTrade> PlayerTrades => Set<PlayerTrade>();
+    public DbSet<AuctionListing> AuctionListings => Set<AuctionListing>();
+    public DbSet<CommerceMail> CommerceMails => Set<CommerceMail>();
     public DbSet<CharacterSkinOwnership> CharacterSkinOwnerships => Set<CharacterSkinOwnership>();
 
     public DbSet<CharacterVitals> CharacterVitals => Set<CharacterVitals>();

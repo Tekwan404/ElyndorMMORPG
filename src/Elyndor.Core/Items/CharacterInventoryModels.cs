@@ -71,6 +71,17 @@ public sealed class CharacterItem
     public int EnhancementLevel { get; private set; }
     public string BindState { get; private set; } = ItemBindStates.Unbound;
     public Guid? TransactionLockId { get; private set; }
+    public string Storage { get; private set; } = "INVENTORY";
+
+    public void Transfer(Guid operationId, Guid owner, string storage)
+    {
+        if (TransactionLockId != operationId || owner == Guid.Empty
+            || storage is not ("INVENTORY" or "AUCTION" or "MAILBOX"))
+            throw new InvalidOperationException("Invalid item custody transition.");
+        CharacterId = owner;
+        Storage = storage;
+        if (storage == "INVENTORY") TransactionLockId = null;
+    }
     public string? SourceType { get; private set; }
     public Guid? SourceOperationId { get; private set; }
     public string? SourceEntryId { get; private set; }
@@ -134,7 +145,11 @@ public sealed class CharacterItem
         SetRolledPrimaryStats(null);
     }
 
-    public void SetLocked(bool isLocked) => IsLocked = isLocked;
+    public void SetLocked(bool isLocked)
+    {
+        if (TransactionLockId.HasValue) throw new InvalidOperationException("Item is reserved for a transaction.");
+        IsLocked = isLocked;
+    }
 
     public void AcquireTransactionLock(Guid operationId)
     {
@@ -216,6 +231,7 @@ public sealed class CharacterItem
 
     public void AddQuantity(int quantity, int maxStack)
     {
+        if (TransactionLockId.HasValue) throw new InvalidOperationException("Item is reserved for a transaction.");
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxStack, 1);
         int updated = checked(Quantity + quantity);
@@ -226,6 +242,7 @@ public sealed class CharacterItem
 
     public void RemoveQuantity(int quantity)
     {
+        if (TransactionLockId.HasValue) throw new InvalidOperationException("Item is reserved for a transaction.");
         ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 1);
         if (quantity > Quantity)
             throw new InvalidOperationException("Item stack does not contain enough quantity.");

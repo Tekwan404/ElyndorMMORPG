@@ -448,7 +448,7 @@ public sealed class CombatDurabilityService(
                 item.CharacterId == use.CharacterId
                 && item.ItemDefinitionId == use.ItemDefinitionId
                 && item.DefinitionVersion == use.DefinitionVersion
-                && item.Quantity < use.MaxStack)
+                && item.Quantity < use.MaxStack && item.TransactionLockId == null)
             .OrderBy(item => item.AcquiredAtUtc)
             .FirstOrDefaultAsync(cancellationToken);
 

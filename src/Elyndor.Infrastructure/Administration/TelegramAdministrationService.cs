@@ -329,7 +329,7 @@ public sealed class TelegramAdministrationService(
                 .Where(item => item.CharacterId == character.Id
                     && item.ItemDefinitionId == definition.Id
                     && item.DefinitionVersion == definition.Version
-                    && item.Quantity < definition.MaxStack)
+                    && item.Quantity < definition.MaxStack && item.TransactionLockId == null)
                 .OrderBy(item => item.AcquiredAtUtc)
                 .ToArrayAsync(cancellationToken);
             int remaining = quantity;

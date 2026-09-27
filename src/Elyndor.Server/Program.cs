@@ -119,7 +119,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             OnMessageReceived = context =>
             {
                 string? token = context.Request.Query["access_token"].FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat"))
+                if (!string.IsNullOrWhiteSpace(token) && (context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat")
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")))
                     context.Token = token;
                 return Task.CompletedTask;
             }
@@ -268,6 +269,7 @@ app.MapInventoryEndpoints();
 app.MapSpatialInventoryEndpoints();
 app.MapItemStarUpgradePreviewEndpoints();
 app.MapEconomyEndpoints();
+app.MapCommerceEndpoints();
 app.MapProfessionEndpoints();
 app.MapAfkFarmEndpoints();
 app.MapReleaseNotesEndpoints();
@@ -279,6 +281,7 @@ app.MapContentAdminEndpoints();
 app.MapBossCombatLogEndpoints();
 app.MapBossCombatLogArchiveEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
+app.MapHub<TradeHub>("/hubs/trade").RequireAuthorization();
 
 app.MapGet("/api/v1/status", (TimeProvider timeProvider) => new ApiStatusResponse("Elyndor.Server", "ready", timeProvider.GetUtcNow()))
     .WithName("GetApiStatus")
