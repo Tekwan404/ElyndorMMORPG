@@ -187,7 +187,7 @@ public sealed class AfkFarmProgressService(
             .Where(item => item.CharacterId == characterId
                 && item.ItemDefinitionId == definition.Id
                 && item.DefinitionVersion == definition.Version
-                && item.Quantity < definition.MaxStack)
+                && item.Quantity < definition.MaxStack && item.TransactionLockId == null)
             .OrderBy(item => item.AcquiredAtUtc)
             .ToArrayAsync(cancellationToken);
 

@@ -110,7 +110,7 @@ public sealed class PremiumStoreService(GameDbContext dbContext, IContentSnapsho
             .Where(item => item.CharacterId == characterId
                 && item.ItemDefinitionId == definition.Id
                 && item.DefinitionVersion == definition.Version
-                && item.Quantity < definition.MaxStack)
+                && item.Quantity < definition.MaxStack && item.TransactionLockId == null)
             .Where(item => !dbContext.CharacterEquipment.Any(equipment =>
                 equipment.CharacterId == characterId
                 && equipment.CharacterItemId == item.Id))
