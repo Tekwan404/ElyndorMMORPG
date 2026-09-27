@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, shallowRef } from 'vue'
+import { computed, onUnmounted, shallowRef } from 'vue'
 
 import type { CombatAbility } from '@/api/contracts'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
@@ -17,6 +17,8 @@ const props = defineProps<{
 const emit = defineEmits<{ use: [ability: CombatAbility] }>()
 
 const inspectedAbility = shallowRef<CombatAbility | null>(null)
+const abilitiesExpanded = shallowRef(false)
+const overflowAbilityCount = computed(() => Math.max(0, props.abilities.length - 8))
 let inspectionTimer: ReturnType<typeof setTimeout> | undefined
 let suppressedAbilityId: string | null = null
 
@@ -87,7 +89,13 @@ onUnmounted(cancelInspection)
       <h2 id="battle-skills-title">Умения</h2>
       <small>Удерживайте для описания</small>
     </header>
-    <div class="skill-panel__grid" data-skill-grid data-columns="4">
+    <div
+      id="battle-skill-grid"
+      class="skill-panel__grid"
+      data-skill-grid
+      data-columns="4"
+      :data-expanded="abilitiesExpanded"
+    >
       <button
         v-for="ability in abilities"
         :key="ability.id"
@@ -131,6 +139,17 @@ onUnmounted(cancelInspection)
         </span>
       </button>
     </div>
+    <button
+      v-if="overflowAbilityCount > 0"
+      type="button"
+      class="skill-panel__overflow-toggle"
+      data-skill-overflow-toggle
+      aria-controls="battle-skill-grid"
+      :aria-expanded="abilitiesExpanded"
+      @click="abilitiesExpanded = !abilitiesExpanded"
+    >
+      {{ abilitiesExpanded ? 'Свернуть' : `Ещё ${overflowAbilityCount}` }}
+    </button>
     <aside
       v-if="inspectedAbility"
       class="skill-panel__inspection"
@@ -301,25 +320,28 @@ onUnmounted(cancelInspection)
   background: transparent;
   color: #e7dfd2;
 }
+.skill-panel__overflow-toggle {
+  display: none;
+}
 
-@media (max-width: 390px) {
+@media (max-width: 480px) {
   .skill-panel__grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.24rem;
+    overflow-x: hidden;
   }
-  .skill-panel__grid::-webkit-scrollbar {
+  .skill-panel__grid[data-expanded='false'] .skill-panel__ability:nth-child(n + 9) {
     display: none;
   }
-  .skill-panel__ability {
-    min-width: calc((100% - 0.9rem) / 4);
-    scroll-snap-align: start;
+  .skill-panel__grid[data-expanded='true'] {
+    max-height: calc(128px + 0.24rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
-  .skill-panel__grid {
-    gap: 0.24rem;
-  }
   .skill-panel__ability {
+    min-width: 0;
+    min-height: 64px;
     grid-template-columns: 1fr;
     place-items: center;
     padding: 0.2rem;
@@ -334,6 +356,22 @@ onUnmounted(cancelInspection)
     font-size: 0.44rem;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  .skill-panel__overflow-toggle {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(177 151 91 / 32%);
+    border-radius: 7px;
+    background: rgb(12 15 23 / 92%);
+    color: #d8c89f;
+    font: 700 0.54rem/1 var(--ui-font-body);
+    touch-action: manipulation;
+  }
+  .skill-panel__overflow-toggle:focus-visible {
+    outline: 2px solid #e5ca79;
+    outline-offset: 2px;
   }
 }
 </style>

@@ -148,3 +148,47 @@ test('narrow and reduced-motion layouts keep controls inside the viewport', asyn
     fullPage: true,
   })
 })
+
+test('mobile hotbar uses four columns and bounds large ability kits without layout shift', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/dev/battle?party=1&abilities=16&error=true')
+
+  const screen = page.locator('[data-battle-screen]')
+  const grid = page.locator('[data-skill-grid]')
+  const slots = page.locator('[data-ability-slot]')
+  const toast = page.locator('[data-combat-error-toast]')
+  await expect(screen).toBeVisible()
+  await expect(slots).toHaveCount(16)
+  await expect(slots.nth(7)).toBeVisible()
+  await expect(slots.nth(8)).toBeHidden()
+  await expect(toast).toBeVisible()
+
+  const collapsed = await grid.evaluate((element) => ({
+    columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+    horizontalOverflow: element.scrollWidth > element.clientWidth,
+    position: getComputedStyle(document.querySelector('[data-combat-error-toast]')!).position,
+  }))
+  expect(collapsed.columns).toBe(4)
+  expect(collapsed.horizontalOverflow).toBe(false)
+  expect(collapsed.position).toBe('fixed')
+  await page.screenshot({
+    path: '../../output/playwright/battle-screen-16-abilities-collapsed-390x844.png',
+    fullPage: true,
+  })
+
+  await page.locator('[data-skill-overflow-toggle]').click()
+  await expect(slots.nth(8)).toBeVisible()
+  const expanded = await grid.evaluate((element) => ({
+    verticalOverflow: element.scrollHeight > element.clientHeight,
+    horizontalOverflow: element.scrollWidth > element.clientWidth,
+  }))
+  expect(expanded.verticalOverflow).toBe(true)
+  expect(expanded.horizontalOverflow).toBe(false)
+
+  await page.setViewportSize({ width: 820, height: 900 })
+  await expect(slots.nth(15)).toBeVisible()
+  await expect(page.locator('[data-skill-overflow-toggle]')).toBeHidden()
+  expect(await grid.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false)
+})

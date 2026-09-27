@@ -9,8 +9,9 @@ import BattleScreen from './BattleScreen.vue'
 const route = useRoute()
 const combat = useCombatSessionStore()
 const partySize = computed(() => Math.max(1, Math.min(5, Number(route.query.party) || 3)))
+const abilityCount = computed(() => Math.max(4, Math.min(20, Number(route.query.abilities) || 4)))
 
-const abilities: CombatAbility[] = [
+const baseAbilities: CombatAbility[] = [
   {
     id: 'HEROIC_STRIKE',
     displayName: 'Героический удар',
@@ -47,6 +48,18 @@ const abilities: CombatAbility[] = [
     cooldownSeconds: 24,
     targetType: 'Self',
   },
+]
+const abilities: CombatAbility[] = [
+  ...baseAbilities,
+  ...Array.from({ length: abilityCount.value - baseAbilities.length }, (_, index) => ({
+    id: `PREVIEW_ABILITY_${index + 5}`,
+    displayName: `Умение ${index + 5}`,
+    description: 'Дополнительная способность для проверки мобильной панели.',
+    iconId: null,
+    resourceCost: 0,
+    cooldownSeconds: 8,
+    targetType: 'SingleEnemy' as const,
+  })),
 ]
 
 function player(index: number): CombatActorSnapshot {
@@ -108,6 +121,7 @@ combat.snapshot = {
   selectedTargetActorId: enemy.actorId,
 }
 combat.selectedFriendlyTargetActorId = players[Math.min(2, players.length - 1)]!.actorId
+if (route.query.error === 'true') combat.errorCode = 'combat_invalid_target'
 combat.events = [
   {
     sequence: 10,

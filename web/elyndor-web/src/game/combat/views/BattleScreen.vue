@@ -38,7 +38,7 @@ const activeAbilities = computed(() => {
   const abilities = (localActor.value?.abilities ?? []).filter(
     (ability) => !isAuraAbility(ability.id),
   )
-  return orderCombatAbilities(session.snapshot?.character?.id ?? '', abilities).slice(0, 12)
+  return orderCombatAbilities(session.snapshot?.character?.id ?? '', abilities)
 })
 const queuedAbilityIds = computed(() => battle.abilityQueue.value.map((queued) => queued.abilityId))
 const battlefieldArt = computed(() => {
@@ -199,7 +199,9 @@ onUnmounted(() => window.clearInterval(timer))
         <div>
           <strong>Бой уже идёт</strong><small>Войдите, чтобы присоединиться к группе.</small>
         </div>
-        <UIButton :disabled="battle.lifecyclePending.value" @click="battle.attachCombat(snapshot.sessionId)"
+        <UIButton
+          :disabled="battle.lifecyclePending.value"
+          @click="battle.attachCombat(snapshot.sessionId)"
           >Войти в бой</UIButton
         >
       </section>
@@ -297,7 +299,7 @@ onUnmounted(() => window.clearInterval(timer))
           :items="combatConsumables"
           :cooldown-remaining="consumableCooldownRemaining"
           :can-use="consumableCanAffect"
-          :is-pending="item => battle.isConsumablePending(item.definitionId)"
+          :is-pending="(item) => battle.isConsumablePending(item.definitionId)"
           @use="useConsumable"
         />
         <BattleControls
@@ -374,7 +376,13 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <CombatLog :entries="battle.eventProjection.value.logEntries" />
-      <p v-if="battle.errorCode.value" class="battle-screen__error" role="alert">
+      <p
+        v-if="battle.errorCode.value"
+        class="battle-screen__error"
+        role="alert"
+        aria-live="assertive"
+        data-combat-error-toast
+      >
         {{ combatErrorMessage }} <small>{{ battle.errorCode.value }}</small>
       </p>
 
@@ -574,12 +582,22 @@ onUnmounted(() => window.clearInterval(timer))
   font-size: 0.5rem;
 }
 .battle-screen__error {
-  margin: 0;
-  padding: 0.35rem;
+  position: fixed;
+  z-index: 1000;
+  right: max(0.65rem, env(safe-area-inset-right));
+  bottom: max(0.65rem, env(safe-area-inset-bottom));
+  left: max(0.65rem, env(safe-area-inset-left));
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 0.55rem 0.7rem;
   border: 1px solid rgb(209 75 93 / 42%);
-  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 48%);
+  background: rgb(24 8 13 / 96%);
   color: #f1a0aa;
-  font-size: 0.54rem;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  pointer-events: none;
 }
 .battle-screen__error small {
   color: #98777d;

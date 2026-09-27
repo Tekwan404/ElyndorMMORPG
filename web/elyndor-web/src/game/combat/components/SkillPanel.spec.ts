@@ -70,4 +70,29 @@ describe('SkillPanel', () => {
     expect(wrapper.emitted('use')).toBeUndefined()
     expect(wrapper.get('[data-ability-slot="ABILITY_4"]').attributes('data-state')).toBe('resource')
   })
+
+  it('keeps additional abilities behind an accessible compact expansion', async () => {
+    const wrapper = mount(SkillPanel, {
+      props: {
+        abilities: Array.from({ length: 16 }, (_, index) => ability(index + 1)),
+        cooldowns: {},
+        resource: 100,
+        queuedAbilityIds: [],
+        now: Date.parse('2026-09-25T12:00:00Z'),
+        disabled: false,
+      },
+    })
+
+    const grid = wrapper.get('[data-skill-grid]')
+    const toggle = wrapper.get('[data-skill-overflow-toggle]')
+    expect(grid.attributes('data-expanded')).toBe('false')
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    expect(toggle.text()).toContain('Ещё 8')
+
+    await toggle.trigger('click')
+
+    expect(grid.attributes('data-expanded')).toBe('true')
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(16)
+  })
 })

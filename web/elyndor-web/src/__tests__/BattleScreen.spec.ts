@@ -111,8 +111,36 @@ describe('BattleScreen', () => {
 
     const wrapper = mount(BattleScreen)
 
-    expect(wrapper.get('[data-battle-screen]').classes()).not.toContain('battle-screen--scroll-fallback')
+    expect(wrapper.get('[data-battle-screen]').classes()).not.toContain(
+      'battle-screen--scroll-fallback',
+    )
     expect(wrapper.get('[data-battle-screen]').attributes('data-skill-rows')).toBe('2')
+  })
+
+  it('does not truncate large ability kits and renders combat errors as a toast', () => {
+    const store = useCombatSessionStore()
+    const local = actor(
+      'local',
+      'Player',
+      Array.from({ length: 16 }, (_, index) => ability(index + 1)),
+    )
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: local,
+      enemy: actor('enemy', 'Monster'),
+    }
+    store.errorCode = 'combat_invalid_target'
+
+    const wrapper = mount(BattleScreen)
+
+    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(16)
+    expect(wrapper.get('[data-combat-error-toast]').attributes('role')).toBe('alert')
+    expect(wrapper.get('[data-combat-error-toast]').attributes('aria-live')).toBe('assertive')
   })
 
   it('keeps roster selection independent from a later aggro change', async () => {
