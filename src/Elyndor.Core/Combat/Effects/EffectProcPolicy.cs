@@ -30,8 +30,7 @@ public static class EffectProcPolicy
 
     public static TimeSpan ResolveDefaultInternalCooldown(TimeSpan baseCooldown)
     {
-        if (baseCooldown < TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(baseCooldown));
+        ArgumentOutOfRangeException.ThrowIfLessThan(baseCooldown, TimeSpan.Zero);
 
         TimeSpan halfCooldown = TimeSpan.FromTicks(baseCooldown.Ticks / 2);
         return halfCooldown < MinimumInternalCooldown
@@ -42,9 +41,9 @@ public static class EffectProcPolicy
     public static void Validate(EffectDefinition definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (definition.ProcChance is < 0 or > 1)
-            throw new ArgumentOutOfRangeException(nameof(definition), "Effect proc chance must be between 0 and 1.");
-        if (definition.InternalCooldown < TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(definition), "Effect internal cooldown cannot be negative.");
+        ArgumentOutOfRangeException.ThrowIfLessThan(definition.ProcChance, 0m);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(definition.ProcChance, 1m);
+        if (definition.InternalCooldown is { } internalCooldown)
+            ArgumentOutOfRangeException.ThrowIfLessThan(internalCooldown, TimeSpan.Zero);
     }
 }
