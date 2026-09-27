@@ -820,7 +820,8 @@ public sealed class GameContentPackageValidatorTests
                     "Test",
                     WeaponCategory: EquipmentCategoryIds.OneHandSword,
                     PrimaryStatRanges: new PrimaryStatRanges(
-                        Strength: new ItemStatRange(1, 4)))
+                        Strength: new ItemStatRange(1, 4)),
+                    GenerationMode: ItemGenerationMode.Rolled)
             ],
             LootTables = []
         };
@@ -876,6 +877,155 @@ public sealed class GameContentPackageValidatorTests
                     1, false, 1, EquipmentSlot.Weapon,
                     new PrimaryStats(1, 0, 0, 0), "Test",
                     WeaponCategory: "LASER_SWORD")
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "INVALID_ITEM_EQUIPMENT_CATEGORY");
+    }
+
+    [Fact]
+    public void ValidateAcceptsFixedEquipmentWithExplicitStats()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_FIXED_SWORD", "Test Fixed Sword", ItemType.Equipment, ItemRarity.Rare,
+                    10, false, 1, EquipmentSlot.MainHand,
+                    new PrimaryStats(4, 0, 0, 3), "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    WeaponDamageMin: 12,
+                    WeaponDamageMax: 18,
+                    GenerationMode: ItemGenerationMode.Fixed)
+            ],
+            LootTables = []
+        };
+
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
+    [Fact]
+    public void ValidateRejectsFixedEquipmentWithRolledConfiguration()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_FIXED_WITH_AFFIXES", "Broken Fixed Sword", ItemType.Equipment, ItemRarity.Rare,
+                    10, false, 1, EquipmentSlot.MainHand,
+                    new PrimaryStats(4, 0, 0, 3), "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    RandomAffixPoolId: "TEST_POOL",
+                    AffixCountProfileId: "TEST_COUNT",
+                    GenerationMode: ItemGenerationMode.Fixed)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "ITEM_FIXED_GENERATION_CONFLICT");
+        Assert.DoesNotContain(errors, error => error.Code == "MISSING_ITEMIZATION_PROFILE");
+    }
+
+    [Fact]
+    public void ValidateRejectsRolledEquipmentWithoutGenerationConfiguration()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_EMPTY_ROLLED_SWORD", "Broken Rolled Sword", ItemType.Equipment, ItemRarity.Rare,
+                    10, false, 1, EquipmentSlot.MainHand,
+                    new PrimaryStats(0, 0, 0, 0), "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    GenerationMode: ItemGenerationMode.Rolled)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "ITEM_ROLLED_GENERATION_REQUIRED");
+    }
+
+    [Fact]
+    public void ValidateRejectsRolledGenerationForNonEquipment()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_ROLLED_MATERIAL", "Broken Rolled Material", ItemType.Material, ItemRarity.Common,
+                    1, true, 20, null,
+                    new PrimaryStats(0, 0, 0, 0), "Test",
+                    GenerationMode: ItemGenerationMode.Rolled)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "ITEM_GENERATION_MODE_INVALID_TYPE");
+    }
+
+    [Fact]
+    public void ValidateRejectsMixedLegacyAndV2GenerationConfiguration()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_MIXED_ROLLED_SWORD", "Mixed Rolled Sword", ItemType.Equipment, ItemRarity.Rare,
+                    10, false, 1, EquipmentSlot.MainHand,
+                    new PrimaryStats(0, 0, 0, 0), "Test",
+                    WeaponCategory: EquipmentCategoryIds.OneHandSword,
+                    PrimaryStatRanges: new PrimaryStatRanges(
+                        Strength: new ItemStatRange(2, 4)),
+                    RandomAffixPoolId: "TEST_POOL",
+                    AffixCountProfileId: "TEST_COUNT",
+                    GenerationMode: ItemGenerationMode.Rolled)
+            ],
+            LootTables = []
+        };
+
+        IReadOnlyList<ContentValidationError> errors =
+            GameContentPackageValidator.Validate(package);
+
+        Assert.Contains(errors, error => error.Code == "ITEM_GENERATION_POLICY_AMBIGUOUS");
+    }
+
+    [Fact]
+    public void ValidateRejectsTwoHandedWeaponCategoryInOffHandSlot()
+    {
+        GameContentPackage package = CreatePackage() with
+        {
+            LevelProgression = new LevelProgressionDefinition("DEFAULT_LEVELING", 60, 100, 1.5m),
+            Items =
+            [
+                new ItemDefinition(
+                    "TEST_OFFHAND_STAFF", "Broken Offhand Staff", ItemType.Equipment, ItemRarity.Rare,
+                    10, false, 1, EquipmentSlot.OffHand,
+                    new PrimaryStats(0, 0, 3, 1), "Test",
+                    WeaponCategory: EquipmentCategoryIds.Staff,
+                    GenerationMode: ItemGenerationMode.Fixed)
             ],
             LootTables = []
         };

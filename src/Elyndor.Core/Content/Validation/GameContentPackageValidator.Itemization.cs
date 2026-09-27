@@ -288,15 +288,7 @@ public static partial class GameContentPackageValidator
     }
 
     private static bool UsesProceduralItemization(ItemDefinition item) =>
-        item.ItemLevelMin.HasValue
-        || item.ItemLevelMax.HasValue
-        || item.GuaranteedAffixStatIds is { Count: > 0 }
-        || item.RandomAffixPoolId is not null
-        || item.AffixCountProfileId is not null
-        || item.ExtraAffixBudgetCap != 0
-        || item.PrefixSuffixPolicyId is not null
-        || item.UniqueEquippedGroup is not null
-        || item.TradePolicyId is not null
-        || item.GenerationVersion != 1;
+        item.GenerationMode == ItemGenerationMode.Rolled
+        && ItemGenerationSemantics.HasV2Configuration(item);
 
 }

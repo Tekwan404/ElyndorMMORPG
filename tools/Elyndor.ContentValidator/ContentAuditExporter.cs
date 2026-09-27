@@ -144,6 +144,7 @@ internal static class ContentAuditExporter
                         },
                     Generation = new
                     {
+                        item.GenerationMode,
                         item.ItemLevelMin,
                         item.ItemLevelMax,
                         item.PrimaryStatRanges,

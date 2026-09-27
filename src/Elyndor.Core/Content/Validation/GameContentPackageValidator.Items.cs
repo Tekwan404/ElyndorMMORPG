@@ -73,6 +73,8 @@ public static partial class GameContentPackageValidator
                         $"Item '{item.Id}' contains an invalid equipment category shape."));
                 }
 
+                ValidateItemGenerationShape(item, path, errors);
+
                 if (!string.IsNullOrWhiteSpace(item.SetId)
                     && !equipmentSetIds.Contains(item.SetId))
                 {
@@ -291,7 +293,7 @@ public static partial class GameContentPackageValidator
                     && item.OffHandCategory is null,
                 EquipmentSlot.OffHand =>
                     item.ArmorCategory is null
-                    && (EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
+                    && (EquipmentCategoryIds.IsOneHandedWeapon(item.WeaponCategory)
                         ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
                 EquipmentSlot.Head or EquipmentSlot.Shoulders or EquipmentSlot.Chest or EquipmentSlot.Hands
                     or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet
@@ -306,6 +308,54 @@ public static partial class GameContentPackageValidator
                     && item.OffHandCategory is null,
                 _ => false
             };
+
+        private static void ValidateItemGenerationShape(
+            ItemDefinition item,
+            string path,
+            List<ContentValidationError> errors)
+        {
+            bool hasLegacyRanges = ItemGenerationSemantics.HasLegacyRangeConfiguration(item);
+            bool hasV2Configuration = ItemGenerationSemantics.HasV2Configuration(item);
+
+            if (item.GenerationMode == ItemGenerationMode.Fixed)
+            {
+                if (hasLegacyRanges || hasV2Configuration)
+                {
+                    errors.Add(new(
+                        "ITEM_FIXED_GENERATION_CONFLICT",
+                        $"{path}.generationMode",
+                        $"Fixed item '{item.Id}' cannot declare rolled-stat generation configuration."));
+                }
+
+                return;
+            }
+
+            if (item.Type != ItemType.Equipment)
+            {
+                errors.Add(new(
+                    "ITEM_GENERATION_MODE_INVALID_TYPE",
+                    $"{path}.generationMode",
+                    $"Only equipment can use rolled item generation."));
+                return;
+            }
+
+            if (hasLegacyRanges && hasV2Configuration)
+            {
+                errors.Add(new(
+                    "ITEM_GENERATION_POLICY_AMBIGUOUS",
+                    $"{path}.generationMode",
+                    $"Rolled item '{item.Id}' cannot mix legacy stat ranges with V2 affix generation."));
+                return;
+            }
+
+            if (!hasLegacyRanges && !ItemGenerationSemantics.HasCompleteV2Configuration(item))
+            {
+                errors.Add(new(
+                    "ITEM_ROLLED_GENERATION_REQUIRED",
+                    $"{path}.generationMode",
+                    $"Rolled item '{item.Id}' requires a complete generation configuration."));
+            }
+        }
 
         private static bool HasEquipmentModifiers(ItemDefinition item) =>
             item.Stats != new PrimaryStats(0, 0, 0, 0)

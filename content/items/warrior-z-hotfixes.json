@@ -8,6 +8,7 @@
       "iconId": "sets/warrior_epic_crimson_fury_weapon",
       "name": "Клинок Багровой Клятвы",
       "type": "Equipment",
+      "generationMode": "Rolled",
       "rarity": "Epic",
       "requiredLevel": 14,
       "stackable": false,

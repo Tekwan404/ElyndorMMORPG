@@ -113,7 +113,8 @@ public sealed class ItemizationBudgetPolicyTests
         RandomAffixPoolId: "WARRIOR_SHIELD",
         AffixCountProfileId: "LEVEL_13_16_TEST",
         ExtraAffixBudgetCap: 0.08m,
-        PrefixSuffixPolicyId: "WORLD_V1");
+        PrefixSuffixPolicyId: "WORLD_V1",
+        GenerationMode: ItemGenerationMode.Rolled);
 
     private static ItemDefinition HealthySword() => new(
         "TEST_HEALTHY_SWORD",
@@ -132,7 +133,8 @@ public sealed class ItemizationBudgetPolicyTests
         GuaranteedAffixStatIds: [ItemStatIds.Strength],
         RandomAffixPoolId: "SWORD_POOL",
         AffixCountProfileId: "SWORD_COUNT",
-        ExtraAffixBudgetCap: 0m);
+        ExtraAffixBudgetCap: 0m,
+        GenerationMode: ItemGenerationMode.Rolled);
 
     private static GeneratedItemAffix LegacyAffix(
         string slotKey,

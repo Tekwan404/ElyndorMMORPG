@@ -148,6 +148,33 @@ public sealed class ContentRevisionImporterTests(PostgresFixture postgres) : IAs
     }
 
     [Fact]
+    public async Task LegacyEquipmentPayloadInfersRolledGenerationMode()
+    {
+        string packagePath = Path.GetFullPath("content/package.json");
+        GameContentPackage source =
+            await GameContentPackageLoader.LoadAsync(packagePath);
+        JsonObject payload = JsonNode.Parse(
+            GameContentPackageCodec.SerializeCanonical(source))!.AsObject();
+        JsonArray items = payload["items"]!.AsArray();
+
+        foreach (JsonObject item in items.Select(node => node!.AsObject()))
+            item.Remove("generationMode");
+
+        GameContentPackage restored =
+            GameContentPackageCodec.DeserializeValidated(payload.ToJsonString());
+        ItemDefinition[] equipment = restored.Items!
+            .Where(item => item.Type == ItemType.Equipment)
+            .ToArray();
+
+        Assert.NotEmpty(equipment);
+        Assert.All(equipment, item =>
+        {
+            Assert.Equal(ItemGenerationMode.Rolled, item.GenerationMode);
+            Assert.True(ProceduralItemPolicy.IsEnabled(item), item.Id);
+        });
+    }
+
+    [Fact]
     public async Task TamperedRevisionPayloadIsRejectedBeforeDeserialization()
     {
         string packagePath = Path.GetFullPath("content/package.json");

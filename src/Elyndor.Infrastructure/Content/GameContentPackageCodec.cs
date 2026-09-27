@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -62,8 +63,25 @@ public static class GameContentPackageCodec
         bool changed = false;
         foreach (JsonNode? itemNode in items)
         {
-            if (itemNode is not JsonObject item
-                || item["healAmount"] is not JsonValue healAmountValue
+            if (itemNode is not JsonObject item)
+                continue;
+
+            if (item["generationMode"] is null)
+            {
+                bool isEquipment = string.Equals(
+                    item["type"]?.GetValue<string>(),
+                    nameof(ItemType.Equipment),
+                    StringComparison.Ordinal);
+                bool hasV2Policy = HasNonEmptyString(item, "randomAffixPoolId")
+                    && HasNonEmptyString(item, "affixCountProfileId");
+                bool hasLegacyRanges = item["primaryStatRanges"] is JsonObject;
+                item["generationMode"] = isEquipment && (hasV2Policy || hasLegacyRanges)
+                    ? nameof(ItemGenerationMode.Rolled)
+                    : nameof(ItemGenerationMode.Fixed);
+                changed = true;
+            }
+
+            if (item["healAmount"] is not JsonValue healAmountValue
                 || !healAmountValue.TryGetValue<decimal>(out decimal healAmount))
             {
                 continue;
@@ -100,6 +118,11 @@ public static class GameContentPackageCodec
             ? package.ToJsonString(GameContentJson.SerializerOptions)
             : payloadJson;
     }
+
+    private static bool HasNonEmptyString(JsonObject item, string propertyName) =>
+        item[propertyName] is JsonValue value
+        && value.TryGetValue<string>(out string? text)
+        && !string.IsNullOrWhiteSpace(text);
 }
 
 public sealed record ContentPackageParityResult(

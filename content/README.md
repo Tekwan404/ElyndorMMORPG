@@ -45,6 +45,11 @@ Do not add feature-named JSON overlays beside `package.json`. If a new content d
 extend the category composer and validator explicitly so the runtime, importer, and Admin all see
 the same package.
 
+Equipment definitions must declare `generationMode` explicitly. Use `Rolled` for equipment backed
+by the current affix-pool/count-profile itemization policy and `Fixed` only for equipment whose
+explicit definition stats are final. Set membership, trade policy and acquisition source are
+independent of generation mode.
+
 ## Adding a normal monster
 
 Normal world encounters are data-driven. Do not add monster IDs to `CombatSessionFactory` or to a

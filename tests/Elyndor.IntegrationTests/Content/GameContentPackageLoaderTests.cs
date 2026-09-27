@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
@@ -18,6 +19,48 @@ public sealed class GameContentPackageLoaderTests
         "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
         "SET_BLACK_BASTION_PALADIN_PROTECTION"
     ];
+
+    [Fact]
+    public void EveryAuthoredEquipmentDefinitionDeclaresGenerationMode()
+    {
+        string contentDirectory = Path.GetFullPath("content");
+        string[] paths =
+        [
+            Path.Combine(contentDirectory, "package.json"),
+            .. Directory.EnumerateFiles(
+                Path.Combine(contentDirectory, "items"),
+                "*.json",
+                SearchOption.TopDirectoryOnly)
+        ];
+        var equipmentCount = 0;
+
+        foreach (string path in paths)
+        {
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+            if (!document.RootElement.TryGetProperty("items", out JsonElement items))
+                continue;
+
+            foreach (JsonElement item in items.EnumerateArray())
+            {
+                if (!item.TryGetProperty("type", out JsonElement type)
+                    || type.GetString() != nameof(ItemType.Equipment))
+                {
+                    continue;
+                }
+
+                equipmentCount++;
+                Assert.True(
+                    item.TryGetProperty("generationMode", out JsonElement generationMode),
+                    $"{Path.GetFileName(path)}:{item.GetProperty("id").GetString()} is missing generationMode.");
+                string? mode = generationMode.GetString();
+                Assert.True(
+                    mode is nameof(ItemGenerationMode.Fixed) or nameof(ItemGenerationMode.Rolled),
+                    $"{Path.GetFileName(path)}:{item.GetProperty("id").GetString()} has invalid generationMode '{mode}'.");
+            }
+        }
+
+        Assert.True(equipmentCount > 0);
+    }
 
     private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
@@ -45,7 +88,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.31.0", package.ContentVersion);
+        Assert.Equal("0.32.0", package.ContentVersion);
         Assert.Equal("0.26.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
@@ -176,6 +219,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.All(proceduralEquipment, item =>
         {
             Assert.Null(item.PrimaryStatRanges);
+            Assert.Equal(ItemGenerationMode.Rolled, item.GenerationMode);
             Assert.True(ProceduralItemPolicy.IsEnabled(item), item.Id);
         });
 

@@ -7,6 +7,43 @@ namespace Elyndor.UnitTests.Items;
 public sealed class ItemInstanceStatRollerTests
 {
     [Fact]
+    public void FixedEquipmentDoesNotEnableProceduralGeneration()
+    {
+        ItemDefinition definition = ProceduralTemplate(
+            ItemRarity.Rare,
+            ItemGenerationMode.Fixed);
+
+        Assert.False(ProceduralItemPolicy.IsEnabled(definition));
+    }
+
+    [Fact]
+    public void GeneratorRejectsFixedEquipmentEvenWhenAffixConfigurationExists()
+    {
+        ItemDefinition definition = ProceduralTemplate(
+            ItemRarity.Rare,
+            ItemGenerationMode.Fixed);
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            ItemInstanceGenerator.Generate(
+                definition,
+                TestItemization(),
+                "TEST",
+                new SequenceGameRandom()));
+
+        Assert.Contains("rolled generation mode", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void RolledEquipmentEnablesProceduralGeneration()
+    {
+        ItemDefinition definition = ProceduralTemplate(
+            ItemRarity.Rare,
+            ItemGenerationMode.Rolled);
+
+        Assert.True(ProceduralItemPolicy.IsEnabled(definition));
+    }
+
+    [Fact]
     public void ResolveRollsConfiguredRangesAndKeepsStaticFallbacks()
     {
         ItemDefinition definition = new(
@@ -153,7 +190,9 @@ public sealed class ItemInstanceStatRollerTests
         Assert.Equal("DROP", perfect.PerfectOrigin);
     }
 
-    private static ItemDefinition ProceduralTemplate(ItemRarity rarity) => new(
+    private static ItemDefinition ProceduralTemplate(
+        ItemRarity rarity,
+        ItemGenerationMode generationMode = ItemGenerationMode.Rolled) => new(
         "TEST_PROCEDURAL_SWORD",
         "Test procedural sword",
         ItemType.Equipment,
@@ -164,6 +203,7 @@ public sealed class ItemInstanceStatRollerTests
         EquipmentSlot.MainHand,
         new PrimaryStats(0, 0, 0, 0),
         "Test procedural equipment.",
+        GenerationMode: generationMode,
         GuaranteedAffixStatIds: [ItemStatIds.Strength],
         RandomAffixPoolId: "TEST_POOL",
         AffixCountProfileId: "TEST_COUNT");

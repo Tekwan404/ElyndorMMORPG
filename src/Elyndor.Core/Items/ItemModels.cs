@@ -20,6 +20,12 @@ public enum ItemRarity
     Unique
 }
 
+public enum ItemGenerationMode
+{
+    Fixed,
+    Rolled
+}
+
 public enum ConsumableActionType
 {
     RestoreHp,
@@ -198,7 +204,8 @@ public sealed record ItemDefinition(
     string? TradePolicyId = null,
     int GenerationVersion = 1,
     bool PremiumEligible = true,
-    int InventoryCapacityBonus = 0);
+    int InventoryCapacityBonus = 0,
+    ItemGenerationMode GenerationMode = ItemGenerationMode.Fixed);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

@@ -57,6 +57,7 @@ ItemDefinition
   ├── RequiredLevel
   ├── AllowedClassIds / AllowedClassTags, optional
   ├── FixedStatModifiers
+  ├── GenerationMode: Fixed | Rolled
   ├── WeaponProfile, optional
   ├── AffixPoolId, optional
   ├── AffixCountProfileId, optional
@@ -69,6 +70,14 @@ ItemDefinition
   ├── Flags
   ├── Version
   └── Metadata
+
+`GenerationMode` ортогонален принадлежности к комплекту и identity предмета:
+
+- `Fixed` использует только явно заданные характеристики definition и не допускает random-affix или stat-range generation fields.
+- `Rolled` требует текущую V2 policy через affix pool/count profile либо поддерживаемую legacy stat-range policy.
+- `SetId`, economy restrictions и будущие unique effects не определяют generation mode.
+
+Весь текущий bundled equipment использует `Rolled`. Исторические published packages без этого поля обновляются при десериализации по существующей generation configuration.
 
 4. Item Instance
 

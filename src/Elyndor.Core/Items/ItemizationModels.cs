@@ -213,7 +213,8 @@ public sealed record ItemGenerationKey(int Seed, string AuditHash)
 public static class ProceduralItemPolicy
 {
     public static bool IsEnabled(ItemDefinition item) =>
-        item.Type == ItemType.Equipment
+        item.GenerationMode == ItemGenerationMode.Rolled
+        && item.Type == ItemType.Equipment
         && item.Slot is not null
         && !string.IsNullOrWhiteSpace(item.RandomAffixPoolId)
         && !string.IsNullOrWhiteSpace(item.AffixCountProfileId);
@@ -234,6 +235,27 @@ public static class ProceduralItemPolicy
             : null;
 }
 
+public static class ItemGenerationSemantics
+{
+    public static bool HasLegacyRangeConfiguration(ItemDefinition item) =>
+        item.PrimaryStatRanges is not null;
+
+    public static bool HasV2Configuration(ItemDefinition item) =>
+        item.ItemLevelMin.HasValue
+        || item.ItemLevelMax.HasValue
+        || item.GuaranteedAffixStatIds is { Count: > 0 }
+        || item.RandomAffixPoolId is not null
+        || item.AffixCountProfileId is not null
+        || item.ExtraAffixBudgetCap != 0
+        || item.PrefixSuffixPolicyId is not null
+        || item.GenerationVersion != 1;
+
+    public static bool HasCompleteV2Configuration(ItemDefinition item) =>
+        !string.IsNullOrWhiteSpace(item.RandomAffixPoolId)
+        && !string.IsNullOrWhiteSpace(item.AffixCountProfileId);
+
+}
+
 public static class ItemInstanceGenerator
 {
     private const decimal MinimumAffixQuality = 0.40m;
@@ -250,6 +272,8 @@ public static class ItemInstanceGenerator
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceQualityProfileId);
         ArgumentNullException.ThrowIfNull(random);
 
+        if (template.GenerationMode != ItemGenerationMode.Rolled)
+            throw new InvalidOperationException("Item generation requires rolled generation mode.");
         if (template.Type != ItemType.Equipment || template.Slot is null)
             throw new InvalidOperationException("Only equipment templates can generate equipment instances.");
 
