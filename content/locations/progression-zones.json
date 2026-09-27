@@ -204,7 +204,7 @@
         "BLIGHTED_GROVE"
       ],
       "encounters": [],
-      "minimumLevel": 25,
+      "minimumLevel": 1,
       "maximumLevel": 25,
       "requiredContractId": null,
       "artId": "ancient-ruins",
