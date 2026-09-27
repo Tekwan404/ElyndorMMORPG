@@ -148,7 +148,7 @@ public sealed class ProfessionCraftAtomicityTests(PostgresFixture postgres) : IA
         };
     }
 
-    private ProfessionService CreateService(
+    private static ProfessionService CreateService(
         GameDbContext context,
         GameContentPackage content) =>
         new(
