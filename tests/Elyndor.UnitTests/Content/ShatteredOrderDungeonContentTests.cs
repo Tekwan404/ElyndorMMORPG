@@ -42,7 +42,7 @@ public sealed class ShatteredOrderDungeonContentTests
         Assert.Contains(observatory.Encounters, item => item.MonsterId == "SHATTERED_ORDER_AZRAEL_L25");
 
         LocationDefinition observatoryLocation = package.Locations.Single(item => item.Id == observatory.EntryLocationId);
-        Assert.Equal(25, observatoryLocation.MinimumLevel);
+        Assert.Equal(1, observatoryLocation.MinimumLevel);
         Assert.Equal(25, observatoryLocation.RecommendedLevel);
         Assert.Equal("SAFE", observatoryLocation.DangerLevel);
         Assert.False(ContainsLegacyMirrorLore(observatory.DisplayName));
