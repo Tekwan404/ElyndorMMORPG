@@ -197,18 +197,18 @@
     },
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
-      "displayName": "Обсерватория Расколотого Зеркала",
+      "displayName": "Обсерватория Погасшего Неба",
       "dangerLevel": "SAFE",
       "recommendedLevel": 25,
       "transitions": [
         "BLIGHTED_GROVE"
       ],
       "encounters": [],
-      "minimumLevel": 1,
+      "minimumLevel": 25,
       "maximumLevel": 25,
       "requiredContractId": null,
       "artId": "ancient-ruins",
-      "description": "Подземелье 25 уровня о зеркальной магии, мане, щитах и расколотых отражениях. Награды и основной прогресс здесь отключены.",
+      "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
       "travelDurationSeconds": 0
     }
   ]

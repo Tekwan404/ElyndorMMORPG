@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.32.0",
-  "balanceVersion": "0.26.0",
-  "publishedAtUtc": "2026-09-27T12:00:00+00:00",
+  "contentVersion": "0.33.0",
+  "balanceVersion": "0.27.0",
+  "publishedAtUtc": "2026-09-27T18:00:00+00:00",
   "totals": {
     "locations": 21,
     "dungeons": 6
@@ -981,28 +981,6 @@
       ]
     },
     {
-      "id": "SHATTERED_ORDER_CITADEL_TEST",
-      "name": "Обсерватория Расколотого Зеркала",
-      "level": 25,
-      "levelRange": {
-        "minimum": 1,
-        "maximum": 25
-      },
-      "description": "Подземелье 25 уровня о зеркальной магии, мане, щитах и расколотых отражениях. Награды и основной прогресс здесь отключены.",
-      "dangerLevel": "SAFE",
-      "artId": "ancient-ruins",
-      "transitions": [
-        "BLIGHTED_GROVE"
-      ],
-      "requiredContractId": null,
-      "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "encounters": [],
-      "dungeonIds": [
-        "SHATTERED_ORDER_CITADEL_TEST"
-      ]
-    },
-    {
       "id": "STARTER_TOWN",
       "name": "Стартовый город",
       "level": 1,
@@ -1160,6 +1138,28 @@
         }
       ],
       "dungeonIds": []
+    },
+    {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "name": "Обсерватория Погасшего Неба",
+      "level": 25,
+      "levelRange": {
+        "minimum": 25,
+        "maximum": 25
+      },
+      "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
+      "dangerLevel": "SAFE",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": [
+        "SHATTERED_ORDER_CITADEL_TEST"
+      ]
     }
   ],
   "dungeons": [
@@ -1360,13 +1360,13 @@
     },
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
-      "name": "Обсерватория Расколотого Зеркала",
+      "name": "Обсерватория Погасшего Неба",
       "level": 25,
       "levelRange": {
         "minimum": 25,
         "maximum": 25
       },
-      "description": "Заброшенная обсерватория магов отражений. Неудачный эксперимент разделил её обитателей, души и магические отражения. Награды, лут, золото и опыт намеренно отключены.",
+      "description": "Древняя башня астромантов, захваченная Веллариусом и его хранителями. Пройдите четыре зала обсерватории, остановите ритуал Азраэля и соберите комплекты звёздной стражи.",
       "entryLocationId": "SHATTERED_ORDER_CITADEL_TEST",
       "partySize": {
         "minimum": 1,

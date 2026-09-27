@@ -38,8 +38,8 @@
       "actions": [
         { "type": "Healing", "amount": 650, "healingCanCrit": false }
       ],
-      "displayName": "Зеркальное восстановление",
-      "description": "Прерываемое восстановление Жреца Зеркала."
+      "displayName": "Звёздное восстановление",
+      "description": "Прерываемое восстановление астрожреца."
     },
     {
       "id": "MIRROR_EXECUTIONER_PRESSURE",

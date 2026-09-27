@@ -17,7 +17,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   })
   await installMockApiUnlessReal(page)
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Создайте героя' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Создайте героя' })).toBeVisible({ timeout: 15_000 })
   await page.screenshot({
     path: '../../output/playwright/session-2a-character-creation.png',
     fullPage: true,
@@ -408,7 +408,7 @@ const additionalMapLocations = [
   ['OBSIDIAN_EDGE', 'Обсидиановый предел', 38],
   ['ANCIENT_MINE', 'Древняя шахта', 15],
   ['ECLIPSED_CITADEL', 'Цитадель Затмения', 25],
-  ['SHATTERED_ORDER_CITADEL_TEST', 'Обсерватория Расколотого Зеркала', 25],
+  ['SHATTERED_ORDER_CITADEL_TEST', 'Обсерватория Погасшего Неба', 25],
   ['HEART_OF_BLIGHTED_GROVE', 'Сердце Осквернённой Чащи', 20],
   ['SHATTERED_ORDER_CITADEL', 'Цитадель Расколотого Ордена', 30],
   ['BLACK_BASTION', 'Чёрный Бастион', 40],

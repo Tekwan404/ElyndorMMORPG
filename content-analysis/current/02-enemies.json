@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.32.0",
-  "balanceVersion": "0.26.0",
-  "publishedAtUtc": "2026-09-27T12:00:00+00:00",
+  "contentVersion": "0.33.0",
+  "balanceVersion": "0.27.0",
+  "publishedAtUtc": "2026-09-27T18:00:00+00:00",
   "total": 256,
   "enemies": [
     {
@@ -20133,11 +20133,134 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 0,
-        "goldRewardMin": 0,
-        "goldRewardMax": 0,
-        "lootTableId": null,
-        "lootTable": null
+        "xpReward": 90000,
+        "goldRewardMin": 550,
+        "goldRewardMax": 800,
+        "lootTableId": "LOOT_OBSERVATORY_AZRAEL_L25",
+        "lootTable": {
+          "id": "LOOT_OBSERVATORY_AZRAEL_L25",
+          "entries": [
+            {
+              "itemId": "DUNGEON_CATALYST",
+              "dropChance": 0.5,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            }
+          ],
+          "version": 1,
+          "selectionGroups": [
+            {
+              "id": "GUARANTEED_SET",
+              "rolls": 1,
+              "selectionMode": "EqualWeight",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_CHEST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_CHEST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WAIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            },
+            {
+              "id": "SECOND_EQUIPMENT",
+              "rolls": 1,
+              "selectionMode": "WeightedExclusive",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_CHEST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_CHEST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WAIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            }
+          ]
+        }
       },
       "appearsIn": {
         "worldLocationIds": [],
@@ -20379,10 +20502,10 @@
     },
     {
       "id": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
-      "name": "Зеркальный Кастелан",
-      "internalName": "Зеркальный Кастелан",
+      "name": "Кастелян Звёздного Купола",
+      "internalName": "Кастелян Звёздного Купола",
       "level": 25,
-      "description": "На 70% и 35% здоровья поднимает отражающий барьер и призывает связанную тройку аддов.",
+      "description": "На 70% и 35% здоровья поднимает астральный барьер и призывает трёх хранителей купола.",
       "rank": "Boss",
       "artId": "rytsar-zerkalnogo-iadra",
       "version": 1,
@@ -20426,11 +20549,134 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 0,
-        "goldRewardMin": 0,
-        "goldRewardMax": 0,
-        "lootTableId": null,
-        "lootTable": null
+        "xpReward": 55000,
+        "goldRewardMin": 300,
+        "goldRewardMax": 450,
+        "lootTableId": "LOOT_OBSERVATORY_CASTELLAN_L25",
+        "lootTable": {
+          "id": "LOOT_OBSERVATORY_CASTELLAN_L25",
+          "entries": [
+            {
+              "itemId": "DUNGEON_CATALYST",
+              "dropChance": 0.5,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            }
+          ],
+          "version": 1,
+          "selectionGroups": [
+            {
+              "id": "GUARANTEED_SET",
+              "rolls": 1,
+              "selectionMode": "EqualWeight",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_FEET",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HANDS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_FEET",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HANDS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_FEET",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HANDS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_FEET",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HANDS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            },
+            {
+              "id": "SECOND_EQUIPMENT",
+              "rolls": 1,
+              "selectionMode": "WeightedExclusive",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_FEET",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HANDS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_FEET",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HANDS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_FEET",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HANDS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_FEET",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HANDS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            }
+          ]
+        }
       },
       "appearsIn": {
         "worldLocationIds": [],
@@ -20446,8 +20692,8 @@
     },
     {
       "id": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25",
-      "name": "Палач Зеркала",
-      "internalName": "Палач Зеркала",
+      "name": "Палач Небесной Стражи",
+      "internalName": "Палач Небесной Стражи",
       "level": 25,
       "description": "Наращивает давление на текущей цели.",
       "rank": "Elite",
@@ -20603,10 +20849,10 @@
     },
     {
       "id": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25",
-      "name": "Страж Зеркала",
-      "internalName": "Страж Зеркала",
+      "name": "Страж Звёздного Купола",
+      "internalName": "Страж Звёздного Купола",
       "level": 25,
-      "description": "Пока жив, усиливает отражение Зеркального Кастеляна с 50% до 70%.",
+      "description": "Пока жив, усиливает астральный барьер Кастеляна с 50% до 70%.",
       "rank": "Elite",
       "artId": "oskolochnyi-strazh",
       "version": 1,
@@ -20672,8 +20918,8 @@
     },
     {
       "id": "SHATTERED_ORDER_MIRROR_PRIEST_L25",
-      "name": "Жрец Зеркала",
-      "internalName": "Жрец Зеркала",
+      "name": "Астрожрец Погасшего Света",
+      "internalName": "Астрожрец Погасшего Света",
       "level": 25,
       "description": "Периодически начинает прерываемое восстановление.",
       "rank": "Elite",
@@ -20755,8 +21001,8 @@
             "criticalChanceBonus": 0,
             "criticalDamageBonus": 0,
             "magicPenetrationBonus": 0,
-            "displayName": "Зеркальное восстановление",
-            "description": "Прерываемое восстановление Жреца Зеркала.",
+            "displayName": "Звёздное восстановление",
+            "description": "Прерываемое восстановление астрожреца.",
             "iconId": "paladin-holy-light",
             "targetCount": 0,
             "targetSelectorProfile": "EncounterOrder",
@@ -20855,11 +21101,134 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 0,
-        "goldRewardMin": 0,
-        "goldRewardMax": 0,
-        "lootTableId": null,
-        "lootTable": null
+        "xpReward": 75000,
+        "goldRewardMin": 400,
+        "goldRewardMax": 600,
+        "lootTableId": "LOOT_OBSERVATORY_MOR_ET_L25",
+        "lootTable": {
+          "id": "LOOT_OBSERVATORY_MOR_ET_L25",
+          "entries": [
+            {
+              "itemId": "DUNGEON_CATALYST",
+              "dropChance": 0.5,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            }
+          ],
+          "version": 1,
+          "selectionGroups": [
+            {
+              "id": "GUARANTEED_SET",
+              "rolls": 1,
+              "selectionMode": "EqualWeight",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_LEGS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_SHOULDERS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_LEGS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_SHOULDERS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_LEGS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_SHOULDERS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_LEGS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_SHOULDERS",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            },
+            {
+              "id": "SECOND_EQUIPMENT",
+              "rolls": 1,
+              "selectionMode": "WeightedExclusive",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_LEGS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_SHOULDERS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_LEGS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_SHOULDERS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_LEGS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_SHOULDERS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_LEGS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_SHOULDERS",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            }
+          ]
+        }
       },
       "appearsIn": {
         "worldLocationIds": [],
@@ -21825,11 +22194,134 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 0,
-        "goldRewardMin": 0,
-        "goldRewardMax": 0,
-        "lootTableId": null,
-        "lootTable": null
+        "xpReward": 65000,
+        "goldRewardMin": 350,
+        "goldRewardMax": 500,
+        "lootTableId": "LOOT_OBSERVATORY_VELARIUS_L25",
+        "lootTable": {
+          "id": "LOOT_OBSERVATORY_VELARIUS_L25",
+          "entries": [
+            {
+              "itemId": "DUNGEON_CATALYST",
+              "dropChance": 0.5,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            }
+          ],
+          "version": 1,
+          "selectionGroups": [
+            {
+              "id": "GUARANTEED_SET",
+              "rolls": 1,
+              "selectionMode": "EqualWeight",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HEAD",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HEAD",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WRIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HEAD",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HEAD",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
+                  "weight": 1,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            },
+            {
+              "id": "SECOND_EQUIPMENT",
+              "rolls": 1,
+              "selectionMode": "WeightedExclusive",
+              "entries": [
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HEAD",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HEAD",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WRIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HEAD",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HEAD",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                },
+                {
+                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
+                  "weight": 12.5,
+                  "minQuantity": 1,
+                  "maxQuantity": 1
+                }
+              ]
+            }
+          ]
+        }
       },
       "appearsIn": {
         "worldLocationIds": [],
@@ -34248,12 +34740,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_FEET",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_FEET",
                   "weight": 1,
                   "minQuantity": 1,
@@ -34272,12 +34758,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_FEET",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_FEET",
                   "weight": 1,
                   "minQuantity": 1,
@@ -34285,18 +34765,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_FEET",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_FEET",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_FEET",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -34327,12 +34795,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_FEET",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_FEET",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -34351,12 +34813,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_FEET",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_FEET",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -34364,18 +34820,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_FEET",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_FEET",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_FEET",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -34916,12 +35360,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HANDS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_HANDS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -34940,12 +35378,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HANDS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_HANDS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -34953,18 +35385,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_HANDS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HANDS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HANDS",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -34995,12 +35415,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HANDS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_HANDS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -35019,12 +35433,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HANDS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_HANDS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -35032,18 +35440,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_HANDS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HANDS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HANDS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -35579,12 +35975,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HEAD",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_HEAD",
                   "weight": 1,
                   "minQuantity": 1,
@@ -35603,12 +35993,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HEAD",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_HEAD",
                   "weight": 1,
                   "minQuantity": 1,
@@ -35616,18 +36000,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_HEAD",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HEAD",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HEAD",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -35651,12 +36023,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_WRIST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -35675,12 +36041,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WRIST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -35688,18 +36048,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -35730,12 +36078,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_HEAD",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_HEAD",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -35754,12 +36096,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_HEAD",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_HEAD",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -35767,18 +36103,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_HEAD",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_HEAD",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_HEAD",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -35802,12 +36126,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_WRIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -35826,12 +36144,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WRIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -35839,18 +36151,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -36332,12 +36632,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_LEGS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_LEGS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -36356,12 +36650,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_LEGS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_LEGS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -36369,18 +36657,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_LEGS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_LEGS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_LEGS",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -36411,12 +36687,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_LEGS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_LEGS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -36435,12 +36705,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_LEGS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_LEGS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -36448,18 +36712,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_LEGS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_LEGS",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_LEGS",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37150,12 +37402,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_CHEST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37174,12 +37420,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_CHEST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_CHEST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37187,18 +37427,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_CHEST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_CHEST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37229,12 +37457,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_CHEST",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -37253,12 +37475,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_CHEST",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_CHEST",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
@@ -37266,18 +37482,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_CHEST",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_CHEST",
-                  "weight": 4.166666666666667,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
                   "weight": 4.166666666666667,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37475,12 +37679,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_SHOULDERS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_SHOULDERS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37499,12 +37697,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_SHOULDERS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_SHOULDERS",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37512,18 +37704,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_SHOULDERS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_SHOULDERS",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_SHOULDERS",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37547,12 +37727,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_WAIST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37571,12 +37745,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WAIST",
                   "weight": 1,
                   "minQuantity": 1,
@@ -37584,18 +37752,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                  "weight": 1,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
                   "weight": 1,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37626,12 +37782,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_SHOULDERS",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_SHOULDERS",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -37650,12 +37800,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_SHOULDERS",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_SHOULDERS",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -37663,18 +37807,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_SHOULDERS",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_SHOULDERS",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_SHOULDERS",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
                   "maxQuantity": 1
@@ -37698,12 +37830,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_WARRIOR_WARLORD_WAIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -37722,12 +37848,6 @@
                   "maxQuantity": 1
                 },
                 {
-                  "itemId": "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
                   "itemId": "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WAIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
@@ -37735,18 +37855,6 @@
                 },
                 {
                   "itemId": "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                  "weight": 2.0833333333333335,
-                  "minQuantity": 1,
-                  "maxQuantity": 1
-                },
-                {
-                  "itemId": "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
                   "weight": 2.0833333333333335,
                   "minQuantity": 1,
                   "maxQuantity": 1

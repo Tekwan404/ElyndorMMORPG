@@ -42,10 +42,10 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
     dangerLabel: 'Подземелье',
   },
   SHATTERED_ORDER_CITADEL_TEST: {
-    label: 'Обсерватория Расколотого Зеркала',
+    label: 'Обсерватория Погасшего Неба',
     art: gameArt.locations.SHATTERED_ORDER_CITADEL_TEST,
     kind: 'dungeon',
-    dangerLabel: 'Тестовое подземелье',
+    dangerLabel: 'Подземелье · 25 уровень',
   },
   BROODMOTHER_LAIR: {
     label: 'Логово Прародительницы',

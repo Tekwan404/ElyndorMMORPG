@@ -33,7 +33,10 @@ describe('authored location presentation', () => {
     )
     expect(locationPresentation('BLACK_BASTION').dangerLabel).toBe('Подземелье · 40 уровень')
     expect(locationPresentation('SHATTERED_ORDER_CITADEL_TEST').label).toBe(
-      'Обсерватория Расколотого Зеркала',
+      'Обсерватория Погасшего Неба',
+    )
+    expect(locationPresentation('SHATTERED_ORDER_CITADEL_TEST').dangerLabel).toBe(
+      'Подземелье · 25 уровень',
     )
   })
 })

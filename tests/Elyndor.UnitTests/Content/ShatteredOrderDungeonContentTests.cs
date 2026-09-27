@@ -1,13 +1,24 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
+using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.UnitTests.Content;
 
 public sealed class ShatteredOrderDungeonContentTests
 {
+    private static readonly string[] ObservatorySetIds =
+    [
+        "SET_BLACK_BASTION_WARRIOR_BERSERKER",
+        "SET_BLACK_BASTION_MAGE_FROST",
+        "SET_BLACK_BASTION_ARCHER_SURVIVAL",
+        "SET_BLACK_BASTION_PALADIN_HOLY"
+    ];
+
     private static readonly string[] BossIds =
     [
         "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
@@ -17,16 +28,31 @@ public sealed class ShatteredOrderDungeonContentTests
     ];
 
     [Fact]
-    public async Task MirrorObservatoryAndShatteredOrderCitadelAreDistinctDungeons()
+    public async Task ObservatoryAndShatteredOrderCitadelAreDistinctProductionDungeons()
     {
         GameContentPackage package = await LoadAsync();
         var dungeons = package.Dungeons!;
         var observatory = dungeons.Single(item => item.Id == "SHATTERED_ORDER_CITADEL_TEST");
         var citadel = dungeons.Single(item => item.Id == "SHATTERED_ORDER_CITADEL");
 
-        Assert.Equal("Обсерватория Расколотого Зеркала", observatory.DisplayName);
+        Assert.Equal("Обсерватория Погасшего Неба", observatory.DisplayName);
         Assert.Equal(25, observatory.MinimumLevel);
+        Assert.Equal(25, observatory.MaximumLevel);
+        Assert.Equal(4, observatory.Encounters.Count);
         Assert.Contains(observatory.Encounters, item => item.MonsterId == "SHATTERED_ORDER_AZRAEL_L25");
+
+        LocationDefinition observatoryLocation = package.Locations.Single(item => item.Id == observatory.EntryLocationId);
+        Assert.Equal(25, observatoryLocation.MinimumLevel);
+        Assert.Equal(25, observatoryLocation.RecommendedLevel);
+        Assert.Equal("SAFE", observatoryLocation.DangerLevel);
+        Assert.False(ContainsLegacyMirrorLore(observatory.DisplayName));
+        Assert.False(ContainsLegacyMirrorLore(observatory.Description));
+        Assert.False(ContainsTestCopy(observatory.DisplayName));
+        Assert.False(ContainsTestCopy(observatory.Description));
+        Assert.False(ContainsLegacyMirrorLore(observatoryLocation.DisplayName));
+        Assert.False(ContainsLegacyMirrorLore(observatoryLocation.Description));
+        Assert.False(ContainsTestCopy(observatoryLocation.DisplayName));
+        Assert.False(ContainsTestCopy(observatoryLocation.Description));
 
         Assert.Equal("Цитадель Расколотого Ордена", citadel.DisplayName);
         Assert.Equal(30, citadel.MinimumLevel);
@@ -37,6 +63,51 @@ public sealed class ShatteredOrderDungeonContentTests
         GameContentIndexes indexes = GameContentIndexes.For(package);
         Assert.DoesNotContain(citadel.Encounters, item =>
             indexes.MonstersById[item.MonsterId].DisplayName!.Contains("Зеркал", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task ObservatoryHasLevelAppropriateRewardsAndNoPlayerFacingMirrorLore()
+    {
+        GameContentPackage package = await LoadAsync();
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+        DungeonDefinition observatory = package.Dungeons!.Single(item => item.Id == "SHATTERED_ORDER_CITADEL_TEST");
+        DungeonDefinition blackBastion = package.Dungeons!.Single(item => item.Id == "BLACK_BASTION");
+
+        MonsterDefinition[] bosses = observatory.Encounters
+            .Where(item => item.IsBoss)
+            .Select(item => indexes.MonstersById[item.MonsterId])
+            .ToArray();
+        Assert.Equal(4, bosses.Length);
+        Assert.All(bosses, boss =>
+        {
+            Assert.Equal(25, boss.Level);
+            Assert.True(boss.XpReward > 0, boss.Id);
+            Assert.True(boss.GoldRewardMin > 0, boss.Id);
+            Assert.True(boss.GoldRewardMax >= boss.GoldRewardMin, boss.Id);
+            Assert.NotNull(boss.LootTableId);
+            Assert.False(ContainsObservatoryMirrorLore(boss.DisplayName), $"{boss.Id}: {boss.DisplayName}");
+            Assert.False(ContainsObservatoryMirrorLore(boss.Description), $"{boss.Id}: {boss.Description}");
+        });
+
+        HashSet<string> observatoryLoot = LootItemIds(observatory, indexes);
+        HashSet<string> blackBastionLoot = LootItemIds(blackBastion, indexes);
+        ItemDefinition[] movedSetItems = package.Items!
+            .Where(item => item.SetId is not null && ObservatorySetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.Equal(32, movedSetItems.Length);
+        Assert.All(ObservatorySetIds, setId =>
+            Assert.Equal(8, movedSetItems.Count(item => item.SetId == setId)));
+        Assert.All(movedSetItems, item =>
+        {
+            Assert.Equal(25, item.RequiredLevel);
+            Assert.Equal(25, item.ItemLevelMin);
+            Assert.Equal(25, item.ItemLevelMax);
+            Assert.Equal("LEVEL_25_28", item.AffixCountProfileId);
+            Assert.Contains(item.Id, observatoryLoot);
+            Assert.DoesNotContain(item.Id, blackBastionLoot);
+            Assert.Contains("Обсерватор", item.Description, StringComparison.OrdinalIgnoreCase);
+        });
     }
 
     [Fact]
@@ -178,6 +249,26 @@ public sealed class ShatteredOrderDungeonContentTests
         || value?.Contains("отраж", StringComparison.OrdinalIgnoreCase) == true
         || value?.Contains("между мирами", StringComparison.OrdinalIgnoreCase) == true
         || value?.Contains("триедин", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static bool ContainsTestCopy(string? value) =>
+        value?.Contains("тест", StringComparison.OrdinalIgnoreCase) == true
+        || value?.Contains("отключ", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static bool ContainsObservatoryMirrorLore(string? value) =>
+        value?.Contains("зеркал", StringComparison.OrdinalIgnoreCase) == true
+        || value?.Contains("отраж", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static HashSet<string> LootItemIds(
+        DungeonDefinition dungeon,
+        GameContentIndexes indexes) =>
+        dungeon.Encounters
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId].LootTableId)
+            .Where(lootTableId => lootTableId is not null)
+            .Select(lootTableId => indexes.LootTablesById[lootTableId!])
+            .SelectMany(table => table.Entries.Select(entry => entry.ItemId)
+                .Concat((table.SelectionGroups ?? []).SelectMany(group => group.Entries)
+                    .Select(entry => entry.ItemId)))
+            .ToHashSet(StringComparer.Ordinal);
 
     private static string RepositoryContentPath()
     {
